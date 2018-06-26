@@ -26,28 +26,23 @@ except ImportError:
 from avocado.utils import service
 
 
-class TestRunCalls(unittest.TestCase):
+class TestMultipleInstances(unittest.TestCase):
 
-    def setUp(self):
-        self.run_param1 = ["foo_target", "set_target", mock.Mock()]
-        self.run_param2 = ["foo_service", "start", mock.Mock()]
-        self.run_param1[-1].return_value.stdout = "systemd"
-        self.run_param2[-1].return_value.stdout = "init"
-        self.results = ["systemctl isolate foo_target",
-                        "service foo_service start"]
-
-    def test_run_calls(self):
-
-        def run_call(run_params):
-            run_mock = run_params[-1]
-            serv = service.service_manager(run=run_mock)
-            self.assertTrue(run_mock.called)
-            getattr(serv, run_params[1])(run_params[0])
-
-        for test_params, test_results in zip([self.run_param1, self.run_param2],
-                                             self.results):
-            run_call(test_params)
-            self.assertEqual(test_params[-1].call_args[0][0], test_results)
+    def test_different_runners(self):
+        # Call 'set_target' on first runner
+        runner1 = mock.Mock()
+        runner1.return_value.stdout = 'systemd'
+        service1 = service.service_manager(run=runner1)
+        service1.set_target('foo_target')
+        self.assertEqual(runner1.call_args[0][0],
+                         'systemctl isolate foo_target')
+        # Call 'start' on second runner
+        runner2 = mock.Mock()
+        runner2.return_value.stdout = 'init'
+        service2 = service.service_manager(run=runner2)
+        service2.start('foo_service')
+        self.assertEqual(runner2.call_args[0][0],
+                         'service foo_service start')
 
 
 class TestSystemd(unittest.TestCase):
@@ -55,22 +50,28 @@ class TestSystemd(unittest.TestCase):
     def setUp(self):
         self.service_name = "fake_service"
         init_name = "systemd"
-        command_generator = service._command_generators[init_name]
+        command_generator = service._COMMAND_GENERATORS[init_name]
         self.service_command_generator = service._ServiceCommandGenerator(
             command_generator)
 
     def test_all_commands(self):
+        # Test all commands except "set_target" which is tested elsewhere
         for cmd, _ in ((c, r) for (c, r) in
                        self.service_command_generator.commands if
-                       c not in ["list", "set_target"]):
+                       c not in ["set_target"]):
             ret = getattr(
                 self.service_command_generator, cmd)(self.service_name)
             if cmd == "is_enabled":
                 cmd = "is-enabled"
             if cmd == "reset_failed":
                 cmd = "reset-failed"
-            self.assertEqual(ret, ["systemctl", cmd, "%s.service" %
-                                   self.service_name])
+            if cmd == "list":
+                self.assertEqual(ret, ['systemctl', 'list-unit-files',
+                                       '--type=service', '--no-pager',
+                                       '--full'])
+            else:
+                self.assertEqual(ret, ["systemctl", cmd, "%s.service" %
+                                       self.service_name])
 
     def test_set_target(self):
         ret = getattr(
@@ -83,28 +84,34 @@ class TestSysVInit(unittest.TestCase):
     def setUp(self):
         self.service_name = "fake_service"
         init_name = "init"
-        command_generator = service._command_generators[init_name]
+        command_generator = service._COMMAND_GENERATORS[init_name]
         self.service_command_generator = service._ServiceCommandGenerator(
             command_generator)
 
     def test_all_commands(self):
         command_name = "service"
+        # Test all commands except "set_target" which is tested elsewhere
         for cmd, _ in ((c, r) for (c, r) in
-                       self.service_command_generator.commands if
-                       c not in ["list", "set_target", "reset_failed", "mask",
-                                 "unmask"]):
+                       self.service_command_generator.commands
+                       if c != 'set_target'):
             ret = getattr(
                 self.service_command_generator, cmd)(self.service_name)
-            if cmd == "is_enabled":
-                command_name = "chkconfig"
-                cmd = ""
-            elif cmd == 'enable':
-                command_name = "chkconfig"
-                cmd = "on"
-            elif cmd == 'disable':
-                command_name = "chkconfig"
-                cmd = "off"
-            self.assertEqual(ret, [command_name, self.service_name, cmd])
+            if cmd in ['set_target', 'reset_failed', 'mask', 'unmask']:
+                exp = ['true']
+            elif cmd == 'list':
+                exp = ['chkconfig', '--list']
+            else:
+                if cmd == "is_enabled":
+                    command_name = "chkconfig"
+                    cmd = ""
+                elif cmd == 'enable':
+                    command_name = "chkconfig"
+                    cmd = "on"
+                elif cmd == 'disable':
+                    command_name = "chkconfig"
+                    cmd = "off"
+                exp = [command_name, self.service_name, cmd]
+            self.assertEqual(ret, exp)
 
     def test_set_target(self):
         ret = getattr(
@@ -155,9 +162,9 @@ class TestServiceManager(unittest.TestCase):
 
     @staticmethod
     def get_service_manager_from_init_and_run(init_name, run_mock):
-        command_generator = service._command_generators[init_name]
-        result_parser = service._result_parsers[init_name]
-        service_manager = service._service_managers[init_name]
+        command_generator = service._COMMAND_GENERATORS[init_name]
+        result_parser = service._RESULT_PARSERS[init_name]
+        service_manager = service._SERVICE_MANAGERS[init_name]
         service_command_generator = service._ServiceCommandGenerator(
             command_generator)
         service_result_parser = service._ServiceResultParser(result_parser)
