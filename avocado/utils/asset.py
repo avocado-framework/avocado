@@ -115,19 +115,19 @@ class Asset(object):
         # First let's search for the file in each one of the cache locations
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
-            self.asset_file = os.path.join(cache_dir, basename)
-            self.hashfile = '%s-CHECKSUM' % self.asset_file
+            asset_file = os.path.join(cache_dir, basename)
+            self.hashfile = '%s-CHECKSUM' % asset_file
 
             # To use a cached file, it must:
             # - Exists.
             # - Be valid (not expired).
             # - Be verified (hash check).
-            if (os.path.isfile(self.asset_file) and
-                    not self._is_expired(self.asset_file, self.expire)):
+            if (os.path.isfile(asset_file) and
+                    not self._is_expired(asset_file, self.expire)):
                 try:
-                    with FileLock(self.asset_file, 1):
-                        if self._verify():
-                            return self.asset_file
+                    with FileLock(asset_file, 1):
+                        if self._verify(asset_file):
+                            return asset_file
                 except:
                     exc_type, exc_value = sys.exc_info()[:2]
                     log.error('%s: %s' % (exc_type.__name__, exc_value))
@@ -136,8 +136,8 @@ class Asset(object):
         # A writable cache directory is then needed. The first available
         # writable cache directory will be used.
         cache_dir = self._get_writable_cache_dir()
-        self.asset_file = os.path.join(cache_dir, basename)
-        self.hashfile = '%s-CHECKSUM' % self.asset_file
+        asset_file = os.path.join(cache_dir, basename)
+        self.hashfile = '%s-CHECKSUM' % asset_file
 
         # Now we have a writable cache_dir. Let's get the asset.
         # Adding the user defined locations to the urls list:
@@ -155,38 +155,38 @@ class Asset(object):
                 raise UnsupportedProtocolError("Unsupported protocol"
                                                ": %s" % urlobj.scheme)
             try:
-                if fetch(urlobj):
-                    return self.asset_file
+                if fetch(urlobj, asset_file):
+                    return asset_file
             except:
                 exc_type, exc_value = sys.exc_info()[:2]
                 log.error('%s: %s' % (exc_type.__name__, exc_value))
 
         raise EnvironmentError("Failed to fetch %s." % basename)
 
-    def _download(self, url_obj):
+    def _download(self, url_obj, asset_file):
         try:
             # Temporary unique name to use while downloading
-            temp = '%s.%s' % (self.asset_file,
+            temp = '%s.%s' % (asset_file,
                               next(tempfile._get_candidate_names()))
             url_download(url_obj.geturl(), temp)
 
             # Acquire lock only after download the file
-            with FileLock(self.asset_file, 1):
-                shutil.copy(temp, self.asset_file)
-                self._compute_hash()
-                return self._verify()
+            with FileLock(asset_file, 1):
+                shutil.copy(temp, asset_file)
+                self._compute_hash(asset_file)
+                return self._verify(asset_file)
         finally:
             os.remove(temp)
 
-    def _compute_hash(self):
-        result = crypto.hash_file(self.asset_file, algorithm=self.algorithm)
+    def _compute_hash(self, asset_file):
+        result = crypto.hash_file(asset_file, algorithm=self.algorithm)
         with open(self.hashfile, 'w') as f:
             f.write('%s %s\n' % (self.algorithm, result))
 
-    def _get_hash_from_file(self):
+    def _get_hash_from_file(self, asset_file):
         discovered = None
         if not os.path.isfile(self.hashfile):
-            self._compute_hash()
+            self._compute_hash(asset_file)
 
         with open(self.hashfile, 'r') as hash_file:
             for line in hash_file:
@@ -198,32 +198,32 @@ class Asset(object):
                     break
         return discovered
 
-    def _verify(self):
+    def _verify(self, asset_file):
         if not self.asset_hash:
             return True
-        if self._get_hash_from_file() == self.asset_hash:
+        if self._get_hash_from_file(asset_file) == self.asset_hash:
             return True
         else:
             return False
 
-    def _get_local_file(self, url_obj):
+    def _get_local_file(self, url_obj, asset_file):
         if os.path.isdir(url_obj.path):
             path = os.path.join(url_obj.path, self.name)
         else:
             path = url_obj.path
 
         try:
-            with FileLock(self.asset_file, 1):
+            with FileLock(asset_file, 1):
                 try:
-                    os.symlink(path, self.asset_file)
-                    self._compute_hash()
-                    return self._verify()
+                    os.symlink(path, asset_file)
+                    self._compute_hash(asset_file)
+                    return self._verify(asset_file)
                 except OSError as detail:
                     if detail.errno == errno.EEXIST:
-                        os.remove(self.asset_file)
-                        os.symlink(path, self.asset_file)
-                        self._compute_hash()
-                        return self._verify()
+                        os.remove(asset_file)
+                        os.symlink(path, asset_file)
+                        self._compute_hash(asset_file)
+                        return self._verify(asset_file)
         except:
             raise
 
