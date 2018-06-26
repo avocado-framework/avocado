@@ -17,20 +17,22 @@ Asset fetcher from multiple locations
 """
 
 import errno
+import hashlib
 import logging
 import os
 import re
 import shutil
 import stat
 import sys
-import time
 import tempfile
+import time
 
 try:
     import urlparse
 except ImportError:
     import urllib.parse as urlparse
 
+from . import astring
 from . import crypto
 from . import path as utils_path
 from .download import url_download
@@ -102,6 +104,26 @@ class Asset(object):
         """
         return '%s-CHECKSUM' % asset_file
 
+    def _get_relative_dir(self, parsed_url):
+        """
+        When an asset has a name and a hash, there's a clear intention
+        for it to be unique *by name*, overwriting it if the file is
+        corrupted or expired.  These will be stored in the cache directory
+        indexed by name.
+
+        When an asset does not have a hash, they will be saved according
+        to their locations, so that multiple assets with the same file name,
+        but completely unrelated to each other, will still coexist.
+        """
+        if self.asset_hash:
+            return 'by_name'
+        base_url = "%s://%s/%s" % (parsed_url.scheme,
+                                   parsed_url.netloc,
+                                   os.path.dirname(parsed_url.path))
+        base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
+                                    base_url.encode(astring.ENCODING))
+        return os.path.join('by_location', base_url_hash.hexdigest())
+
     def fetch(self):
         """
         Fetches the asset. First tries to find the asset on the provided
@@ -114,6 +136,7 @@ class Asset(object):
         urls = []
         parsed_url = urlparse.urlparse(self.name)
         basename = os.path.basename(parsed_url.path)
+        cache_relative_dir = self._get_relative_dir(parsed_url)
 
         # If name is actually an url, it has to be included in urls list
         if parsed_url.scheme:
@@ -122,7 +145,7 @@ class Asset(object):
         # First let's search for the file in each one of the cache locations
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
-            asset_file = os.path.join(cache_dir, basename)
+            asset_file = os.path.join(cache_dir, cache_relative_dir, basename)
 
             # To use a cached file, it must:
             # - Exists.
@@ -142,8 +165,6 @@ class Asset(object):
         # A writable cache directory is then needed. The first available
         # writable cache directory will be used.
         cache_dir = self._get_writable_cache_dir()
-        asset_file = os.path.join(cache_dir, basename)
-
         # Now we have a writable cache_dir. Let's get the asset.
         # Adding the user defined locations to the urls list:
         if self.locations is not None:
@@ -159,6 +180,11 @@ class Asset(object):
             else:
                 raise UnsupportedProtocolError("Unsupported protocol"
                                                ": %s" % urlobj.scheme)
+            cache_relative_dir = self._get_relative_dir(urlobj)
+            asset_file = os.path.join(cache_dir, cache_relative_dir, basename)
+            dirname = os.path.dirname(asset_file)
+            if not os.path.isdir(dirname):
+                os.makedirs(dirname)
             try:
                 if fetch(urlobj, asset_file):
                     return asset_file
