@@ -75,8 +75,6 @@ class Asset(object):
             self.algorithm = algorithm
         self.locations = locations
         self.cache_dirs = cache_dirs
-        self.nameobj = urlparse.urlparse(self.name)
-        self.basename = os.path.basename(self.nameobj.path)
         self.expire = expire
 
     def _get_writable_cache_dir(self):
@@ -107,15 +105,17 @@ class Asset(object):
         :returns: The path for the file on the cache directory.
         """
         urls = []
+        parsed_url = urlparse.urlparse(self.name)
+        basename = os.path.basename(parsed_url.path)
 
         # If name is actually an url, it has to be included in urls list
-        if self.nameobj.scheme:
-            urls.append(self.nameobj.geturl())
+        if parsed_url.scheme:
+            urls.append(parsed_url.geturl())
 
         # First let's search for the file in each one of the cache locations
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
-            self.asset_file = os.path.join(cache_dir, self.basename)
+            self.asset_file = os.path.join(cache_dir, basename)
             self.hashfile = '%s-CHECKSUM' % self.asset_file
 
             # To use a cached file, it must:
@@ -136,7 +136,7 @@ class Asset(object):
         # A writable cache directory is then needed. The first available
         # writable cache directory will be used.
         cache_dir = self._get_writable_cache_dir()
-        self.asset_file = os.path.join(cache_dir, self.basename)
+        self.asset_file = os.path.join(cache_dir, basename)
         self.hashfile = '%s-CHECKSUM' % self.asset_file
 
         # Now we have a writable cache_dir. Let's get the asset.
@@ -161,7 +161,7 @@ class Asset(object):
                 exc_type, exc_value = sys.exc_info()[:2]
                 log.error('%s: %s' % (exc_type.__name__, exc_value))
 
-        raise EnvironmentError("Failed to fetch %s." % self.basename)
+        raise EnvironmentError("Failed to fetch %s." % basename)
 
     def _download(self, url_obj):
         try:
