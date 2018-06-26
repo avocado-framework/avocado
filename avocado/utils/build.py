@@ -18,6 +18,36 @@ import os
 from . import process
 
 
+def configure(path, configure=None):
+    """
+    Configures the source tree for a subsequent build
+
+    Most source directories coming from official released tarballs
+    will have a "configure" script, but source code snapshots may have
+    "autogen.sh" instead (which usually creates and runs a "configure"
+    script itself).  This function will attempt to run the first one
+    found (if a configure script name not given explicitly).
+
+    :param configure: the name of the configure script (None for trying to
+                      find one automatically)
+    :type configure: str or None
+    :returns: the configure script exit status, or None if no script was
+              found and executed
+    """
+    cwd = os.getcwd()
+    try:
+        os.chdir(path)
+        if configure is not None:
+            return process.run(os.path.join(path, configure)).exit_status
+
+        candidates = ['autogen.sh', 'configure']
+        for configure in candidates:
+            if os.access(configure, os.R_OK | os.X_OK):
+                return process.run(os.path.join(path, configure)).exit_status
+    finally:
+        os.chdir(cwd)
+
+
 def run_make(path, make='make', extra_args='', process_kwargs=None):
     """
     Run make, adding MAKEOPTS to the list of options.
