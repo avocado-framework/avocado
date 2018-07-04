@@ -72,9 +72,6 @@ class RawFileHandler(logging.FileHandler):
     logged stream but still respects the formatter.
     """
 
-    def __init__(self, *args, **kwargs):
-        logging.FileHandler.__init__(self, *args, **kwargs)
-
     def emit(self, record):
         """
         Modifying the original emit() to avoid including a new line
