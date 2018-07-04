@@ -121,11 +121,8 @@ class TemporaryScript(Script):
         :param mode: set file mode, default to 0775.
         """
         tmpdir = tempfile.mkdtemp(prefix=prefix)
-        self.path = os.path.join(tmpdir, name)
-        self.content = content
-        self.mode = mode
-        self.stored = False
-        self.open_mode = open_mode
+        super(TemporaryScript, self).__init__(os.path.join(tmpdir, name),
+                                              content, mode, open_mode)
 
     def __del__(self):
         self.remove()
