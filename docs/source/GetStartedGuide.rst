@@ -4,7 +4,9 @@
 Getting Started
 ===============
 
-The first step towards using Avocado is, quite obviously, installing it.
+Those who prefer video-introduction, take a look at :ref:`other_resources`.
+Either way first step towards using Avocado is, quite obviously, installing
+it.
 
 .. Note: this section section shares content with the project README
          file.  When editing this section, also sync the content with
