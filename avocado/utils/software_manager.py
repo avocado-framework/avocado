@@ -430,11 +430,14 @@ class YumBackend(RpmBackend):
         """
         process.system("yum clean all", sudo=True)
 
-    def install(self, name):
+    def install(self, name, group_install=False):
         """
         Installs package [name]. Handles local installs.
         """
-        i_cmd = self.base_command + ' ' + 'install' + ' ' + name
+        if group_install:
+            i_cmd = self.base_command + ' ' + 'groupinstall' + ' ' + name
+        else:
+            i_cmd = self.base_command + ' ' + 'install' + ' ' + name
 
         try:
             process.system(i_cmd, sudo=True)
@@ -442,13 +445,16 @@ class YumBackend(RpmBackend):
         except process.CmdError:
             return False
 
-    def remove(self, name):
+    def remove(self, name, group_remove=False):
         """
         Removes package [name].
 
         :param name: Package name (eg. 'ipython').
         """
-        r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
+        if group_remove:
+            r_cmd = self.base_command + ' ' + 'groupremove' + ' ' + name
+        else:
+            r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
         try:
             process.system(r_cmd, sudo=True)
             return True
