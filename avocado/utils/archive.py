@@ -168,10 +168,14 @@ class ArchiveFile(object):
         Extract all files from the archive.
 
         :param path: destination path.
+        :return: extracted folder name
         """
         self._engine.extractall(path)
         if self.is_zip:
             self._update_zip_extra_attrs(path)
+            return self._engine.namelist()[0].strip(os.sep)
+
+        return self._engine.getnames()[0]
 
     def _update_zip_extra_attrs(self, dst_dir):
         if platform.system() != "Linux":
@@ -249,7 +253,7 @@ def uncompress(filename, path):
     :param path: destination path to extract to.
     """
     with ArchiveFile.open(filename) as x:
-        x.extract(path)
+        return x.extract(path)
 
 
 # Some aliases
