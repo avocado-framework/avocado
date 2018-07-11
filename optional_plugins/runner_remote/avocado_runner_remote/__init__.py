@@ -433,7 +433,8 @@ class RemoteTestRunner(TestRunner):
         :return: a dictionary with test results.
         """
         extra_params = []
-        for arg in ["--mux-yaml", "--dry-run"]:
+        for arg in ["--mux-yaml", "--dry-run", "--filter-by-tags",
+                    "--filter-by-tags-include-empty"]:
             key = arg[2:].replace('-', '_')
             value = getattr(self.job.args, key, None)
             if value is True:
