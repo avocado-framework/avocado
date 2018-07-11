@@ -98,7 +98,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
             cmd_line = ('avocado run --force-job-id '
                         '0000000000000000000000000000000000000000 --json - '
                         '--archive /tests/sleeptest.py /tests/other/test '
-                        'passtest.py -m ~/avocado/tests/foo.yaml '
+                        'passtest.py --mux-yaml ~/avocado/tests/foo.yaml '
                         '~/avocado/tests/bar/baz.yaml --dry-run')
             runner.remote.run.assert_called_with(cmd_line,
                                                  ignore_status=True,
