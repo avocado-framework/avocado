@@ -22,9 +22,9 @@ from setuptools import setup, find_packages
 
 detected_distro = distro.detect()
 if detected_distro.name == 'fedora' and int(detected_distro.version) >= 29:
-    fabric = 'Fabric3<2.0.0'
+    fabric = 'Fabric3>=1.5.4,<2.0.0'
 else:
-    fabric = 'fabric<2.0.0'
+    fabric = 'fabric>=1.5.4,<2.0.0'
 
 
 setup(name='avocado-framework-plugin-runner-remote',

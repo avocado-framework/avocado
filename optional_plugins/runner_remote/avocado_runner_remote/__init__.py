@@ -177,7 +177,8 @@ def _update_fabric_env(method):
                               user=args[0].username,
                               key_filename=args[0].key_filename,
                               password=args[0].password,
-                              port=args[0].port)
+                              port=args[0].port,
+                              use_ssh_config=True)
         return method(*args, **kwargs)
     return wrapper
 
