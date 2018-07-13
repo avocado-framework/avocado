@@ -432,13 +432,28 @@ class RemoteTestRunner(TestRunner):
         :param references: a string with test references.
         :return: a dictionary with test results.
         """
-        extra_params = []
-        mux_files = getattr(self.job.args, 'mux_yaml', [])
-        if mux_files:
-            extra_params.append("-m %s" % " ".join(mux_files))
+        def arg_to_dest(arg):
+            """
+            Turns long argparse arguments into default dest
+            """
+            return arg[2:].replace('-', '_')
 
-        if getattr(self.job.args, "dry_run", False):
-            extra_params.append("--dry-run")
+        extra_params = []
+        # bool or nargs
+        for arg in ["--mux-yaml", "--dry-run",
+                    "--filter-by-tags-include-empty"]:
+            value = getattr(self.job.args, arg_to_dest(arg), None)
+            if value is True:
+                extra_params.append(arg)
+            elif value:
+                extra_params.append("%s %s" % (arg, " ".join(value)))
+        # append
+        for arg in ["--filter-by-tags"]:
+            value = getattr(self.job.args, arg_to_dest(arg), None)
+            if value:
+                join = ' %s ' % arg
+                extra_params.append("%s %s" % (arg, join.join(value)))
+
         references_str = " ".join(references)
 
         avocado_cmd = ('avocado run --force-job-id %s --json - '

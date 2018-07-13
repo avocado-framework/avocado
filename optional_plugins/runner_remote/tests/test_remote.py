@@ -58,6 +58,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
                                       show_job_log=False,
                                       mux_yaml=['~/avocado/tests/foo.yaml',
                                                 '~/avocado/tests/bar/baz.yaml'],
+                                      filter_by_tags=["-foo", "-bar"],
+                                      filter_by_tags_include_empty=False,
                                       dry_run=True,
                                       env_keep=None,
                                       reference=['/tests/sleeptest.py',
@@ -98,8 +100,9 @@ class RemoteTestRunnerTest(unittest.TestCase):
             cmd_line = ('avocado run --force-job-id '
                         '0000000000000000000000000000000000000000 --json - '
                         '--archive /tests/sleeptest.py /tests/other/test '
-                        'passtest.py -m ~/avocado/tests/foo.yaml '
-                        '~/avocado/tests/bar/baz.yaml --dry-run')
+                        'passtest.py --mux-yaml ~/avocado/tests/foo.yaml '
+                        '~/avocado/tests/bar/baz.yaml --dry-run --filter-'
+                        'by-tags -foo --filter-by-tags -bar')
             runner.remote.run.assert_called_with(cmd_line,
                                                  ignore_status=True,
                                                  timeout=61)
