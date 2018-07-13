@@ -433,12 +433,15 @@ class RemoteTestRunner(TestRunner):
         :return: a dictionary with test results.
         """
         extra_params = []
-        mux_files = getattr(self.job.args, 'mux_yaml', [])
-        if mux_files:
-            extra_params.append("-m %s" % " ".join(mux_files))
+        for arg in ["--mux-yaml", "--dry-run", "--filter-by-tags",
+                    "--filter-by-tags-include-empty"]:
+            key = arg[2:].replace('-', '_')
+            value = getattr(self.job.args, key, None)
+            if value is True:
+                extra_params.append(arg)
+            elif value:
+                extra_params.append("%s %s" % (arg, " ".join(value)))
 
-        if getattr(self.job.args, "dry_run", False):
-            extra_params.append("--dry-run")
         references_str = " ".join(references)
 
         avocado_cmd = ('avocado run --force-job-id %s --json - '
