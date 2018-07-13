@@ -18,3 +18,5 @@ optional plugins:
    yaml_loader
    golang
    glib
+   avocado_ec2
+   azure
