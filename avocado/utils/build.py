@@ -57,7 +57,7 @@ def run_make(path, make='make', extra_args='', process_kwargs=None):
 
 
 def make(path, make='make', env=None, extra_args='', ignore_status=None,
-         allow_output_check=None, process_kwargs=None):
+         allow_output_check=None, process_kwargs=None, encoding=None):
     """
     Run make, adding MAKEOPTS to the list of options.
 
@@ -82,7 +82,7 @@ def make(path, make='make', env=None, extra_args='', ignore_status=None,
 
     kwargs = dict(env=env,
                   ignore_status=ignore_status,
-                  allow_output_check=allow_output_check)
+                  allow_output_check=allow_output_check, encoding=encoding)
     if process_kwargs is not None:
         kwargs.update(process_kwargs)
     result = run_make(path, make, extra_args, kwargs)
