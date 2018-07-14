@@ -39,7 +39,7 @@ class Script(object):
     Class that represents a script.
     """
 
-    def __init__(self, path, content, mode=DEFAULT_MODE):
+    def __init__(self, path, content, mode=DEFAULT_MODE, open_mode='w'):
         """
         Creates an instance of :class:`Script`.
 
@@ -54,6 +54,7 @@ class Script(object):
         self.content = content
         self.mode = mode
         self.stored = False
+        self.open_mode = open_mode
 
     def __repr__(self):
         return '%s(path="%s", stored=%s)' % (self.__class__.__name__,
@@ -78,7 +79,7 @@ class Script(object):
         """
         dirname = os.path.dirname(self.path)
         utils_path.init_dir(dirname)
-        with open(self.path, 'w') as fd:
+        with open(self.path, self.open_mode) as fd:
             fd.write(self.content)
             os.chmod(self.path, self.mode)
             self.stored = True
@@ -104,7 +105,7 @@ class TemporaryScript(Script):
     Class that represents a temporary script.
     """
 
-    def __init__(self, name, content, prefix='avocado_script', mode=DEFAULT_MODE):
+    def __init__(self, name, content, prefix='avocado_script', mode=DEFAULT_MODE, open_mode='w'):
         """
         Creates an instance of :class:`TemporaryScript`.
 
@@ -120,10 +121,8 @@ class TemporaryScript(Script):
         :param mode: set file mode, default to 0775.
         """
         tmpdir = tempfile.mkdtemp(prefix=prefix)
-        self.path = os.path.join(tmpdir, name)
-        self.content = content
-        self.mode = mode
-        self.stored = False
+        super(TemporaryScript, self).__init__(os.path.join(tmpdir, name),
+                                              content, mode, open_mode)
 
     def __del__(self):
         self.remove()

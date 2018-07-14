@@ -72,9 +72,6 @@ class RawFileHandler(logging.FileHandler):
     logged stream but still respects the formatter.
     """
 
-    def __init__(self, *args, **kwargs):
-        logging.FileHandler.__init__(self, *args, **kwargs)
-
     def emit(self, record):
         """
         Modifying the original emit() to avoid including a new line
@@ -86,7 +83,8 @@ class RawFileHandler(logging.FileHandler):
         try:
             msg = self.format(record)
             stream = self.stream
-            stream.write('%s' % msg)
+            stream.write(astring.to_text(msg, self.encoding,
+                                         'xmlcharrefreplace'))
             self.flush()
         except Exception:
             self.handleError(record)
@@ -639,7 +637,8 @@ class Test(unittest.TestCase, TestData):
     def _register_log_file_handler(self, logger, formatter, filename,
                                    log_level=logging.DEBUG, raw=False):
         if raw:
-            file_handler = RawFileHandler(filename=filename)
+            file_handler = RawFileHandler(filename=filename,
+                                          encoding=astring.ENCODING)
         else:
             file_handler = logging.FileHandler(filename=filename)
         file_handler.setLevel(log_level)

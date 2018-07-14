@@ -14,10 +14,12 @@ basedir = os.path.abspath(basedir)
 
 
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
-OUTPUT_SCRIPT_CONTENTS = """#!/bin/sh
-echo "Hello, avocado!"
-echo "Hello, stderr!" >&2
-"""
+STDOUT = b"Hello, \xc4\x9b\xc5\xa1\xc4\x8d\xc5\x99\xc5\xbe\xc3\xbd\xc3\xa1\xc3\xad\xc3\xa9!"
+STDERR = b"Hello, stderr!"
+OUTPUT_SCRIPT_CONTENTS = b"""#!/bin/sh
+echo "%s"
+echo "%s" >&2
+""" % (STDOUT, STDERR)
 
 
 class RunnerSimpleTest(unittest.TestCase):
@@ -27,7 +29,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.output_script = script.TemporaryScript(
             'output_check.sh',
             OUTPUT_SCRIPT_CONTENTS,
-            'avocado_output_check_functional')
+            'avocado_output_check_functional',
+            open_mode='wb')
         self.output_script.save()
 
     def _check_output_record_all(self):
@@ -42,8 +45,10 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
         stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
-        self.assertTrue(os.path.isfile(stdout_file))
-        self.assertTrue(os.path.isfile(stderr_file))
+        with open(stdout_file, 'rb') as fd_stdout:
+            self.assertEqual(fd_stdout.read(), STDOUT)
+        with open(stderr_file, 'rb') as fd_stderr:
+            self.assertEqual(fd_stderr.read(), STDERR)
 
     def _check_output_record_combined(self):
         os.chdir(basedir)
@@ -56,7 +61,8 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         output_file = os.path.join("%s.data/output.expected" % self.output_script)
-        self.assertTrue(os.path.isfile(output_file))
+        with open(output_file, 'rb') as fd_output:
+            self.assertEqual(fd_output.read(), STDOUT + STDERR)
 
     def test_output_record_none(self):
         os.chdir(basedir)
@@ -85,7 +91,8 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
         stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
-        self.assertTrue(os.path.isfile(stdout_file))
+        with open(stdout_file, 'rb') as fd_stdout:
+            self.assertEqual(fd_stdout.read(), STDOUT)
         self.assertFalse(os.path.isfile(stderr_file))
 
     def test_output_record_and_check(self):
@@ -170,7 +177,7 @@ class RunnerSimpleTest(unittest.TestCase):
             stdout_diff_content = stdout_diff_obj.read()
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!',
                       stdout_diff_content)
-        self.assertIn(b'+Hello, avocado!', stdout_diff_content)
+        self.assertIn(b'+%s' % STDOUT, stdout_diff_content)
 
         with open(stderr_diff, 'rb') as stderr_diff_obj:
             stderr_diff_content = stderr_diff_obj.read()
@@ -182,7 +189,7 @@ class RunnerSimpleTest(unittest.TestCase):
             job_log_content = job_log_obj.read()
         self.assertIn(b'Stdout Diff:', job_log_content)
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!', job_log_content)
-        self.assertIn(b'+Hello, avocado!', job_log_content)
+        self.assertIn(b'+%s' % STDOUT, job_log_content)
         self.assertIn(b'Stdout Diff:', job_log_content)
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDERR!', job_log_content)
         self.assertIn(b'+Hello, stderr!', job_log_content)
