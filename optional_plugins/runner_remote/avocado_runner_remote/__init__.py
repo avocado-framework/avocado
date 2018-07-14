@@ -474,7 +474,8 @@ class RemoteTestRunner(TestRunner):
         try:
             json_result = self._parse_json_response(result.stdout)
         except:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.debug')
+            stacktrace.log_exc_info(sys.exc_info(),
+                                    logger='avocado.app.debug')
             raise exceptions.JobError(result.stdout)
 
         for t_dict in json_result['tests']:
