@@ -16,7 +16,7 @@
 	 "description": "With the built RPMs, check if there are no unexpected packaging errors or warnings by running: `$ rpmlint BUILD/RPM/python*-avocado-x.y*.rpm`.  Expected result: 3 packages and 0 specfiles checked; 0 errors, 0 warnings. (some missing man-pages can be ignored)"},
 
 	{"name": "Avocado RPM install",
-	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build' and the aexpect package from src or avocado repo. Also install and start the qemu-guest-agent."},
+	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build'. Also install and start the qemu-guest-agent."},
 
 	{"name": "Avocado Test Run on RPM based installation",
 	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
