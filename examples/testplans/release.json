@@ -39,21 +39,6 @@
 	{"name": "Avocado Server Functional Test",
 	 "description": "On the same machine used during 'Avocado Server Run', on another console, run `$ curl http://localhost:9405`. Expected result: json response"},
 
-	{"name": "Avocado Virt and VT Source Checkout",
-	 "description": "On a virtualization capable machine, checkout a copy of the avocado-vt, avocado-virt, avocado-virt-tests repositories with `$ git clone git://github.com/avocado-framework/avocado-vt.git`, `$ git clone git://github.com/avocado-framework/avocado-virt.git` and `$ git clone git://github.com/avocado-framework/avocado-virt-tests.git`. On the Avocado (non-virt) repo, run `make link`. Now run `$ avocado plugins`. Expected result: `virt`, `virt-bootstrap`, `vt`, `vt-bootstrap` and `vt-list` plugins enabled."},
-
-	{"name": "Avocado Virt Bootstrap",
-	 "description": "Now that the `virt_bootstrap` plugin and action `virt-bootstrap` is available run `$ avocado virt-bootstrap`. Expected result: `Your system appears to be all set to execute tests`"},
-
-	{"name": "Avocado Virt Boot Test Run and HTML report",
-	 "description": "Now that your system is setup to run virtualization tests, run the boot test with `$ avocado run avocado-virt-tests/qemu/boot.py --sysinfo on --open-browser`. Expected result: `PASS`, followed by a web browser showing an HTML report"},
-
-	{"name": "Avocado Virt - Assignment of values from the cmdline",
-	 "description": "Test that we can assign values from the cmdline. Create a new qemu bin path, for example sudo ln -s `/usr/bin/qemu-kvm /usr/bin/qemu-kvm-avocado-functional`, then run the boot test with `$ avocado run avocado-virt-tests/qemu/boot.py --qemu-bin /usr/bin/qemu-kvm-avocado-functional --sysinfo on --open-browser`. Expected result: `PASS`, followed by the web report. Look at the job log, it should list the path `/usr/bin/qemu-kvm-avocado-functional` in the QEMU command line."},
-
-	{"name": "Avocado Virt - Migration test",
-	 "description": "Run the boot test with `$ avocado run avocado-virt-tests/qemu/migration/migration.py --sysinfo on --open-browser`. Expected result: `PASS`, followed by a web browser showing an HTML report"},
-
 	{"name": "Avocado VT",
 	 "description": "Configure avocado vt as described in http://avocado-vt.readthedocs.org/en/latest/GetStartedGuide.html including the `avocado list` and running the migration test. Expected result: No errors."},
 
