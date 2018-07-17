@@ -16,19 +16,18 @@ basedir = os.path.abspath(basedir)
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 STDOUT = b"Hello, \xc4\x9b\xc5\xa1\xc4\x8d\xc5\x99\xc5\xbe\xc3\xbd\xc3\xa1\xc3\xad\xc3\xa9!"
 STDERR = b"Hello, stderr!"
-OUTPUT_SCRIPT_CONTENTS = b"""#!/bin/sh
-echo "%s"
-echo "%s" >&2
-""" % (STDOUT, STDERR)
 
 
 class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        content = b"#!/bin/sh\n"
+        content += b"echo \"" + STDOUT + b"\"\n"
+        content += b"echo \"" + STDERR + b"\" >&2\n"
         self.output_script = script.TemporaryScript(
             'output_check.sh',
-            OUTPUT_SCRIPT_CONTENTS,
+            content,
             'avocado_output_check_functional',
             open_mode='wb')
         self.output_script.save()
@@ -177,7 +176,7 @@ class RunnerSimpleTest(unittest.TestCase):
             stdout_diff_content = stdout_diff_obj.read()
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!',
                       stdout_diff_content)
-        self.assertIn(b'+%s' % STDOUT, stdout_diff_content)
+        self.assertIn(b'+' + STDOUT, stdout_diff_content)
 
         with open(stderr_diff, 'rb') as stderr_diff_obj:
             stderr_diff_content = stderr_diff_obj.read()
@@ -189,10 +188,10 @@ class RunnerSimpleTest(unittest.TestCase):
             job_log_content = job_log_obj.read()
         self.assertIn(b'Stdout Diff:', job_log_content)
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!', job_log_content)
-        self.assertIn(b'+%s' % STDOUT, job_log_content)
+        self.assertIn(b'+' + STDOUT, job_log_content)
         self.assertIn(b'Stdout Diff:', job_log_content)
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDERR!', job_log_content)
-        self.assertIn(b'+Hello, stderr!', job_log_content)
+        self.assertIn(b'+' + STDERR, job_log_content)
 
     def test_disable_output_check(self):
         self._check_output_record_all()
