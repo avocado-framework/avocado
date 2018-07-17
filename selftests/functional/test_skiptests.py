@@ -127,7 +127,7 @@ class TestSkipDecorators(unittest.TestCase):
 
     def test_skip_setup(self):
         os.chdir(basedir)
-        cmd_line = ['./scripts/avocado',
+        cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
                     '--job-results-dir',
@@ -141,7 +141,7 @@ class TestSkipDecorators(unittest.TestCase):
 
     def test_skip_teardown(self):
         os.chdir(basedir)
-        cmd_line = ['./scripts/avocado',
+        cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
                     '--job-results-dir',
