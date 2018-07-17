@@ -13,10 +13,10 @@
 	 "description": "On your development machine, build the Avocado RPM packages using: `$ make rpm`. Expected result: SRPM and RPM files at `BUILD/RPM/python-avocado-x.y.z-r.distro.{src,noarch}.rpm`"},
 
 	{"name": "Avocado RPM lint",
-	 "description": "With the built RPMs, check if there are no packaging errors or warnings by running: `$ rpmlint BUILD/RPM/python-avocado-x.y.z-r.distro.noarch.rpm`.  Expected result: 1 packages and 0 specfiles checked; 0 errors, 0 warnings."},
+	 "description": "With the built RPMs, check if there are no unexpected packaging errors or warnings by running: `$ rpmlint BUILD/RPM/python*-avocado-x.y*.rpm`.  Expected result: 3 packages and 0 specfiles checked; 0 errors, 0 warnings. (some missing man-pages can be ignored)"},
 
 	{"name": "Avocado RPM install",
-	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build' and the aexpect package from src or avocado repo. Also install and start the qemu-guest-agent."},
+	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build'. Also install and start the qemu-guest-agent."},
 
 	{"name": "Avocado Test Run on RPM based installation",
 	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
@@ -30,29 +30,8 @@
 	{"name": "Avocado Remote Machine HTML report",
 	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-/**/avocado/tests/**/examples/tests/passtest.py:PassTest.test` (under `Test ID`) and `debug.log` point to valid locations."},
 
-	{"name": "Avocado Server Source Checkout and Unittests",
-	 "description": "On the same virtual machine used during 'Avocado RPM install', checkout a copy of the avocado-server repository with `$ git clone git://github.com/avocado-framework/avocado-server.git`. Then install dependencies with `$ pip install -r requirements.txt -r requirements-selftests.txt`. Then finally run the unittests with `$ make check`. Expected result: `OK`"},
-
-	{"name": "Avocado Server Run",
-	 "description": "On the same machine used during 'Avocado Server Source Checkout and Unittests', run the quick and dirty script to get it running `$ ./reset-and-run.sh`. Expected result: `Starting development server at http://0.0.0.0:9405`"},
-
 	{"name": "Avocado Server Functional Test",
 	 "description": "On the same machine used during 'Avocado Server Run', on another console, run `$ curl http://localhost:9405`. Expected result: json response"},
-
-	{"name": "Avocado Virt and VT Source Checkout",
-	 "description": "On a virtualization capable machine, checkout a copy of the avocado-vt, avocado-virt, avocado-virt-tests repositories with `$ git clone git://github.com/avocado-framework/avocado-vt.git`, `$ git clone git://github.com/avocado-framework/avocado-virt.git` and `$ git clone git://github.com/avocado-framework/avocado-virt-tests.git`. On the Avocado (non-virt) repo, run `make link`. Now run `$ avocado plugins`. Expected result: `virt`, `virt-bootstrap`, `vt`, `vt-bootstrap` and `vt-list` plugins enabled."},
-
-	{"name": "Avocado Virt Bootstrap",
-	 "description": "Now that the `virt_bootstrap` plugin and action `virt-bootstrap` is available run `$ avocado virt-bootstrap`. Expected result: `Your system appears to be all set to execute tests`"},
-
-	{"name": "Avocado Virt Boot Test Run and HTML report",
-	 "description": "Now that your system is setup to run virtualization tests, run the boot test with `$ avocado run avocado-virt-tests/qemu/boot.py --sysinfo on --open-browser`. Expected result: `PASS`, followed by a web browser showing an HTML report"},
-
-	{"name": "Avocado Virt - Assignment of values from the cmdline",
-	 "description": "Test that we can assign values from the cmdline. Create a new qemu bin path, for example sudo ln -s `/usr/bin/qemu-kvm /usr/bin/qemu-kvm-avocado-functional`, then run the boot test with `$ avocado run avocado-virt-tests/qemu/boot.py --qemu-bin /usr/bin/qemu-kvm-avocado-functional --sysinfo on --open-browser`. Expected result: `PASS`, followed by the web report. Look at the job log, it should list the path `/usr/bin/qemu-kvm-avocado-functional` in the QEMU command line."},
-
-	{"name": "Avocado Virt - Migration test",
-	 "description": "Run the boot test with `$ avocado run avocado-virt-tests/qemu/migration/migration.py --sysinfo on --open-browser`. Expected result: `PASS`, followed by a web browser showing an HTML report"},
 
 	{"name": "Avocado VT",
 	 "description": "Configure avocado vt as described in http://avocado-vt.readthedocs.org/en/latest/GetStartedGuide.html including the `avocado list` and running the migration test. Expected result: No errors."},
