@@ -1,11 +1,13 @@
 language: python
 
-virtualenv:
-  system_site_packages: true
+matrix:
+  allow_failures:
+    - python: "pypy"
 
 python:
     - "2.7"
     - "3.4"
+    - "pypy"
 
 branches:
     only:
