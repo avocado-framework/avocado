@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      0eec108df704ed3a7b6614b6fb422ee57681b378
+        %global commit      8ef7392a22407e14e4cd3adde3535dadee506475
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20180612
+        %global commit_date 20180717
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -39,8 +39,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 62.0
-Release: 1%{?gitrel}%{?dist}
+Version: 63.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -791,6 +791,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jul 17 2018 Cleber Rosa <cleber@redhat.com> - 63.0-0
+- New release
+
 * Wed Jun 20 2018 Cleber Rosa <cleber@redhat.com> - 62.0-1
 - Added new python[2]-enum34 requirement
 

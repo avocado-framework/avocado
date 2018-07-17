@@ -1,0 +1,84 @@
+=====================
+63.0 Greed in the Sun
+=====================
+
+The Avocado team is proud to present another release: Avocado version
+63.0, AKA "Greed in the Sun", is now available!
+
+Release documentation: `Avocado 63.0
+<http://avocado-framework.readthedocs.io/en/63.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* Including test logs in TAP plugin is disabled by default and can be
+  enabled using ``--tap-include-logs``.
+
+* Performance is improved for the TAP plugin by only using ``fsync()``
+  after writes of important content, instead of doing it for all content,
+  including the logs from tests.
+
+* The command line options ``--filter-by-tags`` and
+  ``--filter-by-tags-include-empty`` are now white listed for the
+  remote runner plugin.
+
+* The remote runner plugin will now respect ``~/.ssh/config``
+  configuration.
+
+* The asset fetcher, available to a test via
+  :meth:`avocado.core.Test.fetch_asset`, will prevent clashes from
+  downloaded files with the same name (when no hash is given), by
+  using a directory named after the hash of the location.
+
+* The identification of PCI bridge devices in :mod:`avocado.utils.pci`
+  is now more precise by using its class.
+
+* A smarter wait, instead of a sleep, is now used on
+  :mod:`avocado.utils.multipath`.
+
+Bug Fixes
+=========
+
+* The recording of output, used by the output check functionality, is
+  done as text, via a ``RawFileHandler`` logger.  Now, instead of failing
+  to encode data (depending on its content) and crashing, data is escaped
+  using the ``xmlcharrefreplace`` handling.
+
+* Avocado won't crash on systems without the ``less`` binary to be used
+  as the paginator.
+
+Internal Changes
+================
+
+* Self tests load failures are now caught on Python 3.4 environments
+  (a workaround was needed due to Python 3.4 specific behavior, not
+  necessary for 3.5+).
+
+* Various build fixes related to the new Fabric packages and naming
+  conventions.
+
+* The :mod:`avocado.core.loader` module now makes use of better named
+  symbolic values (based on enums), such as
+  :attr:`avocado.core.loader.DiscoverMode.DEFAULT`.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/62.0...63.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=Z0I_ukaLQLE>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/EqauNWfL/1349-sprint-theme-greed-in-the-sun-1964
