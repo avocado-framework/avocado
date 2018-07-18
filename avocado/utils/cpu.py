@@ -25,6 +25,7 @@ import os
 import platform
 import glob
 import logging
+import random
 
 
 def _list_matches(content_list, pattern):
@@ -281,3 +282,53 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
                 except IOError as err:
                     logging.warning("Failed to set idle state on cpu %s "
                                     "for state %s:\n%s", cpu, state_no, err)
+
+
+def set_cpufreq_governor(governor="random"):
+    """
+    To change the given cpu frequency governor
+
+    :param governor: frequency governor profile name whereas `random` is default
+                     option to choose random profile among available ones.
+    """
+    avl_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"
+    cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+    cur_gov = get_cpufreq_governor()
+    if not cur_gov:
+        return False
+    if not (os.access(avl_gov_file, os.R_OK) and os.access(cur_gov_file, os.W_OK)):
+        logging.error("Could not locate frequency governor sysfs entries or\n"
+                      " No proper permissions to read/write sysfs entries")
+        return False
+    cpus_list = range(total_cpus_count())
+    with open(avl_gov_file, 'r') as fl:
+        avl_govs = fl.read().strip().split(' ')
+    if governor == "random":
+        avl_govs.remove(cur_gov)
+        governor = random.choice(avl_govs)
+    if governor not in avl_govs:
+        logging.warning("Trying to change unknown frequency "
+                        "governor: %s", governor)
+    for cpu in cpus_list:
+        cur_gov_file = "/sys/devices/system/cpu/cpu%s/cpufreq/scaling_governor" % cpu
+        try:
+            with open(cur_gov_file, 'w') as fl:
+                fl.write(governor)
+        except IOError as err:
+            logging.warning("Unable to write a given frequency "
+                            "governor %s profile for cpu "
+                            "%s\n %s", governor, cpu, err)
+    return True
+
+
+def get_cpufreq_governor():
+    """
+    Get current cpu frequency governor
+    """
+    cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+    try:
+        with open(cur_gov_file, 'r') as fl:
+            return fl.read().strip()
+    except IOError as err:
+        logging.error("Unable to get the current governor\n %s", err)
+        return ""
