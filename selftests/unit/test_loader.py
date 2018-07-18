@@ -1,7 +1,6 @@
 import os
 import shutil
 import stat
-import sys
 import multiprocessing
 import tempfile
 import unittest
@@ -184,57 +183,6 @@ import avocado
 
 class Second(avocado.Test):
     def test_1(self):
-        pass
-"""
-
-KEEP_METHODS_ORDER = '''
-from avocado import Test
-
-class MyClass(Test):
-    def test2(self):
-        pass
-
-    def testA(self):
-        pass
-
-    def test1(self):
-        pass
-
-    def testZZZ(self):
-        pass
-
-    def test(self):
-        pass
-'''
-
-RECURSIVE_DISCOVERY_TEST1 = """
-from avocado import Test
-
-class BaseClass(Test):
-    def test_basic(self):
-        pass
-
-class FirstChild(BaseClass):
-    def test_first_child(self):
-        pass
-
-class SecondChild(FirstChild):
-    '''
-    :avocado: disable
-    '''
-    def test_second_child(self):
-        pass
-"""
-
-RECURSIVE_DISCOVERY_TEST2 = """
-from avocado import Test
-from recursive_discovery_test1 import SecondChild
-
-class ThirdChild(Test, SecondChild):
-    '''
-    :avocado: recursive
-    '''
-    def test_third_child(self):
         pass
 """
 
@@ -514,35 +462,6 @@ class LoaderTest(unittest.TestCase):
                                                ['-fast,-slow,-safe',
                                                 'does,not,exist'])
             self.assertEqual(len(filtered), 0)
-
-    def test_methods_order(self):
-        avocado_keep_methods_order = script.TemporaryScript(
-            'keepmethodsorder.py',
-            KEEP_METHODS_ORDER)
-        avocado_keep_methods_order.save()
-        expected_order = ['test2', 'testA', 'test1', 'testZZZ', 'test']
-        tests = self.loader._find_avocado_tests(avocado_keep_methods_order.path)[0]
-        methods = [method[0] for method in tests['MyClass']]
-        self.assertEqual(expected_order, methods)
-        avocado_keep_methods_order.remove()
-
-    def test_recursive_discovery(self):
-        avocado_recursive_discovery_test1 = script.TemporaryScript(
-            'recursive_discovery_test1.py',
-            RECURSIVE_DISCOVERY_TEST1)
-        avocado_recursive_discovery_test1.save()
-        avocado_recursive_discovery_test2 = script.TemporaryScript(
-            'recursive_discovery_test2.py',
-            RECURSIVE_DISCOVERY_TEST2)
-        avocado_recursive_discovery_test2.save()
-
-        sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
-        tests = self.loader._find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
-        expected = {'ThirdChild': [('test_third_child', set([])),
-                                   ('test_second_child', set([])),
-                                   ('test_first_child', set([])),
-                                   ('test_basic', set([]))]}
-        self.assertEqual(expected, tests)
 
     def test_python_unittest(self):
         disabled_test = script.TemporaryScript("disabled.py",
