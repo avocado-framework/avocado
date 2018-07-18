@@ -305,6 +305,9 @@ def set_cpufreq_governor(governor="random"):
         avl_govs = fl.read().strip().split(' ')
     if governor == "random":
         avl_govs.remove(cur_gov)
+        if not avl_govs:
+            logging.error("No other frequency governors to pick from...")
+            return False
         governor = random.choice(avl_govs)
     if governor not in avl_govs:
         logging.warning("Trying to change unknown frequency "
