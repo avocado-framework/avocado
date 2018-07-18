@@ -59,7 +59,7 @@ class MyResult(unittest.TextTestResult):
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE).communicate()
         # ... and check whether some dirs were left behind
-        dir_check = subprocess.Popen([CHECK_TMP_DIRS], stdout=subprocess.PIPE,
+        dir_check = subprocess.Popen([sys.executable, CHECK_TMP_DIRS], stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
         if dir_check.wait():
             raise AssertionError("Test %s left some tmp files behind:\n%s"

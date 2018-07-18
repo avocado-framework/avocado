@@ -20,7 +20,7 @@ DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
                 stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
                 stat.S_IROTH | stat.S_IXOTH)
 
-FAKE_VMSTAT_CONTENTS = """#!/usr/bin/env python
+FAKE_VMSTAT_CONTENTS = """#!{python}
 import time
 import random
 import signal
@@ -115,13 +115,13 @@ class FakeVMStat(object):
 if __name__ == '__main__':
     vmstat = FakeVMStat(interval=float(sys.argv[1]))
     vmstat.start()
-"""
+""".format(python=sys.executable)
 
-FAKE_UPTIME_CONTENTS = """#!/usr/bin/env python
+FAKE_UPTIME_CONTENTS = """#!{python}
 if __name__ == '__main__':
     print("17:56:34 up  8:06,  7 users,  load average: 0.26, 0.20, 0.21")
 
-"""
+""".format(python=sys.executable)
 
 
 class ProcessTest(unittest.TestCase):

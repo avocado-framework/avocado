@@ -528,7 +528,8 @@ class RunnerOperationTest(unittest.TestCase):
         # from test.
         for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
                      "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
-            self.assertEqual(log.count(line), 4)
+            self.assertEqual(log.count(line), 4,
+                             "Avocado log count for param '%s' not as expected:\n%s" % (line, log))
 
     def test_invalid_python(self):
         test = script.make_script(os.path.join(self.tmpdir, 'test.py'),
