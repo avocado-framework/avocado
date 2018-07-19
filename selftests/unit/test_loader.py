@@ -521,7 +521,7 @@ class LoaderTest(unittest.TestCase):
             KEEP_METHODS_ORDER)
         avocado_keep_methods_order.save()
         expected_order = ['test2', 'testA', 'test1', 'testZZZ', 'test']
-        tests = self.loader._find_avocado_tests(avocado_keep_methods_order.path)[0]
+        tests = self.loader._avocado_discoverer.examine(avocado_keep_methods_order.path)[0]
         methods = [method[0] for method in tests['MyClass']]
         self.assertEqual(expected_order, methods)
         avocado_keep_methods_order.remove()
@@ -537,7 +537,7 @@ class LoaderTest(unittest.TestCase):
         avocado_recursive_discovery_test2.save()
 
         sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
-        tests = self.loader._find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
+        tests = self.loader._avocado_discoverer.examine(avocado_recursive_discovery_test2.path)[0]
         expected = {'ThirdChild': [('test_third_child', set([])),
                                    ('test_second_child', set([])),
                                    ('test_first_child', set([])),
@@ -559,6 +559,62 @@ class LoaderTest(unittest.TestCase):
                 {"name": "python_unittest.SampleTest.test",
                  "test_dir": os.path.dirname(python_unittest.path)})]
         self.assertEqual(tests, exp)
+
+    def test_mod_import_and_classes(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'dont_crash.py')
+        tests = self.loader.discover(path)
+        names = [(_[0], _[1]['name']) for _ in tests]
+        exps = [('DiscoverMe', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe.test'),
+                ('DiscoverMe2', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe2.test'),
+                ('DiscoverMe3', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe3.test'),
+                ('DiscoverMe4', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe4.test')]
+        self.assertEqual(names, exps)
+
+    def test_imports(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'imports.py')
+        tests = self.loader.discover(path)
+        names = [(_[0], _[1]['name']) for _ in tests]
+        exps = [('Test1', 'selftests/.data/loader_instrumented/imports.py:Test1.test'),
+                ('Test3', 'selftests/.data/loader_instrumented/imports.py:Test3.test'),
+                ('Test4', 'selftests/.data/loader_instrumented/imports.py:Test4.test'),
+                ('Test5', 'selftests/.data/loader_instrumented/imports.py:Test5.test'),
+                ('Test6', 'selftests/.data/loader_instrumented/imports.py:Test6.test'),
+                ('Test8', 'selftests/.data/loader_instrumented/imports.py:Test8.test'),
+                ('Test9', 'selftests/.data/loader_instrumented/imports.py:Test9.test'),
+                ('Test10', 'selftests/.data/loader_instrumented/imports.py:Test10.test')]
+        self.assertEqual(names, exps)
+
+    def test_dont_detect_non_avocado(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'dont_detect_non_avocado.py')
+        tests = self.loader.discover(path)
+        names = [(_[0], _[1]['name']) for _ in tests]
+        exps = [(test.PythonUnittest, 'dont_detect_non_avocado.StaticallyNotAvocadoTest.test'),
+                (test.PythonUnittest, 'dont_detect_non_avocado.NotTest.test2')]
+        self.assertEqual(names, exps, tests)
+
+    def test_infinite_recurse(self):
+        """Checks we don't crash on infinite recursion"""
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented',
+                            'infinite_recurse.py')
+        tests = self.loader.discover(path)
+        self.assertEqual(tests, [])
+
+    def test_double_import(self):
+        # This is currently broken in Avocado, so let's just document the
+        # current behavior.
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'double_import.py')
+        tests = self.loader.discover(path)
+        names = [(_[0], _[1]['name']) for _ in tests]
+        exps = [('Test1', 'selftests/.data/loader_instrumented/double_import.py:Test1.test1'),
+                ('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
+                ('Test3', 'selftests/.data/loader_instrumented/double_import.py:Test3.test3'),
+                ('Test4', 'selftests/.data/loader_instrumented/double_import.py:Test4.test4')]
+        self.assertEqual(names, exps, tests)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
