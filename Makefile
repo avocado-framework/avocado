@@ -1,6 +1,6 @@
 PYTHON=$(shell which python 2>/dev/null || which python3 2>/dev/null)
-PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
+PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
 AVOCADO_EXTERNAL_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
@@ -204,8 +204,13 @@ man: man/avocado.1 man/avocado-rest-client.1
 variables:
 	@echo "PYTHON: $(PYTHON)"
 	@echo "VERSION: $(VERSION)"
+	@echo "PYTHON_DEVELOP_ARGS: $(PYTHON_DEVELOP_ARGS)"
 	@echo "DESTDIR: $(DESTDIR)"
 	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
+	@echo "AVOCADO_EXTERNAL_PLUGINS: $(AVOCADO_EXTERNAL_PLUGINS)"
+	@echo "AVOCADO_OPTIONAL_PLUGINS_ORDERED: $(AVOCADO_OPTIONAL_PLUGINS_ORDERED)"
+	@echo "AVOCADO_OPTIONAL_PLUGINS_OTHERS: $(AVOCADO_OPTIONAL_PLUGINS_OTHERS)"
+	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
 	@echo "AVOCADO_PLUGINS: $(AVOCADO_PLUGINS)"
 	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
 	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
@@ -213,7 +218,6 @@ variables:
 	@echo "COMMIT_DATE: $(COMMIT_DATE)"
 	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
 	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
-	@echo "PYTHON_DEVELOP_ARGS: $(PYTHON_DEVELOP_ARGS)"
 
 propagate-version:
 	for DIR in $(AVOCADO_PLUGINS); do\
