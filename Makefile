@@ -22,6 +22,8 @@ ARCHIVE_BASE_NAME=avocado
 PYTHON_MODULE_NAME=avocado-framework
 RPM_BASE_NAME=python-avocado
 
+include Makefile.include
+
 all:
 	@echo
 	@echo "Development related targets:"
@@ -53,14 +55,6 @@ all:
 	@echo "rpm-release:        Generate binary RPMs for the latest tagged release"
 	@echo "propagate-version:  Propagate './VERSION' to all plugins/modules"
 	@echo
-
-source: clean
-	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="$(ARCHIVE_BASE_NAME)-$(COMMIT)/" -o "SOURCES/$(ARCHIVE_BASE_NAME)-$(SHORT_COMMIT).tar.gz" HEAD
-
-source-release: clean
-	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="$(ARCHIVE_BASE_NAME)-$(VERSION)/" -o "SOURCES/$(ARCHIVE_BASE_NAME)-$(VERSION).tar.gz" $(VERSION)
 
 source-pypi: clean
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
@@ -102,25 +96,6 @@ pypi: wheel source-pypi develop
 	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/*.{tar.gz,whl}"
 	@echo
 
-install:
-	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
-
-srpm: source
-	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --buildsrpm --spec $(RPM_BASE_NAME).spec --sources SOURCES
-
-rpm: srpm
-	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --rebuild BUILD/SRPM/$(RPM_BASE_NAME)-$(VERSION)-*.src.rpm
-
-srpm-release: source-release
-	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 1" --buildsrpm --spec $(RPM_BASE_NAME).spec --sources SOURCES
-
-rpm-release: srpm-release
-	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 1" --rebuild BUILD/SRPM/$(RPM_BASE_NAME)-$(VERSION)-*.src.rpm
-
 clean:
 	$(PYTHON) setup.py clean
 	$(MAKE) -f $(CURDIR)/debian/rules clean || true
@@ -141,16 +116,6 @@ clean:
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
 	find $(AVOCADO_OPTIONAL_PLUGINS) -name '*.egg-info' -exec rm -r {} +
-
-pip:
-	$(PYTHON) -m pip --version || $(PYTHON) -m ensurepip $(PYTHON_DEVELOP_ARGS) || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
-
-requirements: pip
-	- pip install "pip>=6.0.1"
-	- pip install -r requirements.txt
-
-requirements-selftests: requirements
-	- pip install -r requirements-selftests.txt
 
 requirements-plugins: requirements
 	for MAKEFILE in $(AVOCADO_PLUGINS);do\
