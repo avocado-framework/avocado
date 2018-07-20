@@ -274,7 +274,7 @@ class TreeNode(object):
         node = self.parent
         while True:
             if node is None:
-                raise StopIteration
+                return
             yield node
             node = node.parent
 
