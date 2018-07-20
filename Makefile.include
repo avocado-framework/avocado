@@ -1,0 +1,36 @@
+source: clean
+	if test ! -d SOURCES; then mkdir SOURCES; fi
+	git archive --prefix="$(ARCHIVE_BASE_NAME)-$(COMMIT)/" -o "SOURCES/$(ARCHIVE_BASE_NAME)-$(SHORT_COMMIT).tar.gz" HEAD
+
+source-release: clean
+	if test ! -d SOURCES; then mkdir SOURCES; fi
+	git archive --prefix="$(ARCHIVE_BASE_NAME)-$(VERSION)/" -o "SOURCES/$(ARCHIVE_BASE_NAME)-$(VERSION).tar.gz" $(VERSION)
+
+install:
+	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
+
+srpm: source
+	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --buildsrpm --spec $(RPM_BASE_NAME).spec --sources SOURCES
+
+rpm: srpm
+	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --rebuild BUILD/SRPM/$(RPM_BASE_NAME)-$(VERSION)-*.src.rpm
+
+srpm-release: source-release
+	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 1" --buildsrpm --spec $(RPM_BASE_NAME).spec --sources SOURCES
+
+rpm-release: srpm-release
+	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 1" --rebuild BUILD/SRPM/$(RPM_BASE_NAME)-$(VERSION)-*.src.rpm
+
+pip:
+	$(PYTHON) -m ensurepip $(PYTHON_DEVELOP_ARGS) || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
+
+requirements: pip
+	- pip install "pip>=6.0.1"
+	- pip install -r requirements.txt
+
+requirements-selftests: requirements
+	- pip install -r requirements-selftests.txt
