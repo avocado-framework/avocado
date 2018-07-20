@@ -20,6 +20,7 @@ SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 MOCK_CONFIG=default
 ARCHIVE_BASE_NAME=avocado
 PYTHON_MODULE_NAME=avocado-framework
+RPM_BASE_NAME=python-avocado
 
 all:
 	@echo
@@ -106,19 +107,19 @@ install:
 
 srpm: source
 	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --buildsrpm --spec python-avocado.spec --sources SOURCES
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --buildsrpm --spec $(RPM_BASE_NAME).spec --sources SOURCES
 
 rpm: srpm
 	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --rebuild BUILD/SRPM/python-avocado-$(VERSION)-*.src.rpm
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --rebuild BUILD/SRPM/$(RPM_BASE_NAME)-$(VERSION)-*.src.rpm
 
 srpm-release: source-release
 	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 1" --buildsrpm --spec python-avocado.spec --sources SOURCES
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 1" --buildsrpm --spec $(RPM_BASE_NAME).spec --sources SOURCES
 
 rpm-release: srpm-release
 	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 1" --rebuild BUILD/SRPM/python-avocado-$(VERSION)-*.src.rpm
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 1" --rebuild BUILD/SRPM/$(RPM_BASE_NAME)-$(VERSION)-*.src.rpm
 
 clean:
 	$(PYTHON) setup.py clean
@@ -222,6 +223,7 @@ variables:
 	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
 	@echo "ARCHIVE_BASE_NAME: $(ARCHIVE_BASE_NAME)"
 	@echo "PYTHON_MODULE_NAME: $(PYTHON_MODULE_NAME)"
+	@echo "RPM_BASE_NAME: $(RPM_BASE_NAME)"
 
 propagate-version:
 	for DIR in $(AVOCADO_PLUGINS); do\
