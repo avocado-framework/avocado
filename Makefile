@@ -19,6 +19,7 @@ COMMIT_DATE=$(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 MOCK_CONFIG=default
 ARCHIVE_BASE_NAME=avocado
+PYTHON_MODULE_NAME=avocado-framework
 
 all:
 	@echo
@@ -62,7 +63,7 @@ source-release: clean
 
 source-pypi: clean
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	git archive --format="tar" --prefix="avocado-framework/" $(VERSION) | tar --file - --delete 'avocado-framework/optional_plugins' > "PYPI_UPLOAD/avocado-framework-$(VERSION).tar"
+	git archive --format="tar" --prefix="$(PYTHON_MODULE_NAME)/" $(VERSION) | tar --file - --delete '$(PYTHON_MODULE_NAME)/optional_plugins' > "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar"
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/setup.py; then\
 			echo ">> Creating source distribution for $$PLUGIN";\
@@ -85,12 +86,12 @@ wheel: clean
 	done
 
 pypi: wheel source-pypi develop
-	mkdir PYPI_UPLOAD/avocado-framework
-	cp avocado_framework.egg-info/PKG-INFO PYPI_UPLOAD/avocado-framework
-	tar rf "PYPI_UPLOAD/avocado-framework-$(VERSION).tar" -C PYPI_UPLOAD avocado-framework/PKG-INFO
-	gzip -9 "PYPI_UPLOAD/avocado-framework-$(VERSION).tar"
-	rm -f PYPI_UPLOAD/avocado-framework/PKG-INFO
-	rmdir PYPI_UPLOAD/avocado-framework
+	mkdir PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
+	cp avocado_framework.egg-info/PKG-INFO PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
+	tar rf "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar" -C PYPI_UPLOAD $(PYTHON_MODULE_NAME)/PKG-INFO
+	gzip -9 "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar"
+	rm -f PYPI_UPLOAD/$(PYTHON_MODULE_NAME)/PKG-INFO
+	rmdir PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
 	@echo
 	@echo "Please use the files on PYPI_UPLOAD dir to upload a new version to PyPI"
 	@echo "The URL to do that may be a bit tricky to find, so here it is:"
@@ -220,6 +221,7 @@ variables:
 	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
 	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
 	@echo "ARCHIVE_BASE_NAME: $(ARCHIVE_BASE_NAME)"
+	@echo "PYTHON_MODULE_NAME: $(PYTHON_MODULE_NAME)"
 
 propagate-version:
 	for DIR in $(AVOCADO_PLUGINS); do\
