@@ -18,6 +18,7 @@ COMMIT=$(shell git log --pretty=format:'%H' -n 1)
 COMMIT_DATE=$(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 MOCK_CONFIG=default
+ARCHIVE_BASE_NAME=avocado
 
 all:
 	@echo
@@ -53,11 +54,11 @@ all:
 
 source: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="avocado-$(COMMIT)/" -o "SOURCES/avocado-$(SHORT_COMMIT).tar.gz" HEAD
+	git archive --prefix="$(ARCHIVE_BASE_NAME)-$(COMMIT)/" -o "SOURCES/$(ARCHIVE_BASE_NAME)-$(SHORT_COMMIT).tar.gz" HEAD
 
 source-release: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="avocado-$(VERSION)/" -o "SOURCES/avocado-$(VERSION).tar.gz" $(VERSION)
+	git archive --prefix="$(ARCHIVE_BASE_NAME)-$(VERSION)/" -o "SOURCES/$(ARCHIVE_BASE_NAME)-$(VERSION).tar.gz" $(VERSION)
 
 source-pypi: clean
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
@@ -218,6 +219,7 @@ variables:
 	@echo "COMMIT_DATE: $(COMMIT_DATE)"
 	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
 	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
+	@echo "ARCHIVE_BASE_NAME: $(ARCHIVE_BASE_NAME)"
 
 propagate-version:
 	for DIR in $(AVOCADO_PLUGINS); do\
