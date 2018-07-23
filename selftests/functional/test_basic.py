@@ -730,7 +730,9 @@ class RunnerSimpleTest(unittest.TestCase):
         simplewarning.sh uses the avocado-bash-utils
         """
         # simplewarning.sh calls "avocado" without specifying a path
-        os.environ['PATH'] += ":" + os.path.join(basedir, 'scripts')
+        # let's add the path that was defined at the global module
+        # scope here
+        os.environ['PATH'] += ":" + os.path.dirname(AVOCADO)
         # simplewarning.sh calls "avocado exec-path" which hasn't
         # access to an installed location for the libexec scripts
         os.environ['PATH'] += ":" + os.path.join(basedir, 'libexec')
