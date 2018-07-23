@@ -127,5 +127,21 @@ class IsoMount(BaseIso9660):
         self.mnt_dir_workflow()
 
 
+class PyCDLib(BaseIso9660):
+
+    """
+    PyCDLib-based check
+    """
+
+    @unittest.skipUnless(iso9660.has_pycdlib(), "pycdlib not installed")
+    def setUp(self):
+        super(PyCDLib, self).setUp()
+        self.iso = iso9660.ISO9660PyCDLib(self.iso_path)
+
+    def test_basic_workflow(self):
+        """Call the basic workflow"""
+        self.basic_workflow()
+
+
 if __name__ == "__main__":
     unittest.main()
