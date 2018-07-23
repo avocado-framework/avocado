@@ -21,16 +21,24 @@ either in userspace tools or on the Linux kernel itself (via mount).
 """
 
 
-__all__ = ['iso9660', 'Iso9660IsoInfo', 'Iso9660IsoRead', 'Iso9660Mount']
+__all__ = ['iso9660', 'Iso9660IsoInfo', 'Iso9660IsoRead', 'Iso9660Mount',
+           'ISO9660PyCDLib']
 
-import os
+import io
 import logging
-import tempfile
+import os
+import re
 import shutil
 import sys
-import re
+import tempfile
 
 from . import process
+
+
+try:
+    import pycdlib
+except ImportError:
+    pycdlib = None
 
 
 def has_userland_tool(executable):
@@ -72,6 +80,15 @@ def has_isoread():
     :rtype: bool
     """
     return has_userland_tool('iso-read')
+
+
+def has_pycdlib():
+    """
+    Returns whether the system has the Python "pycdlib" library
+
+    :rtype: bool
+    """
+    return pycdlib is not None
 
 
 def can_mount():
@@ -366,6 +383,39 @@ class Iso9660Mount(BaseIso9660):
         return self._mnt_dir
 
 
+class ISO9660PyCDLib(BaseIso9660):
+
+    """
+    Represents a ISO9660 filesystem
+
+    This implementation is based on the pycdlib library
+    """
+
+    def __init__(self, path):
+        if not has_pycdlib():
+            raise RuntimeError('This class requires the pycdlib library')
+        self._iso = pycdlib.PyCdlib()
+        self._iso.open(path)
+        self._iso_closed = False
+
+    def read(self, path):
+        if not os.path.isabs(path):
+            path = '/' + path
+        data = io.BytesIO()
+        self._iso.get_file_from_iso_fp(data, joliet_path=path)
+        return data.getvalue()
+
+    def copy(self, src, dst):
+        if not os.path.isabs(src):
+            src = '/' + src
+        self._iso.get_file_from_iso(dst, joliet_path=src)
+
+    def close(self):
+        if not self._iso_closed:
+            self._iso.close()
+        self._iso_closed = True
+
+
 def iso9660(path):
     """
     Checks the available tools on a system and chooses class accordingly
@@ -379,7 +429,8 @@ def iso9660(path):
     :rtype: :class:`Iso9660IsoInfo`, :class:`Iso9660IsoRead`,
             :class:`Iso9660Mount` or None
     """
-    implementations = [('isoinfo', has_isoinfo, Iso9660IsoInfo),
+    implementations = [('pycdlib', has_pycdlib, ISO9660PyCDLib),
+                       ('isoinfo', has_isoinfo, Iso9660IsoInfo),
                        ('iso-read', has_isoread, Iso9660IsoRead),
                        ('mount', can_mount, Iso9660Mount)]
 
