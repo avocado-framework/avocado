@@ -32,6 +32,13 @@
 %global with_python3 1
 %endif
 
+# Python 3 version of Fabric package is new starting with Fedora 29
+%if %{with_python3} && 0%{?fedora} >= 29
+%global with_python3_fabric 1
+%else
+%global with_python3_fabric 0
+%endif
+
 # The Python dependencies are already tracked by the python2
 # or python3 "Requires".  This filters out the python binaries
 # from the RPM automatic requires/provides scanner.
@@ -40,7 +47,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 63.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -56,6 +63,9 @@ BuildRequires: kmod
 BuildRequires: python2-fabric3
 %else
 BuildRequires: fabric
+%endif
+%if %{with_python3_fabric}
+BuildRequires: python3-fabric3
 %endif
 
 %if 0%{?rhel} == 7
@@ -99,6 +109,7 @@ BuildRequires: python3-docutils
 BuildRequires: python3-lxml
 BuildRequires: python3-psutil
 BuildRequires: python3-requests
+BuildRequires: python3-resultsdb_api
 BuildRequires: python3-setuptools
 BuildRequires: python3-six
 BuildRequires: python3-sphinx
@@ -114,6 +125,7 @@ BuildRequires: PyYAML
 BuildRequires: python2-yaml
 %endif
 %if %{with_python3}
+BuildRequires: python3-libvirt
 BuildRequires: python3-yaml
 %endif
 %endif
@@ -195,21 +207,29 @@ pushd optional_plugins/html
 %py3_build
 %endif
 popd
-# no runner_remote plugin on Python 3 due to missing Fabric package
 pushd optional_plugins/runner_remote
 %py2_build
+%if %{with_python3_fabric}
+%py3_build
+%endif
 popd
-# no runner_vm plugin on Python 3 due to missing Fabric package
 pushd optional_plugins/runner_vm
 %py2_build
+%if %{with_python3_fabric}
+%py3_build
+%endif
 popd
-# no runner_docker plugin on Python 3 due to missing Fabric package
 pushd optional_plugins/runner_docker
 %py2_build
+%if %{with_python3_fabric}
+%py3_build
+%endif
 popd
-# no resultsdb plugin on Python 3 due to missing resultsdb_api package
 pushd optional_plugins/resultsdb
 %py2_build
+%if %{with_python3}
+%py3_build
+%endif
 popd
 pushd optional_plugins/varianter_yaml_to_mux
 %py2_build
@@ -276,21 +296,29 @@ pushd optional_plugins/html
 %py3_install
 %endif
 popd
-# no runner_remote plugin on Python 3 due to missing Fabric package
 pushd optional_plugins/runner_remote
 %py2_install
+%if %{with_python3_fabric}
+%py3_install
+%endif
 popd
-# no runner_vm plugin on Python 3 due to missing Fabric package
 pushd optional_plugins/runner_vm
 %py2_install
+%if %{with_python3_fabric}
+%py3_install
+%endif
 popd
-# no runner_docker plugin on Python 3 due to missing Fabric package
 pushd optional_plugins/runner_docker
 %py2_install
+%if %{with_python3_fabric}
+%py3_install
+%endif
 popd
-# no resultsdb plugin on Python 3 due to missing resultsdb_api package
 pushd optional_plugins/resultsdb
 %py2_install
+%if %{with_python3}
+%py3_install
+%endif
 popd
 pushd optional_plugins/varianter_yaml_to_mux
 %py2_install
@@ -358,7 +386,6 @@ popd
 pushd optional_plugins/runner_docker
 %{__python2} setup.py develop --user
 popd
-# no resultsdb plugin on Python 3 due to missing resultsdb_api package
 pushd optional_plugins/resultsdb
 %{__python2} setup.py develop --user
 popd
@@ -393,6 +420,20 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %if %{with_python3}
 %{__python3} setup.py develop --user
 pushd optional_plugins/html
+%{__python3} setup.py develop --user
+popd
+%if %{with_python3_fabric}
+pushd optional_plugins/runner_remote
+%{__python3} setup.py develop --user
+popd
+pushd optional_plugins/runner_vm
+%{__python3} setup.py develop --user
+popd
+pushd optional_plugins/runner_docker
+%{__python3} setup.py develop --user
+popd
+%endif
+pushd optional_plugins/resultsdb
 %{__python3} setup.py develop --user
 popd
 pushd optional_plugins/varianter_yaml_to_mux
@@ -462,6 +503,10 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %{_bindir}/avocado-rest-client-%{python3_version}
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
+%exclude %{python3_sitelib}/avocado_runner_remote*
+%exclude %{python3_sitelib}/avocado_runner_vm*
+%exclude %{python3_sitelib}/avocado_runner_docker*
+%exclude %{python3_sitelib}/avocado_resultsdb*
 %exclude %{python3_sitelib}/avocado_loader_yaml*
 %exclude %{python3_sitelib}/avocado_golang*
 %exclude %{python3_sitelib}/avocado_varianter_yaml_to_mux*
@@ -469,6 +514,10 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %exclude %{python3_sitelib}/avocado_result_upload*
 %exclude %{python3_sitelib}/avocado_glib*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_html*
+%exclude %{python3_sitelib}/avocado_framework_plugin_runner_remote*
+%exclude %{python3_sitelib}/avocado_framework_plugin_runner_vm*
+%exclude %{python3_sitelib}/avocado_framework_plugin_runner_docker*
+%exclude %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
 %exclude %{python3_sitelib}/avocado_framework_plugin_loader_yaml*
@@ -550,6 +599,21 @@ connection.  Avocado must be previously installed on the remote machine.
 %{python2_sitelib}/avocado_runner_remote*
 %{python2_sitelib}/avocado_framework_plugin_runner_remote*
 
+%if %{with_python3_fabric}
+%package -n python3-%{srcname}-plugins-runner-remote
+Summary: Avocado Runner for Remote Execution
+Requires: python3-%{srcname} == %{version}
+Requires: python3-fabric3
+
+%description -n python3-%{srcname}-plugins-runner-remote
+Allows Avocado to run jobs on a remote machine, by means of an SSH
+connection.  Avocado must be previously installed on the remote machine.
+
+%files -n python3-%{srcname}-plugins-runner-remote
+%{python3_sitelib}/avocado_runner_remote*
+%{python3_sitelib}/avocado_framework_plugin_runner_remote*
+%endif
+
 %package -n python2-%{srcname}-plugins-runner-vm
 Summary: Avocado Runner for libvirt VM Execution
 Requires: python2-%{srcname} == %{version}
@@ -564,6 +628,23 @@ itself.  Avocado must be previously installed on the VM.
 %files -n python2-%{srcname}-plugins-runner-vm
 %{python2_sitelib}/avocado_runner_vm*
 %{python2_sitelib}/avocado_framework_plugin_runner_vm*
+
+%if %{with_python3_fabric}
+%package -n python3-%{srcname}-plugins-runner-vm
+Summary: Avocado Runner for libvirt VM Execution
+Requires: python3-%{srcname} == %{version}
+Requires: python3-%{srcname}-plugins-runner-remote == %{version}
+Requires: python3-libvirt
+
+%description -n python3-%{srcname}-plugins-runner-vm
+Allows Avocado to run jobs on a libvirt based VM, by means of
+interaction with a libvirt daemon and an SSH connection to the VM
+itself.  Avocado must be previously installed on the VM.
+
+%files -n python3-%{srcname}-plugins-runner-vm
+%{python3_sitelib}/avocado_runner_vm*
+%{python3_sitelib}/avocado_framework_plugin_runner_vm*
+%endif
 
 %package -n python2-%{srcname}-plugins-runner-docker
 Summary: Avocado Runner for Execution on Docker Containers
@@ -580,6 +661,23 @@ be previously installed on the container.
 %{python2_sitelib}/avocado_runner_docker*
 %{python2_sitelib}/avocado_framework_plugin_runner_docker*
 
+%if %{with_python3_fabric}
+%package -n python3-%{srcname}-plugins-runner-docker
+Summary: Avocado Runner for Execution on Docker Containers
+Requires: python3-%{srcname} == %{version}
+Requires: python3-%{srcname}-plugins-runner-remote == %{version}
+Requires: python3-aexpect
+
+%description -n python3-%{srcname}-plugins-runner-docker
+Allows Avocado to run jobs on a Docker container by interacting with a
+Docker daemon and attaching to the container itself.  Avocado must
+be previously installed on the container.
+
+%files -n python3-%{srcname}-plugins-runner-docker
+%{python3_sitelib}/avocado_runner_docker*
+%{python3_sitelib}/avocado_framework_plugin_runner_docker*
+%endif
+
 %package -n python2-%{srcname}-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
 Requires: python2-%{srcname} == %{version}
@@ -593,6 +691,22 @@ server.
 %{python2_sitelib}/avocado_resultsdb*
 %{python2_sitelib}/avocado_framework_plugin_resultsdb*
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
+
+%if %{with_python3}
+%package -n python3-%{srcname}-plugins-resultsdb
+Summary: Avocado plugin to propagate job results to ResultsDB
+Requires: python3-%{srcname} == %{version}
+Requires: python3-resultsdb_api
+
+%description -n python3-%{srcname}-plugins-resultsdb
+Allows Avocado to send job results directly to a ResultsDB
+server.
+
+%files -n python3-%{srcname}-plugins-resultsdb
+%{python3_sitelib}/avocado_resultsdb*
+%{python3_sitelib}/avocado_framework_plugin_resultsdb*
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
+%endif
 
 %package -n python2-%{srcname}-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
@@ -791,6 +905,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Jul 23 2018 Merlin Mathesius <mmathesi@redhat.com> - 63.0-1
+- Enable python3 versions of runner and resultsdb plugins when
+  package dependencies are available.
+
 * Tue Jul 17 2018 Cleber Rosa <cleber@redhat.com> - 63.0-0
 - New release
 
