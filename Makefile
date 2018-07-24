@@ -1,6 +1,6 @@
 PYTHON=$(shell which python 2>/dev/null || which python3 2>/dev/null)
-PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
+PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
 AVOCADO_EXTERNAL_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
@@ -18,6 +18,11 @@ COMMIT=$(shell git log --pretty=format:'%H' -n 1)
 COMMIT_DATE=$(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 MOCK_CONFIG=default
+ARCHIVE_BASE_NAME=avocado
+PYTHON_MODULE_NAME=avocado-framework
+RPM_BASE_NAME=python-avocado
+
+include Makefile.include
 
 all:
 	@echo
@@ -51,17 +56,9 @@ all:
 	@echo "propagate-version:  Propagate './VERSION' to all plugins/modules"
 	@echo
 
-source: clean
-	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="avocado-$(COMMIT)/" -o "SOURCES/avocado-$(SHORT_COMMIT).tar.gz" HEAD
-
-source-release: clean
-	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="avocado-$(VERSION)/" -o "SOURCES/avocado-$(VERSION).tar.gz" $(VERSION)
-
 source-pypi: clean
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	git archive --format="tar" --prefix="avocado-framework/" $(VERSION) | tar --file - --delete 'avocado-framework/optional_plugins' > "PYPI_UPLOAD/avocado-framework-$(VERSION).tar"
+	git archive --format="tar" --prefix="$(PYTHON_MODULE_NAME)/" $(VERSION) | tar --file - --delete '$(PYTHON_MODULE_NAME)/optional_plugins' > "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar"
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/setup.py; then\
 			echo ">> Creating source distribution for $$PLUGIN";\
@@ -84,12 +81,12 @@ wheel: clean
 	done
 
 pypi: wheel source-pypi develop
-	mkdir PYPI_UPLOAD/avocado-framework
-	cp avocado_framework.egg-info/PKG-INFO PYPI_UPLOAD/avocado-framework
-	tar rf "PYPI_UPLOAD/avocado-framework-$(VERSION).tar" -C PYPI_UPLOAD avocado-framework/PKG-INFO
-	gzip -9 "PYPI_UPLOAD/avocado-framework-$(VERSION).tar"
-	rm -f PYPI_UPLOAD/avocado-framework/PKG-INFO
-	rmdir PYPI_UPLOAD/avocado-framework
+	mkdir PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
+	cp avocado_framework.egg-info/PKG-INFO PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
+	tar rf "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar" -C PYPI_UPLOAD $(PYTHON_MODULE_NAME)/PKG-INFO
+	gzip -9 "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar"
+	rm -f PYPI_UPLOAD/$(PYTHON_MODULE_NAME)/PKG-INFO
+	rmdir PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
 	@echo
 	@echo "Please use the files on PYPI_UPLOAD dir to upload a new version to PyPI"
 	@echo "The URL to do that may be a bit tricky to find, so here it is:"
@@ -98,25 +95,6 @@ pypi: wheel source-pypi develop
 	@echo "Alternatively, you can also run a command like: "
 	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/*.{tar.gz,whl}"
 	@echo
-
-install:
-	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
-
-srpm: source
-	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --buildsrpm --spec python-avocado.spec --sources SOURCES
-
-rpm: srpm
-	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --rebuild BUILD/SRPM/python-avocado-$(VERSION)-*.src.rpm
-
-srpm-release: source-release
-	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 1" --buildsrpm --spec python-avocado.spec --sources SOURCES
-
-rpm-release: srpm-release
-	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 1" --rebuild BUILD/SRPM/python-avocado-$(VERSION)-*.src.rpm
 
 clean:
 	$(PYTHON) setup.py clean
@@ -138,16 +116,6 @@ clean:
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
 	find $(AVOCADO_OPTIONAL_PLUGINS) -name '*.egg-info' -exec rm -r {} +
-
-pip:
-	$(PYTHON) -m pip --version || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
-
-requirements: pip
-	- pip install "pip>=6.0.1"
-	- pip install -r requirements.txt
-
-requirements-selftests: requirements
-	- pip install -r requirements-selftests.txt
 
 requirements-plugins: requirements
 	for MAKEFILE in $(AVOCADO_PLUGINS);do\
@@ -204,8 +172,13 @@ man: man/avocado.1 man/avocado-rest-client.1
 variables:
 	@echo "PYTHON: $(PYTHON)"
 	@echo "VERSION: $(VERSION)"
+	@echo "PYTHON_DEVELOP_ARGS: $(PYTHON_DEVELOP_ARGS)"
 	@echo "DESTDIR: $(DESTDIR)"
 	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
+	@echo "AVOCADO_EXTERNAL_PLUGINS: $(AVOCADO_EXTERNAL_PLUGINS)"
+	@echo "AVOCADO_OPTIONAL_PLUGINS_ORDERED: $(AVOCADO_OPTIONAL_PLUGINS_ORDERED)"
+	@echo "AVOCADO_OPTIONAL_PLUGINS_OTHERS: $(AVOCADO_OPTIONAL_PLUGINS_OTHERS)"
+	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
 	@echo "AVOCADO_PLUGINS: $(AVOCADO_PLUGINS)"
 	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
 	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
@@ -213,7 +186,9 @@ variables:
 	@echo "COMMIT_DATE: $(COMMIT_DATE)"
 	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
 	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
-	@echo "PYTHON_DEVELOP_ARGS: $(PYTHON_DEVELOP_ARGS)"
+	@echo "ARCHIVE_BASE_NAME: $(ARCHIVE_BASE_NAME)"
+	@echo "PYTHON_MODULE_NAME: $(PYTHON_MODULE_NAME)"
+	@echo "RPM_BASE_NAME: $(RPM_BASE_NAME)"
 
 propagate-version:
 	for DIR in $(AVOCADO_PLUGINS); do\
