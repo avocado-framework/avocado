@@ -24,3 +24,4 @@ lxml>=3.4.4
 # pkg_resources.packaging, let's pin the version
 setuptools==25.1.1
 libvirt-python==3.6.0
+-e git+https://github.com/clalancette/pycdlib#egg=pycdlib
