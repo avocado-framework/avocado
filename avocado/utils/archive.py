@@ -173,9 +173,16 @@ class ArchiveFile(object):
         self._engine.extractall(path)
         if self.is_zip:
             self._update_zip_extra_attrs(path)
-            return self._engine.namelist()[0].strip(os.sep)
+            files = self._engine.namelist()
+            if files:
+                return files[0].strip(os.sep)
+            else:
+                return None
 
-        return self._engine.getnames()[0]
+        files = self._engine.getnames()
+        if files:
+            return files[0]
+        return None
 
     def _update_zip_extra_attrs(self, dst_dir):
         if platform.system() != "Linux":
