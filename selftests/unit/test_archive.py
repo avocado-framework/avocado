@@ -56,7 +56,8 @@ class ArchiveTest(unittest.TestCase):
         dstfile = filename + extension
         archive_filename = os.path.join(self.basedir, dstfile)
         archive.compress(archive_filename, filename)
-        archive.uncompress(archive_filename, self.decompressdir)
+        ret = archive.uncompress(archive_filename, self.decompressdir)
+        self.assertEqual(ret, os.path.basename(filename))
         decompress_file = os.path.join(self.decompressdir,
                                        os.path.basename(filename))
         decompress_hash = crypto.hash_file(decompress_file)
