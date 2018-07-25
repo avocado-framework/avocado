@@ -12,6 +12,10 @@ from avocado.utils import crypto
 from avocado.utils import data_factory
 
 
+BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+BASEDIR = os.path.abspath(BASEDIR)
+
+
 class ArchiveTest(unittest.TestCase):
 
     def setUp(self):
@@ -146,6 +150,12 @@ class ArchiveTest(unittest.TestCase):
                          0o775)
         self.assertEqual(os.stat(get_path("link_to_file")).st_mode & 0o777,
                          0o753)
+
+    def test_empty_tbz2(self):
+        ret = archive.uncompress(os.path.join(BASEDIR, 'selftests', '.data',
+                                 'empty.tar.bz2'), self.decompressdir)
+        self.assertEqual(ret, None, "Empty archive should return None (%s)"
+                         % ret)
 
     def tearDown(self):
         try:
