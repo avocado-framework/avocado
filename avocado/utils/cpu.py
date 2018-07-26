@@ -138,10 +138,14 @@ def get_cpu_arch():
         if _list_matches(cpuinfo, pattern):
             # ARM is a special situation, which matches both 32 bits
             # (v7) and 64 bits (v8).
-            if arch == 'arm':
-                arm_v8_arch_name = 'aarch64'
-                if arm_v8_arch_name == platform.machine():
-                    return arm_v8_arch_name
+            for line in cpuinfo:
+                if line.startswith("CPU architecture"):
+                    version = int(line.split(':', 1)[1])
+                    if version >= 8:
+                        return 'aarch64'
+                    else:
+                        # For historical reasons return arm
+                        return 'arm'
             return arch
     return platform.machine()
 

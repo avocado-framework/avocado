@@ -521,9 +521,8 @@ CPU variant     : 0x1
 CPU part        : 0x0a1
 CPU revision    : 1
 """
-        with mock.patch('avocado.utils.cpu.platform.machine', return_value='aarch64'):
-            with mock.patch('avocado.utils.cpu.open',
-                            return_value=self._get_file_mock(cpu_output)):
+        with mock.patch('avocado.utils.cpu.open',
+                        return_value=self._get_file_mock(cpu_output)):
                 self.assertEqual(cpu.get_cpu_arch(), "aarch64")
 
     @unittest.skipUnless(recent_mock(),
