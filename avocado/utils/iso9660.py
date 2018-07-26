@@ -415,6 +415,11 @@ class ISO9660PyCDLib(BaseIso9660):
     def create(self):
         self._open_for_create()
 
+    def write(self, path, content):
+        self._open_for_create()
+        self._iso.add_fp(io.BytesIO(content), len(content),
+                         iso_path=path, joliet_path=path)
+
     def read(self, path):
         self._open_for_read()
         if not os.path.isabs(path):
@@ -459,7 +464,7 @@ def iso9660(path, capabilities=None):
     common_capabilities = ["read", "copy", "mnt_dir"]
 
     implementations = [('pycdlib', has_pycdlib, ISO9660PyCDLib,
-                        common_capabilities + ["create"]),
+                        common_capabilities + ["create", "write"]),
 
                        ('isoinfo', has_isoinfo, Iso9660IsoInfo,
                         common_capabilities),

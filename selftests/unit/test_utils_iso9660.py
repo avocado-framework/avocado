@@ -160,11 +160,16 @@ class PyCDLib(BaseIso9660):
         """Call the basic workflow"""
         self.basic_workflow()
 
-    def test_create(self):
+    def test_create_write(self):
         new_iso_path = os.path.join(self.tmpdir, 'new.iso')
         new_iso = iso9660.ISO9660PyCDLib(new_iso_path)
         new_iso.create()
+        path = "/README"
+        content = b"AVOCADO"
+        new_iso.write(path, content)
         new_iso.close()
+        read_iso = iso9660.ISO9660PyCDLib(new_iso_path)
+        self.assertEqual(read_iso.read(path), content)
         self.assertTrue(os.path.isfile(new_iso_path))
 
 
