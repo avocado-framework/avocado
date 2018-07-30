@@ -181,7 +181,7 @@ class ArchiveFile(object):
 
         files = self._engine.getnames()
         if files:
-            return files[0]
+            return files[0].split(os.sep)[0]
         return None
 
     def _update_zip_extra_attrs(self, dst_dir):
