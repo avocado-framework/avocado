@@ -26,3 +26,4 @@ Public test repositories
 * `Cockpit tests <https://github.com/cockpit-project/cockpit/tree/master/test/avocado>`__
 * `Modularity framework tests (uses custom docker image) <https://github.com/fedora-modularity/meta-test-family>`__
 * `Azure Tests (requires plugin) <https://github.com/yuxisun1217/avocado-azure/>`__
+* `OpenPOWER Host OS and Guest Virtual Machine (VM) stability tests <https://github.com/open-power-host-os/>`__
