@@ -47,7 +47,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 63.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -255,6 +255,12 @@ pushd optional_plugins/varianter_pict
 %py3_build
 %endif
 popd
+pushd optional_plugins/varianter_cit
+%py2_build
+%if %{with_python3}
+%py3_build
+%endif
+popd
 pushd optional_plugins/result_upload
 %py2_build
 %if %{with_python3}
@@ -344,6 +350,12 @@ pushd optional_plugins/varianter_pict
 %py3_install
 %endif
 popd
+pushd optional_plugins/varianter_cit
+%py2_install
+%if %{with_python3}
+%py3_install
+%endif
+popd
 pushd optional_plugins/result_upload
 %py2_install
 %if %{with_python3}
@@ -368,6 +380,7 @@ popd
 %{__cp} -r examples/yaml_to_mux %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
+%{__cp} -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
 %{__mkdir} -p %{buildroot}%{_libexecdir}/avocado
 %{__mv} %{buildroot}%{python2_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
 
@@ -399,6 +412,9 @@ pushd optional_plugins/golang
 %{__python2} setup.py develop --user
 popd
 pushd optional_plugins/varianter_pict
+%{__python2} setup.py develop --user
+popd
+pushd optional_plugins/varianter_cit
 %{__python2} setup.py develop --user
 popd
 pushd optional_plugins/result_upload
@@ -448,6 +464,9 @@ popd
 pushd optional_plugins/varianter_pict
 %{__python3} setup.py develop --user
 popd
+pushd optional_plugins/varianter_cit
+%{__python3} setup.py develop --user
+popd
 pushd optional_plugins/result_upload
 %{__python3} setup.py develop --user
 popd
@@ -477,6 +496,7 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %exclude %{python2_sitelib}/avocado_golang*
 %exclude %{python2_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python2_sitelib}/avocado_varianter_pict*
+%exclude %{python2_sitelib}/avocado_varianter_cit*
 %exclude %{python2_sitelib}/avocado_result_upload*
 %exclude %{python2_sitelib}/avocado_glib*
 %exclude %{python2_sitelib}/avocado_framework_plugin_result_html*
@@ -486,6 +506,7 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %exclude %{python2_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python2_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %exclude %{python2_sitelib}/avocado_framework_plugin_varianter_pict*
+%exclude %{python2_sitelib}/avocado_framework_plugin_varianter_cit*
 %exclude %{python2_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python2_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python2_sitelib}/avocado_framework_plugin_result_upload*
@@ -511,6 +532,7 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %exclude %{python3_sitelib}/avocado_golang*
 %exclude %{python3_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_varianter_pict*
+%exclude %{python3_sitelib}/avocado_varianter_cit*
 %exclude %{python3_sitelib}/avocado_result_upload*
 %exclude %{python3_sitelib}/avocado_glib*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_html*
@@ -520,6 +542,7 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %exclude %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
+%exclude %{python3_sitelib}/avocado_framework_plugin_varianter_cit*
 %exclude %{python3_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
@@ -820,6 +843,34 @@ Pair-Wise algorithms, also known as Combinatorial Independent Testing.
 %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
 %endif
 
+%package -n python2-%{srcname}-plugins-varianter-cit
+Summary: Varianter with Combinatorial Independent Testing capabilities
+Requires: python2-%{srcname} == %{version}
+
+%description -n python2-%{srcname}-plugins-varianter-cit
+A varianter plugin that generates variants using Combinatorial
+Independent Testing (AKA Pair-Wise) algorithm developed in
+collaboration with CVUT Prague.
+
+%files -n python2-%{srcname}-plugins-varianter-cit
+%{python2_sitelib}/avocado_varianter_cit*
+%{python2_sitelib}/avocado_framework_plugin_varianter_cit*
+
+%if %{with_python3}
+%package -n python3-%{srcname}-plugins-varianter-cit
+Summary: Varianter with Combinatorial Independent Testing capabilities
+Requires: python3-%{srcname} == %{version}
+
+%description -n python3-%{srcname}-plugins-varianter-cit
+A varianter plugin that generates variants using Combinatorial
+Independent Testing (AKA Pair-Wise) algorithm developed in
+collaboration with CVUT Prague.
+
+%files -n python3-%{srcname}-plugins-varianter-cit
+%{python3_sitelib}/avocado_varianter_cit*
+%{python3_sitelib}/avocado_framework_plugin_varianter_cit*
+%endif
+
 %package -n python2-%{srcname}-plugins-result-upload
 Summary: Avocado Plugin to propagate Job results to a remote host
 Requires: python2-%{srcname} == %{version}
@@ -892,6 +943,7 @@ examples of how to write tests on your own.
 %{_docdir}/avocado/yaml_to_mux
 %{_docdir}/avocado/yaml_to_mux_loader
 %{_docdir}/avocado/varianter_pict
+%{_docdir}/avocado/varianter_cit
 
 %package bash
 Summary: Avocado Test Framework Bash Utilities
@@ -905,6 +957,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Jul 25 2018 Cleber Rosa <cleber@redhat.com> - 63.0-2
+- Added CIT varianter plugin sub-packages
+
 * Mon Jul 23 2018 Merlin Mathesius <mmathesi@redhat.com> - 63.0-1
 - Enable python3 versions of runner and resultsdb plugins when
   package dependencies are available.
