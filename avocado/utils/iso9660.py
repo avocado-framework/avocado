@@ -21,16 +21,24 @@ either in userspace tools or on the Linux kernel itself (via mount).
 """
 
 
-__all__ = ['iso9660', 'Iso9660IsoInfo', 'Iso9660IsoRead', 'Iso9660Mount']
+__all__ = ['iso9660', 'Iso9660IsoInfo', 'Iso9660IsoRead', 'Iso9660Mount',
+           'ISO9660PyCDLib']
 
-import os
+import io
 import logging
-import tempfile
+import os
+import re
 import shutil
 import sys
-import re
+import tempfile
 
 from . import process
+
+
+try:
+    import pycdlib
+except ImportError:
+    pycdlib = None
 
 
 def has_userland_tool(executable):
@@ -72,6 +80,15 @@ def has_isoread():
     :rtype: bool
     """
     return has_userland_tool('iso-read')
+
+
+def has_pycdlib():
+    """
+    Returns whether the system has the Python "pycdlib" library
+
+    :rtype: bool
+    """
+    return pycdlib is not None
 
 
 def can_mount():
@@ -366,7 +383,67 @@ class Iso9660Mount(BaseIso9660):
         return self._mnt_dir
 
 
-def iso9660(path):
+class ISO9660PyCDLib(BaseIso9660):
+
+    """
+    Represents a ISO9660 filesystem
+
+    This implementation is based on the pycdlib library
+    """
+
+    def __init__(self, path):
+        if not has_pycdlib():
+            raise RuntimeError('This class requires the pycdlib library')
+        self._path = path
+        self._iso = None
+        self._iso_closed = True
+        self._iso_opened_for_create = False
+
+    def _open_for_read(self):
+        if self._iso is None:
+            self._iso = pycdlib.PyCdlib()
+            self._iso.open(self._path)
+            self._iso_closed = False
+
+    def _open_for_create(self):
+        if self._iso is None:
+            self._iso = pycdlib.PyCdlib()
+            self._iso.new(interchange_level=3, joliet=3)
+            self._iso_opened_for_create = True
+            self._iso_closed = False
+
+    def create(self):
+        self._open_for_create()
+
+    def write(self, path, content):
+        self._open_for_create()
+        self._iso.add_fp(io.BytesIO(content), len(content),
+                         iso_path=path, joliet_path=path)
+
+    def read(self, path):
+        self._open_for_read()
+        if not os.path.isabs(path):
+            path = '/' + path
+        data = io.BytesIO()
+        self._iso.get_file_from_iso_fp(data, joliet_path=path)
+        return data.getvalue()
+
+    def copy(self, src, dst):
+        self._open_for_read()
+        if not os.path.isabs(src):
+            src = '/' + src
+        self._iso.get_file_from_iso(dst, joliet_path=src)
+
+    def close(self):
+        if not self._iso_closed:
+            if self._iso_opened_for_create:
+                self._iso.write(self._path)
+            self._iso.close()
+            self._iso = None
+        self._iso_closed = True
+
+
+def iso9660(path, capabilities=None):
     """
     Checks the available tools on a system and chooses class accordingly
 
@@ -375,15 +452,32 @@ def iso9660(path):
 
     :param path: path to an iso9660 image file
     :type path: str
+    :param capabilities: list of specific capabilities that
+                         are required for the picked implementation,
+                         such as "read", "copy", "mnt_dir".
+    :type capabilities: list
     :return: an instance of any iso9660 capable tool
     :rtype: :class:`Iso9660IsoInfo`, :class:`Iso9660IsoRead`,
             :class:`Iso9660Mount` or None
     """
-    implementations = [('isoinfo', has_isoinfo, Iso9660IsoInfo),
-                       ('iso-read', has_isoread, Iso9660IsoRead),
-                       ('mount', can_mount, Iso9660Mount)]
+    # all implementations so far have these base capabilities
+    common_capabilities = ["read", "copy", "mnt_dir"]
 
-    for (name, check, klass) in implementations:
+    implementations = [('pycdlib', has_pycdlib, ISO9660PyCDLib,
+                        common_capabilities + ["create", "write"]),
+
+                       ('isoinfo', has_isoinfo, Iso9660IsoInfo,
+                        common_capabilities),
+
+                       ('iso-read', has_isoread, Iso9660IsoRead,
+                        common_capabilities),
+
+                       ('mount', can_mount, Iso9660Mount,
+                        common_capabilities)]
+
+    for (name, check, klass, cap) in implementations:
+        if capabilities is not None and not set(capabilities).issubset(cap):
+            continue
         if check():
             logging.debug('Automatically chosen class for iso9660: %s', name)
             return klass(path)
