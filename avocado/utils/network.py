@@ -48,14 +48,15 @@ def is_port_free(port, address):
     return free
 
 
-def find_free_port(start_port, end_port, address="localhost", sequent=True):
+def find_free_port(start_port=1024, end_port=65535, address="localhost", sequent=True):
     """
     Return a host free port in the range [start_port, end_port].
 
-    :param start_port: header of candidate port range
-    :param end_port: ender of candidate port range
+    :param start_port: header of candidate port range, defaults to 1024
+    :param end_port: ender of candidate port range, defaults to 65535
     :param sequent: Find port sequentially, random order if it's False
     :param address: Socket address to bind or connect
+    :rtype: int or None if no free port found
     """
     port_range = range(start_port, end_port)
     if not sequent:
