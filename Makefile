@@ -119,7 +119,7 @@ clean:
 
 requirements-plugins: requirements
 	for MAKEFILE in $(AVOCADO_PLUGINS);do\
-		if test -f $$MAKEFILE/Makefile; then echo ">> REQUIREMENTS (Makefile) $$MAKEFILE"; AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE requirement &>/dev/null;\
+		if test -f $$MAKEFILE/Makefile; then echo ">> REQUIREMENTS (Makefile) $$MAKEFILE"; AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE requirements &>/dev/null;\
 		elif test -f $$MAKEFILE/requirements.txt; then echo ">> REQUIREMENTS (requirements.txt) $$MAKEFILE"; pip install $(PYTHON_DEVELOP_ARGS) -r $$MAKEFILE/requirements.txt;\
 		else echo ">> SKIP $$MAKEFILE";\
 		fi;\
