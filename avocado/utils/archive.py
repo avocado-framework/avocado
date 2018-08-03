@@ -168,7 +168,8 @@ class ArchiveFile(object):
         Extract all files from the archive.
 
         :param path: destination path.
-        :return: extracted folder name
+        :return: the first member of the archive, a file or directory or None
+                 if the archive is empty
         """
         self._engine.extractall(path)
         if self.is_zip:
