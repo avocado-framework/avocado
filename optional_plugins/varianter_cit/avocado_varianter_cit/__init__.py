@@ -112,7 +112,7 @@ class VarianterCit(Varianter):
         for vid, variant in zip(variant_ids, self.variants):
             yield {"variant_id": vid,
                    "variant": TreeNode('', variant),
-                   "paths": '/run'}
+                   "paths": ['/']}
 
     def __len__(self):
         return sum(1 for _ in self.variants) if self.variants else 0
