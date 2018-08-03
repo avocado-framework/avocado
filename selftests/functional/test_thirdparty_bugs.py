@@ -2,10 +2,7 @@ import re
 import json
 import unittest
 
-try:
-    from urllib2 import URLError
-except ImportError:
-    from urllib.error import URLError
+from six.moves.urllib.error import URLError
 
 from avocado.utils import download
 
