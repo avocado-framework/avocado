@@ -23,6 +23,7 @@ from six.moves import configparser
 from six.moves import zip
 
 from avocado.core import exit_codes
+from avocado.core import varianter
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.plugin_interfaces import Varianter
@@ -138,27 +139,14 @@ class VarianterCit(Varianter):
         """
         if not self.variants:
             return ""
-
         out = []
-        verbose = variants > 1
-        out.append("CIT Variants (%i):" % len(self))
-        for variant in self:
-            out.append('%sVariant %s:    %s' % ('\n' if verbose else '',
-                                                variant["variant_id"],
-                                                self.parameter_path))
-            if not verbose:
-                continue
-            env = set()
-            for node in variant["variant"]:
-                for key, value in iteritems(node.environment):
-                    origin = node.environment.origin[key].path
-                    env.add(("%s:%s" % (origin, key), str(value)))
-            if not env:
-                return out
-            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
-            for record in sorted(env):
-                out.append(fmt % record)
 
+        if variants:
+            # variants == 0 means disable, but in plugin it's brief
+            out.append("CIT Variants (%s):" % len(self))
+            for variant in self:
+                out.extend(varianter.variant_to_str(variant, variants - 1,
+                                                    kwargs, False))
         return "\n".join(out)
 
 
