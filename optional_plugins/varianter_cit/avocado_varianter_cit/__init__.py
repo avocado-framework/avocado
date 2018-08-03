@@ -23,6 +23,7 @@ from six.moves import configparser
 from six.moves import zip
 
 from avocado.core import exit_codes
+from avocado.core import varianter
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.plugin_interfaces import Varianter
@@ -47,10 +48,6 @@ class VarianterCitCLI(CLI):
             cit = subparser.add_argument_group('CIT varianter options')
             cit.add_argument('--cit-parameter-file', metavar='PATH',
                              help="Paths to a parameter file")
-            cit.add_argument('--cit-parameter-path', metavar='PATH',
-                             default='/run',
-                             help=('Default path for parameters generated '
-                                   'on the CIT variants'))
             cit.add_argument('--cit-order-of-combinations',
                              metavar='ORDER', type=int, default=2,
                              help=("Order of combinations. Defaults to "
@@ -83,7 +80,6 @@ class VarianterCit(Varianter):
                              "is not readable", cit_parameter_file)
                 self.error_exit(args)
 
-        self.parameter_path = getattr(args, "cit_parameter_path")
         config = configparser.ConfigParser()
         try:
             config.read(cit_parameter_file)
@@ -116,7 +112,7 @@ class VarianterCit(Varianter):
         for vid, variant in zip(variant_ids, self.variants):
             yield {"variant_id": vid,
                    "variant": TreeNode('', variant),
-                   "paths": self.parameter_path}
+                   "paths": ['/']}
 
     def __len__(self):
         return sum(1 for _ in self.variants) if self.variants else 0
@@ -138,27 +134,14 @@ class VarianterCit(Varianter):
         """
         if not self.variants:
             return ""
-
         out = []
-        verbose = variants > 1
-        out.append("CIT Variants (%i):" % len(self))
-        for variant in self:
-            out.append('%sVariant %s:    %s' % ('\n' if verbose else '',
-                                                variant["variant_id"],
-                                                self.parameter_path))
-            if not verbose:
-                continue
-            env = set()
-            for node in variant["variant"]:
-                for key, value in iteritems(node.environment):
-                    origin = node.environment.origin[key].path
-                    env.add(("%s:%s" % (origin, key), str(value)))
-            if not env:
-                return out
-            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
-            for record in sorted(env):
-                out.append(fmt % record)
 
+        if variants:
+            # variants == 0 means disable, but in plugin it's brief
+            out.append("CIT Variants (%s):" % len(self))
+            for variant in self:
+                out.extend(varianter.variant_to_str(variant, variants - 1,
+                                                    kwargs, False))
         return "\n".join(out)
 
 
