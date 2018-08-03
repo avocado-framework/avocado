@@ -198,7 +198,7 @@ class Varianter(object):
             default_params.merge(default_param)
         self._default_params = default_params
         self.default_params.clear()
-        self._variant_plugins.map_method_copy("initialize", args)
+        self._variant_plugins.map_method("initialize", args)
         self._variant_plugins.map_method_copy("update_defaults", self._default_params)
         self._no_variants = sum(self._variant_plugins.map_method("__len__"))
 
