@@ -92,6 +92,22 @@ def find_free_ports(start_port, end_port, count, address="localhost", sequent=Tr
     return ports
 
 
+def get_free_port(address="localhost"):
+    """
+    Returns a free port
+
+    This selects a port from the maximum range of high ports (from
+    1024 to 65535), and should be used when the user is not interested
+    in specifying the range.
+
+    :param address: Socket address to bind or connect
+    :type address: str
+    :returns: the free port number
+    :rtype: int
+    """
+    return find_free_port(1024, 65535, address)
+
+
 class PortTracker(Borg):
 
     """
