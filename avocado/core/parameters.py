@@ -250,7 +250,8 @@ class AvocadoParam(object):
         if not ret:
             raise NoMatchError("No matches to %s => %s in %s"
                                % (path.pattern, key, self.str_leaves_variant))
-        if len(set([_[1] for _ in ret])) == 1:  # single source of results
+        # make sure all params come from the same origin
+        if len(set([_[1].path for _ in ret])) == 1:
             return ret[0][0]
         else:
             raise ValueError("Multiple %s leaves contain the key '%s'; %s"
