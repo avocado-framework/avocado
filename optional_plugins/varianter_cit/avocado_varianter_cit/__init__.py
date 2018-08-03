@@ -48,10 +48,6 @@ class VarianterCitCLI(CLI):
             cit = subparser.add_argument_group('CIT varianter options')
             cit.add_argument('--cit-parameter-file', metavar='PATH',
                              help="Paths to a parameter file")
-            cit.add_argument('--cit-parameter-path', metavar='PATH',
-                             default='/run',
-                             help=('Default path for parameters generated '
-                                   'on the CIT variants'))
             cit.add_argument('--cit-order-of-combinations',
                              metavar='ORDER', type=int, default=2,
                              help=("Order of combinations. Defaults to "
@@ -84,7 +80,6 @@ class VarianterCit(Varianter):
                              "is not readable", cit_parameter_file)
                 self.error_exit(args)
 
-        self.parameter_path = getattr(args, "cit_parameter_path")
         config = configparser.ConfigParser()
         try:
             config.read(cit_parameter_file)
@@ -117,7 +112,7 @@ class VarianterCit(Varianter):
         for vid, variant in zip(variant_ids, self.variants):
             yield {"variant_id": vid,
                    "variant": TreeNode('', variant),
-                   "paths": self.parameter_path}
+                   "paths": '/run'}
 
     def __len__(self):
         return sum(1 for _ in self.variants) if self.variants else 0
