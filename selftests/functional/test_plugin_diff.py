@@ -1,5 +1,6 @@
 import glob
 import os
+import sys
 import tempfile
 import shutil
 import unittest
@@ -50,9 +51,15 @@ class DiffTests(unittest.TestCase):
                     (AVOCADO, self.jobdir, self.jobdir2))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
+        # Avocado won't know about the Python interpreter used on the
+        # command line
+        if AVOCADO.startswith(sys.executable):
+            avocado_in_log = AVOCADO[len(sys.executable)+1:]
+        else:
+            avocado_in_log = AVOCADO
         self.assertIn(b"# COMMAND LINE", result.stdout)
-        self.assertIn("-%s run" % AVOCADO, result.stdout_text)
-        self.assertIn("+%s run" % AVOCADO, result.stdout_text)
+        self.assertIn("-%s run" % avocado_in_log, result.stdout_text)
+        self.assertIn("+%s run" % avocado_in_log, result.stdout_text)
 
     def test_diff_nocmdline(self):
         cmd_line = ('%s diff %s %s --diff-filter nocmdline' %

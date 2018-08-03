@@ -21,10 +21,13 @@ basedir = os.path.abspath(basedir)
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 
+# AVOCADO may contain more than a single command, as it can be
+# prefixed by the Python interpreter
+AVOCADO_QUOTED = ", ".join(["'%s'" % cmd for cmd in AVOCADO.split(' ')])
 PERL_TAP_PARSER_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--sysinfo', 'off', '--job-results-dir', '%%s'] } );
+my $parser = TAP::Parser->new( { exec => [%s, 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--sysinfo', 'off', '--job-results-dir', '%%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
@@ -32,7 +35,7 @@ while ( my $result = $parser->next ) {
 $parser->parse_errors == 0 || die "Parser errors!\n";
 $parser->is_good_plan || die "Plan is not a good plan!\n";
 $parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
-""" % AVOCADO
+""" % AVOCADO_QUOTED
 
 
 OUTPUT_TEST_CONTENT = """#!/bin/env python
