@@ -7,11 +7,8 @@ import unittest
 from avocado.utils import genio
 from avocado.utils import process
 
+from .. import AVOCADO, BASEDIR
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 ALL_MESSAGES = ['setup pre',
                 'setup post',
@@ -139,7 +136,7 @@ class TestStatuses(unittest.TestCase):
                                                  ".data",
                                                  'test_statuses.py'))
 
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s --json -' %
                (AVOCADO, test_file, self.tmpdir))
 

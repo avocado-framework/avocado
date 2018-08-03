@@ -8,12 +8,9 @@ from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
+from .. import AVOCADO, BASEDIR
 
 
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 STDOUT = b"Hello, \xc4\x9b\xc5\xa1\xc4\x8d\xc5\x99\xc5\xbe\xc3\xbd\xc3\xa1\xc3\xad\xc3\xa9!"
 STDERR = b"Hello, stderr!"
 
@@ -33,7 +30,7 @@ class RunnerSimpleTest(unittest.TestCase):
         self.output_script.save()
 
     def _check_output_record_all(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record all'
                     % (AVOCADO, self.tmpdir, self.output_script.path))
@@ -50,7 +47,7 @@ class RunnerSimpleTest(unittest.TestCase):
             self.assertEqual(fd_stderr.read(), STDERR)
 
     def _check_output_record_combined(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record combined'
                     % (AVOCADO, self.tmpdir, self.output_script.path))
@@ -64,7 +61,7 @@ class RunnerSimpleTest(unittest.TestCase):
             self.assertEqual(fd_output.read(), STDOUT + STDERR)
 
     def test_output_record_none(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record none'
                     % (AVOCADO, self.tmpdir, self.output_script.path))
@@ -79,7 +76,7 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertFalse(os.path.isfile(stderr_file))
 
     def test_output_record_stdout(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record stdout'
                     % (AVOCADO, self.tmpdir, self.output_script.path))

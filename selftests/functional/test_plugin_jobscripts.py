@@ -7,10 +7,8 @@ from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
-BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-BASEDIR = os.path.abspath(BASEDIR)
+from .. import AVOCADO, BASEDIR
 
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 SCRIPT_PRE_TOUCH = """#!/bin/sh -e
 touch %s"""

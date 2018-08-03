@@ -7,11 +7,8 @@ from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
+from .. import AVOCADO, BASEDIR
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 COMMANDS_TIMEOUT_CONF = """
 [sysinfo.collect]
@@ -28,7 +25,7 @@ class SysInfoTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test_sysinfo_enabled(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=on '
                     'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line)
@@ -54,7 +51,7 @@ class SysInfoTest(unittest.TestCase):
             self.assertTrue(os.path.exists(sysinfo_subdir), msg)
 
     def test_sysinfo_disabled(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off passtest.py'
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line)
@@ -77,7 +74,7 @@ class SysInfoTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def run_sysinfo_interrupted(self, sleep, timeout, exp_duration):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         commands_path = os.path.join(self.tmpdir, "commands")
         script.make_script(commands_path, "sleep %s" % sleep)
         config_path = os.path.join(self.tmpdir, "config.conf")

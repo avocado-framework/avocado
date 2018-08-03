@@ -6,11 +6,7 @@ import unittest
 
 from avocado.utils import process
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 class VariantsDumpLoadTests(unittest.TestCase):
@@ -18,7 +14,7 @@ class VariantsDumpLoadTests(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.variants_file = os.path.join(self.tmpdir, 'variants.json')
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def test_variants_dump(self):
         cmd_line = ('%s variants --json-variants-dump %s' %

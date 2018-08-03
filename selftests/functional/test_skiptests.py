@@ -9,10 +9,7 @@ from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import script
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 AVOCADO_TEST_SKIP_DECORATORS = """
 import avocado
@@ -81,7 +78,7 @@ class AvocadoSkipTests(avocado.Test):
 class TestSkipDecorators(unittest.TestCase):
 
     def setUp(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
         test_path = os.path.join(self.tmpdir, 'test_skip_decorators.py')
@@ -106,7 +103,7 @@ class TestSkipDecorators(unittest.TestCase):
         self.bad_teardown.save()
 
     def test_skip_decorators(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
@@ -126,7 +123,7 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertFalse('teardown executed' in debuglog_contents)
 
     def test_skip_setup(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
@@ -140,7 +137,7 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertEqual(json_results['skip'], 1)
 
     def test_skip_teardown(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',

@@ -10,11 +10,7 @@ from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import script
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 SCRIPT_CONTENT = """#!/bin/bash
@@ -53,11 +49,11 @@ class JobTimeOutTest(unittest.TestCase):
             'avocado_timeout_functional')
         self.py.save()
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def run_and_check(self, cmd_line, e_rc, e_ntests, e_nerrors, e_nfailures,
                       e_nskip):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
         xml_output = result.stdout
         self.assertEqual(result.exit_status, e_rc,

@@ -9,9 +9,7 @@ import unittest
 
 from avocado.utils import process
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
+from .. import BASEDIR
 
 
 class DocBuildError(Exception):
@@ -52,7 +50,7 @@ class DocBuildTest(unittest.TestCase):
                            'nonexisting document u\'api/test/avocado.plugins\'')
         ignore_list.append('WARNING: toctree contains reference to ' +
                            'nonexisting document u\'api/test/avocado.utils\'')
-        doc_dir = os.path.join(basedir, 'docs')
+        doc_dir = os.path.join(BASEDIR, 'docs')
         process.run('make -C %s clean' % doc_dir)
         result = process.run('make -C %s html' % doc_dir, ignore_status=True)
         self.assertFalse(result.exit_status, "Doc build reported non-zero "

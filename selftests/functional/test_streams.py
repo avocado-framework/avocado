@@ -7,19 +7,14 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",
-                         "%s ./scripts/avocado" % sys.executable)
+from .. import AVOCADO, BASEDIR
 
 
 class StreamsTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def test_app_info_stdout(self):
         """

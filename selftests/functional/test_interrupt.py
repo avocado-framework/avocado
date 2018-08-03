@@ -14,12 +14,7 @@ from avocado.utils import wait
 from avocado.utils import script
 from avocado.utils import data_factory
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
-
+from .. import AVOCADO, BASEDIR
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
@@ -119,7 +114,7 @@ class InterruptTest(unittest.TestCase):
                                           mode=DEFAULT_MODE)
         bad_test.save()
         self.test_module = bad_test.path
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir))
         self.proc = subprocess.Popen(cmd.split(),
@@ -167,7 +162,7 @@ class InterruptTest(unittest.TestCase):
                                           mode=DEFAULT_MODE)
         bad_test.save()
         self.test_module = bad_test.path
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir))
         self.proc = subprocess.Popen(cmd.split(),
@@ -207,7 +202,7 @@ class InterruptTest(unittest.TestCase):
                                            mode=DEFAULT_MODE)
         good_test.save()
         self.test_module = good_test.path
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir))
         self.proc = subprocess.Popen(cmd.split(),
@@ -251,7 +246,7 @@ class InterruptTest(unittest.TestCase):
                                            mode=DEFAULT_MODE)
         good_test.save()
         self.test_module = good_test.path
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir))
         self.proc = subprocess.Popen(cmd.split(),

@@ -15,10 +15,7 @@ from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 # AVOCADO may contain more than a single command, as it can be
@@ -147,7 +144,7 @@ class OutputTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying doublefree.py test")
@@ -284,7 +281,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)

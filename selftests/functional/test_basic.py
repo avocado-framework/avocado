@@ -35,11 +35,8 @@ from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
+from .. import AVOCADO, BASEDIR
 
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",
-                         "%s ./scripts/avocado" % sys.executable)
 
 LOCAL_IMPORT_TEST_CONTENTS = '''
 from avocado import Test
@@ -160,7 +157,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def test_show_version(self):
         result = process.run('%s -v' % AVOCADO, ignore_status=True)
@@ -565,7 +562,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def test_output_pass(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
@@ -663,7 +660,7 @@ class RunnerSimpleTest(unittest.TestCase):
                                                   'avocado_simpletest_'
                                                   'functional')
         self.fail_script.save()
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def test_simpletest_pass(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
@@ -735,7 +732,7 @@ class RunnerSimpleTest(unittest.TestCase):
         os.environ['PATH'] += ":" + os.path.dirname(AVOCADO)
         # simplewarning.sh calls "avocado exec-path" which hasn't
         # access to an installed location for the libexec scripts
-        os.environ['PATH'] += ":" + os.path.join(basedir, 'libexec')
+        os.environ['PATH'] += ":" + os.path.join(BASEDIR, 'libexec')
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'examples/tests/simplewarning.sh --show-job-log'
                     % (AVOCADO, self.tmpdir))
@@ -755,7 +752,7 @@ class RunnerSimpleTest(unittest.TestCase):
 
     @unittest.skipIf(not GNU_ECHO_BINARY, "Uses echo as test")
     def test_fs_unfriendly_run(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         commands_path = os.path.join(self.tmpdir, "commands")
         script.make_script(commands_path, "echo '\"\\/|?*<>'")
         config_path = os.path.join(self.tmpdir, "config.conf")
@@ -790,7 +787,7 @@ class RunnerSimpleTest(unittest.TestCase):
             self.assertTrue(sysinfo)
 
     def test_non_absolute_path(self):
-        avocado_path = os.path.join(basedir, 'scripts', 'avocado')
+        avocado_path = os.path.join(BASEDIR, 'scripts', 'avocado')
         test_base_dir = os.path.dirname(self.pass_script.path)
         os.chdir(test_base_dir)
         test_file_name = os.path.basename(self.pass_script.path)
@@ -867,7 +864,7 @@ class RunnerSimpleTestStatus(unittest.TestCase):
                                                   "skip_regex = ^SKIP$\n"
                                                   "skip_location = stdout\n")
         self.config_file.save()
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def test_simpletest_status(self):
         # Multi-line warning in STDERR should by default be handled
@@ -930,7 +927,7 @@ class ExternalRunnerTest(unittest.TestCase):
             "exit 1",
             'avocado_externalrunner_functional')
         self.fail_script.save()
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def test_externalrunner_pass(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -987,7 +984,7 @@ class AbsPluginsTest(object):
 
     def setUp(self):
         self.base_outputdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def tearDown(self):
         shutil.rmtree(self.base_outputdir)

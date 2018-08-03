@@ -5,9 +5,7 @@ from six import PY3
 
 from avocado.core import jobdata
 
-
-BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-BASEDIR = os.path.abspath(BASEDIR)
+from .. import BASEDIR
 
 
 class JobdataTest(unittest.TestCase):
