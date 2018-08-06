@@ -394,11 +394,16 @@ class ISO9660PyCDLib(BaseIso9660):
     def __init__(self, path):
         if not has_pycdlib():
             raise RuntimeError('This class requires the pycdlib library')
-        self._iso = pycdlib.PyCdlib()
-        self._iso.open(path)
-        self._iso_closed = False
+        self._path = path
+        self._iso = None
+
+    def _open_for_read(self):
+        if self._iso is None:
+            self._iso = pycdlib.PyCdlib()
+            self._iso.open(self._path)
 
     def read(self, path):
+        self._open_for_read()
         if not os.path.isabs(path):
             path = '/' + path
         data = io.BytesIO()
@@ -406,14 +411,15 @@ class ISO9660PyCDLib(BaseIso9660):
         return data.getvalue()
 
     def copy(self, src, dst):
+        self._open_for_read()
         if not os.path.isabs(src):
             src = '/' + src
         self._iso.get_file_from_iso(dst, joliet_path=src)
 
     def close(self):
-        if not self._iso_closed:
+        if self._iso:
             self._iso.close()
-        self._iso_closed = True
+            self._iso = None
 
 
 def iso9660(path, capabilities=None):
