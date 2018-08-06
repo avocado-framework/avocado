@@ -29,6 +29,7 @@ import logging
 import os
 import re
 import shutil
+import string
 import sys
 import tempfile
 
@@ -421,6 +422,35 @@ class ISO9660PyCDLib(BaseIso9660):
             self._iso.new(**flags)
             self._iso_opened_for_create = True
 
+    @staticmethod
+    def _get_iso_path(path):
+        iso_path = "".join([c for c in path
+                            if c in (string.ascii_letters + string.digits)])
+        iso_path = iso_path[:7].upper() + ";"
+        if not os.path.isabs(iso_path):
+            iso_path = '/' + iso_path[:6] + ";"
+        return iso_path
+
+    @staticmethod
+    def _get_abs_path(path):
+        if not os.path.isabs(path):
+            path = '/' + path
+        return path
+
+    def write(self, path, content):
+        """
+        Writes a new file into the ISO image
+
+        :param path: the path of the new file inside the ISO image
+        :type path: str
+        :param content: the content of the new file
+        :type path: bytes
+        """
+        self.create()
+        self._iso.add_fp(io.BytesIO(content), len(content),
+                         iso_path=self._get_iso_path(path),
+                         joliet_path=self._get_abs_path(path))
+
     def read(self, path):
         self._open_for_read()
         if not os.path.isabs(path):
@@ -464,7 +494,7 @@ def iso9660(path, capabilities=None):
     common_capabilities = ["read", "copy", "mnt_dir"]
 
     implementations = [('pycdlib', has_pycdlib, ISO9660PyCDLib,
-                        common_capabilities + ["create"]),
+                        common_capabilities + ["create", "write"]),
 
                        ('isoinfo', has_isoinfo, Iso9660IsoInfo,
                         common_capabilities),
