@@ -391,16 +391,35 @@ class ISO9660PyCDLib(BaseIso9660):
     This implementation is based on the pycdlib library
     """
 
+    #: Default flags used when creating a new ISO image
+    DEFAULT_CREATE_FLAGS = {"interchange_level": 3,
+                            "joliet": 3}
+
     def __init__(self, path):
         if not has_pycdlib():
             raise RuntimeError('This class requires the pycdlib library')
         self._path = path
         self._iso = None
+        self._iso_opened_for_create = False
 
     def _open_for_read(self):
         if self._iso is None:
             self._iso = pycdlib.PyCdlib()
             self._iso.open(self._path)
+
+    def create(self, flags=None):
+        """
+        Creates a new ISO image
+
+        :param flags: the flags used when creating a new image
+        :type flags: dict
+        """
+        if self._iso is None:
+            self._iso = pycdlib.PyCdlib()
+            if flags is None:
+                flags = self.DEFAULT_CREATE_FLAGS
+            self._iso.new(**flags)
+            self._iso_opened_for_create = True
 
     def read(self, path):
         self._open_for_read()
@@ -418,6 +437,8 @@ class ISO9660PyCDLib(BaseIso9660):
 
     def close(self):
         if self._iso:
+            if self._iso_opened_for_create:
+                self._iso.write(self._path)
             self._iso.close()
             self._iso = None
 
@@ -443,7 +464,7 @@ def iso9660(path, capabilities=None):
     common_capabilities = ["read", "copy", "mnt_dir"]
 
     implementations = [('pycdlib', has_pycdlib, ISO9660PyCDLib,
-                        common_capabilities),
+                        common_capabilities + ["create"]),
 
                        ('isoinfo', has_isoinfo, Iso9660IsoInfo,
                         common_capabilities),

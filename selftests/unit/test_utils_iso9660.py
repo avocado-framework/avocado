@@ -24,7 +24,7 @@ class Capabilities(unittest.TestCase):
 
     @mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=True)
     def test_capabilities_pycdlib(self, has_pycdlib_mocked):
-        instance = iso9660.iso9660(self.iso_path, ['read'])
+        instance = iso9660.iso9660(self.iso_path, ['read', 'create'])
         self.assertIsInstance(instance, iso9660.ISO9660PyCDLib)
 
     @mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=False)
@@ -172,6 +172,13 @@ class PyCDLib(BaseIso9660):
     def test_basic_workflow(self):
         """Call the basic workflow"""
         self.basic_workflow()
+
+    def test_create(self):
+        new_iso_path = os.path.join(self.tmpdir, 'new.iso')
+        new_iso = iso9660.ISO9660PyCDLib(new_iso_path)
+        new_iso.create()
+        new_iso.close()
+        self.assertTrue(os.path.isfile(new_iso_path))
 
 
 if __name__ == "__main__":
