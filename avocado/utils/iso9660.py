@@ -416,7 +416,7 @@ class ISO9660PyCDLib(BaseIso9660):
         self._iso_closed = True
 
 
-def iso9660(path):
+def iso9660(path, capabilities=None):
     """
     Checks the available tools on a system and chooses class accordingly
 
@@ -425,16 +425,32 @@ def iso9660(path):
 
     :param path: path to an iso9660 image file
     :type path: str
+    :param capabilities: list of specific capabilities that are
+                         required for the selected implementation,
+                         such as "read", "copy" and "mnt_dir".
+    :type capabilities: list
     :return: an instance of any iso9660 capable tool
     :rtype: :class:`Iso9660IsoInfo`, :class:`Iso9660IsoRead`,
             :class:`Iso9660Mount`, :class:`ISO9660PyCDLib` or None
     """
-    implementations = [('pycdlib', has_pycdlib, ISO9660PyCDLib),
-                       ('isoinfo', has_isoinfo, Iso9660IsoInfo),
-                       ('iso-read', has_isoread, Iso9660IsoRead),
-                       ('mount', can_mount, Iso9660Mount)]
+    # all implementations so far have these base capabilities
+    common_capabilities = ["read", "copy", "mnt_dir"]
 
-    for (name, check, klass) in implementations:
+    implementations = [('pycdlib', has_pycdlib, ISO9660PyCDLib,
+                        common_capabilities),
+
+                       ('isoinfo', has_isoinfo, Iso9660IsoInfo,
+                        common_capabilities),
+
+                       ('iso-read', has_isoread, Iso9660IsoRead,
+                        common_capabilities),
+
+                       ('mount', can_mount, Iso9660Mount,
+                        common_capabilities)]
+
+    for (name, check, klass, cap) in implementations:
+        if capabilities is not None and not set(capabilities).issubset(cap):
+            continue
         if check():
             logging.debug('Automatically chosen class for iso9660: %s', name)
             return klass(path)
