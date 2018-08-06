@@ -160,6 +160,13 @@ class PyCDLib(BaseIso9660):
         """Call the basic workflow"""
         self.basic_workflow()
 
+    def test_create(self):
+        new_iso_path = os.path.join(self.tmpdir, 'new.iso')
+        new_iso = iso9660.ISO9660PyCDLib(new_iso_path)
+        new_iso.create()
+        new_iso.close()
+        self.assertTrue(os.path.isfile(new_iso_path))
+
 
 if __name__ == "__main__":
     unittest.main()
