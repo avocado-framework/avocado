@@ -9,6 +9,24 @@ import unittest
 from avocado.utils import iso9660, process
 
 
+class Capabilities(unittest.TestCase):
+
+    def setUp(self):
+        self.iso_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                     os.path.pardir, ".data",
+                                                     "sample.iso"))
+
+    def test_common_capabilities(self):
+        none_cap = iso9660.iso9660(self.iso_path)
+        read_cap = iso9660.iso9660(self.iso_path, ['read'])
+        if not (none_cap is None and read_cap is None):
+            self.assertEqual(none_cap.__class__, read_cap.__class__)
+
+    def test_non_existing_capabilities(self):
+        self.assertIsNone(iso9660.iso9660(self.iso_path,
+                                          ['non-existing', 'capabilities']))
+
+
 class BaseIso9660(unittest.TestCase):
 
     """
