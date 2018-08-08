@@ -6,22 +6,18 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 class GetData(unittest.TestCase):
 
     def setUp(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test(self):
-        test_path = os.path.join(basedir, "selftests", ".data", "get_data.py")
-        test_variants_path = os.path.join(basedir, "selftests", ".data",
+        test_path = os.path.join(BASEDIR, "selftests", ".data", "get_data.py")
+        test_variants_path = os.path.join(BASEDIR, "selftests", ".data",
                                           "get_data.py.data", "get_data.yaml")
         cmd_line = "%s run --sysinfo=off --job-results-dir '%s' -m %s -- %s"
         cmd_line %= (AVOCADO, self.tmpdir, test_variants_path, test_path)

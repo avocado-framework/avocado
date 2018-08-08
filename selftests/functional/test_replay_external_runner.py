@@ -8,11 +8,7 @@ from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 class ReplayExtRunnerTests(unittest.TestCase):
@@ -33,7 +29,7 @@ class ReplayExtRunnerTests(unittest.TestCase):
             self.jobid = f.read().strip('\n')
 
     def run_and_check(self, cmd_line, expected_rc):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "

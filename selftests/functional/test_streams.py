@@ -1,23 +1,20 @@
 import os
 import shutil
+import sys
 import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 class StreamsTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
 
     def test_app_info_stdout(self):
         """
@@ -60,7 +57,10 @@ class StreamsTest(unittest.TestCase):
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertIn(b"stevedore.extension: found extension EntryPoint.parse",
                           result.stdout)
-            self.assertIn("avocado.test: Command line: %s" % cmd,
+            # Avocado won't know about the Python interpreter used on the
+            # command line
+            cmd_in_log = cmd[len(sys.executable)+1:]
+            self.assertIn("avocado.test: Command line: %s" % cmd_in_log,
                           result.stdout_text)
             self.assertEqual(b'', result.stderr)
 
@@ -80,7 +80,10 @@ class StreamsTest(unittest.TestCase):
                              result.stdout)
             self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
                              result.stderr)
-            self.assertIn("Command line: %s" % cmd,
+            # Avocado won't know about the Python interpreter used on the
+            # command line
+            cmd_in_log = cmd[len(sys.executable)+1:]
+            self.assertIn("Command line: %s" % cmd_in_log,
                           result.stdout_text)
             self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
                           result.stdout)

@@ -7,9 +7,7 @@ import unittest
 from avocado.utils import script
 from avocado.utils import process
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
+from .. import BASEDIR
 
 
 UNITTEST_GOOD = """from avocado import Test
@@ -68,9 +66,9 @@ class UnittestCompat(unittest.TestCase):
         self.original_pypath = os.environ.get('PYTHONPATH')
         if self.original_pypath is not None:
             os.environ['PYTHONPATH'] = '%s:%s' % (
-                basedir, self.original_pypath)
+                BASEDIR, self.original_pypath)
         else:
-            os.environ['PYTHONPATH'] = '%s' % basedir
+            os.environ['PYTHONPATH'] = '%s' % BASEDIR
         self.unittest_script_good = script.TemporaryScript(
             'unittest_good.py',
             UNITTEST_GOOD % self.tmpdir,

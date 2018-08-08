@@ -5,9 +5,7 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process, astring
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
+from .. import BASEDIR
 
 
 PY_CMD = sys.executable
@@ -18,12 +16,12 @@ class StandaloneTests(unittest.TestCase):
     def setUp(self):
         self.original_pypath = os.environ.get('PYTHONPATH')
         if self.original_pypath is not None:
-            os.environ['PYTHONPATH'] = '%s:%s' % (basedir, self.original_pypath)
+            os.environ['PYTHONPATH'] = '%s:%s' % (BASEDIR, self.original_pypath)
         else:
-            os.environ['PYTHONPATH'] = '%s' % basedir
+            os.environ['PYTHONPATH'] = '%s' % BASEDIR
 
     def run_and_check(self, cmd_line, expected_rc, tstname):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True,
                              encoding=astring.ENCODING)
         self.assertEqual(result.exit_status, expected_rc,

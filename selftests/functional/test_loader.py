@@ -13,11 +13,7 @@ from avocado.core import exit_codes
 from avocado.utils import script
 from avocado.utils import process
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
@@ -155,7 +151,7 @@ class LoaderTestFunctional(unittest.TestCase):
                  stat.S_IROTH | stat.S_IXOTH)
 
     def setUp(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def _test(self, name, content, exp_str, mode=MODE_0664, count=1):
@@ -243,7 +239,7 @@ class LoaderTestFunctional(unittest.TestCase):
         mytest = script.Script(
             os.path.join(os.path.dirname(mylib.path), 'test.py'),
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES)
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         mytest.save()
         cmd_line = "%s list -V %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
@@ -262,7 +258,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                         AVOCADO_TEST_SIMPLE_USING_MAIN,
                                         'avocado_simpletest_functional')
         mytest.save()
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
         cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
@@ -330,7 +326,7 @@ class LoaderTestFunctional(unittest.TestCase):
                          % (test, result))
 
     def test_python_unittest(self):
-        test_path = os.path.join(basedir, "selftests", ".data", "unittests.py")
+        test_path = os.path.join(BASEDIR, "selftests", ".data", "unittests.py")
         cmd = ("%s run --sysinfo=off --job-results-dir %s --json - -- %s"
                % (AVOCADO, self.tmpdir, test_path))
         result = process.run(cmd, ignore_status=True)

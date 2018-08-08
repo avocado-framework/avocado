@@ -11,9 +11,7 @@ from avocado.utils import archive
 from avocado.utils import crypto
 from avocado.utils import data_factory
 
-
-BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-BASEDIR = os.path.abspath(BASEDIR)
+from .. import BASEDIR
 
 
 class ArchiveTest(unittest.TestCase):

@@ -8,11 +8,8 @@ from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
 
+from .. import AVOCADO, BASEDIR
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 SCRIPT_CONTENT = """#!/bin/bash
 touch %s
@@ -51,7 +48,7 @@ class WrapperTest(unittest.TestCase):
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying datadir.py test")
     def test_global_wrapper(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
                     'examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir, self.script.path))
@@ -68,7 +65,7 @@ class WrapperTest(unittest.TestCase):
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying datadir.py test")
     def test_process_wrapper(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir, self.script.path))
@@ -85,7 +82,7 @@ class WrapperTest(unittest.TestCase):
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying datadir.py test")
     def test_both_wrappers(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir, self.dummy.path,

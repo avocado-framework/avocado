@@ -8,16 +8,13 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 class JournalPluginTests(unittest.TestCase):
 
     def setUp(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.cmd_line = ('%s run --job-results-dir %s --sysinfo=off --json - '
                          '--journal examples/tests/passtest.py'

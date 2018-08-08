@@ -7,17 +7,13 @@ from avocado.core import job_id
 from avocado.core import exit_codes
 from avocado.utils import process
 
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from .. import AVOCADO, BASEDIR
 
 
 class ArgumentParsingTest(unittest.TestCase):
 
     def test_unknown_command(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = '%s whacky-command-that-doesnt-exist' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
@@ -25,7 +21,7 @@ class ArgumentParsingTest(unittest.TestCase):
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
 
     def test_known_command_bad_choice(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = '%s run --sysinfo=foo passtest' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
@@ -33,7 +29,7 @@ class ArgumentParsingTest(unittest.TestCase):
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
 
     def test_known_command_bad_argument(self):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         cmd_line = '%s run --sysinfo=off --whacky-argument passtest' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
@@ -54,7 +50,7 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
         :param complement_args: the complement arguments to an 'avocado run'
                                 command line
         """
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         log_dir = data_dir.get_logs_dir()
         self.assertIsNotNone(log_dir)
         job = job_id.create_unique_job_id()
