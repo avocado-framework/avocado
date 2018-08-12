@@ -81,15 +81,15 @@ class TestGDBProcess(unittest.TestCase):
                       process.SubProcess)
 
     def test_split_gdb_expr(self):
-        binary, breakpoint = process.split_gdb_expr('foo:debug_print')
+        binary, break_point = process.split_gdb_expr('foo:debug_print')
         self.assertEqual(binary, 'foo')
-        self.assertEqual(breakpoint, 'debug_print')
-        binary, breakpoint = process.split_gdb_expr('bar')
+        self.assertEqual(break_point, 'debug_print')
+        binary, break_point = process.split_gdb_expr('bar')
         self.assertEqual(binary, 'bar')
-        self.assertEqual(breakpoint, 'main')
-        binary, breakpoint = process.split_gdb_expr('baz:main.c:57')
+        self.assertEqual(break_point, 'main')
+        binary, break_point = process.split_gdb_expr('baz:main.c:57')
         self.assertEqual(binary, 'baz')
-        self.assertEqual(breakpoint, 'main.c:57')
+        self.assertEqual(break_point, 'main.c:57')
         self.assertIsInstance(process.split_gdb_expr('foo'), tuple)
         self.assertIsInstance(process.split_gdb_expr('foo:debug_print'), tuple)
 

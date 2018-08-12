@@ -877,10 +877,10 @@ class GDBSubProcess(object):
     def _get_breakpoints(self):
         breakpoints = []
         for expr in gdb.GDB_RUN_BINARY_NAMES_EXPR:
-            expr_binary_name, breakpoint = split_gdb_expr(expr)
+            expr_binary_name, break_point = split_gdb_expr(expr)
             binary_name = os.path.basename(self.binary)
             if expr_binary_name == binary_name:
-                breakpoints.append(breakpoint)
+                breakpoints.append(break_point)
 
         if not breakpoints:
             breakpoints.append(gdb.GDB.DEFAULT_BREAK)
