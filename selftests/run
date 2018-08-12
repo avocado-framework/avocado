@@ -52,7 +52,7 @@ def test_suite():
 class MyResult(unittest.TextTestResult):
     def stopTest(self, test):
         # stopTest
-        ret = super(MyResult, self).stopTest(test)
+        super(MyResult, self).stopTest(test)
         # Destroy the data_dir.get_tmpdir ...
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         # Rung garbage collection (run __del__s) and force-sync disk
@@ -66,7 +66,6 @@ class MyResult(unittest.TextTestResult):
         if dir_check.wait():
             raise AssertionError("Test %s left some tmp files behind:\n%s"
                                  % (test, dir_check.stdout.read()))
-        return ret
 
 
 if __name__ == '__main__':
