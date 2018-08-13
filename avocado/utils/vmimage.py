@@ -63,7 +63,9 @@ class VMImageHtmlParser(HTMLParser):
             return
         for attr in attrs:
             if attr[0] == 'href' and re.match(self.pattern, attr[1]):
-                self.items.append(attr[1].strip('/'))
+                match = attr[1].strip('/')
+                if match not in self.items:
+                    self.items.append(match)
 
 
 class ImageProviderBase(object):
