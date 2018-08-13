@@ -170,6 +170,7 @@ results_dir_content() {
 run_rc lint 'inspekt lint --parallel=4 --exclude=.git --enable R0401,W0101,W0102,W0404,W0611,W0612,W0622'
 # noop1
 # noop2
+# noop3
 # Skip checking test_utils_cpu.py due to inspektor bug
 run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'
 run_rc style 'inspekt style --exclude=.git --disable E501,E265,W601,E402,E722'
