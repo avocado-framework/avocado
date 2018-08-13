@@ -78,7 +78,9 @@ class Job(object):
         """
         Creates an instance of Job class.
 
-        :param args: an instance of :class:`argparse.Namespace`.
+        :param args: the job configuration, usually set by command
+                     line options and argument parsing
+        :type args: :class:`argparse.Namespace`
         """
         if args is None:
             args = argparse.Namespace()
