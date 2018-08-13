@@ -167,33 +167,8 @@ results_dir_content() {
 }
 
 [ "$SKIP_RESULTSDIR_CHECK" ] || RESULTS_DIR_CONTENT="$(ls $RESULTS_DIR 2> /dev/null)"
-run_rc lint 'inspekt lint --exclude=.git --enable R0401,W0101,W0102,W0104,W0105,W0106,W0107,W0108,W0109,W0110,W0111,W0404,W0611,W0612,W0622'
-# Skip checking test_utils_cpu.py due to inspektor bug
-run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'
-run_rc style 'inspekt style --exclude=.git --disable E501,E265,W601,E402,E722'
-run_rc boundaries 'selftests/modules_boundaries'
-run_rc signed-off-by signed_off_check
-if [ "$AVOCADO_PARALLEL_CHECK" ]; then
-    run_rc selftests parallel_selftests
-elif [ -z "$AVOCADO_SELF_CHECK" ]; then
-    run_rc selftests selftests/run
-else
-    CMD='scripts/avocado run --job-results-dir=$(mktemp -d) selftests/{unit,functional,doc}'
-    [ ! $SELF_CHECK_CONTINUOUS ] && CMD+=" --failfast on"
-    run_rc selftests "$CMD"
-fi
-[ "$SKIP_RESULTSDIR_CHECK" ] || run_rc job-results results_dir_content "$RESULTS_DIR_CONTENT"
+run_rc lint 'inspekt lint --parallel=8 --exclude=.git --enable R0401,W0101,W0102,W0104,W0105,W0106,W0107,W0108,W0109,W0110,W0111,W0404,W0611,W0612,W0622'
 
-if [ "$ERR" ]; then
-    echo -e "\e[31m"
-    echo "Checks:"
-    for CHECK in "${ERR[@]}"; do
-        echo -e " * $CHECK FAILED"
-    done
-    echo -ne "\e[0m"
-else
-    echo -e "\e[32mAll checks PASSED\e[0m"
-fi
 if [ "$ERR" ]; then
     exit 1
 fi
