@@ -68,6 +68,12 @@ class Job(object):
     along with setup operations and event recording.
     """
 
+    LOG_MAP = {'info': logging.INFO,
+               'debug': logging.DEBUG,
+               'warning': logging.WARNING,
+               'error': logging.ERROR,
+               'critical': logging.CRITICAL}
+
     def __init__(self, args=None):
         """
         Creates an instance of Job class.
@@ -97,18 +103,10 @@ class Job(object):
         self.logfile = None
         self.tmpdir = None
         self.__remove_tmpdir = False
-        raw_log_level = settings.get_value('job.output', 'loglevel',
-                                           default='debug')
-        mapping = {'info': logging.INFO,
-                   'debug': logging.DEBUG,
-                   'warning': logging.WARNING,
-                   'error': logging.ERROR,
-                   'critical': logging.CRITICAL}
-        if raw_log_level in mapping:
-            self.loglevel = mapping[raw_log_level]
-        else:
-            self.loglevel = logging.DEBUG
-
+        self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
+                                                            'loglevel',
+                                                            default='debug'),
+                                         logging.DEBUG)
         self.status = "RUNNING"
         self.result = None
         self.sysinfo = None
