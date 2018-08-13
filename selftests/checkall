@@ -169,6 +169,7 @@ results_dir_content() {
 [ "$SKIP_RESULTSDIR_CHECK" ] || RESULTS_DIR_CONTENT="$(ls $RESULTS_DIR 2> /dev/null)"
 run_rc lint 'inspekt lint --parallel=32 --exclude=.git --enable R0401,W0101,W0102,W0104,W0105,W0106,W0107,W0108,W0109,W0110,W0111,W0404,W0611,W0612,W0622'
 # noop1
+# noop2
 
 if [ "$ERR" ]; then
     echo -e "\e[31m"
