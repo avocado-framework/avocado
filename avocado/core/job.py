@@ -85,6 +85,11 @@ class Job(object):
         self.args = args
         self.references = getattr(args, "reference", [])
         self.log = LOG_UI
+        self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
+                                                            'loglevel',
+                                                            default='debug'),
+                                         logging.DEBUG)
+        self.__logging_handlers = {}
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
             unique_id = getattr(self.args, 'unique_job_id', None)
@@ -103,10 +108,6 @@ class Job(object):
         self.logfile = None
         self.tmpdir = None
         self.__remove_tmpdir = False
-        self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
-                                                            'loglevel',
-                                                            default='debug'),
-                                         logging.DEBUG)
         self.status = "RUNNING"
         self.result = None
         self.sysinfo = None
@@ -120,7 +121,6 @@ class Job(object):
         #: The total amount of time the job took from start to finish,
         #: or `-1` if it has not been started by means of the `run()` method
         self.time_elapsed = -1
-        self.__logging_handlers = {}
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            LOG_JOB)
