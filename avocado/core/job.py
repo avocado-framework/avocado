@@ -82,9 +82,7 @@ class Job(object):
                      line options and argument parsing
         :type args: :class:`argparse.Namespace`
         """
-        if args is None:
-            args = argparse.Namespace()
-        self.args = args
+        self.args = args or argparse.Namespace()
         self.references = getattr(args, "reference", [])
         self.log = LOG_UI
         self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
