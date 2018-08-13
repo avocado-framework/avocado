@@ -26,16 +26,7 @@ from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import HTTPError
 from six.moves.html_parser import HTMLParser
 
-try:
-    import lzma
-    LZMA_CAPABLE = True
-except ImportError:
-    try:
-        from backports import lzma
-        LZMA_CAPABLE = True
-    except ImportError:
-        LZMA_CAPABLE = False
-
+from . import archive
 from . import asset
 from . import path as utils_path
 from . import process
@@ -202,7 +193,7 @@ class CentOSImageProvider(ImageProviderBase):
         super(CentOSImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cloud.centos.org/centos/'
         self.url_images = self.url_versions + '{version}/images/'
-        if LZMA_CAPABLE:
+        if archive.LZMA_CAPABLE:
             self.image_pattern = 'CentOS-{version}-{arch}-GenericCloud-{build}.qcow2.xz$'
         else:
             self.image_pattern = 'CentOS-{version}-{arch}-GenericCloud-{build}.qcow2$'
@@ -303,7 +294,7 @@ class Image(object):
                                  expire=None).fetch()
 
         if os.path.splitext(asset_path)[1] == '.xz':
-            asset_path = self._extract(asset_path)
+            asset_path = archive.extract_lzma(asset_path)
 
         self._base_image = asset_path
         self._path = self._take_snapshot()
@@ -322,19 +313,6 @@ class Image(object):
                                                new_image)
         process.run(cmd)
         return new_image
-
-    @staticmethod
-    def _extract(path, force=False):
-        """
-        Extracts a XZ compressed file to the same directory.
-        """
-        extracted_file = os.path.splitext(path)[0]
-        if not force and os.path.exists(extracted_file):
-            return extracted_file
-        with open(path, 'r') as file_obj:
-            with open(extracted_file, 'wb') as newfile_obj:
-                newfile_obj.write(lzma.decompress(file_obj.read()))
-        return extracted_file
 
 
 def get(name=None, version=None, build=None, arch=None, checksum=None,
