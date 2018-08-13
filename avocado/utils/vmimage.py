@@ -19,8 +19,12 @@ Provides VM images acquired from official repositories
 import os
 import re
 import tempfile
-import urllib2
 import uuid
+
+from six import itervalues
+from six.moves.urllib.request import urlopen
+from six.moves.urllib.error import HTTPError
+from six.moves.html_parser import HTMLParser
 
 try:
     import lzma
@@ -31,8 +35,6 @@ except ImportError:
         LZMA_CAPABLE = True
     except ImportError:
         LZMA_CAPABLE = False
-
-from HTMLParser import HTMLParser
 
 from . import asset
 from . import path as utils_path
@@ -92,8 +94,8 @@ class ImageProviderBase(object):
         pattern = '^%s/$' % self._version
         parser = VMImageHtmlParser(pattern)
         try:
-            parser.feed(urllib2.urlopen(self.url_versions).read())
-        except urllib2.HTTPError:
+            parser.feed(urlopen(self.url_versions).read())
+        except HTTPError:
             raise ImageProviderError('Cannot open %s' % self.url_versions)
         if parser.items:
             resulting_versions = []
@@ -128,9 +130,9 @@ class ImageProviderBase(object):
                                           arch=self.arch)
         parser = VMImageHtmlParser(image)
         try:
-            content = urllib2.urlopen(url_images).read()
+            content = urlopen(url_images).read()
             parser.feed(content)
-        except urllib2.HTTPError:
+        except HTTPError:
             raise ImageProviderError('Cannot open %s' % url_images)
 
         if parser.items:
@@ -390,7 +392,7 @@ def list_providers():
     """
     List the available Image Providers
     """
-    return set(_ for _ in globals().itervalues()
+    return set(_ for _ in itervalues(globals())
                if (_ != ImageProviderBase and
                    isinstance(_, type) and
                    issubclass(_, ImageProviderBase)))
