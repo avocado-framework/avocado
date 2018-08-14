@@ -48,7 +48,14 @@ def url_open(url, data=None, timeout=5):
     old_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(timeout)
     try:
-        return urlopen(url, data=data)
+        result = urlopen(url, data=data)
+        msg = ('Retrieved URL "%s": content-length %s, date: "%s", '
+               'last-modified: "%s"')
+        logging.debug(msg, url,
+                      result.headers.get('Content-Length', 'UNKNOWN'),
+                      result.headers.get('Date', 'UNKNOWN'),
+                      result.headers.get('Last-Modified', 'UNKNOWN'))
+        return result
     finally:
         socket.setdefaulttimeout(old_timeout)
 
