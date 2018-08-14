@@ -68,17 +68,28 @@ class Job(object):
     along with setup operations and event recording.
     """
 
+    LOG_MAP = {'info': logging.INFO,
+               'debug': logging.DEBUG,
+               'warning': logging.WARNING,
+               'error': logging.ERROR,
+               'critical': logging.CRITICAL}
+
     def __init__(self, args=None):
         """
         Creates an instance of Job class.
 
-        :param args: an instance of :class:`argparse.Namespace`.
+        :param args: the job configuration, usually set by command
+                     line options and argument parsing
+        :type args: :class:`argparse.Namespace`
         """
-        if args is None:
-            args = argparse.Namespace()
-        self.args = args
+        self.args = args or argparse.Namespace()
         self.references = getattr(args, "reference", [])
         self.log = LOG_UI
+        self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
+                                                            'loglevel',
+                                                            default='debug'),
+                                         logging.DEBUG)
+        self.__logging_handlers = {}
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
             unique_id = getattr(self.args, 'unique_job_id', None)
@@ -97,18 +108,6 @@ class Job(object):
         self.logfile = None
         self.tmpdir = None
         self.__remove_tmpdir = False
-        raw_log_level = settings.get_value('job.output', 'loglevel',
-                                           default='debug')
-        mapping = {'info': logging.INFO,
-                   'debug': logging.DEBUG,
-                   'warning': logging.WARNING,
-                   'error': logging.ERROR,
-                   'critical': logging.CRITICAL}
-        if raw_log_level in mapping:
-            self.loglevel = mapping[raw_log_level]
-        else:
-            self.loglevel = logging.DEBUG
-
         self.status = "RUNNING"
         self.result = None
         self.sysinfo = None
@@ -122,7 +121,6 @@ class Job(object):
         #: The total amount of time the job took from start to finish,
         #: or `-1` if it has not been started by means of the `run()` method
         self.time_elapsed = -1
-        self.__logging_handlers = {}
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            LOG_JOB)
