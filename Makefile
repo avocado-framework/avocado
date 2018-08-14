@@ -128,21 +128,18 @@ requirements-plugins: requirements
 smokecheck: clean develop
 	./scripts/avocado run passtest.py
 
-check: clean develop check_cyclical modules_boundaries
+check: clean develop modules_boundaries
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
 	selftests/checkall
 	selftests/check_tmp_dirs
 
-check-full: clean develop check_cyclical modules_boundaries
+check-full: clean develop modules_boundaries
 	AVOCADO_CHECK_LEVEL=2 selftests/checkall
 	selftests/check_tmp_dirs
 
-selfcheck: clean check_cyclical modules_boundaries develop
+selfcheck: clean modules_boundaries develop
 	AVOCADO_SELF_CHECK=1 selftests/checkall
 	selftests/check_tmp_dirs
-
-check_cyclical:
-	selftests/cyclical_deps avocado
 
 modules_boundaries:
 	selftests/modules_boundaries
