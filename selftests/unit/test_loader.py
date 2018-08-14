@@ -516,7 +516,9 @@ class LoaderTest(unittest.TestCase):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                             '.data', 'loader_instrumented', 'double_import.py')
         tests = self.loader.discover(path)
-        exps = [('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
+        exps = [('Test1', 'selftests/.data/loader_instrumented/double_import.py:Test1.test1'),
+                ('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
+                ('Test3', 'selftests/.data/loader_instrumented/double_import.py:Test3.test3'),
                 ('Test4', 'selftests/.data/loader_instrumented/double_import.py:Test4.test4')]
         self._check_discovery(exps, tests)
 

@@ -1,4 +1,3 @@
-# This currently only discovers 2 tests in avocado due to bug
 import avocado as foo
 import avocado as bar   # pylint: disable=W0404
 
