@@ -250,14 +250,17 @@ class Partition(object):
         :raise PartitionError: On critical failure
         """
         # Human readable list of processes
-        out = process.system_output("lsof " + mountpoint, ignore_status=True)
-        # Try to kill all pids
-        for pid in (line.split()[1] for line in out.splitlines()[1:]):
-            try:
-                process.system("kill -9 %d" % int(pid), ignore_status=True,
-                               sudo=True)
-            except OSError:
-                pass
+        try:
+            out = process.system_output("lsof " + mountpoint, ignore_status=True)
+            # Try to kill all pids
+            for pid in (line.split()[1] for line in out.splitlines()[1:]):
+                try:
+                    process.system("kill -9 %d" % int(pid), ignore_status=True,
+                                   sudo=True)
+                except OSError:
+                    pass
+        except OSError:
+            pass
         # Unmount
         try:
             process.run("umount -f %s" % mountpoint, sudo=True)
