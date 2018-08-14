@@ -479,6 +479,28 @@ class LoaderTest(unittest.TestCase):
                  "test_dir": os.path.dirname(python_unittest.path)})]
         self.assertEqual(tests, exp)
 
+    def test_mod_import_and_classes(self):
+        path = os.path.relpath(os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                            '.data', 'loader_instrumented', 'dont_crash.py'))
+        tests = self.loader.discover(path)
+        names = [(_[0], _[1]['name']) for _ in tests]
+        exps = [('DiscoverMe', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe.test'),
+                ('DiscoverMe2', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe2.test'),
+                ('DiscoverMe3', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe3.test'),
+                ('DiscoverMe4', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe4.test')]
+        self.assertEqual(names, exps)
+
+    def test_double_import(self):
+        # This is currently broken in Avocado, so let's just document the
+        # current behavior.
+        path = os.path.relpath(os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                            '.data', 'loader_instrumented', 'double_import.py'))
+        tests = self.loader.discover(path)
+        names = [(_[0], _[1]['name']) for _ in tests]
+        exps = [('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
+                ('Test4', 'selftests/.data/loader_instrumented/double_import.py:Test4.test4')]
+        self.assertEqual(names, exps, tests)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
