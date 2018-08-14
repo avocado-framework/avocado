@@ -242,6 +242,31 @@ class Partition(object):
         # Update the fstype as the mount command passed
         self.fstype = fstype
 
+    def _get_pids_on_mountpoint(self, mnt):
+        """
+        Returns a list of processes using a given mountpoint
+        """
+        try:
+            FileNotFoundError
+        except NameError:
+            FileNotFoundError = IOError   # pylint: disable=W0622
+        try:
+            cmd = "lsof " + mnt
+            out = process.system_output(cmd)
+            return [int(line.split()[1]) for line in out.splitlines()[1:]]
+        except FileNotFoundError as details:
+            msg = 'Could not find lsof executable'
+            LOG.error(msg)
+            raise PartitionError(self, msg, details)
+        except OSError as details:
+            msg = 'Could not run lsof to identify processes using "%s"' % mnt
+            LOG.error(msg)
+            raise PartitionError(self, msg, details)
+        except process.CmdError as details:
+            msg = 'Failure executing "%s"' % cmd
+            LOG.error(msg)
+            raise PartitionError(self, msg, details)
+
     def _unmount_force(self, mountpoint):
         """
         Kill all other jobs accessing this partition and force unmount it.
@@ -249,15 +274,11 @@ class Partition(object):
         :return: None
         :raise PartitionError: On critical failure
         """
-        # Human readable list of processes
-        out = process.system_output("lsof " + mountpoint, ignore_status=True)
-        # Try to kill all pids
-        for pid in (line.split()[1] for line in out.splitlines()[1:]):
+        for pid in self._get_pids_on_mountpoint(mountpoint):
             try:
-                process.system("kill -9 %d" % int(pid), ignore_status=True,
-                               sudo=True)
-            except OSError:
-                pass
+                process.system("kill -9 %d" % pid, ignore_status=True, sudo=True)
+            except process.CmdError as details:
+                raise PartitionError(self, "Failed to kill processes", details)
         # Unmount
         try:
             process.run("umount -f %s" % mountpoint, sudo=True)

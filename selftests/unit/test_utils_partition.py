@@ -78,6 +78,7 @@ class TestPartitionMkfsMount(Base):
         self.disk.mkfs()
         self.disk.mount()
 
+    @unittest.skipIf(missing_binary('lsof'), "requires running lsof")
     @unittest.skipIf(not process.can_sudo('kill -l'),
                      "requires running kill as a privileged user")
     def test_force_unmount(self):
@@ -93,6 +94,36 @@ class TestPartitionMkfsMount(Base):
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
             self.assertNotIn(self.mountpoint, proc_mounts)
+
+    @unittest.skipUnless(missing_binary('lsof'), "requires not having lsof")
+    def test_force_unmount_no_lsof(self):
+        """ Checks that a force-unmount will fail on systems without lsof """
+        with open("/proc/mounts") as proc_mounts_file:
+            proc_mounts = proc_mounts_file.read()
+            self.assertIn(self.mountpoint, proc_mounts)
+            proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
+                                      % self.mountpoint, shell=True)
+            proc.start()
+            self.assertRaises(partition.PartitionError, self.disk.unmount)
+            proc.terminate()
+            proc.wait()
+
+    def test_force_unmount_get_pids_fail(self):
+        """ Checks PartitionError is raised if there's no lsof to get pids """
+        with open("/proc/mounts") as proc_mounts_file:
+            proc_mounts = proc_mounts_file.read()
+            self.assertIn(self.mountpoint, proc_mounts)
+            proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
+                                      % self.mountpoint, shell=True)
+            proc.start()
+            with mock.patch('avocado.utils.partition.process.run',
+                            side_effect=process.CmdError):
+                with mock.patch('avocado.utils.partition.process.system_output',
+                                side_effect=OSError) as mocked_system_output:
+                    self.assertRaises(partition.PartitionError, self.disk.unmount)
+                    mocked_system_output.assert_called_with('lsof ' + self.mountpoint)
+            proc.terminate()
+            proc.wait()
 
     def test_double_mount(self):
         """ Check the attempt for second mount fails """
