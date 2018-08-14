@@ -31,12 +31,13 @@ class AvocadoModule(object):
     """
     Representation of a module that might contain avocado.Test tests
     """
-    __slots__ = 'path', 'test_import', 'mod_import', 'mod', 'imported_objects'
+    __slots__ = ('path', 'test_imports', 'mod_imports', 'mod',
+                 'imported_objects')
 
-    def __init__(self, path, test_import=False, mod_import=False):
+    def __init__(self, path):
         self.path = path
-        self.test_import = test_import
-        self.mod_import = mod_import
+        self.test_imports = set()
+        self.mod_imports = set()
         # Dict where:
         #   key => object name how is visible from this module
         #   value => Something-like a directory path to the import.
@@ -74,9 +75,9 @@ class AvocadoModule(object):
                     for name in statement.names:
                         if name.name == 'Test':
                             if name.asname is not None:
-                                self.test_import = name.asname
+                                self.test_imports.add(name.asname)
                             else:
-                                self.test_import = name.name
+                                self.test_imports.add(name.name)
                             break
 
             # Looking for a 'import avocado'
@@ -85,9 +86,9 @@ class AvocadoModule(object):
                 for name in statement.names:
                     if name.name == 'avocado':
                         if name.asname is not None:
-                            self.mod_import = name.asname
+                            self.mod_imports.add(name.asname)
                         else:
-                            self.mod_import = name.name
+                            self.mod_imports.add(name.name)
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
@@ -252,22 +253,22 @@ def _is_class_avocado_test(module, klass):
     Detect, whether given class directly defines itself as avocado.Test
     """
     # Is it inherited from Test? 'class FooTest(Test):'
-    if module.test_import:
+    if module.test_imports:
         base_ids = [base.id for base in klass.bases
                     if isinstance(base, ast.Name)]
         # Looking for a 'class FooTest(Test):'
-        if module.test_import in base_ids:
+        if not module.test_imports.isdisjoint(base_ids):
             return True
 
     # Is it inherited from avocado.Test? 'class FooTest(avocado.Test):'
-    if module.mod_import:
+    if module.mod_imports:
         for base in klass.bases:
             if not isinstance(base, ast.Attribute):
                 # Check only 'module.Class' bases
                 continue
             cls_module = base.value.id
             cls_name = base.attr
-            if cls_module == module.mod_import and cls_name == 'Test':
+            if cls_module in module.mod_imports and cls_name == 'Test':
                 return True
     return False
 
