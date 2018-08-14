@@ -258,7 +258,7 @@ class JeosImageProvider(ImageProviderBase):
 
 class Image(object):
     def __init__(self, name, url, version, arch, checksum, algorithm,
-                 cache_dir):
+                 cache_dir, snapshot_dir=None):
         self.name = name
         self.url = url
         self.version = version
@@ -266,6 +266,7 @@ class Image(object):
         self.checksum = checksum
         self.algorithm = algorithm
         self.cache_dir = cache_dir
+        self.snapshot_dir = snapshot_dir
 
         self._path = None
         self._base_image = None
@@ -308,6 +309,9 @@ class Image(object):
         name, extension = os.path.splitext(self.base_image)
         new_image = '%s-%s%s' % (name, str(uuid.uuid4()).split('-')[0],
                                  extension)
+        if self.snapshot_dir is not None:
+            new_image = os.path.join(self.snapshot_dir,
+                                     os.path.basename(new_image))
         cmd = '%s create -f qcow2 -b %s %s' % (qemu_img,
                                                self.base_image,
                                                new_image)
@@ -316,7 +320,7 @@ class Image(object):
 
 
 def get(name=None, version=None, build=None, arch=None, checksum=None,
-        algorithm=None, cache_dir=None):
+        algorithm=None, cache_dir=None, snapshot_dir=None):
     """
     Wrapper to get the best Image Provider, according to the parameters
     provided.
@@ -330,8 +334,10 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
                      download.
     :param algorithm: (optional) Hash type, used when the checksum is
                       provided.
-    :param cache_dir: (optional) Local system path where the images and
-                      the snapshots will be held.
+    :param cache_dir: (optional) Local system path where the base
+                      images will be held.
+    :param snapshot_dir: (optional) Local system path where the snapshot images
+                         will be held.  Defaults to cache_dir if none is given.
 
     :returns: Image Provider instance that can provide the image
               according to the parameters.
@@ -361,7 +367,8 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
                              arch=cls.arch,
                              checksum=checksum,
                              algorithm=algorithm,
-                             cache_dir=cache_dir)
+                             cache_dir=cache_dir,
+                             snapshot_dir=snapshot_dir)
             except ImageProviderError:
                 pass
 
