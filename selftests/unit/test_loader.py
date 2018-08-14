@@ -529,7 +529,9 @@ class LoaderTest(unittest.TestCase):
                             '.data', 'loader_instrumented', 'double_import.py')
         tests = self.loader.discover(path)
         names = [(_[0], _[1]['name']) for _ in tests]
-        exps = [('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
+        exps = [('Test1', 'selftests/.data/loader_instrumented/double_import.py:Test1.test1'),
+                ('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
+                ('Test3', 'selftests/.data/loader_instrumented/double_import.py:Test3.test3'),
                 ('Test4', 'selftests/.data/loader_instrumented/double_import.py:Test4.test4')]
         self.assertEqual(names, exps, tests)
 
