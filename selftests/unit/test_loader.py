@@ -479,6 +479,22 @@ class LoaderTest(unittest.TestCase):
                  "test_dir": os.path.dirname(python_unittest.path)})]
         self.assertEqual(tests, exp)
 
+    def _check_discovery(self, exps, tests):
+        self.assertEqual(len(exps), len(tests), "Total count of tests not "
+                         "as expected (%s != %s)\nexps: %s\ntests: %s"
+                         % (len(exps), len(tests), exps, tests))
+        try:
+            for exp, tst in zip(exps, tests):
+                # Test class
+                self.assertEqual(tst[0], exp[0])
+                # Test name (path)
+                # py2 reports relpath, py3 abspath
+                self.assertEqual(os.path.abspath(tst[1]['name']),
+                                 os.path.abspath(exp[1]))
+        except AssertionError as details:
+            raise AssertionError("%s\nexps: %s\ntests:%s"
+                                 % (details, exps, tests))
+
     def test_mod_import_and_classes(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                             '.data', 'loader_instrumented', 'dont_crash.py')
@@ -487,12 +503,37 @@ class LoaderTest(unittest.TestCase):
                 ('DiscoverMe2', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe2.test'),
                 ('DiscoverMe3', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe3.test'),
                 ('DiscoverMe4', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe4.test')]
-        for exp, tst in zip(exps, tests):
-            # Test class
-            self.assertEqual(tst[0], exp[0])
-            # Test name (path)
-            # py2 reports relpath, py3 abspath
-            self.assertEqual(os.path.abspath(tst[1]['name']), os.path.abspath(exp[1]))
+        self._check_discovery(exps, tests)
+
+    def test_imports(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'imports.py')
+        tests = self.loader.discover(path)
+        exps = [('Test1', 'selftests/.data/loader_instrumented/imports.py:Test1.test'),
+                ('Test3', 'selftests/.data/loader_instrumented/imports.py:Test3.test'),
+                ('Test4', 'selftests/.data/loader_instrumented/imports.py:Test4.test'),
+                ('Test5', 'selftests/.data/loader_instrumented/imports.py:Test5.test'),
+                ('Test6', 'selftests/.data/loader_instrumented/imports.py:Test6.test'),
+                ('Test8', 'selftests/.data/loader_instrumented/imports.py:Test8.test'),
+                ('Test9', 'selftests/.data/loader_instrumented/imports.py:Test9.test'),
+                ('Test10', 'selftests/.data/loader_instrumented/imports.py:Test10.test')]
+        self._check_discovery(exps, tests)
+
+    def test_dont_detect_non_avocado(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'dont_detect_non_avocado.py')
+        tests = self.loader.discover(path)
+        exps = [(test.PythonUnittest, 'dont_detect_non_avocado.StaticallyNotAvocadoTest.test'),
+                (test.PythonUnittest, 'dont_detect_non_avocado.NotTest.test2')]
+        self._check_discovery(exps, tests)
+
+    def test_infinite_recurse(self):
+        """Checks we don't crash on infinite recursion"""
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented',
+                            'infinite_recurse.py')
+        tests = self.loader.discover(path)
+        self.assertEqual(tests, [])
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
