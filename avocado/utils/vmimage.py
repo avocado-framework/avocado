@@ -19,21 +19,14 @@ Provides VM images acquired from official repositories
 import os
 import re
 import tempfile
-import urllib2
 import uuid
 
-try:
-    import lzma
-    LZMA_CAPABLE = True
-except ImportError:
-    try:
-        from backports import lzma
-        LZMA_CAPABLE = True
-    except ImportError:
-        LZMA_CAPABLE = False
+from six import itervalues
+from six.moves.urllib.request import urlopen
+from six.moves.urllib.error import HTTPError
+from six.moves.html_parser import HTMLParser
 
-from HTMLParser import HTMLParser
-
+from . import archive
 from . import asset
 from . import path as utils_path
 from . import process
@@ -61,7 +54,9 @@ class VMImageHtmlParser(HTMLParser):
             return
         for attr in attrs:
             if attr[0] == 'href' and re.match(self.pattern, attr[1]):
-                self.items.append(attr[1].strip('/'))
+                match = attr[1].strip('/')
+                if match not in self.items:
+                    self.items.append(match)
 
 
 class ImageProviderBase(object):
@@ -92,8 +87,8 @@ class ImageProviderBase(object):
         pattern = '^%s/$' % self._version
         parser = VMImageHtmlParser(pattern)
         try:
-            parser.feed(urllib2.urlopen(self.url_versions).read())
-        except urllib2.HTTPError:
+            parser.feed(urlopen(self.url_versions).read())
+        except HTTPError:
             raise ImageProviderError('Cannot open %s' % self.url_versions)
         if parser.items:
             resulting_versions = []
@@ -128,9 +123,9 @@ class ImageProviderBase(object):
                                           arch=self.arch)
         parser = VMImageHtmlParser(image)
         try:
-            content = urllib2.urlopen(url_images).read()
+            content = urlopen(url_images).read()
             parser.feed(content)
-        except urllib2.HTTPError:
+        except HTTPError:
             raise ImageProviderError('Cannot open %s' % url_images)
 
         if parser.items:
@@ -198,7 +193,7 @@ class CentOSImageProvider(ImageProviderBase):
         super(CentOSImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cloud.centos.org/centos/'
         self.url_images = self.url_versions + '{version}/images/'
-        if LZMA_CAPABLE:
+        if archive.LZMA_CAPABLE:
             self.image_pattern = 'CentOS-{version}-{arch}-GenericCloud-{build}.qcow2.xz$'
         else:
             self.image_pattern = 'CentOS-{version}-{arch}-GenericCloud-{build}.qcow2$'
@@ -299,7 +294,7 @@ class Image(object):
                                  expire=None).fetch()
 
         if os.path.splitext(asset_path)[1] == '.xz':
-            asset_path = self._extract(asset_path)
+            asset_path = archive.extract_lzma(asset_path)
 
         self._base_image = asset_path
         self._path = self._take_snapshot()
@@ -318,19 +313,6 @@ class Image(object):
                                                new_image)
         process.run(cmd)
         return new_image
-
-    @staticmethod
-    def _extract(path, force=False):
-        """
-        Extracts a XZ compressed file to the same directory.
-        """
-        extracted_file = os.path.splitext(path)[0]
-        if not force and os.path.exists(extracted_file):
-            return extracted_file
-        with open(path, 'r') as file_obj:
-            with open(extracted_file, 'wb') as newfile_obj:
-                newfile_obj.write(lzma.decompress(file_obj.read()))
-        return extracted_file
 
 
 def get(name=None, version=None, build=None, arch=None, checksum=None,
@@ -390,7 +372,7 @@ def list_providers():
     """
     List the available Image Providers
     """
-    return set(_ for _ in globals().itervalues()
+    return set(_ for _ in itervalues(globals())
                if (_ != ImageProviderBase and
                    isinstance(_, type) and
                    issubclass(_, ImageProviderBase)))

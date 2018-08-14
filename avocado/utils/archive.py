@@ -80,6 +80,20 @@ class _WrapLZMA(object):
         return cls(filename, mode)
 
 
+if LZMA_CAPABLE:
+    def extract_lzma(path, force=False):
+        """
+        Extracts a XZ compressed file to the same directory.
+        """
+        extracted_file = os.path.splitext(path)[0]
+        if not force and os.path.exists(extracted_file):
+            return extracted_file
+        with open(path, 'r') as file_obj:
+            with open(extracted_file, 'wb') as newfile_obj:
+                newfile_obj.write(lzma.decompress(file_obj.read()))
+        return extracted_file
+
+
 class ArchiveFile(object):
 
     """
