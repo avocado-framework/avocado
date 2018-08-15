@@ -112,7 +112,6 @@ class TestClassTestUnit(unittest.TestCase):
         above_limit_name = os.path.join(self.tmpdir, "a" * 251)
         tst = self._get_fake_filename_test(above_limit_name)
         self.assertFalse(tst.get_data('', 'file', False))
-        tst._record_reference       # Should do nothing
         tst._record_reference('stdout', 'stdout.expected')
         tst._record_reference('stderr', 'stderr.expected')
         tst._record_reference('output', 'output.expected')
