@@ -162,8 +162,6 @@ class Diff(CLICmd):
             for test in job1_data['tests']:
                 test_result = '%s: %s\n' % (get_name(test),
                                             str(test['status']))
-                if args.diff_strip_id:
-                    test
                 results1.append(test_result)
             results2 = []
             for test in job2_data['tests']:
