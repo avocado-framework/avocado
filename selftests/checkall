@@ -167,7 +167,7 @@ results_dir_content() {
 }
 
 [ "$SKIP_RESULTSDIR_CHECK" ] || RESULTS_DIR_CONTENT="$(ls $RESULTS_DIR 2> /dev/null)"
-run_rc lint 'inspekt lint --exclude=.git --enable R0401,W0101,W0102,W0404,W0611,W0612,W0622'
+run_rc lint 'inspekt lint --exclude=.git --enable R0401,W0101,W0102,W0104,W0105,W0106,W0107,W0108,W0109,W0110,W0111,W0404,W0611,W0612,W0622'
 # Skip checking test_utils_cpu.py due to inspektor bug
 run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'
 run_rc style 'inspekt style --exclude=.git --disable E501,E265,W601,E402,E722'
