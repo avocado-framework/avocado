@@ -1,0 +1,66 @@
+---
+- name: Installs Avocado using pip, directly from GIT repo
+  hosts: avocado-test-deployment
+  vars:
+    avocado_git_url: https://github.com/avocado-framework/avocado.git
+    avocado_git_branch: master
+    avocado_egg_name: avocado-framework
+    avocado_python_rpm_packages:
+      - python-pip
+      # pip install "git+https://" quite obviously requires git
+      - git
+      - python-virtualenv
+    avocado_virtualenv_command: virtualenv-2.7
+  tasks:
+    - include_vars: vars.yml
+    - include_tasks: tasks/epel.yml
+    - include_tasks: tasks/python_rpm_pkgs.yml
+    - name: Temporary dir for Avocado venv
+      tempfile:
+        state: directory
+      register: temporary_dir
+    - name: Avocado installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg={{ avocado_egg_name }}"
+        virtualenv_command: "{{ avocado_virtualenv_command }}"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado version
+      shell: "{{ temporary_dir.path }}/bin/avocado --version"
+      register: avocado_version_result
+      changed_when: false
+    - name: Avocado HTML report plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-result-html&subdirectory=optional_plugins/html"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado resultsdb plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-resultsdb&subdirectory=optional_plugins/resultsdb"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado result_upload plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-result-upload&subdirectory=optional_plugins/result_upload"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado Varianter YAML-to-Mux plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-varianter-yaml-to-mux&subdirectory=optional_plugins/varianter_yaml_to_mux"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado Varianter CIT plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-varianter-cit&subdirectory=optional_plugins/varianter_cit"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado Varianter PICT plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-varianter-pict&subdirectory=optional_plugins/varianter_pict"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado glib loader plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-glib&subdirectory=optional_plugins/glib"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado golang loader plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-golang&subdirectory=optional_plugins/golang"
+        virtualenv: "{{ temporary_dir.path }}"
+    - name: Avocado YAML loader plugin installation via pip
+      pip:
+        name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-loader-yaml&subdirectory=optional_plugins/loader_yaml"
+        virtualenv: "{{ temporary_dir.path }}"
