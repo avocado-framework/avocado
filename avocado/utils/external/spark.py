@@ -677,7 +677,7 @@ class GenericParser:
             sortlist.append((len(rhs), name))
             name2index[name] = i
         sortlist.sort()
-        result_list = map(lambda a, b: b, sortlist)
+        result_list = [name for _, name in sortlist]
         return rules[name2index[self.resolve(result_list)]]
 
     def resolve(self, input_list):
