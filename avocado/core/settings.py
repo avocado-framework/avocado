@@ -219,7 +219,6 @@ class Settings(object):
             else:
                 self.process_config_path(config_path_local)
         else:
-            # Unittests
             self.process_config_path(config_path)
 
     def process_config_path(self, pth):
@@ -228,6 +227,7 @@ class Settings(object):
             self.config_paths += read_configs
         else:
             self.config_paths_failed.append(pth)
+            # Only used by unittests (the --config parses the file later)
 
     def _handle_no_value(self, section, key, default):
         """
