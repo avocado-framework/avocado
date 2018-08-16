@@ -140,9 +140,15 @@ class Settings(object):
         :param config_path: Path to a config file. Useful for unittesting.
         """
         self.config = ConfigParser.ConfigParser()
-        self.intree = False
         self.config_paths = []
         self.config_paths_failed = []
+        _source_tree_root = os.path.dirname(os.path.dirname(os.path.dirname(
+            sys.modules[__name__].__file__)))
+        # In case "examples" file exists in root, we are running from tree
+        if os.path.exists(os.path.join(_source_tree_root, 'examples')):
+            self.intree = True
+        else:
+            self.intree = False
         if config_path is None:
             if 'VIRTUAL_ENV' in os.environ:
                 cfg_dir = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
@@ -154,7 +160,6 @@ class Settings(object):
             _config_dir_system = os.path.join(cfg_dir, 'avocado')
             _config_dir_system_extra = os.path.join(cfg_dir, 'avocado', 'conf.d')
             _config_dir_local = os.path.join(user_dir, '.config', 'avocado')
-            _source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
             _config_path_intree = os.path.join(os.path.abspath(_source_tree_root),
                                                'avocado', 'etc', 'avocado')
             _config_path_intree_extra = os.path.join(_config_path_intree, 'conf.d')
@@ -184,7 +189,6 @@ class Settings(object):
                 if config_intree_extra:
                     for extra_file in glob.glob(os.path.join(_config_path_intree_extra, '*.conf')):
                         self.process_config_path(extra_file)
-                self.intree = True
             # Override with system config
             if config_system:
                 self.process_config_path(config_path_system)
