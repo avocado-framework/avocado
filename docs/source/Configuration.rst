@@ -72,7 +72,26 @@ So the file parsing order is:
 * ``/etc/avocado/conf.d/*.conf``
 * ``~/.config/avocado/avocado.conf``
 
-In this order, meaning that what you set on your local config file may override what's defined in the system wide files.
+You can see the actual set of files/location by using ``avocado config``
+which uses ``*`` to mark existing and used files::
+
+   $ avocado config
+   Config files read (in order, '*' means the file exists and had been read):
+    * /etc/avocado/avocado.conf
+    * /etc/avocado/conf.d/resultsdb.conf
+    * /etc/avocado/conf.d/result_upload.conf
+    * /etc/avocado/conf.d/jobscripts.conf
+    * /etc/avocado/conf.d/gdb.conf
+      /home/medic/.config/avocado/avocado.conf
+
+    Section.Key                              Value
+    datadir.paths.base_dir                   /var/lib/avocado
+    datadir.paths.test_dir                   /usr/share/doc/avocado/tests
+    ...
+
+
+Where the lower config files override values of the upper files and
+the ``/home/medic/.config/avocado/avocado.conf`` file missing.
 
 .. note::  Please note that if avocado is running from git repos, those files will be ignored in favor of in tree configuration files. This is something that would normally only affect people developing avocado, and if you are in doubt, ``avocado config`` will tell you exactly which files are being used in any given situation.
 .. note::  When avocado runs inside virtualenv than path for global config files is also changed. For example, `avocado.conf` comes from the virual-env path `venv/etc/avocado/avocado.conf`.
@@ -93,26 +112,6 @@ example), we established the following order of precedence for variables (from l
 So the least important value comes from the library or test code default,
 going all the way up to the test parameters system.
 
-Config plugin
-=============
-
-A configuration plugin is provided for users that wish to quickly see what's defined in all sections of their Avocado
-configuration, after all the files are parsed in their correct resolution order. Example::
-
-    $ avocado config
-    Config files read (in order):
-        /etc/avocado/avocado.conf
-        $HOME/.config/avocado/avocado.conf
-
-        Section.Key     Value
-        runner.base_dir /var/lib/avocado
-        runner.test_dir /usr/share/doc/avocado/tests
-        runner.data_dir /var/lib/avocado/data
-        runner.logs_dir ~/avocado/job-results
-
-The command also shows the order in which your config files were parsed, giving you a better understanding of
-what's going on. The Section.Key nomenclature was inspired in ``git config --list`` output.
-
 Avocado Data Directories
 ========================
 
@@ -132,8 +131,12 @@ it will give you an output similar to the one seen below::
 
     $ avocado config --datadir
     Config files read (in order):
-        /etc/avocado/avocado.conf
-        $HOME/.config/avocado/avocado.conf
+        * /etc/avocado/avocado.conf
+        * /etc/avocado/conf.d/resultsdb.conf
+        * /etc/avocado/conf.d/result_upload.conf
+        * /etc/avocado/conf.d/jobscripts.conf
+        * /etc/avocado/conf.d/gdb.conf
+          $HOME/.config/avocado/avocado.conf
 
     Avocado replaces config dirs that can't be accessed
     with sensible defaults. Please edit your local config
