@@ -25,7 +25,10 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
-from pkg_resources import resource_exists, resource_filename
+from pkg_resources import resource_exists
+from pkg_resources import resource_filename
+from pkg_resources import resource_isdir
+from pkg_resources import resource_listdir
 from six import string_types
 
 from ..utils import path
@@ -160,34 +163,36 @@ class Settings(object):
             _config_dir_system = os.path.join(cfg_dir, 'avocado')
             _config_dir_system_extra = os.path.join(cfg_dir, 'avocado', 'conf.d')
             _config_dir_local = os.path.join(user_dir, '.config', 'avocado')
-            _config_path_intree = os.path.join(os.path.abspath(_source_tree_root),
-                                               'avocado', 'etc', 'avocado')
-            _config_path_intree_extra = os.path.join(_config_path_intree, 'conf.d')
 
             config_filename = 'avocado.conf'
             config_path_system = os.path.join(_config_dir_system, config_filename)
             config_path_local = os.path.join(_config_dir_local, config_filename)
-            config_path_intree = os.path.join(_config_path_intree, config_filename)
 
             config_system = os.path.exists(config_path_system)
             config_system_extra = os.path.exists(_config_dir_system_extra)
             config_local = os.path.exists(config_path_local)
-            config_intree = os.path.exists(config_path_intree)
-            config_intree_extra = os.path.exists(_config_path_intree_extra)
-            config_pkg_base = os.path.join('etc', config_filename)
+            config_pkg_base = os.path.join('etc', 'avocado', config_filename)
             config_pkg = resource_exists('avocado', config_pkg_base)
             config_path_pkg = resource_filename('avocado', config_pkg_base)
+            _config_pkg_extra = os.path.join('etc', 'avocado', 'conf.d')
+            if resource_isdir('avocado', _config_pkg_extra):
+                config_pkg_extra = resource_listdir('avocado',
+                                                    _config_pkg_extra)
+                _config_pkg_extra = resource_filename('avocado', _config_pkg_extra)
+            else:
+                config_pkg_extra = None
             if not (config_system or config_local or
-                    config_intree or config_pkg):
+                    config_pkg):
                 raise ConfigFileNotFound([config_path_system,
                                           config_path_local,
-                                          config_path_intree,
                                           config_path_pkg])
-            # First try in-tree config
-            if config_intree:
-                self.process_config_path(config_path_intree)
-                if config_intree_extra:
-                    for extra_file in glob.glob(os.path.join(_config_path_intree_extra, '*.conf')):
+            # First try pkg/in-tree config
+            if config_pkg:
+                self.process_config_path(config_path_pkg)
+                if config_pkg_extra:
+                    for extra_file in (os.path.join(_config_pkg_extra, _)
+                                       for _ in config_pkg_extra
+                                       if _.endswith('.conf')):
                         self.process_config_path(extra_file)
             # Override with system config
             if config_system:
