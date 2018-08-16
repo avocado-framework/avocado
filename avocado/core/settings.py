@@ -25,7 +25,6 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
-from pkg_resources import resource_exists
 from pkg_resources import resource_filename
 from pkg_resources import resource_isdir
 from pkg_resources import resource_listdir
@@ -148,7 +147,7 @@ class Settings(object):
         """
         self.config = ConfigParser.ConfigParser()
         self.config_paths = []
-        self.config_paths_failed = []
+        self.all_config_paths = []
         _source_tree_root = os.path.dirname(os.path.dirname(os.path.dirname(
             sys.modules[__name__].__file__)))
         # In case "examples" file exists in root, we are running from tree
@@ -172,11 +171,7 @@ class Settings(object):
             config_path_system = os.path.join(_config_dir_system, config_filename)
             config_path_local = os.path.join(_config_dir_local, config_filename)
 
-            config_system = os.path.exists(config_path_system)
-            config_system_extra = os.path.exists(_config_dir_system_extra)
-            config_local = os.path.exists(config_path_local)
             config_pkg_base = os.path.join('etc', 'avocado', config_filename)
-            config_pkg = resource_exists('avocado', config_pkg_base)
             config_path_pkg = resource_filename('avocado', config_pkg_base)
             _config_pkg_extra = os.path.join('etc', 'avocado', 'conf.d')
             if resource_isdir('avocado', _config_pkg_extra):
@@ -184,28 +179,20 @@ class Settings(object):
                                                     _config_pkg_extra)
                 _config_pkg_extra = resource_filename('avocado', _config_pkg_extra)
             else:
-                config_pkg_extra = None
-            if not (config_system or config_local or
-                    config_pkg):
-                raise ConfigFileNotFound([config_path_system,
-                                          config_path_local,
-                                          config_path_pkg])
+                config_pkg_extra = []
             # First try pkg/in-tree config
-            if config_pkg:
-                self.process_config_path(config_path_pkg)
-                if config_pkg_extra:
-                    for extra_file in (os.path.join(_config_pkg_extra, _)
-                                       for _ in config_pkg_extra
-                                       if _.endswith('.conf')):
-                        self.process_config_path(extra_file)
+            self.all_config_paths.append(config_path_pkg)
+            for extra_file in (os.path.join(_config_pkg_extra, _)
+                               for _ in config_pkg_extra
+                               if _.endswith('.conf')):
+                self.all_config_paths.append(extra_file)
             # Override with system config
-            if config_system:
-                self.process_config_path(config_path_system)
-                if config_system_extra:
-                    for extra_file in glob.glob(os.path.join(_config_dir_system_extra, '*.conf')):
-                        self.process_config_path(extra_file)
+            self.all_config_paths.append(config_path_system)
+            for extra_file in glob.glob(os.path.join(_config_dir_system_extra,
+                                                     '*.conf')):
+                self.all_config_paths.append(extra_file)
             # And the local config
-            if not config_local:
+            if not os.path.exists(config_path_local):
                 try:
                     path.init_dir(_config_dir_local)
                     with open(config_path_local, 'w') as config_local_fileobj:
@@ -216,18 +203,20 @@ class Settings(object):
                         config_local_fileobj.write(content)
                 except IOError:     # Some users can't write it (docker)
                     pass
-            else:
-                self.process_config_path(config_path_local)
+            self.all_config_paths.append(config_path_local)
         else:
-            self.process_config_path(config_path)
+            # Only used by unittests (the --config parses the file later)
+            self.all_config_paths.append(config_path)
+        self.config_paths = self.config.read(self.all_config_paths)
+        if not self.config_paths:
+            raise ConfigFileNotFound(self.all_config_paths)
 
     def process_config_path(self, pth):
-        read_configs = self.config.read(pth)
-        if read_configs:
-            self.config_paths += read_configs
-        else:
-            self.config_paths_failed.append(pth)
-            # Only used by unittests (the --config parses the file later)
+        """
+        Update list of config paths and process the given pth
+        """
+        self.all_config_paths.append(pth)
+        self.config_paths.extend(self.config.read(pth))
 
     def _handle_no_value(self, section, key, default):
         """
