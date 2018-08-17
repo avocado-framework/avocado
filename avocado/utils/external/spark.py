@@ -297,15 +297,15 @@ class GenericParser:
                                  candidate, oldrule))
                 candidate = 0
                 i += 1
+
+            if candidate:
+                lhs = self._NULLABLE + lhs
+                rule = (lhs, rhs)
+            if lhs in self.newrules:
+                self.newrules[lhs].append(rule)
             else:
-                if candidate:
-                    lhs = self._NULLABLE + lhs
-                    rule = (lhs, rhs)
-                if lhs in self.newrules:
-                    self.newrules[lhs].append(rule)
-                else:
-                    self.newrules[lhs] = [rule]
-                self.new2old[rule] = oldrule
+                self.newrules[lhs] = [rule]
+            self.new2old[rule] = oldrule
 
     def typestring(self, token):
         return None
