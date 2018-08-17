@@ -29,8 +29,30 @@ from pkg_resources import resource_filename
 from pkg_resources import resource_isdir
 from pkg_resources import resource_listdir
 from six import string_types
+from stevedore import EnabledExtensionManager
 
 from ..utils import path
+
+
+class SettingsDispatcher(EnabledExtensionManager):
+
+    """
+    Dispatchers that allows plugins to modify settings
+
+    It's not the standard "avocado.core.dispatcher" because that one depends
+    on settings. This dispatcher is the bare-stevedore dispatcher which is
+    executed before settings is parsed.
+    """
+
+    def __init__(self):
+        super(SettingsDispatcher, self).__init__('avocado.plugins.settings',
+                                                 check_func=self.enabled,
+                                                 invoke_on_load=True,
+                                                 invoke_kwds={},
+                                                 propagate_map_exceptions=True)
+
+    def enabled(self, _):
+        return True
 
 
 class SettingsError(Exception):
@@ -203,6 +225,12 @@ class Settings(object):
                         config_local_fileobj.write(content)
                 except IOError:     # Some users can't write it (docker)
                     pass
+            # Allow plugins to modify/extend the list of configs
+            dispatcher = SettingsDispatcher()
+            if dispatcher.extensions:
+                dispatcher.map_method('adjust_settings_paths',
+                                      self.all_config_paths)
+            # Register user config as last to always take precedence
             self.all_config_paths.append(config_path_local)
         else:
             # Only used by unittests (the --config parses the file later)
