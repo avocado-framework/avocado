@@ -25,6 +25,22 @@ class Plugin(object):
     """
 
 
+class Settings(Plugin):
+
+    """
+    Base plugin to allow modifying settings.
+
+    Currently it only supports to extend/modify the default list of
+    paths to config files.
+    """
+
+    @abc.abstractmethod
+    def adjust_settings_paths(self, paths):
+        """
+        Entry point where plugin can modify the list of configuration paths
+        """
+
+
 class CLI(Plugin):
 
     """

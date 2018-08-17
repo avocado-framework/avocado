@@ -21,8 +21,14 @@ from stevedore import EnabledExtensionManager
 
 from .settings import settings
 from .settings import SettingsError
+from .settings import SettingsDispatcher
 from .output import LOG_UI
 from ..utils import stacktrace
+
+
+#: Settings dispatcher is simplified and has to be available before the
+#: settings object. Let's include it here for consistency
+SettingsDispatcher = SettingsDispatcher
 
 
 class Dispatcher(EnabledExtensionManager):
