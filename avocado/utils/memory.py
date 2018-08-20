@@ -350,6 +350,13 @@ def read_from_numa_maps(pid, key):
         return numa_maps_dict
 
 
+def _get_buddy_info_content():
+    buddy_info_content = ''
+    with open("/proc/buddyinfo") as buddy_info:
+        buddy_info_content = buddy_info.read()
+    return buddy_info_content
+
+
 def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     """
     Get the fragement status of the host.
@@ -378,45 +385,44 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     :return: A dict using the chunk_size as the keys
     :rtype: dict
     """
-    with open("/proc/buddyinfo") as buddy_info:
-        buddy_info_content = buddy_info.read()
+    buddy_info_content = _get_buddy_info_content()
 
-        re_buddyinfo = r"Node\s+"
-        if nodes == "all":
-            re_buddyinfo += r"(\d+)"
-        else:
-            re_buddyinfo += "(%s)" % "|".join(nodes.split())
+    re_buddyinfo = r"Node\s+"
+    if nodes == "all":
+        re_buddyinfo += r"(\d+)"
+    else:
+        re_buddyinfo += "(%s)" % "|".join(nodes.split())
 
-        if not re.findall(re_buddyinfo, buddy_info_content):
-            logging.warn("Can not find Nodes %s" % nodes)
-            return None
-        re_buddyinfo += r".*?zone\s+"
-        if zones == "all":
-            re_buddyinfo += r"(\w+)"
-        else:
-            re_buddyinfo += "(%s)" % "|".join(zones.split())
-        if not re.findall(re_buddyinfo, buddy_info_content):
-            logging.warn("Can not find zones %s" % zones)
-            return None
-        re_buddyinfo += r"\s+([\s\d]+)"
+    if not re.findall(re_buddyinfo, buddy_info_content):
+        logging.warn("Can not find Nodes %s" % nodes)
+        return None
+    re_buddyinfo += r".*?zone\s+"
+    if zones == "all":
+        re_buddyinfo += r"(\w+)"
+    else:
+        re_buddyinfo += "(%s)" % "|".join(zones.split())
+    if not re.findall(re_buddyinfo, buddy_info_content):
+        logging.warn("Can not find zones %s" % zones)
+        return None
+    re_buddyinfo += r"\s+([\s\d]+)"
 
-        buddy_list = re.findall(re_buddyinfo, buddy_info_content)
+    buddy_list = re.findall(re_buddyinfo, buddy_info_content)
 
-        if re.findall("[<>=]", chunk_sizes) and buddy_list:
-            size_list = range(len(buddy_list[-1][-1].strip().split()))
-            chunk_sizes = [str(_) for _ in size_list if eval("%s %s" % (_,
-                                                                        chunk_sizes))]
+    if re.findall("[<>=]", chunk_sizes) and buddy_list:
+        size_list = range(len(buddy_list[-1][-1].strip().split()))
+        chunk_sizes = [str(_) for _ in size_list if eval("%s %s" % (_,
+                                                                    chunk_sizes))]
 
-            chunk_sizes = ' '.join(chunk_sizes)
+        chunk_sizes = ' '.join(chunk_sizes)
 
-        buddyinfo_dict = {}
-        for chunk_size in chunk_sizes.split():
-            buddyinfo_dict[chunk_size] = 0
-            for _, _, chunk_info in buddy_list:
-                chunk_info = chunk_info.strip().split()[int(chunk_size)]
-                buddyinfo_dict[chunk_size] += int(chunk_info)
+    buddyinfo_dict = {}
+    for chunk_size in chunk_sizes.split():
+        buddyinfo_dict[chunk_size] = 0
+        for _, _, chunk_info in buddy_list:
+            chunk_info = chunk_info.strip().split()[int(chunk_size)]
+            buddyinfo_dict[chunk_size] += int(chunk_info)
 
-        return buddyinfo_dict
+    return buddyinfo_dict
 
 
 def set_thp_value(feature, value):
