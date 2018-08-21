@@ -59,6 +59,7 @@ class TestPartition(unittest.TestCase):
             proc_mounts = proc_mounts_file.read()
             self.assertNotIn(self.mountpoint, proc_mounts)
 
+    @unittest.skipIf(missing_binary('lsof'), "requires running lsof")
     @unittest.skipIf(not process.can_sudo('kill -l'),
                      "requires running kill as a privileged user")
     def test_force_unmount(self):
