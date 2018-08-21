@@ -47,7 +47,7 @@ class TestPartition(unittest.TestCase):
 
     def test_basic(self):
         """ Test the basic workflow """
-        self.assertEqual(None, self.disk.get_mountpoint())
+        self.assertIsNone(self.disk.get_mountpoint())
         self.disk.mkfs()
         self.disk.mount()
         with open("/proc/mounts") as proc_mounts_file:
