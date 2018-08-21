@@ -63,7 +63,7 @@ class FileLock(object):
                         try:
                             content = f.read()
                         except Exception as detail:
-                            raise LockFailed(detail.message)
+                            raise LockFailed(detail)
 
                     # If file is empty, I guess someone created it with 'touch'
                     # to manually lock the file.

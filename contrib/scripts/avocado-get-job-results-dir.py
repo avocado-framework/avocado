@@ -41,7 +41,7 @@ if __name__ == '__main__':
     try:
         resultsdir = jobdata.get_resultsdir(logdir, sys.argv[1])
     except ValueError as exception:
-        sys.stderr.write('%s\n' % exception.message)
+        sys.stderr.write('%s\n' % exception)
         sys.exit(-1)
     else:
         if resultsdir is None:
