@@ -6,7 +6,38 @@ import shutil
 import tempfile
 import unittest
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
+
 from avocado.utils import iso9660, process
+
+
+class Capabilities(unittest.TestCase):
+
+    def setUp(self):
+        self.iso_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                     os.path.pardir, ".data",
+                                                     "sample.iso"))
+
+    @mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=True)
+    def test_capabilities_pycdlib(self, has_pycdlib_mocked):
+        instance = iso9660.iso9660(self.iso_path, ['read', 'create', 'write'])
+        self.assertIsInstance(instance, iso9660.ISO9660PyCDLib)
+
+    @mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=False)
+    @mock.patch('avocado.utils.iso9660.has_isoinfo', return_value=False)
+    @mock.patch('avocado.utils.iso9660.has_isoread', return_value=False)
+    @mock.patch('avocado.utils.iso9660.can_mount', return_value=False)
+    def test_capabilities_nobackend(self, has_pycdlib_mocked, has_isoinfo_mocked,
+                                    has_isoread_mocked, can_mount_mocked):
+        self.assertIsNone(iso9660.iso9660(self.iso_path, ['read']))
+
+    def test_non_existing_capabilities(self):
+        self.assertIsNone(iso9660.iso9660(self.iso_path,
+                                          ['non-existing', 'capabilities']))
 
 
 class BaseIso9660(unittest.TestCase):
@@ -141,6 +172,18 @@ class PyCDLib(BaseIso9660):
     def test_basic_workflow(self):
         """Call the basic workflow"""
         self.basic_workflow()
+
+    def test_create_write(self):
+        new_iso_path = os.path.join(self.tmpdir, 'new.iso')
+        new_iso = iso9660.ISO9660PyCDLib(new_iso_path)
+        new_iso.create()
+        content = b"AVOCADO"
+        for path in ("README", "/readme", "readme.txt", "quite-long-readme.txt"):
+            new_iso.write(path, content)
+            new_iso.close()
+            read_iso = iso9660.ISO9660PyCDLib(new_iso_path)
+            self.assertEqual(read_iso.read(path), content)
+            self.assertTrue(os.path.isfile(new_iso_path))
 
 
 if __name__ == "__main__":
