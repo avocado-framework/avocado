@@ -25,10 +25,10 @@ def missing_binary(binary):
         return True
 
 
-class TestPartition(unittest.TestCase):
+class Base(unittest.TestCase):
 
     """
-    Unit tests for avocado.utils.partition
+    Common setUp/tearDown for partition tests
     """
 
     @unittest.skipIf(not os.path.isfile('/proc/mounts'),
@@ -45,9 +45,16 @@ class TestPartition(unittest.TestCase):
         self.disk = partition.Partition(os.path.join(self.tmpdir, "block"), 1,
                                         self.mountpoint)
 
+    def tearDown(self):
+        self.disk.unmount()
+        shutil.rmtree(self.tmpdir)
+
+
+class TestPartition(Base):
+
     def test_basic(self):
         """ Test the basic workflow """
-        self.assertEqual(None, self.disk.get_mountpoint())
+        self.assertIsNone(self.disk.get_mountpoint())
         self.disk.mkfs()
         self.disk.mount()
         with open("/proc/mounts") as proc_mounts_file:
@@ -59,12 +66,23 @@ class TestPartition(unittest.TestCase):
             proc_mounts = proc_mounts_file.read()
             self.assertNotIn(self.mountpoint, proc_mounts)
 
+
+class TestPartitionMkfsMount(Base):
+
+    """
+    Tests that assume a filesystem and mounted partition
+    """
+
+    def setUp(self):
+        super(TestPartitionMkfsMount, self).setUp()
+        self.disk.mkfs()
+        self.disk.mount()
+
+    @unittest.skipIf(missing_binary('lsof'), "requires running lsof")
     @unittest.skipIf(not process.can_sudo('kill -l'),
                      "requires running kill as a privileged user")
     def test_force_unmount(self):
         """ Test force-unmount feature """
-        self.disk.mkfs()
-        self.disk.mount()
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
             self.assertIn(self.mountpoint, proc_mounts)
@@ -77,10 +95,38 @@ class TestPartition(unittest.TestCase):
             proc_mounts = proc_mounts_file.read()
             self.assertNotIn(self.mountpoint, proc_mounts)
 
+    @unittest.skipUnless(missing_binary('lsof'), "requires not having lsof")
+    def test_force_unmount_no_lsof(self):
+        """ Checks that a force-unmount will fail on systems without lsof """
+        with open("/proc/mounts") as proc_mounts_file:
+            proc_mounts = proc_mounts_file.read()
+            self.assertIn(self.mountpoint, proc_mounts)
+            proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
+                                      % self.mountpoint, shell=True)
+            proc.start()
+            self.assertRaises(partition.PartitionError, self.disk.unmount)
+            proc.terminate()
+            proc.wait()
+
+    def test_force_unmount_get_pids_fail(self):
+        """ Checks PartitionError is raised if there's no lsof to get pids """
+        with open("/proc/mounts") as proc_mounts_file:
+            proc_mounts = proc_mounts_file.read()
+            self.assertIn(self.mountpoint, proc_mounts)
+            proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
+                                      % self.mountpoint, shell=True)
+            proc.start()
+            with mock.patch('avocado.utils.partition.process.run',
+                            side_effect=process.CmdError):
+                with mock.patch('avocado.utils.partition.process.system_output',
+                                side_effect=OSError) as mocked_system_output:
+                    self.assertRaises(partition.PartitionError, self.disk.unmount)
+                    mocked_system_output.assert_called_with('lsof ' + self.mountpoint)
+            proc.terminate()
+            proc.wait()
+
     def test_double_mount(self):
         """ Check the attempt for second mount fails """
-        self.disk.mkfs()
-        self.disk.mount()
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
             self.assertIn(self.mountpoint, proc_mounts)
@@ -89,8 +135,6 @@ class TestPartition(unittest.TestCase):
 
     def test_double_umount(self):
         """ Check double unmount works well """
-        self.disk.mkfs()
-        self.disk.mount()
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
             self.assertIn(self.mountpoint, proc_mounts)
@@ -105,16 +149,10 @@ class TestPartition(unittest.TestCase):
 
     def test_format_mounted(self):
         """ Check format on mounted device fails """
-        self.disk.mkfs()
-        self.disk.mount()
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
             self.assertIn(self.mountpoint, proc_mounts)
         self.assertRaises(partition.PartitionError, self.disk.mkfs)
-
-    def tearDown(self):
-        self.disk.unmount()
-        shutil.rmtree(self.tmpdir)
 
 
 @unittest.skipIf(not os.path.isfile('/etc/mtab'),
