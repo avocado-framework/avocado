@@ -45,8 +45,8 @@ def fail_on(exceptions=None):
             """ Function wrapper """
             try:
                 return func(*args, **kwargs)
-            except core_exceptions.TestBaseException:
-                raise
+            except core_exceptions.TestBaseException as exc:
+                raise exc
             except exceptions as details:
                 raise core_exceptions.TestFail(str(details))
         return wrap
