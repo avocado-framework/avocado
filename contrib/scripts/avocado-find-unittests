@@ -34,7 +34,7 @@ if __name__ == '__main__':
         try:
             test_class_methods = find_class_and_methods(test_module_path,
                                                         re.compile(r'test.*'))
-        except:
+        except IOError as error:
             continue
         for klass, methods in test_class_methods.items():
             if test_module_path.endswith(".py"):

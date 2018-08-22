@@ -189,7 +189,7 @@ class Replay(CLI):
         try:
             resultsdir = jobdata.get_resultsdir(base_logdir, args.replay_jobid)
         except ValueError as exception:
-            LOG_UI.error(exception.message)
+            LOG_UI.error(exception)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         if resultsdir is None:
