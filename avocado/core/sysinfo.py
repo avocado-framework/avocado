@@ -187,6 +187,9 @@ class Daemon(Command):
     :param compress_log: Whether to compress the output of the command.
     """
 
+    def __init__(self, *args, **kwargs):
+        super(Daemon, self).__init__(*args, **kwargs)
+
     def run(self, logdir):
         """
         Execute the daemon as a subprocess and log its output in logdir.
