@@ -89,6 +89,10 @@ class Human(ResultEvents):
                      status + output.TERM_SUPPORT.ENDC +
                      duration)
 
+        if status == 'FAIL':
+            fail_reason = state.get("fail_reason", "")
+            LOG_UI.debug('    '+fail_reason)
+
     def post_tests(self, job):
         if not self.owns_stdout:
             return
