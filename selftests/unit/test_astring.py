@@ -59,13 +59,13 @@ class AstringTest(unittest.TestCase):
                    123),
                   (u'\u0430\u0432\u043e\u043a\u0430\u0434\xff', 123),
                   ("avok\xc3\xa1do", 123),
-                  ("a\u0430", 123)]
+                  ("a\u0430", 123)]  # pylint: disable=W1402
         str_matrix = ("\xd0\xb0\xd0\xb2\xd0\xbe\xd0\xba\xd0\xb0\xd0\xb4"
                       "\xef\xbf\xbd 123\n"
                       "\xd0\xb0\xd0\xb2\xd0\xbe\xd0\xba\xd0\xb0\xd0\xb4"
                       "\xc3\xbf 123\n"
                       "avok\xc3\xa1do 123\n"
-                      "a\u0430 123")
+                      "a\u0430 123")  # pylint: disable=W1402
         self.assertEqual(astring.tabular_output(matrix), str_matrix)
 
     def test_safe_path(self):

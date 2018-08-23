@@ -391,26 +391,30 @@ class TestAvocadoParams(unittest.TestCase):
                          'ooo')
 
     def test_get_clashes(self):
+        # py2 and py3 compatibility. assertRaisesRegex only exists in py3
+        if not hasattr(self, 'assertRaisesRegex'):
+            self.assertRaisesRegex = self.assertRaisesRegexp
+
         # One inherited, the other is new
-        self.assertRaisesRegexp(ValueError, r"'clash1'.* \['/ch0/ch0.1/ch0.1.1"
-                                r"/ch0.1.1.1=>equal', '/ch0=>equal'\]",
-                                self.params1.get, 'clash1',
-                                default='nnn')
+        self.assertRaisesRegex(ValueError, r"'clash1'.* \['/ch0/ch0.1/ch0.1.1"
+                               r"/ch0.1.1.1=>equal', '/ch0=>equal'\]",
+                               self.params1.get, 'clash1',
+                               default='nnn')
         # Only inherited ones
         self.assertEqual(self.params2.get('clash1', default='ooo'),
                          'equal')
         # Booth of different origin
-        self.assertRaisesRegexp(ValueError,
-                                r"'clash2'.* \['/ch11=>equal', "
-                                r"'/ch111=>equal'\]", self.params1.get,
-                                'clash2', path='/*')
+        self.assertRaisesRegex(ValueError,
+                               r"'clash2'.* \['/ch11=>equal', "
+                               r"'/ch111=>equal'\]", self.params1.get,
+                               'clash2', path='/*')
         # Filter-out the clash
         self.assertEqual(self.params1.get('clash2', path='/ch11/*'), 'equal')
         # simple clash in params1
-        self.assertRaisesRegexp(ValueError, r"'clash3'.* \['/ch0=>also equal',"
-                                r" '/ch0/ch0.1b/ch0.1.2=>also equal'\]",
-                                self.params1.get, 'clash3',
-                                default='nnn')
+        self.assertRaisesRegex(ValueError, r"'clash3'.* \['/ch0=>also equal',"
+                               r" '/ch0/ch0.1b/ch0.1.2=>also equal'\]",
+                               self.params1.get, 'clash3',
+                               default='nnn')
         # params2 is sliced the other way around so it returns before the clash
         self.assertEqual(self.params2.get('clash3', default='nnn'),
                          'also equal')
