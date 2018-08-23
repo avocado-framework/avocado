@@ -189,6 +189,7 @@ class Daemon(Command):
 
     def __init__(self, *args, **kwargs):
         super(Daemon, self).__init__(*args, **kwargs)
+        self.daemon_process = None
 
     def run(self, logdir):
         """
@@ -205,23 +206,23 @@ class Daemon(Command):
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
-        self.pipe = subprocess.Popen(shlex.split(self.cmd),
-                                     stdin=stdin, stdout=stdout,
-                                     stderr=subprocess.STDOUT,
-                                     shell=False, env=env)
+        self.daemon_process = subprocess.Popen(shlex.split(self.cmd),
+                                               stdin=stdin, stdout=stdout,
+                                               stderr=subprocess.STDOUT,
+                                               shell=False, env=env)
 
     def stop(self):
         """
         Stop daemon execution.
         """
-        retcode = self.pipe.poll()
+        retcode = self.daemon_process.poll()
         if retcode is None:
-            process.kill_process_tree(self.pipe.pid)
-            retcode = self.pipe.wait()
+            process.kill_process_tree(self.daemon_process.pid)
+            retcode = self.daemon_process.wait()
         else:
             log.error("Daemon process '%s' (pid %d) "
                       "terminated abnormally (code %d)",
-                      self.cmd, self.pipe.pid, retcode)
+                      self.cmd, self.daemon_process.pid, retcode)
         return retcode
 
 
