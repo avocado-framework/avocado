@@ -211,6 +211,9 @@ class UbuntuImageProvider(ImageProviderBase):
         # Ubuntu uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = 'amd64'
+        # and 'arm64' instead of 'aarch64'
+        elif arch == 'aarch64':
+            arch = 'arm64'
 
         super(UbuntuImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'http://cloud-images.ubuntu.com/releases/'
@@ -230,6 +233,9 @@ class DebianImageProvider(ImageProviderBase):
         # Debian uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = 'amd64'
+        # and 'arm64' instead of 'aarch64'
+        elif arch == 'aarch64':
+            arch = 'arm64'
 
         super(DebianImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cdimage.debian.org/cdimage/openstack/'
