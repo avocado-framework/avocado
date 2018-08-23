@@ -52,39 +52,43 @@ class CloudInitISO(unittest.TestCase):
 
 class PhoneHome(unittest.TestCase):
 
-    def test_phone_home(self):
-        instance_id = data_factory.generate_random_string(12)
-        address = '127.0.0.1'
-        port = network.find_free_port(address=address)
-        server = cloudinit.PhoneHomeServer((address, port), instance_id)
-        self.assertFalse(server.instance_phoned_back)
+    ADDRESS = '127.0.0.1'
 
-        server_thread = threading.Thread(target=server.handle_request)
-        server_thread.start()
-        conn = http_client.HTTPConnection(address, port)
-
-        # contact the wrong url, and check the server does not
-        # consider it a call back from the expected caller
-        conn.request('POST', '/BAD_INSTANCE_ID')
+    def post_ignore_response(self, url):
+        self.conn.request('POST', url)
         try:
-            conn.getresponse()
+            self.conn.getresponse()
         except:
             pass
-        self.assertFalse(server.instance_phoned_back)
-        conn.close()
 
-        # now the right url
-        server_thread = threading.Thread(target=server.handle_request)
+    def setUp(self):
+        self.port = network.find_free_port(address=self.ADDRESS)
+        self.instance_id = data_factory.generate_random_string(12)
+        self.server = cloudinit.PhoneHomeServer((self.ADDRESS, self.port),
+                                                self.instance_id)
+        self.conn = http_client.HTTPConnection(self.ADDRESS, self.port)
+
+    def test_phone_home_bad(self):
+        self.assertFalse(self.server.instance_phoned_back)
+        server_thread = threading.Thread(target=self.server.handle_request)
         server_thread.start()
-        conn = http_client.HTTPConnection(address, port)
-        conn.request('POST', '/' + instance_id)
-        try:
-            conn.getresponse()
-        except:
-            pass
-        self.assertTrue(server.instance_phoned_back)
-        conn.close()
-        server.server_close()
+        self.post_ignore_response('/BAD_INSTANCE_ID')
+        self.assertFalse(self.server.instance_phoned_back)
+
+    def test_phone_home_good(self):
+        self.assertFalse(self.server.instance_phoned_back)
+        server_thread = threading.Thread(target=self.server.handle_request)
+        server_thread.start()
+        self.post_ignore_response('/' + self.instance_id)
+        self.assertTrue(self.server.instance_phoned_back)
+
+    def test_phone_home_bad_good(self):
+        self.test_phone_home_bad()
+        self.test_phone_home_good()
+
+    def tearDown(self):
+        self.conn.close()
+        self.server.server_close()
 
 
 if __name__ == '__main__':
