@@ -206,24 +206,29 @@ class Daemon(Command):
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
-        self.daemon_process = subprocess.Popen(shlex.split(self.cmd),
-                                               stdin=stdin, stdout=stdout,
-                                               stderr=subprocess.STDOUT,
-                                               shell=False, env=env)
+
+        try:
+            self.daemon_process = subprocess.Popen(shlex.split(self.cmd),
+                                                   stdin=stdin, stdout=stdout,
+                                                   stderr=subprocess.STDOUT,
+                                                   shell=False, env=env)
+        except OSError:
+            log.debug("Not logging  %s (command could not be run)" % self.cmd)
 
     def stop(self):
         """
         Stop daemon execution.
         """
-        retcode = self.daemon_process.poll()
-        if retcode is None:
-            process.kill_process_tree(self.daemon_process.pid)
-            retcode = self.daemon_process.wait()
-        else:
-            log.error("Daemon process '%s' (pid %d) "
-                      "terminated abnormally (code %d)",
-                      self.cmd, self.daemon_process.pid, retcode)
-        return retcode
+        if self.daemon_process is not None:
+            retcode = self.daemon_process.poll()
+            if retcode is None:
+                process.kill_process_tree(self.daemon_process.pid)
+                retcode = self.daemon_process.wait()
+            else:
+                log.error("Daemon process '%s' (pid %d) "
+                          "terminated abnormally (code %d)",
+                          self.cmd, self.daemon_process.pid, retcode)
+            return retcode
 
 
 class JournalctlWatcher(Collectible):
