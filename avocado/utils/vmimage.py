@@ -135,9 +135,23 @@ class ImageProviderBase(object):
                                      "Wrong arch?" % (image, url_images))
 
 
-class FedoraImageProvider(ImageProviderBase):
+class FedoraImageProviderBase(ImageProviderBase):
     """
-    Fedora Image Provider
+    Base Fedora Image Provider
+    """
+
+    def get_image_url(self):
+        if int(self.version) >= 28:
+            cloud = 'Cloud'
+        else:
+            cloud = 'CloudImages'
+        self.url_images = self.url_images % cloud
+        return super(FedoraImageProviderBase, self).get_image_url()
+
+
+class FedoraImageProvider(FedoraImageProviderBase):
+    """
+    Base Fedora Image Provider
     """
 
     name = 'Fedora'
@@ -149,16 +163,8 @@ class FedoraImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
         self.image_pattern = 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2$'
 
-    def get_image_url(self):
-        if int(self.version) >= 28:
-            cloud = 'Cloud'
-        else:
-            cloud = 'CloudImages'
-        self.url_images = self.url_images % cloud
-        return super(FedoraImageProvider, self).get_image_url()
 
-
-class FedoraSecondaryImageProvider(ImageProviderBase):
+class FedoraSecondaryImageProvider(FedoraImageProviderBase):
     """
     Fedora Secondary Image Provider
     """
@@ -172,14 +178,6 @@ class FedoraSecondaryImageProvider(ImageProviderBase):
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora-secondary/releases/'
         self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
         self.image_pattern = 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2$'
-
-    def get_image_url(self):
-        if int(self.version) >= 28:
-            cloud = 'Cloud'
-        else:
-            cloud = 'CloudImages'
-        self.url_images = self.url_images % cloud
-        return super(FedoraSecondaryImageProvider, self).get_image_url()
 
 
 class CentOSImageProvider(ImageProviderBase):
@@ -211,6 +209,9 @@ class UbuntuImageProvider(ImageProviderBase):
         # Ubuntu uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = 'amd64'
+        # and 'arm64' instead of 'aarch64'
+        elif arch == 'aarch64':
+            arch = 'arm64'
 
         super(UbuntuImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'http://cloud-images.ubuntu.com/releases/'
@@ -230,6 +231,9 @@ class DebianImageProvider(ImageProviderBase):
         # Debian uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = 'amd64'
+        # and 'arm64' instead of 'aarch64'
+        elif arch == 'aarch64':
+            arch = 'arm64'
 
         super(DebianImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cdimage.debian.org/cdimage/openstack/'
@@ -356,6 +360,8 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
         provider_args['build'] = version
     if arch is not None:
         provider_args['arch'] = arch
+        if name == 'fedora' and arch in ('ppc64', 'ppc64le'):
+            name = 'fedorasecondary'
 
     for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
