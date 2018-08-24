@@ -18,7 +18,7 @@ class Sleep(JobPre, JobPost):
                                           key_type=int,
                                           default=3)
 
-    def sleep(self, job):
+    def sleep(self, job):  # pylint: disable=W0613
         for i in range(1, self.seconds + 1):
             LOG_UI.info("Sleeping %2i/%s", i, self.seconds)
             time.sleep(1)

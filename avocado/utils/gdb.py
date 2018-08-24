@@ -622,7 +622,7 @@ class GDBServer(object):
     #: ready to accept new connections
     INIT_TIMEOUT = 5.0
 
-    def __init__(self, path='/usr/bin/gdbserver', port=None,
+    def __init__(self, path='/usr/bin/gdbserver', port=None,  # pylint: disable=W0613
                  wait_until_running=True, *extra_args):
         """
         Initializes a new gdbserver instance

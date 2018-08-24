@@ -628,7 +628,7 @@ class SubProcess(object):
                 self._stdout_drainer.start()
                 self._stderr_drainer.start()
 
-            def signal_handler(signum, frame):
+            def signal_handler(signum, frame):  # pylint: disable=W0613
                 self.result.interrupted = "signal/ctrl+c"
                 self.wait()
                 signal.default_int_handler()
@@ -841,9 +841,8 @@ class GDBSubProcess(object):
     Runs a subprocess inside the GNU Debugger
     """
 
-    def __init__(self, cmd, verbose=True,
-                 allow_output_check=None, shell=False,
-                 env=None, sudo=False, ignore_bg_processes=False, encoding=None):
+    def __init__(self, cmd, verbose=True, allow_output_check=None, shell=False,  # pylint: disable=W0613
+                 env=None, sudo=False, ignore_bg_processes=False, encoding=None):  # pylint: disable=W0613
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -945,7 +944,7 @@ class GDBSubProcess(object):
         shutil.copy(self.binary, runtime.CURRENT_TEST.outputdir)
         return core_path
 
-    def handle_break_hit(self, response):
+    def handle_break_hit(self, response):  # pylint: disable=W0613
         self.gdb.disconnect()
         script_path, fifo_path = self.generate_gdb_connect_sh()
 
@@ -964,7 +963,7 @@ class GDBSubProcess(object):
         runtime.CURRENT_TEST.paused = ''
         return ret
 
-    def handle_fatal_signal(self, response):
+    def handle_fatal_signal(self, response):  # pylint: disable=W0613
         script_path, fifo_path = self.generate_gdb_connect_sh()
 
         msg = ("\n\nTEST PAUSED because inferior process received a FATAL SIGNAL. "
@@ -1084,7 +1083,7 @@ class GDBSubProcess(object):
             for command in genio.read_all_lines(prerun_commands_path):
                 self.gdb.cmd(command)
 
-    def run(self, timeout=None):
+    def run(self, timeout=None):  # pylint: disable=W0613
         for b in self._get_breakpoints():
             self.gdb.set_break(b, ignore_error=True)
 

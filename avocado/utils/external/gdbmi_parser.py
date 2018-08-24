@@ -72,7 +72,7 @@ def __private():
             spark.GenericScanner.tokenize(self, input_message)
             return self.rv
 
-        def t_nl(self, s):
+        def t_nl(self, s):  # pylint: disable=W0613
             r'\n|\r\n'
             self.rv.append(Token('nl'))
 
