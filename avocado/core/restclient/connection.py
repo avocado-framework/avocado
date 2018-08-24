@@ -209,7 +209,7 @@ def get_default():
 
     :returns: an avocado.core.restclient.connection.Connection instance
     """
-    global CONNECTION
+    global CONNECTION  # pylint: disable=W0603
 
     if CONNECTION is None:
         CONNECTION = Connection()

@@ -1169,7 +1169,7 @@ def should_run_inside_wrapper(cmd):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
-    global CURRENT_WRAPPER
+    global CURRENT_WRAPPER  # pylint: disable=W0603
     CURRENT_WRAPPER = None
     args = cmd_split(cmd)
     cmd_binary_name = args[0]

@@ -46,7 +46,7 @@ def log_line(filename, line):
                      the dir set by set_log_file_dir().
     :param line: Line to write.
     """
-    global _open_log_files, _log_file_dir
+    global _open_log_files, _log_file_dir  # pylint: disable=W0603
 
     path = utils_path.get_path(_log_file_dir, filename)
     if path not in _open_log_files:
@@ -69,12 +69,12 @@ def set_log_file_dir(directory):
 
     :param dir: Directory for log files.
     """
-    global _log_file_dir
+    global _log_file_dir  # pylint: disable=W0603
     _log_file_dir = directory
 
 
 def close_log_file(filename):
-    global _open_log_files, _log_file_dir
+    global _open_log_files, _log_file_dir  # pylint: disable=W0603
     remove = []
     for k in _open_log_files:
         if os.path.basename(k) == filename:
