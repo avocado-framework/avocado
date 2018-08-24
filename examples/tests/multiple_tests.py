@@ -18,7 +18,7 @@ class MultipleTests(Test):
         self.assertEqual(self.hello, "Hi there!")
 
     def testIdentity(self):
-        self.assertTrue(1, 1)
+        self.assertTrue(1 < 2)
 
     def division_by_zero(self):
         """
