@@ -75,6 +75,14 @@ class Human(ResultEvents):
         LOG_UI.debug(color + self.__throbber.render() +
                      output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
 
+    def get_colored_status(self, status, extra=None):
+        out = (output.TERM_SUPPORT.MOVE_BACK + self.output_mapping[status] +
+               status)
+        if extra:
+            out += ": " + extra
+        out += output.TERM_SUPPORT.ENDC
+        return out
+
     def end_test(self, result, state):
         if not self.owns_stdout:
             return
@@ -84,10 +92,8 @@ class Human(ResultEvents):
         duration = (" (%.2f s)" % state.get('time_elapsed', -1)
                     if status != "SKIP"
                     else "")
-        LOG_UI.debug(output.TERM_SUPPORT.MOVE_BACK +
-                     self.output_mapping[status] +
-                     status + output.TERM_SUPPORT.ENDC +
-                     duration)
+        msg = self.get_colored_status(status, state.get("fail_reason", None))
+        LOG_UI.debug(msg + duration)
 
     def post_tests(self, job):
         if not self.owns_stdout:
