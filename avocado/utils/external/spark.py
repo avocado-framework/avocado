@@ -62,7 +62,7 @@ class GenericScanner:
         rv.append(self.makeRE('t_default'))
         return '|'.join(rv)
 
-    def error(self, s, pos):
+    def error(self, s, pos):  # pylint: disable=W0613
         print("Lexical error at position %s" % pos)
         raise SystemExit
 
@@ -88,7 +88,7 @@ class GenericScanner:
                    self.index2func.has_key(i):
                     self.index2func[i](groups[i])
 
-    def t_default(self, s):
+    def t_default(self, s):  # pylint: disable=W0613
         r'( . | \n )+'
         print("Specification error: unmatched input")
         raise SystemExit
@@ -307,7 +307,7 @@ class GenericParser:
                 self.newrules[lhs] = [rule]
             self.new2old[rule] = oldrule
 
-    def typestring(self, token):
+    def typestring(self, token):  # pylint: disable=W0613
         return None
 
     def error(self, token):

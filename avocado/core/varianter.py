@@ -137,7 +137,7 @@ class FakeVariantDispatcher(object):
         else:
             return []
 
-    def to_str(self, summary=0, variants=0, **kwargs):
+    def to_str(self, summary=0, variants=0, **kwargs):  # pylint: disable=W0613
         if not self.variants:
             return ""
         out = []

@@ -609,7 +609,7 @@ class FileLoader(TestLoader):
             tests.extend(self._make_tests(exception.filename,
                                           which_tests == DiscoverMode.ALL))
 
-        def skip_non_test(exception):
+        def skip_non_test(exception):  # pylint: disable=W0613
             """ Always return None """
             return None
 
@@ -743,7 +743,7 @@ class FileLoader(TestLoader):
         :param list_non_tests: include bad tests (NotATest, BrokenSymlink,...)
         :param subtests_filter: optional filter of methods for avocado tests
         """
-        def ignore_broken(klass, uid, description=None):
+        def ignore_broken(klass, uid, description=None):  # pylint: disable=W0613
             """ Always return empty list """
             return []
 
