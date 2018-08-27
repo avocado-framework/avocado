@@ -1,0 +1,104 @@
+==============================
+64.0 The man who would be king
+==============================
+
+The Avocado team is proud to present another release: Avocado version
+64.0, AKA "The man who would be king", is now available!
+
+Release documentation: `Avocado 64.0
+<http://avocado-framework.readthedocs.io/en/64.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* A new varianter plugin, the :ref:`cit-varianter-plugin`. This plugin
+  implements a "Pair-Wise", also known as "Combinatorial Independent
+  Testing" algorithm, in pure Python.  This exciting new functionality
+  is provided thanks to a collaboration with the Czech Technical
+  University in Prague.
+
+* The :mod:`avocado.utils.distro` module has dropped the probe that
+  depended on the Python standard library :func:`platform.dist`.  The
+  reason is the :func:`platform.dist` has been deprecated since Python
+  2.6, and has been removed on the upcoming Python 3.8.
+
+* All optional plugins available on Python 2 RPM packages are now also
+  available on Python 3 based RPM packages.
+
+* The :mod:`avocado.utils.iso9660` module gained a pycdlib based
+  backend, which is very capable, and pyre Python ISO9660 library.
+  This allows us to have a working :mod:`avocado.utils.iso9660`
+  backend on environments in which other backends may not be easily
+  installable.
+
+* The :func:`avocado.utils.iso9660.iso9660` function gained a
+  capabilities mechanism, in which users may request a backend that
+  implement a given set of features.
+
+* The :mod:`avocado.utils.iso9660` module, gained "create" and "write"
+  capabilities, currently implemented on the pycdlib based backend.
+  This allows users of the :mod:`avocado.utils.iso9660` module to
+  create ISO images programatically - a task that was previously done
+  by running ``mkisofs`` and similar tools.
+
+* The :func:`avocado.utils.vmimage.get` function now provides a
+  directory in which to put the snapshot file, which is usually
+  discarded.  Previously, the snapshot file would always be kept in
+  the cache directory, resulting in its pollution.
+
+* The :mod:`avocado.utils.download` module, and the various utility
+  functions that use it, will have extended logging, including the
+  file size, time stamp information, etc.
+
+* A brand new module, :mod:`avocado.utils.cloudinit`, that aides in
+  the creation of ISO files containing configuration for the virtual
+  machines compatible with cloudinit.  Besides authentication
+  credentials, it's also possible to define a "phone home" address,
+  which is complemented by a simple phone home server implementation.
+  On top of that, a very easy to use function to wait on the phone
+  home is available as :func:`avocado.utils.cloudinit.wait_for_phone_home`.
+
+* The Human UI plugin, will now show the "reason" behind test
+  failures, cancellations and others right along the test result
+  status.  This hopefully will give more information to users without
+  requiring them to resort to logs every single time.
+
+Bug Fixes
+=========
+
+* The :mod:`avocado.utils.partition` now behaves better when the
+  system is missing the ``lsof`` utility.
+
+Internal Changes
+================
+
+* Fixes generators on Python 3.7, according to PEP479.
+
+* Other enablements for Python 3.7 environments were added, including
+  RPM build fixes for Fedora 29.
+
+* A large number of warnings checks have been enabled in the "lint"
+  check, making the Avocado source code better now, and avoiding best
+  practices regressions.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/63.0...64.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=Gn9y2FHVmiw>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/dTc5HtrX/1382-sprint-theme-the-man-who-would-be-king-1975

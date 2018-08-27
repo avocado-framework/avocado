@@ -46,8 +46,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 63.0
-Release: 2%{?gitrel}%{?dist}
+Version: 64.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -99,6 +99,7 @@ BuildRequires: python2-setuptools
 BuildRequires: python2-six
 BuildRequires: python2-sphinx
 BuildRequires: python2-stevedore
+BuildRequires: python2-pycdlib
 %endif
 
 %if %{with_python3}
@@ -114,6 +115,7 @@ BuildRequires: python3-setuptools
 BuildRequires: python3-six
 BuildRequires: python3-sphinx
 BuildRequires: python3-stevedore
+BuildRequires: python3-pycdlib
 %endif
 
 %if %{with_tests}
@@ -155,6 +157,7 @@ Requires: python2-requests
 Requires: python2-setuptools
 Requires: python2-six
 Requires: python2-stevedore
+Requires: python2-pycdlib
 %endif
 %{?python_provide:%python_provide python2-%{srcname}}
 
@@ -175,6 +178,7 @@ Requires: python3-requests
 Requires: python3-setuptools
 Requires: python3-six
 Requires: python3-stevedore
+Requires: python3-pycdlib
 %{?python_provide:%python_provide python3-%{srcname}}
 
 %description -n python3-%{srcname}
@@ -957,6 +961,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Aug 27 2018 Cleber Rosa <cleber@redhat.com> - 64.0-0
+- Added pycdlib as requirements
+- New release
+
 * Wed Jul 25 2018 Cleber Rosa <cleber@redhat.com> - 63.0-2
 - Added CIT varianter plugin sub-packages
 

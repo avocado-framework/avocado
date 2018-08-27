@@ -1,3 +1,5 @@
+.. _cit-varianter-plugin:
+
 ====================
 CIT Varianter Plugin
 ====================
