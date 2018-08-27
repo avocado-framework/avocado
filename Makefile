@@ -104,11 +104,11 @@ clean:
 	rm -f man/avocado-rest-client.1
 	rm -rf docs/build
 	find docs/source/api/ -name '*.rst' -delete
-	for MAKEFILE in $(AVOCADO_PLUGINS); do\
-		if test -f $$MAKEFILE/Makefile -o -f $$MAKEFILE/setup.py; then echo ">> UNLINK $$MAKEFILE";\
-			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null || echo ">> FAIL $$MAKEFILE";\
-			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); cd -; fi;\
-		else echo ">> SKIP $$MAKEFILE"; fi;\
+	for PLUGIN in $(AVOCADO_PLUGINS); do\
+		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> UNLINK $$PLUGIN";\
+			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN unlink &>/dev/null || echo ">> FAIL $$PLUGIN";\
+			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); cd -; fi;\
+		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
 	rm -rf avocado_framework.egg-info
@@ -118,10 +118,10 @@ clean:
 	find $(AVOCADO_OPTIONAL_PLUGINS) -name '*.egg-info' -exec rm -r {} +
 
 requirements-plugins: requirements
-	for MAKEFILE in $(AVOCADO_PLUGINS);do\
-		if test -f $$MAKEFILE/Makefile; then echo ">> REQUIREMENTS (Makefile) $$MAKEFILE"; AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE requirements &>/dev/null;\
-		elif test -f $$MAKEFILE/requirements.txt; then echo ">> REQUIREMENTS (requirements.txt) $$MAKEFILE"; pip install $(PYTHON_DEVELOP_ARGS) -r $$MAKEFILE/requirements.txt;\
-		else echo ">> SKIP $$MAKEFILE";\
+	for PLUGIN in $(AVOCADO_PLUGINS);do\
+		if test -f $$PLUGIN/Makefile; then echo ">> REQUIREMENTS (Makefile) $$PLUGIN"; AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN requirements &>/dev/null;\
+		elif test -f $$PLUGIN/requirements.txt; then echo ">> REQUIREMENTS (requirements.txt) $$PLUGIN"; pip install $(PYTHON_DEVELOP_ARGS) -r $$PLUGIN/requirements.txt;\
+		else echo ">> SKIP $$PLUGIN";\
 		fi;\
 	done;
 
@@ -146,19 +146,19 @@ modules_boundaries:
 
 develop:
 	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS)
-	for MAKEFILE in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$MAKEFILE/Makefile -o -f $$MAKEFILE/setup.py; then echo ">> LINK $$MAKEFILE";\
-			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null;\
-			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
-		else echo ">> SKIP $$MAKEFILE"; fi;\
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
+		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
+			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN link &>/dev/null;\
+			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
+		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
 
 link: develop
-	for MAKEFILE in $(AVOCADO_EXTERNAL_PLUGINS); do\
-		if test -f $$MAKEFILE/Makefile -o -f $$MAKEFILE/setup.py; then echo ">> LINK $$MAKEFILE";\
-			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null || echo ">> FAIL $$MAKEFILE";\
-			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
-		else echo ">> SKIP $$MAKEFILE"; fi;\
+	for PLUGIN in $(AVOCADO_EXTERNAL_PLUGINS); do\
+		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
+			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN link &>/dev/null || echo ">> FAIL $$PLUGIN";\
+			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
+		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
 
 spell:
