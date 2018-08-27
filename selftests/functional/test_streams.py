@@ -57,9 +57,11 @@ class StreamsTest(unittest.TestCase):
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertIn(b"stevedore.extension: found extension EntryPoint.parse",
                           result.stdout)
-            # Avocado won't know about the Python interpreter used on the
-            # command line
-            cmd_in_log = cmd[len(sys.executable)+1:]
+            # If using the Python interpreter, Avocado won't know about it
+            if AVOCADO.startswith(sys.executable):
+                cmd_in_log = cmd[len(sys.executable)+1:]
+            else:
+                cmd_in_log = cmd
             self.assertIn("avocado.test: Command line: %s" % cmd_in_log,
                           result.stdout_text)
             self.assertEqual(b'', result.stderr)
@@ -80,9 +82,11 @@ class StreamsTest(unittest.TestCase):
                              result.stdout)
             self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
                              result.stderr)
-            # Avocado won't know about the Python interpreter used on the
-            # command line
-            cmd_in_log = cmd[len(sys.executable)+1:]
+            # If using the Python interpreter, Avocado won't know about it
+            if AVOCADO.startswith(sys.executable):
+                cmd_in_log = cmd[len(sys.executable)+1:]
+            else:
+                cmd_in_log = cmd
             self.assertIn("Command line: %s" % cmd_in_log,
                           result.stdout_text)
             self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
