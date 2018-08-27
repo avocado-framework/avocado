@@ -19,7 +19,7 @@ class CitTest(unittest.TestCase):
     def test_number_of_combinations(self):
         # the algorithm doesn't allow us to know beforehand, for a
         # reason, the precise number of combinations that will be
-        # computed.  still, we can check for the mininum number of
+        # computed.  still, we can check for the minimum number of
         # combinations that should be produced
         cit = Cit(self.PARAMS, 1)
         self.assertEqual(len(cit.combine()[1]), 3)
