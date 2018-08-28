@@ -66,21 +66,11 @@ class _BaseLoader(Loader):
                            lambda *_: mux.Control(YAML_FILTER_OUT))
 
 
-class Value(tuple):     # Few methods pylint: disable=R0903
-
-    """Used to mark values to simplify checking for node vs. value"""
-
-
 class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
 
     """
     Used to mark list as list of objects from whose node is going to be created
     """
-
-
-class MappingDict(dict):
-
-    """Object representing mapping"""
 
 
 def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
@@ -230,7 +220,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
             elif values is None:            # Empty node
                 objects.append(cls_node(str(name)))
             else:                           # Values
-                objects.append(Value((name, values)))
+                objects.append((name, values))
         return objects
 
     def mux_loader(loader, obj):
