@@ -4,6 +4,7 @@ import unittest
 
 from six.moves.urllib.error import URLError
 
+from avocado.utils import astring
 from avocado.utils import download
 
 
@@ -12,7 +13,9 @@ def get_content_by_encoding(url):
     Returns the content of the given URL, attempting to use server provided
     encoding.
 
+    :param url: the url to be fetched
     :rtype: str
+    :raises: URLError when the given url can not be retrieved
     """
     http_response = download.url_open(url)
     content_type = None
@@ -26,12 +29,7 @@ def get_content_by_encoding(url):
         if match is not None:
             encoding = match.group(1)
     content = http_response.read()
-    if hasattr(content, 'decode'):
-        if encoding is not None:
-            content = content.decode(encoding)
-        else:
-            content = content.decode()  # Python default encoding
-    return content
+    return astring.to_text(content, encoding)
 
 
 class TestThirdPartyBugs(unittest.TestCase):
