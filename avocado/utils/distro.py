@@ -349,6 +349,19 @@ class DebianProbe(Probe):
     CHECK_FILE_DISTRO_NAME = 'debian'
 
 
+class UbuntuProbe(Probe):
+
+    """
+    Simple probe for Ubunt systems in general
+    """
+
+    CHECK_FILE = '/etc/os-release'
+    CHECK_FILE_CONTAINS = 'ubuntu'
+    CHECK_FILE_DISTRO_NAME = 'Ubuntu'
+    CHECK_VERSION_REGEX = re.compile(r'.*VERSION_ID=\"(\d+)\.(\d+)\".*',
+                                     re.MULTILINE | re.DOTALL)
+
+
 class SUSEProbe(Probe):
 
     """
@@ -410,6 +423,7 @@ register_probe(FedoraProbe)
 register_probe(AmazonLinuxProbe)
 register_probe(DebianProbe)
 register_probe(SUSEProbe)
+register_probe(UbuntuProbe)
 
 
 def detect():
