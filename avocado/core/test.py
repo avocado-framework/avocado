@@ -917,6 +917,9 @@ class Test(unittest.TestCase, TestData):
                                                 logger=LOG_JOB)
                         stderr_check_exception = details
 
+        if self.__sysinfo_enabled:
+            self.__sysinfo_logger.end_test_hook()
+
         # pylint: disable=E0702
         if test_exception is not None:
             raise test_exception
@@ -934,8 +937,6 @@ class Test(unittest.TestCase, TestData):
                                       "details.")
 
         self.__status = 'PASS'
-        if self.__sysinfo_enabled:
-            self.__sysinfo_logger.end_test_hook()
 
     def _setup_environment_variables(self):
         os.environ['AVOCADO_VERSION'] = VERSION
