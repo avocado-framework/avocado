@@ -4,6 +4,7 @@ import unittest
 
 from six.moves.urllib.error import URLError
 
+from avocado.utils import astring
 from avocado.utils import download
 
 
@@ -12,7 +13,9 @@ def get_content_by_encoding(url):
     Returns the content of the given URL, attempting to use server provided
     encoding.
 
+    :param url: the url to be fetched
     :rtype: str
+    :raises: URLError when the given url can not be retrieved
     """
     http_response = download.url_open(url)
     content_type = None
@@ -26,12 +29,7 @@ def get_content_by_encoding(url):
         if match is not None:
             encoding = match.group(1)
     content = http_response.read()
-    if hasattr(content, 'decode'):
-        if encoding is not None:
-            content = content.decode(encoding)
-        else:
-            content = content.decode()  # Python default encoding
-    return content
+    return astring.to_text(content, encoding)
 
 
 class TestThirdPartyBugs(unittest.TestCase):
@@ -46,14 +44,14 @@ class TestThirdPartyBugs(unittest.TestCase):
         try:
             issue_url = 'https://api.github.com/repos/paramiko/paramiko/issues/243'
             content = get_content_by_encoding(issue_url)
-            issue = json.loads(content)
-            self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
-                             'anymore. Please double check and, if already fixed, '
-                             'change the avocado.conf option '
-                             '"reject_unknown_hosts" defaults to True.' %
-                             'https://github.com/paramiko/paramiko/issues/243')
         except URLError as details:
             raise unittest.SkipTest(details)
+        issue = json.loads(content)
+        self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
+                         'anymore. Please double check and, if already fixed, '
+                         'change the avocado.conf option '
+                         '"reject_unknown_hosts" defaults to True.' %
+                         'https://github.com/paramiko/paramiko/issues/243')
 
     def test_inspektor_indent_bug(self):
         # https://github.com/avocado-framework/inspektor/issues/31
@@ -64,14 +62,14 @@ class TestThirdPartyBugs(unittest.TestCase):
         try:
             issue_url = 'https://api.github.com/repos/avocado-framework/inspektor/issues/31'
             content = get_content_by_encoding(issue_url)
-            issue = json.loads(content)
-            self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
-                             'anymore. Please double check and, if already fixed, '
-                             'remove the selftests/unit/test_utils_cpu.py from '
-                             'the exclusion list of indent in selftests/checkall' %
-                             'https://github.com/avocado-framework/inspektor/issues/31')
         except URLError as details:
             raise unittest.SkipTest(details)
+        issue = json.loads(content)
+        self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
+                         'anymore. Please double check and, if already fixed, '
+                         'remove the selftests/unit/test_utils_cpu.py from '
+                         'the exclusion list of indent in selftests/checkall' %
+                         'https://github.com/avocado-framework/inspektor/issues/31')
 
 
 if __name__ == '__main__':
