@@ -46,14 +46,14 @@ class TestThirdPartyBugs(unittest.TestCase):
         try:
             issue_url = 'https://api.github.com/repos/paramiko/paramiko/issues/243'
             content = get_content_by_encoding(issue_url)
-            issue = json.loads(content)
-            self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
-                             'anymore. Please double check and, if already fixed, '
-                             'change the avocado.conf option '
-                             '"reject_unknown_hosts" defaults to True.' %
-                             'https://github.com/paramiko/paramiko/issues/243')
         except URLError as details:
             raise unittest.SkipTest(details)
+        issue = json.loads(content)
+        self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
+                         'anymore. Please double check and, if already fixed, '
+                         'change the avocado.conf option '
+                         '"reject_unknown_hosts" defaults to True.' %
+                         'https://github.com/paramiko/paramiko/issues/243')
 
     def test_inspektor_indent_bug(self):
         # https://github.com/avocado-framework/inspektor/issues/31
@@ -64,14 +64,14 @@ class TestThirdPartyBugs(unittest.TestCase):
         try:
             issue_url = 'https://api.github.com/repos/avocado-framework/inspektor/issues/31'
             content = get_content_by_encoding(issue_url)
-            issue = json.loads(content)
-            self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
-                             'anymore. Please double check and, if already fixed, '
-                             'remove the selftests/unit/test_utils_cpu.py from '
-                             'the exclusion list of indent in selftests/checkall' %
-                             'https://github.com/avocado-framework/inspektor/issues/31')
         except URLError as details:
             raise unittest.SkipTest(details)
+        issue = json.loads(content)
+        self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
+                         'anymore. Please double check and, if already fixed, '
+                         'remove the selftests/unit/test_utils_cpu.py from '
+                         'the exclusion list of indent in selftests/checkall' %
+                         'https://github.com/avocado-framework/inspektor/issues/31')
 
 
 if __name__ == '__main__':
