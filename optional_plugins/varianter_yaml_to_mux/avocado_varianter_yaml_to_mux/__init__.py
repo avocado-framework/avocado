@@ -78,11 +78,6 @@ class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
     """
 
 
-class MappingDict(dict):
-
-    """Object representing mapping"""
-
-
 def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     """Create tree structure from yaml stream"""
     def tree_node_from_values(name, values):
