@@ -98,10 +98,8 @@ class ReportModel(object):
         try:
             with open(sysinfo_path, 'r') as sysinfo_file:
                 sysinfo_contents = sysinfo_file.read()
-        except OSError as details:
+        except (OSError, IOError) as details:
             sysinfo_contents = "Error reading %s: %s" % (sysinfo_path, details)
-        except IOError as details:
-            sysinfo_contents = os.uname()[1]
         return sysinfo_contents
 
     def hostname(self):
