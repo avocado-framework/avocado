@@ -402,10 +402,10 @@ class Job(object):
     def _log_avocado_datadir(self):
         LOG_JOB.info('Avocado Data Directories:')
         LOG_JOB.info('')
-        LOG_JOB.info('base     ' + data_dir.get_base_dir())
-        LOG_JOB.info('tests    ' + data_dir.get_test_dir())
-        LOG_JOB.info('data     ' + data_dir.get_data_dir())
-        LOG_JOB.info('logs     ' + self.logdir)
+        LOG_JOB.info('base     %s', data_dir.get_base_dir())
+        LOG_JOB.info('tests    %s', data_dir.get_test_dir())
+        LOG_JOB.info('data     %s', data_dir.get_data_dir())
+        LOG_JOB.info('logs     %s', self.logdir)
         LOG_JOB.info('')
 
     @staticmethod
@@ -540,7 +540,7 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
             return self.exitcode
         except exceptions.OptionValidationError as details:
-            self.log.error('\n' + str(details))
+            self.log.error('\n%s', str(details))
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
             return self.exitcode
 

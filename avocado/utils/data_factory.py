@@ -82,8 +82,8 @@ def make_dir_and_populate(basedir='/tmp'):
                 os.write(fd, generate_random_string(str_length))
             os.close(fd)
     except OSError as details:
-        log.error("Failed to generate dir in '%s' and populate: %s" %
-                  (basedir, details))
+        log_msg = "Failed to generate dir in '%s' and populate: %s"
+        log.error(log_msg, basedir, details)
         return None
 
     return path

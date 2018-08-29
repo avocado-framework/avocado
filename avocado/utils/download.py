@@ -171,7 +171,7 @@ def get_file(src, dst, permissions=None, hash_expected=None,
     while not hash_file == hash_expected:
         hash_file = _verify_hash(_get_file(src, dst, permissions))
         if hash_file != hash_expected:
-            log.error("It seems that dst %s is corrupted" % dst)
+            log.error("It seems that dst %s is corrupted", dst)
             download_failures += 1
         if download_failures > download_retries:
             raise EnvironmentError("Failed to retrieve %s. "

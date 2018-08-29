@@ -662,7 +662,7 @@ class ZypperBackend(RpmBackend):
         except IndexError:
             ver = out
         self.pm_version = ver
-        log.debug('Zypper version: %s' % self.pm_version)
+        log.debug('Zypper version: %s', self.pm_version)
 
     def install(self, name):
         """

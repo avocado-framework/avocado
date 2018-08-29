@@ -448,8 +448,8 @@ def lv_take_snapshot(vg_name, lv_name,
             re.search(re.escape(lv_snapshot_name + " [active]"),
                       process.run("lvdisplay", sudo=True).stdout)):
             # the above conditions detect if merge of snapshot was postponed
-            LOGGER.debug(("Logical volume %s is still active! " +
-                          "Attempting to deactivate..."), lv_name)
+            log_msg = "Logical volume %s is still active! Attempting to deactivate..."
+            LOGGER.debug(log_msg, lv_name)
             lv_reactivate(vg_name, lv_name)
             process.run(cmd, sudo=True)
         else:
@@ -491,8 +491,8 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
         if ('Snapshot could not be found' in ex.result.stderr and
                 re.search(active_lv_pattern, lvdisplay_output) or
                 "The Logical volume %s is still active" % lv_name in ex.result.stderr):
-            LOGGER.debug(("Logical volume %s is still active! " +
-                          "Attempting to deactivate..."), lv_name)
+            log_msg = "Logical volume %s is still active! Attempting to deactivate..."
+            LOGGER.debug(log_msg, lv_name)
             lv_reactivate(vg_name, lv_name)
             LOGGER.error("Continuing after reactivation")
         elif 'Snapshot could not be found' in ex.result.stderr:
@@ -533,8 +533,8 @@ def lv_reactivate(vg_name, lv_name, timeout=10):
         process.run("lvchange -ay /dev/%s/%s" % (vg_name, lv_name), sudo=True)
         time.sleep(timeout)
     except process.CmdError:
-        LOGGER.error(("Failed to reactivate %s - please, " +
-                      "nuke the process that uses it first."), lv_name)
+        log_msg = "Failed to reactivate %s - please, nuke the process that uses it first."
+        LOGGER.error(log_msg, lv_name)
         raise LVException("The Logical volume %s is still active" % lv_name)
 
 

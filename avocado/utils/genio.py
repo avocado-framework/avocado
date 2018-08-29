@@ -99,7 +99,7 @@ def ask(question, auto=False):
     :rtype: str
     """
     if auto:
-        log.info("%s (y/n) y" % question)
+        log.info("%s (y/n) y", question)
         return "y"
     return input("%s (y/n) " % question)
 
