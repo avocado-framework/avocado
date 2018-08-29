@@ -254,10 +254,6 @@ class Partition(object):
             cmd = "lsof " + mnt
             out = process.system_output(cmd)
             return [int(line.split()[1]) for line in out.splitlines()[1:]]
-        except FileNotFoundError as details:
-            msg = 'Could not find lsof executable'
-            LOG.error(msg)
-            raise PartitionError(self, msg, details)
         except OSError as details:
             msg = 'Could not run lsof to identify processes using "%s"' % mnt
             LOG.error(msg)
