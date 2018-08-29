@@ -386,9 +386,9 @@ def list_providers():
     List the available Image Providers
     """
     return set(_ for _ in itervalues(globals())
-               if (_ != ImageProviderBase and
-                   isinstance(_, type) and
-                   issubclass(_, ImageProviderBase)))
+               if (isinstance(_, type) and
+                   issubclass(_, ImageProviderBase) and
+                   hasattr(_, 'name')))
 
 
 #: List of available providers classes
