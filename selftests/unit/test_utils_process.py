@@ -94,7 +94,7 @@ class TestGDBProcess(unittest.TestCase):
         self.assertIsInstance(process.split_gdb_expr('foo:debug_print'), tuple)
 
 
-def mock_fail_find_cmd(cmd, default=None):
+def mock_fail_find_cmd(cmd, default=None):  # pylint: disable=W0613
     path_paths = ["/usr/libexec", "/usr/local/sbin", "/usr/local/bin",
                   "/usr/sbin", "/usr/bin", "/sbin", "/bin"]
     raise path.CmdNotFoundError(cmd, path_paths)
