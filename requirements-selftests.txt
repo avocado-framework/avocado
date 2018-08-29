@@ -1,23 +1,34 @@
 # Avocado test requirements
-# Setuptools
-setuptools>=18.0.0
 # sphinx (doc build test)
-Sphinx>=1.3b1
+Sphinx==1.7.8
+
 # inspektor (static and style checks)
-inspektor>=0.4.5
+inspektor==0.5.2
+
 # mock (some unittests use it)
-mock>=1.0.0; python_version <= '2.7'
+mock>=2.0.0; python_version <= '2.7'
+
 # six
-six>=1.9.0
+six==1.11.0
+
 # funcsigs
 funcsigs>=0.4
+
 # To run make check
-pep8>=1.6.2
-Pillow>=2.2.1
-aexpect>=1.0.0
-psutil>=3.1.1
-# six is a stevedore depedency, but we also use it directly
-six>=1.9.0
+Pillow==5.2.0
+aexpect==1.5.1
+psutil==5.4.7
+
+# pycdlib is an optional requirement in production
+# but is necessary for selftests
+pycdlib==1.6.0
+
 # stevedore for loading "new style" plugins
-stevedore>=0.14
-lxml>=3.4.4
+stevedore==1.29.0
+lxml==4.2.4
+
+# this is a workaround since easy_install cannot install
+# libvirt-python properly with the the current process
+# in make develop. The proper solution would be migrate
+# our make develop process to use pip
+libvirt-python==4.6.0

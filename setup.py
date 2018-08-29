@@ -30,9 +30,13 @@ def get_long_description():
     return req_contents
 
 
-INSTALL_REQUIREMENTS = ['stevedore>=0.14', 'six>=1.10.0', 'setuptools']
+INSTALL_REQUIREMENTS = ['requests', 'stevedore>=0.14', 'six>=1.10.0', 'setuptools']
+
 if sys.version_info[0] == 2:
     INSTALL_REQUIREMENTS.append('enum34')
+
+if sys.version_info[0] == 3 and sys.version_info[1] <= 3:
+    INSTALL_REQUIREMENTS.append('backports.lzma>=0.0.10')
 
 
 if __name__ == '__main__':

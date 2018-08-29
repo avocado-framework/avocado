@@ -13,6 +13,10 @@ python:
 
 env:
     - AVOCADO_PARALLEL_LINT=1
+      AVOCADO_PARALLEL_CHECK=yes
+      AVOCADO_LOG_DEBUG=yes
+      SELF_CHECK_CONTINUOUS=y
+      AVOCADO_CHECK_LEVEL=1
 
 branches:
     only:
@@ -31,7 +35,7 @@ addons:
     - libvirt-dev
 
 install:
-    - pip install -r requirements-travis.txt
+    - pip install -r requirements-selftests.txt
 
 script:
     - |
@@ -57,7 +61,7 @@ script:
             echo
             echo
             git checkout $COMMIT || ERR=$(echo -e "$ERR\nUnable to checkout $(git log -1 --oneline $COMMIT)")
-            AVOCADO_PARALLEL_CHECK=yes AVOCADO_LOG_DEBUG=yes AVOCADO_RESULTSDIR_CHECK=y SELF_CHECK_CONTINUOUS=y AVOCADO_CHECK_LEVEL=1 make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
+            make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
             make clean
         done
         if [ "$ERR" ]; then

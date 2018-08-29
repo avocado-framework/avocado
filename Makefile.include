@@ -28,9 +28,5 @@ rpm-release: srpm-release
 pip:
 	$(PYTHON) -m pip --version || $(PYTHON) -m ensurepip $(PYTHON_DEVELOP_ARGS) || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
 
-requirements: pip
-	- $(PYTHON) -m pip install "pip>=6.0.1"
-	- $(PYTHON) -m pip install -r requirements.txt
-
-requirements-selftests: requirements
+requirements-selftests:
 	- $(PYTHON) -m pip install -r requirements-selftests.txt
