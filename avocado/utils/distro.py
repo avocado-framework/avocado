@@ -349,6 +349,43 @@ class DebianProbe(Probe):
     CHECK_FILE_DISTRO_NAME = 'debian'
 
 
+class UbuntuProbe(Probe):
+
+    """
+    Simple probe for Ubunt systems in general
+    """
+
+    CHECK_FILE = '/etc/os-release'
+    CHECK_FILE_CONTAINS = 'ubuntu'
+    CHECK_FILE_DISTRO_NAME = 'Ubuntu'
+
+    def get_distro(self):
+        distro = Probe.get_distro(self)
+
+        # if the default methods find Ubuntu, detect version
+        if not distro.name == self.CHECK_FILE_DISTRO_NAME:
+            return distro
+
+        # we need to check VERSION_ID, which is number
+        # for Ubunt  Linux Enterprise this will be e.g. 18 or 18.04
+        version_id_re = re.compile(r'VERSION_ID="([\d\.]*)"')
+        version_id = None
+
+        with open(self.CHECK_FILE) as check_file:
+            for line in check_file:
+                match = version_id_re.match(line)
+                if match:
+                    version_id = match.group(1)
+
+        if version_id:
+            version_parts = version_id.split('.')
+            distro.version = int(version_parts[0])
+            if len(version_parts) > 1:
+                distro.release = int(version_parts[1])
+
+        return distro
+
+
 class SUSEProbe(Probe):
 
     """
@@ -410,6 +447,7 @@ register_probe(FedoraProbe)
 register_probe(AmazonLinuxProbe)
 register_probe(DebianProbe)
 register_probe(SUSEProbe)
+register_probe(UbuntuProbe)
 
 
 def detect():
