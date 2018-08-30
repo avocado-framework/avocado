@@ -12,15 +12,33 @@
 # This code was inspired in the autotest project,
 #
 # client/base_utils.py
+#
+# Copyright: 2018 IBM
+# Authors : Praveen K Pandey <praveen@linux.vnet.ibm.com>
 
 
 """
 Disk utilities
 """
 
+
 import os
+import json
+from . import process
 
 
 def freespace(path):
     fs_stats = os.statvfs(path)
     return fs_stats.f_bsize * fs_stats.f_bavail
+
+
+def get_disk_blocksize(path):
+    """Return the disk block size, in bytes"""
+    fs_stats = os.statvfs(path)
+    return fs_stats.f_bsize
+
+
+def get_disks():
+    json_result = process.run('lsblk --json')
+    json_data = json.loads(json_result.stdout_text)
+    return ['/dev/%s' % str(disk['name']) for disk in json_data['blockdevices']]
