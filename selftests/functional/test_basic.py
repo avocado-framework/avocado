@@ -1197,7 +1197,7 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
         super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
-                      e_nnotfound, e_nfailures, e_nskip):
+                      e_nnotfound, e_nfailures, e_nskip):  # pylint: disable=W0613
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
                     ' --xunit - %s' % (AVOCADO, self.tmpdir, testname))
         result = process.run(cmd_line, ignore_status=True)

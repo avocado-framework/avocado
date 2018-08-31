@@ -62,7 +62,7 @@ def skip(message=None):
     def decorator(function):
         if not isinstance(function, type):
             @wraps(function)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args, **kwargs):  # pylint: disable=W0613
                 raise core_exceptions.TestSkipError(message)
             function = wrapper
         function.__skip_test_decorator__ = True
