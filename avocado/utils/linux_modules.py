@@ -238,3 +238,15 @@ def check_kernel_config(config_name):
                 else:
                     return BUILTIN
     return NOT_SET
+
+
+def get_modules_dir():
+    """
+    Return the modules dir for the running kernel version
+
+    :return: path of module directory
+    :rtype: String
+    """
+    kernel_version = platform.uname()[2]
+
+    return '/lib/modules/%s/kernel' % kernel_version
