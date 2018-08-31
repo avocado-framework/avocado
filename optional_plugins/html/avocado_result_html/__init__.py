@@ -253,7 +253,7 @@ class HTMLResult(Result):
                 report_contents = v.render('utf8')
         except UnicodeDecodeError as details:
             # FIXME: Remove me when UnicodeDecodeError problem is fixed
-            LOG_UI.critical("\n" + ("-" * 80))
+            LOG_UI.critical("\n%s", ("-" * 80))
             LOG_UI.critical("HTML failed to render the template: %s\n\n",
                             template)
             LOG_UI.critical("-" * 80)

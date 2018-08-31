@@ -159,7 +159,7 @@ class Asset(object):
                             return asset_file
                 except:
                     exc_type, exc_value = sys.exc_info()[:2]
-                    log.error('%s: %s' % (exc_type.__name__, exc_value))
+                    log.error('%s: %s', exc_type.__name__, exc_value)
 
         # If we get to this point, we have to download it from a location.
         # A writable cache directory is then needed. The first available
@@ -190,7 +190,7 @@ class Asset(object):
                     return asset_file
             except:
                 exc_type, exc_value = sys.exc_info()[:2]
-                log.error('%s: %s' % (exc_type.__name__, exc_value))
+                log.error('%s: %s', exc_type.__name__, exc_value)
 
         raise EnvironmentError("Failed to fetch %s." % basename)
 

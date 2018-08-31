@@ -213,7 +213,7 @@ class Daemon(Command):
                                                    stderr=subprocess.STDOUT,
                                                    shell=False, env=env)
         except OSError:
-            log.debug("Not logging  %s (command could not be run)" % self.cmd)
+            log.debug("Not logging  %s (command could not be run)", self.cmd)
 
     def stop(self):
         """

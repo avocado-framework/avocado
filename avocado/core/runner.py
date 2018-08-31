@@ -378,13 +378,14 @@ class TestRunner(object):
                 return
             with sigtstp:
                 msg = "ctrl+z pressed, %%s test (%s)" % proc.pid
+                app_log_msg = '\n%s' % msg
                 if self.sigstopped:
-                    APP_LOG.info("\n" + msg, "resumming")
+                    APP_LOG.info(app_log_msg, "resumming")
                     TEST_LOG.info(msg, "resumming")
                     process.kill_process_tree(proc.pid, signal.SIGCONT, False)
                     self.sigstopped = False
                 else:
-                    APP_LOG.info("\n" + msg, "stopping")
+                    APP_LOG.info(app_log_msg, "stopping")
                     TEST_LOG.info(msg, "stopping")
                     process.kill_process_tree(proc.pid, signal.SIGSTOP, False)
                     self.sigstopped = True
