@@ -38,7 +38,7 @@ class ImageProviderError(Exception):
     """
 
 
-class VMImageHtmlParser(HTMLParser):
+class VMImageHtmlParser(HTMLParser):  # pylint: disable=W0223
     """
     Custom HTML parser to extract the href items that match
     a given pattern
