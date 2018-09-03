@@ -190,6 +190,10 @@ class PyCDLib(BaseIso9660):
             self.assertEqual(read_iso.read(path), content)
             self.assertTrue(os.path.isfile(new_iso_path))
 
+    def test_mnt_dir(self):
+        """Use the mnt_dir property"""
+        self.mnt_dir_workflow()
+
 
 if __name__ == "__main__":
     unittest.main()
