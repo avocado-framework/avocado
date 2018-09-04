@@ -343,7 +343,7 @@ class GenericParser:
         finalitem = (self.finalState(tokens), 0)
         if finalitem not in sets[-2]:
             if len(tokens) > 0:
-                self.error(tokens[i - 1])
+                self.error(tokens[i - 1])  # pylint: disable=W0631
             else:
                 self.error(None)
 
