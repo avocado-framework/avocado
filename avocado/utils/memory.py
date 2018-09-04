@@ -133,8 +133,8 @@ def read_from_meminfo(key):
     """
     cmd_result = process.run('grep %s /proc/meminfo' % key, verbose=False)
     # Get text mode result for compatibility.
-    meminfo = cmd_result.stdout_text
-    return int(re.search(r'\d+', meminfo).group(0))
+    meminfo_result = cmd_result.stdout_text
+    return int(re.search(r'\d+', meminfo_result).group(0))
 
 
 def memtotal():

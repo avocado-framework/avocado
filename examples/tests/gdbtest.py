@@ -49,7 +49,7 @@ class GdbTest(Test):
                                                     self.segfault_binary_path))
 
     @staticmethod
-    def is_process_alive(process):
+    def is_process_alive(process):  # pylint: disable=W0621
         """
         Checks if a process is still alive
 

@@ -18,7 +18,7 @@ import os
 from . import process
 
 
-def configure(path, configure=None):
+def configure(path, configure=None):  # pylint: disable=W0621
     """
     Configures the source tree for a subsequent build
 
@@ -48,7 +48,7 @@ def configure(path, configure=None):
         os.chdir(cwd)
 
 
-def run_make(path, make='make', extra_args='', process_kwargs=None):
+def run_make(path, make='make', extra_args='', process_kwargs=None):  # pylint: disable=W0621
     """
     Run make, adding MAKEOPTS to the list of options.
 
@@ -86,7 +86,7 @@ def run_make(path, make='make', extra_args='', process_kwargs=None):
     return make_process
 
 
-def make(path, make='make', env=None, extra_args='', ignore_status=None,
+def make(path, make='make', env=None, extra_args='', ignore_status=None,  # pylint: disable=W0621
          allow_output_check=None, process_kwargs=None):
     """
     Run make, adding MAKEOPTS to the list of options.

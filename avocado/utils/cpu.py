@@ -64,8 +64,8 @@ def _get_cpu_status(cpu):
     :returns: `bool` True if online or False if not
     :rtype: 'bool'
     """
-    with open('/sys/devices/system/cpu/cpu%s/online' % cpu, 'rb') as online:
-        if b'1' in online.read():
+    with open('/sys/devices/system/cpu/cpu%s/online' % cpu, 'rb') as cpu_online:
+        if b'1' in cpu_online.read():
             return True
     return False
 

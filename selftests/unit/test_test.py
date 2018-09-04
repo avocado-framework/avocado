@@ -122,9 +122,9 @@ class TestClassTestUnit(unittest.TestCase):
                               test.TestID(1, "name"), base_logdir=self.tmpdir)
 
     def test_try_override_test_variable(self):
-        test = self.DummyTest(base_logdir=self.tmpdir)
-        self.assertRaises(AttributeError, setattr, test, "name", "whatever")
-        self.assertRaises(AttributeError, setattr, test, "status", "whatever")
+        dummy_test = self.DummyTest(base_logdir=self.tmpdir)
+        self.assertRaises(AttributeError, setattr, dummy_test, "name", "whatever")
+        self.assertRaises(AttributeError, setattr, dummy_test, "status", "whatever")
 
     def test_check_reference_success(self):
         '''

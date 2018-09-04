@@ -195,13 +195,13 @@ class ResultsdbCLI(CLI):
         self.configured = True
 
     def run(self, args):
-        resultsdb_api = getattr(args, 'resultsdb_api', None)
-        if resultsdb_api is None:
-            resultsdb_api = settings.get_value('plugins.resultsdb',
-                                               'api_url',
-                                               default=None)
-            if resultsdb_api is not None:
-                args.resultsdb_api = resultsdb_api
+        resultsdb_api_url = getattr(args, 'resultsdb_api', None)
+        if resultsdb_api_url is None:
+            resultsdb_api_url = settings.get_value('plugins.resultsdb',
+                                                   'api_url',
+                                                   default=None)
+            if resultsdb_api_url is not None:
+                args.resultsdb_api = resultsdb_api_url
 
         resultsdb_logs = getattr(args, 'resultsdb_logs', None)
         if resultsdb_logs is None:

@@ -140,11 +140,11 @@ class LoaderYAML(CLI):
             if subparser is None:
                 continue
 
-        mux = subparser.add_argument_group("yaml to mux testsuite options")
-        mux.add_argument("--mux-suite-only", nargs="+",
-                         help="Filter only part of the YAML suite file")
-        mux.add_argument("--mux-suite-out", nargs="+",
-                         help="Filter out part of the YAML suite file")
+        mux_options = subparser.add_argument_group("yaml to mux testsuite options")
+        mux_options.add_argument("--mux-suite-only", nargs="+",
+                                 help="Filter only part of the YAML suite file")
+        mux_options.add_argument("--mux-suite-out", nargs="+",
+                                 help="Filter out part of the YAML suite file")
 
     def run(self, args):
         loader.loader.register_plugin(YamlTestsuiteLoader)

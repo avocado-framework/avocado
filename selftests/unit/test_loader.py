@@ -398,8 +398,8 @@ class LoaderTest(unittest.TestCase):
                                                    AVOCADO_TEST_OK,
                                                    'avocado_loader_unittest',
                                                    DEFAULT_NON_EXEC_MODE)
-        with avocado_pass_test as test:
-            test_suite = self.loader.discover(test.path, loader.DiscoverMode.ALL)
+        with avocado_pass_test as test_script:
+            test_suite = self.loader.discover(test_script.path, loader.DiscoverMode.ALL)
             self.assertEqual([], loader.filter_test_tags(test_suite, []))
             self.assertEqual(test_suite,
                              loader.filter_test_tags(test_suite, [], True))
@@ -409,8 +409,8 @@ class LoaderTest(unittest.TestCase):
                                                    AVOCADO_TEST_TAGS,
                                                    'avocado_loader_unittest',
                                                    DEFAULT_NON_EXEC_MODE)
-        with avocado_test_tags as test:
-            test_suite = self.loader.discover(test.path, loader.DiscoverMode.ALL)
+        with avocado_test_tags as test_script:
+            test_suite = self.loader.discover(test_script.path, loader.DiscoverMode.ALL)
             self.assertEqual(len(test_suite), 5)
             self.assertEqual(test_suite[0][0], 'FastTest')
             self.assertEqual(test_suite[0][1]['methodName'], 'test_fast')
