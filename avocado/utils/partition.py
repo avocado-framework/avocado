@@ -258,7 +258,7 @@ class Partition(object):
             msg = 'Could not find lsof executable'
             LOG.error(msg)
             raise PartitionError(self, msg, details)
-        except OSError as details:
+        except OSError as details:  # pylint: disable=W0705
             msg = 'Could not run lsof to identify processes using "%s"' % mnt
             LOG.error(msg)
             raise PartitionError(self, msg, details)
