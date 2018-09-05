@@ -261,7 +261,7 @@ class RpmBackend(BaseBackend):
             cmd_result = process.run('rpm -qa | sort', verbose=False,
                                      shell=True)
 
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout.decode('utf-8').strip()
         installed_packages = out.splitlines()
         return installed_packages
 
@@ -362,7 +362,7 @@ class DpkgBackend(BaseBackend):
         log.debug("Listing all system packages (may take a while)")
         installed_packages = []
         cmd_result = process.run('dpkg -l', verbose=False)
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout.decode('utf-8').strip()
         raw_list = out.splitlines()[5:]
         for line in raw_list:
             parts = line.split()
@@ -408,7 +408,7 @@ class YumBackend(RpmBackend):
         y_cmd = executable + ' --version | head -1'
         cmd_result = process.run(y_cmd, ignore_status=True,
                                  verbose=False, shell=True)
-        out = cmd_result.stdout_text.strip()
+        out = cmd_result.stdout.decode('utf-8').strip()
         try:
             ver = re.findall(r'\d*.\d*.\d*', out)[0]
         except IndexError:
@@ -656,7 +656,7 @@ class ZypperBackend(RpmBackend):
         z_cmd = self.base_command + ' --version'
         cmd_result = process.run(z_cmd, ignore_status=True,
                                  verbose=False)
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout.decode('utf-8').strip()
         try:
             ver = re.findall(r'\d.\d*.\d*', out)[0]
         except IndexError:
@@ -835,7 +835,7 @@ class AptBackend(DpkgBackend):
                                  ignore_status=True,
                                  verbose=False,
                                  shell=True)
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout.decode('utf-8').strip()
         try:
             ver = re.findall(r'\d\S*', out)[0]
         except IndexError:
