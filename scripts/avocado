@@ -17,14 +17,23 @@
 import sys
 try:
     import os
+    import time
     import tempfile
     import traceback
-except:
+
+    from avocado.core import data_dir
+except ImportError:
     sys.stderr.write("Unable to import basic python libraries, please "
                      "reinstall avocado and dependencies.\n")
     # This exit code is replicated from avocado/core/exit_codes.py and not
     # imported because we are dealing with import failures
     sys.exit(-1)
+
+
+def get_crash_dir():
+    crash_dir_path = os.path.join(data_dir.get_data_dir(), "crashes")
+    os.makedirs(crash_dir_path)
+    return crash_dir_path
 
 
 def handle_exception(*exc_info):
@@ -34,18 +43,9 @@ def handle_exception(*exc_info):
     if os.environ.get("AVOCADO_LOG_DEBUG"):
         os.write(2, msg.encode('utf-8'))
     # Store traceback in data_dir or TMPDIR
-    crash_dir = None
     prefix = "avocado-traceback-"
-    try:
-        import time
-        prefix += time.strftime("%F_%T") + "-"
-        from avocado.core import data_dir    # pylint: disable=E0611
-        _crash_dir = os.path.join(data_dir.get_data_dir(), "crashes")
-        os.makedirs(_crash_dir)
-        crash_dir = _crash_dir
-    except:
-        pass
-    tmp, name = tempfile.mkstemp(".log", prefix, crash_dir)
+    prefix += time.strftime("%F_%T") + "-"
+    tmp, name = tempfile.mkstemp(".log", prefix, get_crash_dir())
     os.write(tmp, msg.encode('utf-8'))
     os.close(tmp)
     # Print friendly message in console-like output
