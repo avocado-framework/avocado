@@ -82,6 +82,10 @@ class CmdError(Exception):
         self.result = result
         self.additional_text = additional_text
 
+    def __str__(self):
+        return ("Command '%s' failed.\nThe stdout: %s\nThe stderr: %s\nThe additional info: %s" %
+                (self.command, self.result.stdout_text, self.result.stderr_text, self.additional_text))
+
 
 def can_sudo(cmd=None):
     """
