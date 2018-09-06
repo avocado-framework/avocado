@@ -384,7 +384,7 @@ class Iso9660Mount(BaseIso9660):
         return self._mnt_dir
 
 
-class ISO9660PyCDLib(BaseIso9660):
+class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
 
     """
     Represents a ISO9660 filesystem
