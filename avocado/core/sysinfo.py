@@ -571,11 +571,11 @@ class SysInfo(object):
         """
         Logging hook called whenever a job starts.
         """
-        for log in self.start_job_collectibles:
-            if isinstance(log, Daemon):  # log daemons in profile directory
-                log.run(self.profile_dir)
+        for log_hook in self.start_job_collectibles:
+            if isinstance(log_hook, Daemon):  # log daemons in profile directory
+                log_hook.run(self.profile_dir)
             else:
-                log.run(self.pre_dir)
+                log_hook.run(self.pre_dir)
 
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
@@ -584,12 +584,12 @@ class SysInfo(object):
         """
         Logging hook called whenever a job finishes.
         """
-        for log in self.end_job_collectibles:
-            log.run(self.post_dir)
+        for log_hook in self.end_job_collectibles:
+            log_hook.run(self.post_dir)
         # Stop daemon(s) started previously
-        for log in self.start_job_collectibles:
-            if isinstance(log, Daemon):
-                log.stop()
+        for log_hook in self.start_job_collectibles:
+            if isinstance(log_hook, Daemon):
+                log_hook.stop()
 
         if self.log_packages:
             self._log_modified_packages(self.post_dir)
@@ -598,11 +598,11 @@ class SysInfo(object):
         """
         Logging hook called before a test starts.
         """
-        for log in self.start_test_collectibles:
-            if isinstance(log, Daemon):  # log daemons in profile directory
-                log.run(self.profile_dir)
+        for log_hook in self.start_test_collectibles:
+            if isinstance(log_hook, Daemon):  # log daemons in profile directory
+                log_hook.run(self.profile_dir)
             else:
-                log.run(self.pre_dir)
+                log_hook.run(self.pre_dir)
 
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
@@ -611,12 +611,12 @@ class SysInfo(object):
         """
         Logging hook called after a test finishes.
         """
-        for log in self.end_test_collectibles:
-            log.run(self.post_dir)
+        for log_hook in self.end_test_collectibles:
+            log_hook.run(self.post_dir)
         # Stop daemon(s) started previously
-        for log in self.start_test_collectibles:
-            if isinstance(log, Daemon):
-                log.stop()
+        for log_hook in self.start_test_collectibles:
+            if isinstance(log_hook, Daemon):
+                log_hook.stop()
 
         if self.log_packages:
             self._log_modified_packages(self.post_dir)

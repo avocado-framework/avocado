@@ -233,11 +233,11 @@ class OutputTest(unittest.TestCase):
         with script.Script(os.path.join(self.tmpdir, "output_mode_none.py"),
                            OUTPUT_MODE_NONE_CONTENT,
                            script.READ_ONLY_MODE) as test:
-            cmd = ("%s run --job-results-dir %s --sysinfo=off "
-                   "--json - --output-check-record none -- %s") % (AVOCADO,
-                                                                   self.tmpdir,
-                                                                   test.path)
-            result = process.run(cmd)
+            command = ("%s run --job-results-dir %s --sysinfo=off "
+                       "--json - --output-check-record none -- %s") % (AVOCADO,
+                                                                       self.tmpdir,
+                                                                       test.path)
+            result = process.run(command)
             res = json.loads(result.stdout_text)
             testdir = res["tests"][0]["logdir"]
             for output_file in ('stdout', 'stderr', 'output'):
@@ -257,9 +257,9 @@ class OutputTest(unittest.TestCase):
         with script.Script(os.path.join(self.tmpdir, "test_check_on_off.py"),
                            OUTPUT_CHECK_ON_OFF_CONTENT,
                            script.READ_ONLY_MODE) as test:
-            cmd = ("%s run --job-results-dir %s --sysinfo=off "
-                   "--json - -- %s") % (AVOCADO, self.tmpdir, test.path)
-            result = process.run(cmd)
+            command = ("%s run --job-results-dir %s --sysinfo=off "
+                       "--json - -- %s") % (AVOCADO, self.tmpdir, test.path)
+            result = process.run(command)
             res = json.loads(result.stdout_text)
             testdir = res["tests"][0]["logdir"]
             stdout_path = os.path.join(testdir, 'stdout')

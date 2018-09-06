@@ -122,7 +122,7 @@ def pid_exists(pid):
     return True
 
 
-def safe_kill(pid, signal):
+def safe_kill(pid, signal):  # pylint: disable=W0621
     """
     Attempt to send a signal to a given process that may or may not exist.
 
@@ -885,7 +885,7 @@ class GDBSubProcess(object):
             breakpoints.append(gdb.GDB.DEFAULT_BREAK)
         return breakpoints
 
-    def create_and_wait_on_resume_fifo(self, path):
+    def create_and_wait_on_resume_fifo(self, path):  # pylint: disable=W0621
         """
         Creates a FIFO file and waits until it's written to
 
@@ -905,11 +905,11 @@ class GDBSubProcess(object):
         if current_test is not None:
             binary_name = os.path.basename(self.binary)
             script_name = '%s.gdb.connect_commands' % binary_name
-            path = os.path.join(current_test.outputdir, script_name)
-            with open(path, 'w') as cmds_file:
+            script_path = os.path.join(current_test.outputdir, script_name)
+            with open(script_path, 'w') as cmds_file:
                 cmds_file.write('file %s\n' % os.path.abspath(self.binary))
                 cmds_file.write('target extended-remote :%s\n' % self.gdb_server.port)
-            return path
+            return script_path
 
     def generate_gdb_connect_sh(self):
         cmds = self.generate_gdb_connect_cmds()

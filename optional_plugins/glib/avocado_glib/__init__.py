@@ -96,8 +96,8 @@ class GLibLoader(loader.TestLoader):
                              {"name": "%s: %s" % (reference, details)})]
                 return []
 
-            for test in result.stdout.splitlines():
-                test_name = "%s:%s" % (reference, test)
+            for test_item in result.stdout.splitlines():
+                test_name = "%s:%s" % (reference, test_item)
                 if subtests_filter and not subtests_filter.search(test_name):
                     continue
                 avocado_suite.append((GLibTest, {'name': test_name,
