@@ -17,7 +17,7 @@ class Env(Test):
         def get_proc_content(rel_path):
             try:
                 return genio.read_file(os.path.join(p_dir, rel_path)).strip()
-            except:
+            except OSError:
                 return "<NOT AVAILABLE>"
 
         self.log.debug('Process ID: %s', pid)

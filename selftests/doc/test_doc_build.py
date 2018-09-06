@@ -29,7 +29,7 @@ def has_no_external_connectivity():
     try:
         urllib.urlopen('http://docs.python.org/objects.inv')
         return False
-    except:
+    except Exception:
         return True
 
 

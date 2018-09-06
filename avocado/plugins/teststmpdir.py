@@ -43,5 +43,5 @@ class TestsTmpDir(JobPre, JobPost):
             try:
                 shutil.rmtree(self._dirname)
                 del os.environ[self._varname]
-            except:
+            except Exception:
                 pass

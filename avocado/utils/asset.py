@@ -157,7 +157,7 @@ class Asset(object):
                     with FileLock(asset_file, 1):
                         if self._verify(asset_file):
                             return asset_file
-                except:
+                except Exception:
                     exc_type, exc_value = sys.exc_info()[:2]
                     log.error('%s: %s', exc_type.__name__, exc_value)
 
@@ -188,7 +188,7 @@ class Asset(object):
             try:
                 if fetch(urlobj, asset_file):
                     return asset_file
-            except:
+            except Exception:
                 exc_type, exc_value = sys.exc_info()[:2]
                 log.error('%s: %s', exc_type.__name__, exc_value)
 

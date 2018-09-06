@@ -186,7 +186,7 @@ class FileLockTest(unittest.TestCase):
         args = [(self.tmpdir, players, timeout)] * players
         try:
             pool.map(file_lock_action, args)
-        except:
+        except Exception:
             msg = 'Failed to run FileLock with %s players:\n%s'
             msg %= (players, prepare_exc_info(sys.exc_info()))
             self.fail(msg)

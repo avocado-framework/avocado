@@ -339,7 +339,7 @@ class TestLoaderProxy(object):
                 sys.path.insert(0, test_module_dir)
                 f, p, d = imp.find_module(module_name, [test_module_dir])
                 test_module = imp.load_module(module_name, f, p, d)
-            except:
+            except:  # pylint: disable=W0702
                 # On load_module exception we fake the test class and pass
                 # the exc_info as parameter to be logged.
                 test_parameters['methodName'] = 'test'

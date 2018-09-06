@@ -44,7 +44,7 @@ class Mail(JobPre, JobPost):
             smtp = smtplib.SMTP(self.server)
             smtp.sendmail(self.sender, [self.rcpt], msg.as_string())
             smtp.quit()
-        except:
+        except Exception:
             LOG_UI.error("Failure to send email notification: "
                          "please check your mail configuration")
 

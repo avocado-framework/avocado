@@ -7,7 +7,7 @@ from xml.dom import minidom
 
 try:
     from io import BytesIO
-except:
+except ImportError:
     from BytesIO import BytesIO
 
 try:
