@@ -107,7 +107,7 @@ clean:
 	for PLUGIN in $(AVOCADO_PLUGINS); do\
 		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> UNLINK $$PLUGIN";\
 			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN unlink &>/dev/null || echo ">> FAIL $$PLUGIN";\
-			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); cd -; fi;\
+			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); $(PYTHON) setup.py clean; rm -fr build; cd -; fi;\
 		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
