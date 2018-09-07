@@ -201,3 +201,23 @@ def write_file_or_fail(filename, data):
     except OSError as details:
         raise GenIOError("The write to %s failed: %s" % (
                          filename, details))
+
+
+def grep_pattern(filename, pattern):
+    """
+    This is mainly to fix the return code inversion from grep
+    Also handles compressed files.
+    :param filename: Path to file
+    :type filename: str
+    :param pattern: pattern that need to match in file
+    :type pattern: str
+
+    returns 1 if the pattern is present in the file, 0 if not.
+    """
+    command = 'grep "%s" > /dev/null' % pattern
+    if not os.path.isfile(filename):
+        raise GenIOError('invalid file %s to cat to command %s'
+                         % (filename, command))
+
+    ret = os.system('cat %s | %s' % (filename, command))
+    return not ret
