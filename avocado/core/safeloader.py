@@ -26,6 +26,54 @@ import sys
 from ..utils import data_structures
 
 
+class AvocadoModule(object):
+    """
+    Representation of a module that might contain avocado.Test tests
+    """
+    __slots__ = 'path', 'test_import', 'mod_import', 'mod'
+
+    def __init__(self, path, test_import=False, mod_import=False):
+        self.path = path
+        self.test_import = test_import
+        self.mod_import = mod_import
+        if os.path.isdir(path):
+            self.path = os.path.join(path, "__init__.py")
+        else:
+            self.path = path
+        with open(self.path) as source_file:
+            self.mod = ast.parse(source_file.read(), self.path)
+
+    def iter_classes(self):
+        """
+        Iter through classes and keep track of imported avocado statements
+        """
+        for statement in self.mod.body:
+            # Looking for a 'from avocado import Test'
+            if (isinstance(statement, ast.ImportFrom) and
+                    statement.module == 'avocado'):
+
+                for name in statement.names:
+                    if name.name == 'Test':
+                        if name.asname is not None:
+                            self.test_import = name.asname
+                        else:
+                            self.test_import = name.name
+                        break
+
+            # Looking for a 'import avocado'
+            elif isinstance(statement, ast.Import):
+                for name in statement.names:
+                    if name.name == 'avocado':
+                        if name.asname is not None:
+                            self.mod_import = name.nasname
+                        else:
+                            self.mod_import = name.name
+
+            # Looking for a 'class Anything(anything):'
+            elif isinstance(statement, ast.ClassDef):
+                yield statement
+
+
 def modules_imported_as(module):
     """
     Returns a mapping of imported module names whether using aliases or not
@@ -193,166 +241,134 @@ def find_avocado_tests(path, class_name=None):
               force-disabled.
     :rtype: tuple
     """
-    # If only the Test class was imported from the avocado namespace
-    test_import = False
-    # The name used, in case of 'from avocado import Test as AvocadoTest'
-    test_import_name = None
-    # If the "avocado" module itself was imported
-    mod_import = False
-    # The name used, in case of 'import avocado as avocadolib'
-    mod_import_name = None
+    module = AvocadoModule(path)
     # The resulting test classes
     result = collections.OrderedDict()
     disabled = set()
 
-    if os.path.isdir(path):
-        path = os.path.join(path, "__init__.py")
+    for klass in module.iter_classes():
+        # class_name will exist only under recursion. In that
+        # case, we will only process the class if it has the
+        # expected class_name.
+        if class_name is not None and class_name != klass.name:
+            continue
 
-    with open(path) as source_file:
-        mod = ast.parse(source_file.read(), path)
+        docstring = ast.get_docstring(klass)
+        # Looking for a class that has in the docstring either
+        # ":avocado: enable" or ":avocado: disable
+        has_disable = check_docstring_directive(docstring,
+                                                'disable')
+        if (has_disable and class_name is None):
+            disabled.add(klass.name)
+            continue
 
-    for statement in mod.body:
-        # Looking for a 'from avocado import Test'
-        if (isinstance(statement, ast.ImportFrom) and
-                statement.module == 'avocado'):
+        cl_tags = get_docstring_directives_tags(docstring)
 
-            for name in statement.names:
-                if name.name == 'Test':
-                    test_import = True
-                    if name.asname is not None:
-                        test_import_name = name.asname
-                    else:
-                        test_import_name = name.name
-                    break
+        has_enable = check_docstring_directive(docstring,
+                                               'enable')
+        if (has_enable and class_name is None):
+            info = get_methods_info(klass.body, cl_tags)
+            result[klass.name] = info
+            continue
 
-        # Looking for a 'import avocado'
-        elif isinstance(statement, ast.Import):
-            for name in statement.names:
-                if name.name == 'avocado':
-                    mod_import = True
-                    if name.asname is not None:
-                        mod_import_name = name.nasname
-                    else:
-                        mod_import_name = name.name
+        # Looking for the 'recursive' docstring or a 'class_name'
+        # (meaning we are under recursion)
+        has_recurse = check_docstring_directive(docstring,
+                                                'recursive')
+        if (has_recurse or class_name is not None):
+            info = get_methods_info(klass.body, cl_tags)
+            result[klass.name] = info
 
-        # Looking for a 'class Anything(anything):'
-        elif isinstance(statement, ast.ClassDef):
+            # Getting the list of parents of the current class
+            parents = klass.bases
 
-            # class_name will exist only under recursion. In that
-            # case, we will only process the class if it has the
-            # expected class_name.
-            if class_name is not None and class_name != statement.name:
-                continue
-
-            docstring = ast.get_docstring(statement)
-            # Looking for a class that has in the docstring either
-            # ":avocado: enable" or ":avocado: disable
-            has_disable = check_docstring_directive(docstring, 'disable')
-            if (has_disable and class_name is None):
-                disabled.add(statement.name)
-                continue
-
-            cl_tags = get_docstring_directives_tags(docstring)
-
-            has_enable = check_docstring_directive(docstring, 'enable')
-            if (has_enable and class_name is None):
-                info = get_methods_info(statement.body, cl_tags)
-                result[statement.name] = info
-                continue
-
-            # Looking for the 'recursive' docstring or a 'class_name'
-            # (meaning we are under recursion)
-            has_recurse = check_docstring_directive(docstring, 'recursive')
-            if (has_recurse or class_name is not None):
-                info = get_methods_info(statement.body, cl_tags)
-                result[statement.name] = info
-
-                # Getting the list of parents of the current class
-                parents = statement.bases
-
-                # Searching the parents in the same module
-                for parent in parents[:]:
-                    # Looking for a 'class FooTest(module.Parent)'
-                    if isinstance(parent, ast.Attribute):
-                        parent_class = parent.attr
-                    # Looking for a 'class FooTest(Parent)'
-                    else:
-                        parent_class = parent.id
-                    res, dis = find_avocado_tests(path, parent_class)
-                    if res:
-                        parents.remove(parent)
-                        for cls in res:
-                            info.extend(res[cls])
-                    disabled.update(dis)
-
-                # If there are parents left to be discovered, they
-                # might be in a different module.
-                for parent in parents:
-                    if isinstance(parent, ast.Attribute):
-                        # Looking for a 'class FooTest(module.Parent)'
-                        parent_module = parent.value.id
-                        parent_class = parent.attr
-                    else:
-                        # Looking for a 'class FooTest(Parent)'
-                        parent_module = None
-                        parent_class = parent.id
-
-                    for node in mod.body:
-                        reference = None
-                        # Looking for 'from parent import class'
-                        if isinstance(node, ast.ImportFrom):
-                            reference = parent_class
-                        # Looking for 'import parent'
-                        elif isinstance(node, ast.Import):
-                            reference = parent_module
-
-                        if reference is None:
-                            continue
-
-                        for artifact in node.names:
-                            # Looking for a class alias
-                            # ('from parent import class as alias')
-                            if artifact.asname is not None:
-                                parent_class = reference = artifact.name
-                            # If the parent class or the parent module
-                            # is found in the imports, discover the
-                            # parent module path and find the parent
-                            # class there
-                            if artifact.name == reference:
-                                modules_paths = [os.path.dirname(path)]
-                                modules_paths.extend(sys.path)
-                                if parent_module is None:
-                                    parent_module = node.module
-                                _, ppath, _ = imp.find_module(parent_module,
-                                                              modules_paths)
-                                res, dis = find_avocado_tests(ppath,
-                                                              parent_class)
-                                if res:
-                                    for cls in res:
-                                        info.extend(res[cls])
-                                disabled.update(dis)
-
-                continue
-
-            if test_import:
-                base_ids = [base.id for base in statement.bases
-                            if hasattr(base, 'id')]
-                # Looking for a 'class FooTest(Test):'
-                if test_import_name in base_ids:
-                    info = get_methods_info(statement.body,
-                                            cl_tags)
-                    result[statement.name] = info
+            # Searching the parents in the same module
+            for parent in parents[:]:
+                # Looking for a 'class FooTest(Parent)'
+                if not isinstance(parent, ast.Name):
+                    # 'class FooTest(bar.Bar)' not supported withing
+                    # a module
                     continue
+                parent_class = parent.id
+                res, dis = find_avocado_tests(path, parent_class)
+                if res:
+                    parents.remove(parent)
+                    for cls in res:
+                        info.extend(res[cls])
+                disabled.update(dis)
 
-            # Looking for a 'class FooTest(avocado.Test):'
-            if mod_import:
-                for base in statement.bases:
-                    module = base.value.id
-                    klass = base.attr
-                    if module == mod_import_name and klass == 'Test':
-                        info = get_methods_info(statement.body,
-                                                cl_tags)
-                        result[statement.name] = info
+            # If there are parents left to be discovered, they
+            # might be in a different module.
+            for parent in parents:
+                if isinstance(parent, ast.Attribute):
+                    # Looking for a 'class FooTest(module.Parent)'
+                    parent_module = parent.value.id
+                    parent_class = parent.attr
+                else:
+                    # Looking for a 'class FooTest(Parent)'
+                    parent_module = None
+                    parent_class = parent.id
+
+                for node in module.mod.body:
+                    reference = None
+                    # Looking for 'from parent import class'
+                    if isinstance(node, ast.ImportFrom):
+                        reference = parent_class
+                    # Looking for 'import parent'
+                    elif isinstance(node, ast.Import):
+                        reference = parent_module
+
+                    if reference is None:
                         continue
+
+                    for artifact in node.names:
+                        # Looking for a class alias
+                        # ('from parent import class as alias')
+                        if artifact.asname is not None:
+                            parent_class = reference = artifact.name
+                        # If the parent class or the parent module
+                        # is found in the imports, discover the
+                        # parent module path and find the parent
+                        # class there
+                        if artifact.name == reference:
+                            modules_paths = [os.path.dirname(path)]
+                            modules_paths.extend(sys.path)
+                            if parent_module is None:
+                                parent_module = node.module
+                            _, ppath, _ = imp.find_module(parent_module,
+                                                          modules_paths)
+                            res, dis = find_avocado_tests(ppath,
+                                                          parent_class)
+                            if res:
+                                for cls in res:
+                                    info.extend(res[cls])
+                            disabled.update(dis)
+
+            continue
+
+        # Looking for a 'class FooTest(Test):'
+        if module.test_import:
+            base_ids = [base.id for base in klass.bases
+                        if isinstance(base, ast.Name)]
+            # Looking for a 'class FooTest(Test):'
+            if module.test_import in base_ids:
+                info = get_methods_info(klass.body,
+                                        cl_tags)
+                result[klass.name] = info
+                continue
+
+        # Looking for a 'class FooTest(avocado.Test):'
+        if module.mod_import:
+            for base in klass.bases:
+                if not isinstance(base, ast.Attribute):
+                    # Check only 'module.Class' bases
+                    continue
+                cls_module = base.value.id
+                cls_name = base.attr
+                if cls_module == module.mod_import and cls_name == 'Test':
+                    info = get_methods_info(klass.body,
+                                            cl_tags)
+                    result[klass.name] = info
+                    continue
 
     return result, disabled
