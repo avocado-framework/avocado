@@ -523,7 +523,7 @@ CPU revision    : 1
 """
         with mock.patch('avocado.utils.cpu.open',
                         return_value=self._get_file_mock(cpu_output)):
-                self.assertEqual(cpu.get_cpu_arch(), "aarch64")
+            self.assertEqual(cpu.get_cpu_arch(), "aarch64")
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
