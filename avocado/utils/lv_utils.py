@@ -1,8 +1,6 @@
 # Copyright (C) IBM 2016 - Harish <harisrir@linux.vnet.ibm.com>
 # Copyright (C) Red Hat 2016 - Lukas Doktor <ldoktor@redhat.com>
-#
-# Based on code by
-# Copyright (C) Intra2net AG 2012 - Plamen Dimitrov
+# Copyright (C) Intra2net AG 2018 - Plamen Dimitrov <pdimitrov@pevogam.com>
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
