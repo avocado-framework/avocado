@@ -57,7 +57,8 @@ def get_diskspace(disk):
 
 
 def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
-               ramdisk_basedir, ramdisk_sparse_filename):
+               ramdisk_basedir, ramdisk_sparse_filename,
+               use_tmpfs=True):
     """
     Create vg on top of ram memory to speed up lv performance.
     When disk is specified size of the physical volume is taken from
@@ -91,15 +92,17 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
                                     ramdisk_sparse_filename)
     # Try to cleanup the ramdisk before defining it
     try:
-        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name)
+        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
+                           vg_name, use_tmpfs)
     except LVException:
         pass
     if not os.path.exists(vg_ramdisk_dir):
         os.makedirs(vg_ramdisk_dir)
     try:
-        LOGGER.debug("Mounting tmpfs")
-        process.run("mount -t tmpfs tmpfs %s" % vg_ramdisk_dir,
-                    sudo=True)
+        if use_tmpfs:
+            LOGGER.debug("Mounting tmpfs")
+            process.run("mount -t tmpfs tmpfs %s" % vg_ramdisk_dir,
+                        sudo=True)
 
         LOGGER.debug("Converting and copying /dev/zero")
         if disk:
@@ -114,7 +117,8 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
             result = process.run("losetup --find", sudo=True)
     except process.CmdError as ex:
         LOGGER.error(ex)
-        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name)
+        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
+                           vg_name, use_tmpfs)
         raise LVException("Fail to create vg_ramdisk: %s" % ex)
 
     if not disk:
@@ -134,13 +138,13 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
     except process.CmdError as ex:
         LOGGER.error(ex)
         vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
-                           vg_name, loop_device)
+                           vg_name, loop_device, use_tmpfs)
         raise LVException("Fail to create vg_ramdisk: %s" % ex)
     return ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
 
 
 def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
-                       vg_name=None, loop_device=None):
+                       vg_name=None, loop_device=None, use_tmpfs=True):
     """
     Inline cleanup function in case of test error.
 
@@ -194,8 +198,8 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
             vg_ramdisk_dir = os.path.dirname(ramdisk_filename)
 
     if vg_ramdisk_dir is not None:
-        if not process.system("mountpoint %s" % vg_ramdisk_dir,
-                              ignore_status=True):
+        if use_tmpfs and not process.system("mountpoint %s" % vg_ramdisk_dir,
+                                            ignore_status=True):
             for _ in range(10):
                 result = process.run("umount %s" % vg_ramdisk_dir,
                                      ignore_status=True, sudo=True)
