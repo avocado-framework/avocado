@@ -84,7 +84,6 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
     - lv_snapshot_name='autotest_sn',
     - lv_snapshot_size='1G'
     The ramdisk volume group size is in MB.
-
     """
     vg_size = ramdisk_vg_size
     vg_ramdisk_dir = os.path.join(ramdisk_basedir, vg_name)
@@ -279,7 +278,6 @@ def vg_create(vg_name, pv_list, force=False):
     :param pv_list: List of physical volumes
     :param force: Create volume group forcefully
     """
-
     if vg_check(vg_name):
         raise LVException("Volume group '%s' already exist" % vg_name)
     if force:
@@ -329,7 +327,6 @@ def lv_remove(vg_name, lv_name):
     :param vg_name: Name of the volume group
     :param lv_name: Name of the logical volume
     """
-
     if not vg_check(vg_name):
         raise LVException("Volume group could not be found")
     if not lv_check(vg_name, lv_name):
@@ -358,7 +355,6 @@ def lv_create(vg_name, lv_name, lv_size, force_flag=True,
 
     The volume group must already exist.
     """
-
     if not vg_check(vg_name):
         raise LVException("Volume group could not be found")
     if lv_check(vg_name, lv_name) and not force_flag:
@@ -462,7 +458,6 @@ def lv_take_snapshot(vg_name, lv_name,
     :param pool_name: Name of thin pool or None for regular snapshot
                       or snapshot in the same thin pool like the volume
     """
-
     if not vg_check(vg_name):
         raise LVException("Volume group could not be found")
     if pool_name is not None and not lv_check(vg_name, pool_name):
@@ -552,7 +547,6 @@ def lv_revert_with_snapshot(vg_name, lv_name,
     :param lv_snapshot_name: Name of the snapshot be to reverted
     :param lv_snapshot_size: Size of the snapshot
     """
-
     lv_revert(vg_name, lv_name, lv_snapshot_name)
     lv_take_snapshot(vg_name, lv_name, lv_snapshot_name, lv_snapshot_size)
 
@@ -589,7 +583,6 @@ def lv_mount(vg_name, lv_name, mount_loc, create_filesystem=""):
                               if the filesystem was already created and the
                               mkfs process is skipped
     """
-
     try:
         if create_filesystem:
             process.run("mkfs.%s /dev/%s/%s" %
@@ -608,7 +601,6 @@ def lv_umount(vg_name, lv_name):
     :param vg_name: Name of volume group
     :param lv_name: Name of the logical volume
     """
-
     try:
         process.run("umount /dev/%s/%s" % (vg_name, lv_name), sudo=True)
     except process.CmdError as ex:
