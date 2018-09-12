@@ -238,13 +238,16 @@ def vg_check(vg_name):
         return False
 
 
-def vg_list():
+def vg_list(vg_name=None):
     """
-    List available volume groups.
+    List all info about available volume groups.
 
-    :return List of volume groups.
+    :param vg_name: Name of the volume group or none to list all
+    :return: available volume groups
+    :rtype: list
     """
     cmd = "vgs --all"
+    cmd += " %s" % vg_name if vg_name is not None else ""
     vgroups = {}
     result = process.run(cmd, sudo=True)
     lines = result.stdout_text.strip().splitlines()
@@ -293,7 +296,6 @@ def vg_remove(vg_name):
 
     :param vg_name: Name of the volume group
     """
-
     if not vg_check(vg_name):
         raise LVException("Volume group '%s' could not be found" % vg_name)
     cmd = "vgremove -f %s" % vg_name
@@ -358,13 +360,16 @@ def lv_create(vg_name, lv_name, lv_size, force_flag=True):
     process.run(cmd, sudo=True)
 
 
-def lv_list():
+def lv_list(vg_name=None):
     """
-    List available group volumes.
+    List all info about available logical volumes.
 
-    :return list available logical volumes
+    :param vg_name: Name of the volume group or none to list all
+    :return: available logical volume
+    :rtype: list
     """
     cmd = "lvs --all"
+    cmd += " %s" % vg_name if vg_name is not None else ""
     volumes = {}
     result = process.run(cmd, sudo=True)
 
