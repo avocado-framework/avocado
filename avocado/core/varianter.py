@@ -50,7 +50,7 @@ def generate_variant_id(variant):
     variant = sorted(variant, key=lambda x: x.path)
     fingerprint = "\n".join(_.fingerprint() for _ in variant)
     return ("-".join(node.name for node in variant) + '-' +
-            hashlib.sha1(fingerprint.encode()).hexdigest()[:4])
+            hashlib.sha1(fingerprint.encode(astring.ENCODING)).hexdigest()[:4])
 
 
 def variant_to_str(variant, verbosity, out_args=None, debug=False):
