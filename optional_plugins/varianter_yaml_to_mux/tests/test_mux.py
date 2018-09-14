@@ -396,8 +396,9 @@ class TestAvocadoParams(unittest.TestCase):
             self.assertRaisesRegex = self.assertRaisesRegexp
 
         # One inherited, the other is new
-        self.assertRaisesRegex(ValueError, r"'clash1'.* \['/ch0/ch0.1/ch0.1.1"
-                               r"/ch0.1.1.1=>equal', '/ch0=>equal'\]",
+        self.assertRaisesRegex(ValueError, r"'clash1'.* \[u?'/ch0/ch0.1/"
+                               r"ch0.1.1/ch0.1.1.1=>equal', "
+                               r"u?'/ch0=>equal'\]",
                                self.params1.get, 'clash1',
                                default='nnn')
         # Only inherited ones
@@ -405,14 +406,15 @@ class TestAvocadoParams(unittest.TestCase):
                          'equal')
         # Booth of different origin
         self.assertRaisesRegex(ValueError,
-                               r"'clash2'.* \['/ch11=>equal', "
-                               r"'/ch111=>equal'\]", self.params1.get,
+                               r"'clash2'.* \[u?'/ch11=>equal', "
+                               r"u?'/ch111=>equal'\]", self.params1.get,
                                'clash2', path='/*')
         # Filter-out the clash
         self.assertEqual(self.params1.get('clash2', path='/ch11/*'), 'equal')
         # simple clash in params1
-        self.assertRaisesRegex(ValueError, r"'clash3'.* \['/ch0=>also equal',"
-                               r" '/ch0/ch0.1b/ch0.1.2=>also equal'\]",
+        self.assertRaisesRegex(ValueError, r"'clash3'.* "
+                               r"\[u?'/ch0=>also equal',"
+                               r" u?'/ch0/ch0.1b/ch0.1.2=>also equal'\]",
                                self.params1.get, 'clash3',
                                default='nnn')
         # params2 is sliced the other way around so it returns before the clash

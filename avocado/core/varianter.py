@@ -26,6 +26,7 @@ from six import iteritems, itervalues
 from . import tree
 from . import dispatcher
 from . import output
+from ..utils import astring
 
 
 def is_empty_variant(variant):
@@ -82,7 +83,7 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
         for node in variant["variant"]:
             for key, value in iteritems(node.environment):
                 origin = node.environment.origin[key].path
-                env.add(("%s:%s" % (origin, key), str(value)))
+                env.add(("%s:%s" % (origin, key), astring.to_text(value)))
         if not env:
             return out
         fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
@@ -99,14 +100,15 @@ def dump_ivariants(ivariants):
         """
         Turns TreeNode-like object into tuple(path, env_representation)
         """
-        return (str(node.path),
-                [(str(node.environment.origin[key].path), str(key), value)
+        return (astring.to_text(node.path),
+                [(astring.to_text(node.environment.origin[key].path),
+                  astring.to_text(key), value)
                  for key, value in iteritems(node.environment)])
 
     variants = []
     for variant in ivariants():
         safe_variant = {}
-        safe_variant["paths"] = [str(pth)
+        safe_variant["paths"] = [astring.to_text(pth)
                                  for pth in variant.get("paths")]
         safe_variant["variant_id"] = variant.get("variant_id")
         safe_variant["variant"] = [dump_tree_node(_)
@@ -149,7 +151,7 @@ class FakeVariantDispatcher(object):
             for node in variant["variant"]:
                 for key, value in iteritems(node.environment):
                     origin = node.environment.origin[key].path
-                    env.add(("%s:%s" % (origin, key), str(value)))
+                    env.add(("%s:%s" % (origin, key), astring.to_text(value)))
             if not env:
                 continue
             fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
