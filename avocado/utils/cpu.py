@@ -27,6 +27,8 @@ import glob
 import logging
 import random
 
+from . import process
+
 
 def _list_matches(content_list, pattern):
     """
@@ -346,3 +348,24 @@ def get_cpufreq_governor():
     except IOError as err:
         logging.error("Unable to get the current governor\n %s", err)
         return ""
+
+
+def get_pid_cpu(pid):
+    """
+    Get the process used cpus.
+    :param pid: process id
+    :type pid: string
+    :return: A list include all cpus the process used
+    :rtype: list
+    """
+    cmd = "ps -o cpuid -L -p %s" % pid
+    cpu_pid = ''
+    try:
+        cpu_pid = process.run(cmd)
+    except Exception:
+        pass
+    if not cpu_pid:
+        return []
+    lst = set([_.strip() for _ in cpu_pid.stdout_text.splitlines()])
+    lst.remove("CPUID")
+    return list(lst)
