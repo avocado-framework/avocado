@@ -48,7 +48,7 @@ def generate_variant_id(variant):
              values.
     """
     variant = sorted(variant, key=lambda x: x.path)
-    fingerprint = "-".join(_.fingerprint() for _ in variant)
+    fingerprint = "\n".join(_.fingerprint() for _ in variant)
     return ("-".join(node.name for node in variant) + '-' +
             hashlib.sha1(fingerprint.encode()).hexdigest()[:4])
 

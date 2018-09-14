@@ -236,7 +236,7 @@ class TestMuxTree(unittest.TestCase):
         expected_items = ["'paths': ''",
                           "'variant': '[TreeNode(name='child1'), "
                           "TreeNode(name='child2')]'",
-                          "'variant_id': 'child1-child2-9154'"]
+                          "'variant_id': 'child1-child2-f47e'"]
         for item in expected_items:
             self.assertIn(item, variant_list)
             variant_list.remove(item)
