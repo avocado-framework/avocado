@@ -823,7 +823,8 @@ class ExternalLoader(TestLoader):
 
         if runner:
             external_runner_and_args = shlex.split(runner)
-            executable = external_runner_and_args[0]
+            executable = os.path.abspath(external_runner_and_args[0])
+            runner = " ".join([executable] + external_runner_and_args[1:])
             if not os.path.exists(executable):
                 msg = ('Could not find the external runner executable "%s"'
                        % executable)

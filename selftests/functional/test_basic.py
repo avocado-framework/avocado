@@ -962,6 +962,19 @@ class ExternalRunnerTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
+    def test_externalrunner_chdir_runner_relative(self):
+        avocado_abs = " ".join([os.path.abspath(_) for _ in AVOCADO.split(" ")])
+        pass_abs = os.path.abspath(self.pass_script.path)
+        os.chdir('/')
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+                    '--external-runner=bin/sh --external-runner-chdir=runner -- %s'
+                    % (avocado_abs, self.tmpdir, pass_abs))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
     def test_externalrunner_no_url(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--external-runner=%s' % (AVOCADO, self.tmpdir, TRUE_CMD))
