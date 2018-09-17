@@ -135,6 +135,22 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
         return False
 
 
+def get_parent_pid(pid):
+    """
+    Returns the parent PID for the given process
+
+    TODO: this is currently Linux specific, and needs to implement
+    similar features for other platforms.
+
+    :param pid: The PID of child process
+    :returns: The parent PID
+    :rtype: int
+    """
+    with open('/proc/%d/stat' % pid, 'rb') as proc_stat:
+        parent_pid = proc_stat.read().split(b' ')[-49]
+        return int(parent_pid)
+
+
 def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
     """
     Signal a process and all of its children.
