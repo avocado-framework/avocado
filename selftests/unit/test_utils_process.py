@@ -3,6 +3,7 @@ import logging
 import os
 import shlex
 import unittest
+import sys
 
 try:
     from unittest import mock
@@ -283,6 +284,14 @@ class MiscProcessTests(unittest.TestCase):
         with mock.patch('avocado.utils.process.open',
                         return_value=io.BytesIO(stat)):
             self.assertTrue(process.get_parent_pid(0), 24139)
+
+    @unittest.skipUnless(sys.platform.startswith('linux'),
+                         'Linux specific feature and test')
+    def test_get_children_pids(self):
+        '''
+        Gets the list of children process.  Linux only.
+        '''
+        self.assertGreaterEqual(len(process.get_children_pids(1)), 1)
 
 
 class CmdResultTests(unittest.TestCase):
