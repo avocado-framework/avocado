@@ -18,6 +18,7 @@ Functions dedicated to find and run external commands.
 
 import errno
 import fnmatch
+import glob
 import logging
 import os
 import re
@@ -151,6 +152,41 @@ def get_parent_pid(pid):
         return int(parent_pid)
 
 
+def _get_pid_from_proc_pid_stat(proc_path):
+    match = re.match(r'\/proc\/([0-9]+)\/.*', proc_path)
+    if match is not None:
+        return int(match.group(1))
+
+
+def get_children_pids(parent_pid, recursive=False):
+    """
+    Returns the children PIDs for the given process
+
+    TODO: this is currently Linux specific, and needs to implement
+    similar features for other platforms.
+
+    :param parent_pid: The PID of parent child process
+    :returns: The PIDs for the children processes
+    :rtype: list of int
+    """
+    proc_stats = glob.glob('/proc/[123456789]*/stat')
+    children = []
+    for proc_stat in proc_stats:
+        try:
+            with open(proc_stat, 'rb') as proc_stat_fp:
+                this_parent_pid = int(proc_stat_fp.read().split(b' ')[3])
+        except IOError:
+            continue
+
+        if this_parent_pid == parent_pid:
+            children.append(_get_pid_from_proc_pid_stat(proc_stat))
+
+    if recursive:
+        for child in children:
+            children.extend(get_children_pids(child))
+    return children
+
+
 def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
     """
     Signal a process and all of its children.
@@ -160,12 +196,9 @@ def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
     :param pid: The pid of the process to signal.
     :param sig: The signal to send to the processes.
     """
-    # TODO: This relies on the GNU version of ps (need to fix MacOS support)
     if not safe_kill(pid, signal.SIGSTOP):
         return
-    children = system_output("ps --ppid=%d -o pid=" % pid, ignore_status=True,
-                             verbose=False).split()
-    for child in children:
+    for child in get_children_pids(pid):
         kill_process_tree(int(child), sig)
     safe_kill(pid, sig)
     if send_sigcont:
@@ -208,31 +241,6 @@ def process_in_ptree_is_defunct(ppid):
             defunct = True
             break
     return defunct
-
-
-def get_children_pids(ppid, recursive=False):
-    """
-    Get all PIDs of children/threads of parent ppid
-    param ppid: parent PID
-    param recursive: True to return all levels of sub-processes
-    return: list of PIDs of all children/threads of ppid
-    """
-    # TODO: This relies on the GNU version of ps (need to fix MacOS support)
-
-    cmd = "ps -L --ppid=%d -o lwp"
-
-    # Getting first level of sub-processes
-    children = system_output(cmd % ppid, verbose=False).split(b'\n')[1:]
-    if not recursive:
-        return children
-
-    # Recursion to get all levels of sub-processes
-    for child in children:
-        children.extend(system_output(cmd % int(child),
-                                      verbose=False,
-                                      ignore_status=True).split(b'\n')[1:])
-
-    return children
 
 
 def binary_from_shell_cmd(cmd):
