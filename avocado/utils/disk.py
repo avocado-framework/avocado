@@ -24,6 +24,7 @@ Disk utilities
 
 import os
 import json
+
 from . import process
 
 
@@ -39,6 +40,18 @@ def get_disk_blocksize(path):
 
 
 def get_disks():
+    """
+    Returns the physical "hard drives" available on this system
+
+    This is a simple wrapper around `lsblk` and will return all the
+    top level physical (non-virtual) devices return by it.
+
+    TODO: this is currently Linux specific.  Support for other
+    platforms is desirable and may be implemented in the future.
+
+    :returns: a list of paths to the physical disks on the system
+    :rtype: list of str
+    """
     json_result = process.run('lsblk --json')
     json_data = json.loads(json_result.stdout_text)
     return ['/dev/%s' % str(disk['name']) for disk in json_data['blockdevices']]
