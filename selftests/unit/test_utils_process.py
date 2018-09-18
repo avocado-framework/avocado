@@ -3,6 +3,7 @@ import logging
 import os
 import shlex
 import unittest
+import sys
 
 try:
     from unittest import mock
@@ -10,6 +11,7 @@ except ImportError:
     import mock
 
 
+from .. import recent_mock
 from avocado.utils import astring
 from avocado.utils import gdb
 from avocado.utils import process
@@ -277,6 +279,22 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual(process.cmd_split(unicode_command),
                          [u"avok\xe1do_test_runner",
                           u"arguments"])
+
+    @unittest.skipUnless(recent_mock(),
+                         "mock library version cannot (easily) patch open()")
+    def test_get_parent_pid(self):
+        stat = b'18405 (bash) S 24139 18405 18405 34818 8056 4210688 9792 170102 0 7 11 4 257 84 20 0 1 0 44336493 235409408 4281 18446744073709551615 94723230367744 94723231442728 140723100226000 0 0 0 65536 3670020 1266777851 0 0 0 17 1 0 0 0 0 0 94723233541456 94723233588580 94723248717824 140723100229613 140723100229623 140723100229623 140723100233710 0'
+        with mock.patch('avocado.utils.process.open',
+                        return_value=io.BytesIO(stat)):
+            self.assertTrue(process.get_parent_pid(0), 24139)
+
+    @unittest.skipUnless(sys.platform.startswith('linux'),
+                         'Linux specific feature and test')
+    def test_get_children_pids(self):
+        '''
+        Gets the list of children process.  Linux only.
+        '''
+        self.assertGreaterEqual(len(process.get_children_pids(1)), 1)
 
 
 class CmdResultTests(unittest.TestCase):
