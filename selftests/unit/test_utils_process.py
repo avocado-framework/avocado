@@ -281,6 +281,20 @@ class MiscProcessTests(unittest.TestCase):
 
 class CmdResultTests(unittest.TestCase):
 
+    def test_nasty_str(self):
+        result = process.CmdResult("ls", b"unicode_follows: \xc5\xa1",
+                                   b"cp1250 follows: \xfd", 1, 2, 3,
+                                   "wrong_encoding")
+        if PY2:
+            prefix = ''
+        else:
+            prefix = 'b'
+        self.assertEqual(str(result), "command: 'ls'\nexit_status: 1"
+                         "\nduration: 2\ninterrupted: False\npid: "
+                         "3\nencoding: 'wrong_encoding'\nstdout: "
+                         "%s'unicode_follows: \\xc5\\xa1'\nstderr: "
+                         "%s'cp1250 follows: \\xfd'" % (prefix, prefix))
+
     def test_cmd_result_stdout_stderr_bytes(self):
         result = process.CmdResult()
         self.assertTrue(isinstance(result.stdout, bytes))
