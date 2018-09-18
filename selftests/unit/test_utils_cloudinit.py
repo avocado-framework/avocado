@@ -59,7 +59,7 @@ class PhoneHome(unittest.TestCase):
         conn.request('POST', url)
         try:
             conn.getresponse()
-        except:
+        except Exception:
             pass
         finally:
             conn.close()

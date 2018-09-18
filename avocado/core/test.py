@@ -827,7 +827,7 @@ class Test(unittest.TestCase, TestData):
             except exceptions.TestCancel as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise
-            except:  # Old-style exceptions are not inherited from Exception()
+            except:  # Old-style exceptions are not inherited from Exception() pylint: disable=W0702
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 details = sys.exc_info()[1]
                 if not isinstance(details, Exception):  # Avoid passing nasty exc
@@ -852,7 +852,7 @@ class Test(unittest.TestCase, TestData):
             except exceptions.TestCancel as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise
-            except:  # avoid old-style exception failures
+            except:  # avoid old-style exception failures pylint: disable=W0702
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 details = sys.exc_info()[1]
                 cleanup_exception = exceptions.TestSetupFail(details)
