@@ -15,16 +15,16 @@
 
 
 import sys
-try:
-    import os
-    import time
-    import tempfile
-    import traceback
+import os
+import time
+import tempfile
+import traceback
 
+try:
     from avocado.core import data_dir
 except ImportError:
-    sys.stderr.write("Unable to import basic python libraries, please "
-                     "reinstall avocado and dependencies.\n")
+    sys.stderr.write("Unable to import Avocado libraries, please verify "
+                     "your installation, and if necessary reinstall it.\n")
     # This exit code is replicated from avocado/core/exit_codes.py and not
     # imported because we are dealing with import failures
     sys.exit(-1)
