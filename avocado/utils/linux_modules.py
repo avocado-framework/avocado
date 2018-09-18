@@ -27,8 +27,8 @@ import platform
 
 from enum import Enum
 
+from . import astring
 from . import process
-from . import genio
 
 LOG = logging.getLogger('avocado.test')
 
@@ -205,10 +205,7 @@ def module_is_loaded(module_name):
     :rtype: bool
     """
     module_name = module_name.replace('-', '_')
-    for line in genio.read_file("/proc/modules").splitlines():
-        if line.split(None, 1)[0] == module_name:
-            return True
-    return False
+    return module_name in get_loaded_modules()
 
 
 def get_loaded_modules():
@@ -216,8 +213,8 @@ def get_loaded_modules():
     Gets list of loaded modules.
     :return: List of loaded modules.
     """
-    lsmod_output = process.system_output('/sbin/lsmod').splitlines()[1:]
-    return [line.split(None, 1)[0] for line in lsmod_output]
+    with open('/proc/modules', 'rb') as proc_modules:
+        return [astring.to_text(_.split(b' ', 1)[0]) for _ in proc_modules]
 
 
 def check_kernel_config(config_name):
