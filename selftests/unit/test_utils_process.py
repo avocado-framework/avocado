@@ -15,7 +15,7 @@ from avocado.utils import gdb
 from avocado.utils import process
 from avocado.utils import path
 
-from six import string_types
+from six import string_types, PY2
 
 
 def probe_binary(binary):
@@ -281,6 +281,20 @@ class MiscProcessTests(unittest.TestCase):
 
 class CmdResultTests(unittest.TestCase):
 
+    def test_nasty_str(self):
+        result = process.CmdResult("ls", b"unicode_follows: \xc5\xa1",
+                                   b"cp1250 follows: \xfd", 1, 2, 3,
+                                   "wrong_encoding")
+        if PY2:
+            prefix = ''
+        else:
+            prefix = 'b'
+        self.assertEqual(str(result), "command: 'ls'\nexit_status: 1"
+                         "\nduration: 2\ninterrupted: False\npid: "
+                         "3\nencoding: 'wrong_encoding'\nstdout: "
+                         "%s'unicode_follows: \\xc5\\xa1'\nstderr: "
+                         "%s'cp1250 follows: \\xfd'" % (prefix, prefix))
+
     def test_cmd_result_stdout_stderr_bytes(self):
         result = process.CmdResult()
         self.assertTrue(isinstance(result.stdout, bytes))
@@ -304,6 +318,23 @@ class CmdResultTests(unittest.TestCase):
         result.stderr = None
         self.assertRaises(TypeError, lambda x: result.stdout_text)
         self.assertRaises(TypeError, lambda x: result.stderr_text)
+
+
+class CmdErrorTests(unittest.TestCase):
+
+    def test_nasty_str(self):
+        result = process.CmdResult("ls", b"unicode_follows: \xc5\xa1",
+                                   b"cp1250 follows: \xfd", 1, 2, 3,
+                                   "wrong_encoding")
+        err = process.CmdError("ls", result, "please don't crash")
+        if PY2:
+            prefix = ''
+        else:
+            prefix = 'b'
+        self.assertEqual(str(err), "Command 'ls' failed.\nstdout: "
+                         "%s'unicode_follows: \\xc5\\xa1'\nstderr: "
+                         "%s'cp1250 follows: \\xfd'\nadditional_info: "
+                         "please don't crash" % (prefix, prefix))
 
 
 class FDDrainerTests(unittest.TestCase):
