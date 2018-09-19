@@ -104,12 +104,9 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                     raise ValueError("File '%s' included from '%s' does not "
                                      "exist." % (ypath, path))
                 node.merge(_create_from_yaml('/:' + ypath, cls_node))
-            elif value[0].code == YAML_REMOVE_NODE:
+            elif value[0].code in (YAML_REMOVE_NODE, YAML_REMOVE_VALUE):
                 value[0].value = value[1]   # set the name
                 node.ctrl.append(value[0])    # add "blue pill" of death
-            elif value[0].code == YAML_REMOVE_VALUE:
-                value[0].value = value[1]   # set the name
-                node.ctrl.append(value[0])
             elif value[0].code == YAML_MUX:
                 node.multiplex = True
             elif value[0].code == YAML_FILTER_ONLY:
