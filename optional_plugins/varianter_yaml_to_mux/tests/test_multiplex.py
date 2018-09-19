@@ -55,6 +55,13 @@ class MultiplexTests(unittest.TestCase):
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn('No such file or directory', result.stderr_text)
 
+    def test_mplex_plugin_using(self):
+        cmd_line = ('%s variants -m /:optional_plugins/varianter_yaml_to_mux/'
+                    'tests/.data/mux-selftest-using.yaml' % AVOCADO)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        result = self.run_and_check(cmd_line, expected_rc)
+        self.assertIn(b' /foo/baz/bar', result.stdout)
+
     @unittest.skipIf(sys.version_info[0] == 3,
                      "Test currently broken on Python 3")
     def test_mplex_debug(self):

@@ -148,6 +148,34 @@ def _handle_control_tag_using(path, name, using, value):
     return using
 
 
+def _apply_using(name, cls_node, using, node):
+    """
+    Create the structure defined by "!using" and return the new root
+
+    :param name: the tag name to have the "!using" applied to
+    :type name: str
+    :param cls_node: the class of the node
+    :type cls_node: :class:`avocado.core.tree.TreeNode` or similar
+    :param using: the new location to put the tag into
+    :type using: bool
+    :param node: the node in which to handle control tags
+    :type node: instance of :class:`avocado.core.tree.TreeNode` or similar
+    """
+    if name is not '':
+        for name in using.split('/')[::-1]:
+            node = cls_node(name, children=[node])
+    else:
+        using = using.split('/')[::-1]
+        node.name = using.pop()
+        while True:
+            if not using:
+                break
+            name = using.pop()  # 'using' is list pylint: disable=E1101
+            node = cls_node(name, children=[node])
+        node = cls_node('', children=[node])
+    return node
+
+
 def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     """Create tree structure from yaml stream"""
     def tree_node_from_values(name, values):
@@ -184,22 +212,6 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                     node.value[key] = value
             return using
 
-        def apply_using(name, using, node):
-            '''Create the structure defined by using and return the new root'''
-            if name is not '':
-                for name in using.split('/')[::-1]:
-                    node = cls_node(name, children=[node])
-            else:
-                using = using.split('/')[::-1]
-                node.name = using.pop()
-                while True:
-                    if not using:
-                        break
-                    name = using.pop()  # 'using' is list pylint: disable=E1101
-                    node = cls_node(name, children=[node])
-                node = cls_node('', children=[node])
-            return node
-
         # Initialize the node
         node = cls_node(str(name))
         if not values:
@@ -214,7 +226,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
 
         # Prefix nodes if tag "!using" was used
         if using:
-            node = apply_using(name, using, node)
+            node = _apply_using(name, cls_node, using, node)
         return node
 
     def mapping_to_tree_loader(loader, node, looks_like_node=False):

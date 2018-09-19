@@ -570,6 +570,11 @@ class TestCreateFromYaml(unittest.TestCase):
                                                       '/using/path/')
         self.assertEqual(using, 'using/path')
 
+    def test_apply_using(self):
+        node = yaml_to_mux._apply_using('bar', mux.MuxTreeNode,
+                                        'foo', mux.MuxTreeNode())
+        self.assertEqual(node.path, '/foo')
+
 
 class TestFingerprint(unittest.TestCase):
 
