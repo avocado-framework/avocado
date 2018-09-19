@@ -28,6 +28,7 @@ from six.moves.html_parser import HTMLParser
 
 from . import archive
 from . import asset
+from . import astring
 from . import path as utils_path
 from . import process
 
@@ -65,6 +66,8 @@ class ImageProviderBase(object):
     image. Intended to be sub-classed by the specific image providers.
     """
 
+    HTML_ENCODING = 'utf-8'
+
     def __init__(self, version, build, arch):
 
         self.url_versions = None
@@ -87,7 +90,8 @@ class ImageProviderBase(object):
         pattern = '^%s/$' % self._version
         parser = VMImageHtmlParser(pattern)
         try:
-            parser.feed(urlopen(self.url_versions).read())
+            data = urlopen(self.url_versions).read()
+            parser.feed(astring.to_text(data, self.HTML_ENCODING))
         except HTTPError:
             raise ImageProviderError('Cannot open %s' % self.url_versions)
         if parser.items:
@@ -124,7 +128,7 @@ class ImageProviderBase(object):
         parser = VMImageHtmlParser(image)
         try:
             content = urlopen(url_images).read()
-            parser.feed(content)
+            parser.feed(astring.to_text(content, self.HTML_ENCODING))
         except HTTPError:
             raise ImageProviderError('Cannot open %s' % url_images)
 
@@ -139,6 +143,8 @@ class FedoraImageProviderBase(ImageProviderBase):
     """
     Base Fedora Image Provider
     """
+
+    HTML_ENCODING = 'iso-8859-1'
 
     def get_image_url(self):
         if int(self.version) >= 28:
