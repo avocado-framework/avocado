@@ -40,6 +40,8 @@ import locale
 
 from six import string_types, iteritems
 
+from ..utils import astring
+
 
 class FilterSet(set):
 
@@ -59,7 +61,8 @@ class FilterSet(set):
                                               for item in items])
 
     def __str__(self):
-        return 'FilterSet([%s])' % ', '.join(["'%s'" % i for i in self])
+        return ('FilterSet([%s])'
+                % ', '.join(sorted(["'%s'" % i for i in self])))
 
 
 class TreeEnvironment(dict):
@@ -91,8 +94,8 @@ class TreeEnvironment(dict):
         else:
             values = "{}"
             origin = "{}"
-        return ",".join((values, origin, str(self.filter_only),
-                         str(self.filter_out)))
+        return ",".join((values, origin, astring.to_text(self.filter_only),
+                         astring.to_text(self.filter_out)))
 
 
 class TreeNodeEnvOnly(object):
@@ -209,13 +212,13 @@ class TreeNode(object):
             try:
                 values.append(hash(item))
             except TypeError:
-                values.append(hash(str(item)))
+                values.append(hash(astring.to_text(item)))
         children = []
         for item in self.children:
             try:
                 children.append(hash(item))
             except TypeError:
-                children.append(hash(str(item)))
+                children.append(hash(astring.to_text(item)))
         return hash((self.name, ) + tuple(values) + tuple(children))
 
     def fingerprint(self):
@@ -295,10 +298,10 @@ class TreeNode(object):
     def get_path(self, sep='/'):
         """ Get node path """
         if not self.parent:
-            return sep + str(self.name)
-        path = [str(self.name)]
+            return sep + astring.to_text(self.name)
+        path = [astring.to_text(self.name)]
         for node in self.iter_parents():
-            path.append(str(node.name))
+            path.append(astring.to_text(node.name))
         return sep.join(reversed(path))
 
     @property
@@ -402,7 +405,7 @@ def tree_view(root, verbose=None, use_utf8=None):
         Split value's lines and prepend empty prefix to 2nd+ lines
         :return: list of lines
         """
-        value = str(value)
+        value = astring.to_text(value)
         if '\n' not in value:
             return [prefix1 + prefix2 + value]
         value = value.splitlines()
@@ -504,4 +507,5 @@ def tree_view(root, verbose=None, use_utf8=None):
         out.append(right + lines[0])
         out.extend(' ' * len(down_right) + line for line in lines[1:])
     # When not on TTY we need to force the encoding
-    return '\n'.join(out).encode('utf-8' if use_utf8 else 'ascii')
+    return '\n'.join(out).encode('utf-8' if use_utf8 else 'ascii',
+                                 errors='xmlcharrefreplace')

@@ -314,6 +314,10 @@ class ValueDict(dict):  # only container pylint: disable=R0903
         for key in iterkeys(self):
             yield key, self[key]
 
+    def items(self):
+        """ Slower implementation with the use of __getitem__ """
+        return self.iteritems()
+
 
 class Control(object):  # Few methods pylint: disable=R0903
 
