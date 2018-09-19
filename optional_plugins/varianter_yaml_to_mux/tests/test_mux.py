@@ -539,6 +539,25 @@ class TestCreateFromYaml(unittest.TestCase):
         self.assertEqual(yaml_to_mux._normalize_path(''), None)
         self.assertEqual(yaml_to_mux._normalize_path('path'), 'path/')
 
+    def test_handle_control_path_include_file_does_not_exist(self):
+        self.assertRaises(ValueError,
+                          yaml_to_mux._handle_control_tag,
+                          'original_fake_file.yaml',
+                          mux.MuxTreeNode, mux.MuxTreeNode(),
+                          (mux.Control(yaml_to_mux.YAML_INCLUDE),
+                           'unexisting_include.yaml'))
+
+    def test_handle_control_path_remove(self):
+        klass = mux.MuxTreeNode
+        node = klass()
+        control = mux.Control(yaml_to_mux.YAML_REMOVE_NODE)
+        to_be_removed = 'node_to_be_removed'
+        yaml_to_mux._handle_control_tag('fake_path',
+                                        klass, node,
+                                        (control, to_be_removed))
+        self.assertEqual(control.value, to_be_removed)
+        self.assertIn(control, node.ctrl)
+
 
 class TestFingerprint(unittest.TestCase):
 
