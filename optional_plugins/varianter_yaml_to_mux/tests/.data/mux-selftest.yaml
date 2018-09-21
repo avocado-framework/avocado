@@ -55,6 +55,5 @@ env: !mux
     prod:
         opt_CFLAGS: '-O2'
 distro: !mux
-    # Use utf-8 character
-    šmint:
+    mint:
         init: 'systemv'

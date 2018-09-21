@@ -5,14 +5,11 @@ import pickle
 import sys
 import unittest
 
-from six import PY2
-
 import yaml
 
 import avocado_varianter_yaml_to_mux as yaml_to_mux
 from avocado_varianter_yaml_to_mux import mux
 from avocado.core import tree, parameters
-from avocado.utils import astring
 
 BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 BASEDIR = os.path.abspath(BASEDIR)
@@ -81,15 +78,10 @@ class TestMuxTree(unittest.TestCase):
 
     def test_basic_functions(self):
         # repr
-        if PY2:
-            self.assertEqual("MuxTreeNode(name=u'hw')",
-                             repr(self.tree.children[0]))
-        else:
-            self.assertEqual("MuxTreeNode(name='hw')",
-                             repr(self.tree.children[0]))
+        self.assertEqual("MuxTreeNode(name='hw')", repr(self.tree.children[0]))
         # str
-        self.assertEqual(u"/distro/\u0161mint: init=systemv",
-                         astring.to_text(self.tree.children[1].children[1]))
+        self.assertEqual("/distro/mint: init=systemv",
+                         str(self.tree.children[1].children[1]))
         # len
         self.assertEqual(8, len(self.tree))  # number of leaves
         # __iter__
@@ -131,28 +123,23 @@ class TestMuxTree(unittest.TestCase):
         vals = {'opt_CFLAGS': '-Os'}
         self.assertEqual(vals, self.tree.children[2].environment)
         # leaves order
-        leaves = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora',
-                  u'\u0161mint', 'prod']
+        leaves = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', 'mint',
+                  'prod']
         self.assertEqual(leaves, self.tree.get_leaves())
-        tree_view = tree.tree_view(self.tree, 0, False)
-        # ascii treeview contains only ascii chars
-        tree_view.decode('ascii')
-        # ascii treeview contain all leaves
+        # ascii contain all leaves and doesn't raise any exceptions
+        tree_view = tree.tree_view(self.tree, 0, False).decode('ascii')
         for leaf in leaves:
-            # In ascii mode we replace non-ascii character using
-            # xmlcharrefreplace, make sure this is performed
-            leaf = leaf.encode('ascii', errors='xmlcharrefreplace')
             self.assertIn(leaf, tree_view, "Leaf %s not in ascii:\n%s"
                           % (leaf, tree_view))
 
     def test_filters(self):
         tree2 = copy.deepcopy(self.tree)
-        exp = ['intel', 'amd', 'arm', 'fedora', u'\u0161mint', 'prod']
+        exp = ['intel', 'amd', 'arm', 'fedora', 'mint', 'prod']
         act = mux.apply_filters(tree2,
                                 filter_only=['/hw/cpu', '']).get_leaves()
         self.assertEqual(exp, act)
         tree2 = copy.deepcopy(self.tree)
-        exp = ['scsi', 'virtio', 'fedora', u'\u0161mint', 'prod']
+        exp = ['scsi', 'virtio', 'fedora', 'mint', 'prod']
         act = mux.apply_filters(tree2,
                                 filter_out=['/hw/cpu', '']).get_leaves()
         self.assertEqual(exp, act)
@@ -167,7 +154,7 @@ class TestMuxTree(unittest.TestCase):
         tree3.children[0].add_child(mux.MuxTreeNode('cpu', {'test_value': ['z']}))
         tree2.merge(tree3)
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'default', 'virtio',
-               'fedora', u'\u0161mint', 'prod']
+               'fedora', 'mint', 'prod']
         self.assertEqual(exp, tree2.get_leaves())
         self.assertEqual({'corruptlist': ['upper_node_list'],
                           'another_value': 'bbb'},
@@ -184,24 +171,24 @@ class TestMuxTree(unittest.TestCase):
         tree2_yaml_url = '/:%s' % tree2_yaml_path
         tree2 = yaml_to_mux.create_from_yaml([tree2_yaml_url])
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', '6',
-               '7', 'gentoo', u'\u0161mint', 'prod', 'new_node', 'on', 'dict']
+               '7', 'gentoo', 'mint', 'prod', 'new_node', 'on', 'dict']
         act = tree2.get_leaves()
         oldroot = tree2.children[0]
         self.assertEqual(exp, act)
-        self.assertEqual(tree2.children[0].children[0].path, u"/\u0161virt/hw")
+        self.assertEqual(tree2.children[0].children[0].path, "/virt/hw")
         self.assertEqual({'enterprise': True},
                          oldroot.children[1].children[1].value)
         self.assertEqual({'new_init': 'systemd'},
                          oldroot.children[1].children[0].value)
         self.assertEqual({'is_cool': True},
                          oldroot.children[1].children[2].value)
-        self.assertEqual({'new_value': u'\u0161omething'},
+        self.assertEqual({'new_value': 'something'},
                          oldroot.children[3].children[0].children[0].value)
         # Convert values, but not keys
         self.assertEqual({'on': True, "true": "true"},
                          oldroot.children[4].value)
         # Dicts as values
-        self.assertEqual({"explicit": {u"foo\u0161": u"\u0161bar", "bar": "baz"},
+        self.assertEqual({"explicit": {"foo": "bar", "bar": "baz"},
                           "in_list": [{"foo": "bar", "bar": "baz"}]},
                          oldroot.children[5].value)
         # multiplex root (always True)
