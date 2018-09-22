@@ -73,20 +73,28 @@ class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
     """
 
 
+def _normalize_path(path):
+    """
+    End the path with single '/'
+
+    :param path: original path
+    :type path: str
+    :returns: path with trailing '/', or None when empty path
+    :rtype: str or None
+    """
+    if not path:
+        return
+    if path[-1] != '/':
+        path += '/'
+    return path
+
+
 def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     """Create tree structure from yaml stream"""
     def tree_node_from_values(name, values):
         """Create `name` node and add values"""
         def handle_control_tag(node, value):
             """Handling of YAML tags (except of !using)"""
-            def normalize_path(path):
-                """End the path with single '/', None when empty path"""
-                if not path:
-                    return
-                if path[-1] != '/':
-                    path += '/'
-                return path
-
             if value[0].code == YAML_INCLUDE:
                 # Include file
                 ypath = value[1]
@@ -105,11 +113,11 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
             elif value[0].code == YAML_MUX:
                 node.multiplex = True
             elif value[0].code == YAML_FILTER_ONLY:
-                new_value = normalize_path(value[1])
+                new_value = _normalize_path(value[1])
                 if new_value:
                     node.filters[0].append(new_value)
             elif value[0].code == YAML_FILTER_OUT:
-                new_value = normalize_path(value[1])
+                new_value = _normalize_path(value[1])
                 if new_value:
                     node.filters[1].append(new_value)
 

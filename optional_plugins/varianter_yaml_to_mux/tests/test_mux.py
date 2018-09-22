@@ -535,6 +535,13 @@ class TestPathParent(unittest.TestCase):
         self.assertNotEqual(mux.path_parent('/os/linux'), '/')
 
 
+class TestCreateFromYaml(unittest.TestCase):
+
+    def test_normalize_path(self):
+        self.assertEqual(yaml_to_mux._normalize_path(''), None)
+        self.assertEqual(yaml_to_mux._normalize_path('path'), 'path/')
+
+
 class TestFingerprint(unittest.TestCase):
 
     def test_fingerprint(self):
