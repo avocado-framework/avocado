@@ -125,22 +125,33 @@ def _handle_control_tag(path, cls_node, node, value):
             node.filters[1].append(new_value)
 
 
+def _handle_control_tag_using(path, name, using, value):
+    """
+    Handling of the "!using" YAML control tag
+
+    :param path: path on the YAML
+    :type path: str
+    :param name: name to be applied in the "!using" tag
+    :type name: str
+    :param using: wether using is already being used
+    :type using: bool
+    :param value: the value of the node
+    """
+    if using:
+        raise ValueError("!using can be used only once per "
+                         "node! (%s:%s)" % (path, name))
+    using = value
+    if using[0] == '/':
+        using = using[1:]
+    if using[-1] == '/':
+        using = using[:-1]
+    return using
+
+
 def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     """Create tree structure from yaml stream"""
     def tree_node_from_values(name, values):
         """Create `name` node and add values"""
-        def handle_control_tag_using(name, using, value):
-            """Handling of the !using tag"""
-            if using:
-                raise ValueError("!using can be used only once per "
-                                 "node! (%s:%s)" % (path, name))
-            using = value
-            if using[0] == '/':
-                using = using[1:]
-            if using[-1] == '/':
-                using = using[:-1]
-            return using
-
         def node_content_from_node(node, values, using):
             """Processes node values into the current node content"""
             for value in values:
@@ -148,7 +159,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                     node.add_child(value)
                 elif isinstance(value[0], mux.Control):
                     if value[0].code == YAML_USING:
-                        using = handle_control_tag_using(name, using, value[1])
+                        using = _handle_control_tag_using(path, name, using, value[1])
                     else:
                         _handle_control_tag(path, cls_node, node, value)
                 elif isinstance(value[1], collections.OrderedDict):
@@ -163,7 +174,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
             for key, value in iteritems(values):
                 if isinstance(key, mux.Control):
                     if key.code == YAML_USING:
-                        using = handle_control_tag_using(name, using, value)
+                        using = _handle_control_tag_using(path, name, using, value)
                     else:
                         _handle_control_tag(path, cls_node, node, [key, value])
                 elif (isinstance(value, collections.OrderedDict) or

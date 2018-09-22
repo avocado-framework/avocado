@@ -560,6 +560,18 @@ class TestCreateFromYaml(unittest.TestCase):
         self.assertEqual(control.value, to_be_removed)
         self.assertIn(control, node.ctrl)
 
+    def test_handle_control_tag_using_multiple(self):
+        with self.assertRaises(ValueError):
+            yaml_to_mux._handle_control_tag_using('original_fake_file.yaml',
+                                                  'name', True, 'using')
+
+    def test_handle_control_tag_using(self):
+        using = yaml_to_mux._handle_control_tag_using('fake_path',
+                                                      'name',
+                                                      False,
+                                                      '/using/path/')
+        self.assertEqual(using, 'using/path')
+
 
 class TestFingerprint(unittest.TestCase):
 
