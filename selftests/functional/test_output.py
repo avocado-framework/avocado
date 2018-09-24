@@ -6,8 +6,6 @@ import tempfile
 import unittest
 from xml.dom import minidom
 
-import pkg_resources
-
 from avocado.core import exit_codes
 from avocado.core.output import TermSupport
 from avocado.utils import genio
@@ -117,14 +115,6 @@ def image_output_uncapable():
         import PIL              # pylint: disable=W0612
         return False
     except ImportError:
-        return True
-
-
-def html_uncapable():
-    try:
-        pkg_resources.require('avocado-framework-plugin-result-html')
-        return False
-    except pkg_resources.DistributionNotFound:
         return True
 
 
@@ -319,21 +309,6 @@ class OutputPluginTest(unittest.TestCase):
                              "Missing error message from output:\n%s" %
                              result.stderr)
 
-    @unittest.skipIf(html_uncapable(),
-                     "Uncapable of Avocado Result HTML plugin")
-    def test_output_incompatible_setup_2(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
-                    '--html - passtest.py' % (AVOCADO, self.tmpdir))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
-        output = result.stdout + result.stderr
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        error_excerpt = b"HTML to stdout not supported"
-        self.assertIn(error_excerpt, output,
-                      "Missing excerpt error message from output:\n%s" % output)
-
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -366,36 +341,6 @@ class OutputPluginTest(unittest.TestCase):
             debug_log = json_results['debuglog']
             self.check_output_files(debug_log)
         minidom.parseString(output)
-
-    @unittest.skipIf(html_uncapable(),
-                     "Uncapable of Avocado Result HTML plugin")
-    def test_output_compatible_setup_3(self):
-        prefix = 'avocado_' + __name__
-        tmpfile = tempfile.mktemp(prefix=prefix, dir=self.tmpdir)
-        tmpfile2 = tempfile.mktemp(prefix=prefix, dir=self.tmpdir)
-        tmpdir = tempfile.mkdtemp(prefix=prefix, dir=self.tmpdir)
-        tmpfile3 = os.path.join(tmpdir, "result.html")
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
-                    '--xunit %s --json %s --html %s --tap-include-logs '
-                    'passtest.py' % (AVOCADO, self.tmpdir, tmpfile, tmpfile2,
-                                     tmpfile3))
-        result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        tmpdir_contents = os.listdir(tmpdir)
-        self.assertEqual(len(tmpdir_contents), 1, "Html plugin generated "
-                         "extra files in the result dir: %s"
-                         % tmpdir_contents)
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        self.assertNotEqual(output, "", "Output is empty")
-        # Check if we are producing valid outputs
-        with open(tmpfile2, 'r') as fp:
-            json_results = json.load(fp)
-            debug_log = json_results['debuglog']
-            self.check_output_files(debug_log)
-        minidom.parse(tmpfile)
 
     def test_output_compatible_setup_nooutput(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir)
