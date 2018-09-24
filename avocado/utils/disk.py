@@ -24,6 +24,7 @@ Disk utilities
 
 import os
 import json
+import re
 
 from . import process
 
@@ -55,3 +56,13 @@ def get_disks():
     json_result = process.run('lsblk --json')
     json_data = json.loads(json_result.stdout_text)
     return ['/dev/%s' % str(disk['name']) for disk in json_data['blockdevices']]
+
+
+def get_filesystems():
+    """
+    Return a list of all available filesystems
+
+    :returns: a list of filesystem string
+    :rtype: list of str
+    """
+    return [re.sub('(nodev)?\s*', '', fs) for fs in open('/proc/filesystems')]
