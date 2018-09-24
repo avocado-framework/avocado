@@ -339,22 +339,40 @@ def lv_check(vg_name, lv_name):
         return False
 
 
-def lv_remove(vg_name, lv_name):
+def lv_list(vg_name=None):
     """
-    Remove a logical volume.
+    List all info about available logical volumes.
 
-    :param str vg_name: name of the volume group
-    :param str lv_name: name of the logical volume
-    :raises: :py:class:`LVException` if volume group or logical
-             volume cannot be found
+    :param str vg_name: name of the volume group or None to list all
+    :returns: list of available logical volumes
+    :rtype: {str, {str, str}}
     """
-    if not vg_check(vg_name):
-        raise LVException("Volume group could not be found")
-    if not lv_check(vg_name, lv_name):
-        raise LVException("Logical volume could not be found")
+    cmd = "lvs --all"
+    cmd += " %s" % vg_name if vg_name is not None else ""
+    volumes = {}
+    result = process.run(cmd, sudo=True)
 
-    cmd = "lvremove -f %s/%s" % (vg_name, lv_name)
-    process.run(cmd, sudo=True)
+    lines = result.stdout_text.strip().splitlines()
+    if len(lines) > 1:
+        lines = lines[1:]
+    else:
+        return volumes
+
+    for line in lines:
+        details = line.split()
+        length = len(details)
+        details_dict = {}
+        lv_name = details[0]
+        details_dict["VG"] = details[1]
+        details_dict["Attr"] = details[2]
+        details_dict["LSize"] = details[3]
+        if length == 5:
+            details_dict["Origin_Data"] = details[4]
+        elif length > 5:
+            details_dict["Origin_Data"] = details[5]
+            details_dict["Pool"] = details[4]
+        volumes[lv_name] = details_dict
+    return volumes
 
 
 def lv_create(vg_name, lv_name, lv_size, force_flag=True,
@@ -430,40 +448,22 @@ def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
     return (thinpool_name, thinlv_name)
 
 
-def lv_list(vg_name=None):
+def lv_remove(vg_name, lv_name):
     """
-    List all info about available logical volumes.
+    Remove a logical volume.
 
-    :param str vg_name: name of the volume group or None to list all
-    :returns: list of available logical volumes
-    :rtype: {str, {str, str}}
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :raises: :py:class:`LVException` if volume group or logical
+             volume cannot be found
     """
-    cmd = "lvs --all"
-    cmd += " %s" % vg_name if vg_name is not None else ""
-    volumes = {}
-    result = process.run(cmd, sudo=True)
+    if not vg_check(vg_name):
+        raise LVException("Volume group could not be found")
+    if not lv_check(vg_name, lv_name):
+        raise LVException("Logical volume could not be found")
 
-    lines = result.stdout_text.strip().splitlines()
-    if len(lines) > 1:
-        lines = lines[1:]
-    else:
-        return volumes
-
-    for line in lines:
-        details = line.split()
-        length = len(details)
-        details_dict = {}
-        lv_name = details[0]
-        details_dict["VG"] = details[1]
-        details_dict["Attr"] = details[2]
-        details_dict["LSize"] = details[3]
-        if length == 5:
-            details_dict["Origin_Data"] = details[4]
-        elif length > 5:
-            details_dict["Origin_Data"] = details[5]
-            details_dict["Pool"] = details[4]
-        volumes[lv_name] = details_dict
-    return volumes
+    cmd = "lvremove -f %s/%s" % (vg_name, lv_name)
+    process.run(cmd, sudo=True)
 
 
 def lv_take_snapshot(vg_name, lv_name,
