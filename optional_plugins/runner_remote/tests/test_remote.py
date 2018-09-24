@@ -1,5 +1,8 @@
 import argparse
+import glob
+import os
 import shutil
+import tempfile
 import unittest
 
 try:
@@ -8,7 +11,7 @@ except ImportError:
     import mock
 
 from avocado.core.job import Job
-from avocado.core import version
+from avocado.core import exit_codes, version
 from avocado.utils import process
 import avocado_runner_remote
 
@@ -109,6 +112,35 @@ class RemoteTestRunnerTest(unittest.TestCase):
         finally:
             if job:
                 shutil.rmtree(job.args.base_logdir)
+
+    def test_run_replay_remotefail(self):
+        """
+        Runs a replay job using remote plugin (not supported).
+        """
+        tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        cmd_line = ('avocado run passtest.py '
+                    '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
+                    '--job-results-dir %s --sysinfo=off --json -' % tmpdir)
+        result = process.run(cmd_line, ignore_status=True)
+        jobdir = ''.join(glob.glob(os.path.join(tmpdir, 'job-*')))
+        idfile = ''.join(os.path.join(jobdir, 'id'))
+
+        with open(idfile, 'r') as f:
+            jobid = f.read().strip('\n')
+
+        cmd_line = ('avocado run --replay %s --remote-hostname '
+                    'localhost --job-results-dir %s --sysinfo=off' % (jobid, tmpdir))
+        expected_rc = exit_codes.AVOCADO_FAIL
+        result = process.run(cmd_line, ignore_status=True)
+
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Command %s did not return rc "
+                         "%d:\n%s" % (cmd_line, expected_rc, result))
+
+        msg = b"Currently we don't replay jobs in remote hosts."
+        self.assertIn(msg, result.stderr)
+
+        shutil.rmtree(tmpdir)
 
 
 if __name__ == '__main__':

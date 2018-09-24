@@ -4,20 +4,10 @@ import shutil
 import tempfile
 import unittest
 
-import pkg_resources
-
 from avocado.core import exit_codes
 from avocado.utils import process
 
 from .. import AVOCADO, BASEDIR
-
-
-def remote_capable():
-    try:
-        pkg_resources.require('avocado-framework-plugin-runner-remote')
-        return True
-    except pkg_resources.DistributionNotFound:
-        return False
 
 
 class ReplayTests(unittest.TestCase):
@@ -153,20 +143,6 @@ class ReplayTests(unittest.TestCase):
         msg = (b'RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 4 | WARN 0 | '
                b'INTERRUPT 0')
         self.assertIn(msg, result.stdout)
-
-    @unittest.skipUnless(remote_capable(),
-                         "Remote runner plugin is not available")
-    def test_run_replay_remotefail(self):
-        """
-        Runs a replay job using remote plugin (not supported).
-        """
-        cmd_line = ('%s run --replay %s --remote-hostname '
-                    'localhost --job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.jobid, self.tmpdir))
-        expected_rc = exit_codes.AVOCADO_FAIL
-        result = self.run_and_check(cmd_line, expected_rc)
-        msg = b"Currently we don't replay jobs in remote hosts."
-        self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_variants(self):
         """
