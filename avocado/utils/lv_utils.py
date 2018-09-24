@@ -309,10 +309,10 @@ def lv_check(vg_name, lv_name):
     :param vg_name: Name of the volume group
     :param lv_name: Name of the logical volume
     """
-    cmd = "lvdisplay"
+    cmd = "lvdisplay %s" % vg_name
     result = process.run(cmd, ignore_status=True, sudo=True)
 
-    lvpattern = r"LV Path\s+/dev/%s/%s\s+" % (vg_name, lv_name)
+    lvpattern = r"LV Name\s+%s\s+" % lv_name
     match = re.search(lvpattern, result.stdout_text.rstrip())
     if match:
         LOGGER.debug("Provided Logical volume %s exists in %s",
