@@ -296,6 +296,20 @@ class MiscProcessTests(unittest.TestCase):
         '''
         self.assertGreaterEqual(len(process.get_children_pids(1)), 1)
 
+    @mock.patch('avocado.utils.process.os.stat')
+    @mock.patch('avocado.utils.process.pwd.getpwuid')
+    def test_get_user_of_pid(self, getpwuid_mock, stat_mock):
+        process_id = 123
+        user_id = 13
+        stat_mock.return_value = mock.Mock(st_uid=user_id)
+        getpwuid_mock.return_value = mock.Mock(pw_name='root')
+
+        returned_user = process.get_user_of_pid(process_id)
+
+        self.assertEqual(returned_user, 'root')
+        stat_mock.assert_called_with('/proc/%d/' % process_id)
+        getpwuid_mock.assert_called_with(user_id)
+
 
 class CmdResultTests(unittest.TestCase):
 

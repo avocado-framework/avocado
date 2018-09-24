@@ -21,6 +21,7 @@ import fnmatch
 import glob
 import logging
 import os
+import pwd
 import re
 import select
 import shlex
@@ -133,6 +134,11 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
 
     :param signal: Signal number.
     """
+    if get_user_of_pid(pid) == 'root':
+        kill_cmd = 'kill -%d %d' % (signal.value, pid)
+        run(kill_cmd, sudo=True)
+        return True
+
     try:
         os.kill(pid, signal)
         return True
@@ -750,7 +756,13 @@ class SubProcess(object):
         :param sig: Signal to send.
         """
         self._init_subprocess()
-        self._popen.send_signal(sig)
+        if self.is_running_as_sudo():
+            for child in get_children_pids(self.get_pid()):
+                child_pid = child.decode('UTF-8')
+                kill_child_cmd = 'kill -%d %s' % (sig.value, child_pid)
+                run(kill_child_cmd, sudo=True)
+        else:
+            self._popen.send_signal(sig)
 
     def poll(self):
         """
@@ -790,6 +802,20 @@ class SubProcess(object):
         """
         self._init_subprocess()
         return self._popen.pid
+
+    def get_user(self):
+        """
+        Reports user of this process
+        """
+        self._init_subprocess()
+        return get_user_of_pid(self.get_pid())
+
+    def is_running_as_sudo(self):
+        """
+        Returns whether a process is running as sudo
+        """
+        self._init_subprocess()
+        return self.get_user() == 'root'
 
     def run(self, timeout=None, sig=signal.SIGTERM):
         """
@@ -1553,3 +1579,16 @@ def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     if text[-1:] == '\n':
         text = text[:-1]
     return (sts, text)
+
+
+def get_user_of_pid(pid):
+    """
+    Get the name of user owner of pid informed
+    param pid: parent PID
+    return: user name of the process owner
+    """
+    try:
+        user_id = os.stat('/proc/%d/' % pid).st_uid
+        return pwd.getpwuid(user_id).pw_name
+    except OSError:
+        return ''
