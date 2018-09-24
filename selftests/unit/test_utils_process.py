@@ -296,6 +296,27 @@ class MiscProcessTests(unittest.TestCase):
         '''
         self.assertGreaterEqual(len(process.get_children_pids(1)), 1)
 
+    @mock.patch('avocado.utils.process.os.stat')
+    def test_process_get_owner_id(self, stat_mock):
+        process_id = 123
+        owner_user_id = 13
+        stat_mock.return_value = mock.Mock(st_uid=owner_user_id)
+
+        returned_owner_id = process.get_owner_id(process_id)
+
+        self.assertEqual(returned_owner_id, owner_user_id)
+        stat_mock.assert_called_with('/proc/%d/' % process_id)
+
+    @mock.patch('avocado.utils.process.os.stat')
+    def test_process_get_owner_id_with_pid_not_found(self, stat_mock):
+        process_id = 123
+        stat_mock.side_effect = OSError()
+
+        returned_owner_id = process.get_owner_id(process_id)
+
+        self.assertIsNone(returned_owner_id)
+        stat_mock.assert_called_with('/proc/%d/' % process_id)
+
 
 class CmdResultTests(unittest.TestCase):
 
