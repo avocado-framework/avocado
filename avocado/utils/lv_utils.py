@@ -463,7 +463,7 @@ def lv_take_snapshot(vg_name, lv_name,
         process.run(cmd, sudo=True)
     except process.CmdError as ex:
         lv = 'Logical volume "%s" already exists in volume group "%s"' % (lv_snapshot_name, vg_name)
-        if lv in ex.result.stderr:
+        if lv in ex.result.stderr_text:
             active = lv_snapshot_name + " [active]" in process.run("lvdisplay", sudo=True).stdout_text
             if active:
                 # the above conditions detect if merge of snapshot was postponed
@@ -498,7 +498,7 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
         cmd = ("lvconvert --merge /dev/%s/%s" % (vg_name, lv_snapshot_name))
         result = process.run(cmd, sudo=True)
         if (("Merging of snapshot %s will start next activation." %
-             lv_snapshot_name) in result.stdout):
+             lv_snapshot_name) in result.stdout_text):
             raise LVException("The Logical volume %s is still active" %
                               lv_name)
 
@@ -506,15 +506,15 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
         # detect if merge of snapshot was postponed
         # and attempt to reactivate the volume.
         active_lv_pattern = re.escape("%s [active]" % lv_snapshot_name)
-        lvdisplay_output = process.system_output("lvdisplay", sudo=True)
-        if ('Snapshot could not be found' in ex.result.stderr and
+        lvdisplay_output = process.run("lvdisplay", sudo=True).stdout_text
+        if ('Snapshot could not be found' in ex.result.stderr_text and
                 re.search(active_lv_pattern, lvdisplay_output) or
-                "The Logical volume %s is still active" % lv_name in ex.result.stderr):
+                "The Logical volume %s is still active" % lv_name in ex.result.stderr_text):
             log_msg = "Logical volume %s is still active! Attempting to deactivate..."
             LOGGER.debug(log_msg, lv_name)
             lv_reactivate(vg_name, lv_name)
             LOGGER.error("Continuing after reactivation")
-        elif 'Snapshot could not be found' in ex.result.stderr:
+        elif 'Snapshot could not be found' in ex.result.stderr_text:
             LOGGER.error("Could not revert to snapshot:")
             LOGGER.error(ex.result)
         else:
