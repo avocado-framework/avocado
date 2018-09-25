@@ -65,4 +65,14 @@ def get_filesystems():
     :returns: a list of filesystem string
     :rtype: list of str
     """
-    return [re.sub('(nodev)?\s*', '', fs) for fs in open('/proc/filesystems')]
+    return [re.sub('(nodev)?\\s*', '', fs) for fs in open('/proc/filesystems')]
+
+
+def get_rootfilesystem():
+    """
+    Return a root  filesystem
+
+    :returns: file system string
+    :rtype: str
+    """
+    return process.system_output('findmnt / -o FSTYPE -n')
