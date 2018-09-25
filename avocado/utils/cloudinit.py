@@ -52,6 +52,12 @@ chpasswd:
     expire: False
 """
 
+#: An authorized key configuration for the default user
+AUTHORIZED_KEY_TEMPLATE = """
+ssh_authorized_keys:
+  - {0}
+"""
+
 #: A phone home configuration that will post just the instance id
 #: Positional template variables are: address, port
 PHONE_HOME_TEMPLATE = """
@@ -62,7 +68,7 @@ phone_home:
 
 
 def iso(output_path, instance_id, username=None, password=None,
-        phone_home_host=None, phone_home_port=None):
+        phone_home_host=None, phone_home_port=None, authorized_key=None):
     """
     Generates an ISO image with cloudinit configuration
 
@@ -85,6 +91,9 @@ def iso(output_path, instance_id, username=None, password=None,
     :param phone_home_port: the port acting as an HTTP phone home
                             server that the instance should contact
                             once it has finished booting
+    :param authorized_key: a SSH public key to be added as an authorized key
+                           for the default user, similar to "ssh-rsa ..."
+    :type authorized_key: str
     :raises: RuntimeError if the system can not create ISO images.  On such
              a case, user is expected to install supporting packages, such as
              pycdlib.
@@ -103,6 +112,8 @@ def iso(output_path, instance_id, username=None, password=None,
             userdata += "\ndisable_root: False\n"
         if password:
             userdata += PASSWORD_TEMPLATE.format(password)
+        if authorized_key:
+            userdata += AUTHORIZED_KEY_TEMPLATE.format(authorized_key)
     if phone_home_host and phone_home_port:
         userdata += PHONE_HOME_TEMPLATE.format(phone_home_host, phone_home_port)
     out.write("/user-data", userdata.encode(astring.ENCODING))
