@@ -1553,3 +1553,15 @@ def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     if text[-1:] == '\n':
         text = text[:-1]
     return (sts, text)
+
+
+def get_owner_id(pid):
+    """
+    Get the owner's user id of a process
+    param pid: process id
+    return: user id of the process owner
+    """
+    try:
+        return os.stat('/proc/%d/' % pid).st_uid
+    except OSError:
+        return None
