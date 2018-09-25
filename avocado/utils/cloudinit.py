@@ -99,6 +99,8 @@ def iso(output_path, instance_id, username=None, password=None,
     userdata = USERDATA_HEADER
     if username:
         userdata += USERNAME_TEMPLATE.format(username)
+        if username == "root":
+            userdata += "\ndisable_root: False\n"
         if password:
             userdata += PASSWORD_TEMPLATE.format(password)
     if phone_home_host and phone_home_port:
