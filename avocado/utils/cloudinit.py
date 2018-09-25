@@ -34,16 +34,20 @@ hostname: {1}
 #: The header expected to be found at the beginning of the user-data file
 USERDATA_HEADER = "#cloud-config"
 
-#: A password configuration as per cloudinit/config/cc_set_passwords.py
-#: Positional template variables are: username, password
-PASSWORD_TEMPLATE = """
+#: A username configuration as per cloudinit/config/cc_set_passwords.py
+#: Positional template variables : username
+USERNAME_TEMPLATE = """
 ssh_pwauth: True
 
 system_info:
    default_user:
       name: {0}
+"""
 
-password: {1}
+#: A username configuration as per cloudinit/config/cc_set_passwords.py
+#: Positional template variables : password
+PASSWORD_TEMPLATE = """
+password: {0}
 chpasswd:
     expire: False
 """
@@ -93,8 +97,10 @@ def iso(output_path, instance_id, username=None, password=None,
                                         instance_id).encode(astring.ENCODING)
     out.write("/meta-data", metadata)
     userdata = USERDATA_HEADER
-    if username and password:
-        userdata += PASSWORD_TEMPLATE.format(username, password)
+    if username:
+        userdata += USERNAME_TEMPLATE.format(username)
+        if password:
+            userdata += PASSWORD_TEMPLATE.format(password)
     if phone_home_host and phone_home_port:
         userdata += PHONE_HOME_TEMPLATE.format(phone_home_host, phone_home_port)
     out.write("/user-data", userdata.encode(astring.ENCODING))
