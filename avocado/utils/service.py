@@ -118,16 +118,16 @@ def sys_v_init_result_parser(command):
             # If service is stopped, exit_status is also not zero.
             # So, we can't use exit_status to check result.
             # Returns None if XXX is unrecognized.
-            if re.search(r"unrecognized", cmd_result.stderr.lower()):
+            if re.search(b"unrecognized", cmd_result.stderr.lower()):
                 return None
             # Returns False if XXX is stopped.
             output = cmd_result.stdout.lower()
-            dead_flags = [r"stopped", r"not running", r"dead"]
+            dead_flags = [b"stopped", b"not running", b"dead"]
             for flag in dead_flags:
                 if re.search(flag, output):
                     return False
             # If output does not contain a dead flag, check it with "running".
-            return bool(re.search(r"running", output))
+            return bool(re.search(b"running", output))
         return method
     elif command == "list":
         def method(cmd_result):
@@ -208,10 +208,10 @@ def systemd_result_parser(command):
             # So, we can't use exit_status to check result.
             output = cmd_result.stdout
             # Returns None if XXX is not loaded.
-            if not re.search(r"Loaded: loaded", output):
+            if not re.search(b"Loaded: loaded", output):
                 return None
             # Check it with Active status.
-            return output.count("Active: active") > 0
+            return output.count(b"Active: active") > 0
         return method
     elif command == "list":
         def method(cmd_result):
