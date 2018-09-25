@@ -197,6 +197,22 @@ class SampleTest(TestCase):
 
 class LoaderTest(unittest.TestCase):
 
+    def _check_discovery(self, exps, tests):
+        self.assertEqual(len(exps), len(tests), "Total count of tests not "
+                         "as expected (%s != %s)\nexps: %s\ntests: %s"
+                         % (len(exps), len(tests), exps, tests))
+        try:
+            for exp, tst in zip(exps, tests):
+                # Test class
+                self.assertEqual(tst[0], exp[0])
+                # Test name (path)
+                # py2 reports relpath, py3 abspath
+                self.assertEqual(os.path.abspath(tst[1]['name']),
+                                 os.path.abspath(exp[1]))
+        except AssertionError as details:
+            raise AssertionError("%s\nexps: %s\ntests:%s"
+                                 % (details, exps, tests))
+
     def setUp(self):
         self.loader = loader.FileLoader(None, {})
         self.queue = multiprocessing.Queue()
@@ -493,6 +509,16 @@ class LoaderTest(unittest.TestCase):
             # Test name (path)
             # py2 reports relpath, py3 abspath
             self.assertEqual(os.path.abspath(tst[1]['name']), os.path.abspath(exp[1]))
+
+    def test_double_import(self):
+        # This is currently broken in Avocado, so let's just document the
+        # current behavior.
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'double_import.py')
+        tests = self.loader.discover(path)
+        exps = [('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
+                ('Test4', 'selftests/.data/loader_instrumented/double_import.py:Test4.test4')]
+        self._check_discovery(exps, tests)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
