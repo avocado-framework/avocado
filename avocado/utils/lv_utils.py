@@ -473,7 +473,7 @@ def lv_take_snapshot(vg_name, lv_name,
         raise LVException("Snapshot's origin could not be found")
 
     # thin snapshot extensions (from thin or external volume)
-    cmd = ("lvcreate --snapshot --name %s /dev/%s/%s" %
+    cmd = ("lvcreate --snapshot --name %s /dev/%s/%s --ignoreactivationskip" %
            (lv_snapshot_name, vg_name, lv_name))
     if lv_snapshot_size is not None:
         cmd += " --size %s" % lv_snapshot_size
