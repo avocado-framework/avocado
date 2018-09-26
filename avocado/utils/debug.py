@@ -20,6 +20,7 @@ import time
 import os
 
 from six import iteritems
+from six import get_function_code
 
 
 # Use this for debug logging
@@ -69,8 +70,8 @@ def _log_calls(func, length=None, cls_name=None):
     def wrapper(*args, **kwargs):
         """ Wrapper function """
         msg = ("CALL: %s:%s%s(%s, %s)"
-               % (os.path.relpath(func.func_code.co_filename),
-                  cls_name, func.func_name,
+               % (os.path.relpath(get_function_code(func).co_filename),
+                  cls_name, func.__name__,
                   ", ".join([str(_) for _ in args]),
                   ", ".join(["%s=%s" % (key, value)
                              for key, value in iteritems(kwargs)])))
