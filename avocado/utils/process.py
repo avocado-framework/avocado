@@ -133,6 +133,14 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
 
     :param signal: Signal number.
     """
+    if get_owner_id(pid) == 0:
+        kill_cmd = 'kill -%d %d' % (int(signal), pid)
+        try:
+            run(kill_cmd, sudo=True)
+            return True
+        except Exception:
+            return False
+
     try:
         os.kill(pid, signal)
         return True
@@ -750,7 +758,15 @@ class SubProcess(object):
         :param sig: Signal to send.
         """
         self._init_subprocess()
-        self._popen.send_signal(sig)
+        if self.is_sudo_enabled():
+            for child_pid in get_children_pids(self.get_pid()):
+                kill_child_cmd = 'kill -%d %d' % (int(sig), child_pid)
+                try:
+                    run(kill_child_cmd, sudo=True)
+                except Exception:
+                    continue
+        else:
+            self._popen.send_signal(sig)
 
     def poll(self):
         """
@@ -790,6 +806,20 @@ class SubProcess(object):
         """
         self._init_subprocess()
         return self._popen.pid
+
+    def get_user_id(self):
+        """
+        Reports user id of this process
+        """
+        self._init_subprocess()
+        return get_owner_id(self.get_pid())
+
+    def is_sudo_enabled(self):
+        """
+        Returns whether the subprocess is running with sudo enabled
+        """
+        self._init_subprocess()
+        return self.get_user_id() == 0
 
     def run(self, timeout=None, sig=signal.SIGTERM):
         """

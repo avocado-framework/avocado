@@ -37,6 +37,84 @@ class TestSubProcess(unittest.TestCase):
         self.assertRaises(ValueError, process.SubProcess,
                           FICTIONAL_CMD, False, "invalid")
 
+    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @mock.patch('avocado.utils.process.SubProcess.is_sudo_enabled')
+    @mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @mock.patch('avocado.utils.process.get_children_pids')
+    @mock.patch('avocado.utils.process.run')
+    def test_send_signal_sudo_enabled(self, run, get_children, pid, sudo, init):  # pylint: disable=W0613
+        signal = 1
+        child_pid = 123
+        sudo.return_value = True
+        get_children.return_value = [child_pid]
+
+        subprocess = process.SubProcess(FICTIONAL_CMD)
+        subprocess.send_signal(signal)
+
+        expected_cmd = 'kill -%d %d' % (signal, child_pid)
+        run.assert_called_with(expected_cmd, sudo=True)
+
+    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @mock.patch('avocado.utils.process.SubProcess.is_sudo_enabled')
+    @mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @mock.patch('avocado.utils.process.get_children_pids')
+    @mock.patch('avocado.utils.process.run')
+    def test_send_signal_sudo_enabled_with_exception(
+            self, run, get_children, pid, sudo, init):  # pylint: disable=W0613
+        signal = 1
+        child_pid = 123
+        sudo.return_value = True
+        get_children.return_value = [child_pid]
+        run.side_effect = Exception()
+
+        subprocess = process.SubProcess(FICTIONAL_CMD)
+        subprocess.send_signal(signal)
+
+        expected_cmd = 'kill -%d %d' % (signal, child_pid)
+        run.assert_called_with(expected_cmd, sudo=True)
+
+    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @mock.patch('avocado.utils.process.get_owner_id')
+    def test_get_user_id(self, get_owner, get_pid, init):  # pylint: disable=W0613
+        user_id = 1
+        process_id = 123
+        get_pid.return_value = process_id
+        get_owner.return_value = user_id
+
+        subprocess = process.SubProcess(FICTIONAL_CMD)
+
+        self.assertEqual(subprocess.get_user_id(), user_id)
+        get_owner.assert_called_with(process_id)
+
+    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @mock.patch('avocado.utils.process.get_owner_id')
+    def test_is_sudo_enabled_false(self, get_owner, get_pid, init):  # pylint: disable=W0613
+        user_id = 1
+        process_id = 123
+        get_pid.return_value = process_id
+        get_owner.return_value = user_id
+
+        subprocess = process.SubProcess(FICTIONAL_CMD)
+
+        self.assertFalse(subprocess.is_sudo_enabled())
+        get_owner.assert_called_with(process_id)
+
+    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @mock.patch('avocado.utils.process.get_owner_id')
+    def test_is_sudo_enabled_true(self, get_owner, get_pid, init):  # pylint: disable=W0613
+        user_id = 0
+        process_id = 123
+        get_pid.return_value = process_id
+        get_owner.return_value = user_id
+
+        subprocess = process.SubProcess(FICTIONAL_CMD)
+
+        self.assertTrue(subprocess.is_sudo_enabled())
+        get_owner.assert_called_with(process_id)
+
 
 class TestGDBProcess(unittest.TestCase):
 
@@ -295,6 +373,58 @@ class MiscProcessTests(unittest.TestCase):
         Gets the list of children process.  Linux only.
         '''
         self.assertGreaterEqual(len(process.get_children_pids(1)), 1)
+
+    @mock.patch('avocado.utils.process.os.kill')
+    @mock.patch('avocado.utils.process.get_owner_id')
+    def test_safe_kill(self, owner_mocked, kill_mocked):
+        owner_id = 1
+        process_id = 123
+        signal = 1
+        owner_mocked.return_value = owner_id
+
+        killed = process.safe_kill(process_id, signal)
+        self.assertTrue(killed)
+        kill_mocked.assert_called_with(process_id, signal)
+
+    @mock.patch('avocado.utils.process.os.kill')
+    @mock.patch('avocado.utils.process.get_owner_id')
+    def test_safe_kill_with_exception(self, owner_mocked, kill_mocked):
+        owner_id = 1
+        process_id = 123
+        signal = 1
+        owner_mocked.return_value = owner_id
+        kill_mocked.side_effect = Exception()
+
+        killed = process.safe_kill(process_id, signal)
+        self.assertFalse(killed)
+        kill_mocked.assert_called_with(process_id, signal)
+
+    @mock.patch('avocado.utils.process.run')
+    @mock.patch('avocado.utils.process.get_owner_id')
+    def test_safe_kill_sudo_enabled(self, owner_mocked, run_mocked):
+        owner_id = 0
+        process_id = 123
+        signal = 1
+        owner_mocked.return_value = owner_id
+        expected_cmd = 'kill -%d %d' % (signal, process_id)
+
+        killed = process.safe_kill(process_id, signal)
+        self.assertTrue(killed)
+        run_mocked.assert_called_with(expected_cmd, sudo=True)
+
+    @mock.patch('avocado.utils.process.run')
+    @mock.patch('avocado.utils.process.get_owner_id')
+    def test_safe_kill_sudo_enabled_with_exception(self, owner_mocked, run_mocked):
+        owner_id = 0
+        process_id = 123
+        signal = 1
+        owner_mocked.return_value = owner_id
+        expected_cmd = 'kill -%d %d' % (signal, process_id)
+        run_mocked.side_effect = Exception()
+
+        killed = process.safe_kill(process_id, signal)
+        self.assertFalse(killed)
+        run_mocked.assert_called_with(expected_cmd, sudo=True)
 
     @mock.patch('avocado.utils.process.os.stat')
     def test_process_get_owner_id(self, stat_mock):
