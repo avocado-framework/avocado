@@ -29,6 +29,7 @@ from enum import Enum
 
 from . import astring
 from . import process
+from . import data_structures
 
 LOG = logging.getLogger('avocado.test')
 
@@ -163,7 +164,7 @@ def get_submodules(module_name):
         module_list = submodules
         for module in submodules:
             module_list += get_submodules(module)
-    return module_list
+    return data_structures.ordered_list_unique(module_list)
 
 
 def unload_module(module_name):
