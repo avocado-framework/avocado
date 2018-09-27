@@ -546,7 +546,9 @@ class YumBackend(RpmBackend):
                       "yum module is required for this operation")
             return None
         try:
-            d_provides = self.yum_base.searchPackageProvides(args=[name])
+            #Python API need to be passed globs along with name for searching
+            #all possible occurrences of pattern 'name'
+            d_provides = self.yum_base.searchPackageProvides(args=['*/' + name])
         except Exception as exc:
             log.error("Error searching for package that "
                       "provides %s: %s", name, exc)
