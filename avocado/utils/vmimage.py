@@ -83,17 +83,25 @@ class ImageProviderBase(object):
     def version(self):
         return self._best_version or self.get_version()
 
+    def _feed_html_parser(self, url, parser):
+        try:
+            data = urlopen(url).read()
+            parser.feed(astring.to_text(data, self.HTML_ENCODING))
+        except HTTPError:
+            raise ImageProviderError('Cannot open %s' % self.url_versions)
+
+    def get_best_version(self, versions):
+        return max(versions)
+
     def get_version(self):
         """
         Probes the higher version available for the current parameters.
         """
         pattern = '^%s/$' % self._version
         parser = VMImageHtmlParser(pattern)
-        try:
-            data = urlopen(self.url_versions).read()
-            parser.feed(astring.to_text(data, self.HTML_ENCODING))
-        except HTTPError:
-            raise ImageProviderError('Cannot open %s' % self.url_versions)
+
+        self._feed_html_parser(self.url_versions, parser)
+
         if parser.items:
             resulting_versions = []
             for version in parser.items:
@@ -109,7 +117,7 @@ class ImageProviderBase(object):
                     except ValueError:
                         # So it's just a string
                         resulting_versions.append(version)
-            self._best_version = max(resulting_versions)
+            self._best_version = self.get_best_version(resulting_versions)
             return self._best_version
         else:
             raise ImageProviderError('Version not available at %s' %
@@ -119,6 +127,10 @@ class ImageProviderBase(object):
         """
         Probes the higher image available for the current parameters.
         """
+        if not self.url_images or not self.image_pattern:
+            raise ImageProviderError(
+                "url_images and image_pattern attributes are required to get image url")
+
         url_images = self.url_images.format(version=self.version,
                                             build=self.build,
                                             arch=self.arch)
@@ -126,11 +138,8 @@ class ImageProviderBase(object):
                                           build=self.build,
                                           arch=self.arch)
         parser = VMImageHtmlParser(image)
-        try:
-            content = urlopen(url_images).read()
-            parser.feed(astring.to_text(content, self.HTML_ENCODING))
-        except HTTPError:
-            raise ImageProviderError('Cannot open %s' % url_images)
+
+        self._feed_html_parser(url_images, parser)
 
         if parser.items:
             return url_images + max(parser.items)
