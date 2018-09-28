@@ -320,7 +320,7 @@ class DebianProbe(Probe):
 class UbuntuProbe(Probe):
 
     """
-    Simple probe for Ubunt systems in general
+    Simple probe for Ubuntu systems in general
     """
 
     CHECK_FILE = '/etc/os-release'

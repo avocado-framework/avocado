@@ -133,7 +133,7 @@ def _handle_control_tag_using(path, name, using, value):
     :type path: str
     :param name: name to be applied in the "!using" tag
     :type name: str
-    :param using: wether using is already being used
+    :param using: whether using is already being used
     :type using: bool
     :param value: the value of the node
     """
