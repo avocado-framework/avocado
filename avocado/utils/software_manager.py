@@ -970,34 +970,34 @@ class AptBackend(DpkgBackend):
         except process.CmdError:
             return False
 
-    def provides(self, path):
+    def provides(self, name):
         """
-        Return a list of packages that provide [path].
+        Return a list of packages that provide [name of package/file].
 
-        :param path: File path.
+        :param name: File name.
         """
         try:
             command = utils_path.find_command('apt-file')
         except utils_path.CmdNotFoundError:
             self.install('apt-file')
             command = utils_path.find_command('apt-file')
-
         cache_update_cmd = command + ' update'
         try:
             process.system(cache_update_cmd, ignore_status=True)
         except process.CmdError:
             log.error("Apt file cache update failed")
-        fu_cmd = command + ' search ' + path
+        fu_cmd = command + ' search ' + name
         try:
-            provides = process.system_output(fu_cmd).split('\n')
+            paths = filter(None, os.environ['PATH'].split(':'))
+            provides = filter(None, process.system_output(fu_cmd).split('\n'))
             list_provides = []
-            for line in provides:
-                if line:
+            for each_path in paths:
+                for line in provides:
                     try:
                         line = line.split(':')
                         package = line[0].strip()
                         lpath = line[1].strip()
-                        if lpath == path and package not in list_provides:
+                        if lpath == os.path.join(each_path, name) and package not in list_provides:
                             list_provides.append(package)
                     except IndexError:
                         pass
@@ -1005,7 +1005,7 @@ class AptBackend(DpkgBackend):
                 log.warning('More than one package found, '
                             'opting by the first result')
             if list_provides:
-                log.info("Package %s provides %s", list_provides[0], path)
+                log.info("Package %s provides %s", list_provides[0], name)
                 return list_provides[0]
             return None
         except process.CmdError:
