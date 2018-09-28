@@ -45,7 +45,7 @@ class AvocadoModule(object):
 
     def iter_classes(self):
         """
-        Iter through classes and keep track of imported avocado statements
+        Iterate through classes and keep track of imported avocado statements
         """
         for statement in self.mod.body:
             # Looking for a 'from avocado import Test'
