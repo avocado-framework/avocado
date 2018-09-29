@@ -505,6 +505,14 @@ class LoaderTest(unittest.TestCase):
                 ('DiscoverMe4', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe4.test')]
         self._check_discovery(exps, tests)
 
+    def test_dont_detect_non_avocado(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'dont_detect_non_avocado.py')
+        tests = self.loader.discover(path)
+        exps = [(test.PythonUnittest, 'dont_detect_non_avocado.StaticallyNotAvocadoTest.test'),
+                (test.PythonUnittest, 'dont_detect_non_avocado.NotTest.test2')]
+        self._check_discovery(exps, tests)
+
     def test_double_import(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                             '.data', 'loader_instrumented', 'double_import.py')
