@@ -520,10 +520,9 @@ class TestRunner(object):
         """
         var = variant.get("variant")
         paths = variant.get("paths")
-        klass, klass_parameters = template
 
-        if "params" not in klass_parameters:
-            factory = [klass, klass_parameters.copy()]
+        if "params" not in template[1]:
+            factory = [template[0], template[1].copy()]
             factory[1]["params"] = (var, paths)
             return factory, variant
 
