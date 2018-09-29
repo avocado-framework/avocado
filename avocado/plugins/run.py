@@ -42,6 +42,15 @@ class Run(CLICmd):
     description = ("Runs one or more tests (native test, test alias, binary "
                    "or script)")
 
+    @staticmethod
+    def _test_parameter(string):
+        param_name_value = string.split('=', 1)
+        if len(param_name_value) < 2:
+            msg = ('Invalid --test-parameter option: "%s". Valid option must '
+                   'be a "NAME=VALUE" like expression' % string)
+            raise argparse.ArgumentTypeError(msg)
+        return param_name_value
+
     def configure(self, parser):
         """
         Add the subparser for the run action.
@@ -53,6 +62,15 @@ class Run(CLICmd):
         parser.add_argument("reference", type=str, default=[], nargs='*',
                             metavar="TEST_REFERENCE",
                             help='List of test references (aliases or paths)')
+
+        parser.add_argument("-p", "--test-parameter", action="append",
+                            dest='test_parameters', default=[],
+                            metavar="NAME_VALUE", type=self._test_parameter,
+                            help="Parameter name and value to pass to all "
+                            "tests. This is only applicable when not using a "
+                            "varianter plugin. This option format must be "
+                            "given in the NAME=VALUE format, and may be given "
+                            "any number of times, or per parameter.")
 
         parser.add_argument("-d", "--dry-run", action="store_true",
                             help="Instead of running the test only "

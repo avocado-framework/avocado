@@ -25,6 +25,7 @@ import sys
 import time
 
 from . import test
+from . import tree
 from . import exceptions
 from . import output
 from . import status
@@ -505,8 +506,7 @@ class TestRunner(object):
             return False
         return True
 
-    @staticmethod
-    def _template_to_factory(template, variant):
+    def _template_to_factory(self, template, variant):
         """
         Applies test params from variant to the test template
 
@@ -520,13 +520,18 @@ class TestRunner(object):
         """
         var = variant.get("variant")
         paths = variant.get("paths")
+        empty_variants = varianter.is_empty_variant(var)
 
         if "params" not in template[1]:
             factory = [template[0], template[1].copy()]
+            if self.job.test_parameters and empty_variants:
+                var[0] = tree.TreeNode().get_node("/", True)
+                var[0].value = self.job.test_parameters
+                paths = ["/"]
             factory[1]["params"] = (var, paths)
             return factory, variant
 
-        if not varianter.is_empty_variant(var):
+        if not empty_variants:
             raise NotImplementedError("Specifying test params from test loader "
                                       "and from varianter at the same time is "
                                       "not yet supported. Please remove either "
