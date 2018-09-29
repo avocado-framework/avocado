@@ -62,16 +62,31 @@ class AvocadoModule(object):
 
             # Looking for a 'import avocado'
             elif isinstance(statement, ast.Import):
-                for name in statement.names:
-                    if name.name == 'avocado':
-                        if name.asname is not None:
-                            self.mod_imports.add(name.asname)
-                        else:
-                            self.mod_imports.add(name.name)
+                imp_name = statement_import_as(statement).get('avocado', None)
+                if imp_name is not None:
+                    self.mod_imports.add(imp_name)
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
                 yield statement
+
+
+def statement_import_as(statement):
+    """
+    Returns a mapping of imported module names whether using aliases or not
+
+    :param statement: an AST import statement
+    :type statement: ast.Import
+    :returns: a mapping of names {<realname>: <alias>} of modules imported
+    :rtype: dict
+    """
+    result = {}
+    for name in statement.names:
+        if name.asname is not None:
+            result[name.name] = name.asname
+        else:
+            result[name.name] = name.name
+    return result
 
 
 def modules_imported_as(module):
@@ -105,13 +120,8 @@ def modules_imported_as(module):
     """
     result = {}
     for statement in module.body:
-        # Looking for a 'import <module>'
         if isinstance(statement, ast.Import):
-            for name in statement.names:
-                if name.asname is not None:
-                    result[name.name] = name.asname
-                else:
-                    result[name.name] = name.name
+            result.update(statement_import_as(statement))
     return result
 
 
