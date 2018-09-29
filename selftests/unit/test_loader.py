@@ -503,12 +503,15 @@ class LoaderTest(unittest.TestCase):
                 ('DiscoverMe2', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe2.test'),
                 ('DiscoverMe3', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe3.test'),
                 ('DiscoverMe4', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe4.test')]
-        for exp, tst in zip(exps, tests):
-            # Test class
-            self.assertEqual(tst[0], exp[0])
-            # Test name (path)
-            # py2 reports relpath, py3 abspath
-            self.assertEqual(os.path.abspath(tst[1]['name']), os.path.abspath(exp[1]))
+        self._check_discovery(exps, tests)
+
+    def test_dont_detect_non_avocado(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'dont_detect_non_avocado.py')
+        tests = self.loader.discover(path)
+        exps = [(test.PythonUnittest, 'dont_detect_non_avocado.StaticallyNotAvocadoTest.test'),
+                (test.PythonUnittest, 'dont_detect_non_avocado.NotTest.test2')]
+        self._check_discovery(exps, tests)
 
     def test_double_import(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
