@@ -399,14 +399,14 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
     def __init__(self, path):
         if not has_pycdlib():
             raise RuntimeError('This class requires the pycdlib library')
-        self._path = path
+        self.path = path
         self._iso = None
         self._iso_opened_for_create = False
 
     def _open_for_read(self):
         if self._iso is None:
             self._iso = pycdlib.PyCdlib()
-            self._iso.open(self._path)
+            self._iso.open(self.path)
 
     def create(self, flags=None):
         """
@@ -466,9 +466,10 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
         self._iso.get_file_from_iso(dst, joliet_path=src)
 
     def close(self):
+        super(ISO9660PyCDLib, self).close()
         if self._iso:
             if self._iso_opened_for_create:
-                self._iso.write(self._path)
+                self._iso.write(self.path)
             self._iso.close()
             self._iso = None
 
