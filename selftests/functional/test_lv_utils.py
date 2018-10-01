@@ -114,8 +114,8 @@ class LVUtilsTest(unittest.TestCase):
             # Create and check LV
             lv_utils.lv_create(vg_name, lv_name, 1)
             lv_utils.lv_check(vg_name, lv_name)
-            self.assertIn(vg_name, process.system_output("lvs --all",
-                                                         sudo=True))
+            self.assertIn(vg_name, process.run("lvs --all",
+                                               sudo=True).stdout_text)
             self.assertIn(lv_name, lv_utils.lv_list())
             lv_utils.lv_mount(vg_name, lv_name, mount_loc, "ext2")
             lv_utils.lv_umount(vg_name, lv_name)
