@@ -536,8 +536,9 @@ class TestRunner(object):
                                       "and from varianter at the same time is "
                                       "not yet supported. Please remove either "
                                       "variants defined by the varianter (%s) "
-                                      "or make the test loader oftest %s to not "
-                                      "to fill variants." % (variant, template))
+                                      "or make the test loader of test %s to "
+                                      "not to fill variants." % (variant,
+                                                                 template))
 
         return template, {"variant": var,
                           "variant_id": varianter.generate_variant_id(var),
