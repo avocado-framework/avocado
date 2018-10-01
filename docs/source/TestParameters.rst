@@ -26,16 +26,17 @@ Overall picture of how the params handling works is:
 .. code-block:: c
 
        +-----------+
-       |           |  // Test uses variant to produce AvocadoParams
-       |   Test    |
-       |           |
+       |           |  // Test uses AvocadoParams, with content either from
+       |   Test    |  // a variant or from the test parameters given by
+       |           |  // "--test-parameters"
        +-----^-----+
-             |  // single variant is passed to Test
+             |
              |
        +-----------+
        |  Runner   |  // iterates through tests and variants to run all
-       +-----^-----+  // desired combinations specified by "--execution-order"
-             |
+       +-----^-----+  // desired combinations specified by "--execution-order".
+             |        // if no variants are produced by varianter plugins,
+             |        // use the test parameters given by "--test-parameters"
              |
    +-------------------+ provide variants +-----------------------+
    |                   |<-----------------|                       |
@@ -272,6 +273,33 @@ Where:
 * value - the parameter's value
 * path - the location of this parameter. When the path does not exists yet,
   it's created out of `TreeNode`_.
+
+Test parameters
+~~~~~~~~~~~~~~~
+
+This is an Avocado core feature, that is, it's not dependent on any
+varianter plugin.  In fact, it's only active when no Varianter plugin
+is used and produces a valid variant.
+
+Avocado will use those simple parameters, and will pass them to all
+tests in a job execution.  This is done on the command line via
+``--test-parameters``, or simply, ``-p``.  It can be given multiple
+times for multiple parameters.
+
+Because Avocado parameters do not have a mechanism to define their
+types, test code should always consider that a parameter value is a
+string, and convert it to the appropriate type.
+
+.. note:: Some varianter plugins would implicitly set parameters
+   with different data types, but given that the same test can be
+   used with different, or none, varianter plugins, it's safer if
+   the test does an explicit check or type conversion.
+
+Because the :class:`avocado.core.varianter.AvocadoParams` mandates the
+concept of a parameter path (a legacy of the tree based Multiplexer)
+and these test parameters are flat, those test parameters are placed
+in the ``/`` path.  This is to ensure maximum compatibility with tests
+that do not choose an specific parameter location.
 
 Varianter plugins
 ~~~~~~~~~~~~~~~~~
