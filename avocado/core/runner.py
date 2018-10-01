@@ -520,24 +520,23 @@ class TestRunner(object):
         """
         var = variant.get("variant")
         paths = variant.get("paths")
-        klass, klass_parameters = template
-        if "params" in klass_parameters:
-            if not varianter.is_empty_variant(var):
-                msg = ("Specifying test params from test loader and "
-                       "from varianter at the same time is not yet "
-                       "supported. Please remove either variants defined"
-                       "by the varianter (%s) or make the test loader of"
-                       "test %s to not to fill variants."
-                       % (variant, template))
-                raise NotImplementedError(msg)
-            variant_id = varianter.generate_variant_id(var)
-            return template, {"variant": var,
-                              "variant_id": variant_id,
-                              "paths": paths}
-        else:
-            factory = [klass, klass_parameters.copy()]
+
+        if "params" not in template[1]:
+            factory = [template[0], template[1].copy()]
             factory[1]["params"] = (var, paths)
             return factory, variant
+
+        if not varianter.is_empty_variant(var):
+            raise NotImplementedError("Specifying test params from test loader "
+                                      "and from varianter at the same time is "
+                                      "not yet supported. Please remove either "
+                                      "variants defined by the varianter (%s) "
+                                      "or make the test loader oftest %s to not "
+                                      "to fill variants." % (variant, template))
+
+        return template, {"variant": var,
+                          "variant_id": varianter.generate_variant_id(var),
+                          "paths": paths}
 
     def _iter_suite(self, test_suite, variants, execution_order):
         """
