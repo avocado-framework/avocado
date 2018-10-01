@@ -134,6 +134,16 @@ class Job(object):
         self.test_suite = None
         self.test_runner = None
 
+        #: Placeholder for test parameters (related to --test-parameters command
+        #: line option).  They're kept in the job because they will be prepared
+        #: only once, since they are read only and will be shared acrross all
+        #: tests of a job.
+        self.test_parameters = None
+        if "test_parameters" in self.args:
+            self.test_parameters = {}
+            for parameter_name, parameter_value in self.args.test_parameters:
+                self.test_parameters[parameter_name] = parameter_value
+
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
         # freely, let's get the result events dispatcher ready early.
