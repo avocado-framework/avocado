@@ -136,7 +136,7 @@ class Job(object):
 
         #: Placeholder for test parameters (related to --test-parameters command
         #: line option).  They're kept in the job because they will be prepared
-        #: only once, since they are read only and will be shared acrross all
+        #: only once, since they are read only and will be shared across all
         #: tests of a job.
         self.test_parameters = None
         if "test_parameters" in self.args:
