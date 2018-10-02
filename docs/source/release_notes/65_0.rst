@@ -1,0 +1,115 @@
+=======================
+65.0 Back to the Future
+=======================
+
+The Avocado team is proud to present another release: Avocado version
+65.0, AKA "Back to the Future", is now available!
+
+Release documentation: `Avocado 65.0
+<http://avocado-framework.readthedocs.io/en/65.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* A new utility library, :mod:`avocado.utils.ssh`, has been
+  introduced.  It's a simple wrapper around the OpenSSH client
+  utilities (your regular ``/usr/bin/ssh``) and allows a
+  connection/session to be easily established, and commands to be
+  executed on the remote endpoint using that previously established
+  connection.
+
+* Passing parameters to tests is now possible directly on the Avocado
+  command line, without the use of any varianter plugin.  In fact,
+  when using variants, these parameters are (currently) ignored.  To
+  pass one parameter to a test, use ``-p NAME=VAL``, and repeat it
+  for other parameters.
+
+* The ``timeout`` feature on the various :mod:`avocado.utils.process`
+  functions is now respected for processes started with ``sudo=True``.
+  Sending general signals to processes that have also been started in
+  privileged mode (and killing them) is now possible and is the basis
+  of this improvement.
+
+* The :mod:`avocado.utils.cloudinit` module now adds support for
+  instances to be configured to allow ``root`` logins and
+  authentication configuration via SSH keys.
+
+* The :mod:`avocado.utils.distro` module introduced a probe for the
+  Ubuntu distros.
+
+* New :func:`avocado.utils.disk.get_disk_blocksize` and
+  :func:`avocado.utils.disk.get_disks` disk related utilities.
+
+* New :func:`avocado.utils.process.get_parent_pid` and
+  :func:`avocado.utils.process.get_owner_id` process related functions
+
+Bug Fixes
+=========
+
+* The :mod:`avocado.utils.vmimage` had an issue when dealing with bytes
+  and strings on Python 3.  Now the expected encoding on the parsed web
+  pages is explicitly given and used.
+
+* The :func:`avocado.utils.linux_modules.get_submodules` function now
+  returns unique modules names, instead of possibly having duplicate
+  modules names.
+  
+* The system information collection, known in Avocado as "sysinfo", now
+  properly collects information after failed and errored tests finish.
+
+* The INSTRUMENTED test loader now properly finds all tests when, within
+  the same module, either the Avocado library or the :class:`avocado.Test`
+  class is imported more than once, and with different names.
+
+* The INSTRUMENTED test loader now won't crash when specific multi
+  inheritance happens on test classes.
+
+* The external test runner feature now supports relative paths given
+  on the command line when used in conjunction with
+  ``--external-runner-chdir=runner``.
+
+Internal Changes
+================
+
+* A number of utility libraries, including :mod:`avocado.utils.process`
+  and :mod:`avocado.utils.linux_modules` have been modified to use
+  system files (such as the ones from ``/proc/``) instead of depending
+  and executing command line utilities whenever possible.  This type
+  of change is expected to continue happening on Avocado.
+
+* Tests depending on the presence of the HTML and remote plugin have
+  been moved to the plugin themselves.
+
+* A number of refactors and general improvements, usually accompanied
+  by new tests, have increased the number of self tests from 549 to
+  the 590 mark.
+
+* Continuing from the past release, another large number of warnings
+  checks have been enabled in the "lint" check, making the Avocado
+  source code better now, and avoiding best practices regressions.
+
+* Fixes to self tests that require privileged execution (tests
+  covering the mount support in :mod:`avocado.utils.vmimage` and
+  general operation of the :mod:`avocado.utils.lv_utils` module).
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/64.0...65.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=TA3RTixd5Yg>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/lhw9hO0L/1416-sprint-theme-back-to-the-future-1985
