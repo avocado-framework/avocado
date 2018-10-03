@@ -83,6 +83,10 @@ class ImageProviderBase(object):
     def version(self):
         return self._best_version or self.get_version()
 
+    @property
+    def version_pattern(self):
+        return '^%s/$' % self._version
+
     def _feed_html_parser(self, url, parser):
         try:
             data = urlopen(url).read()
@@ -97,8 +101,7 @@ class ImageProviderBase(object):
         """
         Probes the higher version available for the current parameters.
         """
-        pattern = '^%s/$' % self._version
-        parser = VMImageHtmlParser(pattern)
+        parser = VMImageHtmlParser(self.version_pattern)
 
         self._feed_html_parser(self.url_versions, parser)
 
@@ -273,6 +276,38 @@ class JeosImageProvider(ImageProviderBase):
         self.url_versions = 'https://avocado-project.org/data/assets/jeos/'
         self.url_images = self.url_versions + '{version}/'
         self.image_pattern = 'jeos-{version}-{arch}.qcow2.xz$'
+
+
+class OpenSUSEImageProvider(ImageProviderBase):
+    """
+    OpenSUSE Image Provider
+    """
+
+    HTML_ENCODING = 'iso-8859-1'
+    name = 'OpenSUSE'
+
+    def __init__(self, version='[0-9]{2}.[0-9]{1}', build=None, arch=os.uname()[4]):
+        super(OpenSUSEImageProvider, self).__init__(version, build, arch)
+        self.url_versions = 'https://download.opensuse.org/repositories/Cloud:/Images:/'
+        self.url_images = self.url_versions + 'Leap_{version}/images/'
+
+        if not build:
+            self.image_pattern = 'openSUSE-Leap-{version}-OpenStack.{arch}-((.)*).qcow2$'
+        else:
+            self.image_pattern = 'openSUSE-Leap-{version}-OpenStack.{arch}-{build}.qcow2$'
+
+    @property
+    def version_pattern(self):
+        return '^Leap_%s' % self._version
+
+    def get_best_version(self, versions):
+        # versions pattern equals Leap_15.0, Leap_42.0, Leap_XY.Z
+        version_numbers = [float(v.split('_')[1]) for v in versions]
+        if self._version.startswith('4'):
+            version_numbers = [v for v in version_numbers if v >= 40.0]
+        else:
+            version_numbers = [v for v in version_numbers if v < 40.0]
+        return max(version_numbers)
 
 
 class Image(object):
