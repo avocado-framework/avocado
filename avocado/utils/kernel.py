@@ -71,9 +71,15 @@ class KernelBuild(object):
                     source tarball
         :type url: str or None
         """
+
         kernel_file = self.SOURCE.format(version=self.version)
-        if url is not None:
+        # if there's no url to override, the default is the one
+        # specified in the class
+        if url is None:
             base_url = self.URL.format(major=self.version.split('.', 1)[0])
+
+        # however, if there's a url informed as a parameter, this one
+        # should be used as the base url.
         else:
             base_url = url
         full_url = base_url + kernel_file
@@ -94,7 +100,8 @@ class KernelBuild(object):
         Configure/prepare kernel source to build.
         """
         self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
-        build.make(self.linux_dir, extra_args='-C %s mrproper' % self.linux_dir)
+        build.make(self.linux_dir, extra_args='-C %s mrproper' %
+                   self.linux_dir)
         if self.config_path is not None:
             dotconfig = os.path.join(self.linux_dir, '.config')
             shutil.copy(self.config_path, dotconfig)
@@ -114,10 +121,13 @@ class KernelBuild(object):
             if self.distro.name == "Ubuntu":
                 build_output_format = "deb-pkg"
         if self.config_path is None:
-            build.make(self.linux_dir, extra_args='-C %s defconfig' % self.linux_dir)
+            build.make(self.linux_dir, extra_args='-C %s defconfig' %
+                       self.linux_dir)
         else:
-            build.make(self.linux_dir, extra_args='-C %s olddefconfig' % self.linux_dir)
-        build.make(self.linux_dir, extra_args='-C %s %s' % (self.linux_dir, build_output_format))
+            build.make(self.linux_dir, extra_args='-C %s olddefconfig' %
+                       self.linux_dir)
+        build.make(self.linux_dir, extra_args='-C %s %s' %
+                   (self.linux_dir, build_output_format))
 
     def install(self):
         """
@@ -125,7 +135,8 @@ class KernelBuild(object):
         """
         log.info("Starting kernel install")
         if self.distro.name == "Ubuntu":
-            process.run('dpkg -i %s/*.deb' % self.work_dir, shell=True, sudo=True)
+            process.run('dpkg -i %s/*.deb' %
+                        self.work_dir, shell=True, sudo=True)
         else:
             log.info("Skipping kernel install")
 
