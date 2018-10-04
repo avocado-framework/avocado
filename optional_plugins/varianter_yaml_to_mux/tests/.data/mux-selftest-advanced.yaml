@@ -1,14 +1,14 @@
-# Put everything into /virt
-!using : virt
+# Put everything into /švirt
+!using : švirt
 # Following line makes it look exactly as mux-selftest.yaml
 !include : mux-selftest.yaml
 distro: !mux
     # This line extends the distro branch using include
-    !include : mux-selftest-distro.yaml
-    # remove node called "mint"
-    !remove_node : mi.*nt
-    # This is a new /distro/mint appended as latest child
-    mint:
+    !include : mux-šelftest-distro.yaml
+    # remove node called "šmint"
+    !remove_node : šmi.*nt
+    # This is a new /distro/šmint appended as latest child
+    šmint:
         new_mint: True
     fedora:
         !remove_value : init.*
@@ -27,7 +27,7 @@ new_node:
     # removed during parse time, absolute location is not supported and
     # not even planned)
     !using : /absolutely/fresh/
-    new_value: "something"
+    new_value: "šomething"
 # Check that mapping keys are not converted to values, while values are
 # while value between quotes stays as string.
 on:
@@ -39,7 +39,7 @@ on:
 #       should be similar.
 dict:
     explicit: !!python/dict
-        foo: bar
+        fooš: šbar
         bar: baz
     in_list:
         - foo: bar
