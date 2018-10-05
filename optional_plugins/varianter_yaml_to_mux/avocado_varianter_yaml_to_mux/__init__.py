@@ -31,6 +31,7 @@ from six import iteritems
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
+from avocado.utils import astring
 
 from . import mux
 
@@ -191,8 +192,9 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                     else:
                         _handle_control_tag(path, cls_node, node, value)
                 elif isinstance(value[1], collections.OrderedDict):
-                    node.add_child(tree_node_from_values(str(value[0]),
-                                                         value[1]))
+                    child = tree_node_from_values(astring.to_text(value[0]),
+                                                  value[1])
+                    node.add_child(child)
                 else:
                     node.value[value[0]] = value[1]
             return using
@@ -213,7 +215,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
             return using
 
         # Initialize the node
-        node = cls_node(str(name))
+        node = cls_node(astring.to_text(name))
         if not values:
             return node
         using = ''
@@ -257,7 +259,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
             if isinstance(values, ListOfNodeObjects):   # New node from list
                 objects.append(tree_node_from_values(name, values))
             elif values is None:            # Empty node
-                objects.append(cls_node(str(name)))
+                objects.append(cls_node(astring.to_text(name)))
             else:                           # Values
                 objects.append((name, values))
         return objects
@@ -358,10 +360,11 @@ def create_from_yaml(paths, debug=False):
             merge(data, path)
     # Yaml can raise IndexError on some files
     except (yaml.YAMLError, IndexError) as details:
-        if 'mapping values are not allowed in this context' in str(details):
-            details = ("%s\nMake sure !tags and colons are separated by a "
-                       "space (eg. !include :)" % details)
-        msg = "Invalid multiplex file '%s': %s" % (path, details)
+        if (u'mapping values are not allowed in this context' in
+                astring.to_text(details)):
+            details = (u"%s\nMake sure !tags and colons are separated by a "
+                       u"space (eg. !include :)" % details)
+        msg = u"Invalid multiplex file '%s': %s" % (path, details)
         raise IOError(2, msg, path)
     return data
 
@@ -416,6 +419,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
 
     def initialize(self, args):
         debug = getattr(args, "varianter_debug", False)
+
         if debug:
             data = mux.MuxTreeNodeDebug()
         else:

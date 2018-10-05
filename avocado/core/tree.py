@@ -84,12 +84,31 @@ class TreeEnvironment(dict):
         return cpy
 
     def __str__(self):
+        """
+        String representation using __str__ on items to improve readability
+        """
+        return self.to_text(False)
+
+    def to_text(self, sort=False):
+        """
+        Human readable representation
+
+        :param sort: Sorted to provide stable output
+        :rtype: str
+        """
+        def _iteritems_sorted(dictionary):
+            return sorted(iteritems(dictionary))
+
         # Use __str__ instead of __repr__ to improve readability
         if self:
-            _values = ["%s: %s" % _ for _ in iteritems(self)]
+            if sort:
+                _iteritems = _iteritems_sorted
+            else:
+                _iteritems = iteritems
+            _values = ["%s: %s" % _ for _ in _iteritems(self)]
             values = "{%s}" % ", ".join(_values)
             _origin = ["%s: %s" % (key, node.path)
-                       for key, node in iteritems(self.origin)]
+                       for key, node in _iteritems(self.origin)]
             origin = "{%s}" % ", ".join(_origin)
         else:
             values = "{}"
@@ -133,7 +152,7 @@ class TreeNodeEnvOnly(object):
         return True
 
     def fingerprint(self):
-        return "%s%s" % (self.path, self.environment)
+        return "%s%s" % (self.path, self.environment.to_text(True))
 
     def get_environment(self):
         return self.environment
@@ -225,7 +244,7 @@ class TreeNode(object):
         """
         Reports string which represents the value of this node.
         """
-        return "%s%s" % (self.path, self.environment)
+        return "%s%s" % (self.path, self.environment.to_text(True))
 
     def add_child(self, node):
         """

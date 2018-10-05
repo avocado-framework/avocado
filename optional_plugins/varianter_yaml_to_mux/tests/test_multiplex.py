@@ -11,10 +11,11 @@ from avocado.utils import process
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..')
 basedir = os.path.abspath(basedir)
 
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",
+                         "%s ./scripts/avocado" % sys.executable)
 
 DEBUG_OUT = b"""
-Variant mint-debug-amd-virtio-a9d2:    amd@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, mint@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, debug@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml
+Variant mint-debug-amd-virtio-022a:    amd@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, mint@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, debug@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml
     /distro/mint:init         => systemv@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/distro/mint
     /env/debug:opt_CFLAGS     => -O0 -g@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/env/debug
     /hw/cpu/amd:cpu_CFLAGS    => -march=athlon64@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/hw/cpu/amd
@@ -62,8 +63,6 @@ class MultiplexTests(unittest.TestCase):
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(b' /foo/baz/bar', result.stdout)
 
-    @unittest.skipIf(sys.version_info[0] == 3,
-                     "Test currently broken on Python 3")
     def test_mplex_debug(self):
         cmd_line = ('%s variants -c -d -m '
                     '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml '
@@ -151,8 +150,6 @@ class MultiplexTests(unittest.TestCase):
                     "passtest.py" % (AVOCADO, self.tmpdir))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (1, 0))
 
-    @unittest.skipIf(sys.version_info[0] == 3,
-                     "Test currently broken on Python 3")
     def test_run_mplex_params(self):
         for variant_msg in (('/run/short', 'A'),
                             ('/run/medium', 'ASDFASDF'),

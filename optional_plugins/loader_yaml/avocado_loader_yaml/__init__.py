@@ -85,7 +85,7 @@ class YamlTestsuiteLoader(loader.TestLoader):
         if not _args:
             args = self.args
         else:
-            args = copy.deepcopy(self.args)
+            args = copy.copy(self.args)
             for key, value in iteritems(_args):
                 setattr(args, key, value)
         extra_params = params.get("test_reference_resolver_extra", default={})
