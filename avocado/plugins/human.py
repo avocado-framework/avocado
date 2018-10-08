@@ -79,6 +79,9 @@ class Human(ResultEvents):
         out = (output.TERM_SUPPORT.MOVE_BACK + self.output_mapping[status] +
                status)
         if extra:
+            if len(extra) > 255:
+                extra = extra[:255] + '...'
+            extra = extra.replace('\n', '\\n')
             out += ": " + extra
         out += output.TERM_SUPPORT.ENDC
         return out
