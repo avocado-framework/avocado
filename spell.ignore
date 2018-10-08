@@ -604,3 +604,6 @@ builtin
 lsblk
 regex
 login
+moduleconfig
+treeview
+xmlcharrefreplace
