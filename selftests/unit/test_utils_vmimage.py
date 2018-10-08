@@ -113,5 +113,55 @@ class ImageProviderBase(unittest.TestCase):
         self.assertIn('attributes are required to get image url', exc.exception.args[0])
 
 
+class OpenSUSEImageProvider(unittest.TestCase):
+    def setUp(self):
+        self.suse_available_versions = ['Leap_15.0', 'Leap_42.1', 'Leap_42.2', 'Leap_42.3']
+        self.base_images_url = 'https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.0/images/'
+
+    @staticmethod
+    def get_html_with_image_link(image_link):
+        return '''
+            <a href="openSUSE-Leap-15.0-OpenStack.x86_64-0.0.4-Buildlp150.12.30.packages"></a>
+            <a href="%s"></a>
+            <a href="openSUSE-Leap-15.0-OpenStack.x86_64-0.0.4-Buildlp150.12.30.qcow2.sha256"></a>
+        ''' % image_link
+
+    def test_get_best_version_default(self):
+        suse_latest_version = 15.0
+        suse_provider = vmimage.OpenSUSEImageProvider()
+        self.assertEqual(suse_provider.get_best_version(self.suse_available_versions),
+                         suse_latest_version)
+
+    def test_get_best_version_leap_4_series(self):
+        suse_latest_version = 42.3
+        suse_provider = vmimage.OpenSUSEImageProvider(version='4(.)*')
+        self.assertEqual(suse_provider.get_best_version(self.suse_available_versions),
+                         suse_latest_version)
+
+    @mock.patch('avocado.utils.vmimage.urlopen')
+    def test_get_image_url(self, urlopen_mock):
+        image = 'openSUSE-Leap-15.0-OpenStack.x86_64-0.0.4-Buildlp150.12.30.qcow2'
+        html_fixture = self.get_html_with_image_link(image)
+        urlread_mocked = mock.Mock(return_value=html_fixture)
+        urlopen_mock.return_value = mock.Mock(read=urlread_mocked)
+        expected_image_url = self.base_images_url + image
+
+        suse_provider = vmimage.OpenSUSEImageProvider()
+        suse_provider.get_version = mock.Mock(return_value='15.0')
+        self.assertEqual(suse_provider.get_image_url(), expected_image_url)
+
+    @mock.patch('avocado.utils.vmimage.urlopen')
+    def test_get_image_url_defining_build(self, urlopen_mock):
+        image = 'openSUSE-Leap-15.0-OpenStack.x86_64-1.1.1-Buildlp111.11.11.qcow2'
+        html_fixture = self.get_html_with_image_link(image)
+        urlread_mocked = mock.Mock(return_value=html_fixture)
+        urlopen_mock.return_value = mock.Mock(read=urlread_mocked)
+        expected_image_url = self.base_images_url + image
+
+        suse_provider = vmimage.OpenSUSEImageProvider(build='1.1.1-Buildlp111.11.11')
+        suse_provider.get_version = mock.Mock(return_value='15.0')
+        self.assertEqual(suse_provider.get_image_url(), expected_image_url)
+
+
 if __name__ == '__main__':
     unittest.main()
