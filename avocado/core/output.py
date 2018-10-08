@@ -20,6 +20,7 @@ import logging
 import os
 import re
 import sys
+import traceback
 
 from six import string_types, iterkeys
 
@@ -703,7 +704,7 @@ def log_plugin_failures(failures):
                      :class:`avocado.core.dispatcher.Dispatcher`
                      attribute `load_failures`
     """
-    msg_fmt = 'Failed to load plugin from module "%s": %s'
+    msg_fmt = 'Failed to load plugin from module "%s": %s :\n%s'
     silenced = settings.get_value('plugins',
                                   'skip_broken_plugin_notification',
                                   list, [])
@@ -711,4 +712,5 @@ def log_plugin_failures(failures):
         if failure[0].module_name in silenced:
             continue
         LOG_UI.error(msg_fmt, failure[0].module_name,
-                     failure[1].__repr__())
+                     failure[1].__repr__(),
+                     ''.join(traceback.format_tb(failure[1].__traceback__)))
