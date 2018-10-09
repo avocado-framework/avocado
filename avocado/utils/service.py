@@ -25,6 +25,7 @@ import os
 import re
 import logging
 from tempfile import mktemp
+from functools import partial
 
 from . import process
 
@@ -430,83 +431,6 @@ def get_name_of_init(run=process.run):
         return os.path.basename(output)
 
 
-class _SpecificServiceManager(object):  # pylint: disable=too-few-public-methods
-
-    def __init__(self, service_name, service_command_generator,
-                 service_result_parser, run=process.run):
-        """
-        Create staticmethods that call process.run with the given service_name
-
-        >>> my_generator = auto_create_specific_service_command_generator
-        >>> lldpad = SpecificServiceManager("lldpad", my_generator())
-        >>> lldpad.start()
-        >>> lldpad.stop()
-
-        :param service_name: init service name or systemd unit name
-        :type service_name: str
-        :param service_command_generator: a sys_v_init or systemd command
-                generator
-        :type service_command_generator: _ServiceCommandGenerator
-        :param run: function that executes the commands and return CmdResult
-                object, default process.run
-        :type run: function
-        """
-        for cmd, requires_root in service_command_generator.commands:
-            run_func = run
-            parse_func = getattr(service_result_parser, cmd)
-            command = getattr(service_command_generator, cmd)
-            setattr(self, cmd,
-                    self.generate_run_function(run_func=run_func,
-                                               parse_func=parse_func,
-                                               command=command,
-                                               service_name=service_name,
-                                               requires_root=requires_root))
-
-    @staticmethod
-    def generate_run_function(run_func, parse_func, command, service_name,
-                              requires_root):
-        """
-        Generate the wrapped call to process.run for the given service_name.
-
-        :param run_func:  function to execute command and return CmdResult
-                object.
-        :type run_func:  function
-        :param parse_func: function to parse the result from run.
-        :type parse_func: function
-        :param command: partial function that generates the command list
-        :type command: function
-        :param service_name: init service name or systemd unit name
-        :type service_name: str
-        :param requires_root: whether command needs superuser privileges
-        :type requires_root: bool
-        :return: wrapped process.run function.
-        :rtype: function
-        """
-        def run(**kwargs):
-            """
-            Wrapped process.run invocation that will start/stop/etc a service.
-
-            :param kwargs: extra arguments to process.run, .e.g. timeout.
-                    But not for ignore_status.
-                    We need a CmdResult to parse and raise an
-                    exception.TestError if command failed.
-                    We will not let the CmdError out.
-            :return: result of parse_func.
-            """
-            # If run_func is process.run by default, we need to set
-            # ignore_status = True. Otherwise, skip this setting.
-            if run_func is process.run:
-                LOG.debug("Setting ignore_status to True.")
-                kwargs["ignore_status"] = True
-                if requires_root:
-                    LOG.debug("Setting sudo to True.")
-                    kwargs["sudo"] = True
-            cmd = " ".join(command(service_name))
-            result = run_func(cmd, **kwargs)
-            return parse_func(result)
-        return run
-
-
 class _GenericServiceManager(object):  # pylint: disable=too-few-public-methods
 
     """
@@ -578,6 +502,34 @@ class _GenericServiceManager(object):  # pylint: disable=too-few-public-methods
             result = run_func(cmd, **kwargs)
             return parse_func(result)
         return run
+
+
+class _SpecificServiceManager(_GenericServiceManager):
+
+    def __init__(self, service_name, service_command_generator,
+                 service_result_parser, run=process.run):
+        """
+        Create staticmethods that call process.run with the given service_name
+
+        >>> my_generator = auto_create_specific_service_command_generator
+        >>> lldpad = SpecificServiceManager("lldpad", my_generator())
+        >>> lldpad.start()
+        >>> lldpad.stop()
+
+        :param service_name: init service name or systemd unit name
+        :type service_name: str
+        :param service_command_generator: a sys_v_init or systemd command
+                generator
+        :type service_command_generator: _ServiceCommandGenerator
+        :param run: function that executes the commands and return CmdResult
+                object, default process.run
+        :type run: function
+        """
+        super(_SpecificServiceManager, self).__init__(
+            service_command_generator, service_result_parser, run
+            )
+        for cmd, _ in service_command_generator.commands:
+            setattr(self, cmd, partial(getattr(self, cmd), service_name))
 
 
 class _SysVInitServiceManager(_GenericServiceManager):  # pylint: disable=too-few-public-methods
