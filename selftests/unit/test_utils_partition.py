@@ -166,7 +166,7 @@ class TestMtabLock(unittest.TestCase):
     def test_lock(self):
         """ Check double-lock raises exception after 60s (in 0.1s) """
         with partition.MtabLock():
-            with mock.patch('avocado.utils.partition.time.time',
+            with mock.patch('avocado.utils.filelock.time.time',
                             mock.MagicMock(side_effect=[1, 2, 62])):
                 self.assertRaises(partition.PartitionError,
                                   partition.MtabLock().__enter__)
