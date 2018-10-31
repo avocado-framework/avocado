@@ -24,11 +24,11 @@ Utility for handling partitions.
 
 import logging
 import os
-import time
-
-import fcntl
+import hashlib
+import tempfile
 
 from . import process
+from . import filelock
 
 
 LOG = logging.getLogger(__name__)
@@ -51,29 +51,29 @@ class PartitionError(Exception):
 
 
 class MtabLock(object):
-    mtab = None
+    device = "/etc/mtab"
+
+    def __init__(self, timeout=60):
+        self.timeout = timeout
+        self.mtab = None
+        device_hash = hashlib.sha1(self.device.encode("utf-8")).hexdigest()
+        lock_filename = os.path.join(tempfile.gettempdir(), device_hash)
+        self.lock = filelock.FileLock(lock_filename, timeout=self.timeout)
 
     def __enter__(self):
-        self.mtab = open("/etc/mtab")
-        end_time = time.time() + 60
-        while time.time() < end_time:
-            try:
-                fcntl.flock(self.mtab.fileno(),
-                            fcntl.LOCK_EX | fcntl.LOCK_NB)
-                break
-            except IOError as details:
-                if details.errno == 11:
-                    time.sleep(0.1)
-                else:
-                    raise
-        else:
-            raise PartitionError(self, "Unable to obtain '/etc/mtab' lock "
-                                 "in 60s")
+        try:
+            self.lock.__enter__()
+        except (filelock.LockFailed, filelock.AlreadyLocked) as e:
+            reason = "Unable to obtain '%s' lock in %ds" % (self.device,
+                                                            self.timeout)
+            raise PartitionError(self, reason, e)
+        self.mtab = open(self.device)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         if self.mtab:
             self.mtab.close()
+        self.lock.__exit__(exc_type, exc_value, exc_traceback)
 
 
 class Partition(object):
