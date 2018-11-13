@@ -249,7 +249,7 @@ class TestStatus(object):
                 test_state['text_output'] = log_file_obj.read()
         except IOError:
             test_state["text_output"] = "Not available, file not created yet"
-        TEST_LOG.error('ERROR %s -> TestAbortedError: %s.', err,
+        TEST_LOG.error('ERROR %s -> TestAbortError: %s.', err,
                        test_state['name'])
         if proc.is_alive():
             TEST_LOG.warning("Killing hanged test process %s" % proc.pid)
