@@ -403,7 +403,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(b"Runner error occurred: Timeout reached", output,
                       "Timeout reached message not found in the output:\n%s" % output)
         # Ensure no test aborted error messages show up
-        self.assertNotIn(b"TestAbortedError: Test aborted unexpectedly", output)
+        self.assertNotIn(b"TestAbortError: Test aborted unexpectedly", output)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
