@@ -63,6 +63,12 @@ class KernelBuild(object):
                                               self.config_path,
                                               self.work_dir)
 
+    def _build_kernel_url(self, base_url=None):
+        kernel_file = self.SOURCE.format(version=self.version)
+        if base_url is None:
+            base_url = self.URL.format(major=self.version.split('.', 1)[0])
+        return base_url + kernel_file
+
     def download(self, url=None):
         """
         Download kernel source.
@@ -71,19 +77,7 @@ class KernelBuild(object):
                     source tarball
         :type url: str or None
         """
-
-        kernel_file = self.SOURCE.format(version=self.version)
-        # if there's no url to override, the default is the one
-        # specified in the class
-        if url is None:
-            base_url = self.URL.format(major=self.version.split('.', 1)[0])
-
-        # however, if there's a url informed as a parameter, this one
-        # should be used as the base url.
-        else:
-            base_url = url
-        full_url = base_url + kernel_file
-
+        full_url = self._build_kernel_url(base_url=url)
         self.asset_path = asset.Asset(full_url, asset_hash=None,
                                       algorithm=None, locations=None,
                                       cache_dirs=self.data_dirs).fetch()
