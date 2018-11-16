@@ -1,4 +1,5 @@
 #!/bin/bash
+PYTHON=${PYTHON:-python3}
 ERR=()
 RESULTS_DIR=$(./scripts/avocado config | grep datadir.paths.logs_dir | awk '{print $2}')
 # Very basic version of expanduser
@@ -72,7 +73,7 @@ parallel_selftests() {
         for I in $(seq 0 $PER_SLICE $((${#ALL[@]} - 1))); do
             TMP=$(mktemp /tmp/avocado_parallel_unittest_output_XXXXXX)
             TMPS+=("$TMP")
-            ( python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
+            ( $PYTHON -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
             PIDS+=("$!")
             sleep 0.1
         done
@@ -104,8 +105,8 @@ parallel_selftests() {
         if [ ${#FAILED_ONCE[@]} -gt 0 ]; then
             if [ ${#FAILED_ONCE[@]} -le 24 ]; then
                 echo ${#FAILED_ONCE[@]} failed during parallel execution, trying them in series
-                echo "python -m unittest --failfast ${FAILED_ONCE[@]}"
-                if python -m unittest --failfast ${FAILED_ONCE[@]}; then
+                echo "$PYTHON -m unittest --failfast ${FAILED_ONCE[@]}"
+                if $PYTHON -m unittest --failfast ${FAILED_ONCE[@]}; then
                     echo "All failed tests passed when executed in series"
                     echo
                     for I in $(seq 0 $((${#PIDS[@]} - 1))); do
@@ -126,7 +127,7 @@ parallel_selftests() {
         for I in $(seq 0 $((${#PIDS[@]} - 1))); do
             if [ -e "${TMPS[$I]}" ]; then
                 echo
-                echo python -m unittest ${ALL[@]:$(($I * $PER_SLICE)):$PER_SLICE}
+                echo $PYTHON -m unittest ${ALL[@]:$(($I * $PER_SLICE)):$PER_SLICE}
                 cat "${TMPS[$I]}"
                 rm "${TMPS[$I]}"
             fi

@@ -40,7 +40,8 @@ install:
 script:
     - |
         # First cleanup the previously installed files
-        python setup.py develop --uninstall
+        PYTHON=$(which python)
+        $(PYTHON) setup.py develop --uninstall
         BINDIR=$(dirname $(which python))
         for FILE in scripts/*; do
             rm $BINDIR/$(basename $FILE)
@@ -61,8 +62,8 @@ script:
             echo
             echo
             git checkout $COMMIT || ERR=$(echo -e "$ERR\nUnable to checkout $(git log -1 --oneline $COMMIT)")
-            make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
-            make clean
+            make PYTHON=$PYTHON check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
+            make PYTHON=$PYTHON clean
         done
         if [ "$ERR" ]; then
             echo
