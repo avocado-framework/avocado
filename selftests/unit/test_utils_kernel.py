@@ -16,3 +16,7 @@ class TestKernelBuild(unittest.TestCase):
         base_url = 'https://mykernel.com/'
         expected_url = '{}linux-4.4.133.tar.gz'.format(base_url)
         self.assertEqual(self.kernel._build_kernel_url(base_url=base_url), expected_url)
+
+    def tearDown(self):
+        # To make sure that the temporary workdir is cleaned up
+        del(self.kernel)
