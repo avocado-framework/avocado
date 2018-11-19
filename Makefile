@@ -1,4 +1,6 @@
-PYTHON=$(shell which python 2>/dev/null || which python3 2>/dev/null)
+ifndef PYTHON
+PYTHON=$(shell which python3 2>/dev/null || which python 2>/dev/null)
+endif
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 DESTDIR=/
@@ -130,15 +132,15 @@ smokecheck: clean develop
 
 check: clean develop modules_boundaries
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	selftests/checkall
+	PYTHON=$(PYTHON) selftests/checkall
 	selftests/check_tmp_dirs
 
 check-full: clean develop modules_boundaries
-	AVOCADO_CHECK_LEVEL=2 selftests/checkall
+	PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=2 selftests/checkall
 	selftests/check_tmp_dirs
 
 selfcheck: clean modules_boundaries develop
-	AVOCADO_SELF_CHECK=1 selftests/checkall
+	PYTHON=$(PYTHON) AVOCADO_SELF_CHECK=1 selftests/checkall
 	selftests/check_tmp_dirs
 
 modules_boundaries:
