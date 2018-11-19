@@ -41,7 +41,7 @@ from .output import LOG_UI as APP_LOG
 from .output import LOG_JOB as TEST_LOG
 
 #: when test was interrupted (ctrl+c/timeout)
-TIMEOUT_TEST_INTERRUPTED = 1
+TIMEOUT_TEST_INTERRUPTED = 60
 #: when the process died but the status was not yet delivered
 TIMEOUT_PROCESS_DIED = 10
 #: when test reported status but the process did not finish
