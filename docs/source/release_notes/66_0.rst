@@ -1,0 +1,62 @@
+===================
+66.0 Les Misérables
+===================
+
+The Avocado team is proud to present another release: Avocado version
+66.0, AKA "Les Misérables", is now available!
+
+Release documentation: `Avocado 66.0
+<http://avocado-framework.readthedocs.io/en/66.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* The :mod:`avocado.utils.vmimage` library got a provider implementation
+  for OpenSUSE.  The limitation is that it tracks the general releases,
+  and not the rolling releases (called Tumbleweed).
+
+* Users of the :mod:`avocado.utils.kernel` module can now properly specify
+  the base URL from which to download the kernel sources.
+
+Bug Fixes
+=========
+
+* The YAML to Mux plugins now properly deals with text encoding and
+  work as intended on Python 3.  These were the last existing tests
+  that were being skipped in the Python 3 environment, so now all
+  existing tests run equally on all Python versions.
+
+Internal Changes
+================
+
+* Development environments now default to Python 3, that is, if you
+  download the Avocado source code, and run ``make develop`` or
+  related targets, Python 3 will be favored if available on your
+  system.  You can force the Python interpreter version with ``make
+  PYTHON=/path/to/python develop``.
+
+* The :mod:`avocado.utils.partition` implementation for the
+  ``/etc/mtab`` lock is now based on the :mod:`avocado.utils.filelock`
+  module.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/65.0...66.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=-5uGGSm9egc>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/RbIV6bDp/1442-sprint-theme
