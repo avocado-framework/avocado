@@ -76,7 +76,7 @@ class XUnitResult(Result):
                         text_output = logfile_obj.read(size)
                         text_output += ("\n\n--[ CUT DUE TO XML PER TEST "
                                         "LIMIT ]--\n\n")
-                        logfile_obj.seek(-size, 2)
+                        logfile_obj.seek(log_size - size, 0)
                         text_output += logfile_obj.read()
                 else:
                     text_output = logfile_obj.read()
