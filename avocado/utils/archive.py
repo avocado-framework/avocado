@@ -15,6 +15,7 @@
 Module to help extract and create compressed archives.
 """
 
+import gzip
 import logging
 import os
 import platform
@@ -37,6 +38,23 @@ except ImportError:
         LZMA_CAPABLE = True
     except ImportError:
         LZMA_CAPABLE = False
+
+
+def is_gzip_file(path):
+    """
+    Checks if file given by path has contents that suggests gzip file
+    """
+    with open(path, 'rb') as gzip_file:
+        magic = gzip_file.read(2)
+        return magic == b'\037\213'
+
+
+def is_gzip_filename(path):
+    """
+    Returns if, based on the filename only, this looks like a pure gzip file
+    """
+    return (path.endswith('.gz') and not ((path.endswith('.tar.gz') or
+                                           path.endswith('.tgz'))))
 
 
 class ArchiveException(Exception):
@@ -243,7 +261,8 @@ def is_archive(filename):
     :param filename: file to test.
     :return: `True` if it is an archive.
     """
-    return zipfile.is_zipfile(filename) or tarfile.is_tarfile(filename)
+    return (zipfile.is_zipfile(filename) or tarfile.is_tarfile(filename) or
+            is_gzip_file(filename))
 
 
 def compress(filename, path):
@@ -272,8 +291,21 @@ def uncompress(filename, path):
     :param filename: archive file name.
     :param path: destination path to extract to.
     """
-    with ArchiveFile.open(filename) as x:
-        return x.extract(path)
+    if is_gzip_filename(filename) and is_gzip_file(filename):
+        with gzip.GzipFile(filename=filename, mode='rb') as input_file:
+            if os.path.isdir(path):
+                non_gz_name = os.path.basename(filename[:-3])
+                path = os.path.join(path, non_gz_name)
+            with open(path, 'wb') as output_file:
+                while True:
+                    chunk = input_file.read(4096)
+                    if not chunk:
+                        break
+                    output_file.write(chunk)
+            return path
+    else:
+        with ArchiveFile.open(filename) as x:
+            return x.extract(path)
 
 
 # Some aliases
