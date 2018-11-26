@@ -155,6 +155,14 @@ class ArchiveTest(unittest.TestCase):
         self.assertEqual(ret, None, "Empty archive should return None (%s)"
                          % ret)
 
+    def test_gzip(self):
+        gz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.gz')
+        self.assertTrue(archive.is_archive(gz_path))
+        ret = archive.uncompress(gz_path, self.decompressdir)
+        self.assertEqual(ret, os.path.join(self.decompressdir, 'avocado'))
+        with open(ret, 'rb') as decompressed:
+            self.assertEqual(decompressed.read(), b'avocado\n')
+
     def tearDown(self):
         try:
             shutil.rmtree(self.basedir)
