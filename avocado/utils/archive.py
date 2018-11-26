@@ -40,11 +40,9 @@ except ImportError:
 
 
 class ArchiveException(Exception):
-
     """
     Base exception for all archive errors.
     """
-    pass
 
 
 class _WrapLZMA(object):

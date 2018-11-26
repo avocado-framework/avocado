@@ -238,11 +238,9 @@ class _StdOutputFile(object):
 
     def close(self):
         """ File-object methods """
-        pass
 
     def flush(self):
         """ File-object methods """
-        pass
 
     def isatty(self):
         """ File-object methods """
@@ -250,11 +248,9 @@ class _StdOutputFile(object):
 
     def seek(self):
         """ File-object methods """
-        pass
 
     def tell(self):
         """ File-object methods """
-        pass
 
     def getvalue(self):
         """
@@ -527,7 +523,6 @@ class MemStreamHandler(logging.StreamHandler):
         """
         This is in-mem object, it does not require flushing
         """
-        pass
 
 
 class PagerNotFoundError(Exception):

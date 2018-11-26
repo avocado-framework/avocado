@@ -72,43 +72,33 @@ REMOTE_MAX_PACKET_SIZE = 1024
 
 
 class UnexpectedResponseError(Exception):
-
     """
     A response different from the one expected was received from GDB
     """
-    pass
 
 
 class ServerInitTimeoutError(Exception):
-
     """
     Server took longer than expected to initialize itself properly
     """
-    pass
 
 
 class InvalidPacketError(Exception):
-
     """
     Packet received has invalid format
     """
-    pass
 
 
 class NotConnectedError(Exception):
-
     """
     GDBRemote is not connected to a remote GDB server
     """
-    pass
 
 
 class RetransmissionRequestedError(Exception):
-
     """
     Message integrity was not validated and retransmission is being requested
     """
-    pass
 
 
 def parse_mi(line):

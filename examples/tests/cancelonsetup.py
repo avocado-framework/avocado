@@ -17,7 +17,6 @@ class CancelOnSetupTest(Test):
         """
         This won't get to be executed, given that setUp calls .cancel().
         """
-        pass
 
 
 if __name__ == "__main__":

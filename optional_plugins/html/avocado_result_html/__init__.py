@@ -47,7 +47,6 @@ class ReportModel(object):
         """
         Hook for updates not supported
         """
-        pass
 
     def get(self, key, default):
         value = getattr(self, key, default)

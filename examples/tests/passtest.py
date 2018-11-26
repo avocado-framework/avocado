@@ -16,7 +16,6 @@ class PassTest(Test):
         """
         A test simply doesn't have to fail in order to pass
         """
-        pass
 
 
 if __name__ == "__main__":

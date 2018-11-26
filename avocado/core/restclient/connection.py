@@ -32,19 +32,15 @@ MIN_REQUIRED_VERSION = (0, 2, 0)
 
 
 class InvalidConnectionError(Exception):
-
     """
     Invalid connection for selected server
     """
-    pass
 
 
 class InvalidServerVersionError(Exception):
-
     """
     The server version does not satisfy the minimum required version
     """
-    pass
 
 
 class UnexpectedHttpStatusCode(Exception):

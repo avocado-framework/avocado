@@ -38,7 +38,6 @@ class LVException(Exception):
     """
     Base Exception Class for all exceptions
     """
-    pass
 
 
 def get_diskspace(disk):

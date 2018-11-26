@@ -595,7 +595,6 @@ class RemoteTestRunner(TestRunner):
         :warning: It might be called on `setup` exceptions, so things
                   initialized during `setup` might not yet be initialized.
         """
-        pass
 
 
 class RemoteCLI(CLI):

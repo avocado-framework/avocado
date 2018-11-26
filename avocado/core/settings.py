@@ -32,19 +32,15 @@ from ..utils import path
 
 
 class SettingsError(Exception):
-
     """
     Base settings error.
     """
-    pass
 
 
 class SettingsValueError(SettingsError):
-
     """
     Error thrown when we could not convert successfully a key to a value.
     """
-    pass
 
 
 class ConfigFileNotFound(SettingsError):

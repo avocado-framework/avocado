@@ -73,7 +73,7 @@ class DockerRemoter(object):
         """
         def print_func(*args, **kwargs):    # pylint: disable=W0613
             """ Accept anything and does nothing """
-            pass
+
         if timeout is None:
             timeout = 31536000  # aexpect does not support None, use one year
         start = time.time()
