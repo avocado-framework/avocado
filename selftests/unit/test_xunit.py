@@ -97,6 +97,7 @@ class xUnitSucceedTest(unittest.TestCase):
     def test_max_test_log_size(self):
         log = tempfile.NamedTemporaryFile(dir=self.tmpdir, delete=False)
         log_content = b"1234567890" * 100
+        log_content += b"this should not be present" + b"0987654321" * 100
         log.write(log_content)
         log_path = log.name
         log.close()
@@ -117,6 +118,14 @@ class xUnitSucceedTest(unittest.TestCase):
                         "Length of xunit limitted to 10 chars was greater "
                         "than (unlimited - 500). Unlimited output:\n%s\n\n"
                         "Limited output:\n%s" % (unlimited, limited))
+        self.assertIn(b"this should not be present", unlimited)
+        self.assertNotIn(b"this should not be present", limited)
+        self.assertIn(b"1234567890", unlimited)
+        self.assertNotIn(b"1234567890", limited)
+        self.assertIn(b"12345", limited)
+        self.assertIn(b"0987654321", unlimited)
+        self.assertNotIn(b"0987654321", limited)
+        self.assertIn(b"54321", limited)
 
 
 if __name__ == '__main__':
