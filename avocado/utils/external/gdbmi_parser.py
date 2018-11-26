@@ -78,7 +78,6 @@ def __private():
 
         def t_whitespace(self, s):
             r'[ \t\f\v]+'
-            pass
 
         def t_symbol(self, s):
             r',|\{|\}|\[|\]|\='
@@ -158,7 +157,6 @@ def __private():
             list ::= { value }
             list ::= { value value_list }
             """
-            pass
 
         def terminal(self, token):
             #  Homogeneous AST.

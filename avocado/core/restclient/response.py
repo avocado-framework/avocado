@@ -20,22 +20,18 @@ import json
 
 
 class InvalidJSONError(Exception):
-
     """
     Data given to a loader/decoder is not valid JSON
     """
-    pass
 
 
 class InvalidResultResponseError(Exception):
-
     """
     Returned result response does not conform to expectation
 
     Even though the result may be a valid json, it may not have the required
     or expected information that would normally be sent by avocado-server.
     """
-    pass
 
 
 class BaseResponse(object):

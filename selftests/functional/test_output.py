@@ -112,7 +112,7 @@ class OutputCheckOnOff(Test):
 
 def image_output_uncapable():
     try:
-        import PIL              # pylint: disable=W0612
+        import PIL              # pylint: disable=W0611,W0612
         return False
     except ImportError:
         return True

@@ -75,7 +75,6 @@ class Result(object):
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        pass
 
     def end_test(self, state):
         """

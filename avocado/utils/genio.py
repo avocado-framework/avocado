@@ -35,7 +35,6 @@ class GenIOError(Exception):
     """
     Base Exception Class for all IO exceptions
     """
-    pass
 
 
 def log_line(filename, line):

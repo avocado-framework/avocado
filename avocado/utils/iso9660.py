@@ -185,7 +185,6 @@ class BaseIso9660(object):
 
         :rtype: None
         """
-        pass
 
 
 class MixInMntDirMount(object):

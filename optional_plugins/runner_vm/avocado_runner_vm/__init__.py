@@ -34,7 +34,6 @@ class VirtError(Exception):
     Generic exception class to propagate underling
     errors to the caller.
     """
-    pass
 
 
 class Hypervisor(object):
@@ -100,7 +99,6 @@ class Hypervisor(object):
         avoid unwanted messages from libvirt exceptions to be sent for
         stdout.
         """
-        pass
 
 
 class VM(object):

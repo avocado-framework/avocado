@@ -106,17 +106,11 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
 
 
 class LoaderError(Exception):
-
     """ Loader exception """
-
-    pass
 
 
 class InvalidLoaderPlugin(LoaderError):
-
     """ Invalid loader plugin """
-
-    pass
 
 
 class LoaderUnhandledReferenceError(LoaderError):
@@ -445,17 +439,11 @@ class TestLoader(object):
 
 
 class BrokenSymlink(object):
-
     """ Dummy object to represent reference pointing to a BrokenSymlink path """
-
-    pass
 
 
 class AccessDeniedPath(object):
-
     """ Dummy object to represent reference pointing to a inaccessible path """
-
-    pass
 
 
 def add_loader_options(parser):

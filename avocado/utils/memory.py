@@ -31,11 +31,9 @@ from .data_structures import DataSize
 
 
 class MemError(Exception):
-
     """
     called when memory operations fails
     """
-    pass
 
 
 def get_blk_string(block):
