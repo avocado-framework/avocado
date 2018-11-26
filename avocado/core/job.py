@@ -573,6 +573,22 @@ class Job(object):
         self.__stop_job_logging()
         if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
+        cleanup_conditionals = (
+            getattr(self.args, "dry_run", False),
+            not getattr(self.args, "dry_run_no_cleanup", False)
+        )
+        if all(cleanup_conditionals):
+            # Also clean up temp base directory created because of the dry-run
+            base_logdir = getattr(self.args, "base_logdir", None)
+            if base_logdir is not None:
+                try:
+                    FileNotFoundError
+                except NameError:
+                    FileNotFoundError = OSError   # pylint: disable=W0622
+                try:
+                    shutil.rmtree(base_logdir)
+                except FileNotFoundError:
+                    pass
 
 
 class TestProgram(object):

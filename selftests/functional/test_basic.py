@@ -495,9 +495,10 @@ class RunnerOperationTest(unittest.TestCase):
             avocado_process.wait()
 
     def test_dry_run(self):
-        cmd = ("%s run --sysinfo=off passtest.py failtest.py "
-               "gendata.py --json - --mux-inject foo:1 bar:2 baz:3 foo:foo:a"
-               " foo:bar:b foo:baz:c bar:bar:bar --dry-run" % AVOCADO)
+        cmd = ("%s run --sysinfo=off --dry-run --dry-run-no-cleanup --json - "
+               "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
+               "foo:bar:b foo:baz:c bar:bar:bar "
+               "-- passtest.py failtest.py gendata.py " % AVOCADO)
         result = json.loads(process.run(cmd).stdout_text)
         debuglog = result['debuglog']
         log = genio.read_file(debuglog)
