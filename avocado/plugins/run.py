@@ -76,6 +76,10 @@ class Run(CLICmd):
                             help="Instead of running the test only "
                             "list them and log their params.")
 
+        parser.add_argument("--dry-run-no-cleanup", action="store_true",
+                            help="Do not automatically clean up temporary "
+                            "directories used by dry-run", default=False)
+
         parser.add_argument('--force-job-id', dest='unique_job_id',
                             type=str, default=None,
                             help='Forces the use of a particular job ID. Used '
@@ -237,9 +241,9 @@ class Run(CLICmd):
                 # Run JobPost plugins
                 pre_post_dispatcher.map_method('post', job_instance)
 
-        result_dispatcher = ResultDispatcher()
-        if result_dispatcher.extensions:
-            result_dispatcher.map_method('render',
-                                         job_instance.result,
-                                         job_instance)
+            result_dispatcher = ResultDispatcher()
+            if result_dispatcher.extensions:
+                result_dispatcher.map_method('render',
+                                             job_instance.result,
+                                             job_instance)
         return job_run
