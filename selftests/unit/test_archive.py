@@ -155,6 +155,32 @@ class ArchiveTest(unittest.TestCase):
         self.assertEqual(ret, None, "Empty archive should return None (%s)"
                          % ret)
 
+    def test_is_gzip_file(self):
+        gz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.gz')
+        self.assertTrue(archive.is_gzip_file(gz_path))
+
+    def test_gzip_uncompress_to_dir(self):
+        gz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.gz')
+        ret = archive.gzip_uncompress(gz_path, self.decompressdir)
+        self.assertEqual(ret, os.path.join(self.decompressdir, 'avocado'))
+
+    def test_gzip_uncompress_to_file(self):
+        gz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.gz')
+        filename = os.path.join(self.decompressdir, 'other')
+        ret = archive.gzip_uncompress(gz_path, filename)
+        self.assertEqual(ret, filename)
+
+    def test_gzip_is_archive(self):
+        gz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.gz')
+        self.assertTrue(archive.is_archive(gz_path))
+
+    def test_uncompress_gzip(self):
+        gz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.gz')
+        ret = archive.uncompress(gz_path, self.decompressdir)
+        self.assertEqual(ret, os.path.join(self.decompressdir, 'avocado'))
+        with open(ret, 'rb') as decompressed:
+            self.assertEqual(decompressed.read(), b'avocado\n')
+
     def tearDown(self):
         try:
             shutil.rmtree(self.basedir)

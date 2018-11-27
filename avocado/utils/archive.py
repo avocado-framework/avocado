@@ -15,6 +15,7 @@
 Module to help extract and create compressed archives.
 """
 
+import gzip
 import logging
 import os
 import platform
@@ -37,6 +38,37 @@ except ImportError:
         LZMA_CAPABLE = True
     except ImportError:
         LZMA_CAPABLE = False
+
+
+#: The first two bytes that all gzip files start with
+GZIP_MAGIC = b'\037\213'
+
+
+def is_gzip_file(path):
+    """
+    Checks if file given by path has contents that suggests gzip file
+    """
+    with open(path, 'rb') as gzip_file:
+        return gzip_file.read(len(GZIP_MAGIC)) == GZIP_MAGIC
+
+
+def gzip_uncompress(path, output_path):
+    """
+    Uncompress a gzipped file at path, to either a file or dir at output_path
+    """
+    with gzip.GzipFile(filename=path, mode='rb') as input_file:
+        if os.path.isdir(output_path):
+            basename = os.path.basename(path)
+            if basename.endswith('.gz'):
+                basename = basename[:-3]
+            output_path = os.path.join(output_path, basename)
+        with open(output_path, 'wb') as output_file:
+            while True:
+                chunk = input_file.read(4096)
+                if not chunk:
+                    break
+                output_file.write(chunk)
+        return output_path
 
 
 class ArchiveException(Exception):
@@ -243,7 +275,8 @@ def is_archive(filename):
     :param filename: file to test.
     :return: `True` if it is an archive.
     """
-    return zipfile.is_zipfile(filename) or tarfile.is_tarfile(filename)
+    return (zipfile.is_zipfile(filename) or tarfile.is_tarfile(filename) or
+            is_gzip_file(filename))
 
 
 def compress(filename, path):
@@ -272,8 +305,11 @@ def uncompress(filename, path):
     :param filename: archive file name.
     :param path: destination path to extract to.
     """
-    with ArchiveFile.open(filename) as x:
-        return x.extract(path)
+    if is_gzip_file(filename) and not tarfile.is_tarfile(filename):
+        return gzip_uncompress(filename, path)
+    else:
+        with ArchiveFile.open(filename) as x:
+            return x.extract(path)
 
 
 # Some aliases
