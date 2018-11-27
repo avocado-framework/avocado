@@ -150,7 +150,7 @@ develop:
 	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS)
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
-			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN link &>/dev/null;\
+			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN PYTHON="$(PYTHON)" link &>/dev/null;\
 			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
 		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
@@ -158,7 +158,7 @@ develop:
 link: develop
 	for PLUGIN in $(AVOCADO_EXTERNAL_PLUGINS); do\
 		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
-			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN link &>/dev/null || echo ">> FAIL $$PLUGIN";\
+			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN PYTHON="$(PYTHON)" link &>/dev/null || echo ">> FAIL $$PLUGIN";\
 			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
 		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
