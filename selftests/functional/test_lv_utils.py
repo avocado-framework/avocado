@@ -3,7 +3,6 @@ avocado.utils.lv_utils selftests
 :author: Lukas Doktor <ldoktor@redhat.com>
 :copyright: 2016 Red Hat, Inc
 """
-from __future__ import print_function
 
 import glob
 import os
