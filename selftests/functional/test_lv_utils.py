@@ -13,7 +13,8 @@ import unittest
 
 from six.moves import xrange as range
 
-from avocado.utils import process, lv_utils
+from avocado.utils import process
+from avocado.utils import lv_utils
 
 
 class LVUtilsTest(unittest.TestCase):
