@@ -90,7 +90,7 @@ class XUnitResult(Result):
     def _render(self, result, max_test_log_size):
         document = Document()
         testsuite = document.createElement('testsuite')
-        testsuite.setAttribute('name', 'avocado')
+        testsuite.setAttribute('name', os.path.basename(os.path.dirname(result.logfile)))
         testsuite.setAttribute('tests', self._escape_attr(result.tests_total))
         testsuite.setAttribute('errors', self._escape_attr(result.errors + result.interrupted))
         testsuite.setAttribute('failures', self._escape_attr(result.failed))
