@@ -107,7 +107,7 @@ class Job(object):
         self.logdir = None
         self.logfile = None
         self.tmpdir = None
-        self.__remove_tmpdir = False
+        self.__keep_tmpdir = True
         self.status = "RUNNING"
         self.result = None
         self.sysinfo = None
@@ -170,12 +170,12 @@ class Job(object):
         self._setup_job_results()
         self.result = result.Result(self)
         self.__start_job_logging()
-        # Use "logdir" in case "keep_tmp" is set enabled
+        # Use "logdir" in case "keep_tmp" is enabled
         if getattr(self.args, "keep_tmp", None) == "on":
             base_tmpdir = self.logdir
         else:
             base_tmpdir = data_dir.get_tmp_dir()
-            self.__remove_tmpdir = True
+            self.__keep_tmpdir = False
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_",
                                        dir=base_tmpdir)
 
@@ -579,7 +579,7 @@ class Job(object):
         Cleanup the temporary job handlers (dirs, global setting, ...)
         """
         self.__stop_job_logging()
-        if self.__remove_tmpdir and os.path.exists(self.tmpdir):
+        if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
 
 
