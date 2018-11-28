@@ -40,6 +40,7 @@ from . import gdb
 from . import runtime
 from . import path
 from . import genio
+from .wait import wait_for
 
 log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
@@ -199,7 +200,8 @@ def get_children_pids(parent_pid, recursive=False):
     return children
 
 
-def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
+def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True,
+                      timeout=0):
     """
     Signal a process and all of its children.
 
@@ -207,14 +209,36 @@ def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
 
     :param pid: The pid of the process to signal.
     :param sig: The signal to send to the processes.
+    :param timeout: How long to wait for the pid(s) to die
+                    (negative=infinity, 0=don't wait,
+                    positive=number_of_seconds)
     """
+    if timeout <= 0:
+        def remaining_time():
+            return timeout
+    else:
+        start = time.time()
+
+        def remaining_time():
+            return timeout - time.time() + start
+
     if not safe_kill(pid, signal.SIGSTOP):
         return
     for child in get_children_pids(pid):
-        kill_process_tree(int(child), sig)
+        kill_process_tree(int(child), sig, timeout=remaining_time())
     safe_kill(pid, sig)
     if send_sigcont:
         safe_kill(pid, signal.SIGCONT)
+    if timeout == 0:
+        return
+    elif timeout > 0:
+        if not wait_for(lambda: not pid_exists(pid), remaining_time(),
+                        step=0.01):
+            raise RuntimeError("Timeout reached when waiting for pid %s "
+                               "and children to die (%s)" % (pid, timeout))
+    else:
+        while pid_exists(pid):
+            time.sleep(0.01)
 
 
 def kill_process_by_pattern(pattern):
