@@ -15,6 +15,7 @@ from six.moves import xrange as range
 
 from avocado.utils import process
 from avocado.utils import lv_utils
+from avocado.utils import linux_modules
 
 
 class LVUtilsTest(unittest.TestCase):
@@ -43,8 +44,7 @@ class LVUtilsTest(unittest.TestCase):
     @unittest.skipIf(process.system("modinfo scsi_debug", shell=True,
                                     ignore_status=True),
                      "Kernel mod 'scsi_debug' not available.")
-    @unittest.skipIf(process.system("lsmod | grep -q scsi_debug; [ $? -ne 0 ]",
-                                    shell=True, ignore_status=True),
+    @unittest.skipIf(linux_modules.module_is_loaded("scsi_debug"),
                      "Kernel mod 'scsi_debug' is already loaded.")
     def test_get_diskspace(self):
         """
