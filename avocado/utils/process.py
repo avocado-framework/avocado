@@ -40,6 +40,7 @@ from . import gdb
 from . import runtime
 from . import path
 from . import genio
+from .wait import wait_for
 
 log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
@@ -199,7 +200,8 @@ def get_children_pids(parent_pid, recursive=False):
     return children
 
 
-def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
+def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True,
+                      wait=False):
     """
     Signal a process and all of its children.
 
@@ -207,14 +209,32 @@ def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
 
     :param pid: The pid of the process to signal.
     :param sig: The signal to send to the processes.
+    :param wait: How long to wait for the pid(s) to die (False=don't wait,
+                 None=wait for infinity, otherwise wait for $wait seconds)
     """
+    if not wait:
+        def remaining_time():
+            return wait
+    else:
+        start = time.time()
+
+        def remaining_time():
+            return wait - time.time() + start
+
     if not safe_kill(pid, signal.SIGSTOP):
         return
     for child in get_children_pids(pid):
-        kill_process_tree(int(child), sig)
+        kill_process_tree(int(child), sig, wait=remaining_time())
     safe_kill(pid, sig)
     if send_sigcont:
         safe_kill(pid, signal.SIGCONT)
+    if wait is False:
+        return
+    elif wait is not None:
+        wait_for(lambda: not pid_exists(pid), remaining_time())
+    else:
+        while pid_exists(pid):
+            time.sleep(0.1)
 
 
 def kill_process_by_pattern(pattern):
