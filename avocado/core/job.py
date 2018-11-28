@@ -301,15 +301,6 @@ class Job(object):
                 sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
                 self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
 
-    def _make_test_runner(self):
-        if hasattr(self.args, 'test_runner'):
-            test_runner_class = self.args.test_runner
-        else:
-            test_runner_class = runner.TestRunner
-
-        self.test_runner = test_runner_class(job=self,
-                                             result=self.result)
-
     def _make_test_suite(self, references=None):
         """
         Prepares a test suite to be used for running tests
@@ -487,7 +478,8 @@ class Job(object):
                 raise exceptions.OptionValidationError("Unable to parse "
                                                        "variant: %s" % details)
 
-        self._make_test_runner()
+        runner_klass = getattr(self.args, 'test_runner', runner.TestRunner)
+        self.test_runner = runner_klass(job=self, result=self.result)
         self._start_sysinfo()
 
         self._log_job_debug_info(variant)
