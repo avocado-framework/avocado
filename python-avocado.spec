@@ -99,6 +99,10 @@ BuildRequires: python2-setuptools
 BuildRequires: python2-six
 BuildRequires: python2-sphinx
 BuildRequires: python2-stevedore
+%endif
+%if 0%{?fedora} && 0%{?fedora} <= 29
+# Python2 binary packages are being removed
+# See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
 BuildRequires: python2-pycdlib
 %endif
 
@@ -157,6 +161,10 @@ Requires: python2-requests
 Requires: python2-setuptools
 Requires: python2-six
 Requires: python2-stevedore
+%endif
+%if 0%{?fedora} && 0%{?fedora} <= 29
+# Python2 binary packages are being removed
+# See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
 Requires: python2-pycdlib
 %endif
 %{?python_provide:%python_provide python2-%{srcname}}
@@ -385,6 +393,7 @@ popd
 %{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
+find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x {} ';'
 %{__mkdir} -p %{buildroot}%{_libexecdir}/avocado
 %{__mv} %{buildroot}%{python2_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
 
