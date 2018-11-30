@@ -6,6 +6,7 @@ avocado.utils.partition unittests
 
 import os
 import shutil
+import sys
 import tempfile
 import unittest     # pylint: disable=C0411
 try:
@@ -15,6 +16,7 @@ except ImportError:
 
 from avocado.utils import partition, process
 from avocado.utils import path as utils_path
+from avocado.utils import wait
 
 
 def missing_binary(binary):
@@ -77,6 +79,18 @@ class TestPartitionMkfsMount(Base):
         super(TestPartitionMkfsMount, self).setUp()
         self.disk.mkfs()
         self.disk.mount()
+        self.use_mnt_file = os.path.join(self.mountpoint, 'file')
+        self.use_mnt_cmd = ("%s -c 'import time; f = open(\"%s\", \"w\"); "
+                            "time.sleep(60)'" % (sys.executable,
+                                                 self.use_mnt_file))
+
+    def run_process_to_use_mnt(self):
+        proc = process.SubProcess(self.use_mnt_cmd)
+        proc.start()
+        self.assertTrue(wait.wait_for(lambda: os.path.exists(self.use_mnt_file),
+                                      timeout=1, first=0.1, step=0.1),
+                        "File was not created within mountpoint")
+        return proc
 
     @unittest.skipIf(missing_binary('lsof'), "requires running lsof")
     @unittest.skipIf(not process.can_sudo('kill -l'),
@@ -86,9 +100,7 @@ class TestPartitionMkfsMount(Base):
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
-        proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
-                                  % self.mountpoint, shell=True)
-        proc.start()
+        proc = self.run_process_to_use_mnt()
         self.assertTrue(self.disk.unmount())
         self.assertEqual(proc.poll(), -9)   # Process should be killed -9
         with open("/proc/mounts") as proc_mounts_file:
@@ -101,9 +113,7 @@ class TestPartitionMkfsMount(Base):
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
-        proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
-                                  % self.mountpoint, shell=True)
-        proc.start()
+        proc = self.run_process_to_use_mnt()
         self.assertRaises(partition.PartitionError, self.disk.unmount)
         proc.terminate()
         proc.wait()
@@ -113,9 +123,7 @@ class TestPartitionMkfsMount(Base):
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
-        proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
-                                  % self.mountpoint, shell=True)
-        proc.start()
+        proc = self.run_process_to_use_mnt()
         with mock.patch('avocado.utils.partition.process.run',
                         side_effect=process.CmdError):
             with mock.patch('avocado.utils.partition.process.system_output',
