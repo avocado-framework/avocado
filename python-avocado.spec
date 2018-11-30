@@ -393,6 +393,7 @@ popd
 %{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
+find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x {} ';'
 %{__mkdir} -p %{buildroot}%{_libexecdir}/avocado
 %{__mv} %{buildroot}%{python2_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
 
