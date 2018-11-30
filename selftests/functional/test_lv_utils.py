@@ -3,18 +3,20 @@ avocado.utils.lv_utils selftests
 :author: Lukas Doktor <ldoktor@redhat.com>
 :copyright: 2016 Red Hat, Inc
 """
-from __future__ import print_function
 
 import glob
 import os
 import sys
 import shutil
 import tempfile
+import time
 import unittest
 
 from six.moves import xrange as range
 
-from avocado.utils import process, lv_utils
+from avocado.utils import process
+from avocado.utils import lv_utils
+from avocado.utils import linux_modules
 
 
 class LVUtilsTest(unittest.TestCase):
@@ -37,43 +39,6 @@ class LVUtilsTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
         for vg_name in self.vgs:
             lv_utils.vg_remove(vg_name)
-
-    @unittest.skipIf(sys.platform.startswith('darwin'),
-                     'macOS does not support LVM')
-    @unittest.skipIf(process.system("modinfo scsi_debug", shell=True,
-                                    ignore_status=True),
-                     "Kernel mod 'scsi_debug' not available.")
-    @unittest.skipIf(process.system("lsmod | grep -q scsi_debug; [ $? -ne 0 ]",
-                                    shell=True, ignore_status=True),
-                     "Kernel mod 'scsi_debug' is already loaded.")
-    def test_get_diskspace(self):
-        """
-        Use scsi_debug device to check disk size
-        """
-        pre = glob.glob("/dev/sd*")
-        try:
-            process.system("modprobe scsi_debug", sudo=True)
-            disks = set(glob.glob("/dev/sd*")).difference(pre)
-            self.assertEqual(len(disks), 1, "pre: %s\npost: %s"
-                             % (disks, glob.glob("/dev/sd*")))
-            disk = disks.pop()
-            self.assertEqual(lv_utils.get_diskspace(disk), "8388608")
-        except BaseException:
-            for _ in range(10):
-                res = process.run("rmmod scsi_debug", ignore_status=True,
-                                  sudo=True)
-                if not res.exit_status:
-                    print("scsi_debug removed")
-                    break
-            else:
-                print("Fail to remove scsi_debug: %s" % res)
-        for _ in range(10):
-            res = process.run("rmmod scsi_debug", ignore_status=True,
-                              sudo=True)
-            if not res.exit_status:
-                break
-        else:
-            self.fail("Fail to remove scsi_debug after testing: %s" % res)
 
     @unittest.skipIf(sys.platform.startswith('darwin'),
                      'macOS does not support LVM')
@@ -141,7 +106,39 @@ class LVUtilsTest(unittest.TestCase):
                                             vg_name, loop_device)
             except BaseException as details:
                 print("Fail to cleanup vg_ramdisk: %s" % details)
-            raise
+
+
+class DiskSpace(unittest.TestCase):
+
+    @unittest.skipIf(process.system("modinfo scsi_debug", shell=True,
+                                    ignore_status=True),
+                     "Kernel mod 'scsi_debug' not available.")
+    @unittest.skipIf(linux_modules.module_is_loaded("scsi_debug"),
+                     "Kernel mod 'scsi_debug' is already loaded.")
+    @unittest.skipIf(sys.platform.startswith('darwin'),
+                     'macOS does not support scsi_debug module')
+    @unittest.skipIf(not process.can_sudo(), "This test requires root or "
+                     "passwordless sudo configured.")
+    def test_get_diskspace(self):
+        """
+        Use scsi_debug device to check disk size
+        """
+        pre = glob.glob("/dev/sd*")
+        process.system("modprobe scsi_debug", sudo=True)
+        disks = set(glob.glob("/dev/sd*")).difference(pre)
+        self.assertEqual(len(disks), 1, "pre: %s\npost: %s"
+                         % (disks, glob.glob("/dev/sd*")))
+        disk = disks.pop()
+        self.assertEqual(lv_utils.get_diskspace(disk), "8388608")
+
+    def tearDown(self):
+        for _ in range(10):
+            if process.run("modprobe -r scsi_debug",
+                           ignore_status=True,
+                           sudo=True).exit_status == 0:
+                return
+            time.sleep(0.05)
+        raise RuntimeError("Failed to remove scsi_debug after testing")
 
 
 if __name__ == '__main__':
