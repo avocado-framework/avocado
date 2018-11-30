@@ -107,7 +107,7 @@ class Job(object):
         self.logdir = None
         self.logfile = None
         self.tmpdir = None
-        self.__remove_tmpdir = False
+        self.__keep_tmpdir = True
         self.status = "RUNNING"
         self.result = None
         self.sysinfo = None
@@ -170,12 +170,12 @@ class Job(object):
         self._setup_job_results()
         self.result = result.Result(self)
         self.__start_job_logging()
-        # Use "logdir" in case "keep_tmp" is set enabled
+        # Use "logdir" in case "keep_tmp" is enabled
         if getattr(self.args, "keep_tmp", None) == "on":
             base_tmpdir = self.logdir
         else:
             base_tmpdir = data_dir.get_tmp_dir()
-            self.__remove_tmpdir = True
+            self.__keep_tmpdir = False
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_",
                                        dir=base_tmpdir)
 
@@ -300,15 +300,6 @@ class Job(object):
             if self.args.sysinfo == 'on':
                 sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
                 self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
-
-    def _make_test_runner(self):
-        if hasattr(self.args, 'test_runner'):
-            test_runner_class = self.args.test_runner
-        else:
-            test_runner_class = runner.TestRunner
-
-        self.test_runner = test_runner_class(job=self,
-                                             result=self.result)
 
     def _make_test_suite(self, references=None):
         """
@@ -487,7 +478,8 @@ class Job(object):
                 raise exceptions.OptionValidationError("Unable to parse "
                                                        "variant: %s" % details)
 
-        self._make_test_runner()
+        runner_klass = getattr(self.args, 'test_runner', runner.TestRunner)
+        self.test_runner = runner_klass(job=self, result=self.result)
         self._start_sysinfo()
 
         self._log_job_debug_info(variant)
@@ -579,7 +571,7 @@ class Job(object):
         Cleanup the temporary job handlers (dirs, global setting, ...)
         """
         self.__stop_job_logging()
-        if self.__remove_tmpdir and os.path.exists(self.tmpdir):
+        if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
 
 
