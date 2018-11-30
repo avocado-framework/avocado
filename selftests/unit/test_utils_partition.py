@@ -130,6 +130,10 @@ class TestPartitionMkfsMount(Base):
                             side_effect=OSError) as mocked_system_output:
                 self.assertRaises(partition.PartitionError, self.disk.unmount)
                 mocked_system_output.assert_called_with('lsof ' + self.mountpoint)
+        # TODO: process.terminate() should be enough, but currently isn't.
+        # debug the root cause of why the process fails to terminate and the
+        # test hangs on wait()
+        self.disk.unmount()
         proc.terminate()
         proc.wait()
 
