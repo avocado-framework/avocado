@@ -186,7 +186,7 @@ run_rc signed-off-by signed_off_check
 if [ "$AVOCADO_PARALLEL_CHECK" ]; then
     run_rc selftests parallel_selftests
 elif [ -z "$AVOCADO_SELF_CHECK" ]; then
-    run_rc selftests selftests/run
+    run_rc selftests "$PYTHON selftests/run"
 else
     CMD='scripts/avocado run --job-results-dir=$(mktemp -d) selftests/{unit,functional,doc}'
     [ ! $SELF_CHECK_CONTINUOUS ] && CMD+=" --failfast on"
