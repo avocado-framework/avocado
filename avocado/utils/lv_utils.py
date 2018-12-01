@@ -339,9 +339,8 @@ def lv_remove(vg_name, lv_name):
     process.run(cmd, sudo=True)
 
 
-def lv_create(vg_name, lv_name, lv_size,
-              pool_name=None, pool_size="1G",
-              force_flag=True):
+def lv_create(vg_name, lv_name, lv_size, force_flag=True,
+              pool_name=None, pool_size="1G"):
     """
     Create a (possibly thin) logical volume in a volume group.
     The volume group must already exist.
@@ -349,10 +348,10 @@ def lv_create(vg_name, lv_name, lv_size,
     :param vg_name: Name of the volume group
     :param lv_name: Name of the logical volume
     :param lv_size: Size for the logical volume to be created
-    :param pool_name: Name of thin pool or None for regular volume
-    :param pool_size: Size of thin pool if it will be created
     :param force_flag: Whether to abort if volume already exists
                        or remove and recreate it
+    :param pool_name: Name of thin pool or None for regular volume
+    :param pool_size: Size of thin pool if it will be created
 
     A thin pool will be created if pool parameters are provided
     and the thin pool doesn't already exist.
