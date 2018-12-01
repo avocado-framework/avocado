@@ -96,7 +96,7 @@ class GLibLoader(loader.TestLoader):
                              {"name": "%s: %s" % (reference, details)})]
                 return []
 
-            for test_item in result.stdout.splitlines():
+            for test_item in result.stdout_text.splitlines():
                 test_name = "%s:%s" % (reference, test_item)
                 if subtests_filter and not subtests_filter.search(test_name):
                     continue
