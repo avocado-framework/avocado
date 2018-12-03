@@ -49,6 +49,8 @@ class xUnitSucceedTest(unittest.TestCase):
         self.job = job.Job(args)
         self.test_result = Result(FakeJob(args))
         self.test_result.tests_total = 1
+        self.test_result.logfile = ("/.../avocado/job-results/"
+                                    "job-2018-11-28T16.27-8fef221/job.log")
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
