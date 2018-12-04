@@ -339,14 +339,24 @@ def lv_remove(vg_name, lv_name):
     process.run(cmd, sudo=True)
 
 
-def lv_create(vg_name, lv_name, lv_size, force_flag=True):
+def lv_create(vg_name, lv_name, lv_size, force_flag=True,
+              pool_name=None, pool_size="1G"):
     """
-    Create a Logical volume in a volume group.
+    Create a (possibly thin) logical volume in a volume group.
     The volume group must already exist.
 
     :param vg_name: Name of the volume group
     :param lv_name: Name of the logical volume
     :param lv_size: Size for the logical volume to be created
+    :param force_flag: Whether to abort if volume already exists
+                       or remove and recreate it
+    :param pool_name: Name of thin pool or None for regular volume
+    :param pool_size: Size of thin pool if it will be created
+
+    A thin pool will be created if pool parameters are provided
+    and the thin pool doesn't already exist.
+
+    The volume group must already exist.
     """
 
     if not vg_check(vg_name):
@@ -356,8 +366,50 @@ def lv_create(vg_name, lv_name, lv_size, force_flag=True):
     elif lv_check(vg_name, lv_name) and force_flag:
         lv_remove(vg_name, lv_name)
 
-    cmd = "lvcreate --size %s --name %s %s -y" % (lv_size, lv_name, vg_name)
-    process.run(cmd, sudo=True)
+    lv_cmd = "lvcreate --name %s" % lv_name
+    if pool_name is not None:
+        if not lv_check(vg_name, pool_name):
+            tp_cmd = "lvcreate --thinpool %s --size %s %s -y" % (pool_name,
+                                                                 pool_size,
+                                                                 vg_name)
+            try:
+                process.run(tp_cmd, sudo=True)
+            except process.CmdError as detail:
+                LOGGER.debug(detail)
+                raise LVException("Create thin volume pool failed.")
+            LOGGER.debug("Created thin volume pool: %s", pool_name)
+        lv_cmd += " --virtualsize %s" % lv_size
+        lv_cmd += " --thin %s/%s -y" % (vg_name, pool_name)
+    else:
+        lv_cmd += " --size %s" % lv_size
+        lv_cmd += " %s -y" % vg_name
+    try:
+        process.run(lv_cmd, sudo=True)
+    except process.CmdError as detail:
+        LOGGER.error(detail)
+        raise LVException("Create thin volume failed.")
+    LOGGER.debug("Created thin volume:%s", lv_name)
+
+
+def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
+                   thinlv_name="lvthin", thinlv_size="1G"):
+    """
+    Create a thin volume from given volume group.
+
+    Note: this is a deprecated API and will be removed soon.
+
+    :param vg_name: An exist volume group
+    :param thinpool_name: The name of thin pool
+    :param thinpool_size: The size of thin pool to be created
+    :param thinlv_name: The name of thin volume
+    :param thinlv_size: The size of thin volume
+    """
+    LOGGER.warn("thin_lv_create() is a deprecated API and will be removed "
+                "soon.  Please resort to using lv_create() which is now "
+                "capable of creathing thin logical volumes")
+    lv_create(vg_name=vg_name, lv_name=thinlv_name, lv_size=thinlv_size,
+              pool_name=thinpool_name, pool_size=thinpool_size)
+    return (thinpool_name, thinlv_name)
 
 
 def lv_list(vg_name=None):
@@ -396,58 +448,38 @@ def lv_list(vg_name=None):
     return volumes
 
 
-def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
-                   thinlv_name="lvthin", thinlv_size="1G"):
-    """
-    Create a thin volume from given volume group.
-
-    :param vg_name: An exist volume group
-    :param thinpool_name: The name of thin pool
-    :param thinpool_size: The size of thin pool to be created
-    :param thinlv_name: The name of thin volume
-    :param thinlv_size: The size of thin volume
-    """
-    tp_cmd = "lvcreate --thinpool %s --size %s %s -y" % (thinpool_name,
-                                                         thinpool_size,
-                                                         vg_name)
-    try:
-        process.run(tp_cmd, sudo=True)
-    except process.CmdError as detail:
-        LOGGER.debug(detail)
-        raise LVException("Create thin volume pool failed.")
-    LOGGER.debug("Created thin volume pool: %s", thinpool_name)
-    lv_cmd = ("lvcreate --name %s --virtualsize %s "
-              "--thin %s/%s -y" % (thinlv_name, thinlv_size,
-                                   vg_name, thinpool_name))
-    try:
-        process.run(lv_cmd, sudo=True)
-    except process.CmdError as detail:
-        LOGGER.error(detail)
-        raise LVException("Create thin volume failed.")
-    LOGGER.debug("Created thin volume:%s", thinlv_name)
-    return (thinpool_name, thinlv_name)
-
-
 def lv_take_snapshot(vg_name, lv_name,
-                     lv_snapshot_name, lv_snapshot_size):
+                     lv_snapshot_name, lv_snapshot_size=None,
+                     pool_name=None):
     """
     Take a snapshot of the original Logical volume.
 
     :param vg_name: An existing volume group
     :param lv_name: An existing logical volume
     :param lv_snapshot_name: Name of the snapshot be to created
-    :param lv_snapshot_size: Size of the snapshot
+    :param lv_snapshot_size: Size of the snapshot or None for thin
+                             snapshot of a thin volume
+    :param pool_name: Name of thin pool or None for regular snapshot
+                      or snapshot in the same thin pool like the volume
     """
 
     if not vg_check(vg_name):
         raise LVException("Volume group could not be found")
+    if pool_name is not None and not lv_check(vg_name, pool_name):
+        raise LVException("Snapshot's thin pool could not be found")
     if lv_check(vg_name, lv_snapshot_name):
         raise LVException("Snapshot already exists")
     if not lv_check(vg_name, lv_name):
         raise LVException("Snapshot's origin could not be found")
 
-    cmd = ("lvcreate --size %s --snapshot --name %s /dev/%s/%s -y" %
-           (lv_snapshot_size, lv_snapshot_name, vg_name, lv_name))
+    # thin snapshot extensions (from thin or external volume)
+    cmd = ("lvcreate --snapshot --name %s /dev/%s/%s --ignoreactivationskip" %
+           (lv_snapshot_name, vg_name, lv_name))
+    if lv_snapshot_size is not None:
+        cmd += " --size %s" % lv_snapshot_size
+    if pool_name is not None:
+        cmd += " --thinpool %s/%s" % (vg_name, pool_name)
+
     try:
         process.run(cmd, sudo=True)
     except process.CmdError as ex:
