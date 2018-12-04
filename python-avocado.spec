@@ -47,7 +47,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 66.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -123,8 +123,11 @@ BuildRequires: python3-pycdlib
 %endif
 
 %if %{with_tests}
+BuildRequires: genisoimage
+BuildRequires: libcdio
 BuildRequires: libvirt-python
 BuildRequires: perl-Test-Harness
+BuildRequires: psmisc
 %if 0%{?rhel}
 BuildRequires: PyYAML
 %else
@@ -970,6 +973,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Dec  5 2018 Cleber Rosa <cleber@redhat.com> - 66.0-1
+- Added libcdio, genisoimage and psmisc as build deps
+
 * Tue Nov 20 2018 Cleber Rosa <cleber@redhat.com> - 66.0-0
 - New release
 
