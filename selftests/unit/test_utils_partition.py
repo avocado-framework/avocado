@@ -6,6 +6,7 @@ avocado.utils.partition unittests
 
 import os
 import shutil
+import sys
 import tempfile
 import unittest     # pylint: disable=C0411
 try:
@@ -15,6 +16,7 @@ except ImportError:
 
 from avocado.utils import partition, process
 from avocado.utils import path as utils_path
+from avocado.utils import wait
 
 
 def missing_binary(binary):
@@ -59,12 +61,12 @@ class TestPartition(Base):
         self.disk.mount()
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertIn(self.mountpoint, proc_mounts)
-            self.assertEqual(self.mountpoint, self.disk.get_mountpoint())
-            self.disk.unmount()
+        self.assertIn(self.mountpoint, proc_mounts)
+        self.assertEqual(self.mountpoint, self.disk.get_mountpoint())
+        self.disk.unmount()
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertNotIn(self.mountpoint, proc_mounts)
+        self.assertNotIn(self.mountpoint, proc_mounts)
 
 
 class TestPartitionMkfsMount(Base):
@@ -77,6 +79,18 @@ class TestPartitionMkfsMount(Base):
         super(TestPartitionMkfsMount, self).setUp()
         self.disk.mkfs()
         self.disk.mount()
+        self.use_mnt_file = os.path.join(self.mountpoint, 'file')
+        self.use_mnt_cmd = ("%s -c 'import time; f = open(\"%s\", \"w\"); "
+                            "time.sleep(60)'" % (sys.executable,
+                                                 self.use_mnt_file))
+
+    def run_process_to_use_mnt(self):
+        proc = process.SubProcess(self.use_mnt_cmd)
+        proc.start()
+        self.assertTrue(wait.wait_for(lambda: os.path.exists(self.use_mnt_file),
+                                      timeout=1, first=0.1, step=0.1),
+                        "File was not created within mountpoint")
+        return proc
 
     @unittest.skipIf(missing_binary('lsof'), "requires running lsof")
     @unittest.skipIf(not process.can_sudo('kill -l'),
@@ -85,73 +99,71 @@ class TestPartitionMkfsMount(Base):
         """ Test force-unmount feature """
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertIn(self.mountpoint, proc_mounts)
-            proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
-                                      % self.mountpoint, shell=True)
-            proc.start()
-            self.assertTrue(self.disk.unmount())
-            self.assertEqual(proc.poll(), -9)   # Process should be killed -9
+        self.assertIn(self.mountpoint, proc_mounts)
+        proc = self.run_process_to_use_mnt()
+        self.assertTrue(self.disk.unmount())
+        self.assertEqual(proc.poll(), -9)   # Process should be killed -9
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertNotIn(self.mountpoint, proc_mounts)
+        self.assertNotIn(self.mountpoint, proc_mounts)
 
     @unittest.skipUnless(missing_binary('lsof'), "requires not having lsof")
     def test_force_unmount_no_lsof(self):
         """ Checks that a force-unmount will fail on systems without lsof """
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertIn(self.mountpoint, proc_mounts)
-            proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
-                                      % self.mountpoint, shell=True)
-            proc.start()
-            self.assertRaises(partition.PartitionError, self.disk.unmount)
-            proc.terminate()
-            proc.wait()
+        self.assertIn(self.mountpoint, proc_mounts)
+        proc = self.run_process_to_use_mnt()
+        self.assertRaises(partition.PartitionError, self.disk.unmount)
+        proc.terminate()
+        proc.wait()
 
     def test_force_unmount_get_pids_fail(self):
         """ Checks PartitionError is raised if there's no lsof to get pids """
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertIn(self.mountpoint, proc_mounts)
-            proc = process.SubProcess("cd %s; while :; do echo a > a; rm a; done"
-                                      % self.mountpoint, shell=True)
-            proc.start()
-            with mock.patch('avocado.utils.partition.process.run',
-                            side_effect=process.CmdError):
-                with mock.patch('avocado.utils.partition.process.system_output',
-                                side_effect=OSError) as mocked_system_output:
-                    self.assertRaises(partition.PartitionError, self.disk.unmount)
-                    mocked_system_output.assert_called_with('lsof ' + self.mountpoint)
-            proc.terminate()
-            proc.wait()
+        self.assertIn(self.mountpoint, proc_mounts)
+        proc = self.run_process_to_use_mnt()
+        with mock.patch('avocado.utils.partition.process.run',
+                        side_effect=process.CmdError):
+            with mock.patch('avocado.utils.partition.process.system_output',
+                            side_effect=OSError) as mocked_system_output:
+                self.assertRaises(partition.PartitionError, self.disk.unmount)
+                mocked_system_output.assert_called_with('lsof ' + self.mountpoint)
+        # TODO: process.terminate() should be enough, but currently isn't.
+        # debug the root cause of why the process fails to terminate and the
+        # test hangs on wait()
+        self.disk.unmount()
+        proc.terminate()
+        proc.wait()
 
     def test_double_mount(self):
         """ Check the attempt for second mount fails """
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertIn(self.mountpoint, proc_mounts)
-            self.assertRaises(partition.PartitionError, self.disk.mount)
-            self.assertIn(self.mountpoint, proc_mounts)
+        self.assertIn(self.mountpoint, proc_mounts)
+        self.assertRaises(partition.PartitionError, self.disk.mount)
+        self.assertIn(self.mountpoint, proc_mounts)
 
     def test_double_umount(self):
         """ Check double unmount works well """
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertIn(self.mountpoint, proc_mounts)
+        self.assertIn(self.mountpoint, proc_mounts)
         self.disk.unmount()
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertNotIn(self.mountpoint, proc_mounts)
+        self.assertNotIn(self.mountpoint, proc_mounts)
         self.disk.unmount()
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertNotIn(self.mountpoint, proc_mounts)
+        self.assertNotIn(self.mountpoint, proc_mounts)
 
     def test_format_mounted(self):
         """ Check format on mounted device fails """
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
-            self.assertIn(self.mountpoint, proc_mounts)
+        self.assertIn(self.mountpoint, proc_mounts)
         self.assertRaises(partition.PartitionError, self.disk.mkfs)
 
 
