@@ -52,32 +52,40 @@ def python_module_available(module_name):
         return False
 
 
-def test_suite():
+#: The plugin module names and directories under optional_plugins
+PLUGINS = {'varianter_yaml_to_mux': 'avocado-framework-plugin-varianter-yaml-to-mux',
+           'runner_remote': 'avocado-framework-plugin-runner-remote',
+           'runner_vm': 'avocado-framework-plugin-runner-vm',
+           'varianter_cit': 'avocado-framework-plugin-varianter-cit',
+           'html': 'avocado-framework-plugin-result-html'}
+
+
+def test_suite(base_selftests=True, plugin_selftests=None):
     '''
     Returns a test suite with all selftests found
 
     This includes tests on available optional plugins directories
 
+    :param base_selftests: if the base selftests directory should be included
+    :type base_selftests: bool
+    :param plugin_selftests: the list optional plugin directories to include
+                             or None to include all
+    :type plugin_selftests: list or None
     :rtype: unittest.TestSuite
     '''
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
     selftests_dir = os.path.dirname(os.path.abspath(__file__))
     basedir = os.path.dirname(selftests_dir)
-    for section in ('unit', 'functional', 'doc'):
-        suite.addTests(loader.discover(start_dir=os.path.join(selftests_dir, section),
-                                       top_level_dir=basedir))
-    plugins = (('avocado-framework-plugin-varianter-yaml-to-mux',
-                'varianter_yaml_to_mux'),
-               ('avocado-framework-plugin-runner-remote',
-                'runner_remote'),
-               ('avocado-framework-plugin-runner-vm',
-                'runner_vm'),
-               ('avocado-framework-plugin-varianter-cit',
-                'varianter_cit'),
-               ('avocado-framework-plugin-result-html',
-                'html'))
-    for plugin_name, plugin_dir in plugins:
+    if base_selftests:
+        for section in ('unit', 'functional', 'doc'):
+            start_dir = os.path.join(selftests_dir, section)
+            suite.addTests(loader.discover(start_dir=start_dir,
+                                           top_level_dir=basedir))
+    if plugin_selftests is None:
+        plugin_selftests = PLUGINS.keys()
+    for plugin_dir in plugin_selftests:
+        plugin_name = PLUGINS.get(plugin_dir, None)
         if python_module_available(plugin_name):
             path = os.path.join(basedir, 'optional_plugins',
                                 plugin_dir, 'tests')
