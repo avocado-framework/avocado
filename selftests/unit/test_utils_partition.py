@@ -80,7 +80,9 @@ class TestPartitionMkfsMount(Base):
         self.disk.mkfs()
         self.disk.mount()
         self.use_mnt_file = os.path.join(self.mountpoint, 'file')
-        self.use_mnt_cmd = ("%s -c 'import time; f = open(\"%s\", \"w\"); "
+        self.use_mnt_cmd = ("%s -c 'import time; import os; "
+                            "f = open(\"%s\", \"w\"); f.write(\"x\"); "
+                            "os.fsync(f.fileno()); "
                             "time.sleep(60)'" % (sys.executable,
                                                  self.use_mnt_file))
 
@@ -88,7 +90,7 @@ class TestPartitionMkfsMount(Base):
         proc = process.SubProcess(self.use_mnt_cmd)
         proc.start()
         self.assertTrue(wait.wait_for(lambda: os.path.exists(self.use_mnt_file),
-                                      timeout=1, first=0.1, step=0.1),
+                                      timeout=10, first=0.1, step=0.1),
                         "File was not created within mountpoint")
         return proc
 
