@@ -89,7 +89,12 @@ class TestPartitionMkfsMount(Base):
         proc.start()
         self.assertTrue(wait.wait_for(lambda: os.path.exists(self.use_mnt_file),
                                       timeout=1, first=0.1, step=0.1),
-                        "File was not created within mountpoint")
+                        "File was not created within mountpoint. "
+                        "\nCommand line: %s"
+                        "\nCommand output: %s"
+                        "\nCommand error: %s" % (self.use_mnt_cmd,
+                                                 proc.get_stdout(),
+                                                 proc.get_stderr()))
         return proc
 
     @unittest.skipIf(missing_binary('lsof'), "requires running lsof")
