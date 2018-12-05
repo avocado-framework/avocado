@@ -25,31 +25,41 @@ from .data_structures import Borg
 
 #: Families taken into account in this class
 FAMILIES = (socket.AF_INET, socket.AF_INET6)
+#: Protocols taken into account in this class
+PROTOCOLS = (socket.SOCK_STREAM, socket.SOCK_DGRAM)
 
 
 def is_port_free(port, address):
     """
     Return True if the given port is available for use.
 
-    Currently we only check for TCP connections on IPv4/6
+    Currently we only check for TCP/UDP connections on IPv4/6
 
     :param port: Port number
     :param address: Socket address to bind or connect
     """
     s = None
+    if address == "localhost":
+        protocols = PROTOCOLS
+    else:
+        # sock.connect always connects for UDP
+        protocols = (socket.SOCK_STREAM, )
     try:
         for family in FAMILIES:
-            try:
-                s = socket.socket(family, socket.SOCK_STREAM)
-                if address == "localhost":
-                    s.bind((address, port))
-                else:
-                    s.connect((address, port))
-                    return False
-            except socket.error:
-                if address == "localhost":
-                    return False
-            s.close()
+            for protocol in protocols:
+                try:
+                    s = socket.socket(family, protocol)
+                    if address == "localhost":
+                        s.bind((address, port))
+                    else:
+                        s.connect((address, port))
+                        return False
+                except socket.error as exc:
+                    if exc.errno in (93, 94):   # Unsupported combinations
+                        continue
+                    if address == "localhost":
+                        return False
+                s.close()
         return True
     finally:
         if s is not None:
