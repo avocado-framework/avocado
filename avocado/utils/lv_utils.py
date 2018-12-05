@@ -173,7 +173,7 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
             errs.append("wipe pv")
             LOGGER.error("Failed to wipe pv from %s: %s", loop_device, result)
 
-        losetup_all = process.run("losetup --all").stdout_text
+        losetup_all = process.run("losetup --all", sudo=True).stdout_text
         if loop_device in losetup_all:
             ramdisk_filename = re.search(r"%s: \[\d+\]:\d+ \(([/\w]+)\)" %
                                          loop_device, losetup_all)

@@ -252,7 +252,7 @@ class Partition(object):
             FileNotFoundError = IOError   # pylint: disable=W0622
         try:
             cmd = "lsof " + mnt
-            out = process.system_output(cmd)
+            out = process.system_output(cmd, sudo=True)
             return [int(line.split()[1]) for line in out.splitlines()[1:]]
         except OSError as details:
             msg = 'Could not run lsof to identify processes using "%s"' % mnt
