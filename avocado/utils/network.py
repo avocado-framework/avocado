@@ -23,29 +23,37 @@ from six.moves import xrange as range
 
 from .data_structures import Borg
 
+#: Families taken into account in this class
+FAMILIES = (socket.AF_INET, socket.AF_INET6)
+
 
 def is_port_free(port, address):
     """
     Return True if the given port is available for use.
 
+    Currently we only check for TCP connections on IPv4/6
+
     :param port: Port number
     :param address: Socket address to bind or connect
     """
+    s = None
     try:
-        s = socket.socket()
-        if address == "localhost":
-            s.bind((address, port))
-            free = True
-        else:
-            s.connect((address, port))
-            free = False
-    except socket.error:
-        if address == "localhost":
-            free = False
-        else:
-            free = True
-    s.close()
-    return free
+        for family in FAMILIES:
+            try:
+                s = socket.socket(family, socket.SOCK_STREAM)
+                if address == "localhost":
+                    s.bind((address, port))
+                else:
+                    s.connect((address, port))
+                    return False
+            except socket.error:
+                if address == "localhost":
+                    return False
+            s.close()
+        return True
+    finally:
+        if s is not None:
+            s.close()
 
 
 def find_free_port(start_port=1024, end_port=65535, address="localhost", sequent=True):
