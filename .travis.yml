@@ -27,8 +27,6 @@ cache:
     directories:
         - $HOME/.cache/pip
 
-sudo: false
-
 addons:
   apt:
     packages:
