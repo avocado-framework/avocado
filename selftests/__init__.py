@@ -1,4 +1,5 @@
 import os
+import pkg_resources
 import sys
 import unittest
 
@@ -33,3 +34,19 @@ def recent_mock():
     elif sys.version_info[0] == 3:
         return sys.version_info[1] >= 6
     return True
+
+
+def python_module_available(module_name):
+    '''
+    Checks if a given Python module is available
+
+    :param module_name: the name of the module
+    :type module_name: str
+    :returns: if the Python module is available in the system
+    :rtype: bool
+    '''
+    try:
+        pkg_resources.require(module_name)
+        return True
+    except pkg_resources.DistributionNotFound:
+        return False

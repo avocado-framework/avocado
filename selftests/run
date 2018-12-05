@@ -5,24 +5,17 @@ __author__ = 'Lucas Meneghel Rodrigues <lmr@redhat.com>'
 
 import gc
 import os
-import pkg_resources
 import subprocess
 import sys
 import unittest
 
 from avocado.core import data_dir
 
+from selftests import python_module_available
+
 
 CHECK_TMP_DIRS = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                               "check_tmp_dirs"))
-
-
-def plugin_available(plugin_name):
-    try:
-        pkg_resources.require(plugin_name)
-        return True
-    except pkg_resources.DistributionNotFound:
-        return False
 
 
 def test_suite():
@@ -44,7 +37,7 @@ def test_suite():
                ('avocado-framework-plugin-result-html',
                 'html'))
     for plugin_name, plugin_dir in plugins:
-        if plugin_available(plugin_name):
+        if python_module_available(plugin_name):
             path = os.path.join(basedir, 'optional_plugins',
                                 plugin_dir, 'tests')
             suite.addTests(loader.discover(start_dir=path, top_level_dir=path))
