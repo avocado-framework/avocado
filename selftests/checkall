@@ -23,43 +23,25 @@ run_rc() {
 parallel_selftests() {
     local START=$(date +%s)
     local ERR=0
-    local FIND_UNITTESTS=$(readlink -f ./contrib/scripts/avocado-find-unittests)
+    local FIND_UNITTESTS=$(readlink -f ./selftests/list)
     local NO_WORKERS=$(($(cat /proc/cpuinfo | grep -c processor) * 2))
 
     # The directories that may contain files with tests, from the Avocado core
     # and from all optional plugins
-    declare -A DIR_GLOB_MAP
-    DIR_GLOB_MAP[selftests]="selftests/unit/test_*.py selftests/functional/test_*.py selftests/doc/test_*.py"
-    for PLUGIN in $(find optional_plugins -mindepth 1 -maxdepth 1 -type d); do
-        DIR_GLOB_MAP[$PLUGIN]="tests/test_*.py"
-    done;
-
     declare -A TESTS
-    for TEST_DIR in "${!DIR_GLOB_MAP[@]}"; do
-        # tests in core, that is "selftests" expect the regular path, while
-        # python -m unittest module.class.test_name won't work for tests on
-        # plugins without a change of directory because the full path is
-        # not a valid python module (would need __init__.py) in places where
-        # it doesn't make sense
-        if [ "x$TEST_DIR" != "xselftests" ]; then
-            OLD_PWD=$PWD
-            cd $TEST_DIR
-        fi
-        # Use sort -R to randomize the order as longer tests
-        # seems to be likely in the same file
-        THIS_DIR_TESTS=$(${FIND_UNITTESTS} ${DIR_GLOB_MAP[$TEST_DIR]} | sort -R)
+    TESTS[selftests]=$(${FIND_UNITTESTS} | sort -R)
+    for PLUGIN in $(find optional_plugins -mindepth 1 -maxdepth 1 -type d); do
+        PLUGIN_BASENAME=$(basename $PLUGIN)
+        THIS_DIR_TESTS=$(${FIND_UNITTESTS} --no-base-selftests --plugin-dirs $PLUGIN_BASENAME | sort -R)
         if [ -n "$THIS_DIR_TESTS" ]; then
-            TESTS[$TEST_DIR]=${THIS_DIR_TESTS};
-        fi
-        if [ -n $TEST_DIR ]; then
-            cd $OLD_PWD
+            TESTS[$PLUGIN]=${THIS_DIR_TESTS};
         fi
     done
 
     for TEST_DIR in "${!TESTS[@]}"; do
         if [ "x$TEST_DIR" != "xselftests" ]; then
             OLD_PWD=$PWD
-            cd $TEST_DIR
+            cd $TEST_DIR/tests
         fi
 
         declare -a ALL
