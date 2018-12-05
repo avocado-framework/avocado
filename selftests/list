@@ -1,8 +1,22 @@
 #!/usr/bin/env python
 
+import argparse
 import sys
 
-from selftests import test_suite
+from selftests import test_suite, PLUGINS
+
+
+class Parser(argparse.ArgumentParser):
+    def __init__(self):
+        super(Parser, self).__init__(
+            description='List selftests using unittest loader')
+        self.add_argument('--no-base-selftests',
+                          action='store_true', default=False,
+                          help='Do not include the base selftests')
+        self.add_argument('--plugin-dirs', nargs='+', default=[],
+                          metavar='DIR',
+                          help='Plugin directories to include. Available '
+                          'directories: %s' % " ".join(PLUGINS.keys()))
 
 
 if __name__ == '__main__':
@@ -12,8 +26,11 @@ if __name__ == '__main__':
                 iter_or_id(inner)
         else:
             print(arg.id())
+
+    args = Parser().parse_args()
     try:
-        iter_or_id(test_suite())
+        iter_or_id(test_suite(not args.no_base_selftests,
+                              args.plugin_dirs))
         sys.exit(0)
     except Exception:
         sys.exit(1)
