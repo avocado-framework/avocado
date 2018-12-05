@@ -85,7 +85,7 @@ class TestPartitionMkfsMount(Base):
                                                  self.use_mnt_file))
 
     def run_process_to_use_mnt(self):
-        proc = process.SubProcess(self.use_mnt_cmd)
+        proc = process.SubProcess(self.use_mnt_cmd, sudo=True)
         proc.start()
         self.assertTrue(wait.wait_for(lambda: os.path.exists(self.use_mnt_file),
                                       timeout=1, first=0.1, step=0.1),
@@ -93,6 +93,8 @@ class TestPartitionMkfsMount(Base):
         return proc
 
     @unittest.skipIf(missing_binary('lsof'), "requires running lsof")
+    @unittest.skipIf(not process.can_sudo(sys.executable + " -c ''"),
+                     "requires running Python as a privileged user")
     @unittest.skipIf(not process.can_sudo('kill -l'),
                      "requires running kill as a privileged user")
     def test_force_unmount(self):
@@ -102,11 +104,17 @@ class TestPartitionMkfsMount(Base):
         self.assertIn(self.mountpoint, proc_mounts)
         proc = self.run_process_to_use_mnt()
         self.assertTrue(self.disk.unmount())
-        self.assertEqual(proc.poll(), -9)   # Process should be killed -9
+        # Process should return -9, or when sudo is used
+        # return code is 137
+        self.assertIn(proc.poll(), [-9, 137],
+                      "Unexpected return code when trying to kill process "
+                      "using the mountpoint")
         with open("/proc/mounts") as proc_mounts_file:
             proc_mounts = proc_mounts_file.read()
         self.assertNotIn(self.mountpoint, proc_mounts)
 
+    @unittest.skipIf(not process.can_sudo(sys.executable + " -c ''"),
+                     "requires running Python as a privileged user")
     @unittest.skipUnless(missing_binary('lsof'), "requires not having lsof")
     def test_force_unmount_no_lsof(self):
         """ Checks that a force-unmount will fail on systems without lsof """
@@ -118,6 +126,8 @@ class TestPartitionMkfsMount(Base):
         proc.terminate()
         proc.wait()
 
+    @unittest.skipIf(not process.can_sudo(sys.executable + " -c ''"),
+                     "requires running Python as a privileged user")
     def test_force_unmount_get_pids_fail(self):
         """ Checks PartitionError is raised if there's no lsof to get pids """
         with open("/proc/mounts") as proc_mounts_file:
@@ -129,7 +139,8 @@ class TestPartitionMkfsMount(Base):
             with mock.patch('avocado.utils.partition.process.system_output',
                             side_effect=OSError) as mocked_system_output:
                 self.assertRaises(partition.PartitionError, self.disk.unmount)
-                mocked_system_output.assert_called_with('lsof ' + self.mountpoint)
+                mocked_system_output.assert_called_with('lsof ' + self.mountpoint,
+                                                        sudo=True)
         # TODO: process.terminate() should be enough, but currently isn't.
         # debug the root cause of why the process fails to terminate and the
         # test hangs on wait()
