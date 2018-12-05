@@ -50,19 +50,22 @@ class FreePort(unittest.TestCase):
             else:
                 addrs = ipv6_addrs
             for addr in addrs:
-                try:
-                    sock = socket.socket(family, socket.SOCK_STREAM)
-                    sock.bind((addr, port))
-                    if network.is_port_free(port, "localhost"):
-                        bad.append("%s, %s: reports free" % (family, addr))
-                    else:
-                        good.append("%s, %s" % (family, addr))
-                except Exception as exc:
-                    bad.append("%s, %s: Failed to bind: %s"
-                               % (family, addr, exc))
-                finally:
-                    if sock is not None:
-                        sock.close()
+                for protocol in network.PROTOCOLS:
+                    try:
+                        sock = socket.socket(family, socket.SOCK_STREAM)
+                        sock.bind((addr, port))
+                        if network.is_port_free(port, "localhost"):
+                            bad.append("%s, %s, %s: reports free"
+                                       % (family, protocol, addr))
+                        else:
+                            good.append("%s, %s, %s" % (family, protocol,
+                                                        addr))
+                    except Exception as exc:
+                        bad.append("%s, %s, %s: Failed to bind: %s"
+                                   % (family, protocol, addr, exc))
+                    finally:
+                        if sock is not None:
+                            sock.close()
         self.assertFalse(bad, "Following combinations failed:\n%s\n\n"
                          "Following combinations passed:\n%s"
                          % ("\n".join(bad), "\n".join(good)))
