@@ -1,8 +1,6 @@
 # Copyright (C) IBM 2016 - Harish <harisrir@linux.vnet.ibm.com>
 # Copyright (C) Red Hat 2016 - Lukas Doktor <ldoktor@redhat.com>
-#
-# Based on code by
-# Copyright (C) Intra2net AG 2012 - Plamen Dimitrov
+# Copyright (C) Intra2net AG 2018 - Plamen Dimitrov <pdimitrov@pevogam.com>
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -42,10 +40,12 @@ class LVException(Exception):
 
 def get_diskspace(disk):
     """
-    Get the entire disk space of a given disk
+    Get the entire disk space of a given disk.
 
-    :param disk: Name of the disk to find free space
-    :return: size in bytes
+    :param str disk: name of the disk to find the free space of
+    :returns: size in bytes
+    :rtype: str
+    :raises: :py:class:`LVException` on failure to find disk space
     """
     result = process.run('fdisk -l %s' % disk,
                          env={"LANG": "C"}, sudo=True).stdout_text
@@ -60,17 +60,19 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
                ramdisk_basedir, ramdisk_sparse_filename,
                use_tmpfs=True):
     """
-    Create vg on top of ram memory to speed up lv performance.
-    When disk is specified size of the physical volume is taken from
+    Create volume group on top of ram memory to speed up LV performance.
+    When disk is specified the size of the physical volume is taken from
     existing disk space.
 
-    :param disk: Name of the disk in which volume groups are created.
-    :param vg_name: Name of the volume group.
-    :param ramdisk_vg_size: Size of the ramdisk virtual group (MB).
-    :param ramdisk_basedir: Base directory for the ramdisk sparse file.
-    :param ramdisk_sparse_filename: Name of the ramdisk sparse file.
-    :return: ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
-    :raise LVException: On failure
+    :param str disk: name of the disk in which volume groups are created
+    :param str vg_name: name of the volume group
+    :param str ramdisk_vg_size: size of the ramdisk virtual group (MB)
+    :param str ramdisk_basedir: base directory for the ramdisk sparse file
+    :param str ramdisk_sparse_filename: name of the ramdisk sparse file
+    :param bool use_tmpfs: whether to use RAM or slower storage
+    :returns: ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
+    :rtype: (str, str, str, str)
+    :raises: :py:class:`LVException` on failure at any stage
 
     Sample ramdisk params:
     - ramdisk_vg_size = "40000"
@@ -84,7 +86,6 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
     - lv_snapshot_name='autotest_sn',
     - lv_snapshot_size='1G'
     The ramdisk volume group size is in MB.
-
     """
     vg_size = ramdisk_vg_size
     vg_ramdisk_dir = os.path.join(ramdisk_basedir, vg_name)
@@ -146,16 +147,19 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
 def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
                        vg_name=None, loop_device=None, use_tmpfs=True):
     """
-    Inline cleanup function in case of test error.
+    Clean up any stage of the VG ramdisk setup in case of test error.
 
-    It detects whether the components were initialized and if so it tries
+    This detects whether the components were initialized and if so tries
     to remove them. In case of failure it raises summary exception.
 
-    :param ramdisk_filename: Name of the ramdisk sparse file.
-    :param vg_ramdisk_dir: Location of the ramdisk file
-    :vg_name: Name of the volume group
-    :loop_device: Name of the disk or loop device
-    :raise LVException: In case it fail to clean things detected in system
+    :param str ramdisk_filename: name of the ramdisk sparse file
+    :param str vg_ramdisk_dir: location of the ramdisk file
+    :param str vg_name: name of the volume group
+    :param str loop_device: name of the disk or loop device
+    :param bool use_tmpfs: whether to use RAM or slower storage
+    :returns: ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
+    :rtype: (str, str, str, str)
+    :raises: :py:class:`LVException` on intolerable failure at any stage
     """
     errs = []
     if vg_name is not None:
@@ -226,7 +230,9 @@ def vg_check(vg_name):
     """
     Check whether provided volume group exists.
 
-    :param vg_name: Name of the volume group.
+    :param str vg_name: name of the volume group
+    :returns: whether the volume group was found
+    :rtype: bool
     """
     cmd = "vgdisplay %s" % vg_name
     try:
@@ -242,9 +248,10 @@ def vg_list(vg_name=None):
     """
     List all info about available volume groups.
 
-    :param vg_name: Name of the volume group or none to list all
-    :return: available volume groups
-    :rtype: list
+    :param vg_name: name of the volume group to list or or None to list all
+    :type vg_name: str or None
+    :returns: list of available volume groups
+    :rtype: {str, {str, str}}
     """
     cmd = "vgs --all"
     cmd += " %s" % vg_name if vg_name is not None else ""
@@ -273,19 +280,24 @@ def vg_list(vg_name=None):
 
 def vg_create(vg_name, pv_list, force=False):
     """
-    Create a volume group by using the block special devices
+    Create a volume group from a list of physical volumes.
 
-    :param vg_name: Name of the volume group
-    :param pv_list: List of physical volumes
-    :param force: Create volume group forcefully
+    :param str vg_name: name of the volume group
+    :param pv_list: list of physical volumes to use
+    :type pv_list: str or [str]
+    :param bool force: create volume group with a force flag
+    :raises: :py:class:`LVException` if volume group already exists
     """
-
     if vg_check(vg_name):
         raise LVException("Volume group '%s' already exist" % vg_name)
     if force:
         cmd = "vgcreate -f"
     else:
         cmd = "vgcreate"
+    if isinstance(pv_list, list):
+        pv_list = " ".join(pv_list)
+    else:
+        pv_list = str(pv_list)
     cmd += " %s %s" % (vg_name, pv_list)
     process.run(cmd, sudo=True)
 
@@ -294,7 +306,8 @@ def vg_remove(vg_name):
     """
     Remove a volume group.
 
-    :param vg_name: Name of the volume group
+    :param str vg_name: name of the volume group
+    :raises: :py:class:`LVException` if volume group cannot be found
     """
     if not vg_check(vg_name):
         raise LVException("Volume group '%s' could not be found" % vg_name)
@@ -304,10 +317,12 @@ def vg_remove(vg_name):
 
 def lv_check(vg_name, lv_name):
     """
-    Check whether provided Logical volume exists.
+    Check whether provided logical volume exists.
 
-    :param vg_name: Name of the volume group
-    :param lv_name: Name of the logical volume
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :return: whether the logical volume was found
+    :rtype: bool
     """
     cmd = "lvdisplay %s" % vg_name
     result = process.run(cmd, ignore_status=True, sudo=True)
@@ -322,21 +337,40 @@ def lv_check(vg_name, lv_name):
         return False
 
 
-def lv_remove(vg_name, lv_name):
+def lv_list(vg_name=None):
     """
-    Remove a logical volume.
+    List all info about available logical volumes.
 
-    :param vg_name: Name of the volume group
-    :param lv_name: Name of the logical volume
+    :param str vg_name: name of the volume group or None to list all
+    :returns: list of available logical volumes
+    :rtype: {str, {str, str}}
     """
+    cmd = "lvs --all"
+    cmd += " %s" % vg_name if vg_name is not None else ""
+    volumes = {}
+    result = process.run(cmd, sudo=True)
 
-    if not vg_check(vg_name):
-        raise LVException("Volume group could not be found")
-    if not lv_check(vg_name, lv_name):
-        raise LVException("Logical volume could not be found")
+    lines = result.stdout_text.strip().splitlines()
+    if len(lines) > 1:
+        lines = lines[1:]
+    else:
+        return volumes
 
-    cmd = "lvremove -f %s/%s" % (vg_name, lv_name)
-    process.run(cmd, sudo=True)
+    for line in lines:
+        details = line.split()
+        length = len(details)
+        details_dict = {}
+        lv_name = details[0]
+        details_dict["VG"] = details[1]
+        details_dict["Attr"] = details[2]
+        details_dict["LSize"] = details[3]
+        if length == 5:
+            details_dict["Origin_Data"] = details[4]
+        elif length > 5:
+            details_dict["Origin_Data"] = details[5]
+            details_dict["Pool"] = details[4]
+        volumes[lv_name] = details_dict
+    return volumes
 
 
 def lv_create(vg_name, lv_name, lv_size, force_flag=True,
@@ -345,20 +379,20 @@ def lv_create(vg_name, lv_name, lv_size, force_flag=True,
     Create a (possibly thin) logical volume in a volume group.
     The volume group must already exist.
 
-    :param vg_name: Name of the volume group
-    :param lv_name: Name of the logical volume
-    :param lv_size: Size for the logical volume to be created
-    :param force_flag: Whether to abort if volume already exists
-                       or remove and recreate it
-    :param pool_name: Name of thin pool or None for regular volume
-    :param pool_size: Size of thin pool if it will be created
-
     A thin pool will be created if pool parameters are provided
     and the thin pool doesn't already exist.
 
     The volume group must already exist.
-    """
 
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :param str lv_size: size for the logical volume to be created
+    :param bool force_flag: whether to abort if volume already exists
+                            or remove and recreate it
+    :param str pool_name: name of thin pool or None for a regular volume
+    :param str pool_size: size of thin pool if it will be created
+    :raises: :py:class:`LVException` if preconditions or execution fails
+    """
     if not vg_check(vg_name):
         raise LVException("Volume group could not be found")
     if lv_check(vg_name, lv_name) and not force_flag:
@@ -412,57 +446,40 @@ def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
     return (thinpool_name, thinlv_name)
 
 
-def lv_list(vg_name=None):
+def lv_remove(vg_name, lv_name):
     """
-    List all info about available logical volumes.
+    Remove a logical volume.
 
-    :param vg_name: Name of the volume group or none to list all
-    :return: available logical volume
-    :rtype: list
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :raises: :py:class:`LVException` if volume group or logical
+             volume cannot be found
     """
-    cmd = "lvs --all"
-    cmd += " %s" % vg_name if vg_name is not None else ""
-    volumes = {}
-    result = process.run(cmd, sudo=True)
+    if not vg_check(vg_name):
+        raise LVException("Volume group could not be found")
+    if not lv_check(vg_name, lv_name):
+        raise LVException("Logical volume could not be found")
 
-    lines = result.stdout_text.strip().splitlines()
-    if len(lines) > 1:
-        lines = lines[1:]
-    else:
-        return volumes
-
-    for line in lines:
-        details = line.split()
-        length = len(details)
-        details_dict = {}
-        lv_name = details[0]
-        details_dict["VG"] = details[1]
-        details_dict["Attr"] = details[2]
-        details_dict["LSize"] = details[3]
-        if length == 5:
-            details_dict["Origin_Data"] = details[4]
-        elif length > 5:
-            details_dict["Origin_Data"] = details[5]
-            details_dict["Pool"] = details[4]
-        volumes[lv_name] = details_dict
-    return volumes
+    cmd = "lvremove -f %s/%s" % (vg_name, lv_name)
+    process.run(cmd, sudo=True)
 
 
 def lv_take_snapshot(vg_name, lv_name,
                      lv_snapshot_name, lv_snapshot_size=None,
                      pool_name=None):
     """
-    Take a snapshot of the original Logical volume.
+    Take a (possibly thin) snapshot of a regular (or thin) logical volume.
 
-    :param vg_name: An existing volume group
-    :param lv_name: An existing logical volume
-    :param lv_snapshot_name: Name of the snapshot be to created
-    :param lv_snapshot_size: Size of the snapshot or None for thin
-                             snapshot of a thin volume
-    :param pool_name: Name of thin pool or None for regular snapshot
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :param str lv_snapshot_name: name of the snapshot be to created
+    :param str lv_snapshot_size: size of the snapshot or None for thin
+                                 snapshot of an already thin volume
+    :param pool_name: name of thin pool or None for regular snapshot
                       or snapshot in the same thin pool like the volume
+    :raises: :py:class:`process.CmdError` on failure to create snapshot
+    :raises: :py:class:`LVException` if preconditions fail
     """
-
     if not vg_check(vg_name):
         raise LVException("Volume group could not be found")
     if pool_name is not None and not lv_check(vg_name, pool_name):
@@ -498,11 +515,13 @@ def lv_take_snapshot(vg_name, lv_name,
 
 def lv_revert(vg_name, lv_name, lv_snapshot_name):
     """
-    Revert the origin to a snapshot.
+    Revert the origin logical volume to a snapshot.
 
-    :param vg_name: An existing volume group
-    :param lv_name: An existing logical volume
-    :param lv_snapshot_name: Name of the snapshot be to reverted
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :param str lv_snapshot_name: name of the snapshot to be reverted
+    :raises: :py:class:`process.CmdError` on failure to revert snapshot
+    :raises: :py:class:`LVException` if preconditions or execution fails
     """
     try:
         if not vg_check(vg_name):
@@ -516,7 +535,7 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
                                                                  lv_name)):
             raise LVException("Snapshot origin could not be found")
 
-        cmd = ("lvconvert --merge /dev/%s/%s" % (vg_name, lv_snapshot_name))
+        cmd = ("lvconvert --merge --interval 1 /dev/%s/%s" % (vg_name, lv_snapshot_name))
         result = process.run(cmd, sudo=True)
         if (("Merging of snapshot %s will start next activation." %
              lv_snapshot_name) in result.stdout_text):
@@ -545,14 +564,13 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
 def lv_revert_with_snapshot(vg_name, lv_name,
                             lv_snapshot_name, lv_snapshot_size):
     """
-    Perform Logical volume merge with snapshot and take a new snapshot.
+    Perform logical volume merge with snapshot and take a new snapshot.
 
-    :param vg_name: Name of volume group in which lv has to be reverted
-    :param lv_name: Name of the logical volume to be reverted
-    :param lv_snapshot_name: Name of the snapshot be to reverted
-    :param lv_snapshot_size: Size of the snapshot
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :param str lv_snapshot_name: name of the snapshot to be reverted
+    :param str lv_snapshot_size: size of the snapshot
     """
-
     lv_revert(vg_name, lv_name, lv_snapshot_name)
     lv_take_snapshot(vg_name, lv_name, lv_snapshot_name, lv_snapshot_size)
 
@@ -563,9 +581,10 @@ def lv_reactivate(vg_name, lv_name, timeout=10):
     is postponed. Use this function to attempt to deactivate and reactivate
     all of them to cause the merge to happen.
 
-    :param vg_name: Name of volume group
-    :param lv_name: Name of the logical volume
-    :param timeout: Timeout between operations
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :param int timeout: timeout between operations
+    :raises: :py:class:`LVException` if the logical volume is still active
     """
     try:
         process.run("lvchange -an /dev/%s/%s" % (vg_name, lv_name), sudo=True)
@@ -580,16 +599,16 @@ def lv_reactivate(vg_name, lv_name, timeout=10):
 
 def lv_mount(vg_name, lv_name, mount_loc, create_filesystem=""):
     """
-    Mount a Logical volume to a mount location.
+    Mount a logical volume to a mount location.
 
-    :param vg_name: Name of volume group
-    :param lv_name: Name of the logical volume
-    :mount_loc: Location to mount the logical volume
-    :param create_filesystem: Can be one of ext2, ext3, ext4, vfat or empty
-                              if the filesystem was already created and the
-                              mkfs process is skipped
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :param str mount_loc: location to mount the logical volume to
+    :param str create_filesystem: can be one of ext2, ext3, ext4, vfat or empty
+                                  if the filesystem was already created and the
+                                  mkfs process is skipped
+    :raises: :py:class:`LVException` if the logical volume could not be mounted
     """
-
     try:
         if create_filesystem:
             process.run("mkfs.%s /dev/%s/%s" %
@@ -598,18 +617,18 @@ def lv_mount(vg_name, lv_name, mount_loc, create_filesystem=""):
         process.run("mount /dev/%s/%s %s" %
                     (vg_name, lv_name, mount_loc), sudo=True)
     except process.CmdError as ex:
-        raise LVException("Fail to mount lv: %s" % ex)
+        raise LVException("Fail to mount logical volume: %s" % ex)
 
 
 def lv_umount(vg_name, lv_name):
     """
     Unmount a Logical volume from a mount location.
 
-    :param vg_name: Name of volume group
-    :param lv_name: Name of the logical volume
+    :param str vg_name: name of the volume group
+    :param str lv_name: name of the logical volume
+    :raises: :py:class:`LVException` if the logical volume could not be unmounted
     """
-
     try:
         process.run("umount /dev/%s/%s" % (vg_name, lv_name), sudo=True)
     except process.CmdError as ex:
-        raise LVException("Fail to unmount lv: %s" % ex)
+        raise LVException("Fail to unmount logical volume: %s" % ex)
