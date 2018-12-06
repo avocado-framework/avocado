@@ -75,13 +75,12 @@ class BaseIso9660(unittest.TestCase):
 
     @unittest.skipIf(not process.can_sudo("mount"),
                      "This test requires mount to run under sudo or root")
-    def mnt_dir_workflow(self):
+    def test_mnt_dir_workflow(self):
         """
         Check the mnt_dir functionality
-
-        :warning: Make sure to include this in per-implementation tests
-                  due to ast loader we can't just define a base-class.
         """
+        if self.iso is None:
+            self.skipTest("ISO attribute not setup for this test to work with")
         base = self.iso.mnt_dir
         dir_path = os.path.join(base, "Dir")
         self.assertTrue(os.path.isdir(dir_path))
@@ -116,10 +115,6 @@ class IsoInfo(BaseIso9660):
         """Call the basic workflow"""
         self.basic_workflow()
 
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        self.mnt_dir_workflow()
-
 
 class IsoRead(BaseIso9660):
 
@@ -137,10 +132,6 @@ class IsoRead(BaseIso9660):
         """Call the basic workflow"""
         self.basic_workflow()
 
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        self.mnt_dir_workflow()
-
 
 class IsoMount(BaseIso9660):
 
@@ -157,10 +148,6 @@ class IsoMount(BaseIso9660):
     def test_basic_workflow(self):
         """Call the basic workflow"""
         self.basic_workflow()
-
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        self.mnt_dir_workflow()
 
 
 class PyCDLib(BaseIso9660):
@@ -189,10 +176,6 @@ class PyCDLib(BaseIso9660):
             read_iso = iso9660.ISO9660PyCDLib(new_iso_path)
             self.assertEqual(read_iso.read(path), content)
             self.assertTrue(os.path.isfile(new_iso_path))
-
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        self.mnt_dir_workflow()
 
 
 if __name__ == "__main__":
