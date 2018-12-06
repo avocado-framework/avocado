@@ -983,9 +983,8 @@ class AptBackend(DpkgBackend):
         except utils_path.CmdNotFoundError:
             self.install('apt-file')
             command = utils_path.find_command('apt-file')
-        cache_update_cmd = command + ' update'
         try:
-            process.system(cache_update_cmd, ignore_status=True)
+            process.run(command + ' update')
         except process.CmdError:
             log.error("Apt file cache update failed")
         fu_cmd = command + ' search ' + name
