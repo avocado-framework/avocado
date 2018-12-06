@@ -261,7 +261,7 @@ class RpmBackend(BaseBackend):
             cmd_result = process.run('rpm -qa | sort', verbose=False,
                                      shell=True)
 
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout_text.strip()
         installed_packages = out.splitlines()
         return installed_packages
 
@@ -349,7 +349,7 @@ class DpkgBackend(BaseBackend):
             name = process.system_output(n_cmd)
         i_cmd = self.lowlevel_base_cmd + " -s " + name
         # Checking if package is installed
-        package_status = process.system_output(i_cmd, ignore_status=True)
+        package_status = process.run(i_cmd, ignore_status=True).stdout_text
         dpkg_installed = (self.INSTALLED_OUTPUT in package_status)
         if dpkg_installed:
             return True
@@ -362,7 +362,7 @@ class DpkgBackend(BaseBackend):
         log.debug("Listing all system packages (may take a while)")
         installed_packages = []
         cmd_result = process.run('dpkg -l', verbose=False)
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout_text.strip()
         raw_list = out.splitlines()[5:]
         for line in raw_list:
             parts = line.split()
@@ -658,7 +658,7 @@ class ZypperBackend(RpmBackend):
         z_cmd = self.base_command + ' --version'
         cmd_result = process.run(z_cmd, ignore_status=True,
                                  verbose=False)
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout_text.strip()
         try:
             ver = re.findall(r'\d.\d*.\d*', out)[0]
         except IndexError:
@@ -837,7 +837,7 @@ class AptBackend(DpkgBackend):
                                  ignore_status=True,
                                  verbose=False,
                                  shell=True)
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout_text.strip()
         try:
             ver = re.findall(r'\d\S*', out)[0]
         except IndexError:
@@ -991,7 +991,7 @@ class AptBackend(DpkgBackend):
         fu_cmd = command + ' search ' + name
         try:
             paths = filter(None, os.environ['PATH'].split(':'))
-            provides = filter(None, process.system_output(fu_cmd).split('\n'))
+            provides = filter(None, process.run(fu_cmd).stdout_text.split('\n'))
             list_provides = []
             for each_path in paths:
                 for line in provides:
