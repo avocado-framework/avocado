@@ -45,7 +45,7 @@ class Capabilities(unittest.TestCase):
                                           ['non-existing', 'capabilities']))
 
 
-class BaseIso9660(unittest.TestCase):
+class BaseIso9660(object):
 
     """
     Base class defining setup and tests for shared Iso9660 functionality
@@ -62,8 +62,6 @@ class BaseIso9660(unittest.TestCase):
         """
         Check the basic Iso9660 workflow
         """
-        if self.iso is None:
-            self.skipTest("ISO attribute not setup for this test to work with")
         self.assertEqual(self.iso.read("file"),
                          b"file content\n")
         dst = os.path.join(self.tmpdir, "file")
@@ -78,8 +76,6 @@ class BaseIso9660(unittest.TestCase):
         """
         Check the mnt_dir functionality
         """
-        if self.iso is None:
-            self.skipTest("ISO attribute not setup for this test to work with")
         base = self.iso.mnt_dir
         dir_path = os.path.join(base, "Dir")
         self.assertTrue(os.path.isdir(dir_path))
@@ -98,7 +94,7 @@ class BaseIso9660(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
-class IsoInfo(BaseIso9660):
+class IsoInfo(BaseIso9660, unittest.TestCase):
 
     """
     IsoInfo-based check
@@ -111,7 +107,7 @@ class IsoInfo(BaseIso9660):
         self.iso = iso9660.Iso9660IsoInfo(self.iso_path)
 
 
-class IsoRead(BaseIso9660):
+class IsoRead(BaseIso9660, unittest.TestCase):
 
     """
     IsoRead-based check
@@ -124,7 +120,7 @@ class IsoRead(BaseIso9660):
         self.iso = iso9660.Iso9660IsoRead(self.iso_path)
 
 
-class IsoMount(BaseIso9660):
+class IsoMount(BaseIso9660, unittest.TestCase):
 
     """
     Mount-based check
@@ -137,7 +133,7 @@ class IsoMount(BaseIso9660):
         self.iso = iso9660.Iso9660Mount(self.iso_path)
 
 
-class PyCDLib(BaseIso9660):
+class PyCDLib(BaseIso9660, unittest.TestCase):
 
     """
     PyCDLib-based check
