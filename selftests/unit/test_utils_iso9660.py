@@ -58,13 +58,12 @@ class BaseIso9660(unittest.TestCase):
         self.iso = None
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
 
-    def basic_workflow(self):
+    def test_basic_workflow(self):
         """
         Check the basic Iso9660 workflow
-
-        :warning: Make sure to include this in per-implementation tests
-                  due to ast loader we can't just define a base-class.
         """
+        if self.iso is None:
+            self.skipTest("ISO attribute not setup for this test to work with")
         self.assertEqual(self.iso.read("file"),
                          b"file content\n")
         dst = os.path.join(self.tmpdir, "file")
@@ -111,10 +110,6 @@ class IsoInfo(BaseIso9660):
         super(IsoInfo, self).setUp()
         self.iso = iso9660.Iso9660IsoInfo(self.iso_path)
 
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        self.basic_workflow()
-
 
 class IsoRead(BaseIso9660):
 
@@ -127,10 +122,6 @@ class IsoRead(BaseIso9660):
     def setUp(self):
         super(IsoRead, self).setUp()
         self.iso = iso9660.Iso9660IsoRead(self.iso_path)
-
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        self.basic_workflow()
 
 
 class IsoMount(BaseIso9660):
@@ -145,10 +136,6 @@ class IsoMount(BaseIso9660):
         super(IsoMount, self).setUp()
         self.iso = iso9660.Iso9660Mount(self.iso_path)
 
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        self.basic_workflow()
-
 
 class PyCDLib(BaseIso9660):
 
@@ -160,10 +147,6 @@ class PyCDLib(BaseIso9660):
     def setUp(self):
         super(PyCDLib, self).setUp()
         self.iso = iso9660.ISO9660PyCDLib(self.iso_path)
-
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        self.basic_workflow()
 
     def test_create_write(self):
         new_iso_path = os.path.join(self.tmpdir, 'new.iso')
