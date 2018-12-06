@@ -232,12 +232,10 @@ class JobTest(unittest.TestCase):
     def test_job_dryrun_no_base_logdir(self):
         args = argparse.Namespace(dry_run=True)
         self.job = job.Job(args)
-        self.job.setup()
-        try:
+        with self.job:
             self.assertTrue(os.path.isdir(self.job.logdir))
             self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))
-        finally:
-            shutil.rmtree(self.job.args.base_logdir)
+        self.assertFalse(os.path.isdir(self.job.logdir))
 
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
