@@ -313,8 +313,9 @@ class DebianProbe(Probe):
     """
     Simple probe with file checks for Debian systems
     """
-    CHECK_FILE = '/etc/debian-version'
+    CHECK_FILE = '/etc/debian_version'
     CHECK_FILE_DISTRO_NAME = 'debian'
+    CHECK_VERSION_REGEX = re.compile(r'(\d+)\.(\d+)')
 
 
 class UbuntuProbe(Probe):
