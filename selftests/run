@@ -5,50 +5,17 @@ __author__ = 'Lucas Meneghel Rodrigues <lmr@redhat.com>'
 
 import gc
 import os
-import pkg_resources
 import subprocess
 import sys
 import unittest
 
 from avocado.core import data_dir
 
+from selftests import test_suite
+
 
 CHECK_TMP_DIRS = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                               "check_tmp_dirs"))
-
-
-def plugin_available(plugin_name):
-    try:
-        pkg_resources.require(plugin_name)
-        return True
-    except pkg_resources.DistributionNotFound:
-        return False
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    loader = unittest.TestLoader()
-    selftests_dir = os.path.dirname(os.path.abspath(__file__))
-    basedir = os.path.dirname(selftests_dir)
-    for section in ('unit', 'functional', 'doc'):
-        suite.addTests(loader.discover(start_dir=os.path.join(selftests_dir, section),
-                                       top_level_dir=basedir))
-    plugins = (('avocado-framework-plugin-varianter-yaml-to-mux',
-                'varianter_yaml_to_mux'),
-               ('avocado-framework-plugin-runner-remote',
-                'runner_remote'),
-               ('avocado-framework-plugin-runner-vm',
-                'runner_vm'),
-               ('avocado-framework-plugin-varianter-cit',
-                'varianter_cit'),
-               ('avocado-framework-plugin-result-html',
-                'html'))
-    for plugin_name, plugin_dir in plugins:
-        if plugin_available(plugin_name):
-            path = os.path.join(basedir, 'optional_plugins',
-                                plugin_dir, 'tests')
-            suite.addTests(loader.discover(start_dir=path, top_level_dir=path))
-    return suite
 
 
 class MyResult(unittest.TextTestResult):

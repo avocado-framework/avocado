@@ -12,7 +12,6 @@ import xml.dom.minidom
 import zipfile
 import unittest
 import psutil
-import pkg_resources
 
 try:
     from io import BytesIO
@@ -35,7 +34,7 @@ from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, python_module_available
 
 
 LOCAL_IMPORT_TEST_CONTENTS = '''
@@ -143,14 +142,6 @@ if GNU_ECHO_BINARY is not None:
             GNU_ECHO_BINARY = probe_binary('gecho')
 READ_BINARY = probe_binary('read')
 SLEEP_BINARY = probe_binary('sleep')
-
-
-def html_capable():
-    try:
-        pkg_resources.require('avocado-framework-plugin-result-html')
-        return True
-    except pkg_resources.DistributionNotFound:
-        return False
 
 
 class RunnerOperationTest(unittest.TestCase):
@@ -782,7 +773,7 @@ class RunnerSimpleTest(unittest.TestCase):
                                                     "sysinfo", "pre",
                                                     "echo \'________\'")))
 
-        if html_capable():
+        if python_module_available('avocado-framework-plugin-result-html'):
             with open(os.path.join(self.tmpdir, "latest",
                                    "results.html")) as html_res:
                 html_results = html_res.read()
@@ -1156,7 +1147,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
 
         result_plugins = ["json", "xunit", "zip_archive"]
         result_outputs = ["results.json", "results.xml"]
-        if html_capable():
+        if python_module_available('avocado-framework-plugin-result-html'):
             result_plugins.append("html")
             result_outputs.append("results.html")
 
