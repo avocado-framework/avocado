@@ -45,7 +45,7 @@ class Capabilities(unittest.TestCase):
                                           ['non-existing', 'capabilities']))
 
 
-class BaseIso9660(unittest.TestCase):
+class BaseIso9660(object):
 
     """
     Base class defining setup and tests for shared Iso9660 functionality
@@ -58,12 +58,9 @@ class BaseIso9660(unittest.TestCase):
         self.iso = None
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
 
-    def basic_workflow(self):
+    def test_basic_workflow(self):
         """
         Check the basic Iso9660 workflow
-
-        :warning: Make sure to include this in per-implementation tests
-                  due to ast loader we can't just define a base-class.
         """
         self.assertEqual(self.iso.read("file"),
                          b"file content\n")
@@ -75,12 +72,9 @@ class BaseIso9660(unittest.TestCase):
 
     @unittest.skipIf(not process.can_sudo("mount"),
                      "This test requires mount to run under sudo or root")
-    def mnt_dir_workflow(self):
+    def test_mnt_dir_workflow(self):
         """
         Check the mnt_dir functionality
-
-        :warning: Make sure to include this in per-implementation tests
-                  due to ast loader we can't just define a base-class.
         """
         base = self.iso.mnt_dir
         dir_path = os.path.join(base, "Dir")
@@ -100,7 +94,7 @@ class BaseIso9660(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
-class IsoInfo(BaseIso9660):
+class IsoInfo(BaseIso9660, unittest.TestCase):
 
     """
     IsoInfo-based check
@@ -112,16 +106,8 @@ class IsoInfo(BaseIso9660):
         super(IsoInfo, self).setUp()
         self.iso = iso9660.Iso9660IsoInfo(self.iso_path)
 
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        self.basic_workflow()
 
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        self.mnt_dir_workflow()
-
-
-class IsoRead(BaseIso9660):
+class IsoRead(BaseIso9660, unittest.TestCase):
 
     """
     IsoRead-based check
@@ -133,16 +119,8 @@ class IsoRead(BaseIso9660):
         super(IsoRead, self).setUp()
         self.iso = iso9660.Iso9660IsoRead(self.iso_path)
 
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        self.basic_workflow()
 
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        self.mnt_dir_workflow()
-
-
-class IsoMount(BaseIso9660):
+class IsoMount(BaseIso9660, unittest.TestCase):
 
     """
     Mount-based check
@@ -154,16 +132,8 @@ class IsoMount(BaseIso9660):
         super(IsoMount, self).setUp()
         self.iso = iso9660.Iso9660Mount(self.iso_path)
 
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        self.basic_workflow()
 
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        self.mnt_dir_workflow()
-
-
-class PyCDLib(BaseIso9660):
+class PyCDLib(BaseIso9660, unittest.TestCase):
 
     """
     PyCDLib-based check
@@ -173,10 +143,6 @@ class PyCDLib(BaseIso9660):
     def setUp(self):
         super(PyCDLib, self).setUp()
         self.iso = iso9660.ISO9660PyCDLib(self.iso_path)
-
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        self.basic_workflow()
 
     def test_create_write(self):
         new_iso_path = os.path.join(self.tmpdir, 'new.iso')
@@ -189,10 +155,6 @@ class PyCDLib(BaseIso9660):
             read_iso = iso9660.ISO9660PyCDLib(new_iso_path)
             self.assertEqual(read_iso.read(path), content)
             self.assertTrue(os.path.isfile(new_iso_path))
-
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        self.mnt_dir_workflow()
 
 
 if __name__ == "__main__":
