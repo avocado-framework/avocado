@@ -209,6 +209,7 @@ def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True,
 
     :param pid: The pid of the process to signal.
     :param sig: The signal to send to the processes.
+    :param send_sigcont: Send SIGCONT to allow killing stopped processes
     :param timeout: How long to wait for the pid(s) to die
                     (negative=infinity, 0=don't wait,
                     positive=number_of_seconds)
