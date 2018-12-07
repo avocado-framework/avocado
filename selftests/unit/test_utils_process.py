@@ -466,12 +466,13 @@ class MiscProcessTests(unittest.TestCase):
                                           get_children_pids, safe_kill):
         safe_kill.return_value = True
         get_children_pids.return_value = []
-        p_time.side_effect = [500, 502, 504, 506, 508, 510, 512, 514, 516, 518]
+        p_time.side_effect = [500, 502, 502, 502, 502, 502, 502,
+                              504, 504, 504, 520, 520, 520]
         sleep.return_value = None
         pid_exists.return_value = True
         self.assertRaises(RuntimeError, process.kill_process_tree, 1,
                           timeout=3)
-        self.assertEqual(p_time.call_count, 5)
+        self.assertLess(p_time.call_count, 10)
 
     @mock.patch('avocado.utils.process.safe_kill')
     @mock.patch('avocado.utils.process.get_children_pids')
