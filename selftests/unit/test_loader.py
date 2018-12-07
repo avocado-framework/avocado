@@ -385,26 +385,6 @@ class LoaderTest(unittest.TestCase):
         self.assertTrue(test_class == 'Second', test_class)
         avocado_multiple_imp_test.remove()
 
-    def test_load_tags(self):
-        avocado_test_tags = script.TemporaryScript('tags.py',
-                                                   AVOCADO_TEST_TAGS,
-                                                   'avocado_loader_unittest',
-                                                   DEFAULT_NON_EXEC_MODE)
-        tags_map = {'FastTest.test_fast': set(['fast', 'net']),
-                    'FastTest.test_fast_other': set(['fast', 'net']),
-                    'SlowTest.test_slow': set(['slow', 'disk']),
-                    'SlowUnsafeTest.test_slow_unsafe': set(['slow',
-                                                            'disk',
-                                                            'unsafe']),
-                    'SafeTest.test_safe': set(['safe'])}
-        with avocado_test_tags:
-            for _, info in self.loader.discover(avocado_test_tags.path,
-                                                loader.DiscoverMode.ALL):
-                name = info['name'].split(':', 1)[1]
-                self.assertEqual(info['tags'], tags_map[name])
-                del(tags_map[name])
-        self.assertEqual(len(tags_map), 0)
-
     def test_filter_tags_include_empty(self):
         avocado_pass_test = script.TemporaryScript('passtest.py',
                                                    AVOCADO_TEST_OK,
@@ -531,6 +511,21 @@ class TagFilter(unittest.TestCase):
                                            ['-fast,-slow,-safe',
                                             'does,not,exist'])
         self.assertEqual(len(filtered), 0)
+
+    def test_load_tags(self):
+        tags_map = {'FastTest.test_fast': set(['fast', 'net']),
+                    'FastTest.test_fast_other': set(['fast', 'net']),
+                    'SlowTest.test_slow': set(['slow', 'disk']),
+                    'SlowUnsafeTest.test_slow_unsafe': set(['slow',
+                                                            'disk',
+                                                            'unsafe']),
+                    'SafeTest.test_safe': set(['safe'])}
+
+        for _, info in self.test_suite:
+            name = info['name'].split(':', 1)[1]
+            self.assertEqual(info['tags'], tags_map[name])
+            del(tags_map[name])
+        self.assertEqual(len(tags_map), 0)
 
 
 if __name__ == '__main__':
