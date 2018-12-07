@@ -1,7 +1,6 @@
 import os
 import shutil
 import stat
-import multiprocessing
 import tempfile
 import unittest
 
@@ -215,7 +214,6 @@ class LoaderTest(unittest.TestCase):
 
     def setUp(self):
         self.loader = loader.FileLoader(None, {})
-        self.queue = multiprocessing.Queue()
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test_load_simple(self):
