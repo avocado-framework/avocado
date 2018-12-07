@@ -34,6 +34,7 @@ import sys
 import tempfile
 
 from . import process
+from . import path as utils_path
 
 
 try:
@@ -129,25 +130,8 @@ class BaseIso9660(object):
     """
 
     def __init__(self, path):
+        utils_path.check_readable(path)
         self.path = path
-        self._verify_path(path)
-
-    @staticmethod
-    def _verify_path(path):
-        """
-        Verify that the current set path is accessible
-
-        :param path: the path for test
-        :type path: str
-        :raise OSError: path does not exist or path could not be read
-        :rtype: None
-        """
-        if not os.path.exists(path):
-            raise OSError('File or device path does not exist: %s' %
-                          path)
-        if not os.access(path, os.R_OK):
-            raise OSError('File or device path could not be read: %s' %
-                          path)
 
     def read(self, path):
         """
