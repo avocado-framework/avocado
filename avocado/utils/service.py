@@ -153,7 +153,7 @@ def sys_v_init_result_parser(command):
             status_per_target_dict = {}
             # Dict to store the status for service based on xinetd.
             xinet_services_dict = {}
-            lines = cmd_result.stdout.strip().splitlines()
+            lines = cmd_result.stdout_text.strip().splitlines()
             for line in lines:
                 sublines = line.strip().split()
                 if len(sublines) == 8:
@@ -231,7 +231,7 @@ def systemd_result_parser(command):
                 raise process.CmdError(cmd_result.command, cmd_result)
             # Dict to store service name to status.
             _service2status_dict = {}
-            lines = cmd_result.stdout.strip().splitlines()
+            lines = cmd_result.stdout_text.strip().splitlines()
             for line in lines:
                 sublines = line.strip().split()
                 if ((not len(sublines) == 2) or

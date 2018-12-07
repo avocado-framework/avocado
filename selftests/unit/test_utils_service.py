@@ -190,7 +190,7 @@ class TestSystemdServiceManager(TestServiceManager):
 
     def test_list(self):
         list_result_mock = mock.Mock(exit_status=0,
-                                     stdout="sshd.service enabled\n"
+                                     stdout_text="sshd.service enabled\n"
                                      "vsftpd.service disabled\n"
                                      "systemd-sysctl.service static\n")
         run_mock = mock.Mock(return_value=list_result_mock)
@@ -254,7 +254,7 @@ class TestSysVInitServiceManager(TestServiceManager):
     def test_list(self):
         list_result_mock = mock.Mock(
             exit_status=0,
-            stdout="sshd             0:off   1:off   "
+            stdout_text="sshd             0:off   1:off   "
             "2:off   3:off   4:off   5:off   6:off\n"
             "vsftpd           0:off   1:off   2:off "
             "  3:off   4:off   5:on   6:off\n"
