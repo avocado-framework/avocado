@@ -454,7 +454,7 @@ class MiscProcessTests(unittest.TestCase):
                                       sleep):
         safe_kill.return_value = True
         get_children_pids.return_value = []
-        process.kill_process_tree(1)
+        self.assertEqual([1], process.kill_process_tree(1))
         self.assertEqual(sleep.call_count, 0)
 
     @mock.patch('avocado.utils.process.safe_kill')
@@ -466,12 +466,13 @@ class MiscProcessTests(unittest.TestCase):
                                           get_children_pids, safe_kill):
         safe_kill.return_value = True
         get_children_pids.return_value = []
-        p_time.side_effect = [500, 502, 504, 506, 508, 510, 512, 514, 516, 518]
+        p_time.side_effect = [500, 502, 502, 502, 502, 502, 502,
+                              504, 504, 504, 520, 520, 520]
         sleep.return_value = None
         pid_exists.return_value = True
-        self.assertRaises(RuntimeError, process.kill_process_tree, 1,
+        self.assertRaises(RuntimeError, process.kill_process_tree, 17,
                           timeout=3)
-        self.assertEqual(p_time.call_count, 5)
+        self.assertLess(p_time.call_count, 10)
 
     @mock.patch('avocado.utils.process.safe_kill')
     @mock.patch('avocado.utils.process.get_children_pids')
@@ -486,7 +487,7 @@ class MiscProcessTests(unittest.TestCase):
         p_time.side_effect = [500, 502, 502, 502, 502, 502, 502, 502, 502, 503]
         sleep.return_value = None
         pid_exists.side_effect = [True, False]
-        process.kill_process_tree(1, timeout=3)
+        self.assertEqual([76], process.kill_process_tree(76, timeout=3))
         self.assertLess(p_time.call_count, 10)
 
     @mock.patch('avocado.utils.process.safe_kill')
@@ -501,10 +502,22 @@ class MiscProcessTests(unittest.TestCase):
         sleep.return_value = None
         pid_exists.side_effect = [True, True, True, True, True, False]
 
-        process.kill_process_tree(1, timeout=-7.354)
+        self.assertEqual([31], process.kill_process_tree(31, timeout=-7.354))
 
         self.assertEqual(pid_exists.call_count, 6)
         self.assertEqual(sleep.call_count, 5)
+
+    @mock.patch('avocado.utils.process.time.sleep')
+    @mock.patch('avocado.utils.process.safe_kill')
+    @mock.patch('avocado.utils.process.get_children_pids')
+    def test_kill_process_tree_children(self, get_children_pids, safe_kill,
+                                        sleep):
+        safe_kill.return_value = True
+        get_children_pids.side_effect = [[53, 12], [78, 58, 41], [], [13],
+                                         [], [], []]
+        self.assertEqual([31, 53, 78, 58, 13, 41, 12],
+                         process.kill_process_tree(31))
+        self.assertEqual(sleep.call_count, 0)
 
 
 class CmdResultTests(unittest.TestCase):

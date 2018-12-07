@@ -212,33 +212,38 @@ def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True,
     :param timeout: How long to wait for the pid(s) to die
                     (negative=infinity, 0=don't wait,
                     positive=number_of_seconds)
+    :return: list of all PIDs we sent signal to
+    :rtype: list
     """
-    if timeout <= 0:
-        def remaining_time():
-            return timeout
-    else:
+    def _all_pids_dead(killed_pids):
+        for pid in killed_pids:
+            if pid_exists(pid):
+                return False
+        return True
+
+    if timeout > 0:
         start = time.time()
 
-        def remaining_time():
-            return timeout - time.time() + start
-
     if not safe_kill(pid, signal.SIGSTOP):
-        return
+        return [pid]
+    killed_pids = [pid]
     for child in get_children_pids(pid):
-        kill_process_tree(int(child), sig, timeout=remaining_time())
+        killed_pids.extend(kill_process_tree(int(child), sig, False))
     safe_kill(pid, sig)
     if send_sigcont:
-        safe_kill(pid, signal.SIGCONT)
+        for pid in killed_pids:
+            safe_kill(pid, signal.SIGCONT)
     if timeout == 0:
-        return
+        return killed_pids
     elif timeout > 0:
-        if not wait_for(lambda: not pid_exists(pid), remaining_time(),
-                        step=0.01):
+        if not wait_for(_all_pids_dead, timeout + start - time.time(),
+                        step=0.01, args=(killed_pids[::-1],)):
             raise RuntimeError("Timeout reached when waiting for pid %s "
                                "and children to die (%s)" % (pid, timeout))
     else:
-        while pid_exists(pid):
+        while not _all_pids_dead(killed_pids[::-1]):
             time.sleep(0.01)
+    return killed_pids
 
 
 def kill_process_by_pattern(pattern):
