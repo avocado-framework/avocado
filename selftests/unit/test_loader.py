@@ -385,17 +385,6 @@ class LoaderTest(unittest.TestCase):
         self.assertTrue(test_class == 'Second', test_class)
         avocado_multiple_imp_test.remove()
 
-    def test_filter_tags_include_empty(self):
-        avocado_pass_test = script.TemporaryScript('passtest.py',
-                                                   AVOCADO_TEST_OK,
-                                                   'avocado_loader_unittest',
-                                                   DEFAULT_NON_EXEC_MODE)
-        with avocado_pass_test as test_script:
-            test_suite = self.loader.discover(test_script.path, loader.DiscoverMode.ALL)
-            self.assertEqual([], loader.filter_test_tags(test_suite, []))
-            self.assertEqual(test_suite,
-                             loader.filter_test_tags(test_suite, [], True))
-
     def test_python_unittest(self):
         disabled_test = script.TemporaryScript("disabled.py",
                                                AVOCADO_TEST_OK_DISABLED,
@@ -526,6 +515,21 @@ class TagFilter(unittest.TestCase):
             self.assertEqual(info['tags'], tags_map[name])
             del(tags_map[name])
         self.assertEqual(len(tags_map), 0)
+
+
+class TagFilter2(unittest.TestCase):
+
+    def test_filter_tags_include_empty(self):
+        with script.TemporaryScript('passtest.py',
+                                    AVOCADO_TEST_OK,
+                                    'avocado_loader_unittest',
+                                    DEFAULT_NON_EXEC_MODE) as test_script:
+            this_loader = loader.FileLoader(None, {})
+            test_suite = this_loader.discover(test_script.path,
+                                              loader.DiscoverMode.ALL)
+            self.assertEqual([], loader.filter_test_tags(test_suite, []))
+            self.assertEqual(test_suite,
+                             loader.filter_test_tags(test_suite, [], True))
 
 
 if __name__ == '__main__':
