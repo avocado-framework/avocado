@@ -109,3 +109,11 @@ class Result(object):
         else:
             self.errors += 1
         self.end_test(state)
+
+    @property
+    def rate(self):
+        total = float(self.tests_total - self.skipped - self.cancelled)
+        if not total:
+            return 0.0
+        succeeded = float(self.passed + self.warned)
+        return 100 * (succeeded / total)
