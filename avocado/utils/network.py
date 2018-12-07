@@ -38,13 +38,17 @@ def is_port_free(port, address):
     :param port: Port number
     :param address: Socket address to bind or connect
     """
+    if address == "localhost" or not address:
+        localhost = True
+    else:
+        localhost = False
     sock = None
     try:
         for family in FAMILIES:
             for protocol in PROTOCOLS:
                 try:
                     sock = socket.socket(family, protocol)
-                    if address == "localhost":
+                    if localhost:
                         sock.bind(("", port))
                     else:
                         sock.connect((address, port))
@@ -52,7 +56,7 @@ def is_port_free(port, address):
                 except socket.error as exc:
                     if exc.errno in (93, 94):   # Unsupported combinations
                         continue
-                    if address == "localhost":
+                    if localhost:
                         return False
                 sock.close()
         return True
