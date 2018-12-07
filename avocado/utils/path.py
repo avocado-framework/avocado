@@ -190,3 +190,22 @@ def usable_ro_dir(directory):
             pass
 
     return False
+
+
+def check_readable(path):
+    """
+    Verify that the given path exists and is readable
+
+    This should be used where an assertion makes sense, and is useful
+    because it can provide a better message in the exception it
+    raises.
+
+    :param path: the path to test
+    :type path: str
+    :raise OSError: path does not exist or path could not be read
+    :rtype: None
+    """
+    if not os.path.exists(path):
+        raise OSError('File "%s" does not exist' % path)
+    if not os.access(path, os.R_OK):
+        raise OSError('File "%s" can not be read' % path)
