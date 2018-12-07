@@ -128,6 +128,7 @@ BuildRequires: libcdio
 BuildRequires: libvirt-python
 BuildRequires: perl-Test-Harness
 BuildRequires: psmisc
+BuildRequires: python2-netifaces
 %if 0%{?rhel}
 BuildRequires: PyYAML
 %else
@@ -136,6 +137,7 @@ BuildRequires: python2-yaml
 %if %{with_python3}
 BuildRequires: python3-libvirt
 BuildRequires: python3-yaml
+BuildRequires: python3-netifaces
 %endif
 %endif
 

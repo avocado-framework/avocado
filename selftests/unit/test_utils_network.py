@@ -1,3 +1,4 @@
+import netifaces
 import socket
 import unittest
 
@@ -34,17 +35,29 @@ class PortTrackerTest(unittest.TestCase):
         self.assertNotIn(22, tracker.retained_ports)
 
 
+def get_all_local_addrs():
+    """
+    Returns all ipv4/ipv6 addresses that are associated with this machine
+    """
+    ipv4_addrs = []
+    ipv6_addrs = []
+    for interface in netifaces.interfaces():
+        ifaddresses = netifaces.ifaddresses(interface)
+        ipv4_addrs += [_['addr']
+                       for _ in ifaddresses.get(netifaces.AF_INET, [])]
+        ipv6_addrs += [_['addr']
+                       for _ in ifaddresses.get(netifaces.AF_INET6, [])]
+    return ipv4_addrs, ipv6_addrs
+
+
 class FreePort(unittest.TestCase):
 
     def test_is_port_free(self):
         port = network.find_free_port(sequent=False)
-        if port is None:
-            # Use this temporarily as in Travis the current implementation
-            # fails to find free port.
-            self.skipTest("No free port")
         self.assertTrue(network.is_port_free(port, "localhost"))
-        ipv4_addrs = ["localhost", "127.0.0.1"]
-        ipv6_addrs = ["localhost", "::1"]
+        local_addrs = get_all_local_addrs()
+        ipv4_addrs = ["localhost", ""] + list(local_addrs[0])
+        ipv6_addrs = ["localhost", ""] + list(local_addrs[1])
         good = []
         bad = []
         skip = []
