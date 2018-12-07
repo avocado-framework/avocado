@@ -345,8 +345,10 @@ def find_avocado_tests(path, class_name=None):
                             modules_paths.extend(sys.path)
                             if parent_module is None:
                                 parent_module = node.module
-                            _, ppath, _ = imp.find_module(parent_module,
-                                                          modules_paths)
+                            mod_file, ppath, _ = imp.find_module(parent_module,
+                                                                 modules_paths)
+                            if mod_file is not None:
+                                mod_file.close()
                             res, dis = find_avocado_tests(ppath,
                                                           parent_class)
                             if res:
