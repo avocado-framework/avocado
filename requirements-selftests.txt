@@ -34,3 +34,6 @@ lxml==4.2.4
 # in make develop. The proper solution would be migrate
 # our make develop process to use pip
 libvirt-python==4.6.0
+
+# For avocado.utils.network selftests
+netifaces

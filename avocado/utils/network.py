@@ -45,7 +45,7 @@ def is_port_free(port, address):
                 try:
                     s = socket.socket(family, protocol)
                     if address == "localhost":
-                        s.bind((address, port))
+                        s.bind(("", port))
                     else:
                         s.connect((address, port))
                         return False

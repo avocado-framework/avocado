@@ -1,3 +1,4 @@
+import netifaces
 import socket
 import unittest
 
@@ -34,15 +35,32 @@ class PortTrackerTest(unittest.TestCase):
         self.assertNotIn(22, tracker.retained_ports)
 
 
+def get_all_local_addrs():
+    """
+    Returns all ipv4/ipv6 addresses that are associated with this machine
+    """
+    ipv4_addrs = []
+    ipv6_addrs = []
+    for interface in netifaces.interfaces():
+        ifaddresses = netifaces.ifaddresses(interface)
+        ipv4_addrs += [_['addr']
+                       for _ in ifaddresses.get(netifaces.AF_INET, [])]
+        ipv6_addrs += [_['addr']
+                       for _ in ifaddresses.get(netifaces.AF_INET6, [])]
+    return ipv4_addrs, ipv6_addrs
+
+
 class FreePort(unittest.TestCase):
 
     def test_is_port_free(self):
         port = network.find_free_port()
         self.assertTrue(network.is_port_free(port, "localhost"))
-        ipv4_addrs = ["localhost", "127.0.0.1"]
-        ipv6_addrs = ["localhost", "::1"]
+        local_addrs = get_all_local_addrs()
+        ipv4_addrs = ["localhost", ""] + list(local_addrs[0])
+        ipv6_addrs = ["localhost", ""] + list(local_addrs[1])
         good = []
         bad = []
+        skip = []
         sock = None
         for family in network.FAMILIES:
             if family == socket.AF_INET:
@@ -60,6 +78,13 @@ class FreePort(unittest.TestCase):
                         else:
                             good.append("%s, %s, %s" % (family, protocol,
                                                         addr))
+                    except socket.error as exc:
+                        if exc.errno == 22:
+                            skip.append("%s, %s, %s: %s"
+                                        % (family, protocol, addr, exc))
+                        else:
+                            bad.append("%s, %s, %s: Failed to bind: %s"
+                                       % (family, protocol, addr, exc))
                     except Exception as exc:
                         bad.append("%s, %s, %s: Failed to bind: %s"
                                    % (family, protocol, addr, exc))
@@ -67,8 +92,9 @@ class FreePort(unittest.TestCase):
                         if sock is not None:
                             sock.close()
         self.assertFalse(bad, "Following combinations failed:\n%s\n\n"
-                         "Following combinations passed:\n%s"
-                         % ("\n".join(bad), "\n".join(good)))
+                         "Following combinations passed:\n%s\n\n"
+                         "Following combinations were skipped:\n%s"
+                         % ("\n".join(bad), "\n".join(good), "\n".join(skip)))
 
 
 if __name__ == "__main__":
