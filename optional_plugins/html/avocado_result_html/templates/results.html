@@ -29,23 +29,26 @@
           <table class="table table-bordered">
             <tr>
               <td>ID</td>
-              <td><tt>{{ job_unique_id }}</tt></td>
+              <td><tt>{{ data.result.job_unique_id }}</tt></td>
             </tr>
             <tr>
               <td>Host</td>
-              <td><tt>{{ hostname }}</tt></td>
+              <td><tt>{{ data.hostname }}</tt></td>
             </tr>
             <tr>
               <td>Results Dir</td>
-              <td><a href="{{ results_dir }}"><tt>{{ results_dir_basename }}</tt></a></td>
+              <td><a href="{{ data.results_dir() }}"><tt>{{ data.results_dir_basename() }}</tt></a></td>
             </tr>
             <tr>
               <td>Cumulative test time</td>
-              <td>{{ tests_total_time }} s</td>
+              <td>{{ '%.2f'|format(data.result.tests_total_time) }} s</td>
             </tr>
             <tr>
               <td>Stats</td>
-              <td>From {{ tests_total }} tests executed, {{ passed }} passed and {{ warned }} warned - success rate of {{ rate }}% (excluding SKIP and CANCEL)</td>
+              <td>From {{ data.result.tests_total }} tests executed,
+                {{ data.result.passed }} passed and 
+                {{ data.result.warned }} warned - success rate of 
+                {{ '%.2f'|format(data.result.rate) }}% (excluding SKIP and CANCEL)</td>
             </tr>
           </table>
         </div>
@@ -63,16 +66,16 @@
             <th>Debug Log</th>
           </tr>
         </thead>
-        {% for test in tests %}
-        <tr class="{{row_class}}">
+        {% for test in data.tests %}
+        <tr class="{{ data.row_class }}">
           <td>{{ test.time_start }}</td>
           <td>{{ test.uid }}</td>
           <td><a href="{{ test.logdir }}" title="{{ test.params }}">{{ test.name }}</a></td>
           <td>{{ test.variant }}</td>
           <td>{{ test.status }}</td>
           <td>{{ test.time }}</td>
-          <td>{{ test.fail_reason }}</td>
-          <td><a href="{{ logfile }}">{{ logfile_basename }}</a></td>
+          <td>{{ test.fail_reason|safe }}</td>
+          <td><a href="{{ test.logfile }}">{{ test.logfile_basename }}</a></td>
         </tr>
         {% endfor %}
       </table>
@@ -92,7 +95,7 @@
               <div id="collapsePre" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingPre">
                 <div class="panel-body">
                   <div class="panel-group" id="accordionPre2" role="tablist" aria-multiselectable="true">
-                    {% for sysinfo in sysinfo_pre %}
+                    {% for sysinfo in data.sysinfo_pre %}
                     <div class="panel panel-default">
                       <div class="panel-heading" role="tab" id="{{ sysinfo.element_id }}">
                         <h4 class="panel-title">
@@ -102,7 +105,7 @@
                       <div id="{{ sysinfo.collapse_id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{ sysinfo.element_id }}">
                         <div class="panel-body">
                           <pre>{{ sysinfo.contents }}</pre>
-                          {{ sysinfo.err }}
+                          {{ sysinfo.err|safe }}
                         </div>
                       </div>
                     </div>
@@ -123,7 +126,7 @@
               <div id="collapsePost" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingPost">
                 <div class="panel-body">
                   <div class="panel-group" id="accordionPost2" role="tablist" aria-multiselectable="true">
-                    {% for sysinfo in sysinfo_post %}
+                    {% for sysinfo in data.sysinfo_post %}
                     <div class="panel panel-default">
                       <div class="panel-heading" role="tab" id="{{ sysinfo.element_id }}">
                         <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordionPost2" href="#{{ sysinfo.collapse_id }}" aria-expanded="false" aria-controls="{{ sysinfo.collapse_id }}"><tt>{{ sysinfo.file }}</tt></a></h4>
@@ -151,7 +154,7 @@
               <div id="collapseProfile" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingProfile">
                 <div class="panel-body">
                   <div class="panel-group" id="accordionProfile2" role="tablist" aria-multiselectable="true">
-                    {% for sysinfo in sysinfo_profile %}
+                    {% for sysinfo in data.sysinfo_profile %}
                     <div class="panel panel-default">
                       <div class="panel-heading" role="tab" id="{{ sysinfo.element_id }}">
                         <h4 class="panel-title">
