@@ -783,11 +783,11 @@ class RunnerSimpleTest(unittest.TestCase):
             test1_href = (os.path.join("test-results",
                                        "1-'________'") in html_results or
                           os.path.join("test-results",
-                                       "1-&#x27;________&#x27;") in html_results)
+                                       "1-&#39;________&#39;") in html_results)
             self.assertTrue(test1_href)
             # sysinfo replaces "_" with " "
             sysinfo = ("echo '________'" in html_results or
-                       "echo &#x27;________&#x27;" in html_results)
+                       "echo &#39;________&#39;" in html_results)
             self.assertTrue(sysinfo)
 
     def test_non_absolute_path(self):

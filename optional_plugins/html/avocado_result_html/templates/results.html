@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Avocado Job Report</title>
+
+    <style type="text/css">
+    {% include "bootstrap.min.css" %}
+    </style>
+
+    <style type="text/css">
+    {% include "datatables.css" %}
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h3>Avocado Job Report</h3>
+      </div>
+
+      <div class="panel-group" role="tablist">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title">Summary</h4>
+          </div>
+          <table class="table table-bordered">
+            <tr>
+              <td>ID</td>
+              <td><tt>{{ data.result.job_unique_id }}</tt></td>
+            </tr>
+            <tr>
+              <td>Host</td>
+              <td><tt>{{ data.hostname }}</tt></td>
+            </tr>
+            <tr>
+              <td>Results Dir</td>
+              <td><a href="{{ data.results_dir() }}"><tt>{{ data.results_dir_basename() }}</tt></a></td>
+            </tr>
+            <tr>
+              <td>Cumulative test time</td>
+              <td>{{ '%.2f'|format(data.result.tests_total_time) }} s</td>
+            </tr>
+            <tr>
+              <td>Stats</td>
+              <td>From {{ data.result.tests_total }} tests executed,
+                {{ data.result.passed }} passed and 
+                {{ data.result.warned }} warned - success rate of 
+                {{ '%.2f'|format(data.result.rate) }}% (excluding SKIP and CANCEL)</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <table id="results" class="display" cellspacing="0" width="100%"><thead>
+          <tr>
+            <th>Start Time</th>
+            <th>UID</th>
+            <th>Test Name</th>
+            <th>Variant</th>
+            <th>Status</th>
+            <th>Time (sec)</th>
+            <th>Info</th>
+            <th>Debug Log</th>
+          </tr>
+        </thead>
+        {% for test in data.tests %}
+        <tr class="{{ data.row_class }}">
+          <td>{{ test.time_start }}</td>
+          <td>{{ test.uid }}</td>
+          <td><a href="{{ test.logdir }}" title="{{ test.params }}">{{ test.name }}</a></td>
+          <td>{{ test.variant }}</td>
+          <td>{{ test.status }}</td>
+          <td>{{ test.time }}</td>
+          <td>{{ test.fail_reason|safe }}</td>
+          <td><a href="{{ test.logfile }}">{{ test.logfile_basename }}</a></td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Sysinfo</h3>
+        </div>
+        <div class="panel-body">
+          <div class="panel-group" id="accordionPre" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+              <div class="panel-heading" role="tab" id="headingPre">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordionPre" href="#collapsePre" aria-expanded="false" aria-controls="collapsePre">Pre-Tests</a>
+                </h4>
+              </div>
+              <div id="collapsePre" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingPre">
+                <div class="panel-body">
+                  <div class="panel-group" id="accordionPre2" role="tablist" aria-multiselectable="true">
+                    {% for sysinfo in data.sysinfo_pre %}
+                    <div class="panel panel-default">
+                      <div class="panel-heading" role="tab" id="{{ sysinfo.element_id }}">
+                        <h4 class="panel-title">
+                          <a data-toggle="collapse" data-parent="#accordionPre2" href="#{{ sysinfo.collapse_id}}" aria-expanded="false" aria-controls="{{ sysinfo.collapse_id }}"><tt>{{ sysinfo.file }}</tt></a>
+                        </h4>
+                      </div>
+                      <div id="{{ sysinfo.collapse_id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{ sysinfo.element_id }}">
+                        <div class="panel-body">
+                          <pre>{{ sysinfo.contents }}</pre>
+                          {{ sysinfo.err|safe }}
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-group" id="accordionPost" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+              <div class="panel-heading" role="tab" id="headingPost">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordionPost" href="#collapsePost" aria-expanded="false" aria-controls="collapsePost">Post-Tests</a>
+                </h4>
+              </div>
+              <div id="collapsePost" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingPost">
+                <div class="panel-body">
+                  <div class="panel-group" id="accordionPost2" role="tablist" aria-multiselectable="true">
+                    {% for sysinfo in data.sysinfo_post %}
+                    <div class="panel panel-default">
+                      <div class="panel-heading" role="tab" id="{{ sysinfo.element_id }}">
+                        <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordionPost2" href="#{{ sysinfo.collapse_id }}" aria-expanded="false" aria-controls="{{ sysinfo.collapse_id }}"><tt>{{ sysinfo.file }}</tt></a></h4>
+                      </div>
+                      <div id="{{ sysinfo.collapse_id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{ sysinfo.element_id }}">
+                        <div class="panel-body">
+                          <pre>{{ sysinfo.contents }}</pre>
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-group" id="accordionProfile" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+              <div class="panel-heading" role="tab" id="headingProfile">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordionProfile" href="#collapseProfile" aria-expanded="false" aria-controls="collapseProfile">Profilers</a>
+                </h4>
+              </div>
+              <div id="collapseProfile" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingProfile">
+                <div class="panel-body">
+                  <div class="panel-group" id="accordionProfile2" role="tablist" aria-multiselectable="true">
+                    {% for sysinfo in data.sysinfo_profile %}
+                    <div class="panel panel-default">
+                      <div class="panel-heading" role="tab" id="{{ sysinfo.element_id }}">
+                        <h4 class="panel-title">
+                          <a data-toggle="collapse" data-parent="#accordionProfile2" href="#{{ sysinfo.collapse_id }}" aria-expanded="false" aria-controls="{{ sysinfo.collapse_id }}"><tt>{{ sysinfo.file }}</tt></a>
+                        </h4>
+                      </div>
+                      <div id="{{ sysinfo.collapse_id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{ sysinfo.element_id }}">
+                        <div class="panel-body">
+                          <pre>{{ sysinfo.contents }}</pre>
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      {% include "jquery.min.js" %}
+    </script>
+
+    <script type="text/javascript">
+      {% include "bootstrap.min.js" %}
+    </script>
+
+    <script type="text/javascript">
+      {% include "datatables.min.js" %}
+      {% include "datatables.bootstrap.js" %}
+    </script>
+
+    <script type="text/javascript">
+      {% include "avocado_html.js" %}
+    </script>
+  </body>
+</html>
