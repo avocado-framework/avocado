@@ -19,6 +19,7 @@ Avocado generic IO related functions.
 import logging
 import os
 import time
+import re
 
 from six.moves import input
 
@@ -200,3 +201,25 @@ def write_file_or_fail(filename, data):
     except OSError as details:
         raise GenIOError("The write to %s failed: %s" % (
                          filename, details))
+
+
+def is_pattern_in_file(filename,  pattern):
+    """
+    Check if a pattern matches in a specified file. If a non
+    regular file be informed a GenIOError will be raised.
+
+    :param filename: Path to file
+    :type filename: str
+    :param pattern: Pattern that need to match in file
+    :type pattern: str
+    :return: True when pattern matches in file if not
+             return False
+    :rtype: boolean
+    """
+    if not os.path.isfile(filename):
+        raise GenIOError('invalid file %s to match pattern %s'
+                         % (filename, pattern))
+    with open(filename, 'r') as content_file:
+        if re.search(pattern, content_file.read(), re.MULTILINE):
+            return True
+    return False
