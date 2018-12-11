@@ -203,9 +203,10 @@ def write_file_or_fail(filename, data):
                          filename, details))
 
 
-def check_pattern_in_file(filename,  pattern):
+def is_pattern_in_file(filename,  pattern):
     """
-    Check if a pattern matches in a specified file
+    Check if a pattern matches in a specified file. If a non
+    regular file be informed a GenIOError will be raised.
 
     :param filename: Path to file
     :type filename: str
