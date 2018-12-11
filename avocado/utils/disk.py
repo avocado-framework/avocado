@@ -58,21 +58,32 @@ def get_disks():
     return ['/dev/%s' % str(disk['name']) for disk in json_data['blockdevices']]
 
 
-def get_filesystems():
+def get_available_filesystems():
     """
-    Return a list of all available filesystems
+    Return a list of all available filesystem types
 
-    :returns: a list of filesystem string
+    :returns: a list of filesystem types
     :rtype: list of str
     """
-    return [re.sub('(nodev)?\\s*', '', fs) for fs in open('/proc/filesystems')]
+    filesystems = set()
+    with open('/proc/filesystems') as proc_fs:
+        for proc_fs_line in proc_fs.readlines():
+            filesystems.add(re.sub('(nodev)?\\s*', '', proc_fs_line))
+    return list(filesystems)
 
 
-def get_rootfilesystem():
+def get_filesystem_type(mount_point='/'):
     """
-    Return a root  filesystem
+    Returns the type of the filesystem of mount point informed.
+    The default mount point considered when none is informed
+    is the root "/" mount point.
 
-    :returns: file system string
+    :param str mount_point: mount point to asses the filesystem type, default "/"
+    :returns: filesystem type
     :rtype: str
     """
-    return process.system_output('findmnt / -o FSTYPE -n')
+    with open('/proc/mounts') as mounts:
+        for mount_line in mounts.readlines():
+            _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
+            if fs_file == mount_point:
+                return fs_vfstype
