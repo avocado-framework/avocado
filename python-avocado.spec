@@ -47,7 +47,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 66.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -69,7 +69,7 @@ BuildRequires: python3-fabric3
 %endif
 
 %if 0%{?rhel} == 7
-BuildRequires: pystache
+BuildRequires: python-jinja2
 BuildRequires: python-lxml
 BuildRequires: python-setuptools
 BuildRequires: python-stevedore
@@ -85,7 +85,7 @@ BuildRequires: python2-six
 BuildRequires: python2-sphinx
 BuildRequires: yum
 %else
-BuildRequires: pystache
+BuildRequires: python2-jinja2
 BuildRequires: python2-aexpect
 BuildRequires: python2-devel
 BuildRequires: python2-docutils
@@ -107,7 +107,7 @@ BuildRequires: python2-pycdlib
 %endif
 
 %if %{with_python3}
-BuildRequires: python3-pystache
+BuildRequires: python3-jinja2
 BuildRequires: python3-aexpect
 BuildRequires: python3-devel
 BuildRequires: python3-docutils
@@ -595,7 +595,12 @@ Common files (such as configuration) for the Avocado Testing Framework.
 
 %package -n python2-%{srcname}-plugins-output-html
 Summary: Avocado HTML report plugin
-Requires: python2-%{srcname} == %{version}, pystache
+Requires: python2-%{srcname} == %{version},
+%if 0%{?rhel} == 7
+Requires: python-jinja2
+%else
+Requires: python2-jinja2
+%endif
 
 %description -n python2-%{srcname}-plugins-output-html
 Adds to avocado the ability to generate an HTML report at every job results
@@ -609,7 +614,7 @@ arbitrary filesystem location.
 %if %{with_python3}
 %package -n python3-%{srcname}-plugins-output-html
 Summary: Avocado HTML report plugin
-Requires: python3-%{srcname} == %{version}, python3-pystache
+Requires: python3-%{srcname} == %{version}, python3-jinja2
 
 %description -n python3-%{srcname}-plugins-output-html
 Adds to avocado the ability to generate an HTML report at every job results
@@ -973,6 +978,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Dec 10 2018 Cleber Rosa <cleber@redhat.com> - 66.0-2
+- Replaced pystache requirement for jinja2
+
 * Wed Dec  5 2018 Cleber Rosa <cleber@redhat.com> - 66.0-1
 - Added libcdio, genisoimage and psmisc as build deps
 

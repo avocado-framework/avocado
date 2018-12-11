@@ -202,7 +202,7 @@ class HTMLResult(Result):
     def _render(self, result, output_path):
         env = jinja.Environment(
             loader=jinja.PackageLoader('avocado_result_html'),
-            autoescape=jinja.select_autoescape(['html', 'xml']),
+            autoescape=True,
         )
         template = env.get_template('results.html')
         report_contents = template.render({'data': ReportModel(result, output_path)})
