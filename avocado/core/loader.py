@@ -88,15 +88,19 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
 
         for raw_tags in filter_by_tags:
             required_tags = raw_tags.split(',')
-            must_not_have_tags = set([_[1:] for _ in required_tags
-                                      if _.startswith('-')])
-            if must_not_have_tags.intersection(test_tags):
+            must = set()
+            must_not = set()
+            for tag in required_tags:
+                if tag.startswith('-'):
+                    must_not.add(tag[1:])
+                else:
+                    must.add(tag)
+
+            if must_not.intersection(test_tags):
                 continue
 
-            must_have_tags = set([_ for _ in required_tags
-                                  if not _.startswith('-')])
-            if must_have_tags:
-                if not must_have_tags.issubset(test_tags):
+            if must:
+                if not must.issubset(test_tags):
                     continue
 
             filtered.append((klass, info))
