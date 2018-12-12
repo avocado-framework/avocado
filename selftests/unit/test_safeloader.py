@@ -133,17 +133,6 @@ class DocstringDirectives(unittest.TestCase):
                ":avocado: tags=SLOW,disk, invalid",
                ":avocado: tags=SLOW,disk , invalid"]
 
-    VALID_TAGS = {":avocado: tags=fast": set(["fast"]),
-                  ":avocado: tags=fast,network": set(["fast", "network"]),
-                  ":avocado: tags=fast,,network": set(["fast", "network"]),
-                  ":avocado: tags=slow,DISK": set(["slow", "DISK"]),
-                  ":avocado: tags=SLOW,disk,disk": set(["SLOW", "disk"]),
-                  ":avocado:\ttags=FAST": set(["FAST"]),
-                  ":avocado: tags=": set([]),
-                  ":avocado: enable\n:avocado: tags=fast": set(["fast"]),
-                  ":avocado: tags=fast,slow\n:avocado: enable": set(["fast", "slow"])
-                  }
-
     def test_longline(self):
         docstring = ("This is a very long docstring in a single line. "
                      "Since we have nothing useful to put in here let's just "
@@ -175,9 +164,50 @@ class DocstringDirectives(unittest.TestCase):
         for tag in self.NO_TAGS:
             self.assertEqual(set([]), safeloader.get_docstring_directives_tags(tag))
 
-    def test_get_tags(self):
-        for raw, tags in self.VALID_TAGS.items():
-            self.assertEqual(safeloader.get_docstring_directives_tags(raw), tags)
+    def test_tag_single(self):
+        raw = ":avocado: tags=fast"
+        exp = set(["fast"])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_double(self):
+        raw = ":avocado: tags=fast,network"
+        exp = set(["fast", "network"])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_double_with_empty(self):
+        raw = ":avocado: tags=fast,,network"
+        exp = set(["fast", "network"])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_lowercase_uppercase(self):
+        raw = ":avocado: tags=slow,DISK"
+        exp = set(["slow", "DISK"])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_duplicate(self):
+        raw = ":avocado: tags=SLOW,disk,disk"
+        exp = set(["SLOW", "disk"])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_tab_separator(self):
+        raw = ":avocado:\ttags=FAST"
+        exp = set(["FAST"])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_empty(self):
+        raw = ":avocado: tags="
+        exp = set([])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_newline_before(self):
+        raw = ":avocado: enable\n:avocado: tags=fast"
+        exp = set(["fast"])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_newline_after(self):
+        raw = ":avocado: tags=fast,slow\n:avocado: enable"
+        exp = set(["fast", "slow"])
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_directives_regex(self):
         """
@@ -214,7 +244,15 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_enabled',
                                     'test_disabled',
                                     'test_get_tags_empty',
-                                    'test_get_tags',
+                                    'test_tag_single',
+                                    'test_tag_double',
+                                    'test_tag_double_with_empty',
+                                    'test_tag_lowercase_uppercase',
+                                    'test_tag_duplicate',
+                                    'test_tag_tab_separator',
+                                    'test_tag_empty',
+                                    'test_tag_newline_before',
+                                    'test_tag_newline_after',
                                     'test_directives_regex'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
@@ -238,7 +276,15 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_enabled',
                                     'test_disabled',
                                     'test_get_tags_empty',
-                                    'test_get_tags',
+                                    'test_tag_single',
+                                    'test_tag_double',
+                                    'test_tag_double_with_empty',
+                                    'test_tag_lowercase_uppercase',
+                                    'test_tag_duplicate',
+                                    'test_tag_tab_separator',
+                                    'test_tag_empty',
+                                    'test_tag_newline_before',
+                                    'test_tag_newline_after',
                                     'test_directives_regex'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
