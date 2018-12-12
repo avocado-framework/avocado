@@ -93,6 +93,13 @@ class SafeTest(Test):
     def test_safe(self):
         pass
 
+class SafeX86Test(Test):
+    '''
+    :avocado: tags=safe,arch:x86_64
+    '''
+    def test_safe_x86(self):
+        pass
+
 if __name__ == "__main__":
     main()
 """
@@ -437,7 +444,7 @@ class TagFilter(unittest.TestCase):
                                                    loader.DiscoverMode.ALL)
 
     def test_no_tag_filter(self):
-        self.assertEqual(len(self.test_suite), 5)
+        self.assertEqual(len(self.test_suite), 6)
         self.assertEqual(self.test_suite[0][0], 'FastTest')
         self.assertEqual(self.test_suite[0][1]['methodName'], 'test_fast')
         self.assertEqual(self.test_suite[1][0], 'FastTest')
@@ -486,7 +493,7 @@ class TagFilter(unittest.TestCase):
     def test_filter_not_fast_not_slow(self):
         filtered = loader.filter_test_tags(self.test_suite,
                                            ['-fast,-slow'])
-        self.assertEqual(len(filtered), 1)
+        self.assertEqual(len(filtered), 2)
         self.assertEqual(filtered[0][0], 'SafeTest')
         self.assertEqual(filtered[0][1]['methodName'], 'test_safe')
 
@@ -502,13 +509,15 @@ class TagFilter(unittest.TestCase):
         self.assertEqual(len(filtered), 0)
 
     def test_load_tags(self):
-        tags_map = {'FastTest.test_fast': set(['fast', 'net']),
-                    'FastTest.test_fast_other': set(['fast', 'net']),
-                    'SlowTest.test_slow': set(['slow', 'disk']),
-                    'SlowUnsafeTest.test_slow_unsafe': set(['slow',
-                                                            'disk',
-                                                            'unsafe']),
-                    'SafeTest.test_safe': set(['safe'])}
+        tags_map = {'FastTest.test_fast': {'fast': None, 'net': None},
+                    'FastTest.test_fast_other': {'fast': None, 'net': None},
+                    'SlowTest.test_slow': {'slow': None, 'disk': None},
+                    'SlowUnsafeTest.test_slow_unsafe': {'slow': None,
+                                                        'disk': None,
+                                                        'unsafe': None},
+                    'SafeTest.test_safe': {'safe': None},
+                    'SafeX86Test.test_safe_x86': {'safe': None,
+                                                  'arch': set(['x86_64'])}}
 
         for _, info in self.test_suite:
             name = info['name'].split(':', 1)[1]

@@ -162,51 +162,66 @@ class DocstringDirectives(unittest.TestCase):
 
     def test_get_tags_empty(self):
         for tag in self.NO_TAGS:
-            self.assertEqual(set([]), safeloader.get_docstring_directives_tags(tag))
+            self.assertEqual({}, safeloader.get_docstring_directives_tags(tag))
 
     def test_tag_single(self):
         raw = ":avocado: tags=fast"
-        exp = set(["fast"])
+        exp = {"fast": None}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_tag_double(self):
         raw = ":avocado: tags=fast,network"
-        exp = set(["fast", "network"])
+        exp = {"fast": None, "network": None}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_tag_double_with_empty(self):
         raw = ":avocado: tags=fast,,network"
-        exp = set(["fast", "network"])
+        exp = {"fast": None, "network": None}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_tag_lowercase_uppercase(self):
         raw = ":avocado: tags=slow,DISK"
-        exp = set(["slow", "DISK"])
+        exp = {"slow": None, "DISK": None}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_tag_duplicate(self):
         raw = ":avocado: tags=SLOW,disk,disk"
-        exp = set(["SLOW", "disk"])
+        exp = {"SLOW": None, "disk": None}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_tag_tab_separator(self):
         raw = ":avocado:\ttags=FAST"
-        exp = set(["FAST"])
+        exp = {"FAST": None}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_tag_empty(self):
         raw = ":avocado: tags="
-        exp = set([])
+        exp = {}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_tag_newline_before(self):
         raw = ":avocado: enable\n:avocado: tags=fast"
-        exp = set(["fast"])
+        exp = {"fast": None}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_tag_newline_after(self):
         raw = ":avocado: tags=fast,slow\n:avocado: enable"
-        exp = set(["fast", "slow"])
+        exp = {"fast": None, "slow": None}
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_keyval_single(self):
+        raw = ":avocado: tags=fast,arch:x86_64"
+        exp = {"fast": None, "arch": set(["x86_64"])}
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_keyval_double(self):
+        raw = ":avocado: tags=fast,arch:x86_64,arch:ppc64"
+        exp = {"fast": None, "arch": set(["x86_64", "ppc64"])}
+        self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
+
+    def test_tag_keyval_duplicate(self):
+        raw = ":avocado: tags=fast,arch:x86_64,arch:ppc64,arch:x86_64"
+        exp = {"fast": None, "arch": set(["x86_64", "ppc64"])}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
     def test_directives_regex(self):
@@ -253,6 +268,9 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_tag_empty',
                                     'test_tag_newline_before',
                                     'test_tag_newline_after',
+                                    'test_tag_keyval_single',
+                                    'test_tag_keyval_double',
+                                    'test_tag_keyval_duplicate',
                                     'test_directives_regex'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
@@ -285,6 +303,9 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_tag_empty',
                                     'test_tag_newline_before',
                                     'test_tag_newline_after',
+                                    'test_tag_keyval_single',
+                                    'test_tag_keyval_double',
+                                    'test_tag_keyval_duplicate',
                                     'test_directives_regex'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
@@ -345,10 +366,10 @@ class FindClassAndMethods(UnlimitedDiff):
 
         sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
         tests = safeloader.find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
-        expected = {'ThirdChild': [('test_third_child', set([])),
-                                   ('test_second_child', set([])),
-                                   ('test_first_child', set([])),
-                                   ('test_basic', set([]))]}
+        expected = {'ThirdChild': [('test_third_child', {}),
+                                   ('test_second_child', {}),
+                                   ('test_first_child', {}),
+                                   ('test_basic', {})]}
         self.assertEqual(expected, tests)
 
 

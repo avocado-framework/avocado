@@ -81,7 +81,7 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
     """
     filtered = []
     for klass, info in test_suite:
-        test_tags = info.get('tags', set([]))
+        test_tags = info.get('tags', {})
         if not test_tags and include_empty:
             filtered.append((klass, info))
             continue

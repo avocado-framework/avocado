@@ -167,15 +167,24 @@ def get_docstring_directives_tags(docstring):
     Returns the test categories based on a `:avocado: tags=category`
     docstring
 
-    :rtype: set
+    :rtype: dict
     """
-    tags = []
+    result = {}
     for item in get_docstring_directives(docstring):
         if item.startswith('tags='):
             _, comma_tags = item.split('tags=', 1)
-            tags.extend([tag for tag in comma_tags.split(',') if tag])
-
-    return set(tags)
+            for tag in comma_tags.split(','):
+                if not tag:
+                    continue
+                if ':' in tag:
+                    key, val = tag.split(':', 1)
+                    if key in result:
+                        result[key].add(val)
+                    else:
+                        result[key] = set([val])
+                else:
+                    result[tag] = None
+    return result
 
 
 def find_class_and_methods(path, method_pattern=None, base_class=None):
