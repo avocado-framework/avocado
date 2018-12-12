@@ -24,6 +24,7 @@ Disk utilities
 
 import os
 import json
+import re
 
 from . import process
 
@@ -55,3 +56,34 @@ def get_disks():
     json_result = process.run('lsblk --json')
     json_data = json.loads(json_result.stdout_text)
     return ['/dev/%s' % str(disk['name']) for disk in json_data['blockdevices']]
+
+
+def get_available_filesystems():
+    """
+    Return a list of all available filesystem types
+
+    :returns: a list of filesystem types
+    :rtype: list of str
+    """
+    filesystems = set()
+    with open('/proc/filesystems') as proc_fs:
+        for proc_fs_line in proc_fs.readlines():
+            filesystems.add(re.sub(r'(nodev)?\s*', '', proc_fs_line))
+    return list(filesystems)
+
+
+def get_filesystem_type(mount_point='/'):
+    """
+    Returns the type of the filesystem of mount point informed.
+    The default mount point considered when none is informed
+    is the root "/" mount point.
+
+    :param str mount_point: mount point to asses the filesystem type, default "/"
+    :returns: filesystem type
+    :rtype: str
+    """
+    with open('/proc/mounts') as mounts:
+        for mount_line in mounts.readlines():
+            _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
+            if fs_file == mount_point:
+                return fs_vfstype

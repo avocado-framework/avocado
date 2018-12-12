@@ -1,3 +1,4 @@
+import sys
 import unittest
 
 try:
@@ -10,9 +11,7 @@ from avocado.utils import disk
 from avocado.utils import process
 
 
-class Disk(unittest.TestCase):
-
-    LSBLK_OUTPUT = b'''
+LSBLK_OUTPUT = b'''
 {
    "blockdevices": [
       {"name": "vda", "maj:min": "252:0", "rm": "0", "size": "6G", "ro": "0", "type": "disk", "mountpoint": null,
@@ -26,6 +25,31 @@ class Disk(unittest.TestCase):
    ]
 }'''
 
+
+PROC_FILESYSTEMS = (
+    'nodev   dax\n' +
+    'nodev   bpf\n' +
+    'nodev   pipefs\n' +
+    'nodev   hugetlbfs\n' +
+    'nodev   devpts\n' +
+    '        ext3'
+)
+
+PROC_MOUNTS = (
+    "/dev/mapper/fedora-root / ext4 rw,seclabel,relatime 0 0\n" +
+    "/dev/mapper/fedora-home /home ext2 rw,seclabel,relatime 0 0\n" +
+    "sysfs /sys sysfs rw,seclabel,nosuid,nodev,noexec,relatime 0 0\n" +
+    "proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0"
+)
+
+
+class Disk(unittest.TestCase):
+
+    @property
+    def builtin_open(self):
+        py_version = sys.version_info[0]
+        return 'builtins.open' if py_version == 3 else '__builtin__.open'
+
     def test_empty(self):
         mock_result = process.CmdResult(
             command='lsblk --json',
@@ -37,10 +61,27 @@ class Disk(unittest.TestCase):
     def test_disks(self):
         mock_result = process.CmdResult(
             command='lsblk --json',
-            stdout=self.LSBLK_OUTPUT)
+            stdout=LSBLK_OUTPUT)
         with mock.patch('avocado.utils.disk.process.run',
                         return_value=mock_result):
             self.assertEqual(disk.get_disks(), ['/dev/vda'])
+
+    def test_get_filesystems(self):
+        expected_fs = ['dax', 'bpf', 'pipefs', 'hugetlbfs', 'devpts', 'ext3']
+        open_mocked = mock.mock_open(read_data=PROC_FILESYSTEMS)
+        with mock.patch(self.builtin_open, open_mocked):
+            self.assertEqual(sorted(expected_fs),
+                             sorted(disk.get_available_filesystems()))
+
+    def test_get_filesystem_type_default_root(self):
+        open_mocked = mock.mock_open(read_data=PROC_MOUNTS)
+        with mock.patch(self.builtin_open, open_mocked):
+            self.assertEqual('ext4', disk.get_filesystem_type())
+
+    def test_get_filesystem_type(self):
+        open_mocked = mock.mock_open(read_data=PROC_MOUNTS)
+        with mock.patch(self.builtin_open, open_mocked):
+            self.assertEqual('ext2', disk.get_filesystem_type(mount_point='/home'))
 
 
 if __name__ == '__main__':
