@@ -595,5 +595,22 @@ class TagFilter2(unittest.TestCase):
                          loader.filter_test_tags(test_suite, [], True))
 
 
+class ParseFilterByTags(unittest.TestCase):
+
+    def test_must(self):
+        self.assertEqual(loader.parse_filter_by_tags(['foo,bar,baz']),
+                         [(set(['foo', 'bar', 'baz']), set([]))])
+
+    def test_must_must_not(self):
+        self.assertEqual(loader.parse_filter_by_tags(['foo,-bar,baz']),
+                         [(set(['foo', 'baz']), set(['bar']))])
+
+    def test_musts_must_nots(self):
+        self.assertEqual(loader.parse_filter_by_tags(['foo,bar,baz',
+                                                      '-FOO,-BAR,-BAZ']),
+                         [(set(['foo', 'bar', 'baz']), set([])),
+                          (set([]), set(['FOO', 'BAR', 'BAZ']))])
+
+
 if __name__ == '__main__':
     unittest.main()
