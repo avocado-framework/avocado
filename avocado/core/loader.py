@@ -63,6 +63,33 @@ class MissingTest(object):
     """
 
 
+def parse_filter_by_tags(filter_by_tags):
+    """
+    Parses the various filter by tags in "command line" format
+
+    The filtering of tests usually happens my means of "--filter-by-tags"
+    command line options, and many can be given.  This parses the contents
+    of those into a list of must/must_not pairs, which can be used directly
+    for comparisons when filtering.
+
+    :param filter_by_tags: params in the format given to "-t/--filter-by-tags"
+    :type filter_by_tags: list of str
+    :returns: list of tuples with (set, set)
+    """
+    result = []
+    for raw_tags in filter_by_tags:
+        required_tags = raw_tags.split(',')
+        must = set()
+        must_not = set()
+        for tag in required_tags:
+            if tag.startswith('-'):
+                must_not.add(tag[1:])
+            else:
+                must.add(tag)
+        result.append((must, must_not))
+    return result
+
+
 def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
     """
     Filter the existing (unfiltered) test suite based on tags
@@ -80,22 +107,16 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
     :type include_empty: bool
     """
     filtered = []
+    must_must_nots = parse_filter_by_tags(filter_by_tags)
+
     for klass, info in test_suite:
         test_tags = info.get('tags', {})
-        if not test_tags and include_empty:
-            filtered.append((klass, info))
+        if not test_tags:
+            if include_empty:
+                filtered.append((klass, info))
             continue
 
-        for raw_tags in filter_by_tags:
-            required_tags = raw_tags.split(',')
-            must = set()
-            must_not = set()
-            for tag in required_tags:
-                if tag.startswith('-'):
-                    must_not.add(tag[1:])
-                else:
-                    must.add(tag)
-
+        for must, must_not in must_must_nots:
             if must_not.intersection(test_tags):
                 continue
 

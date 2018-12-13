@@ -100,6 +100,10 @@ class SafeX86Test(Test):
     def test_safe_x86(self):
         pass
 
+class NoTagsTest(Test):
+    def test_no_tags(self):
+        pass
+
 if __name__ == "__main__":
     main()
 """
@@ -444,7 +448,7 @@ class TagFilter(unittest.TestCase):
                                                    loader.DiscoverMode.ALL)
 
     def test_no_tag_filter(self):
-        self.assertEqual(len(self.test_suite), 6)
+        self.assertEqual(len(self.test_suite), 7)
         self.assertEqual(self.test_suite[0][0], 'FastTest')
         self.assertEqual(self.test_suite[0][1]['methodName'], 'test_fast')
         self.assertEqual(self.test_suite[1][0], 'FastTest')
@@ -455,19 +459,48 @@ class TagFilter(unittest.TestCase):
         self.assertEqual(self.test_suite[3][1]['methodName'], 'test_slow_unsafe')
         self.assertEqual(self.test_suite[4][0], 'SafeTest')
         self.assertEqual(self.test_suite[4][1]['methodName'], 'test_safe')
+        self.assertEqual(self.test_suite[5][0], 'SafeX86Test')
+        self.assertEqual(self.test_suite[5][1]['methodName'], 'test_safe_x86')
+        self.assertEqual(self.test_suite[6][0], 'NoTagsTest')
+        self.assertEqual(self.test_suite[6][1]['methodName'], 'test_no_tags')
 
     def test_filter_fast_net(self):
-        filtered = loader.filter_test_tags(self.test_suite, ['fast,net'])
+        filtered = loader.filter_test_tags(self.test_suite, ['fast,net'], False)
         self.assertEqual(len(filtered), 2)
         self.assertEqual(filtered[0][0], 'FastTest')
         self.assertEqual(filtered[0][1]['methodName'], 'test_fast')
         self.assertEqual(filtered[1][0], 'FastTest')
         self.assertEqual(filtered[1][1]['methodName'], 'test_fast_other')
 
+    def test_filter_fast_net_include_empty(self):
+        filtered = loader.filter_test_tags(self.test_suite, ['fast,net'], True)
+        self.assertEqual(len(filtered), 3)
+        self.assertEqual(filtered[0][0], 'FastTest')
+        self.assertEqual(filtered[0][1]['methodName'], 'test_fast')
+        self.assertEqual(filtered[1][0], 'FastTest')
+        self.assertEqual(filtered[1][1]['methodName'], 'test_fast_other')
+        self.assertEqual(filtered[2][0], 'NoTagsTest')
+        self.assertEqual(filtered[2][1]['methodName'], 'test_no_tags')
+
+    def test_filter_arch(self):
+        filtered = loader.filter_test_tags(self.test_suite, ['arch'], False)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0][0], 'SafeX86Test')
+        self.assertEqual(filtered[0][1]['methodName'], 'test_safe_x86')
+
+    def test_filter_arch_include_empty(self):
+        filtered = loader.filter_test_tags(self.test_suite, ['arch'], True)
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered[0][0], 'SafeX86Test')
+        self.assertEqual(filtered[0][1]['methodName'], 'test_safe_x86')
+        self.assertEqual(filtered[1][0], 'NoTagsTest')
+        self.assertEqual(filtered[1][1]['methodName'], 'test_no_tags')
+
     def test_filter_fast_net__slow_disk_unsafe(self):
         filtered = loader.filter_test_tags(self.test_suite,
                                            ['fast,net',
-                                            'slow,disk,unsafe'])
+                                            'slow,disk,unsafe'],
+                                           False)
         self.assertEqual(len(filtered), 3)
         self.assertEqual(filtered[0][0], 'FastTest')
         self.assertEqual(filtered[0][1]['methodName'], 'test_fast')
@@ -479,7 +512,8 @@ class TagFilter(unittest.TestCase):
     def test_filter_fast_net__slow_disk(self):
         filtered = loader.filter_test_tags(self.test_suite,
                                            ['fast,net',
-                                            'slow,disk'])
+                                            'slow,disk'],
+                                           False)
         self.assertEqual(len(filtered), 4)
         self.assertEqual(filtered[0][0], 'FastTest')
         self.assertEqual(filtered[0][1]['methodName'], 'test_fast')
@@ -492,32 +526,52 @@ class TagFilter(unittest.TestCase):
 
     def test_filter_not_fast_not_slow(self):
         filtered = loader.filter_test_tags(self.test_suite,
-                                           ['-fast,-slow'])
+                                           ['-fast,-slow'],
+                                           False)
         self.assertEqual(len(filtered), 2)
         self.assertEqual(filtered[0][0], 'SafeTest')
         self.assertEqual(filtered[0][1]['methodName'], 'test_safe')
+        self.assertEqual(filtered[1][0], 'SafeX86Test')
+        self.assertEqual(filtered[1][1]['methodName'], 'test_safe_x86')
+
+    def test_filter_not_fast_not_slow_include_empty(self):
+        filtered = loader.filter_test_tags(self.test_suite,
+                                           ['-fast,-slow'],
+                                           True)
+        self.assertEqual(len(filtered), 3)
+        self.assertEqual(filtered[0][0], 'SafeTest')
+        self.assertEqual(filtered[0][1]['methodName'], 'test_safe')
+        self.assertEqual(filtered[1][0], 'SafeX86Test')
+        self.assertEqual(filtered[1][1]['methodName'], 'test_safe_x86')
+        self.assertEqual(filtered[2][0], 'NoTagsTest')
+        self.assertEqual(filtered[2][1]['methodName'], 'test_no_tags')
 
     def test_filter_not_fast_not_slow_not_safe(self):
         filtered = loader.filter_test_tags(self.test_suite,
-                                           ['-fast,-slow,-safe'])
+                                           ['-fast,-slow,-safe'],
+                                           False)
         self.assertEqual(len(filtered), 0)
 
     def test_filter_not_fast_not_slow_not_safe_others_dont_exist(self):
         filtered = loader.filter_test_tags(self.test_suite,
                                            ['-fast,-slow,-safe',
-                                            'does,not,exist'])
+                                            'does,not,exist'],
+                                           False)
         self.assertEqual(len(filtered), 0)
 
     def test_load_tags(self):
-        tags_map = {'FastTest.test_fast': {'fast': None, 'net': None},
-                    'FastTest.test_fast_other': {'fast': None, 'net': None},
-                    'SlowTest.test_slow': {'slow': None, 'disk': None},
-                    'SlowUnsafeTest.test_slow_unsafe': {'slow': None,
-                                                        'disk': None,
-                                                        'unsafe': None},
-                    'SafeTest.test_safe': {'safe': None},
-                    'SafeX86Test.test_safe_x86': {'safe': None,
-                                                  'arch': set(['x86_64'])}}
+        tags_map = {
+            'FastTest.test_fast': {'fast': None, 'net': None},
+            'FastTest.test_fast_other': {'fast': None, 'net': None},
+            'SlowTest.test_slow': {'slow': None, 'disk': None},
+            'SlowUnsafeTest.test_slow_unsafe': {'slow': None,
+                                                'disk': None,
+                                                'unsafe': None},
+            'SafeTest.test_safe': {'safe': None},
+            'SafeX86Test.test_safe_x86': {'safe': None,
+                                          'arch': set(['x86_64'])},
+            'NoTagsTest.test_no_tags': {}
+        }
 
         for _, info in self.test_suite:
             name = info['name'].split(':', 1)[1]
@@ -536,9 +590,26 @@ class TagFilter2(unittest.TestCase):
             this_loader = loader.FileLoader(None, {})
             test_suite = this_loader.discover(test_script.path,
                                               loader.DiscoverMode.ALL)
-            self.assertEqual([], loader.filter_test_tags(test_suite, []))
-            self.assertEqual(test_suite,
-                             loader.filter_test_tags(test_suite, [], True))
+        self.assertEqual([], loader.filter_test_tags(test_suite, [], False))
+        self.assertEqual(test_suite,
+                         loader.filter_test_tags(test_suite, [], True))
+
+
+class ParseFilterByTags(unittest.TestCase):
+
+    def test_must(self):
+        self.assertEqual(loader.parse_filter_by_tags(['foo,bar,baz']),
+                         [(set(['foo', 'bar', 'baz']), set([]))])
+
+    def test_must_must_not(self):
+        self.assertEqual(loader.parse_filter_by_tags(['foo,-bar,baz']),
+                         [(set(['foo', 'baz']), set(['bar']))])
+
+    def test_musts_must_nots(self):
+        self.assertEqual(loader.parse_filter_by_tags(['foo,bar,baz',
+                                                      '-FOO,-BAR,-BAZ']),
+                         [(set(['foo', 'bar', 'baz']), set([])),
+                          (set([]), set(['FOO', 'BAR', 'BAZ']))])
 
 
 if __name__ == '__main__':
