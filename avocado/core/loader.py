@@ -90,7 +90,41 @@ def parse_filter_by_tags(filter_by_tags):
     return result
 
 
-def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
+def must_split_flat_key_val(must):
+    """
+    Splits the flat and key:val tags apart
+
+    :returns: the flat set tags and the key:val tags
+    :rtype: tuple(set, dict)
+    """
+    key_val = {}
+    flat = set()
+    for i in must:
+        if ':' in i:
+            k, v = i.split(':', 1)
+            key_val[k] = v
+        else:
+            flat.add(i)
+    return flat, key_val
+
+
+def must_key_val_matches(must_key_vals, test_tags, include_empty_key):
+    """
+    Checks if the required key:vals are fulfilled by the test_tags
+
+    :rtype: bool
+    """
+    for k, v in must_key_vals.items():
+        if k in test_tags:
+            return v in test_tags[k]
+        else:
+            if include_empty_key:
+                return True
+    return False
+
+
+def filter_test_tags(test_suite, filter_by_tags, include_empty=False,
+                     include_empty_key=False):
     """
     Filter the existing (unfiltered) test suite based on tags
 
@@ -105,6 +139,9 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
     :type filter_by_tags: list of comma separated tags (['foo,bar', 'fast'])
     :param include_empty: if true tests without tags will not be filtered out
     :type include_empty: bool
+    :param include_empty_key: if true tests "keys" on key:val tags will be
+                              included in the filtered results
+    :type include_empty_key: bool
     """
     filtered = []
     must_must_nots = parse_filter_by_tags(filter_by_tags)
@@ -120,8 +157,15 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
             if must_not.intersection(test_tags):
                 continue
 
-            if must:
-                if not must.issubset(test_tags):
+            must_flat, must_key_val = must_split_flat_key_val(must)
+            if must_key_val:
+                if not must_key_val_matches(must_key_val,
+                                            test_tags,
+                                            include_empty_key):
+                    continue
+
+            if must_flat:
+                if not must_flat.issubset(test_tags):
                     continue
 
             filtered.append((klass, info))

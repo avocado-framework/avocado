@@ -318,7 +318,8 @@ class Job(object):
                 suite = loader.filter_test_tags(
                     suite,
                     self.args.filter_by_tags,
-                    self.args.filter_by_tags_include_empty)
+                    self.args.filter_by_tags_include_empty,
+                    self.args.filter_by_tags_include_empty_key)
         except loader.LoaderUnhandledReferenceError as details:
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
