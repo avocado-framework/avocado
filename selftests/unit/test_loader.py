@@ -455,6 +455,8 @@ class TagFilter(unittest.TestCase):
         self.assertEqual(self.test_suite[3][1]['methodName'], 'test_slow_unsafe')
         self.assertEqual(self.test_suite[4][0], 'SafeTest')
         self.assertEqual(self.test_suite[4][1]['methodName'], 'test_safe')
+        self.assertEqual(self.test_suite[5][0], 'SafeX86Test')
+        self.assertEqual(self.test_suite[5][1]['methodName'], 'test_safe_x86')
 
     def test_filter_fast_net(self):
         filtered = loader.filter_test_tags(self.test_suite, ['fast,net'])
@@ -496,6 +498,8 @@ class TagFilter(unittest.TestCase):
         self.assertEqual(len(filtered), 2)
         self.assertEqual(filtered[0][0], 'SafeTest')
         self.assertEqual(filtered[0][1]['methodName'], 'test_safe')
+        self.assertEqual(filtered[1][0], 'SafeX86Test')
+        self.assertEqual(filtered[1][1]['methodName'], 'test_safe_x86')
 
     def test_filter_not_fast_not_slow_not_safe(self):
         filtered = loader.filter_test_tags(self.test_suite,
