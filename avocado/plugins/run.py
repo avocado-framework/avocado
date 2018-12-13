@@ -204,6 +204,13 @@ class Run(CLICmd):
                                      'filtering. This effectively means they '
                                      'will be kept in the test suite found '
                                      'previously to filtering.'))
+        filtering.add_argument('--filter-by-tags-include-empty-key',
+                               action='store_true', default=False,
+                               help=('Include all tests that do not have a '
+                                     'matching key in its key:val tags. This '
+                                     'effectively means those tests will be '
+                                     'kept in the test suite found previously '
+                                     'to filtering.'))
 
     def run(self, args):
         """

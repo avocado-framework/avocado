@@ -1570,6 +1570,63 @@ inclusion of tests without tags::
   INSTRUMENTED perf.py:Idle.test_idle
   INSTRUMENTED perf.py:Disk.test_device
 
+Using further categorization with keys and values
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+All the examples given so far are limited to "flat" tags.  Sometimes,
+it's helpful to categorize tests with extra context.  For instance, if
+you have tests that are sensitive to the platform endianess, you may
+way to categorize them by endianess, while at the same time,
+specifying the exact type of endianess that is required.
+
+Example::
+
+  class ByteOrder(Test):
+      def test_le(self):
+          """
+          :avocado: tags=endianess:little
+          """
+          ...
+
+      def test_be(self):
+          """
+          :avocado: tags=endianess:big
+          """
+          ...
+
+  class Generic(Test):
+      def test(self):
+          """
+          :avocado: tags=generic
+          """
+
+To list tests without any type of filtering would give you::
+
+  $ avocado list byteorder.py
+  INSTRUMENTED byteorder.py:ByteOrder.test_le
+  INSTRUMENTED byteorder.py:ByteOrder.test_be
+  INSTRUMENTED byteorder.py:Generic.test
+
+To list tests that are somehow related to endianess, you can use::
+
+  $ avocado list byteorder.py --filter-by-tags endianess
+  INSTRUMENTED byteorder.py:ByteOrder.test_le
+  INSTRUMENTED byteorder.py:ByteOrder.test_be
+
+And to be even more specific, you can use::
+
+  $ avocado list byteorder.py --filter-by-tags endianess:big
+  INSTRUMENTED byteorder.py:ByteOrder.test_be
+
+Now, suppose you intend to run tests on a little endian platform,
+but you'd still want to include tests that are generic enough to
+run on either little or big endian (but not tests that are specific
+to other types of endianess), you could use::
+
+  $ avocado list byteorder.py --filter-by-tags endianess:big --filter-by-tags-include-empty-key
+  INSTRUMENTED byteorder.py:ByteOrder.test_be
+  INSTRUMENTED byteorder.py:Generic.test
+
 Python :mod:`unittest` Compatibility Limitations And Caveats
 ============================================================
 
