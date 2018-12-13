@@ -576,9 +576,9 @@ class TagFilter2(unittest.TestCase):
             this_loader = loader.FileLoader(None, {})
             test_suite = this_loader.discover(test_script.path,
                                               loader.DiscoverMode.ALL)
-            self.assertEqual([], loader.filter_test_tags(test_suite, [], False))
-            self.assertEqual(test_suite,
-                             loader.filter_test_tags(test_suite, [], True))
+        self.assertEqual([], loader.filter_test_tags(test_suite, [], False))
+        self.assertEqual(test_suite,
+                         loader.filter_test_tags(test_suite, [], True))
 
 
 if __name__ == '__main__':
