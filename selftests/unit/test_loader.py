@@ -482,6 +482,20 @@ class TagFilter(unittest.TestCase):
         self.assertEqual(filtered[2][0], 'NoTagsTest')
         self.assertEqual(filtered[2][1]['methodName'], 'test_no_tags')
 
+    def test_filter_arch(self):
+        filtered = loader.filter_test_tags(self.test_suite, ['arch'], False)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0][0], 'SafeX86Test')
+        self.assertEqual(filtered[0][1]['methodName'], 'test_safe_x86')
+
+    def test_filter_arch_include_empty(self):
+        filtered = loader.filter_test_tags(self.test_suite, ['arch'], True)
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered[0][0], 'SafeX86Test')
+        self.assertEqual(filtered[0][1]['methodName'], 'test_safe_x86')
+        self.assertEqual(filtered[1][0], 'NoTagsTest')
+        self.assertEqual(filtered[1][1]['methodName'], 'test_no_tags')
+
     def test_filter_fast_net__slow_disk_unsafe(self):
         filtered = loader.filter_test_tags(self.test_suite,
                                            ['fast,net',
