@@ -1,2 +1,2 @@
-recursive-include avocado_result_html/resources *
+recursive-include avocado_result_html/templates *
 include VERSION
