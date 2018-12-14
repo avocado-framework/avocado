@@ -320,7 +320,7 @@ class Test(unittest.TestCase, TestData):
     timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, job=None, runner_queue=None):
+                 base_logdir=None, job=None, runner_queue=None, tags=None):
         """
         Initializes the test.
 
@@ -349,6 +349,7 @@ class Test(unittest.TestCase, TestData):
             self.__name = TestID(0, self.__class__.__name__)
 
         self.__job = job
+        self.__tags = tags
 
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
@@ -442,6 +443,13 @@ class Test(unittest.TestCase, TestData):
         The job this test is associated with
         """
         return self.__job
+
+    @property
+    def tags(self):
+        """
+        The tags associated with this test
+        """
+        return self.__tags
 
     @property
     def log(self):
