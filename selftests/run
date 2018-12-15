@@ -4,6 +4,7 @@
 __author__ = 'Lucas Meneghel Rodrigues <lmr@redhat.com>'
 
 import gc
+import logging
 import os
 import subprocess
 import sys
@@ -38,6 +39,12 @@ class MyResult(unittest.TextTestResult):
 
 
 if __name__ == '__main__':
+    # Some unittest require properly initialized Avocado loggers. Ideally
+    # we should set them within the unittests, but it's fairly complex to
+    # identify all places so let's do that here.
+    logging.getLogger('').handlers.append(logging.NullHandler())
+    logging.getLogger('avocado.test').handlers.append(logging.NullHandler())
+    logging.getLogger('avocado.app').handlers.append(logging.NullHandler())
     runner = unittest.TextTestRunner(failfast=not os.environ.get("SELF_CHECK_CONTINUOUS"),
                                      verbosity=1, resultclass=MyResult)
     result = runner.run(test_suite())
