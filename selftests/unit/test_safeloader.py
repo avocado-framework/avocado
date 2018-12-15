@@ -7,6 +7,11 @@ import unittest
 from avocado.core import safeloader
 from avocado.utils import script
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 KEEP_METHODS_ORDER = '''
 from avocado import Test

@@ -21,6 +21,11 @@ from avocado.core import job
 from avocado.core.result import Result
 from avocado.plugins import xunit
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 class ParseXMLError(Exception):
     pass

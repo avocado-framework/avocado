@@ -8,6 +8,12 @@ from avocado.core import test
 from avocado.core import loader
 from avocado.utils import script
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
+
 #: What is commonly known as "0664" or "u=rw,g=rw,o=r"
 DEFAULT_NON_EXEC_MODE = (stat.S_IRUSR | stat.S_IWUSR |
                          stat.S_IRGRP | stat.S_IWGRP |

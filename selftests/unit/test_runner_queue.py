@@ -11,6 +11,11 @@ from avocado.core.result import Result
 from avocado.core.runner import TestRunner
 from avocado.core.tree import TreeNode
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 class TestRunnerQueue(unittest.TestCase):
     """

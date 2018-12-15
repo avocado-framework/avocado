@@ -15,6 +15,11 @@ from avocado.utils import iso9660
 from avocado.utils import network
 from avocado.utils import data_factory
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 def has_iso_create_write():
     return iso9660.iso9660(os.devnull, ["create", "write"]) is not None

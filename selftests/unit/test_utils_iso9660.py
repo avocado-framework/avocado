@@ -14,6 +14,11 @@ except ImportError:
 
 from avocado.utils import iso9660, process
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 class Capabilities(unittest.TestCase):
 

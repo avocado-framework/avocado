@@ -6,6 +6,11 @@ import unittest
 from avocado.core import test
 from avocado.plugins import replay
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 class Replay(unittest.TestCase):
 

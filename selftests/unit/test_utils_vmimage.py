@@ -8,6 +8,11 @@ from six.moves.urllib.error import HTTPError
 
 from avocado.utils import vmimage
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 class VMImage(unittest.TestCase):
 

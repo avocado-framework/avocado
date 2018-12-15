@@ -10,6 +10,12 @@ except ImportError:
 from avocado.core import test, exceptions
 from avocado.utils import astring, script
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
+
 PASS_SCRIPT_CONTENTS = """#!/bin/sh
 true
 """

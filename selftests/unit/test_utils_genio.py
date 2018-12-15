@@ -4,6 +4,11 @@ import unittest
 
 from avocado.utils import genio
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 class TestGenio(unittest.TestCase):
     def test_check_pattern_in_directory(self):

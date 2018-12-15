@@ -19,6 +19,11 @@ from avocado.utils import path
 
 from six import string_types, PY2
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 def probe_binary(binary):
     try:
