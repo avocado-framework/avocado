@@ -47,7 +47,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 66.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -128,11 +128,12 @@ BuildRequires: libcdio
 BuildRequires: libvirt-python
 BuildRequires: perl-Test-Harness
 BuildRequires: psmisc
-BuildRequires: python2-netifaces
 %if 0%{?rhel}
 BuildRequires: PyYAML
+BuildRequires: python-netifaces
 %else
 BuildRequires: python2-yaml
+BuildRequires: python2-netifaces
 %endif
 %if %{with_python3}
 BuildRequires: python3-libvirt
@@ -980,6 +981,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Dec 17 2018 Cleber Rosa <cleber@redhat.com> - 66.0-3
+- Use proper name of Python netifaces module package on EL7
+
 * Mon Dec 10 2018 Cleber Rosa <cleber@redhat.com> - 66.0-2
 - Replaced pystache requirement for jinja2
 
