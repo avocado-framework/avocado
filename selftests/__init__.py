@@ -1,3 +1,4 @@
+import logging
 import os
 import pkg_resources
 import sys
@@ -50,6 +51,21 @@ def python_module_available(module_name):
         return True
     except pkg_resources.DistributionNotFound:
         return False
+
+
+def setup_avocado_loggers():
+    """
+    Setup avocado loggers to contain at least one logger
+
+    This is required for tests that directly utilize avocado.Test classes
+    because they require those loggers to be configured. Without this
+    it might (py2) result in infinite recursion while attempting to log
+    "No handlers could be found for logger ..." message.
+    """
+    for name in ('', 'avocado.test', 'avocado.app'):
+        logger = logging.getLogger(name)
+        if not logger.handlers:
+            logger.handlers.append(logging.NullHandler())
 
 
 #: The plugin module names and directories under optional_plugins

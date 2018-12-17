@@ -16,6 +16,11 @@ from avocado.core import job
 from avocado.core import test
 from avocado.utils import path as utils_path
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 class JobTest(unittest.TestCase):
 

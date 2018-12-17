@@ -6,6 +6,11 @@ import unittest
 from avocado.utils import asset
 from avocado.utils.filelock import FileLock
 
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
+
 
 class TestAsset(unittest.TestCase):
 

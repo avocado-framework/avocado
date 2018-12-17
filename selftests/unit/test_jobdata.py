@@ -6,6 +6,10 @@ from six import PY3
 from avocado.core import jobdata
 
 from .. import BASEDIR
+from .. import setup_avocado_loggers
+
+
+setup_avocado_loggers()
 
 
 class JobdataTest(unittest.TestCase):
