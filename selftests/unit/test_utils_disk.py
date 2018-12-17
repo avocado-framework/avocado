@@ -6,7 +6,7 @@ try:
 except ImportError:
     import mock
 
-
+from .. import recent_mock
 from avocado.utils import disk
 from avocado.utils import process
 
@@ -66,6 +66,8 @@ class Disk(unittest.TestCase):
                         return_value=mock_result):
             self.assertEqual(disk.get_disks(), ['/dev/vda'])
 
+    @unittest.skipUnless(recent_mock(),
+                         "mock library version cannot (easily) patch open()")
     def test_get_filesystems(self):
         expected_fs = ['dax', 'bpf', 'pipefs', 'hugetlbfs', 'devpts', 'ext3']
         open_mocked = mock.mock_open(read_data=PROC_FILESYSTEMS)
@@ -73,11 +75,15 @@ class Disk(unittest.TestCase):
             self.assertEqual(sorted(expected_fs),
                              sorted(disk.get_available_filesystems()))
 
+    @unittest.skipUnless(recent_mock(),
+                         "mock library version cannot (easily) patch open()")
     def test_get_filesystem_type_default_root(self):
         open_mocked = mock.mock_open(read_data=PROC_MOUNTS)
         with mock.patch(self.builtin_open, open_mocked):
             self.assertEqual('ext4', disk.get_filesystem_type())
 
+    @unittest.skipUnless(recent_mock(),
+                         "mock library version cannot (easily) patch open()")
     def test_get_filesystem_type(self):
         open_mocked = mock.mock_open(read_data=PROC_MOUNTS)
         with mock.patch(self.builtin_open, open_mocked):
