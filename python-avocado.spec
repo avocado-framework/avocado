@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     0db5599436154e7e8152762d803fbd80fe218ff4
+        %global commit     ce5b5ade31079742591b8bcb08c04f9aa64a80ac
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20181119
+        %global commit_date 20181217
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -46,8 +46,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 66.0
-Release: 3%{?gitrel}%{?dist}
+Version: 67.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -981,6 +981,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Dec 17 2018 Cleber Rosa <cleber@redhat.com> - 67.0-0
+- New release
+
 * Mon Dec 17 2018 Cleber Rosa <cleber@redhat.com> - 66.0-3
 - Use proper name of Python netifaces module package on EL7
 

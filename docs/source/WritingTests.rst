@@ -1570,6 +1570,8 @@ inclusion of tests without tags::
   INSTRUMENTED perf.py:Idle.test_idle
   INSTRUMENTED perf.py:Disk.test_device
 
+.. _tags_keyval:
+
 Using further categorization with keys and values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

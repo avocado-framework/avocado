@@ -1,0 +1,87 @@
+=====================
+67.0 A Beautiful Mind
+=====================
+
+The Avocado team is proud to present another release: Avocado version
+67.0, AKA "A Beautiful Mind", is now available!
+
+Release documentation: `Avocado 67.0
+<http://avocado-framework.readthedocs.io/en/67.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* The :mod:`avocado.utils.archive` module now supports the handling
+  of gzip files that are not compressed tarballs.
+
+* The xunit output now names the job after the Avocado job results
+  directory.  This should make the correlation of results displayed in
+  UIs such as Jenkins and the complete Avocado results much easier.
+
+* A number of improvements to the :mod:`avocado.utils.lv_utils` module
+  now allows users to choose if they want or not to use ramdisks, and
+  allows for a more concise experience when creating Thin Provisioning
+  LVs.
+
+* New utility function in the :mod:`avocado.utils.genio` that
+  allows for easy matching of patterns in files.  See
+  :func:`avocado.utils.is_pattern_in_file` for more information.
+
+* New utility functions are available to deal with filesystems, such
+  as :func:`avocado.utils.disk.get_available_filesystems` and
+  :func:`avocado.utils.disk.get_filesystem_type`.
+
+* The test filtering mechanism using tags now support "key:val"
+  assignments for further categorization.  See :ref:`tags_keyval` for
+  more details.
+
+* The :class:`Avocado Test class <avocado.core.test.Test>` now exposes
+  the :attr:`tags <avocado.core.test.Test.tags>` to the test.  The
+  test may use that information, for instance, to decide on default
+  behavior.
+
+* The :func:`avocado.utils.process.kill_process_tree` now supports
+  waiting a given timeout, and returns the PIDs of all process that
+  had signals delivered to.
+
+* The :func:`avocado.utils.network.is_port_free` utility function now
+  supports IPv6 in addition to IPv4, as well as UDP in addition to TCP.
+
+Bug Fixes
+=========
+
+* Fixed the lack of initialization of the logging system that would,
+  on some unittests, cause an infinity recursion.
+
+Internal Changes
+================
+
+* The template engine that powers the HTML report has been replaced,
+  and now jinja2 is being used and pystache has been dropped.  The
+  reason is the lack of activity in the pystache project, and lack of
+  Python 3.7 support.
+
+* A number of refactors and improvements on the selftests have
+  increased the number of test to the 650 mark.
+
+* The mechanism used to list selftests to be run is now the same
+  when running tests in serial or in parallel mode, and is exposed
+  in the ``selftests/list`` script.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/66.0...67.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=5ayCKc79U_g>`_.
