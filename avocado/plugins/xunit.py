@@ -173,7 +173,8 @@ class XUnitCLI(CLI):
             '--xunit-job-result', dest='xunit_job_result',
             choices=('on', 'off'), default='on',
             help=('Enables default xUnit result in the job results directory. '
-                  'File will be named "results.xml".'))
+                  'File will be named "results.xml". '
+                  'Defaults to on.'))
 
         run_subcommand_parser.output.add_argument(
             '--xunit-max-test-log-chars', metavar='SIZE',
