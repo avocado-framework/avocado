@@ -47,11 +47,15 @@ class XUnitResult(Result):
     def _get_attr(self, container, attrib):
         return self._escape_attr(container.get(attrib, self.UNKNOWN))
 
+    @staticmethod
+    def _format_time(time):
+        return "{:.3f}".format(float(time))
+
     def _create_testcase_element(self, document, state):
         testcase = document.createElement('testcase')
         testcase.setAttribute('classname', self._get_attr(state, 'class_name'))
         testcase.setAttribute('name', self._get_attr(state, 'name'))
-        testcase.setAttribute('time', self._get_attr(state, 'time_elapsed'))
+        testcase.setAttribute('time', self._format_time(self._get_attr(state, 'time_elapsed')))
         return testcase
 
     def _create_failure_or_error(self, document, test, element_type,
@@ -95,7 +99,7 @@ class XUnitResult(Result):
         testsuite.setAttribute('errors', self._escape_attr(result.errors + result.interrupted))
         testsuite.setAttribute('failures', self._escape_attr(result.failed))
         testsuite.setAttribute('skipped', self._escape_attr(result.skipped + result.cancelled))
-        testsuite.setAttribute('time', self._escape_attr(result.tests_total_time))
+        testsuite.setAttribute('time', self._escape_attr(self._format_time(result.tests_total_time)))
         testsuite.setAttribute('timestamp', self._escape_attr(datetime.datetime.now().isoformat()))
         document.appendChild(testsuite)
         for test in result.tests:

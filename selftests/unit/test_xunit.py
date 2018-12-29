@@ -58,7 +58,7 @@ class xUnitSucceedTest(unittest.TestCase):
                                     "job-2018-11-28T16.27-8fef221/job.log")
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
         self.test1._Test__status = 'PASS'
-        self.test1.time_elapsed = 1.23
+        self.test1.time_elapsed = 678.23689
 
     def tearDown(self):
         errs = []
@@ -88,8 +88,14 @@ class xUnitSucceedTest(unittest.TestCase):
         except Exception as details:
             raise ParseXMLError("Error parsing XML: '%s'.\nXML Contents:\n%s" % (details, xml))
         self.assertTrue(dom)
+
+        els = dom.getElementsByTagName('testsuite')
+        self.assertEqual(len(els), 1)
+        self.assertEqual(els[0].attributes['time'].value, '678.237')
+
         els = dom.getElementsByTagName('testcase')
         self.assertEqual(len(els), 1)
+        self.assertEqual(els[0].attributes['time'].value, '678.237')
 
         junit_xsd = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  os.path.pardir, ".data",
