@@ -641,7 +641,7 @@ class FileLoader(TestLoader):
             else:
                 reference = data_dir.get_test_dir()
         ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
-                         '__main__.py')
+                         '__main__.py', '.rst', '.md', '.txt')
 
         # Look for filename:test_method pattern
         subtests_filter = None
