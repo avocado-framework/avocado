@@ -674,15 +674,16 @@ class FileLoader(TestLoader):
         for dirpath, dirs, filenames in os.walk(reference, onerror=onerror):
             dirs.sort()
             for file_name in sorted(filenames):
-                if not file_name.startswith('.'):
-                    for suffix in ignore_suffix:
-                        if file_name.endswith(suffix):
-                            break
-                    else:
-                        pth = os.path.join(dirpath, file_name)
-                        tests.extend(self._make_tests(pth,
-                                                      which_tests == DiscoverMode.ALL,
-                                                      subtests_filter))
+                if file_name.startswith('.'):
+                    continue
+
+                if file_name.endswith(ignore_suffix):
+                    continue
+
+                pth = os.path.join(dirpath, file_name)
+                tests.extend(self._make_tests(pth,
+                                              which_tests == DiscoverMode.ALL,
+                                              subtests_filter))
         return tests
 
     def _find_python_unittests(self, test_path, disabled, subtests_filter):
