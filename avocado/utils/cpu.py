@@ -340,3 +340,27 @@ def get_cpufreq_governor():
     except IOError as err:
         logging.error("Unable to get the current governor\n %s", err)
         return ""
+
+
+def get_pid_cpus(pid):
+    """
+    Get all the cpus being used by the process according to pid informed
+
+    :param pid: process id
+    :type pid: string
+    :return: A list include all cpus the process is using
+    :rtype: list
+    """
+    processor_id_index = 38  # according proc documentation
+    cpus = set()
+    proc_stat_files = glob.glob('/proc/%s/task/[123456789]*/stat' % pid)
+
+    for proc_stat_file in proc_stat_files:
+        try:
+            with open(proc_stat_file) as proc_stat:
+                cpus.add(
+                    proc_stat.read().split(' ')[processor_id_index]
+                )
+        except IOError:
+            continue
+    return list(cpus)
