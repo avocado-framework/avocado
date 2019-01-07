@@ -768,7 +768,8 @@ class FileLoader(TestLoader):
                 raise  # Don't ignore ctrl+c
             else:
                 return self._make_simple_or_broken_test(test_path,
-                                                        subtests_filter)
+                                                        subtests_filter,
+                                                        make_broken)
 
     @staticmethod
     def _make_test(klass, uid, description=None, subtests_filter=None,

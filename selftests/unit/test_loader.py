@@ -4,6 +4,11 @@ import stat
 import tempfile
 import unittest
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
 from avocado.core import test
 from avocado.core import loader
 from avocado.utils import script
@@ -437,6 +442,14 @@ class LoaderTest(unittest.TestCase):
                 ('Test3', 'selftests/.data/loader_instrumented/double_import.py:Test3.test3'),
                 ('Test4', 'selftests/.data/loader_instrumented/double_import.py:Test4.test4')]
         self._check_discovery(exps, tests)
+
+    def test_list_raising_exception(self):
+        simple_test = script.TemporaryScript('simpletest.py', PY_SIMPLE_TEST)
+        simple_test.save()
+        with mock.patch('avocado.core.loader.safeloader.find_avocado_tests') as _mock:
+            _mock.side_effect = BaseException()
+            tests = self.loader.discover(simple_test.path)
+            self.assertEqual(tests[0][1]["name"], simple_test.path)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
