@@ -12,7 +12,8 @@ different test scenarios.
 .. note:: The publication by Ahmed, Bestoun S., Kamal Z. Zamli, and
           Chee Peng Lim, entitled `“Application of particle swarm
           optimization to uniform and variable strength covering array
-          construction” <http://booksc.org/book/13151468/aa9fc9>`__,
+          construction”
+          <https://www.sciencedirect.com/science/article/pii/S1568494611004716>`__,
           Applied Soft Computing, 12(4), 2012, pp. 1330-1347, contains
           the basis for the algorithm and implementation of this
           feature.
