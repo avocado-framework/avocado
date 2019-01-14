@@ -106,16 +106,17 @@ class Asset(object):
 
     def _get_relative_dir(self, parsed_url):
         """
-        When an asset has a name and a hash, there's a clear intention
-        for it to be unique *by name*, overwriting it if the file is
-        corrupted or expired.  These will be stored in the cache directory
-        indexed by name.
+        When an asset name is not an URL, and it also has a hash,
+        there's a clear intention for it to be unique *by name*,
+        overwriting it if the file is corrupted or expired.  These
+        will be stored in the cache directory indexed by name.
 
-        When an asset does not have a hash, they will be saved according
-        to their locations, so that multiple assets with the same file name,
-        but completely unrelated to each other, will still coexist.
+        When an asset name is an URL, wether it has a hash or not, it
+        will be saved according to their locations, so that multiple
+        assets with the same file name, but completely unrelated to
+        each other, will still coexist.
         """
-        if self.asset_hash:
+        if self.asset_hash and not parsed_url.scheme:
             return 'by_name'
         base_url = "%s://%s/%s" % (parsed_url.scheme,
                                    parsed_url.netloc,
