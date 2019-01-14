@@ -139,13 +139,14 @@ class PathInspector(object):
         return self.is_script(language='python')
 
 
-def usable_rw_dir(directory):
+def usable_rw_dir(directory, create=True):
     """
     Verify whether we can use this dir (read/write).
 
     Checks for appropriate permissions, and creates missing dirs as needed.
 
     :param directory: Directory
+    :param create: wether to create the directory
     """
     if os.path.isdir(directory):
         try:
@@ -157,15 +158,16 @@ def usable_rw_dir(directory):
             pass
     else:
         try:
-            init_dir(directory)
-            return True
+            if create:
+                init_dir(directory)
+                return True
         except OSError:
             pass
 
     return False
 
 
-def usable_ro_dir(directory):
+def usable_ro_dir(directory, create=True):
     """
     Verify whether dir exists and we can access its contents.
 
@@ -173,6 +175,7 @@ def usable_ro_dir(directory):
     least try to create one.
 
     :param directory: Directory
+    :param create: wether to create the directory
     """
     cwd = os.getcwd()
     if os.path.isdir(directory):
@@ -184,8 +187,9 @@ def usable_ro_dir(directory):
             pass
     else:
         try:
-            init_dir(directory)
-            return True
+            if create:
+                init_dir(directory)
+                return True
         except OSError:
             pass
 
