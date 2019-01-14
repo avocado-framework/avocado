@@ -171,6 +171,7 @@ class Asset(object):
             for item in self.locations:
                 urls.append(item)
 
+        cache_relative_dir = self._get_relative_dir(parsed_url)
         for url in urls:
             urlobj = urlparse.urlparse(url)
             if urlobj.scheme in ['http', 'https', 'ftp']:
@@ -180,7 +181,6 @@ class Asset(object):
             else:
                 raise UnsupportedProtocolError("Unsupported protocol"
                                                ": %s" % urlobj.scheme)
-            cache_relative_dir = self._get_relative_dir(urlobj)
             asset_file = os.path.join(cache_dir, cache_relative_dir, basename)
             dirname = os.path.dirname(asset_file)
             if not os.path.isdir(dirname):
