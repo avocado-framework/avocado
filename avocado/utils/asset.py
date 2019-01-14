@@ -65,7 +65,7 @@ class Asset(object):
         :param name: the asset filename. url is also supported
         :param asset_hash: asset hash
         :param algorithm: hash algorithm
-        :param locations: list of locations fetch asset from
+        :param locations: list of locations where the asset can be fetched from
         :param cache_dirs: list of cache directories
         :param expire: time in seconds for the asset to expire
         """
