@@ -567,3 +567,21 @@ From this example you can see that querying for ``/env/debug`` works only in
 the first variant, but returns nothing in the second variant. Keep this in mind
 and when you use the ``!mux`` flag always query for the pre-mux path,
 ``/env/*`` in this example.
+
+
+Injecting values
+----------------
+
+Beyond the values injected by YAML files specified it's also possible
+inject values directly from command line to the final multiplex tree.
+It's done by the argument  ``--mux-inject``. The format of expected
+value is ``[path:]key:node_value``.
+
+.. warning:: When no path is specified to ``--mux-inject`` the parameter
+   is added under tree root ``/``. For example: running avocado passing
+   ``--mux-inject my_key:my_value`` the parameter can be accessed calling
+   ``self.prams.get('my_key')``. If the test writer wants to put the injected
+   value in any other path location, like extending the ``/run`` path, it needs
+   to be informed on avocado run call.  For example: ``--mux-inject
+   /run/:my_key:my_value`` makes possible to access the parameters
+   calling ``self.params.get('my_key', '/run')``
