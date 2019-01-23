@@ -129,10 +129,9 @@ def read_from_meminfo(key):
 
     :param key: Key name, such as ``MemTotal``.
     """
-    cmd_result = process.run('grep %s /proc/meminfo' % key, verbose=False)
-    # Get text mode result for compatibility.
-    meminfo_result = cmd_result.stdout_text
-    return int(re.search(r'\d+', meminfo_result).group(0))
+    for line in genio.read_file("/proc/meminfo").splitlines():
+        if key in line:
+            return int(re.search(r"(\d+)\s*(?:kB)?$", line).group(1))
 
 
 def memtotal():
