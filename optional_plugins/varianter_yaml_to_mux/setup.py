@@ -13,7 +13,16 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Cleber Rosa <crosa@redhat.com>
 
+import sys
 from setuptools import setup, find_packages
+
+
+INSTALL_REQUIREMENTS = ['avocado-framework']
+
+if sys.version_info[0] == 2:
+    INSTALL_REQUIREMENTS.append('PyYAML>=3.10')
+else:
+    INSTALL_REQUIREMENTS.append('PyYAML>=4.2b2')
 
 
 setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
@@ -24,8 +33,7 @@ setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
       url='http://avocado-framework.github.io/',
       packages=find_packages(exclude=('tests*',)),
       include_package_data=True,
-      install_requires=['avocado-framework',
-                        'PyYAML>=3.10,!=4.0,!=4.1,!=4.2b1'],
+      install_requires=INSTALL_REQUIREMENTS,
       test_suite='tests',
       entry_points={
           "avocado.plugins.cli": [
