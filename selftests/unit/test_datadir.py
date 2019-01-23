@@ -24,8 +24,10 @@ class DataDirTest(unittest.TestCase):
         a the path to a configuration file contain those same settings
         """
         base_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        test_dir = os.path.join(base_dir, 'tests')
+        os.mkdir(test_dir)
         mapping = {'base_dir': base_dir,
-                   'test_dir': os.path.join(base_dir, 'tests'),
+                   'test_dir': test_dir,
                    'data_dir': os.path.join(base_dir, 'data'),
                    'logs_dir': os.path.join(base_dir, 'logs')}
         temp_settings = ('[datadir.paths]\n'
