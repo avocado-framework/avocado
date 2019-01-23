@@ -27,6 +27,10 @@ from robot import run
 from robot.errors import DataError
 from robot.parsing.model import TestData
 from robot.model import SuiteNamePatterns
+from robot.output.logger import LOGGER
+
+
+LOGGER.unregister_console_logger()
 
 
 class RobotTest(test.SimpleTest):
