@@ -65,7 +65,7 @@ class Asset(object):
         :param name: the asset filename. url is also supported
         :param asset_hash: asset hash
         :param algorithm: hash algorithm
-        :param locations: list of locations fetch asset from
+        :param locations: list of locations where the asset can be fetched from
         :param cache_dirs: list of cache directories
         :param expire: time in seconds for the asset to expire
         """
@@ -106,16 +106,17 @@ class Asset(object):
 
     def _get_relative_dir(self, parsed_url):
         """
-        When an asset has a name and a hash, there's a clear intention
-        for it to be unique *by name*, overwriting it if the file is
-        corrupted or expired.  These will be stored in the cache directory
-        indexed by name.
+        When an asset name is not an URL, and it also has a hash,
+        there's a clear intention for it to be unique *by name*,
+        overwriting it if the file is corrupted or expired.  These
+        will be stored in the cache directory indexed by name.
 
-        When an asset does not have a hash, they will be saved according
-        to their locations, so that multiple assets with the same file name,
-        but completely unrelated to each other, will still coexist.
+        When an asset name is an URL, wether it has a hash or not, it
+        will be saved according to their locations, so that multiple
+        assets with the same file name, but completely unrelated to
+        each other, will still coexist.
         """
-        if self.asset_hash:
+        if self.asset_hash and not parsed_url.scheme:
             return 'by_name'
         base_url = "%s://%s/%s" % (parsed_url.scheme,
                                    parsed_url.netloc,
@@ -171,6 +172,7 @@ class Asset(object):
             for item in self.locations:
                 urls.append(item)
 
+        cache_relative_dir = self._get_relative_dir(parsed_url)
         for url in urls:
             urlobj = urlparse.urlparse(url)
             if urlobj.scheme in ['http', 'https', 'ftp']:
@@ -180,7 +182,6 @@ class Asset(object):
             else:
                 raise UnsupportedProtocolError("Unsupported protocol"
                                                ": %s" % urlobj.scheme)
-            cache_relative_dir = self._get_relative_dir(urlobj)
             asset_file = os.path.join(cache_dir, cache_relative_dir, basename)
             dirname = os.path.dirname(asset_file)
             if not os.path.isdir(dirname):

@@ -25,27 +25,27 @@ class TestAsset(unittest.TestCase):
         self.url = 'file://%s' % self.localpath
         self.cache_dir = tempfile.mkdtemp(dir=self.basedir)
 
-    def test_fetch_urlname(self):
+    def test_fetch_url_cache_by_location(self):
         foo_tarball = asset.Asset(self.url,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=None,
                                   cache_dirs=[self.cache_dir],
                                   expire=None).fetch()
-        expected_tarball = os.path.join(self.cache_dir, 'by_name',
-                                        self.assetname)
-        self.assertEqual(foo_tarball, expected_tarball)
+        expected_location = os.path.join(self.cache_dir, 'by_location')
+        self.assertTrue(foo_tarball.startswith(expected_location))
+        self.assertTrue(foo_tarball.endswith(self.assetname))
 
-    def test_fetch_location(self):
+    def test_fetch_name_cache_by_name(self):
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=[self.url],
                                   cache_dirs=[self.cache_dir],
                                   expire=None).fetch()
-        expected_tarball = os.path.join(self.cache_dir, 'by_name',
-                                        self.assetname)
-        self.assertEqual(foo_tarball, expected_tarball)
+        expected_location = os.path.join(self.cache_dir, 'by_name',
+                                         self.assetname)
+        self.assertEqual(foo_tarball, expected_location)
 
     def test_fetch_expire(self):
         foo_tarball = asset.Asset(self.assetname,
@@ -98,7 +98,7 @@ class TestAsset(unittest.TestCase):
         dirname = os.path.join(self.cache_dir, 'by_name')
         os.makedirs(dirname)
         with FileLock(os.path.join(dirname, self.assetname)):
-            a = asset.Asset(self.url,
+            a = asset.Asset(self.assetname,
                             asset_hash=self.assethash,
                             algorithm='sha1',
                             locations=None,
