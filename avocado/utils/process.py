@@ -812,9 +812,16 @@ class SubProcess(object):
         """
         Call the subprocess poll() method, fill results if rc is not None.
         """
-        def timeout_handler():
-            self.send_signal(sig)
+        def nuke_myself():
             self.result.interrupted = "timeout after %ss" % timeout
+            try:
+                kill_process_tree(self.get_pid(), sig, timeout=1)
+            except Exception:
+                try:
+                    kill_process_tree(self.get_pid(), signal.SIGKILL,
+                                      timeout=1)
+                except Exception:
+                    pass
 
         self._init_subprocess()
         rc = None
@@ -822,7 +829,7 @@ class SubProcess(object):
         if timeout is None:
             rc = self._popen.wait()
         elif timeout > 0.0:
-            timer = threading.Timer(timeout, timeout_handler)
+            timer = threading.Timer(timeout, nuke_myself)
             try:
                 timer.start()
                 rc = self._popen.wait()
@@ -836,7 +843,7 @@ class SubProcess(object):
                 if rc is not None:
                     break
             else:
-                self.kill()
+                nuke_myself()
                 rc = self._popen.poll()
 
         if rc is None:

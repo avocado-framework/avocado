@@ -4,6 +4,7 @@ import os
 import shlex
 import unittest
 import sys
+import time
 
 try:
     from unittest import mock
@@ -12,7 +13,7 @@ except ImportError:
 
 
 from .. import recent_mock
-from avocado.utils import astring
+from avocado.utils import astring, script
 from avocado.utils import gdb
 from avocado.utils import process
 from avocado.utils import path
@@ -34,6 +35,20 @@ def probe_binary(binary):
 
 ECHO_CMD = probe_binary('echo')
 FICTIONAL_CMD = '/usr/bin/fictional_cmd'
+
+REFUSE_TO_DIE = """import signal
+import time
+
+for sig in range(64):
+    try:
+        signal.signal(sig, signal.SIG_IGN)
+    except:
+        pass
+
+end = time.time() + 120
+
+while time.time() < end:
+    time.sleep(1)"""
 
 
 class TestSubProcess(unittest.TestCase):
@@ -320,6 +335,36 @@ class TestProcessRun(unittest.TestCase):
         result = process.run(cmd, encoding='utf-8')
         self.assertEqual(result.stdout, encoded_text)
         self.assertEqual(result.stdout_text, text)
+
+    def test_run_with_timeout_ugly_cmd(self):
+        content = (REFUSE_TO_DIE)
+        with script.TemporaryScript("refuse_to_die", content) as exe:
+            cmd = "%s '%s'" % (sys.executable, exe.path)
+            # Wait 1s to set the traps
+            res = process.run(cmd, timeout=1, ignore_status=True)
+            self.assertLess(res.duration, 100, "Took longer than expected, "
+                            "process probably not interrupted by Avocado.\n%s"
+                            % res)
+            self.assertNotEqual(res.exit_status, 0, "Command finished without "
+                                "reporting failure but should be killed.\n%s"
+                                % res)
+
+    def test_run_with_negative_timeout_ugly_cmd(self):
+        content = (REFUSE_TO_DIE)
+        with script.TemporaryScript("refuse_to_die", content) as exe:
+            cmd = "%s '%s'" % (sys.executable, exe.path)
+            # Wait 1s to set the traps
+            proc = process.SubProcess(cmd)
+            proc.start()
+            time.sleep(1)
+            proc.wait(-1)
+            res = proc.result
+            self.assertLess(res.duration, 100, "Took longer than expected, "
+                            "process probably not interrupted by Avocado.\n%s"
+                            % res)
+            self.assertNotEqual(res.exit_status, 0, "Command finished without "
+                                "reporting failure but should be killed.\n%s"
+                                % res)
 
 
 class MiscProcessTests(unittest.TestCase):
