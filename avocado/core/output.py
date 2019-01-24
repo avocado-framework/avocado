@@ -711,6 +711,9 @@ def log_plugin_failures(failures):
     for failure in failures:
         if failure[0].module_name in silenced:
             continue
+        if hasattr(failure[1], "__traceback__"):
+            str_tb = ''.join(traceback.format_tb(failure[1].__traceback__))
+        else:
+            str_tb = "Traceback not available"
         LOG_UI.error(msg_fmt, failure[0].module_name,
-                     failure[1].__repr__(),
-                     ''.join(traceback.format_tb(failure[1].__traceback__)))
+                     failure[1].__repr__(), str_tb)
