@@ -814,15 +814,29 @@ class SubProcess(object):
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
-                        and get a status. When the process refuses to die
-                        within 1s we send SIGKILL to it and report the
-                        status (be it exit_code or zombie)
+                        and it's children using ``sig`` and get a
+                        status. When the process refuses to die
+                        within 1s we use SIGKILL and report the status
+                        (be it exit_code or zombie)
         :param sig: Signal to send to the process in case it did not end after
                     the specified timeout.
         """
-        def timeout_handler():
-            self.send_signal(sig)
+        def nuke_myself():
             self.result.interrupted = "timeout after %ss" % timeout
+            try:
+                kill_process_tree(self.get_pid(), sig, timeout=1)
+            except Exception:
+                try:
+                    kill_process_tree(self.get_pid(), signal.SIGKILL,
+                                      timeout=1)
+                    log.warning("Process '%s' refused to die in 1s after "
+                                "sending %s to, destroyed it successfully "
+                                "using SIGKILL.", self.cmd, sig)
+                except Exception:
+                    log.error("Process '%s' refused to die in 1s after "
+                              "sending %s, followed by SIGKILL, probably "
+                              "dealing with a zombie process.", self.cmd,
+                              sig)
 
         self._init_subprocess()
         rc = None
@@ -830,7 +844,7 @@ class SubProcess(object):
         if timeout is None:
             rc = self._popen.wait()
         elif timeout > 0.0:
-            timer = threading.Timer(timeout, timeout_handler)
+            timer = threading.Timer(timeout, nuke_myself)
             try:
                 timer.start()
                 rc = self._popen.wait()
@@ -844,7 +858,7 @@ class SubProcess(object):
                 if rc is not None:
                     break
             else:
-                self.kill()
+                nuke_myself()
                 rc = self._popen.poll()
 
         if rc is None:
@@ -895,9 +909,10 @@ class SubProcess(object):
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
-                        and get a status. When the process refuses to die
-                        within 1s we send SIGKILL to it and report the
-                        status (be it exit_code or zombie)
+                        and it's children using ``sig`` and get a
+                        status. When the process refuses to die
+                        within 1s we use SIGKILL and report the status
+                        (be it exit_code or zombie)
         :type timeout: float
         :param sig: Signal to send to the process in case it did not end after
                     the specified timeout.
