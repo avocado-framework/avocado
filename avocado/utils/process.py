@@ -808,14 +808,41 @@ class SubProcess(object):
             self._fill_results(rc)
         return rc
 
-    def wait(self):
+    def wait(self, timeout=None, sig=signal.SIGTERM):
         """
         Call the subprocess poll() method, fill results if rc is not None.
         """
+        def timeout_handler():
+            self.send_signal(sig)
+            self.result.interrupted = "timeout after %ss" % timeout
+
         self._init_subprocess()
-        rc = self._popen.wait()
-        if rc is not None:
-            self._fill_results(rc)
+        rc = None
+
+        if timeout is None:
+            rc = self._popen.wait()
+        elif timeout > 0.0:
+            timer = threading.Timer(timeout, timeout_handler)
+            try:
+                timer.start()
+                rc = self._popen.wait()
+            finally:
+                timer.cancel()
+
+        if rc is None:
+            stop_time = time.time() + 1
+            while time.time() < stop_time:
+                rc = self._popen.wait()
+                if rc is not None:
+                    break
+            else:
+                self.kill()
+                rc = self._popen.wait()
+
+        if rc is None:
+            # If all this work fails, we're dealing with a zombie process.
+            raise AssertionError('Zombie Process %s' % self._popen.pid)
+        self._fill_results(rc)
         return rc
 
     def stop(self):
@@ -868,36 +895,8 @@ class SubProcess(object):
         :returns: The command result object.
         :rtype: A :class:`CmdResult` instance.
         """
-        def timeout_handler():
-            self.send_signal(sig)
-            self.result.interrupted = "timeout after %ss" % timeout
-
         self._init_subprocess()
-
-        if timeout is None:
-            self.wait()
-        elif timeout > 0.0:
-            timer = threading.Timer(timeout, timeout_handler)
-            try:
-                timer.start()
-                self.wait()
-            finally:
-                timer.cancel()
-
-        if self.result.exit_status is None:
-            stop_time = time.time() + 1
-            while time.time() < stop_time:
-                self.poll()
-                if self.result.exit_status is not None:
-                    break
-            else:
-                self.kill()
-                self.poll()
-
-        # If all this work fails, we're dealing with a zombie process.
-        e_msg = 'Zombie Process %s' % self._popen.pid
-        assert self.result.exit_status is not None, e_msg
-
+        self.wait(timeout, sig)
         return self.result
 
 
