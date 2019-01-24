@@ -822,7 +822,8 @@ class SubProcess(object):
                     the specified timeout.
         """
         def nuke_myself():
-            self.result.interrupted = "timeout after %ss" % timeout
+            self.result.interrupted = ("timeout after %ss"
+                                       % (time.time() - self.start_time))
             try:
                 kill_process_tree(self.get_pid(), sig, timeout=1)
             except Exception:
