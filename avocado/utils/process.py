@@ -814,7 +814,9 @@ class SubProcess(object):
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
-                        and get a status.
+                        and get a status. When the process refuses to die
+                        within 1s we send SIGKILL to it and report the
+                        status (be it exit_code or zombie)
         :param sig: Signal to send to the process in case it did not end after
                     the specified timeout.
         """
@@ -838,12 +840,12 @@ class SubProcess(object):
         if rc is None:
             stop_time = time.time() + 1
             while time.time() < stop_time:
-                rc = self._popen.wait()
+                rc = self._popen.poll()
                 if rc is not None:
                     break
             else:
                 self.kill()
-                rc = self._popen.wait()
+                rc = self._popen.poll()
 
         if rc is None:
             # If all this work fails, we're dealing with a zombie process.
@@ -893,7 +895,9 @@ class SubProcess(object):
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
-                        and get a status.
+                        and get a status. When the process refuses to die
+                        within 1s we send SIGKILL to it and report the
+                        status (be it exit_code or zombie)
         :type timeout: float
         :param sig: Signal to send to the process in case it did not end after
                     the specified timeout.
