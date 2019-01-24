@@ -832,12 +832,12 @@ class SubProcess(object):
         if rc is None:
             stop_time = time.time() + 1
             while time.time() < stop_time:
-                rc = self._popen.wait()
+                rc = self._popen.poll()
                 if rc is not None:
                     break
             else:
                 self.kill()
-                rc = self._popen.wait()
+                rc = self._popen.poll()
 
         if rc is None:
             # If all this work fails, we're dealing with a zombie process.
