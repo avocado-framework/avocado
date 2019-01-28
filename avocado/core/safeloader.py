@@ -33,13 +33,11 @@ class AvocadoModule(object):
     __slots__ = 'path', 'test_imports', 'mod_imports', 'mod'
 
     def __init__(self, path):
-        self.path = path
         self.test_imports = set()
         self.mod_imports = set()
         if os.path.isdir(path):
-            self.path = os.path.join(path, "__init__.py")
-        else:
-            self.path = path
+            path = os.path.join(path, "__init__.py")
+        self.path = path
         with open(self.path) as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
 
