@@ -47,6 +47,41 @@ class AvocadoModule(object):
         with open(self.path) as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
 
+    def is_avocado_test(self, klass):
+        """
+        Detect whether given class directly defines itself as avocado.Test
+
+        It can either be a klass that inherits from a Test "symbol", like:
+
+        ```class FooTest(Test)```
+
+        Or from an avocado.Test symbol, like in:
+
+        ```class FooTest(avocado.Test)```
+
+        :type klass: :class:`_ast.ClassDef`
+        :rtype: bool
+        """
+        # Is it inherited from Test? 'class FooTest(Test):'
+        if self.test_imports:
+            base_ids = [base.id for base in klass.bases
+                        if isinstance(base, ast.Name)]
+            # Looking for a 'class FooTest(Test):'
+            if not self.test_imports.isdisjoint(base_ids):
+                return True
+
+        # Is it inherited from avocado.Test? 'class FooTest(avocado.Test):'
+        if self.mod_imports:
+            for base in klass.bases:
+                if not isinstance(base, ast.Attribute):
+                    # Check only 'module.Class' bases
+                    continue
+                cls_module = base.value.id
+                cls_name = base.attr
+                if cls_module in self.mod_imports and cls_name == 'Test':
+                    return True
+        return False
+
     def add_imported_object(self, statement):
         """
         Keeps track of objects names and importable entities
