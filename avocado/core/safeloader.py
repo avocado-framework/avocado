@@ -30,7 +30,7 @@ class AvocadoModule(object):
     """
     Representation of a module that might contain avocado.Test tests
     """
-    __slots__ = 'path', 'test_imports', 'mod_imports', 'mod'
+    __slots__ = 'path', 'test_imports', 'mod_imports', 'mod', 'imported_objects'
 
     def __init__(self, path):
         self.test_imports = set()
@@ -38,8 +38,29 @@ class AvocadoModule(object):
         if os.path.isdir(path):
             path = os.path.join(path, "__init__.py")
         self.path = path
+        # A dict that keeps track of objects names and importable entities
+        #   key => object name from this module point of view
+        #   value => Something-like a directory path to the import.
+        #            Basically a $path/$module/$variable string, but depending
+        #            on the type of import, it can be also be $path/$module.
+        self.imported_objects = {}
         with open(self.path) as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
+
+    def add_imported_object(self, statement):
+        """
+        Keeps track of objects names and importable entities
+        """
+        path = os.path.abspath(os.path.dirname(self.path))
+        if hasattr(statement, 'module'):
+            module_path = statement.module.replace('.', os.path.sep)
+            path = os.path.join(path, module_path)
+        for name in statement.names:
+            path = os.path.join(path, name.name.replace('.', os.path.sep))
+            if name.asname is None:
+                self.imported_objects[name.name] = path
+            else:
+                self.imported_objects[name.asname] = path
 
     def iter_classes(self):
         """
@@ -47,19 +68,20 @@ class AvocadoModule(object):
         """
         for statement in self.mod.body:
             # Looking for a 'from avocado import Test'
-            if (isinstance(statement, ast.ImportFrom) and
-                    statement.module == 'avocado'):
-
-                for name in statement.names:
-                    if name.name == 'Test':
-                        if name.asname is not None:
-                            self.test_imports.add(name.asname)
-                        else:
-                            self.test_imports.add(name.name)
-                        break
+            if isinstance(statement, ast.ImportFrom):
+                self.add_imported_object(statement)
+                if statement.module == 'avocado':
+                    for name in statement.names:
+                        if name.name == 'Test':
+                            if name.asname is not None:
+                                self.test_imports.add(name.asname)
+                            else:
+                                self.test_imports.add(name.name)
+                            break
 
             # Looking for a 'import avocado'
             elif isinstance(statement, ast.Import):
+                self.add_imported_object(statement)
                 imp_name = statement_import_as(statement).get('avocado', None)
                 if imp_name is not None:
                     self.mod_imports.add(imp_name)
