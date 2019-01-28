@@ -254,6 +254,10 @@ class FindClassAndMethods(UnlimitedDiff):
 
     def test_self(self):
         reference = {
+            'AvocadoModule': ['setUp',
+                              'test_add_imported_empty',
+                              'test_add_imported_object_from_module',
+                              'test_add_imported_object_from_module_asname'],
             'ModuleImportedAs': ['_test',
                                  'test_foo',
                                  'test_foo_as_bar',
@@ -290,6 +294,9 @@ class FindClassAndMethods(UnlimitedDiff):
 
     def test_with_pattern(self):
         reference = {
+            'AvocadoModule': ['test_add_imported_empty',
+                              'test_add_imported_object_from_module',
+                              'test_add_imported_object_from_module_asname'],
             'ModuleImportedAs': ['test_foo',
                                  'test_foo_as_bar',
                                  'test_foo_as_foo',
@@ -376,6 +383,30 @@ class FindClassAndMethods(UnlimitedDiff):
                                    ('test_first_child', {}),
                                    ('test_basic', {})]}
         self.assertEqual(expected, tests)
+
+
+class AvocadoModule(unittest.TestCase):
+
+    def setUp(self):
+        self.path = os.path.abspath(os.path.dirname(get_this_file()))
+        self.module = safeloader.AvocadoModule(self.path)
+
+    def test_add_imported_empty(self):
+        self.assertEqual(self.module.imported_objects, {})
+
+    def test_add_imported_object_from_module(self):
+        import_stm = ast.ImportFrom(module='foo', names=[ast.Name(name='bar',
+                                                                  asname=None)])
+        self.module.add_imported_object(import_stm)
+        self.assertEqual(self.module.imported_objects['bar'],
+                         os.path.join(self.path, 'foo', 'bar'))
+
+    def test_add_imported_object_from_module_asname(self):
+        import_stm = ast.ImportFrom(module='foo', names=[ast.Name(name='bar',
+                                                                  asname='baz')])
+        self.module.add_imported_object(import_stm)
+        self.assertEqual(self.module.imported_objects['baz'],
+                         os.path.join(self.path, 'foo', 'bar'))
 
 
 if __name__ == '__main__':
