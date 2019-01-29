@@ -77,7 +77,7 @@ class Session(object):
             if not master.exit_status == 0:
                 return False
             self._connection = master
-        return True
+        return self._check()
 
     def cmd(self, command):
         """
