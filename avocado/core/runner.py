@@ -17,7 +17,6 @@
 Test runner module.
 """
 
-import multiprocessing
 import multiprocessing.queues
 import os
 import signal
