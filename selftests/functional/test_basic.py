@@ -361,6 +361,18 @@ class RunnerOperationTest(unittest.TestCase):
                                                                 result))
         self.assertIn(b'"status": "FAIL"', result.stdout)
 
+    def test_assert_raises(self):
+        cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
+                    "-- assert.py" % (AVOCADO, self.tmpdir))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc,
+                                                                result))
+        self.assertIn(b'Assert.test_assert_raises:  PASS', result.stdout)
+        self.assertIn(b'Assert.test_fails_to_raise:  FAIL', result.stdout)
+        self.assertIn(b'PASS 1 | ERROR 0 | FAIL 1 ', result.stdout)
+
     def test_exception_not_in_path(self):
         os.mkdir(os.path.join(self.tmpdir, "shared_lib"))
         mylib = script.Script(os.path.join(self.tmpdir, "shared_lib",

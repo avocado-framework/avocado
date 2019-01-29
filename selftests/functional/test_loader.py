@@ -356,7 +356,8 @@ class LoaderTestFunctional(unittest.TestCase):
         """
         cmd = "%s list examples/tests/:fail" % AVOCADO
         result = process.run(cmd)
-        expected = (b"INSTRUMENTED examples/tests/doublefail.py:DoubleFail.test\n"
+        expected = (b"INSTRUMENTED examples/tests/assert.py:Assert.test_fails_to_raise\n"
+                    b"INSTRUMENTED examples/tests/doublefail.py:DoubleFail.test\n"
                     b"INSTRUMENTED examples/tests/fail_on_exception.py:FailOnException.test\n"
                     b"INSTRUMENTED examples/tests/failtest.py:FailTest.test\n"
                     b"SIMPLE       examples/tests/failtest.sh\n")
