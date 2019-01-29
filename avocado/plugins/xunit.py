@@ -91,10 +91,13 @@ class XUnitResult(Result):
         system_out.appendChild(system_out_cdata)
         return element, system_out
 
-    def _render(self, result, max_test_log_size):
+    def _render(self, result, max_test_log_size, override_job_name):
         document = Document()
         testsuite = document.createElement('testsuite')
-        testsuite.setAttribute('name', os.path.basename(os.path.dirname(result.logfile)))
+        if override_job_name:
+            testsuite.setAttribute('name', override_job_name)
+        else:
+            testsuite.setAttribute('name', os.path.basename(os.path.dirname(result.logfile)))
         testsuite.setAttribute('tests', self._escape_attr(result.tests_total))
         testsuite.setAttribute('errors', self._escape_attr(result.errors + result.interrupted))
         testsuite.setAttribute('failures', self._escape_attr(result.failed))
@@ -137,7 +140,8 @@ class XUnitResult(Result):
             return
 
         max_test_log_size = getattr(job.args, 'xunit_max_test_log_chars', None)
-        content = self._render(result, max_test_log_size)
+        override_job_name = getattr(job.args, 'xunit_job_name', None)
+        content = self._render(result, max_test_log_size, override_job_name)
         if getattr(job.args, 'xunit_job_result', 'off') == 'on':
             xunit_path = os.path.join(job.logdir, 'results.xml')
             with open(xunit_path, 'wb') as xunit_file:
@@ -179,6 +183,12 @@ class XUnitCLI(CLI):
             help=('Enables default xUnit result in the job results directory. '
                   'File will be named "results.xml". '
                   'Defaults to on.'))
+
+        run_subcommand_parser.output.add_argument(
+            '--xunit-job-name', default=None, help="Override the reported "
+            "job name. By default uses the Avocado job name which is always "
+            "unique. This is useful for reporting in Jenkins as it only "
+            "evaluates first-failure from jobs of the same name.")
 
         run_subcommand_parser.output.add_argument(
             '--xunit-max-test-log-chars', metavar='SIZE',
