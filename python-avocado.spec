@@ -67,6 +67,9 @@ BuildRequires: fabric
 %if %{with_python3_fabric}
 BuildRequires: python3-fabric3
 %endif
+%if 0%{?fedora} >= 30
+BuildRequires: glibc-all-langpacks
+%endif
 
 %if 0%{?rhel} == 7
 BuildRequires: python-jinja2
