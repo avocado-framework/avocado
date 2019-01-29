@@ -8,7 +8,8 @@ class Session(object):
     """
 
     DEFAULT_OPTIONS = (('StrictHostKeyChecking', 'no'),
-                       ('UpdateHostKeys', 'no'))
+                       ('UpdateHostKeys', 'no'),
+                       ('ControlPath', '~/.ssh/avocado-master-%r@%h:%p'))
 
     MASTER_OPTIONS = (('ControlMaster', 'yes'),
                       ('ControlPersist', 'yes'))
