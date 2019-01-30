@@ -8,7 +8,8 @@ class Session(object):
     """
 
     DEFAULT_OPTIONS = (('StrictHostKeyChecking', 'no'),
-                       ('UpdateHostKeys', 'no'))
+                       ('UpdateHostKeys', 'no'),
+                       ('ControlPath', '~/.ssh/avocado-master-%r@%h:%p'))
 
     MASTER_OPTIONS = (('ControlMaster', 'yes'),
                       ('ControlPersist', 'yes'))
@@ -76,7 +77,7 @@ class Session(object):
             if not master.exit_status == 0:
                 return False
             self._connection = master
-        return True
+        return self._check()
 
     def cmd(self, command):
         """
