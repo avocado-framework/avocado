@@ -133,13 +133,13 @@ class OpenSUSEImageProvider(unittest.TestCase):
 
     def test_get_best_version_default(self):
         suse_latest_version = 15.0
-        suse_provider = vmimage.OpenSUSEImageProvider()
+        suse_provider = vmimage.OpenSUSEImageProvider(arch='x86_64')
         self.assertEqual(suse_provider.get_best_version(self.suse_available_versions),
                          suse_latest_version)
 
     def test_get_best_version_leap_4_series(self):
         suse_latest_version = 42.3
-        suse_provider = vmimage.OpenSUSEImageProvider(version='4(.)*')
+        suse_provider = vmimage.OpenSUSEImageProvider(version='4(.)*', arch='x86_64')
         self.assertEqual(suse_provider.get_best_version(self.suse_available_versions),
                          suse_latest_version)
 
@@ -151,7 +151,7 @@ class OpenSUSEImageProvider(unittest.TestCase):
         urlopen_mock.return_value = mock.Mock(read=urlread_mocked)
         expected_image_url = self.base_images_url + image
 
-        suse_provider = vmimage.OpenSUSEImageProvider()
+        suse_provider = vmimage.OpenSUSEImageProvider(arch='x86_64')
         suse_provider.get_version = mock.Mock(return_value='15.0')
         self.assertEqual(suse_provider.get_image_url(), expected_image_url)
 
@@ -163,7 +163,8 @@ class OpenSUSEImageProvider(unittest.TestCase):
         urlopen_mock.return_value = mock.Mock(read=urlread_mocked)
         expected_image_url = self.base_images_url + image
 
-        suse_provider = vmimage.OpenSUSEImageProvider(build='1.1.1-Buildlp111.11.11')
+        suse_provider = vmimage.OpenSUSEImageProvider(build='1.1.1-Buildlp111.11.11',
+                                                      arch='x86_64')
         suse_provider.get_version = mock.Mock(return_value='15.0')
         self.assertEqual(suse_provider.get_image_url(), expected_image_url)
 

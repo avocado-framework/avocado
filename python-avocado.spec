@@ -214,6 +214,10 @@ sed -e "s/'libvirt-python'//" -i optional_plugins/runner_vm/setup.py
 %build
 %if 0%{?rhel} == 7
 sed -e "s/'six>=1.10.0'/'six>=1.9.0'/" -i setup.py
+sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.10'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
+%endif
+%if 0%{?fedora} && 0%{?fedora} < 29
+sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
 %py2_build
 %if %{with_python3}
