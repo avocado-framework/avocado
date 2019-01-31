@@ -469,7 +469,7 @@ class TestRunner(object):
 
         # Get/update the test status (decrease timeout on abort)
         if abort_reason:
-            finish_deadline = TIMEOUT_TEST_INTERRUPTED
+            finish_deadline = TIMEOUT_TEST_INTERRUPTED + time.time()
         else:
             finish_deadline = deadline
         test_state = test_status.finish(proc, time_started, step,
