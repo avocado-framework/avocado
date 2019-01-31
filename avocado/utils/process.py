@@ -134,8 +134,8 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
 
     :param signal: Signal number.
     """
-    if get_owner_id(pid) == 0:
-        kill_cmd = 'kill -%d %d' % (int(signal), pid)
+    if get_owner_id(int(pid)) == 0:
+        kill_cmd = 'kill -%d %d' % (int(signal), int(pid))
         try:
             run(kill_cmd, sudo=True)
             return True
