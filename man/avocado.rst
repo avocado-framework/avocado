@@ -133,6 +133,11 @@ Options for subcommand `run` (`avocado run --help`)::
       --xunit-job-result {on,off}
                             Enables default xUnit result in the job results
                             directory. File will be named "results.xml".
+      --xunit-job-name XUNIT_JOB_NAME
+                            Override the reported job name. By default uses the
+                            Avocado job name which is always unique. This is
+                            useful for reporting in Jenkins as it only evaluates
+                            first-failure from jobs of the same name.
       --xunit-max-test-log-chars SIZE
                             Limit the attached job log to given number of
                             characters (k/m/g suffix allowed)
