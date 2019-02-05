@@ -47,7 +47,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 67.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -97,7 +97,6 @@ BuildRequires: python2-lxml
 BuildRequires: python2-mock
 BuildRequires: python2-psutil
 BuildRequires: python2-requests
-BuildRequires: python2-resultsdb_api
 BuildRequires: python2-setuptools
 BuildRequires: python2-six
 BuildRequires: python2-sphinx
@@ -107,6 +106,7 @@ BuildRequires: python2-stevedore
 # Python2 binary packages are being removed
 # See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
 BuildRequires: python2-pycdlib
+BuildRequires: python2-resultsdb_api
 %endif
 
 %if %{with_python3}
@@ -251,7 +251,9 @@ pushd optional_plugins/runner_docker
 %endif
 popd
 pushd optional_plugins/resultsdb
+%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
 %py2_build
+%endif
 %if %{with_python3}
 %py3_build
 %endif
@@ -346,7 +348,9 @@ pushd optional_plugins/runner_docker
 %endif
 popd
 pushd optional_plugins/resultsdb
+%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
 %py2_install
+%endif
 %if %{with_python3}
 %py3_install
 %endif
@@ -426,7 +430,9 @@ pushd optional_plugins/runner_docker
 %{__python2} setup.py develop --user
 popd
 pushd optional_plugins/resultsdb
+%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
 %{__python2} setup.py develop --user
+%endif
 popd
 pushd optional_plugins/varianter_yaml_to_mux
 %{__python2} setup.py develop --user
@@ -732,6 +738,7 @@ be previously installed on the container.
 %{python3_sitelib}/avocado_framework_plugin_runner_docker*
 %endif
 
+%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
 %package -n python2-%{srcname}-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
 Requires: python2-%{srcname} == %{version}
@@ -745,6 +752,7 @@ server.
 %{python2_sitelib}/avocado_resultsdb*
 %{python2_sitelib}/avocado_framework_plugin_resultsdb*
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
+%endif
 
 %if %{with_python3}
 %package -n python3-%{srcname}-plugins-resultsdb
@@ -988,6 +996,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Feb  4 2019 Cleber Rosa <cleber@redhat.com> - 67.0-1
+- python2-resultsdb_api package has been removed in F30 so
+  python2-avocado-plugins-resultsdb was also disabled.
+
 * Mon Dec 17 2018 Cleber Rosa <cleber@redhat.com> - 67.0-0
 - New release
 
