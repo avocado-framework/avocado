@@ -832,15 +832,17 @@ class RunnerSimpleTest(unittest.TestCase):
         avocado_proc = avocado_shell.children()[0]
         pid = avocado_proc.pid
         os.kill(pid, signal.SIGTSTP)   # This freezes the process
-        deadline = time.time() + 9
+        # The deadline is 3s timeout + 10s test postprocess before kill +
+        # 10s reserve for additional steps (still below 60s)
+        deadline = time.time() + 20
         while time.time() < deadline:
             if not proc.is_alive():
                 break
             time.sleep(0.1)
         else:
             proc.kill(signal.SIGKILL)
-            self.fail("Avocado process still alive 5s after job-timeout:\n%s"
-                      % proc.get_output())
+            self.fail("Avocado process still alive 17s after "
+                      "job-timeout:\n%s" % proc.get_output())
         output = proc.get_output()
         self.assertIn("ctrl+z pressed, stopping test", output, "SIGTSTP "
                       "message not in the output, test was probably not "

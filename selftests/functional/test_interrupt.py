@@ -133,7 +133,7 @@ class InterruptTest(unittest.TestCase):
         time.sleep(2.5)
         os.kill(self.proc.pid, signal.SIGINT)
 
-        if not wait.wait_for(self._is_finished, timeout=10):
+        if not wait.wait_for(self._is_finished, timeout=30):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado was still running after receiving SIGINT '
                       'twice.')
