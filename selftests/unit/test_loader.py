@@ -433,6 +433,36 @@ class LoaderTest(unittest.TestCase):
                 ('DiscoverMe4', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe4.test')]
         self._check_discovery(exps, tests)
 
+    def test_imports(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'imports.py')
+        tests = self.loader.discover(path)
+        exps = [('Test1', 'selftests/.data/loader_instrumented/imports.py:Test1.test'),
+                ('Test3', 'selftests/.data/loader_instrumented/imports.py:Test3.test'),
+                ('Test4', 'selftests/.data/loader_instrumented/imports.py:Test4.test'),
+                ('Test5', 'selftests/.data/loader_instrumented/imports.py:Test5.test'),
+                ('Test6', 'selftests/.data/loader_instrumented/imports.py:Test6.test'),
+                ('Test8', 'selftests/.data/loader_instrumented/imports.py:Test8.test'),
+                ('Test9', 'selftests/.data/loader_instrumented/imports.py:Test9.test'),
+                ('Test10', 'selftests/.data/loader_instrumented/imports.py:Test10.test')]
+        self._check_discovery(exps, tests)
+
+    def test_dont_detect_non_avocado(self):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'dont_detect_non_avocado.py')
+        tests = self.loader.discover(path)
+        exps = [(test.PythonUnittest, 'dont_detect_non_avocado.StaticallyNotAvocadoTest.test'),
+                (test.PythonUnittest, 'dont_detect_non_avocado.NotTest.test2')]
+        self._check_discovery(exps, tests)
+
+    def test_infinite_recurse(self):
+        """Checks we don't crash on infinite recursion"""
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented',
+                            'infinite_recurse.py')
+        tests = self.loader.discover(path)
+        self.assertEqual(tests, [])
+
     def test_double_import(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                             '.data', 'loader_instrumented', 'double_import.py')
