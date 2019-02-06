@@ -39,6 +39,15 @@
 %global with_python3_fabric 0
 %endif
 
+# Python2 binary packages are being removed
+# See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
+# python2-resultsdb_api package has been removed in F30
+%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
+%global with_python2_resultsdb 1
+%else
+%global with_python2_resultsdb 0
+%endif
+
 # The Python dependencies are already tracked by the python2
 # or python3 "Requires".  This filters out the python binaries
 # from the RPM automatic requires/provides scanner.
@@ -83,7 +92,6 @@ BuildRequires: python2-docutils
 BuildRequires: python2-mock
 BuildRequires: python2-psutil
 BuildRequires: python2-requests
-BuildRequires: python2-resultsdb_api
 BuildRequires: python2-six
 BuildRequires: python2-sphinx
 BuildRequires: yum
@@ -106,6 +114,8 @@ BuildRequires: python2-stevedore
 # Python2 binary packages are being removed
 # See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
 BuildRequires: python2-pycdlib
+%endif
+%if %{with_python2_resultsdb}
 BuildRequires: python2-resultsdb_api
 %endif
 
@@ -251,7 +261,7 @@ pushd optional_plugins/runner_docker
 %endif
 popd
 pushd optional_plugins/resultsdb
-%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if %{with_python2_resultsdb}
 %py2_build
 %endif
 %if %{with_python3}
@@ -348,7 +358,7 @@ pushd optional_plugins/runner_docker
 %endif
 popd
 pushd optional_plugins/resultsdb
-%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if %{with_python2_resultsdb}
 %py2_install
 %endif
 %if %{with_python3}
@@ -430,7 +440,7 @@ pushd optional_plugins/runner_docker
 %{__python2} setup.py develop --user
 popd
 pushd optional_plugins/resultsdb
-%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if %{with_python2_resultsdb}
 %{__python2} setup.py develop --user
 %endif
 popd
@@ -738,7 +748,7 @@ be previously installed on the container.
 %{python3_sitelib}/avocado_framework_plugin_runner_docker*
 %endif
 
-%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
+%if %{with_python2_resultsdb}
 %package -n python2-%{srcname}-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
 Requires: python2-%{srcname} == %{version}
