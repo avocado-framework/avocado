@@ -68,17 +68,11 @@ proposed filesystem structure::
 
 
 
-- ``tests/test_example.py``: And this is how your test will look like. The most
-  important item here is to use the docstring ``:avocado: recursive``, so the
-  Avocado test loader will be able to recognize your test class as an Avocado
-  Test class::
+- ``tests/test_example.py``: And this is how your test will look like::
 
     from apricot import ApricotTest
 
     class MyTest(ApricotTest):
-        """
-        :avocado: recursive
-        """
         def test(self):
             self.assertTrue(self.some_useful_method())
 

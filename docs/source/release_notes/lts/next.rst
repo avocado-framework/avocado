@@ -274,6 +274,10 @@ introduced by the next LTS version are:
 * Including test logs in TAP plugin is disabled by default and can
   be enabled using ``--tap-include-logs``.
 
+* Switched the `FileLoader` discovery to `:avocado: recursive` by
+  default. All tags `enable`, `disable` and `recursive` are still
+  available and might help fine-tuning the class visibility.
+
 Complete list of changes
 ========================
 
