@@ -4,9 +4,9 @@ Build documentation and report whether we had warning/error messages.
 This is geared towards documentation build regression testing.
 """
 import os
-import urllib
 import unittest
 
+from avocado.utils import download
 from avocado.utils import process
 
 from .. import BASEDIR
@@ -27,7 +27,7 @@ def has_no_external_connectivity():
     to give a false positive.
     """
     try:
-        urllib.urlopen('http://docs.python.org/objects.inv')
+        download.url_open('http://docs.python.org/objects.inv')
         return False
     except Exception:
         return True
@@ -44,12 +44,12 @@ class DocBuildTest(unittest.TestCase):
         failure_lines = []
         # Disregard bogus warnings due to a bug in older versions of
         # python-sphinx.
-        ignore_list.append('WARNING: toctree contains reference to ' +
-                           'nonexisting document u\'api/test/avocado.core\'')
-        ignore_list.append('WARNING: toctree contains reference to ' +
-                           'nonexisting document u\'api/test/avocado.plugins\'')
-        ignore_list.append('WARNING: toctree contains reference to ' +
-                           'nonexisting document u\'api/test/avocado.utils\'')
+        ignore_list.append(b'WARNING: toctree contains reference to '
+                           b'nonexisting document u\'api/test/avocado.core\'')
+        ignore_list.append(b'WARNING: toctree contains reference to '
+                           b'nonexisting document u\'api/test/avocado.plugins\'')
+        ignore_list.append(b'WARNING: toctree contains reference to '
+                           b'nonexisting document u\'api/test/avocado.utils\'')
         doc_dir = os.path.join(BASEDIR, 'docs')
         process.run('make -C %s clean' % doc_dir)
         result = process.run('make -C %s html' % doc_dir, ignore_status=True)
@@ -62,21 +62,23 @@ class DocBuildTest(unittest.TestCase):
             ignore_msg = False
             for ignore in ignore_list:
                 if ignore in line:
-                    print('Expected warning ignored: %s' % line)
+                    print('Expected warning ignored: %s' % line.decode('utf-8'))
                     ignore_msg = True
             if ignore_msg:
                 continue
-            if 'ERROR' in line:
+            if b'ERROR' in line:
                 failure_lines.append(line)
-            if 'WARNING' in line:
+            if b'WARNING' in line:
                 failure_lines.append(line)
         if failure_lines:
             e_msg = ('%s ERRORS and/or WARNINGS detected while building the html docs:\n' %
                      len(failure_lines))
             for (index, failure_line) in enumerate(failure_lines):
                 e_msg += "%s) %s\n" % (index + 1, failure_line)
-            e_msg += ('Full output: %s\n' % '\n'.join(output_lines))
-            e_msg += 'Please check the output and fix your docstrings/.rst docs'
+            e_msg += ('Full output: %s\n'
+                      % b'\n'.join(output_lines).decode('utf-8'))
+            e_msg += ('Please check the output and fix your '
+                      'docstrings/.rst docs')
             raise DocBuildError(e_msg)
 
 

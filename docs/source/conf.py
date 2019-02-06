@@ -63,7 +63,7 @@ API_SECTIONS = {"Test APIs": (None,
 # clean up all previous rst files. RTD is known to keep them from previous runs
 process.run("find %s -name '*.rst' -delete" % base_api_output_dir)
 
-for (section, params) in API_SECTIONS.iteritems():
+for (section, params) in API_SECTIONS.items():
     output_dir = os.path.join(base_api_output_dir, params[2])
     exclude_dirs = [os.path.join(api_source_dir, d)
                     for d in params[3]]
