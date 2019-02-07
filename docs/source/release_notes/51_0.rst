@@ -42,7 +42,7 @@ Users/Test Writers
   ``--execution-order=variants-per-test``.
 
 * Test methods on parent classes are now found upon the use of the new
-  :ref:`recursive <docstring-directive-recursive>` docstring
+  `recursive <docstring-directive-recursive>` docstring
   directive.  While ``:avocado: enable`` enables Avocado to find
   INSTRUMENTED tests that do not look like one (more details :ref:`here
   <docstring-directive-enable-disable>`), ``recursive`` will do that

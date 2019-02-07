@@ -317,7 +317,7 @@ attention to following changes:
   it is now possible to mark a class as avocado test including all
   ``test*`` methods coming from all parent classes (similarly to how
   dynamic discovery works inside python unittest, see
-  :ref:`docstring-directive-recursive` for details)
+  `docstring-directive-recursive` for details)
 * The ``self.text_output`` is not published after the test execution. If
   you were using it simply open the ``self.logfile`` and read the content
   yourself.
