@@ -126,6 +126,9 @@ requirements-plugins: requirements
 		fi;\
 	done;
 
+requirements-selftests: pip
+	- $(PYTHON) -m pip install -r requirements-selftests.txt
+
 smokecheck: clean develop
 	./scripts/avocado run passtest.py
 
