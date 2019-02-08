@@ -9,12 +9,6 @@
 	{"name": "Avocado source does not contain spelling errors",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
 
-	{"name": "Avocado RPM build",
-	 "description": "On your development machine, build the Avocado RPM packages using: `$ make rpm`. Expected result: SRPM and RPM files at `BUILD/RPM/python-avocado-x.y.z-r.distro.{src,noarch}.rpm`"},
-
-	{"name": "Avocado RPM lint",
-	 "description": "With the built RPMs, check if there are no unexpected packaging errors or warnings by running: `$ rpmlint BUILD/RPM/python*-avocado-x.y*.rpm`.  Expected result: 3 packages and 0 specfiles checked; 0 errors, 0 warnings. (some missing man-pages can be ignored)"},
-
 	{"name": "Avocado RPM install",
 	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build'. Also install and start the qemu-guest-agent."},
 
