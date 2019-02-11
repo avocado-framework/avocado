@@ -17,7 +17,6 @@ Reads the avocado settings from a .ini file (from python ConfigParser).
 """
 import ast
 import os
-import sys
 import glob
 
 try:
@@ -116,27 +115,25 @@ def convert_value_type(value, value_type):
         value_type = str
 
     # if length of string is zero then return None
-    if len(sval) == 0:
+    if not sval:
         if value_type == str:
             return ""
-        elif value_type == os.path.expanduser:
+        if value_type == os.path.expanduser:
             return ""
-        elif value_type == bool:
+        if value_type == bool:
             return False
-        elif value_type == int:
+        if value_type == int:
             return 0
-        elif value_type == float:
+        if value_type == float:
             return 0.0
-        elif value_type == list:
+        if value_type == list:
             return []
-        else:
-            return None
+        return None
 
     if value_type == bool:
         if sval.lower() == "false":
             return False
-        else:
-            return True
+        return True
 
     if value_type == list:
         return ast.literal_eval(sval)
@@ -163,12 +160,10 @@ class Settings(object):
         self.config_paths = []
         self.all_config_paths = []
         _source_tree_root = os.path.dirname(os.path.dirname(os.path.dirname(
-            sys.modules[__name__].__file__)))
+            __file__)))
         # In case "examples" file exists in root, we are running from tree
-        if os.path.exists(os.path.join(_source_tree_root, 'examples')):
-            self.intree = True
-        else:
-            self.intree = False
+        self.intree = bool(os.path.exists(os.path.join(_source_tree_root,
+                                                       'examples')))
         if config_path is None:
             if 'VIRTUAL_ENV' in os.environ:
                 cfg_dir = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
