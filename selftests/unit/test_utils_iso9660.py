@@ -6,10 +6,7 @@ import shutil
 import tempfile
 import unittest
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 from avocado.utils import iso9660, process

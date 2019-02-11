@@ -38,8 +38,6 @@ import copy
 import itertools
 import locale
 
-from six import string_types, iteritems
-
 from ..utils import astring
 
 
@@ -96,19 +94,18 @@ class TreeEnvironment(dict):
         :param sort: Sorted to provide stable output
         :rtype: str
         """
-        def _iteritems_sorted(dictionary):
-            return sorted(iteritems(dictionary))
+        if sort:
+            sort_fn = sorted
+        else:
+            def sort_fn(x):
+                return x
 
         # Use __str__ instead of __repr__ to improve readability
         if self:
-            if sort:
-                _iteritems = _iteritems_sorted
-            else:
-                _iteritems = iteritems
-            _values = ["%s: %s" % _ for _ in _iteritems(self)]
+            _values = ["%s: %s" % _ for _ in sort_fn(self.items())]
             values = "{%s}" % ", ".join(_values)
             _origin = ["%s: %s" % (key, node.path)
-                       for key, node in _iteritems(self.origin)]
+                       for key, node in sort_fn(self.origin.items())]
             origin = "{%s}" % ", ".join(_origin)
         else:
             values = "{}"
@@ -212,7 +209,7 @@ class TreeNode(object):
 
     def __eq__(self, other):
         """ Compares node to other node or string to name of this node """
-        if isinstance(other, string_types):  # Compare names
+        if isinstance(other, str):  # Compare names
             if self.name == other:
                 return True
         else:
@@ -333,7 +330,7 @@ class TreeNode(object):
         if self._environment is None:
             self._environment = (self.parent.environment.copy()
                                  if self.parent else TreeEnvironment())
-            for key, value in iteritems(self.value):
+            for key, value in self.value.items():
                 if isinstance(value, list):
                     if (key in self._environment and
                             isinstance(self._environment[key], list)):
@@ -447,13 +444,13 @@ def tree_view(root, verbose=None, use_utf8=None):
             right = charset['Right']
         out = [node.name]
         if verbose is not None and verbose >= 2 and node.is_leaf:
-            values = itertools.chain(iteritems(node.environment),
+            values = itertools.chain(iter(node.environment.items()),
                                      [("filter-only", _)
                                       for _ in node.environment.filter_only],
                                      [("filter-out", _)
                                       for _ in node.environment.filter_out])
         elif verbose in (1, 3):
-            values = itertools.chain(iteritems(node.value),
+            values = itertools.chain(iter(node.value.items()),
                                      [("filter-only", _)
                                       for _ in node.filters[0]],
                                      [("filter-out", _)
@@ -508,9 +505,9 @@ def tree_view(root, verbose=None, use_utf8=None):
         right = charset['Right']
     out = []
     if verbose is not None and verbose >= 2 and root.is_leaf:
-        values = iteritems(root.environment)
+        values = root.environment.items()
     elif verbose in (1, 3):
-        values = iteritems(root.value)
+        values = root.value.items()
     else:
         values = None
     if values:

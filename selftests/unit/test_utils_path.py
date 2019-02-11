@@ -1,10 +1,5 @@
 import os
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from avocado.utils import path
 
@@ -12,8 +7,8 @@ from avocado.utils import path
 class Path(unittest.TestCase):
 
     def test_check_readable_exists(self):
-        with mock.patch('avocado.utils.path.os.path.exists',
-                        return_value=False) as mocked_exists:
+        with unittest.mock.patch('avocado.utils.path.os.path.exists',
+                                 return_value=False) as mocked_exists:
             with self.assertRaises(OSError) as cm:
                 path.check_readable(os.devnull)
             self.assertEqual('File "%s" does not exist' % os.devnull,
@@ -21,8 +16,8 @@ class Path(unittest.TestCase):
             mocked_exists.assert_called_with(os.devnull)
 
     def test_check_readable_access(self):
-        with mock.patch('avocado.utils.path.os.access',
-                        return_value=False) as mocked_access:
+        with unittest.mock.patch('avocado.utils.path.os.access',
+                                 return_value=False) as mocked_access:
             with self.assertRaises(OSError) as cm:
                 path.check_readable(os.devnull)
             self.assertEqual('File "%s" can not be read' % os.devnull,

@@ -8,11 +8,7 @@ import os
 import shutil
 import sys
 import tempfile
-import unittest     # pylint: disable=C0411
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock     # pylint: disable=C0411
 
 from avocado.utils import partition, process
 from avocado.utils import path as utils_path
@@ -133,10 +129,10 @@ class TestPartitionMkfsMount(Base):
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
         proc = self.run_process_to_use_mnt()
-        with mock.patch('avocado.utils.partition.process.run',
-                        side_effect=process.CmdError):
-            with mock.patch('avocado.utils.partition.process.system_output',
-                            side_effect=OSError) as mocked_system_output:
+        with unittest.mock.patch('avocado.utils.partition.process.run',
+                                 side_effect=process.CmdError):
+            with unittest.mock.patch('avocado.utils.partition.process.system_output',
+                                     side_effect=OSError) as mocked_system_output:
                 self.assertRaises(partition.PartitionError, self.disk.unmount)
                 mocked_system_output.assert_called_with('lsof ' + self.mountpoint,
                                                         sudo=True)
@@ -184,8 +180,8 @@ class TestMtabLock(unittest.TestCase):
     def test_lock(self):
         """ Check double-lock raises exception after 60s (in 0.1s) """
         with partition.MtabLock():
-            with mock.patch('avocado.utils.filelock.time.time',
-                            mock.MagicMock(side_effect=[1, 2, 62])):
+            with unittest.mock.patch('avocado.utils.filelock.time.time',
+                                     unittest.mock.MagicMock(side_effect=[1, 2, 62])):
                 self.assertRaises(partition.PartitionError,
                                   partition.MtabLock().__enter__)
 

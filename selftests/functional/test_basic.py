@@ -12,20 +12,13 @@ import xml.dom.minidom
 import zipfile
 import unittest
 import psutil
-
-try:
-    from io import BytesIO
-except ImportError:
-    from BytesIO import BytesIO
+from io import BytesIO
 
 try:
     from lxml import etree
     SCHEMA_CAPABLE = True
 except ImportError:
     SCHEMA_CAPABLE = False
-
-from six import iteritems
-from six.moves import xrange as range
 
 from avocado.core import exit_codes
 from avocado.utils import astring
@@ -185,7 +178,7 @@ class RunnerOperationTest(unittest.TestCase):
                    'data_dir': os.path.join(base_dir, 'data'),
                    'logs_dir': os.path.join(base_dir, 'logs')}
         config = '[datadir.paths]\n'
-        for key, value in iteritems(mapping):
+        for key, value in mapping.items():
             if not os.path.isdir(value):
                 os.mkdir(value)
             config += "%s = %s\n" % (key, value)

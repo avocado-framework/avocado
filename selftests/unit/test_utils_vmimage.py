@@ -1,10 +1,7 @@
 import unittest
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
-from six.moves.urllib.error import HTTPError
+from unittest import mock
+from urllib.error import HTTPError
 
 from avocado.utils import vmimage
 

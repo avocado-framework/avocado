@@ -1,10 +1,7 @@
 import io
 import unittest
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 from .. import recent_mock
 from avocado.utils import linux_modules

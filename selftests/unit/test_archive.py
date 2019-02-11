@@ -5,8 +5,6 @@ import shutil
 import sys
 import random
 
-from six.moves import xrange as range
-
 from avocado.utils import archive
 from avocado.utils import crypto
 from avocado.utils import data_factory

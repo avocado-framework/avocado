@@ -21,8 +21,6 @@ Base classes for implementing the varianter interface
 
 import hashlib
 
-from six import iteritems, itervalues
-
 from . import tree
 from . import dispatcher
 from . import output
@@ -81,7 +79,7 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
     if verbosity:
         env = set()
         for node in variant["variant"]:
-            for key, value in iteritems(node.environment):
+            for key, value in node.environment.items():
                 origin = node.environment.origin[key].path
                 env.add(("%s:%s" % (origin, key), astring.to_text(value)))
         if not env:
@@ -103,7 +101,7 @@ def dump_ivariants(ivariants):
         return (astring.to_text(node.path),
                 [(astring.to_text(node.environment.origin[key].path),
                   astring.to_text(key), value)
-                 for key, value in iteritems(node.environment)])
+                 for key, value in node.environment.items()])
 
     variants = []
     for variant in ivariants():
@@ -149,7 +147,7 @@ class FakeVariantDispatcher(object):
                                                 paths))
             env = set()
             for node in variant["variant"]:
-                for key, value in iteritems(node.environment):
+                for key, value in node.environment.items():
                     origin = node.environment.origin[key].path
                     env.add(("%s:%s" % (origin, key), astring.to_text(value)))
             if not env:
@@ -196,7 +194,7 @@ class Varianter(object):
         :param args: Parsed cmdline arguments
         """
         default_params = self.node_class()
-        for default_param in itervalues(self.default_params):
+        for default_param in self.default_params.values():
             default_params.merge(default_param)
         self._default_params = default_params
         self.default_params.clear()
