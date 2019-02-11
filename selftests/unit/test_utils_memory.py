@@ -1,9 +1,4 @@
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from avocado.utils import memory
 
@@ -14,9 +9,9 @@ class UtilsMemoryTest(unittest.TestCase):
         file_values = [u"0\n", u"1-3", u"0-1,12-14\n"]
         expected_values = [[0], [1, 2, 3], [0, 1, 12, 13, 14]]
         for value, exp in zip(file_values, expected_values):
-            with mock.patch('os.path.exists', return_value=True):
-                with mock.patch('avocado.utils.genio.read_file',
-                                return_value=value):
+            with unittest.mock.patch('os.path.exists', return_value=True):
+                with unittest.mock.patch('avocado.utils.genio.read_file',
+                                         return_value=value):
                     self.assertEqual(memory.numa_nodes_with_memory(), exp)
 
 
@@ -27,7 +22,8 @@ BUDDY_INFO_RESPONSE = '\n'.join([
 ])
 
 
-@mock.patch('avocado.utils.memory._get_buddy_info_content', return_value=BUDDY_INFO_RESPONSE)
+@unittest.mock.patch('avocado.utils.memory._get_buddy_info_content',
+                     return_value=BUDDY_INFO_RESPONSE)
 class UtilsMemoryTestGetBuddyInfo(unittest.TestCase):
 
     def test_get_buddy_info_simple_chunk_size(self, buddy_info_content_mocked):

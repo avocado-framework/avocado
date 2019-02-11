@@ -25,7 +25,6 @@ import shlex
 import sys
 
 from enum import Enum
-from six import string_types, iteritems
 
 from . import data_dir
 from . import output
@@ -229,7 +228,7 @@ class TestLoaderProxy(object):
             # Using __func__ to avoid problem with different term_supp instances
             healthy_func = getattr(output.TERM_SUPPORT.healthy_str, '__func__')
             types = [mapping[_[0]]
-                     for _ in iteritems(plugin.get_decorator_mapping())
+                     for _ in plugin.get_decorator_mapping().items()
                      if _[1].__func__ is healthy_func]
             return [name + '.' + _ for _ in types]
 
@@ -390,7 +389,7 @@ class TestLoaderProxy(object):
             test_path = test_parameters.pop('modulePath')
         else:
             test_path = None
-        if isinstance(test_class, string_types):
+        if isinstance(test_class, str):
             module_name = os.path.basename(test_path).split('.')[0]
             test_module_dir = os.path.abspath(os.path.dirname(test_path))
             # Tests with local dir imports need this
@@ -614,13 +613,13 @@ class FileLoader(TestLoader):
                 # Instrumented tests are defined as string and loaded at the
                 # execution time.
                 for tst in tests:
-                    if not isinstance(tst[0], string_types):
+                    if not isinstance(tst[0], str):
                         return None
             else:
-                test_class = next(key for key, value in iteritems(mapping)
+                test_class = next(key for key, value in mapping.items()
                                   if value == self.test_type)
                 for tst in tests:
-                    if (isinstance(tst[0], string_types) or
+                    if (isinstance(tst[0], str) or
                             not issubclass(tst[0], test_class)):
                         return None
         return tests
@@ -687,7 +686,7 @@ class FileLoader(TestLoader):
         result = []
         class_methods = safeloader.find_class_and_methods(test_path,
                                                           _RE_UNIT_TEST)
-        for klass, methods in iteritems(class_methods):
+        for klass, methods in class_methods.items():
             if klass in disabled:
                 continue
             if test_path.endswith(".py"):
@@ -725,7 +724,7 @@ class FileLoader(TestLoader):
             if avocado_tests:
                 test_factories = []
                 for test_class, info in avocado_tests.items():
-                    if isinstance(test_class, string_types):
+                    if isinstance(test_class, str):
                         for test_method, tags in info:
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)

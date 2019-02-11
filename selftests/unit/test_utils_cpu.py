@@ -1,10 +1,5 @@
 import io
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from .. import recent_mock
 from avocado.utils import cpu
@@ -14,9 +9,9 @@ class Cpu(unittest.TestCase):
 
     @staticmethod
     def _get_file_mock(content):
-        file_mock = mock.Mock()
-        file_mock.__enter__ = mock.Mock(return_value=io.BytesIO(content))
-        file_mock.__exit__ = mock.Mock()
+        file_mock = unittest.mock.Mock()
+        file_mock.__enter__ = unittest.mock.Mock(return_value=io.BytesIO(content))
+        file_mock.__exit__ = unittest.mock.Mock()
         return file_mock
 
     @unittest.skipUnless(recent_mock(),
@@ -81,12 +76,13 @@ cpu MHz dynamic : 5504
 cpu MHz static  : 5504
 """
 
-        with mock.patch('avocado.utils.cpu.platform.machine', return_value='s390x'):
-            with mock.patch('avocado.utils.cpu.open',
-                            return_value=self._get_file_mock(s390x)):
+        with unittest.mock.patch('avocado.utils.cpu.platform.machine',
+                                 return_value='s390x'):
+            with unittest.mock.patch('avocado.utils.cpu.open',
+                                     return_value=self._get_file_mock(s390x)):
                 self.assertEqual(len(cpu.cpu_online_list()), 2)
-            with mock.patch('avocado.utils.cpu.open',
-                            return_value=self._get_file_mock(s390x_2)):
+            with unittest.mock.patch('avocado.utils.cpu.open',
+                                     return_value=self._get_file_mock(s390x_2)):
                 self.assertEqual(len(cpu.cpu_online_list()), 4)
 
     @unittest.skipUnless(recent_mock(),
@@ -309,9 +305,10 @@ address sizes	: 39 bits physical, 48 bits virtual
 power management:
 
 """
-        with mock.patch('avocado.utils.cpu.platform.machine', return_value='x86_64'):
-            with mock.patch('avocado.utils.cpu.open',
-                            return_value=self._get_file_mock(x86_64)):
+        with unittest.mock.patch('avocado.utils.cpu.platform.machine',
+                                 return_value='x86_64'):
+            with unittest.mock.patch('avocado.utils.cpu.open',
+                                     return_value=self._get_file_mock(x86_64)):
                 self.assertEqual(len(cpu.cpu_online_list()), 8)
 
     @unittest.skipUnless(recent_mock(),
@@ -347,8 +344,8 @@ cache_alignment : 64
 address sizes   : 32 bits physical, 32 bits virtual
 power management:
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "i386")
 
     @unittest.skipUnless(recent_mock(),
@@ -381,8 +378,8 @@ cache_alignment : 64
 address sizes   : 39 bits physical, 48 bits virtual
 power management:
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "x86_64")
 
     @unittest.skipUnless(recent_mock(),
@@ -399,8 +396,8 @@ model           : 8247-21L
 machine         : PowerNV 8247-21L
 firmware        : OPAL v3
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "power8")
 
     @unittest.skipUnless(recent_mock(),
@@ -417,8 +414,8 @@ model           : 8247-21L
 machine         : PowerNV 8247-21L
 firmware        : OPAL v3
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "power8")
 
     @unittest.skipUnless(recent_mock(),
@@ -435,8 +432,8 @@ model		: 8375-42A
 machine		: PowerNV 8375-42A
 firmware	: OPAL
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "power9")
 
     @unittest.skipUnless(recent_mock(),
@@ -465,8 +462,8 @@ cpu number      : 1
 cpu MHz dynamic : 5504
 cpu MHz static  : 5504
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "s390")
 
     @unittest.skipUnless(recent_mock(),
@@ -485,8 +482,8 @@ Hardware        : herring
 Revision        : 0034
 Serial          : 3534268a5e0700ec
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "arm")
 
     @unittest.skipUnless(recent_mock(),
@@ -501,8 +498,8 @@ CPU variant     : 0x1
 CPU part        : 0x0a1
 CPU revision    : 1
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "aarch64")
 
     @unittest.skipUnless(recent_mock(),
@@ -513,35 +510,44 @@ isa	: rv64imafdc
 mmu	: sv39
 uarch	: sifive,rocket0
 """
-        with mock.patch('avocado.utils.cpu.open',
-                        return_value=self._get_file_mock(cpu_output)):
+        with unittest.mock.patch('avocado.utils.cpu.open',
+                                 return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "riscv")
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_get_cpuidle_state_off(self):
         retval = {0: {0: 0}}
-        with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
-            with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
-                with mock.patch('avocado.utils.cpu.open', return_value=io.BytesIO(b'0')):
+        with unittest.mock.patch('avocado.utils.cpu.cpu_online_list',
+                                 return_value=[0]):
+            with unittest.mock.patch('glob.glob',
+                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
+                with unittest.mock.patch('avocado.utils.cpu.open',
+                                         return_value=io.BytesIO(b'0')):
                     self.assertEqual(cpu.get_cpuidle_state(), retval)
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_get_cpuidle_state_on(self):
         retval = {0: {0: 1}}
-        with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
-            with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
-                with mock.patch('avocado.utils.cpu.open', return_value=io.BytesIO(b'1')):
+        with unittest.mock.patch('avocado.utils.cpu.cpu_online_list',
+                                 return_value=[0]):
+            with unittest.mock.patch('glob.glob',
+                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
+                with unittest.mock.patch('avocado.utils.cpu.open',
+                                         return_value=io.BytesIO(b'1')):
                     self.assertEqual(cpu.get_cpuidle_state(), retval)
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_default(self):
         output = io.BytesIO()
-        with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
-            with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
-                with mock.patch('avocado.utils.cpu.open', return_value=output):
+        with unittest.mock.patch('avocado.utils.cpu.cpu_online_list',
+                                 return_value=[0]):
+            with unittest.mock.patch('glob.glob',
+                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
+                with unittest.mock.patch('avocado.utils.cpu.open',
+                                         return_value=output):
                     cpu.set_cpuidle_state()
                     self.assertEqual(output.getvalue(), b'1')
 
@@ -549,9 +555,12 @@ uarch	: sifive,rocket0
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_withstateno(self):
         output = io.BytesIO()
-        with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
-            with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state2']):
-                with mock.patch('avocado.utils.cpu.open', return_value=output):
+        with unittest.mock.patch('avocado.utils.cpu.cpu_online_list',
+                                 return_value=[0]):
+            with unittest.mock.patch('glob.glob',
+                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state2']):
+                with unittest.mock.patch('avocado.utils.cpu.open',
+                                         return_value=output):
                     cpu.set_cpuidle_state(disable=False, state_number='2')
                     self.assertEqual(output.getvalue(), b'0')
 
@@ -559,9 +568,12 @@ uarch	: sifive,rocket0
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_withsetstate(self):
         output = io.BytesIO()
-        with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0, 2]):
-            with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
-                with mock.patch('avocado.utils.cpu.open', return_value=output):
+        with unittest.mock.patch('avocado.utils.cpu.cpu_online_list',
+                                 return_value=[0, 2]):
+            with unittest.mock.patch('glob.glob',
+                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
+                with unittest.mock.patch('avocado.utils.cpu.open',
+                                         return_value=output):
                     cpu.set_cpuidle_state(setstate={0: {0: 1}, 2: {0: 0}})
                     self.assertEqual(output.getvalue(), b'10')
 

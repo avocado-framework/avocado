@@ -4,13 +4,7 @@ Verifies the avocado.utils.iso9660 functionality
 import os
 import shutil
 import tempfile
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
+import unittest.mock
 
 from avocado.utils import iso9660, process
 
@@ -27,16 +21,16 @@ class Capabilities(unittest.TestCase):
                                                      os.path.pardir, ".data",
                                                      "sample.iso"))
 
-    @mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=True)
+    @unittest.mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=True)
     def test_capabilities_pycdlib(self, has_pycdlib_mocked):
         instance = iso9660.iso9660(self.iso_path, ['read', 'create', 'write'])
         self.assertIsInstance(instance, iso9660.ISO9660PyCDLib)
         self.assertTrue(has_pycdlib_mocked.called)
 
-    @mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=False)
-    @mock.patch('avocado.utils.iso9660.has_isoinfo', return_value=False)
-    @mock.patch('avocado.utils.iso9660.has_isoread', return_value=False)
-    @mock.patch('avocado.utils.iso9660.can_mount', return_value=False)
+    @unittest.mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=False)
+    @unittest.mock.patch('avocado.utils.iso9660.has_isoinfo', return_value=False)
+    @unittest.mock.patch('avocado.utils.iso9660.has_isoread', return_value=False)
+    @unittest.mock.patch('avocado.utils.iso9660.can_mount', return_value=False)
     def test_capabilities_nobackend(self, has_pycdlib_mocked, has_isoinfo_mocked,
                                     has_isoread_mocked, can_mount_mocked):
         self.assertIsNone(iso9660.iso9660(self.iso_path, ['read']))

@@ -2,12 +2,7 @@ import os
 import shutil
 import stat
 import tempfile
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from avocado.core import test
 from avocado.core import loader
@@ -476,7 +471,7 @@ class LoaderTest(unittest.TestCase):
     def test_list_raising_exception(self):
         simple_test = script.TemporaryScript('simpletest.py', PY_SIMPLE_TEST)
         simple_test.save()
-        with mock.patch('avocado.core.loader.safeloader.find_avocado_tests') as _mock:
+        with unittest.mock.patch('avocado.core.loader.safeloader.find_avocado_tests') as _mock:
             _mock.side_effect = BaseException()
             tests = self.loader.discover(simple_test.path)
             self.assertEqual(tests[0][1]["name"], simple_test.path)

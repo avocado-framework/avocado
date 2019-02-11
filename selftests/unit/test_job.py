@@ -2,12 +2,7 @@ import argparse
 import os
 import shutil
 import tempfile
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from avocado.core import data_dir
 from avocado.core import exceptions
@@ -226,8 +221,8 @@ class JobTest(unittest.TestCase):
 
     def test_job_no_base_logdir(self):
         args = argparse.Namespace()
-        with mock.patch('avocado.core.job.data_dir.get_logs_dir',
-                        return_value=self.tmpdir):
+        with unittest.mock.patch('avocado.core.job.data_dir.get_logs_dir',
+                                 return_value=self.tmpdir):
             self.job = job.Job(args)
             self.job.setup()
         self.assertTrue(os.path.isdir(self.job.logdir))

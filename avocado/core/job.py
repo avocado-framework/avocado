@@ -27,9 +27,6 @@ import tempfile
 import time
 import traceback
 
-from six import iteritems
-from six.moves import xrange as range
-
 from . import version
 from . import data_dir
 from . import dispatcher
@@ -260,7 +257,7 @@ class Job(object):
     def __stop_job_logging(self):
         if self._stdout_stderr:
             sys.stdout, sys.stderr = self._stdout_stderr
-        for handler, loggers in iteritems(self.__logging_handlers):
+        for handler, loggers in self.__logging_handlers.items():
             for logger in loggers:
                 logging.getLogger(logger).removeHandler(handler)
 

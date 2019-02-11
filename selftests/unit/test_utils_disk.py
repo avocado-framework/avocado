@@ -1,10 +1,5 @@
 import sys
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from .. import recent_mock
 from avocado.utils import disk
@@ -54,39 +49,39 @@ class Disk(unittest.TestCase):
         mock_result = process.CmdResult(
             command='lsblk --json',
             stdout=b'{"blockdevices": []}')
-        with mock.patch('avocado.utils.disk.process.run',
-                        return_value=mock_result):
+        with unittest.mock.patch('avocado.utils.disk.process.run',
+                                 return_value=mock_result):
             self.assertEqual(disk.get_disks(), [])
 
     def test_disks(self):
         mock_result = process.CmdResult(
             command='lsblk --json',
             stdout=LSBLK_OUTPUT)
-        with mock.patch('avocado.utils.disk.process.run',
-                        return_value=mock_result):
+        with unittest.mock.patch('avocado.utils.disk.process.run',
+                                 return_value=mock_result):
             self.assertEqual(disk.get_disks(), ['/dev/vda'])
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_get_filesystems(self):
         expected_fs = ['dax', 'bpf', 'pipefs', 'hugetlbfs', 'devpts', 'ext3']
-        open_mocked = mock.mock_open(read_data=PROC_FILESYSTEMS)
-        with mock.patch(self.builtin_open, open_mocked):
+        open_mocked = unittest.mock.mock_open(read_data=PROC_FILESYSTEMS)
+        with unittest.mock.patch(self.builtin_open, open_mocked):
             self.assertEqual(sorted(expected_fs),
                              sorted(disk.get_available_filesystems()))
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_get_filesystem_type_default_root(self):
-        open_mocked = mock.mock_open(read_data=PROC_MOUNTS)
-        with mock.patch(self.builtin_open, open_mocked):
+        open_mocked = unittest.mock.mock_open(read_data=PROC_MOUNTS)
+        with unittest.mock.patch(self.builtin_open, open_mocked):
             self.assertEqual('ext4', disk.get_filesystem_type())
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_get_filesystem_type(self):
-        open_mocked = mock.mock_open(read_data=PROC_MOUNTS)
-        with mock.patch(self.builtin_open, open_mocked):
+        open_mocked = unittest.mock.mock_open(read_data=PROC_MOUNTS)
+        with unittest.mock.patch(self.builtin_open, open_mocked):
             self.assertEqual('ext2', disk.get_filesystem_type(mount_point='/home'))
 
 

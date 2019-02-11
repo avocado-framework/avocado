@@ -16,12 +16,7 @@
 #  The full GNU General Public License is included in this distribution in
 #  the file called "COPYING".
 
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from avocado.utils import service
 
@@ -35,14 +30,14 @@ class TestMultipleInstances(unittest.TestCase):
 
     def test_different_runners(self):
         # Call 'set_target' on first runner
-        runner1 = mock.Mock()
+        runner1 = unittest.mock.Mock()
         runner1.return_value.stdout = 'systemd'
         service1 = service.service_manager(run=runner1)
         service1.set_target('foo_target')
         self.assertEqual(runner1.call_args[0][0],  # pylint: disable=E1136
                          'systemctl isolate foo_target')
         # Call 'start' on second runner
-        runner2 = mock.Mock()
+        runner2 = unittest.mock.Mock()
         runner2.return_value.stdout = 'init'
         service2 = service.service_manager(run=runner2)
         service2.start('foo_service')
@@ -127,15 +122,17 @@ class TestSysVInit(unittest.TestCase):
 class TestSpecificServiceManager(unittest.TestCase):
 
     def setUp(self):
-        self.run_mock = mock.Mock()
+        self.run_mock = unittest.mock.Mock()
         self.init_name = "init"
-        get_name_of_init_mock = mock.Mock(return_value="init")
+        get_name_of_init_mock = unittest.mock.Mock(return_value="init")
 
-        @mock.patch.object(service, "get_name_of_init", get_name_of_init_mock)
+        @unittest.mock.patch.object(service, "get_name_of_init",
+                                    get_name_of_init_mock)
         def patch_service_command_generator():
             return service._auto_create_specific_service_command_generator()
 
-        @mock.patch.object(service, "get_name_of_init", get_name_of_init_mock)
+        @unittest.mock.patch.object(service, "get_name_of_init",
+                                    get_name_of_init_mock)
         def patch_service_result_parser():
             return service._auto_create_specific_service_result_parser()
         service_command_generator = patch_service_command_generator()
@@ -180,7 +177,7 @@ class TestServiceManager(unittest.TestCase):
 class TestSystemdServiceManager(TestServiceManager):
 
     def setUp(self):
-        self.run_mock = mock.Mock()
+        self.run_mock = unittest.mock.Mock()
         self.init_name = "systemd"
         self.service_manager = \
             (super(TestSystemdServiceManager, self)
@@ -194,11 +191,12 @@ class TestSystemdServiceManager(TestServiceManager):
         self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_list(self):
-        list_result_mock = mock.Mock(exit_status=0,
-                                     stdout_text="sshd.service enabled\n"
-                                     "vsftpd.service disabled\n"
-                                     "systemd-sysctl.service static\n")
-        run_mock = mock.Mock(return_value=list_result_mock)
+        list_result_mock = unittest.mock.Mock(
+            exit_status=0,
+            stdout_text="sshd.service enabled\n"
+            "vsftpd.service disabled\n"
+            "systemd-sysctl.service static\n")
+        run_mock = unittest.mock.Mock(return_value=list_result_mock)
         service_manager = \
             (super(TestSystemdServiceManager, self)
              .get_service_manager_from_init_and_run(self.init_name, run_mock))
@@ -212,13 +210,13 @@ class TestSystemdServiceManager(TestServiceManager):
 
     def test_set_default_runlevel(self):
         runlevel = service.convert_sysv_runlevel(3)
-        mktemp_mock = mock.Mock(return_value="temp_filename")
-        symlink_mock = mock.Mock()
-        rename_mock = mock.Mock()
+        mktemp_mock = unittest.mock.Mock(return_value="temp_filename")
+        symlink_mock = unittest.mock.Mock()
+        rename_mock = unittest.mock.Mock()
 
-        @mock.patch.object(service, "mktemp", mktemp_mock)
-        @mock.patch("os.symlink", symlink_mock)
-        @mock.patch("os.rename", rename_mock)
+        @unittest.mock.patch.object(service, "mktemp", mktemp_mock)
+        @unittest.mock.patch("os.symlink", symlink_mock)
+        @unittest.mock.patch("os.rename", rename_mock)
         def _():
             self.service_manager.change_default_runlevel(runlevel)
             self.assertTrue(mktemp_mock.called)
@@ -243,7 +241,7 @@ class TestSystemdServiceManager(TestServiceManager):
 class TestSysVInitServiceManager(TestServiceManager):
 
     def setUp(self):
-        self.run_mock = mock.Mock()
+        self.run_mock = unittest.mock.Mock()
         self.init_name = "init"
         self.service_manager = \
             super(TestSysVInitServiceManager,
@@ -257,7 +255,7 @@ class TestSysVInitServiceManager(TestServiceManager):
         self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_list(self):
-        list_result_mock = mock.Mock(
+        list_result_mock = unittest.mock.Mock(
             exit_status=0,
             stdout_text="sshd             0:off   1:off   "
             "2:off   3:off   4:off   5:off   6:off\n"
@@ -267,7 +265,7 @@ class TestSysVInitServiceManager(TestServiceManager):
             "        amanda:         off\n"
             "        chargen-dgram:  on\n")
 
-        run_mock = mock.Mock(return_value=list_result_mock)
+        run_mock = unittest.mock.Mock(return_value=list_result_mock)
         service_manager = \
             super(TestSysVInitServiceManager,
                   self).get_service_manager_from_init_and_run(self.init_name,

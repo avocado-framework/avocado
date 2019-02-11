@@ -3,12 +3,7 @@ import glob
 import os
 import shutil
 import tempfile
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from avocado.core.job import Job
 from avocado.core import exit_codes, version
@@ -75,25 +70,25 @@ class RemoteTestRunnerTest(unittest.TestCase):
             job.setup()
             runner = avocado_runner_remote.RemoteTestRunner(job, job.result)
             return_value = (True, (version.MAJOR, version.MINOR))
-            runner.check_remote_avocado = mock.Mock(return_value=return_value)
+            runner.check_remote_avocado = unittest.mock.Mock(return_value=return_value)
 
             # These are mocked at their source, and will prevent fabric from
             # trying to contact remote hosts
-            with mock.patch('avocado_runner_remote.Remote'):
+            with unittest.mock.patch('avocado_runner_remote.Remote'):
                 runner.remote = avocado_runner_remote.Remote(job_args.remote_hostname)
 
                 # This is the result that the run_suite() will get from remote.run
                 remote_run_result = process.CmdResult()
                 remote_run_result.stdout = JSON_RESULTS
                 remote_run_result.exit_status = 0
-                runner.remote.run = mock.Mock(return_value=remote_run_result)
+                runner.remote.run = unittest.mock.Mock(return_value=remote_run_result)
 
                 # We have to fake the uncompressing and removal of the zip
                 # archive that was never generated on the "remote" end
                 # This test could be expand by mocking creating an actual
                 # zip file instead, but it's really overkill
-                with mock.patch('avocado_runner_remote.archive.uncompress'):
-                    with mock.patch('avocado_runner_remote.os.remove'):
+                with unittest.mock.patch('avocado_runner_remote.archive.uncompress'):
+                    with unittest.mock.patch('avocado_runner_remote.os.remove'):
                         runner.run_suite(None, None, 61)
 
             # The job was created with dry_run so it should have a zeroed id
