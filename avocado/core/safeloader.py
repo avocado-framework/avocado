@@ -254,13 +254,15 @@ def find_class_and_methods(path, method_pattern=None, base_class=None):
                        base class (or classes that inherit from any class
                        if None is given)
     :type base_class: str or None
+    :returns: an ordered dictionary with classes as keys and methods as values
+    :rtype: collections.OrderedDict
     """
     def inherits_from_base_class(class_statement, base_class_name):
         base_ids = [base.id for base in class_statement.bases
                     if hasattr(base, 'id')]
         return base_class_name in base_ids
 
-    result = {}
+    result = collections.OrderedDict()
     with open(path) as source_file:
         mod = ast.parse(source_file.read(), path)
 
