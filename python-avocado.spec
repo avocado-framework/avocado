@@ -26,26 +26,11 @@
 # enabled by default.
 %global with_tests 1
 
-%if 0%{?rhel}
-%global with_python3 0
-%else
-%global with_python3 1
-%endif
-
 # Python 3 version of Fabric package is new starting with Fedora 29
-%if %{with_python3} && 0%{?fedora} >= 29
+%if 0%{?fedora} >= 29
 %global with_python3_fabric 1
 %else
 %global with_python3_fabric 0
-%endif
-
-# Python2 binary packages are being removed
-# See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
-# python2-resultsdb_api package has been removed in F30
-%if (0%{?fedora} && 0%{?fedora} <= 29) || (0%{?rhel} && 0%{?rhel} <= 7)
-%global with_python2_resultsdb 1
-%else
-%global with_python2_resultsdb 0
 %endif
 
 # The Python dependencies are already tracked by the python2
@@ -68,11 +53,6 @@ Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.g
 BuildArch: noarch
 BuildRequires: procps-ng
 BuildRequires: kmod
-%if 0%{?fedora} >= 29
-BuildRequires: python2-fabric3
-%else
-BuildRequires: fabric
-%endif
 %if %{with_python3_fabric}
 BuildRequires: python3-fabric3
 %endif
@@ -80,46 +60,6 @@ BuildRequires: python3-fabric3
 BuildRequires: glibc-all-langpacks
 %endif
 
-%if 0%{?rhel} == 7
-BuildRequires: python-jinja2
-BuildRequires: python-lxml
-BuildRequires: python-setuptools
-BuildRequires: python-stevedore
-BuildRequires: python-enum34
-BuildRequires: python2-aexpect
-BuildRequires: python2-devel
-BuildRequires: python2-docutils
-BuildRequires: python2-mock
-BuildRequires: python2-psutil
-BuildRequires: python2-requests
-BuildRequires: python2-six
-BuildRequires: python2-sphinx
-BuildRequires: yum
-%else
-BuildRequires: python2-jinja2
-BuildRequires: python2-aexpect
-BuildRequires: python2-devel
-BuildRequires: python2-docutils
-BuildRequires: python2-enum34
-BuildRequires: python2-lxml
-BuildRequires: python2-mock
-BuildRequires: python2-psutil
-BuildRequires: python2-requests
-BuildRequires: python2-setuptools
-BuildRequires: python2-six
-BuildRequires: python2-sphinx
-BuildRequires: python2-stevedore
-%endif
-%if 0%{?fedora} && 0%{?fedora} <= 29
-# Python2 binary packages are being removed
-# See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
-BuildRequires: python2-pycdlib
-%endif
-%if %{with_python2_resultsdb}
-BuildRequires: python2-resultsdb_api
-%endif
-
-%if %{with_python3}
 BuildRequires: python3-jinja2
 BuildRequires: python3-aexpect
 BuildRequires: python3-devel
@@ -129,11 +69,9 @@ BuildRequires: python3-psutil
 BuildRequires: python3-requests
 BuildRequires: python3-resultsdb_api
 BuildRequires: python3-setuptools
-BuildRequires: python3-six
 BuildRequires: python3-sphinx
 BuildRequires: python3-stevedore
 BuildRequires: python3-pycdlib
-%endif
 
 %if %{with_tests}
 BuildRequires: genisoimage
@@ -141,61 +79,18 @@ BuildRequires: libcdio
 BuildRequires: libvirt-python
 BuildRequires: perl-Test-Harness
 BuildRequires: psmisc
-%if 0%{?rhel}
-BuildRequires: PyYAML
-BuildRequires: python-netifaces
-%else
-BuildRequires: python2-yaml
-BuildRequires: python2-netifaces
-%endif
-%if %{with_python3}
 BuildRequires: python3-libvirt
 BuildRequires: python3-yaml
 BuildRequires: python3-netifaces
-%endif
 %endif
 
 %description
 Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
 
-%package -n python2-%{srcname}
-Summary: %{summary}
-Requires: %{name}-common == %{version}
-Requires: gdb
-Requires: gdb-gdbserver
-Requires: procps-ng
-Requires: pyliblzma
-%if 0%{?rhel} == 7
-Requires: python
-Requires: python-enum34
-Requires: python-setuptools
-Requires: python-six
-Requires: python-stevedore
-Requires: python2-requests
-%else
-Requires: python2
-Requires: python2-enum34
-Requires: python2-requests
-Requires: python2-setuptools
-Requires: python2-six
-Requires: python2-stevedore
-%endif
-%if 0%{?fedora} && 0%{?fedora} <= 29
-# Python2 binary packages are being removed
-# See https://fedoraproject.org/wiki/Changes/Mass_Python_2_Package_Removal
-Requires: python2-pycdlib
-%endif
-%{?python_provide:%python_provide python2-%{srcname}}
-
-%description -n python2-%{srcname}
-Avocado is a set of tools and libraries (what people call
-these days a framework) to perform automated testing.
-
-%if %{with_python3}
 %package -n python3-%{srcname}
 Summary: %{summary}
-Requires: %{name}-common == %{version}
+Requires: python3-%{srcname}-common == %{version}
 Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
@@ -203,15 +98,12 @@ Requires: pyliblzma
 Requires: python3
 Requires: python3-requests
 Requires: python3-setuptools
-Requires: python3-six
 Requires: python3-stevedore
 Requires: python3-pycdlib
-%{?python_provide:%python_provide python3-%{srcname}}
 
 %description -n python3-%{srcname}
 Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
-%endif
 
 %prep
 %if 0%{?rel_build}
@@ -225,187 +117,104 @@ these days a framework) to perform automated testing.
 sed -e "s/'libvirt-python'//" -i optional_plugins/runner_vm/setup.py
 
 %build
-%if 0%{?rhel} == 7
-sed -e "s/'six>=1.10.0'/'six>=1.9.0'/" -i setup.py
-sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.10'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
-%endif
 %if 0%{?fedora} && 0%{?fedora} < 29
 sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 pushd optional_plugins/html
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 popd
 pushd optional_plugins/runner_remote
-%py2_build
 %if %{with_python3_fabric}
 %py3_build
 %endif
 popd
 pushd optional_plugins/runner_vm
-%py2_build
 %if %{with_python3_fabric}
 %py3_build
 %endif
 popd
 pushd optional_plugins/runner_docker
-%py2_build
 %if %{with_python3_fabric}
 %py3_build
 %endif
 popd
 pushd optional_plugins/resultsdb
-%if %{with_python2_resultsdb}
-%py2_build
-%endif
-%if %{with_python3}
 %py3_build
-%endif
 popd
 pushd optional_plugins/varianter_yaml_to_mux
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 popd
 pushd optional_plugins/loader_yaml
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 popd
 pushd optional_plugins/golang
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 popd
 pushd optional_plugins/varianter_pict
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 popd
 pushd optional_plugins/varianter_cit
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 popd
 pushd optional_plugins/result_upload
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 popd
 pushd optional_plugins/glib
-%py2_build
-%if %{with_python3}
 %py3_build
-%endif
 popd
+# python3-docutils on Fedora 28 uses a rst2man binary with -3 prefix
+%if 0%{?fedora} == 28
+/usr/bin/rst2man-3 man/avocado.rst man/avocado.1
+/usr/bin/rst2man-3 man/avocado-rest-client.rst man/avocado-rest-client.1
+%else
 %{__make} man
+%endif
 
 %install
-%py2_install
-%{__mv} %{buildroot}%{python2_sitelib}/avocado/etc %{buildroot}
-mv %{buildroot}%{_bindir}/avocado %{buildroot}%{_bindir}/avocado-%{python2_version}
-ln -s avocado-%{python2_version} %{buildroot}%{_bindir}/avocado-2
-mv %{buildroot}%{_bindir}/avocado-rest-client %{buildroot}%{_bindir}/avocado-rest-client-%{python2_version}
-ln -s avocado-rest-client-%{python2_version} %{buildroot}%{_bindir}/avocado-rest-client-2
-%if %{with_python3}
 %py3_install
-mv %{buildroot}%{_bindir}/avocado %{buildroot}%{_bindir}/avocado-%{python3_version}
-ln -s avocado-%{python3_version} %{buildroot}%{_bindir}/avocado-3
-mv %{buildroot}%{_bindir}/avocado-rest-client %{buildroot}%{_bindir}/avocado-rest-client-%{python3_version}
-ln -s avocado-rest-client-%{python3_version} %{buildroot}%{_bindir}/avocado-rest-client-3
-# configuration is held at /etc/avocado only and part of the
-# python-avocado-common package
-%{__rm} -rf %{buildroot}%{python3_sitelib}/avocado/etc
-# ditto for libexec files
-%{__rm} -rf %{buildroot}%{python3_sitelib}/avocado/libexec
-%endif
-ln -s avocado-%{python2_version} %{buildroot}%{_bindir}/avocado
-ln -s avocado-rest-client-%{python2_version} %{buildroot}%{_bindir}/avocado-rest-client
+%{__mv} %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
 pushd optional_plugins/html
-%py2_install
-%if %{with_python3}
 %py3_install
-%endif
 popd
 pushd optional_plugins/runner_remote
-%py2_install
 %if %{with_python3_fabric}
 %py3_install
 %endif
 popd
 pushd optional_plugins/runner_vm
-%py2_install
 %if %{with_python3_fabric}
 %py3_install
 %endif
 popd
 pushd optional_plugins/runner_docker
-%py2_install
 %if %{with_python3_fabric}
 %py3_install
 %endif
 popd
 pushd optional_plugins/resultsdb
-%if %{with_python2_resultsdb}
-%py2_install
-%endif
-%if %{with_python3}
 %py3_install
-%endif
 popd
 pushd optional_plugins/varianter_yaml_to_mux
-%py2_install
-%if %{with_python3}
 %py3_install
-%endif
 popd
 pushd optional_plugins/loader_yaml
-%py2_install
-%if %{with_python3}
 %py3_install
-%endif
 popd
 pushd optional_plugins/golang
-%py2_install
-%if %{with_python3}
 %py3_install
-%endif
 popd
 pushd optional_plugins/varianter_pict
-%py2_install
-%if %{with_python3}
 %py3_install
-%endif
 popd
 pushd optional_plugins/varianter_cit
-%py2_install
-%if %{with_python3}
 %py3_install
-%endif
 popd
 pushd optional_plugins/result_upload
-%py2_install
-%if %{with_python3}
 %py3_install
-%endif
 popd
 pushd optional_plugins/glib
-%py2_install
-%if %{with_python3}
 %py3_install
-%endif
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
@@ -422,60 +231,10 @@ popd
 %{__cp} -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
 find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x {} ';'
 %{__mkdir} -p %{buildroot}%{_libexecdir}/avocado
-%{__mv} %{buildroot}%{python2_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
+%{__mv} %{buildroot}%{python3_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
 
 %check
 %if %{with_tests}
-%{__python2} setup.py develop --user
-pushd optional_plugins/html
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/runner_remote
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/runner_vm
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/runner_docker
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/resultsdb
-%if %{with_python2_resultsdb}
-%{__python2} setup.py develop --user
-%endif
-popd
-pushd optional_plugins/varianter_yaml_to_mux
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/loader_yaml
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/golang
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/varianter_pict
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/varianter_cit
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/result_upload
-%{__python2} setup.py develop --user
-popd
-pushd optional_plugins/glib
-%{__python2} setup.py develop --user
-popd
-# LANG: to make the results predictable, we pin the language
-# that is used during test execution.
-# AVOCADO_CHECK_LEVEL: package build environments have the least
-# amount of resources we have observed so far.  Let's avoid tests that
-# require too much resources or are time sensitive
-# UNITTEST_AVOCADO_CMD: the "avocado" command to be run during
-# unittests needs to be a Python specific one on Fedora >= 28.  Let's
-# use the one that was setup in the source tree by the "setup.py
-# develop --user" step and is guaranteed to be version specific.
-LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado %{__python2} selftests/run
-%if %{with_python3}
 %{__python3} setup.py develop --user
 pushd optional_plugins/html
 %{__python3} setup.py develop --user
@@ -515,55 +274,23 @@ popd
 pushd optional_plugins/glib
 %{__python3} setup.py develop --user
 popd
+# LANG: to make the results predictable, we pin the language
+# that is used during test execution.
+# AVOCADO_CHECK_LEVEL: package build environments have the least
+# amount of resources we have observed so far.  Let's avoid tests that
+# require too much resources or are time sensitive
+# UNITTEST_AVOCADO_CMD: the "avocado" command to be run during
+# unittests needs to be a Python specific one on Fedora >= 28.  Let's
+# use the one that was setup in the source tree by the "setup.py
+# develop --user" step and is guaranteed to be version specific.
 LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado %{__python3} selftests/run
 %endif
-%endif
 
-%files -n python2-%{srcname}
-%defattr(-,root,root,-)
-%doc README.rst LICENSE
-%{python2_sitelib}/avocado*
-%{_bindir}/avocado
-%{_bindir}/avocado-2
-%{_bindir}/avocado-%{python2_version}
-%{_bindir}/avocado-rest-client
-%{_bindir}/avocado-rest-client-2
-%{_bindir}/avocado-rest-client-%{python2_version}
-%exclude %{python2_sitelib}/avocado_result_html*
-%exclude %{python2_sitelib}/avocado_runner_remote*
-%exclude %{python2_sitelib}/avocado_runner_vm*
-%exclude %{python2_sitelib}/avocado_runner_docker*
-%exclude %{python2_sitelib}/avocado_resultsdb*
-%exclude %{python2_sitelib}/avocado_loader_yaml*
-%exclude %{python2_sitelib}/avocado_golang*
-%exclude %{python2_sitelib}/avocado_varianter_yaml_to_mux*
-%exclude %{python2_sitelib}/avocado_varianter_pict*
-%exclude %{python2_sitelib}/avocado_varianter_cit*
-%exclude %{python2_sitelib}/avocado_result_upload*
-%exclude %{python2_sitelib}/avocado_glib*
-%exclude %{python2_sitelib}/avocado_framework_plugin_result_html*
-%exclude %{python2_sitelib}/avocado_framework_plugin_runner_remote*
-%exclude %{python2_sitelib}/avocado_framework_plugin_runner_vm*
-%exclude %{python2_sitelib}/avocado_framework_plugin_runner_docker*
-%exclude %{python2_sitelib}/avocado_framework_plugin_resultsdb*
-%exclude %{python2_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
-%exclude %{python2_sitelib}/avocado_framework_plugin_varianter_pict*
-%exclude %{python2_sitelib}/avocado_framework_plugin_varianter_cit*
-%exclude %{python2_sitelib}/avocado_framework_plugin_loader_yaml*
-%exclude %{python2_sitelib}/avocado_framework_plugin_golang*
-%exclude %{python2_sitelib}/avocado_framework_plugin_result_upload*
-%exclude %{python2_sitelib}/avocado_framework_plugin_glib*
-%exclude %{python2_sitelib}/avocado/libexec*
-%exclude %{python2_sitelib}/tests*
-
-%if %{with_python3}
 %files -n python3-%{srcname}
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
-%{_bindir}/avocado-3
-%{_bindir}/avocado-%{python3_version}
-%{_bindir}/avocado-rest-client-3
-%{_bindir}/avocado-rest-client-%{python3_version}
+%{_bindir}/avocado
+%{_bindir}/avocado-rest-client
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_runner_remote*
@@ -590,15 +317,14 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python3_sitelib}/avocado_framework_plugin_glib*
 %exclude %{python3_sitelib}/tests*
-%endif
 
-%package common
+%package -n python3-%{srcname}-common
 Summary: Avocado common files
 
-%description common
+%description -n python3-%{srcname}-common
 Common files (such as configuration) for the Avocado Testing Framework.
 
-%files common
+%files -n python3-%{srcname}-common
 %{_mandir}/man1/avocado.1.gz
 %{_mandir}/man1/avocado-rest-client.1.gz
 %dir %{_sysconfdir}/avocado
@@ -619,25 +345,6 @@ Common files (such as configuration) for the Avocado Testing Framework.
 %config(noreplace)%{_sysconfdir}/avocado/scripts/job/pre.d/README
 %config(noreplace)%{_sysconfdir}/avocado/scripts/job/post.d/README
 
-%package -n python2-%{srcname}-plugins-output-html
-Summary: Avocado HTML report plugin
-Requires: python2-%{srcname} == %{version},
-%if 0%{?rhel} == 7
-Requires: python-jinja2
-%else
-Requires: python2-jinja2
-%endif
-
-%description -n python2-%{srcname}-plugins-output-html
-Adds to avocado the ability to generate an HTML report at every job results
-directory. It also gives the user the ability to write a report on an
-arbitrary filesystem location.
-
-%files -n python2-%{srcname}-plugins-output-html
-%{python2_sitelib}/avocado_result_html*
-%{python2_sitelib}/avocado_framework_plugin_result_html*
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-output-html
 Summary: Avocado HTML report plugin
 Requires: python3-%{srcname} == %{version}, python3-jinja2
@@ -650,24 +357,6 @@ arbitrary filesystem location.
 %files -n python3-%{srcname}-plugins-output-html
 %{python3_sitelib}/avocado_result_html*
 %{python3_sitelib}/avocado_framework_plugin_result_html*
-%endif
-
-%package -n python2-%{srcname}-plugins-runner-remote
-Summary: Avocado Runner for Remote Execution
-Requires: python2-%{srcname} == %{version}
-%if 0%{?fedora} >= 29
-Requires: python2-fabric3
-%else
-Requires: fabric
-%endif
-
-%description -n python2-%{srcname}-plugins-runner-remote
-Allows Avocado to run jobs on a remote machine, by means of an SSH
-connection.  Avocado must be previously installed on the remote machine.
-
-%files -n python2-%{srcname}-plugins-runner-remote
-%{python2_sitelib}/avocado_runner_remote*
-%{python2_sitelib}/avocado_framework_plugin_runner_remote*
 
 %if %{with_python3_fabric}
 %package -n python3-%{srcname}-plugins-runner-remote
@@ -683,21 +372,6 @@ connection.  Avocado must be previously installed on the remote machine.
 %{python3_sitelib}/avocado_runner_remote*
 %{python3_sitelib}/avocado_framework_plugin_runner_remote*
 %endif
-
-%package -n python2-%{srcname}-plugins-runner-vm
-Summary: Avocado Runner for libvirt VM Execution
-Requires: python2-%{srcname} == %{version}
-Requires: python2-%{srcname}-plugins-runner-remote == %{version}
-Requires: libvirt-python
-
-%description -n python2-%{srcname}-plugins-runner-vm
-Allows Avocado to run jobs on a libvirt based VM, by means of
-interaction with a libvirt daemon and an SSH connection to the VM
-itself.  Avocado must be previously installed on the VM.
-
-%files -n python2-%{srcname}-plugins-runner-vm
-%{python2_sitelib}/avocado_runner_vm*
-%{python2_sitelib}/avocado_framework_plugin_runner_vm*
 
 %if %{with_python3_fabric}
 %package -n python3-%{srcname}-plugins-runner-vm
@@ -716,21 +390,6 @@ itself.  Avocado must be previously installed on the VM.
 %{python3_sitelib}/avocado_framework_plugin_runner_vm*
 %endif
 
-%package -n python2-%{srcname}-plugins-runner-docker
-Summary: Avocado Runner for Execution on Docker Containers
-Requires: python2-%{srcname} == %{version}
-Requires: python2-%{srcname}-plugins-runner-remote == %{version}
-Requires: python2-aexpect
-
-%description -n python2-%{srcname}-plugins-runner-docker
-Allows Avocado to run jobs on a Docker container by interacting with a
-Docker daemon and attaching to the container itself.  Avocado must
-be previously installed on the container.
-
-%files -n python2-%{srcname}-plugins-runner-docker
-%{python2_sitelib}/avocado_runner_docker*
-%{python2_sitelib}/avocado_framework_plugin_runner_docker*
-
 %if %{with_python3_fabric}
 %package -n python3-%{srcname}-plugins-runner-docker
 Summary: Avocado Runner for Execution on Docker Containers
@@ -748,23 +407,6 @@ be previously installed on the container.
 %{python3_sitelib}/avocado_framework_plugin_runner_docker*
 %endif
 
-%if %{with_python2_resultsdb}
-%package -n python2-%{srcname}-plugins-resultsdb
-Summary: Avocado plugin to propagate job results to ResultsDB
-Requires: python2-%{srcname} == %{version}
-Requires: python2-resultsdb_api
-
-%description -n python2-%{srcname}-plugins-resultsdb
-Allows Avocado to send job results directly to a ResultsDB
-server.
-
-%files -n python2-%{srcname}-plugins-resultsdb
-%{python2_sitelib}/avocado_resultsdb*
-%{python2_sitelib}/avocado_framework_plugin_resultsdb*
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
-%endif
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
 Requires: python3-%{srcname} == %{version}
@@ -778,26 +420,7 @@ server.
 %{python3_sitelib}/avocado_resultsdb*
 %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
-%endif
 
-%package -n python2-%{srcname}-plugins-varianter-yaml-to-mux
-Summary: Avocado plugin to generate variants out of yaml files
-Requires: python2-%{srcname} == %{version}
-%if 0%{?rhel}
-Requires: PyYAML
-%else
-Requires: python2-yaml
-%endif
-
-%description -n python2-%{srcname}-plugins-varianter-yaml-to-mux
-Can be used to produce multiple test variants with test parameters
-defined in a yaml file(s).
-
-%files -n python2-%{srcname}-plugins-varianter-yaml-to-mux
-%{python2_sitelib}/avocado_varianter_yaml_to_mux*
-%{python2_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
 Requires: python3-%{srcname} == %{version}
@@ -810,21 +433,7 @@ defined in a yaml file(s).
 %files -n python3-%{srcname}-plugins-varianter-yaml-to-mux
 %{python3_sitelib}/avocado_varianter_yaml_to_mux*
 %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
-%endif
 
-%package -n python2-%{srcname}-plugins-loader-yaml
-Summary: Avocado Plugin that loads tests from YAML files
-Requires: python2-%{srcname}-plugins-varianter-yaml-to-mux == %{version}
-
-%description -n python2-%{srcname}-plugins-loader-yaml
-Can be used to produce a test suite from definitions in a YAML file,
-similar to the one used in the yaml_to_mux varianter plugin.
-
-%files -n python2-%{srcname}-plugins-loader-yaml
-%{python2_sitelib}/avocado_loader_yaml*
-%{python2_sitelib}/avocado_framework_plugin_loader_yaml*
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-loader-yaml
 Summary: Avocado Plugin that loads tests from YAML files
 Requires: python3-%{srcname}-plugins-varianter-yaml-to-mux == %{version}
@@ -836,22 +445,7 @@ similar to the one used in the yaml_to_mux varianter plugin.
 %files -n python3-%{srcname}-plugins-loader-yaml
 %{python3_sitelib}/avocado_loader_yaml*
 %{python3_sitelib}/avocado_framework_plugin_loader_yaml*
-%endif
 
-%package -n python2-%{srcname}-plugins-golang
-Summary: Avocado Plugin for Execution of golang tests
-Requires: python2-%{srcname} == %{version}
-Requires: golang
-
-%description -n python2-%{srcname}-plugins-golang
-Allows Avocado to list golang tests, and if golang is installed,
-also run them.
-
-%files -n python2-%{srcname}-plugins-golang
-%{python2_sitelib}/avocado_golang*
-%{python2_sitelib}/avocado_framework_plugin_golang*
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-golang
 Summary: Avocado Plugin for Execution of golang tests
 Requires: python3-%{srcname} == %{version}
@@ -864,21 +458,7 @@ also run them.
 %files -n python3-%{srcname}-plugins-golang
 %{python3_sitelib}/avocado_golang*
 %{python3_sitelib}/avocado_framework_plugin_golang*
-%endif
 
-%package -n python2-%{srcname}-plugins-varianter-pict
-Summary: Varianter with combinatorial capabilities by PICT
-Requires: python2-%{srcname} == %{version}
-
-%description -n python2-%{srcname}-plugins-varianter-pict
-This plugin uses a third-party tool to provide variants created by
-Pair-Wise algorithms, also known as Combinatorial Independent Testing.
-
-%files -n python2-%{srcname}-plugins-varianter-pict
-%{python2_sitelib}/avocado_varianter_pict*
-%{python2_sitelib}/avocado_framework_plugin_varianter_pict*
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-varianter-pict
 Summary: Varianter with combinatorial capabilities by PICT
 Requires: python3-%{srcname} == %{version}
@@ -890,22 +470,7 @@ Pair-Wise algorithms, also known as Combinatorial Independent Testing.
 %files -n python3-%{srcname}-plugins-varianter-pict
 %{python3_sitelib}/avocado_varianter_pict*
 %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
-%endif
 
-%package -n python2-%{srcname}-plugins-varianter-cit
-Summary: Varianter with Combinatorial Independent Testing capabilities
-Requires: python2-%{srcname} == %{version}
-
-%description -n python2-%{srcname}-plugins-varianter-cit
-A varianter plugin that generates variants using Combinatorial
-Independent Testing (AKA Pair-Wise) algorithm developed in
-collaboration with CVUT Prague.
-
-%files -n python2-%{srcname}-plugins-varianter-cit
-%{python2_sitelib}/avocado_varianter_cit*
-%{python2_sitelib}/avocado_framework_plugin_varianter_cit*
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-varianter-cit
 Summary: Varianter with Combinatorial Independent Testing capabilities
 Requires: python3-%{srcname} == %{version}
@@ -918,22 +483,7 @@ collaboration with CVUT Prague.
 %files -n python3-%{srcname}-plugins-varianter-cit
 %{python3_sitelib}/avocado_varianter_cit*
 %{python3_sitelib}/avocado_framework_plugin_varianter_cit*
-%endif
 
-%package -n python2-%{srcname}-plugins-result-upload
-Summary: Avocado Plugin to propagate Job results to a remote host
-Requires: python2-%{srcname} == %{version}
-
-%description -n python2-%{srcname}-plugins-result-upload
-This optional plugin is intended to upload the Avocado Job results to
-a dedicated sever.
-
-%files -n python2-%{srcname}-plugins-result-upload
-%{python2_sitelib}/avocado_result_upload*
-%{python2_sitelib}/avocado_framework_plugin_result_upload*
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/result_upload.conf
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-result-upload
 Summary: Avocado Plugin to propagate Job results to a remote host
 Requires: python3-%{srcname} == %{version}
@@ -946,21 +496,7 @@ a dedicated sever.
 %{python3_sitelib}/avocado_result_upload*
 %{python3_sitelib}/avocado_framework_plugin_result_upload*
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/result_upload.conf
-%endif
 
-%package -n python2-%{srcname}-plugins-glib
-Summary: Avocado Plugin for Execution of GLib Test Framework tests
-Requires: python2-%{srcname} == %{version}
-
-%description -n python2-%{srcname}-plugins-glib
-This optional plugin is intended to list and run tests written in the
-GLib Test Framework.
-
-%files -n python2-%{srcname}-plugins-glib
-%{python2_sitelib}/avocado_glib*
-%{python2_sitelib}/avocado_framework_plugin_glib*
-
-%if %{with_python3}
 %package -n python3-%{srcname}-plugins-glib
 Summary: Avocado Plugin for Execution of GLib Test Framework tests
 Requires: python3-%{srcname} == %{version}
@@ -972,18 +508,17 @@ GLib Test Framework.
 %files -n python3-%{srcname}-plugins-glib
 %{python3_sitelib}/avocado_glib*
 %{python3_sitelib}/avocado_framework_plugin_glib*
-%endif
 
-%package examples
+%package -n python3-%{srcname}-examples
 Summary: Avocado Test Framework Example Tests
-Requires: %{name} == %{version}
+Requires: python3-%{srcname} == %{version}
 
-%description examples
+%description -n python3-%{srcname}-examples
 The set of example tests present in the upstream tree of the Avocado framework.
 Some of them are used as functional tests of the framework, others serve as
 examples of how to write tests on your own.
 
-%files examples
+%files -n python3-%{srcname}-examples
 %dir %{_docdir}/avocado
 %{_docdir}/avocado/gdb-prerun-scripts
 %{_docdir}/avocado/plugins
@@ -994,15 +529,15 @@ examples of how to write tests on your own.
 %{_docdir}/avocado/varianter_pict
 %{_docdir}/avocado/varianter_cit
 
-%package bash
+%package -n python3-%{srcname}-bash
 Summary: Avocado Test Framework Bash Utilities
-Requires: %{name} == %{version}
+Requires: python3-%{srcname} == %{version}
 
-%description bash
+%description -n python3-%{srcname}-bash
 A small set of utilities to interact with Avocado from the Bourne
 Again Shell code (and possibly other similar shells).
 
-%files bash
+%files -n python3-%{srcname}-bash
 %{_libexecdir}/avocado*
 
 %changelog

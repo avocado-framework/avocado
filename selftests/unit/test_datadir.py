@@ -3,12 +3,7 @@ import os
 import shutil
 import tempfile
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
-from six.moves import xrange as range
+from unittest import mock
 
 from avocado.core import settings
 

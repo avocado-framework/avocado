@@ -1,10 +1,5 @@
 import socket
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 try:
     import netifaces
@@ -19,7 +14,7 @@ class PortTrackerTest(unittest.TestCase):
 
     def test_register_port(self):
         tracker = network.PortTracker()
-        network.is_port_free = mock.MagicMock(return_value=True)
+        network.is_port_free = unittest.mock.MagicMock(return_value=True)
         self.assertNotIn(22, tracker.retained_ports)
         tracker.register_port(22)
         network.is_port_free.assert_called_once_with(22, tracker.address)
@@ -27,8 +22,8 @@ class PortTrackerTest(unittest.TestCase):
 
     def test_release_port_does_not_poke_system(self):
         tracker = network.PortTracker()
-        tracker.release_port = mock.MagicMock()
-        network.is_port_free = mock.MagicMock()
+        tracker.release_port = unittest.mock.MagicMock()
+        network.is_port_free = unittest.mock.MagicMock()
         tracker.release_port(22)
         tracker.release_port.assert_called_once_with(22)
         network.is_port_free.assert_not_called()

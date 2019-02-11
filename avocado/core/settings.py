@@ -27,7 +27,6 @@ except ImportError:
 from pkg_resources import resource_filename
 from pkg_resources import resource_isdir
 from pkg_resources import resource_listdir
-from six import string_types
 from stevedore import ExtensionManager
 
 from ..utils import path
@@ -97,7 +96,7 @@ def convert_value_type(value, value_type):
     except Exception:
         sval = value
 
-    if isinstance(value_type, string_types):
+    if isinstance(value_type, str):
         if value_type == 'str':
             value_type = str
         elif value_type == 'bool':

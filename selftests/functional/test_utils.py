@@ -8,8 +8,6 @@ import tempfile
 import time
 import unittest
 
-from six.moves import xrange as range
-
 from avocado.utils.filelock import FileLock
 from avocado.utils.stacktrace import prepare_exc_info
 from avocado.utils import process

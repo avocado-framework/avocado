@@ -6,7 +6,7 @@ Avocado is a set of tools and libraries to help with automated testing.
 
 One can call it a test framework with benefits.  Native tests are
 written in Python and they follow the unittest
-(https://docs.python.org/2.7/library/unittest.html) pattern, but any
+(https://docs.python.org/3.7/library/unittest.html) pattern, but any
 executable can serve as a test.
 
 Avocado is composed of:
@@ -44,8 +44,8 @@ Installing with standard Python tools
 -------------------------------------
 
 The simplest installation method is through ``pip``.  On most POSIX
-systems with Python 2.7 and ``pip`` available, installation can be
-performed with a single command::
+systems with Python 3.4 (or later) and ``pip`` available, installation
+can be performed with a single command::
 
   pip install --user avocado-framework
 
@@ -60,7 +60,7 @@ If you want even more isolation, Avocado can also be installed in a
 Python virtual environment. with no additional steps besides creating
 and activating the "venv" itself::
 
-  python -m virtualenv /path/to/new/virtual_environment
+  python -m venv /path/to/new/virtual_environment
   . /path/to/new/virtual_environment/bin/activate
   pip install avocado-framework
 

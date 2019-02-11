@@ -22,8 +22,6 @@ import re
 import sys
 import traceback
 
-from six import string_types, iterkeys
-
 from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
@@ -441,7 +439,7 @@ def reconfigure(args):
             disable_log_handler(LOG_UI.getChild("debug"))
 
     # Add custom loggers
-    for name in [_ for _ in enabled if _ not in iterkeys(BUILTIN_STREAMS)]:
+    for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS]:
         stream_level = re.split(r'(?<!\\):', name, maxsplit=1)
         name = stream_level[0]
         if len(stream_level) == 1:
@@ -581,11 +579,11 @@ def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
     :param level: Log level (defaults to `INFO``)
     :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
     """
-    if isinstance(logger, string_types):
+    if isinstance(logger, str):
         logger = logging.getLogger(logger)
     handler = klass(stream)
     handler.setLevel(level)
-    if isinstance(fmt, string_types):
+    if isinstance(fmt, str):
         fmt = logging.Formatter(fmt=fmt)
     handler.setFormatter(fmt)
     logger.addHandler(handler)
@@ -594,7 +592,7 @@ def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
 
 
 def disable_log_handler(logger):
-    if isinstance(logger, string_types):
+    if isinstance(logger, str):
         logger = logging.getLogger(logger)
     # Handlers might be reused elsewhere, can't delete them
     while logger.handlers:

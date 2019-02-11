@@ -18,10 +18,7 @@
 
 import unittest
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 from avocado.utils import service
 

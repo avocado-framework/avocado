@@ -4,10 +4,7 @@ import shutil
 import tempfile
 import unittest
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 from avocado.core import data_dir
 from avocado.core import exceptions
