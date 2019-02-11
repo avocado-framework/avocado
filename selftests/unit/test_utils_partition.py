@@ -123,8 +123,7 @@ class TestPartitionMkfsMount(Base):
         self.assertIn(self.mountpoint, proc_mounts)
         proc = self.run_process_to_use_mnt()
         self.assertRaises(partition.PartitionError, self.disk.unmount)
-        proc.terminate()
-        proc.wait()
+        proc.wait(timeout=1)
 
     @unittest.skipIf(not process.can_sudo(sys.executable + " -c ''"),
                      "requires running Python as a privileged user")
@@ -141,12 +140,8 @@ class TestPartitionMkfsMount(Base):
                 self.assertRaises(partition.PartitionError, self.disk.unmount)
                 mocked_system_output.assert_called_with('lsof ' + self.mountpoint,
                                                         sudo=True)
-        # TODO: process.terminate() should be enough, but currently isn't.
-        # debug the root cause of why the process fails to terminate and the
-        # test hangs on wait()
         self.disk.unmount()
-        proc.terminate()
-        proc.wait()
+        proc.wait(timeout=1)
 
     def test_double_mount(self):
         """ Check the attempt for second mount fails """
