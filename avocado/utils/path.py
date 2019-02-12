@@ -146,7 +146,7 @@ def usable_rw_dir(directory, create=True):
     Checks for appropriate permissions, and creates missing dirs as needed.
 
     :param directory: Directory
-    :param create: wether to create the directory
+    :param create: whether to create the directory
     """
     if os.path.isdir(directory):
         try:
@@ -174,7 +174,7 @@ def usable_ro_dir(directory, create=True):
     least try to create one.
 
     :param directory: Directory
-    :param create: wether to create the directory
+    :param create: whether to create the directory
     """
     cwd = os.getcwd()
     if os.path.isdir(directory):

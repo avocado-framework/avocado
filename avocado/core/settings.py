@@ -226,12 +226,12 @@ class Settings(object):
         if not self.config_paths:
             raise ConfigFileNotFound(self.all_config_paths)
 
-    def process_config_path(self, pth):
+    def process_config_path(self, path_):
         """
-        Update list of config paths and process the given pth
+        Update list of config paths and process the given path
         """
-        self.all_config_paths.append(pth)
-        self.config_paths.extend(self.config.read(pth))
+        self.all_config_paths.append(path_)
+        self.config_paths.extend(self.config.read(path_))
 
     def _handle_no_value(self, section, key, default):
         """

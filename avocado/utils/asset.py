@@ -111,7 +111,7 @@ class Asset(object):
         overwriting it if the file is corrupted or expired.  These
         will be stored in the cache directory indexed by name.
 
-        When an asset name is an URL, wether it has a hash or not, it
+        When an asset name is an URL, whether it has a hash or not, it
         will be saved according to their locations, so that multiple
         assets with the same file name, but completely unrelated to
         each other, will still coexist.
