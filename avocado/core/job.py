@@ -383,10 +383,6 @@ class Job(object):
         LOG_JOB.info('Config files read (in order):')
         for cfg_path in settings.config_paths:
             LOG_JOB.info(cfg_path)
-        if settings.config_paths_failed:
-            LOG_JOB.info('Config files failed to read (in order):')
-            for cfg_path in settings.config_paths_failed:
-                LOG_JOB.info(cfg_path)
         LOG_JOB.info('')
 
         LOG_JOB.info('Avocado config:')

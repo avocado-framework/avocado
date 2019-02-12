@@ -17,7 +17,6 @@ Reads the avocado settings from a .ini file (from python ConfigParser).
 """
 import ast
 import os
-import sys
 import glob
 
 try:
@@ -25,10 +24,30 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
-from pkg_resources import resource_exists, resource_filename
+from pkg_resources import resource_filename
+from pkg_resources import resource_isdir
+from pkg_resources import resource_listdir
 from six import string_types
+from stevedore import ExtensionManager
 
 from ..utils import path
+
+
+class SettingsDispatcher(ExtensionManager):
+
+    """
+    Dispatchers that allows plugins to modify settings
+
+    It's not the standard "avocado.core.dispatcher" because that one depends
+    on settings. This dispatcher is the bare-stevedore dispatcher which is
+    executed before settings is parsed.
+    """
+
+    def __init__(self):
+        super(SettingsDispatcher, self).__init__('avocado.plugins.settings',
+                                                 invoke_on_load=True,
+                                                 invoke_kwds={},
+                                                 propagate_map_exceptions=True)
 
 
 class SettingsError(Exception):
@@ -96,27 +115,25 @@ def convert_value_type(value, value_type):
         value_type = str
 
     # if length of string is zero then return None
-    if len(sval) == 0:
+    if not sval:
         if value_type == str:
             return ""
-        elif value_type == os.path.expanduser:
+        if value_type == os.path.expanduser:
             return ""
-        elif value_type == bool:
+        if value_type == bool:
             return False
-        elif value_type == int:
+        if value_type == int:
             return 0
-        elif value_type == float:
+        if value_type == float:
             return 0.0
-        elif value_type == list:
+        if value_type == list:
             return []
-        else:
-            return None
+        return None
 
     if value_type == bool:
         if sval.lower() == "false":
             return False
-        else:
-            return True
+        return True
 
     if value_type == list:
         return ast.literal_eval(sval)
@@ -140,9 +157,13 @@ class Settings(object):
         :param config_path: Path to a config file. Useful for unittesting.
         """
         self.config = ConfigParser.ConfigParser()
-        self.intree = False
         self.config_paths = []
-        self.config_paths_failed = []
+        self.all_config_paths = []
+        _source_tree_root = os.path.dirname(os.path.dirname(os.path.dirname(
+            __file__)))
+        # In case "examples" file exists in root, we are running from tree
+        self.intree = bool(os.path.exists(os.path.join(_source_tree_root,
+                                                       'examples')))
         if config_path is None:
             if 'VIRTUAL_ENV' in os.environ:
                 cfg_dir = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
@@ -154,45 +175,33 @@ class Settings(object):
             _config_dir_system = os.path.join(cfg_dir, 'avocado')
             _config_dir_system_extra = os.path.join(cfg_dir, 'avocado', 'conf.d')
             _config_dir_local = os.path.join(user_dir, '.config', 'avocado')
-            _source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
-            _config_path_intree = os.path.join(os.path.abspath(_source_tree_root),
-                                               'avocado', 'etc', 'avocado')
-            _config_path_intree_extra = os.path.join(_config_path_intree, 'conf.d')
 
             config_filename = 'avocado.conf'
             config_path_system = os.path.join(_config_dir_system, config_filename)
             config_path_local = os.path.join(_config_dir_local, config_filename)
-            config_path_intree = os.path.join(_config_path_intree, config_filename)
 
-            config_system = os.path.exists(config_path_system)
-            config_system_extra = os.path.exists(_config_dir_system_extra)
-            config_local = os.path.exists(config_path_local)
-            config_intree = os.path.exists(config_path_intree)
-            config_intree_extra = os.path.exists(_config_path_intree_extra)
-            config_pkg_base = os.path.join('etc', config_filename)
-            config_pkg = resource_exists('avocado', config_pkg_base)
+            config_pkg_base = os.path.join('etc', 'avocado', config_filename)
             config_path_pkg = resource_filename('avocado', config_pkg_base)
-            if not (config_system or config_local or
-                    config_intree or config_pkg):
-                raise ConfigFileNotFound([config_path_system,
-                                          config_path_local,
-                                          config_path_intree,
-                                          config_path_pkg])
-            # First try in-tree config
-            if config_intree:
-                self.process_config_path(config_path_intree)
-                if config_intree_extra:
-                    for extra_file in glob.glob(os.path.join(_config_path_intree_extra, '*.conf')):
-                        self.process_config_path(extra_file)
-                self.intree = True
+            _config_pkg_extra = os.path.join('etc', 'avocado', 'conf.d')
+            if resource_isdir('avocado', _config_pkg_extra):
+                config_pkg_extra = resource_listdir('avocado',
+                                                    _config_pkg_extra)
+                _config_pkg_extra = resource_filename('avocado', _config_pkg_extra)
+            else:
+                config_pkg_extra = []
+            # First try pkg/in-tree config
+            self.all_config_paths.append(config_path_pkg)
+            for extra_file in (os.path.join(_config_pkg_extra, _)
+                               for _ in config_pkg_extra
+                               if _.endswith('.conf')):
+                self.all_config_paths.append(extra_file)
             # Override with system config
-            if config_system:
-                self.process_config_path(config_path_system)
-                if config_system_extra:
-                    for extra_file in glob.glob(os.path.join(_config_dir_system_extra, '*.conf')):
-                        self.process_config_path(extra_file)
+            self.all_config_paths.append(config_path_system)
+            for extra_file in glob.glob(os.path.join(_config_dir_system_extra,
+                                                     '*.conf')):
+                self.all_config_paths.append(extra_file)
             # And the local config
-            if not config_local:
+            if not os.path.exists(config_path_local):
                 try:
                     path.init_dir(_config_dir_local)
                     with open(config_path_local, 'w') as config_local_fileobj:
@@ -203,18 +212,26 @@ class Settings(object):
                         config_local_fileobj.write(content)
                 except IOError:     # Some users can't write it (docker)
                     pass
-            else:
-                self.process_config_path(config_path_local)
+            # Allow plugins to modify/extend the list of configs
+            dispatcher = SettingsDispatcher()
+            if dispatcher.extensions:
+                dispatcher.map_method('adjust_settings_paths',
+                                      self.all_config_paths)
+            # Register user config as last to always take precedence
+            self.all_config_paths.append(config_path_local)
         else:
-            # Unittests
-            self.process_config_path(config_path)
+            # Only used by unittests (the --config parses the file later)
+            self.all_config_paths.append(config_path)
+        self.config_paths = self.config.read(self.all_config_paths)
+        if not self.config_paths:
+            raise ConfigFileNotFound(self.all_config_paths)
 
     def process_config_path(self, pth):
-        read_configs = self.config.read(pth)
-        if read_configs:
-            self.config_paths += read_configs
-        else:
-            self.config_paths_failed.append(pth)
+        """
+        Update list of config paths and process the given pth
+        """
+        self.all_config_paths.append(pth)
+        self.config_paths.extend(self.config.read(pth))
 
     def _handle_no_value(self, section, key, default):
         """

@@ -49,10 +49,54 @@ will read the config files present in the git repos, and will ignore the system 
 Plugin config files
 ===================
 
-Plugins can also be configured by config files. In order to not disturb the main Avocado config file, those plugins,
-if they wish so, may install additional config files to ``/etc/avocado/conf.d/[pluginname].conf``, that will be parsed
-after the system wide config file. Users can override those values as well at the local config file level.
-Considering the config for the hypothethical plugin ``salad``:
+There are two ways to extend settings of extra plugin configuration. Plugins
+can extend the list of files parsed by ``Settings`` object by using
+``avocado.plugins.settings`` entry-point (Python-way) or they can
+simply drop the individual config files into ``/etc/avocado/conf.d``
+(linux/posix-way).
+
+`avocado.plugins.settings`
+--------------------------
+
+This entry-point uses ``avocado.core.plugin_interfaces.Settings``-like object
+to extend the list of parsed files. It only accepts individual files, but
+you can use something like ``glob.glob("*.conf")`` to add all config files
+inside a directory.
+
+You need to create the plugin (eg. ``my_plugin/settings.py``)::
+
+   from avocado.core.plugin_interfaces import Settings
+
+   class MyPluginSettings(Settings):
+       def adjust_settings_paths(self, paths):
+           paths.extend(glob.glob("/etc/my_plugin/conf.d/*.conf"))
+
+
+And register it in your ``setup.py`` entry-points::
+
+   from setuptools import setup
+   ...
+   setup(name="my-plugin",
+         entry_points={
+             'avocado.plugins.settings': [
+                 "my-plugin-settings = my_plugin.settings.MyPluginSettings",
+                 ],
+             ...
+
+Which extends the list of files to be parsed by settings object. Note this
+has to be executed early in the code so try to keep the required deps
+minimal (for example the `avocado.core.settings.settings` is not yet
+available).
+
+`/etc/avocado/conf.d`
+---------------------
+
+In order to not disturb the main Avocado config file, those plugins,
+if they wish so, may install additional config files to
+``/etc/avocado/conf.d/[pluginname].conf``, that will be parsed
+after the system wide config file. Users can override those values
+as well at the local config file level. Considering the config for
+the hypothethical plugin ``salad``:
 
 .. code-block:: ini
 
@@ -70,9 +114,31 @@ So the file parsing order is:
 
 * ``/etc/avocado/avocado.conf``
 * ``/etc/avocado/conf.d/*.conf``
+* ``avocado.plugins.settings`` plugins (but they can insert to any location)
 * ``~/.config/avocado/avocado.conf``
 
-In this order, meaning that what you set on your local config file may override what's defined in the system wide files.
+You can see the actual set of files/location by using ``avocado config``
+which uses ``*`` to mark existing and used files::
+
+   $ avocado config
+   Config files read (in order, '*' means the file exists and had been read):
+    * /etc/avocado/avocado.conf
+    * /etc/avocado/conf.d/resultsdb.conf
+    * /etc/avocado/conf.d/result_upload.conf
+    * /etc/avocado/conf.d/jobscripts.conf
+    * /etc/avocado/conf.d/gdb.conf
+    * /etc/avocado_vt/conf.d/vt.conf
+    * /etc/avocado_vt/conf.d/vt_joblock.conf
+      /home/medic/.config/avocado/avocado.conf
+
+    Section.Key                              Value
+    datadir.paths.base_dir                   /var/lib/avocado
+    datadir.paths.test_dir                   /usr/share/doc/avocado/tests
+    ...
+
+
+Where the lower config files override values of the upper files and
+the ``/home/medic/.config/avocado/avocado.conf`` file missing.
 
 .. note::  Please note that if avocado is running from git repos, those files will be ignored in favor of in tree configuration files. This is something that would normally only affect people developing avocado, and if you are in doubt, ``avocado config`` will tell you exactly which files are being used in any given situation.
 .. note::  When avocado runs inside virtualenv than path for global config files is also changed. For example, `avocado.conf` comes from the virual-env path `venv/etc/avocado/avocado.conf`.
@@ -93,26 +159,6 @@ example), we established the following order of precedence for variables (from l
 So the least important value comes from the library or test code default,
 going all the way up to the test parameters system.
 
-Config plugin
-=============
-
-A configuration plugin is provided for users that wish to quickly see what's defined in all sections of their Avocado
-configuration, after all the files are parsed in their correct resolution order. Example::
-
-    $ avocado config
-    Config files read (in order):
-        /etc/avocado/avocado.conf
-        $HOME/.config/avocado/avocado.conf
-
-        Section.Key     Value
-        runner.base_dir /var/lib/avocado
-        runner.test_dir /usr/share/doc/avocado/tests
-        runner.data_dir /var/lib/avocado/data
-        runner.logs_dir ~/avocado/job-results
-
-The command also shows the order in which your config files were parsed, giving you a better understanding of
-what's going on. The Section.Key nomenclature was inspired in ``git config --list`` output.
-
 Avocado Data Directories
 ========================
 
@@ -132,8 +178,12 @@ it will give you an output similar to the one seen below::
 
     $ avocado config --datadir
     Config files read (in order):
-        /etc/avocado/avocado.conf
-        $HOME/.config/avocado/avocado.conf
+        * /etc/avocado/avocado.conf
+        * /etc/avocado/conf.d/resultsdb.conf
+        * /etc/avocado/conf.d/result_upload.conf
+        * /etc/avocado/conf.d/jobscripts.conf
+        * /etc/avocado/conf.d/gdb.conf
+          $HOME/.config/avocado/avocado.conf
 
     Avocado replaces config dirs that can't be accessed
     with sensible defaults. Please edit your local config

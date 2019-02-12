@@ -37,13 +37,13 @@ class Config(CLICmd):
                             'Current: %(default)s')
 
     def run(self, args):
-        LOG_UI.info('Config files read (in order):')
-        for cfg_path in settings.config_paths:
-            LOG_UI.debug('    %s', cfg_path)
-        if settings.config_paths_failed:
-            LOG_UI.error('\nConfig files that failed to read:')
-            for cfg_path in settings.config_paths_failed:
-                LOG_UI.error('    %s', cfg_path)
+        LOG_UI.info("Config files read (in order, '*' means the file exists "
+                    "and had been read):")
+        for cfg_path in settings.all_config_paths:
+            if cfg_path in settings.config_paths:
+                LOG_UI.debug('    * %s', cfg_path)
+            else:
+                LOG_UI.debug('      %s', cfg_path)
         LOG_UI.debug("")
         if not args.datadir:
             blength = 0
