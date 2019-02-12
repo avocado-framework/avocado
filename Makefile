@@ -29,13 +29,13 @@ include Makefile.include
 all:
 	@echo
 	@echo "Development related targets:"
-	@echo "check:          Runs tree static check, unittests and fast functional tests"
-	@echo "check-full:     Runs tree static check, and all unittests and functional tests"
-	@echo "develop:        Runs 'python setup.py --develop' on this tree alone"
-	@echo "link:           Runs 'python setup.py --develop' in all subprojects and links the needed resources"
-	@echo "clean:          Get rid of scratch, byte files and removes the links to other subprojects"
-	@echo "selfcheck:      Runs tree static check, unittests and functional tests using Avocado itself"
-	@echo "spell:          Runs spell checker on comments and docstrings (requires python-enchant)"
+	@echo "check:       Runs tree static check, unittests and fast functional tests"
+	@echo "check-full:  Runs tree static check, and all unittests and functional tests"
+	@echo "develop:     Runs 'python setup.py --develop' on this tree alone"
+	@echo "link:        Runs 'python setup.py --develop' in all subprojects and links the needed resources"
+	@echo "clean:       Get rid of scratch, byte files and removes the links to other subprojects"
+	@echo "selfcheck:   Runs tree static check, unittests and functional tests using Avocado itself"
+	@echo "spell:       Runs spell checker on comments and docstrings (requires python-enchant)"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements:            Install runtime requirements"
@@ -52,8 +52,8 @@ all:
 	@echo "rpm:   Generate binary RPMs"
 	@echo
 	@echo "Release related targets:"
-	@echo "source-release:     Create source package for the latest tagged release"
-	@echo "srpm-release:       Generate a source RPM package (.srpm) for the latest tagged release"
+	@echo "source-release:  Create source package for the latest tagged release"
+	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
 	@echo "rpm-release:        Generate binary RPMs for the latest tagged release"
 	@echo "propagate-version:  Propagate './VERSION' to all plugins/modules"
 	@echo
@@ -100,7 +100,6 @@ pypi: wheel source-pypi develop
 
 clean:
 	$(PYTHON) setup.py clean
-	$(MAKE) -f $(CURDIR)/debian/rules clean || true
 	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES PYPI_UPLOAD
 	rm -f man/avocado.1
 	rm -f man/avocado-rest-client.1
@@ -126,6 +125,9 @@ requirements-plugins: requirements
 		else echo ">> SKIP $$PLUGIN";\
 		fi;\
 	done;
+
+requirements-selftests: pip
+	- $(PYTHON) -m pip install -r requirements-selftests.txt
 
 smokecheck: clean develop
 	./scripts/avocado run passtest.py
