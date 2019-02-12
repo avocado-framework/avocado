@@ -108,6 +108,8 @@ class xUnitSucceedTest(unittest.TestCase):
                         (junit_xsd, xml, xmlschema.error_log))
 
     def test_max_test_log_size(self):
+        def get_system_out(out):
+            return out[out.find(b"<system-out>"):out.find(b"<system-out/>")]
         log = tempfile.NamedTemporaryFile(dir=self.tmpdir, delete=False)
         log_content = b"1234567890" * 100
         log_content += b"this should not be present" + b"0987654321" * 100
@@ -127,10 +129,17 @@ class xUnitSucceedTest(unittest.TestCase):
         xunit_result.render(self.test_result, self.job)
         with open(self.job.args.xunit_output, 'rb') as fp:
             limited = fp.read()
+        self.job.args.xunit_max_test_log_chars = 100000
+        xunit_result.render(self.test_result, self.job)
+        with open(self.job.args.xunit_output, 'rb') as fp:
+            limited_but_fits = fp.read()
         self.assertLess(len(limited), len(unlimited) - 500,
                         "Length of xunit limitted to 10 chars was greater "
                         "than (unlimited - 500). Unlimited output:\n%s\n\n"
                         "Limited output:\n%s" % (unlimited, limited))
+        unlimited_output = get_system_out(unlimited)
+        self.assertIn(log_content, unlimited_output)
+        self.assertEqual(unlimited_output, get_system_out(limited_but_fits))
         self.assertIn(b"this should not be present", unlimited)
         self.assertNotIn(b"this should not be present", limited)
         self.assertIn(b"1234567890", unlimited)
