@@ -176,6 +176,26 @@ http://avocado-framework.readthedocs.io/en/latest/rfcs/LongTermStability.html
 and to your package management docs on how to switch to the
 ``avocado-lts`` repo.
 
+Latest Development RPM Packages from COPR
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Avocado provides a repository of continuously built packages from the
+GitHub repository's master branch.  These packages are currently
+available for EL7, Fedora 28 and Fedora 29, for both x86_64 and
+ppc64le.
+
+If you're interested in using the very latest development version of
+Avocado from RPM packages, you can do so by running::
+
+  dnf copr enable @avocado/avocado-latest
+  dnf install python*-avocado*
+
+The following image shows the status of the Avocado packages building
+on COPR:
+
+  .. image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/status_image/last_build.png
+     :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
+
 OpenSUSE
 ~~~~~~~~
 
