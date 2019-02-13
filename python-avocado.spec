@@ -55,8 +55,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 67.0
-Release: 1%{?gitrel}%{?dist}
+Version: 68.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -1006,6 +1006,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Feb 13 2019 Cleber Rosa <cleber@redhat.com> - 68.0-0
+- New release
+
 * Mon Feb  4 2019 Cleber Rosa <cleber@redhat.com> - 67.0-1
 - python2-resultsdb_api package has been removed in F30 so
   python2-avocado-plugins-resultsdb was also disabled.

@@ -1,0 +1,127 @@
+==============================
+68.0 The Marvelous Mrs. Maisel
+==============================
+
+The Avocado team is proud to present another release: Avocado version
+68.0, AKA "The Marvelous Mrs. Maisel", is now available!
+
+Release documentation: `Avocado 68.0
+<http://avocado-framework.readthedocs.io/en/68.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* The Avocado test loader, which does not load or execute Python
+  source code that may contain tests for security reasons, now
+  operates in a way much more similar to the standard Python object
+  inheritance model.  Before, classes containing tests that would not
+  directly inherit from :class:`avocado.Test` would require a
+  docstring statement (either ``:avocado: enable`` or ``:avocado:
+  recursive``).  This is not necessary for most users anymore, as the
+  recursive detection is now the default behavior.
+
+* The xUnit plugin now should produce output that is more compatible
+  with other implementations, specifically newer Jenkin's as well as
+  Ant and Maven.  The specific change was to format the time field
+  with 3 decimal places.
+
+* A new :func:`avocado.utils.cpu.get_pid_cpus` utility function allows
+  one to get all the CPUs being used by a given process and its
+  threads.
+
+* The :mod:`avocado.utils.process` module now exposes the ``timeout``
+  parameter to users of the :class:`avocado.utils.process.SubProcess`
+  class.  It allows users to define a timeout, and the type of signal
+  that will be used to attempt to kill the process after the timeout
+  is reached.
+
+* The location of the Avocado configuration files can now be
+  influenced by third parties by means of a new plugin.
+
+* The configuration files that have been effectively parsed are now
+  displayed as part of ``avocado config`` command output.
+
+Bug Fixes
+=========
+
+* A bug that would crash Avocado while listing simple or "broken"
+  tests has been fixed.
+
+* A bug on the asset fetcher cache system would prevent files with the
+  same name, but from different locations, to be kept in the cache
+  at the same, causing overwrites and new download attempts.
+
+* The robot framework plugin would print errors and warnings to the
+  console, confusing Avocado users as to the origin and reason for
+  those messages.  The plugin will now disable all robot framework
+  logging operations on the console.
+
+* Test directories won't be silently created on system wide locations
+  any longer, as this is a packaging and/or installation step, and not
+  an Avocado test runner runtime step.
+
+* The :mod:`avocado.utils.ssh` module would not properly establish
+  master sessions due to the lack of a ``ControlPath`` option.
+
+* A possible infinite hang of the test runner, due to a miscalculation
+  of the timeout, was fixed.
+
+* The :func:`avocado.utils.archive.extract_lzma` now properly opens
+  files in binary mode.
+
+Internal Changes
+================
+
+* An optimization and robustness improvement on the
+  func:`avocado.utils.memory.read_from_meminfo` was added.
+
+* The required version of the PyYAML library has been updated to 4.2b2
+  because of CVE-2017-18342.  Even though Avocado doesn't use the
+  exact piece of code that was subject to the vulnerability, it's
+  better to be on the safe side.
+
+* Rules to allow a SRPM (and consequently RPM) packages to be built
+  on the COPR build service have been added.
+
+* The documentation on the ``--mux-inject`` feature and command line
+  option has been improved, showing the behavior of the ``path``
+  component when inserting content and fetching parameters later
+  on.
+
+* A new test was added to cover the behavior of unittest's
+  assertRaises when used in an Avocado test was added.
+
+* A fix was added to selftests/unit/test_utils_vmimage.py to not
+  depend or assume a given host architecture.
+
+* The :class:`avocado.utils.ssh.Session` will now perform a more
+  extensive check for an usable master connection, instead of relying
+  on just the SSH process status code.
+
+* The upstream and Fedora versions of the SPEC files are now virtually
+  in sync.
+
+* Building the the docs as part of the selftests now works on
+  Python 3.
+
+* The Avocado test loader, when returning Python unittest results,
+  will now return a proper ordered dictionary that matches the order
+  in which they were found on the source code files.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/67.0...68.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=LD6dPc2ptd0>`_.
