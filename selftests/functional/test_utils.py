@@ -142,6 +142,7 @@ class ProcessTest(unittest.TestCase):
         proc = process.SubProcess('%s 1' % self.fake_vmstat)
         proc.start()
         time.sleep(3)
+        proc.terminate()
         proc.wait(timeout=1)
         stdout = proc.get_stdout().decode()
         self.assertIn('memory', stdout, 'result: %s' % stdout)
