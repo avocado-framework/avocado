@@ -4,4 +4,4 @@
       name: "{{ item }}"
       state: latest
     with_items: "{{ avocado_python_rpm_packages }}"
-    when: ansible_distribution_file_variety == "RedHat"
+    when: ansible_facts['distribution_file_variety'] == "RedHat"
