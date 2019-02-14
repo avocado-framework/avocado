@@ -14,6 +14,7 @@
     - include_vars: vars.yml
     - include_tasks: tasks/epel.yml
     - include_tasks: tasks/python_rpm_pkgs.yml
+    - include_tasks: tasks/virtualenv_script.yml
     - name: Temporary dir for Avocado venv
       tempfile:
         state: directory

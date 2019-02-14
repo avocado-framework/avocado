@@ -1,0 +1,9 @@
+---
+    - name: Virtualenv script for systems without one
+      copy:
+        content: "#!/usr/bin/python\nimport virtualenv\nvirtualenv.main()"
+        dest: /usr/local/bin/virtualenv
+        mode: 0775
+      when:
+        - ansible_facts['distribution'] == "Fedora"
+        - ansible_facts['distribution_major_version'] == "29"
