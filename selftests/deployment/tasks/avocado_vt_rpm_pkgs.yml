@@ -1,0 +1,15 @@
+---
+  - name: Install Avocado-VT Depedencies on Red Hat (like) systems
+    package:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+      - gcc
+      - nc
+      - python-netaddr
+      - python-netifaces
+      - python2-aexpect
+      - qemu-img
+      - qemu-kvm
+      - tcpdump
+    when: ansible_facts['distribution_file_variety'] == "RedHat"
