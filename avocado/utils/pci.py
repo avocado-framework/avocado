@@ -304,7 +304,7 @@ def get_mask(pci_address):
     if output:
         dic = {'K': 1024, 'M': 1048576, 'G': 1073741824}
         for line in output.splitlines():
-            if 'Region' in line and 'Memory at' in line:
+            if 'Memory at' in line:
                 val = line.split('=')[-1].split(']')[0]
                 memory_size = int(val[:-1]) * dic[val[-1]]
                 break
