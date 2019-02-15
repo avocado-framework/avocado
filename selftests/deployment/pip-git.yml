@@ -26,7 +26,6 @@
         virtualenv: "{{ temporary_dir.path }}"
     - name: Avocado version
       shell: "{{ temporary_dir.path }}/bin/avocado --version"
-      register: avocado_version_result
       changed_when: false
     - name: Avocado HTML report plugin installation via pip
       pip:
