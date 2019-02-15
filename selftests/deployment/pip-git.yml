@@ -10,7 +10,6 @@
       # pip install "git+https://" quite obviously requires git
       - git
       - python-virtualenv
-    avocado_virtualenv_command: virtualenv-2.7
   tasks:
     - include_vars: vars.yml
     - include_tasks: tasks/epel.yml
@@ -22,7 +21,6 @@
     - name: Avocado installation via pip
       pip:
         name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg={{ avocado_egg_name }}"
-        virtualenv_command: "{{ avocado_virtualenv_command }}"
         virtualenv: "{{ temporary_dir.path }}"
     - name: Avocado version
       shell: "{{ temporary_dir.path }}/bin/avocado --version"
