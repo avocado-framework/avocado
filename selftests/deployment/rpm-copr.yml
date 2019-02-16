@@ -1,0 +1,38 @@
+---
+- name: Installs Avocado using RPM packages from the Copr repo
+  hosts: avocado-test-deployment
+  tasks:
+    - include_vars: vars.yml
+    - include_tasks: tasks/epel.yml
+    - include_tasks: tasks/avocado_copr_repo.yml
+    - name: Install Avocado packages
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - python2-avocado
+        - python2-avocado-plugins-glib
+        - python2-avocado-plugins-golang
+        - python2-avocado-plugins-loader-yaml
+        - python2-avocado-plugins-output-html
+        - python2-avocado-plugins-result-upload
+        - python2-avocado-plugins-runner-docker
+        - python2-avocado-plugins-runner-remote
+        - python2-avocado-plugins-runner-vm
+        - python2-avocado-plugins-varianter-cit
+        - python2-avocado-plugins-varianter-pict
+        - python2-avocado-plugins-varianter-yaml-to-mux
+    - name: Avocado version
+      shell: "avocado --version"
+      changed_when: false
+    - include_tasks: tasks/avocado_vt_rpm_pkgs.yml
+    - include_tasks: tasks/avocado_vt_copr_repo.yml
+    - name: Avocado-VT package
+      package:
+        name: python2-avocado-plugins-vt
+        state: latest
+    - name: Avocado-VT bootstrap
+      shell: avocado vt-bootstrap --yes-to-all --vt-skip-verify-download-assets
+    - name: Avocado-VT test available
+      shell: avocado list boot
+      changed_when: false
