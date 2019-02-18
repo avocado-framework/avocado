@@ -1,4 +1,3 @@
-import netifaces
 import socket
 import unittest
 
@@ -6,6 +5,12 @@ try:
     from unittest import mock
 except ImportError:
     import mock
+
+try:
+    import netifaces
+    HAS_NETIFACES = True
+except ImportError:
+    HAS_NETIFACES = False
 
 from avocado.utils import network
 
@@ -52,6 +57,8 @@ def get_all_local_addrs():
 
 class FreePort(unittest.TestCase):
 
+    @unittest.skipUnless(HAS_NETIFACES,
+                         "netifaces library not available")
     def test_is_port_free(self):
         port = network.find_free_port(sequent=False)
         self.assertTrue(network.is_port_free(port, "localhost"))
