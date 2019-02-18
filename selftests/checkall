@@ -29,10 +29,10 @@ parallel_selftests() {
     # The directories that may contain files with tests, from the Avocado core
     # and from all optional plugins
     declare -A TESTS
-    TESTS[selftests]=$(${FIND_UNITTESTS} | sort -R)
+    TESTS[selftests]=$(${PYTHON} ${FIND_UNITTESTS} | sort -R)
     for PLUGIN in $(find optional_plugins -mindepth 1 -maxdepth 1 -type d); do
         PLUGIN_BASENAME=$(basename $PLUGIN)
-        THIS_DIR_TESTS=$(${FIND_UNITTESTS} --no-base-selftests --plugin-dirs $PLUGIN_BASENAME | sort -R)
+        THIS_DIR_TESTS=$(${PYTHON} ${FIND_UNITTESTS} --no-base-selftests --plugin-dirs $PLUGIN_BASENAME | sort -R)
         if [ -n "$THIS_DIR_TESTS" ]; then
             TESTS[$PLUGIN]=${THIS_DIR_TESTS};
         fi
