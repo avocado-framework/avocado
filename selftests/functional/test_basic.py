@@ -118,6 +118,16 @@ class SharedLibTest(Test):
 '''
 
 
+TEST_OTHER_LOGGERS_CONTENT = '''
+import logging
+from avocado import Test
+
+class My(Test):
+    def test(self):
+        logging.getLogger("some.other.logger").info("SHOULD BE ON debug.log")
+'''
+
+
 def probe_binary(binary):
     try:
         return utils_path.find_command(binary)
@@ -569,6 +579,26 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(b"PARAMS (key=sleep_length, path=*, default=1) => '0.01'",
                       result.stdout)
         self.assertIn(b"Sleeping for 0.01 seconds", result.stdout)
+
+    def test_other_loggers(self):
+        with script.TemporaryScript(
+                'mytest.py',
+                TEST_OTHER_LOGGERS_CONTENT,
+                'avocado_functional_test_other_loggers') as mytest:
+
+            cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+                        '-- %s' % (AVOCADO, self.tmpdir, mytest))
+            result = process.run(cmd_line, ignore_status=True)
+            expected_rc = exit_codes.AVOCADO_ALL_OK
+            self.assertEqual(result.exit_status, expected_rc,
+                             "Avocado did not return rc %d:\n%s" %
+                             (expected_rc, result))
+
+            test_log_dir = glob.glob(os.path.join(self.tmpdir, 'job-*',
+                                                  'test-results', '1-*'))[0]
+            test_log_path = os.path.join(test_log_dir, 'debug.log')
+            with open(test_log_path, 'rb') as test_log:
+                self.assertIn(b'SHOULD BE ON debug.log', test_log.read())
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

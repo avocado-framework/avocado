@@ -667,6 +667,11 @@ class Test(unittest.TestCase, TestData):
         self.file_handler.setFormatter(formatter)
         self.log.addHandler(self.file_handler)
 
+        # add the test log handler to the root logger so that
+        # everything logged while the test is running, for every
+        # logger, also makes its way into the test log file
+        logging.root.addHandler(self.file_handler)
+
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
 
