@@ -58,13 +58,18 @@ as additional packages on PyPI.  You should be able to find them via
 ``pip search avocado-framework-plugin | grep
 avocado-framework-plugin``. Some of them are listed below:
 
+* `avocado-framework-plugin-glib <https://pypi.python.org/pypi/avocado-framework-plugin-glib>`_: Execution of GLib Test Framework tests
+* `avocado-framework-plugin-golang <https://pypi.python.org/pypi/avocado-framework-plugin-glib>`_: Execution of Golang tests
+* `avocado-framework-plugin-loader-yaml <https://pypi.python.org/pypi/avocado-framework-plugin-loader-yaml>`_: Loads tests from YAML files
 * `avocado-framework-plugin-result-html <https://pypi.python.org/pypi/avocado-framework-plugin-result-html>`_: HTML Report for Jobs
+* `avocado-framework-plugin-result-upload  <https://pypi.python.org/pypi/avocado-framework-plugin-result-upload>`_: Propagate Job results to remote host
 * `avocado-framework-plugin-resultsdb <https://pypi.python.org/pypi/avocado-framework-plugin-resultsdb>`_: Propagate Job results to Resultsdb
+* `avocado-framework-plugin-robot <https://pypi.python.org/pypi/avocado-framework-plugin-robot>`_: Execution of Robot Framework tests
+* `avocado-framework-plugin-runner-docker <https://pypi.python.org/pypi/avocado-framework-plugin-runner-docker>`_: Runner for Execution on Docker Containers
 * `avocado-framework-plugin-runner-remote <https://pypi.python.org/pypi/avocado-framework-plugin-runner-remote>`_: Runner for Remote Execution
 * `avocado-framework-plugin-runner-vm <https://pypi.python.org/pypi/avocado-framework-plugin-runner-vm>`_: Runner for libvirt VM Execution
-* `avocado-framework-plugin-runner-docker <https://pypi.python.org/pypi/avocado-framework-plugin-runner-docker>`_: Runner for Execution on Docker Containers
-* `avocado-framework-plugin-loader-yaml <https://pypi.python.org/pypi/avocado-framework-plugin-loader-yaml>`_: Loads tests from YAML files
-* `avocado-framework-plugin-robot <https://pypi.python.org/pypi/avocado-framework-plugin-robot>`_: Execution of Robot Framework tests
+* `avocado-framework-plugin-varianter-cit <https://pypi.python.org/pypi/avocado-framework-plugin-varianter-cit>`_: Varianter with combinatorial capabilities
+* `avocado-framework-plugin-varianter-pict: <https://pypi.python.org/pypi/avocado-framework-plugin-varianter-pict>`_: Varianter with combinatorial capabilities by PICT
 * `avocado-framework-plugin-varianter-yaml-to-mux <https://pypi.python.org/pypi/avocado-framework-plugin-varianter-yaml-to-mux>`_: Parse YAML file into variants
 
 Installing from Packages

@@ -70,13 +70,18 @@ as additional packages on PyPI.  You should be able to find them via
 ``pip search avocado-framework-plugin | grep
 avocado-framework-plugin``. Some of them are listed below:
 
+* ``avocado-framework-plugin-glib``: Execution of GLib Test Framework tests
+* ``avocado-framework-plugin-golang``: Execution of Golang tests
+* ``avocado-framework-plugin-loader-yaml``: Loads tests from YAML files
 * ``avocado-framework-plugin-result-html``: HTML Report for Jobs
+* ``avocado-framework-plugin-result-upload``: Propagate Job results to remote host
 * ``avocado-framework-plugin-resultsdb``: Propagate Job results to Resultsdb
+* ``avocado-framework-plugin-robot``: Execution of Robot Framework tests
+* ``avocado-framework-plugin-runner-docker``: Runner for Execution on Docker Containers
 * ``avocado-framework-plugin-runner-remote``: Runner for Remote Execution
 * ``avocado-framework-plugin-runner-vm``: Runner for libvirt VM Execution
-* ``avocado-framework-plugin-runner-docker``: Runner for Execution on Docker Containers
-* ``avocado-framework-plugin-loader-yaml``: Loads tests from YAML files
-* ``avocado-framework-plugin-robot``: Execution of Robot Framework tests
+* ``avocado-framework-plugin-varianter-cit``: Varianter with combinatorial capabilities
+* ``avocado-framework-plugin-varianter-pict``: Varianter with combinatorial capabilities by PICT
 * ``avocado-framework-plugin-varianter-yaml-to-mux``: Parse YAML file into variants
 
 Installing from Packages
