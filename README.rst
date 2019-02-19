@@ -97,14 +97,13 @@ name is ``python-avocado``, and can be installed with::
 
 Other available packages (depending on the Avocado version) may include:
 
-* ``python-avocado-examples``: contains example tests and other example files
-* ``python2-avocado-plugins-output-html``: HTML job report plugin
-* ``python2-avocado-plugins-resultsdb``: propagate Job results to Resultsdb
-* ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
-* ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
-* ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
-* ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
-* ``python2-avocado-plugins-varianter-pict``: varianter with combinatorial capabilities by PICT
+* ``python-avocado-examples``: Avocado Test Framework Example Tests
+* ``python2-avocado-plugins-output-html``: Avocado HTML report plugin
+* ``python2-avocado-plugins-runner-remote``: Avocado Runner for Remote Execution
+* ``python2-avocado-plugins-runner-vm``: Avocado Runner for libvirt VM Execution
+* ``python2-avocado-plugins-resultsdb``: Avocado plugin to propagate job results to ResultsDB
+* ``python2-avocado-plugins-runner-docker``: Avocado Runner for Execution on Docker Containers
+* ``python2-avocado-plugins-varianter-yaml-to-mux``: Avocado plugin to generate variants out of yaml files
 
 Fedora from Avocado's own Repo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -168,11 +167,13 @@ installation ready::
 
 Other available packages (depending on the Avocado version) may include:
 
-* ``python-avocado-examples``: contains example tests and other example files
-* ``python2-avocado-plugins-output-html``: HTML job report plugin
-* ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
-* ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
-* ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+* ``python-avocado-examples``: Avocado Test Framework Example Tests
+* ``python2-avocado-plugins-output-html``: Avocado HTML report plugin
+* ``python2-avocado-plugins-runner-remote``: Avocado Runner for Remote Execution
+* ``python2-avocado-plugins-runner-vm``: Avocado Runner for libvirt VM Execution
+* ``python2-avocado-plugins-resultsdb``: Avocado plugin to propagate job results to ResultsDB
+* ``python2-avocado-plugins-runner-docker``: Avocado Runner for Execution on Docker Containers
+* ``python2-avocado-plugins-varianter-yaml-to-mux``: Avocado plugin to generate variants out of yaml files
 
 The LTS (Long Term Stability) repositories are also available for
 Enterprise Linux.  For more information about the LTS releases, please
