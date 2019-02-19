@@ -155,14 +155,21 @@ installation ready::
 
 Other available packages (depending on the Avocado version) may include:
 
-* ``python-avocado-examples``: contains example tests and other example files
-* ``python2-avocado-plugins-output-html``: HTML job report plugin
-* ``python2-avocado-plugins-resultsdb``: propagate Job results to Resultsdb
-* ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
-* ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
-* ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
-* ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
-* ``python2-avocado-plugins-varianter-pict``: varianter with combinatorial capabilities by PICT
+* ``python-avocado-bash``: Avocado Test Framework Bash Utilities
+* ``python-avocado-common``: Avocado common files
+* ``python-avocado-examples``: Avocado Test Framework Example Tests
+* ``python2-avocado-plugins-glib``: Avocado Plugin for Execution of GLib Test Framework tests
+* ``python2-avocado-plugins-golang``: Avocado Plugin for Execution of golang tests
+* ``python2-avocado-plugins-loader-yaml``: Avocado Plugin that loads tests from YAML files
+* ``python2-avocado-plugins-output-html``: Avocado HTML report plugin
+* ``python2-avocado-plugins-result-upload``: Avocado Plugin to propagate Job results to a remote host
+* ``python2-avocado-plugins-resultsdb``: Avocado plugin to propagate job results to ResultsDB
+* ``python2-avocado-plugins-runner-docker``: Avocado Runner for Execution on Docker Containers
+* ``python2-avocado-plugins-runner-remote``: Avocado Runner for Remote Execution
+* ``python2-avocado-plugins-runner-vm``: Avocado Runner for libvirt VM Execution
+* ``python2-avocado-plugins-varianter-cit``: Varianter with Combinatorial Independent Testing capabilities
+* ``python2-avocado-plugins-varianter-pict``: Varianter with combinatorial capabilities by PICT
+* ``python2-avocado-plugins-varianter-yaml-to-mux``: Avocado plugin to generate variants out of yaml files
 
 The LTS (Long Term Stability) repositories are also available for
 Enterprise Linux.  Please refer to :ref:`rfc-long-term-stability` and
