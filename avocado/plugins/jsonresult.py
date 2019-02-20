@@ -37,6 +37,9 @@ class JSONResult(Result):
     def _render(self, result):
         tests = []
         for test in result.tests:
+            fail_reason = test.get('fail_reason', UNKNOWN)
+            if fail_reason is not None:
+                fail_reason = astring.to_text(fail_reason)
             tests.append({'id': str(test.get('name', UNKNOWN)),
                           'start': test.get('time_start', -1),
                           'end': test.get('time_end', -1),
@@ -45,7 +48,7 @@ class JSONResult(Result):
                           'whiteboard': test.get('whiteboard', UNKNOWN),
                           'logdir': test.get('logdir', UNKNOWN),
                           'logfile': test.get('logfile', UNKNOWN),
-                          'fail_reason': astring.to_text(test.get('fail_reason', UNKNOWN))})
+                          'fail_reason': fail_reason})
         content = {'job_id': result.job_unique_id,
                    'debuglog': result.logfile,
                    'tests': tests,
