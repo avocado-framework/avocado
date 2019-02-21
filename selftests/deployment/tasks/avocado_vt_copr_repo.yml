@@ -1,0 +1,18 @@
+---
+    - name: Avocado-VT Copr repo
+      yum_repository:
+        name: avocado-vt-latest
+        description: Copr repo for avocado-vt-latest
+        baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-vt-latest/epel-7-$basearch/
+        gpgcheck: no
+      when:
+        - ansible_facts['distribution_file_variety'] == "RedHat"
+        - ansible_facts['distribution_major_version'] == "7"
+    - name: Avocado-VT Copr repo
+      yum_repository:
+        name: avocado-vt-latest
+        description: Copr repo for avocado-vt-latest
+        baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-vt-latest/fedora-$releasever-$basearch/
+        gpgcheck: no
+      when:
+        - ansible_facts['distribution'] == "Fedora"

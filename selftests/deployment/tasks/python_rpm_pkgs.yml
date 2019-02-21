@@ -4,4 +4,15 @@
       name: "{{ item }}"
       state: latest
     with_items: "{{ avocado_python_rpm_packages }}"
-    when: ansible_distribution_file_variety == "RedHat"
+    when: ansible_facts['distribution_file_variety'] == "RedHat"
+  - name: Install Python 2 Depedencies on Fedora 29 and later systems
+    package:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+      - python2-pip
+      - python2-virtualenv
+      - python2-libselinux
+    when:
+       - ansible_facts['distribution'] == "Fedora"
+       - ansible_facts['distribution_major_version'] == "29"
