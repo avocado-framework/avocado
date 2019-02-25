@@ -14,7 +14,7 @@ class AbortTest(Test):
     :avocado: tags=failure_expected
     """
 
-    default_params = {'timeout': 2.0}
+    timeout = 2.0
 
     def test(self):
         os.abort()
