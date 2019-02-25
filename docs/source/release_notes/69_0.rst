@@ -1,0 +1,61 @@
+======================
+69.0 The King's Choice
+======================
+
+The Avocado team is proud to present another LTS (Long Term Stability)
+release: Avocado 69.0, AKA "The King's Choice", is now available!
+
+Release documentation: `Avocado 69.0
+<http://avocado-framework.readthedocs.io/en/69.0/>`_
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+For a complete list of changes from the last LTS release to this one,
+please refer to :ref:`69.0 LTS <lts_69_0>`.
+
+The major changes introduced on this version (when compared to 68.0)
+are listed below, roughly categorized into major topics and intended
+audience:
+
+Bug Fixes
+=========
+
+* INSTRUMENTED tests would not send content to the test's individual
+  log files when the logger name was not ``avocado.test``.  Now tests
+  can declare and use their own logger (with their own names) and the
+  content will be directed to the test's own log files.
+
+* The JSON result plugin would store empty failure data as a string
+  representation of Python's ``None``, instead of JSON's own ``null``.
+  Because the JSON file is used internally between the local and remote
+  runners, the Human UI would show a ``"None"`` "failure" reason
+  when tests succeeded.
+
+Internal Changes
+================
+
+* Document the Copr repo, including the repository build status for
+  our packages on our README and Getting Started pages.
+
+* Documentation improvements with a more accurate list of available
+  plugins.
+
+* Deployment checks for a setup of Avocado and Avocado-VT installed via
+  PIP from the latest sources were added.
+
+* Deployment checks for a setup of Avocado and Avocado-VT installed via
+  the Copr repository packages were added.
+
+* Reliability improvements for the unittest
+  ``selftests.test_utils.ProcessTest.test_process_start``.
+
+* Skip the unittest ``selftests.test_utils_network`` when the Python
+  netifaces library is not available.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/68.0...69.0>`_.

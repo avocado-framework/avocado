@@ -29,7 +29,7 @@ Users/Test Writers
   available on Python 3 based RPM packages.
 
 * The :mod:`avocado.utils.iso9660` module gained a pycdlib based
-  backend, which is very capable, and pyre Python ISO9660 library.
+  backend, which is very capable, and pure Python ISO9660 library.
   This allows us to have a working :mod:`avocado.utils.iso9660`
   backend on environments in which other backends may not be easily
   installable.
