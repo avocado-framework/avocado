@@ -231,7 +231,8 @@ class Job(object):
                          else logging.getLevelName(name[1].upper()))
                 name = name[0]
             try:
-                logfile = os.path.join(self.logdir, name + "." +
+                logname = "log" if name == "" else name
+                logfile = os.path.join(self.logdir, logname + "." +
                                        logging.getLevelName(level))
                 handler = output.add_log_handler(name, logging.FileHandler,
                                                  logfile, level, formatter)
