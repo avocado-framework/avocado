@@ -43,10 +43,6 @@ BUILTIN_STREAMS = {'app': 'application output',
 #: Groups of builtin streams
 BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
                        'none': 'disables regular output (leaving only errors enabled)'}
-#: Transparently handles colored terminal, when one is used
-TERM_SUPPORT = None
-#: Allows modifying the sys.stdout/sys.stderr
-STD_OUTPUT = None
 
 
 class TermSupport(object):
@@ -201,6 +197,7 @@ class TermSupport(object):
         return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
 
 
+#: Transparently handles colored terminal, when one is used
 TERM_SUPPORT = TermSupport()
 
 
@@ -340,6 +337,7 @@ class StdOutput(object):
             paginator.close()
 
 
+#: Allows modifying the sys.stdout/sys.stderr
 STD_OUTPUT = StdOutput()
 
 
