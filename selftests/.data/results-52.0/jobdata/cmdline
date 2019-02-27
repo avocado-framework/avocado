@@ -1,2 +1,0 @@
-['/usr/local/bin/avocado', 'run', '--external-runner', '/bin/echo', '-m', 'examples/yaml_to_mux/simple_vars.yaml', '--', 'yes', 'no']
-
