@@ -518,10 +518,6 @@ class MemStreamHandler(logging.StreamHandler):
         """
 
 
-class PagerNotFoundError(Exception):
-    pass
-
-
 class Paginator(object):
 
     """
