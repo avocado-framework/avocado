@@ -39,14 +39,14 @@ class TestMultipleInstances(unittest.TestCase):
         runner1.return_value.stdout = 'systemd'
         service1 = service.service_manager(run=runner1)
         service1.set_target('foo_target')
-        self.assertEqual(runner1.call_args[0][0],
+        self.assertEqual(runner1.call_args[0][0],  # pylint: disable=E1136
                          'systemctl isolate foo_target')
         # Call 'start' on second runner
         runner2 = mock.Mock()
         runner2.return_value.stdout = 'init'
         service2 = service.service_manager(run=runner2)
         service2.start('foo_service')
-        self.assertEqual(runner2.call_args[0][0],
+        self.assertEqual(runner2.call_args[0][0],  # pylint: disable=E1136
                          'service foo_service start')
 
 
@@ -148,13 +148,13 @@ class TestSpecificServiceManager(unittest.TestCase):
         srv = "lldpad"
         self.service_manager.start()
         cmd = "service boot.%s start" % srv
-        self.assertEqual(self.run_mock.call_args[0][0], cmd)
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_stop_with_args(self):
         srv = "lldpad"
         self.service_manager.stop(ignore_status=True)
         cmd = "service boot.%s stop" % srv
-        self.assertEqual(self.run_mock.call_args[0][0], cmd)
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_list_is_not_present_in_SpecifcServiceManager(self):
         self.assertFalse(hasattr(self.service_manager, "list"))
@@ -191,7 +191,7 @@ class TestSystemdServiceManager(TestServiceManager):
         srv = "lldpad"
         self.service_manager.start(srv)
         cmd = ("systemctl start %s.service" % srv)
-        self.assertEqual(self.run_mock.call_args[0][0], cmd)
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_list(self):
         list_result_mock = mock.Mock(exit_status=0,
@@ -203,7 +203,7 @@ class TestSystemdServiceManager(TestServiceManager):
             (super(TestSystemdServiceManager, self)
              .get_service_manager_from_init_and_run(self.init_name, run_mock))
         list_result = service_manager.list(ignore_status=False)
-        self.assertEqual(run_mock.call_args[0][0],
+        self.assertEqual(run_mock.call_args[0][0],  # pylint: disable=E1136
                          "systemctl list-unit-files --type=service "
                          "--no-pager --full")
         self.assertEqual(list_result, {'sshd': "enabled",
@@ -222,9 +222,9 @@ class TestSystemdServiceManager(TestServiceManager):
         def _():
             self.service_manager.change_default_runlevel(runlevel)
             self.assertTrue(mktemp_mock.called)
-            self.assertEqual(symlink_mock.call_args[0][0],
+            self.assertEqual(symlink_mock.call_args[0][0],  # pylint: disable=E1136
                              "/usr/lib/systemd/system/multi-user.target")
-            self.assertEqual(rename_mock.call_args[0][1],
+            self.assertEqual(rename_mock.call_args[0][1],  # pylint: disable=E1136
                              "/etc/systemd/system/default.target")
         _()
 
@@ -254,7 +254,7 @@ class TestSysVInitServiceManager(TestServiceManager):
         srv = "lldpad"
         self.service_manager.start(srv)
         cmd = ("service %s start" % srv)
-        self.assertEqual(self.run_mock.call_args[0][0], cmd)
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_list(self):
         list_result_mock = mock.Mock(
@@ -273,7 +273,7 @@ class TestSysVInitServiceManager(TestServiceManager):
                   self).get_service_manager_from_init_and_run(self.init_name,
                                                               run_mock)
         list_result = service_manager.list(ignore_status=False)
-        self.assertEqual(run_mock.call_args[0][0], "chkconfig --list")
+        self.assertEqual(run_mock.call_args[0][0], "chkconfig --list")  # pylint: disable=E1136
         self.assertEqual(list_result,
                          {'sshd': {0: "off", 1: "off", 2: "off", 3: "off",
                                    4: "off", 5: "off", 6: "off"},
@@ -285,7 +285,7 @@ class TestSysVInitServiceManager(TestServiceManager):
         srv = "lldpad"
         self.service_manager.enable(srv)
         cmd = "chkconfig lldpad on"
-        self.assertEqual(self.run_mock.call_args[0][0], cmd)
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_unknown_runlevel(self):
         self.assertRaises(ValueError,
