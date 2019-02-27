@@ -28,12 +28,6 @@ from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
 
-if hasattr(logging, 'NullHandler'):
-    NULL_HANDLER = logging.NullHandler
-else:
-    import logutils
-    NULL_HANDLER = logutils.NullHandler
-
 
 #: Pre-defined Avocado human UI logger
 LOG_UI = logging.getLogger("avocado.app")
@@ -599,7 +593,7 @@ def disable_log_handler(logger):
     # Handlers might be reused elsewhere, can't delete them
     while logger.handlers:
         logger.handlers.pop()
-    logger.handlers.append(NULL_HANDLER())
+    logger.handlers.append(logging.NullHandler())
     logger.propagate = False
 
 
