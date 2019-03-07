@@ -268,3 +268,22 @@ Documentation
 
 Avocado's latest documentation build can be found at
 https://avocado-framework.readthedocs.io/.
+
+Build and Quality Status
+========================
+
+  .. image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/status_image/last_build.png
+     :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
+     :alt: Copr build
+
+  .. image:: https://img.shields.io/lgtm/alerts/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+     :target: https://lgtm.com/projects/g/avocado-framework/avocado/alerts/
+     :alt: lgtm total alerts
+
+  .. image:: https://img.shields.io/lgtm/grade/python/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+     :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:python
+     :alt: lgtm language grade for Python
+
+  .. image:: https://img.shields.io/lgtm/grade/javascript/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+     :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:javascript
+     :alt: lgtm language grade for JavaScript
