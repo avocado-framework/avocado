@@ -35,10 +35,6 @@ INSTALL_REQUIREMENTS = ['requests', 'stevedore>=0.14', 'six>=1.10.0', 'setuptool
 if sys.version_info[0] == 2:
     INSTALL_REQUIREMENTS.append('enum34')
 
-if sys.version_info[0] == 3 and sys.version_info[1] <= 3:
-    INSTALL_REQUIREMENTS.append('backports.lzma>=0.0.10')
-
-
 if __name__ == '__main__':
     # Force "make develop" inside the "readthedocs.org" environment
     if os.environ.get("READTHEDOCS") and "install" in sys.argv:

@@ -28,12 +28,6 @@ from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
 
-if hasattr(logging, 'NullHandler'):
-    NULL_HANDLER = logging.NullHandler
-else:
-    import logutils
-    NULL_HANDLER = logutils.NullHandler
-
 
 #: Pre-defined Avocado human UI logger
 LOG_UI = logging.getLogger("avocado.app")
@@ -49,10 +43,6 @@ BUILTIN_STREAMS = {'app': 'application output',
 #: Groups of builtin streams
 BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
                        'none': 'disables regular output (leaving only errors enabled)'}
-#: Transparently handles colored terminal, when one is used
-TERM_SUPPORT = None
-#: Allows modifying the sys.stdout/sys.stderr
-STD_OUTPUT = None
 
 
 class TermSupport(object):
@@ -207,6 +197,7 @@ class TermSupport(object):
         return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
 
 
+#: Transparently handles colored terminal, when one is used
 TERM_SUPPORT = TermSupport()
 
 
@@ -346,6 +337,7 @@ class StdOutput(object):
             paginator.close()
 
 
+#: Allows modifying the sys.stdout/sys.stderr
 STD_OUTPUT = StdOutput()
 
 
@@ -526,10 +518,6 @@ class MemStreamHandler(logging.StreamHandler):
         """
 
 
-class PagerNotFoundError(Exception):
-    pass
-
-
 class Paginator(object):
 
     """
@@ -599,7 +587,7 @@ def disable_log_handler(logger):
     # Handlers might be reused elsewhere, can't delete them
     while logger.handlers:
         logger.handlers.pop()
-    logger.handlers.append(NULL_HANDLER())
+    logger.handlers.append(logging.NullHandler())
     logger.propagate = False
 
 
