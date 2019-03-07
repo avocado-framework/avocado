@@ -1149,11 +1149,10 @@ class GDBSubProcess(object):
 
                 elif gdb.is_break_hit(parsed_msg):
                     # waits on fifo read() until end of debug session is notified
-                    r = self.handle_break_hit(parsed_msg)
-                    if r == 'C':
+                    if self.handle_break_hit(parsed_msg) == 'C':
                         self.gdb.connect(self.gdb_server.port)
                         if self._is_thread_stopped():
-                            r = self.gdb.cli_cmd("continue")
+                            self.gdb.cli_cmd("continue")
                         else:
                             log.warn('Binary "%s" terminated inside the '
                                      'debugger before avocado was resumed. '
@@ -1169,7 +1168,7 @@ class GDBSubProcess(object):
 
                 elif gdb.is_fatal_signal(parsed_msg):
                     # waits on fifo read() until end of debug session is notified
-                    r = self.handle_fatal_signal(parsed_msg)
+                    self.handle_fatal_signal(parsed_msg)
                     log.warn('Because "%s" received a fatal signal, this test '
                              'is going to be skipped.', self.binary)
                     # pylint: disable=E0702
