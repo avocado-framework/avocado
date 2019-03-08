@@ -1,11 +1,7 @@
 import os
 import shutil
 import tempfile
-import unittest
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from avocado.core import test, exceptions
 from avocado.utils import astring, script
@@ -123,7 +119,7 @@ class TestClassTestUnit(unittest.TestCase):
         tst._record_reference('output', 'output.expected')
 
     def test_all_dirs_exists_no_hang(self):
-        with mock.patch('os.path.exists', return_value=True):
+        with unittest.mock.patch('os.path.exists', return_value=True):
             self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
                               test.TestID(1, "name"), base_logdir=self.tmpdir)
 

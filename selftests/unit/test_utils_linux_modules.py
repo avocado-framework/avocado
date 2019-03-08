@@ -1,10 +1,5 @@
 import io
-import unittest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from .. import recent_mock
 from avocado.utils import linux_modules
@@ -166,9 +161,9 @@ video 45056 2 thinkpad_acpi,i915, Live 0x0000000000000000
 
     @staticmethod
     def _get_file_mock(content):
-        file_mock = mock.Mock()
-        file_mock.__enter__ = mock.Mock(return_value=io.BytesIO(content))
-        file_mock.__exit__ = mock.Mock()
+        file_mock = unittest.mock.Mock()
+        file_mock.__enter__ = unittest.mock.Mock(return_value=io.BytesIO(content))
+        file_mock.__exit__ = unittest.mock.Mock()
         return file_mock
 
     def test_parse_lsmod(self):
@@ -203,8 +198,8 @@ video 45056 2 thinkpad_acpi,i915, Live 0x0000000000000000
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_is_module_loaded(self):
-        with mock.patch('avocado.utils.linux_modules.open',
-                        return_value=self._get_file_mock(self.PROC_MODULES_OUT)):
+        with unittest.mock.patch('avocado.utils.linux_modules.open',
+                                 return_value=self._get_file_mock(self.PROC_MODULES_OUT)):
             self.assertTrue(linux_modules.module_is_loaded("rfcomm"))
             self.assertFalse(linux_modules.module_is_loaded("unknown_module"))
 

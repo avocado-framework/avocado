@@ -2,13 +2,8 @@ import os
 import shutil
 import tempfile
 import threading
-import unittest     # pylint: disable=C0411
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
-from six.moves import http_client
+import unittest.mock
+import http.client
 
 from avocado.utils import cloudinit
 from avocado.utils import iso9660
@@ -28,7 +23,7 @@ def has_iso_create_write():
 class CloudInit(unittest.TestCase):
 
     def test_iso_no_create_write(self):
-        with mock.patch('avocado.utils.iso9660.iso9660', return_value=None):
+        with unittest.mock.patch('avocado.utils.iso9660.iso9660', return_value=None):
             self.assertRaises(RuntimeError, cloudinit.iso, os.devnull, "INSTANCE_ID")
 
 
@@ -60,7 +55,7 @@ class PhoneHome(unittest.TestCase):
     ADDRESS = '127.0.0.1'
 
     def post_ignore_response(self, url):
-        conn = http_client.HTTPConnection(self.ADDRESS, self.port)
+        conn = http.client.HTTPConnection(self.ADDRESS, self.port)
         conn.request('POST', url)
         try:
             conn.getresponse()

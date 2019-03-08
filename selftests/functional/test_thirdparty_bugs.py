@@ -1,8 +1,7 @@
 import re
 import json
 import unittest
-
-from six.moves.urllib.error import URLError
+from urllib.error import URLError
 
 from avocado.utils import astring
 from avocado.utils import download

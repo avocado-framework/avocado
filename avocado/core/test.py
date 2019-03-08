@@ -30,7 +30,6 @@ import time
 import unittest
 
 from difflib import unified_diff
-from six import string_types, iteritems
 
 from . import data_dir
 from . import defaults
@@ -130,7 +129,7 @@ class TestID(object):
         return repr(str(self))
 
     def __eq__(self, other):
-        if isinstance(other, string_types):
+        if isinstance(other, str):
             return str(self) == other
         else:
             return self.__dict__ == other.__dict__
@@ -710,7 +709,7 @@ class Test(unittest.TestCase, TestData):
             sys.stderr.rm_logger(LOG_JOB.getChild("stderr"))
         if isinstance(sys.stdout, output.LoggingFile):
             sys.stdout.rm_logger(LOG_JOB.getChild("stdout"))
-        for name, handler in iteritems(self._logging_handlers):
+        for name, handler in self._logging_handlers.items():
             logging.getLogger(name).removeHandler(handler)
 
     def _record_reference(self, produced_file_path, reference_file_name):
@@ -848,7 +847,7 @@ class Test(unittest.TestCase, TestData):
                 test_exception = details
                 self.log.debug("Local variables:")
                 local_vars = inspect.trace()[1][0].f_locals
-                for key, value in iteritems(local_vars):
+                for key, value in local_vars.items():
                     self.log.debug(' -> %s %s: %s', key, type(value), value)
         finally:
             try:

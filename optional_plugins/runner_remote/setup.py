@@ -20,14 +20,11 @@ from avocado.utils import distro
 
 from setuptools import setup, find_packages
 
-if sys.version_info[0] == 3:
-    fabric = 'Fabric3'
-else:
-    fabric = 'fabric>=1.5.4,<2.0.0'
 detected_distro = distro.detect()
 if detected_distro.name == 'fedora' and int(detected_distro.version) >= 29:
     fabric = 'Fabric3>=1.1.4,<2.0.0'
-
+else:
+    fabric = 'Fabric3'
 
 setup(name='avocado-framework-plugin-runner-remote',
       description='Avocado Runner for Remote Execution',

@@ -1,14 +1,7 @@
-import unittest
 import os
 import shutil
 import tempfile
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
-from six.moves import xrange as range
+import unittest.mock
 
 from avocado.core import settings
 
@@ -51,7 +44,7 @@ class DataDirTest(unittest.TestCase):
         stg = settings.Settings(self.config_file_path)
         # Trick the module to think we're on a system wide install
         stg.intree = False
-        with mock.patch('avocado.core.data_dir.settings.settings', stg):
+        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
             from avocado.core import data_dir
             self.assertFalse(data_dir.settings.settings.intree)
             for key in self.mapping.keys():
@@ -66,8 +59,8 @@ class DataDirTest(unittest.TestCase):
         unique results.
         """
         from avocado.core import data_dir
-        with mock.patch('avocado.core.data_dir.time.strftime',
-                        return_value="date_would_go_here"):
+        with unittest.mock.patch('avocado.core.data_dir.time.strftime',
+                                 return_value="date_would_go_here"):
             logdir = os.path.join(self.mapping['base_dir'], "foor", "bar", "baz")
             path_prefix = os.path.join(logdir, "job-date_would_go_here-")
             uid = "1234567890"*4
@@ -96,7 +89,7 @@ class DataDirTest(unittest.TestCase):
         (self.alt_mapping,
          self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()
         stg = settings.Settings(self.alt_config_file_path)
-        with mock.patch('avocado.core.data_dir.settings.settings', stg):
+        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
             from avocado.core import data_dir
             for key in self.alt_mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)

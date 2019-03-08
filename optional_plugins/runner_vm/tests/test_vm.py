@@ -1,10 +1,6 @@
 import argparse
 import shutil
-import unittest
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+import unittest.mock
 
 from avocado.core.job import Job
 import avocado_runner_vm
@@ -20,8 +16,8 @@ class _FakeVM(avocado_runner_vm.VM):
     def __init__(self):  # pylint: disable=W0231
         # don't call avocado_runner_vm.VM.__init__
         self.snapshot = True
-        self.domain = mock.Mock()
-        self.domain.isActive = mock.Mock(return_value=True)
+        self.domain = unittest.mock.Mock()
+        self.domain.isActive = unittest.mock.Mock(return_value=True)
 
 
 class VMTestRunnerSetup(unittest.TestCase):
@@ -30,10 +26,10 @@ class VMTestRunnerSetup(unittest.TestCase):
 
     def test_setup(self):
         mock_vm = _FakeVM()
-        mock_vm.start = mock.Mock(return_value=True)
-        mock_vm.create_snapshot = mock.Mock()
-        mock_vm.stop = mock.Mock()
-        mock_vm.restore_snapshot = mock.Mock()
+        mock_vm.start = unittest.mock.Mock(return_value=True)
+        mock_vm.create_snapshot = unittest.mock.Mock()
+        mock_vm.stop = unittest.mock.Mock()
+        mock_vm.restore_snapshot = unittest.mock.Mock()
         job_args = argparse.Namespace(test_result_total=1,
                                       vm_domain='domain',
                                       vm_username='username',
@@ -54,8 +50,8 @@ class VMTestRunnerSetup(unittest.TestCase):
         try:
             job = Job(job_args)
             job.setup()
-            with mock.patch('avocado_runner_vm.vm_connect',
-                            return_value=mock_vm):
+            with unittest.mock.patch('avocado_runner_vm.vm_connect',
+                                     return_value=mock_vm):
                 # VMTestRunner()
                 runner = avocado_runner_vm.VMTestRunner(job, None)
                 runner.setup()

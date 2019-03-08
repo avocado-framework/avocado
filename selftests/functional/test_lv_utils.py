@@ -12,8 +12,6 @@ import tempfile
 import time
 import unittest
 
-from six.moves import xrange as range
-
 from avocado.utils import process
 from avocado.utils import lv_utils
 from avocado.utils import linux_modules

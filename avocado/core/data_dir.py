@@ -31,8 +31,6 @@ import sys
 import time
 import tempfile
 
-from six.moves import xrange as range
-
 from . import job_id
 from . import settings
 from . import exit_codes

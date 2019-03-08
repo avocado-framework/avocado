@@ -2,14 +2,9 @@ import io
 import logging
 import os
 import shlex
-import unittest
+import unittest.mock
 import sys
 import time
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 
 from .. import recent_mock
@@ -58,11 +53,11 @@ class TestSubProcess(unittest.TestCase):
         self.assertRaises(ValueError, process.SubProcess,
                           FICTIONAL_CMD, False, "invalid")
 
-    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
-    @mock.patch('avocado.utils.process.SubProcess.is_sudo_enabled')
-    @mock.patch('avocado.utils.process.SubProcess.get_pid')
-    @mock.patch('avocado.utils.process.get_children_pids')
-    @mock.patch('avocado.utils.process.run')
+    @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @unittest.mock.patch('avocado.utils.process.SubProcess.is_sudo_enabled')
+    @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @unittest.mock.patch('avocado.utils.process.get_children_pids')
+    @unittest.mock.patch('avocado.utils.process.run')
     def test_send_signal_sudo_enabled(self, run, get_children, pid, sudo, init):  # pylint: disable=W0613
         signal = 1
         child_pid = 123
@@ -75,11 +70,11 @@ class TestSubProcess(unittest.TestCase):
         expected_cmd = 'kill -%d %d' % (signal, child_pid)
         run.assert_called_with(expected_cmd, sudo=True)
 
-    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
-    @mock.patch('avocado.utils.process.SubProcess.is_sudo_enabled')
-    @mock.patch('avocado.utils.process.SubProcess.get_pid')
-    @mock.patch('avocado.utils.process.get_children_pids')
-    @mock.patch('avocado.utils.process.run')
+    @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @unittest.mock.patch('avocado.utils.process.SubProcess.is_sudo_enabled')
+    @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @unittest.mock.patch('avocado.utils.process.get_children_pids')
+    @unittest.mock.patch('avocado.utils.process.run')
     def test_send_signal_sudo_enabled_with_exception(
             self, run, get_children, pid, sudo, init):  # pylint: disable=W0613
         signal = 1
@@ -94,9 +89,9 @@ class TestSubProcess(unittest.TestCase):
         expected_cmd = 'kill -%d %d' % (signal, child_pid)
         run.assert_called_with(expected_cmd, sudo=True)
 
-    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
-    @mock.patch('avocado.utils.process.SubProcess.get_pid')
-    @mock.patch('avocado.utils.process.get_owner_id')
+    @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @unittest.mock.patch('avocado.utils.process.get_owner_id')
     def test_get_user_id(self, get_owner, get_pid, init):  # pylint: disable=W0613
         user_id = 1
         process_id = 123
@@ -108,9 +103,9 @@ class TestSubProcess(unittest.TestCase):
         self.assertEqual(subprocess.get_user_id(), user_id)
         get_owner.assert_called_with(process_id)
 
-    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
-    @mock.patch('avocado.utils.process.SubProcess.get_pid')
-    @mock.patch('avocado.utils.process.get_owner_id')
+    @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @unittest.mock.patch('avocado.utils.process.get_owner_id')
     def test_is_sudo_enabled_false(self, get_owner, get_pid, init):  # pylint: disable=W0613
         user_id = 1
         process_id = 123
@@ -122,9 +117,9 @@ class TestSubProcess(unittest.TestCase):
         self.assertFalse(subprocess.is_sudo_enabled())
         get_owner.assert_called_with(process_id)
 
-    @mock.patch('avocado.utils.process.SubProcess._init_subprocess')
-    @mock.patch('avocado.utils.process.SubProcess.get_pid')
-    @mock.patch('avocado.utils.process.get_owner_id')
+    @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
+    @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
+    @unittest.mock.patch('avocado.utils.process.get_owner_id')
     def test_is_sudo_enabled_true(self, get_owner, get_pid, init):  # pylint: disable=W0613
         user_id = 0
         process_id = 123
@@ -203,71 +198,79 @@ def mock_fail_find_cmd(cmd, default=None):  # pylint: disable=W0613
 
 class TestProcessRun(unittest.TestCase):
 
-    @mock.patch.object(os, 'getuid',
-                       mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_subprocess_nosudo(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=0))
     def test_subprocess_nosudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value='/bin/sudo'))
-    @mock.patch.object(os, 'getuid',
-                       mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(path, 'find_command',
+                                unittest.mock.Mock(return_value='/bin/sudo'))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_subprocess_sudo(self):
         expected_command = '/bin/sudo -n ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
         path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.cmd, expected_command)
 
-    @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(path, 'find_command', mock_fail_find_cmd)
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_subprocess_sudo_no_sudo_installed(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=0))
     def test_subprocess_sudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value='/bin/sudo'))
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(path, 'find_command',
+                                unittest.mock.Mock(return_value='/bin/sudo'))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_subprocess_sudo_shell(self):
         expected_command = '/bin/sudo -n -s ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.cmd, expected_command)
 
-    @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(path, 'find_command', mock_fail_find_cmd)
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_subprocess_sudo_shell_no_sudo_installed(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=0))
     def test_subprocess_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_run_nosudo(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=0))
     def test_run_nosudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', ignore_status=True)
@@ -275,45 +278,51 @@ class TestProcessRun(unittest.TestCase):
 
     @unittest.skipUnless(os.path.exists('/bin/sudo'),
                          "/bin/sudo not available")
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value='/bin/sudo'))
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(path, 'find_command',
+                                unittest.mock.Mock(return_value='/bin/sudo'))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_run_sudo(self):
         expected_command = '/bin/sudo -n ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.command, expected_command)
 
-    @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(path, 'find_command', mock_fail_find_cmd)
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_run_sudo_no_sudo_installed(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=0))
     def test_run_sudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value='/bin/sudo'))
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(path, 'find_command',
+                                unittest.mock.Mock(return_value='/bin/sudo'))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_run_sudo_shell(self):
         expected_command = '/bin/sudo -n -s ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.command, expected_command)
 
-    @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
+    @unittest.mock.patch.object(path, 'find_command', mock_fail_find_cmd)
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=1000))
     def test_run_sudo_shell_no_sudo_installed(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
+    @unittest.mock.patch.object(os, 'getuid',
+                                unittest.mock.Mock(return_value=0))
     def test_run_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
@@ -417,8 +426,8 @@ class MiscProcessTests(unittest.TestCase):
                          "mock library version cannot (easily) patch open()")
     def test_get_parent_pid(self):
         stat = b'18405 (bash) S 24139 18405 18405 34818 8056 4210688 9792 170102 0 7 11 4 257 84 20 0 1 0 44336493 235409408 4281 18446744073709551615 94723230367744 94723231442728 140723100226000 0 0 0 65536 3670020 1266777851 0 0 0 17 1 0 0 0 0 0 94723233541456 94723233588580 94723248717824 140723100229613 140723100229623 140723100229623 140723100233710 0'
-        with mock.patch('avocado.utils.process.open',
-                        return_value=io.BytesIO(stat)):
+        with unittest.mock.patch('avocado.utils.process.open',
+                                 return_value=io.BytesIO(stat)):
             self.assertTrue(process.get_parent_pid(0), 24139)
 
     @unittest.skipUnless(sys.platform.startswith('linux'),
@@ -429,8 +438,8 @@ class MiscProcessTests(unittest.TestCase):
         '''
         self.assertGreaterEqual(len(process.get_children_pids(1)), 1)
 
-    @mock.patch('avocado.utils.process.os.kill')
-    @mock.patch('avocado.utils.process.get_owner_id')
+    @unittest.mock.patch('avocado.utils.process.os.kill')
+    @unittest.mock.patch('avocado.utils.process.get_owner_id')
     def test_safe_kill(self, owner_mocked, kill_mocked):
         owner_id = 1
         process_id = 123
@@ -441,8 +450,8 @@ class MiscProcessTests(unittest.TestCase):
         self.assertTrue(killed)
         kill_mocked.assert_called_with(process_id, signal)
 
-    @mock.patch('avocado.utils.process.os.kill')
-    @mock.patch('avocado.utils.process.get_owner_id')
+    @unittest.mock.patch('avocado.utils.process.os.kill')
+    @unittest.mock.patch('avocado.utils.process.get_owner_id')
     def test_safe_kill_with_exception(self, owner_mocked, kill_mocked):
         owner_id = 1
         process_id = 123
@@ -454,8 +463,8 @@ class MiscProcessTests(unittest.TestCase):
         self.assertFalse(killed)
         kill_mocked.assert_called_with(process_id, signal)
 
-    @mock.patch('avocado.utils.process.run')
-    @mock.patch('avocado.utils.process.get_owner_id')
+    @unittest.mock.patch('avocado.utils.process.run')
+    @unittest.mock.patch('avocado.utils.process.get_owner_id')
     def test_safe_kill_sudo_enabled(self, owner_mocked, run_mocked):
         owner_id = 0
         process_id = 123
@@ -467,8 +476,8 @@ class MiscProcessTests(unittest.TestCase):
         self.assertTrue(killed)
         run_mocked.assert_called_with(expected_cmd, sudo=True)
 
-    @mock.patch('avocado.utils.process.run')
-    @mock.patch('avocado.utils.process.get_owner_id')
+    @unittest.mock.patch('avocado.utils.process.run')
+    @unittest.mock.patch('avocado.utils.process.get_owner_id')
     def test_safe_kill_sudo_enabled_with_exception(self, owner_mocked, run_mocked):
         owner_id = 0
         process_id = 123
@@ -481,18 +490,18 @@ class MiscProcessTests(unittest.TestCase):
         self.assertFalse(killed)
         run_mocked.assert_called_with(expected_cmd, sudo=True)
 
-    @mock.patch('avocado.utils.process.os.stat')
+    @unittest.mock.patch('avocado.utils.process.os.stat')
     def test_process_get_owner_id(self, stat_mock):
         process_id = 123
         owner_user_id = 13
-        stat_mock.return_value = mock.Mock(st_uid=owner_user_id)
+        stat_mock.return_value = unittest.mock.Mock(st_uid=owner_user_id)
 
         returned_owner_id = process.get_owner_id(process_id)
 
         self.assertEqual(returned_owner_id, owner_user_id)
         stat_mock.assert_called_with('/proc/%d/' % process_id)
 
-    @mock.patch('avocado.utils.process.os.stat')
+    @unittest.mock.patch('avocado.utils.process.os.stat')
     def test_process_get_owner_id_with_pid_not_found(self, stat_mock):
         process_id = 123
         stat_mock.side_effect = OSError()
@@ -502,9 +511,9 @@ class MiscProcessTests(unittest.TestCase):
         self.assertIsNone(returned_owner_id)
         stat_mock.assert_called_with('/proc/%d/' % process_id)
 
-    @mock.patch('avocado.utils.process.time.sleep')
-    @mock.patch('avocado.utils.process.safe_kill')
-    @mock.patch('avocado.utils.process.get_children_pids')
+    @unittest.mock.patch('avocado.utils.process.time.sleep')
+    @unittest.mock.patch('avocado.utils.process.safe_kill')
+    @unittest.mock.patch('avocado.utils.process.get_children_pids')
     def test_kill_process_tree_nowait(self, get_children_pids, safe_kill,
                                       sleep):
         safe_kill.return_value = True
@@ -512,11 +521,11 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual([1], process.kill_process_tree(1))
         self.assertEqual(sleep.call_count, 0)
 
-    @mock.patch('avocado.utils.process.safe_kill')
-    @mock.patch('avocado.utils.process.get_children_pids')
-    @mock.patch('avocado.utils.process.time.time')
-    @mock.patch('avocado.utils.process.time.sleep')
-    @mock.patch('avocado.utils.process.pid_exists')
+    @unittest.mock.patch('avocado.utils.process.safe_kill')
+    @unittest.mock.patch('avocado.utils.process.get_children_pids')
+    @unittest.mock.patch('avocado.utils.process.time.time')
+    @unittest.mock.patch('avocado.utils.process.time.sleep')
+    @unittest.mock.patch('avocado.utils.process.pid_exists')
     def test_kill_process_tree_timeout_3s(self, pid_exists, sleep, p_time,
                                           get_children_pids, safe_kill):
         safe_kill.return_value = True
@@ -529,11 +538,11 @@ class MiscProcessTests(unittest.TestCase):
                           timeout=3)
         self.assertLess(p_time.call_count, 10)
 
-    @mock.patch('avocado.utils.process.safe_kill')
-    @mock.patch('avocado.utils.process.get_children_pids')
-    @mock.patch('avocado.utils.process.time.time')
-    @mock.patch('avocado.utils.process.time.sleep')
-    @mock.patch('avocado.utils.process.pid_exists')
+    @unittest.mock.patch('avocado.utils.process.safe_kill')
+    @unittest.mock.patch('avocado.utils.process.get_children_pids')
+    @unittest.mock.patch('avocado.utils.process.time.time')
+    @unittest.mock.patch('avocado.utils.process.time.sleep')
+    @unittest.mock.patch('avocado.utils.process.pid_exists')
     def test_kill_process_tree_dont_timeout_3s(self, pid_exists, sleep,
                                                p_time, get_children_pids,
                                                safe_kill):
@@ -545,10 +554,10 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual([76], process.kill_process_tree(76, timeout=3))
         self.assertLess(p_time.call_count, 10)
 
-    @mock.patch('avocado.utils.process.safe_kill')
-    @mock.patch('avocado.utils.process.get_children_pids')
-    @mock.patch('avocado.utils.process.time.sleep')
-    @mock.patch('avocado.utils.process.pid_exists')
+    @unittest.mock.patch('avocado.utils.process.safe_kill')
+    @unittest.mock.patch('avocado.utils.process.get_children_pids')
+    @unittest.mock.patch('avocado.utils.process.time.sleep')
+    @unittest.mock.patch('avocado.utils.process.pid_exists')
     def test_kill_process_tree_dont_timeout_infinity(self, pid_exists, sleep,
                                                      get_children_pids,
                                                      safe_kill):
@@ -562,9 +571,9 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual(pid_exists.call_count, 6)
         self.assertEqual(sleep.call_count, 5)
 
-    @mock.patch('avocado.utils.process.time.sleep')
-    @mock.patch('avocado.utils.process.safe_kill')
-    @mock.patch('avocado.utils.process.get_children_pids')
+    @unittest.mock.patch('avocado.utils.process.time.sleep')
+    @unittest.mock.patch('avocado.utils.process.safe_kill')
+    @unittest.mock.patch('avocado.utils.process.get_children_pids')
     def test_kill_process_tree_children(self, get_children_pids, safe_kill,
                                         sleep):
         safe_kill.return_value = True

@@ -4,11 +4,7 @@ import shutil
 import tempfile
 import unittest
 from xml.dom import minidom
-
-try:
-    from io import BytesIO
-except ImportError:
-    from BytesIO import BytesIO
+from io import BytesIO
 
 try:
     from lxml import etree
