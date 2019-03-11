@@ -427,7 +427,7 @@ class GDB(object):
 
         self.send_gdb_command(command)
         responses = self.read_until_break()
-        result_response = None
+        result_response_received = False
 
         for line in responses:
             # If the line can not be properly parsed, it is *most likely*
@@ -442,10 +442,11 @@ class GDB(object):
                     parsed_response.record_type == 'stream'):
                 cmd.stream_messages.append(parsed_response)
             elif parsed_response.type == 'result':
-                if result_response is not None:
+                if result_response_received:
                     # raise an exception here, because no two result
                     # responses should come from a single command AFAIK
                     raise Exception("Many result responses to a single cmd")
+                result_response_received = True
                 cmd.result = parsed_response
             else:
                 self.async_messages.append(parsed_response)

@@ -34,7 +34,6 @@ import sys
 import tempfile
 
 from . import process
-from . import path as utils_path
 
 
 try:
@@ -130,7 +129,6 @@ class BaseIso9660(object):
     """
 
     def __init__(self, path):
-        utils_path.check_readable(path)
         self.path = path
 
     def read(self, path):
@@ -382,7 +380,7 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
     def __init__(self, path):
         if not has_pycdlib():
             raise RuntimeError('This class requires the pycdlib library')
-        self.path = path
+        super(ISO9660PyCDLib, self).__init__(path)
         self._iso = None
         self._iso_opened_for_create = False
 
