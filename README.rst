@@ -201,14 +201,14 @@ ppc64le.
 If you're interested in using the very latest development version of
 Avocado from RPM packages, you can do so by running::
 
-  dnf copr enable @avocado/avocado-latest
+  dnf copr enable @avocado/avocado-latest-lts
   dnf install python*-avocado*
 
 The following image shows the status of the Avocado packages building
 on COPR:
 
-  .. image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/status_image/last_build.png
-     :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
+  .. image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest-lts/package/python-avocado/status_image/last_build.png
+     :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest-lts/package/python-avocado/
 
 OpenSUSE
 ~~~~~~~~
