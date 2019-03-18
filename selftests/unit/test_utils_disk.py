@@ -37,6 +37,13 @@ PROC_MOUNTS = (
     "proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0"
 )
 
+SAMPLE_FDISK = "/sbin/fdisk -l -u '/dev/sda'"
+SAMPLE_FDISK_OUTPUT = (
+    "/dev/sda1  *       2048      10239       8192    4M 41 PPC PReP Boot\n" +
+    "/dev/sda2         10240    2107391    2097152    1G 83 Linux\n" +
+    "/dev/sda3       2107392 3907028991 3904921600  1.8T 8e Linux LVM"
+)
+
 
 class Disk(unittest.TestCase):
 
@@ -82,7 +89,17 @@ class Disk(unittest.TestCase):
     def test_get_filesystem_type(self):
         open_mocked = unittest.mock.mock_open(read_data=PROC_MOUNTS)
         with unittest.mock.patch(self.builtin_open, open_mocked):
-            self.assertEqual('ext2', disk.get_filesystem_type(mount_point='/home'))
+            self.assertEqual(
+                'ext2', disk.get_filesystem_type(mount_point='/home'))
+
+    @unittest.skipUnless(recent_mock(),
+                         "mock library version cannot (easily) patch open()")
+    def test_is_linux_fs_type(self):
+        open_mocked = unittest.mock.mock_open(read_data=SAMPLE_FDISK_OUTPUT)
+        with unittest.mock.patch(self.builtin_open, open_mocked):
+            self.assertTrue(disk.is_linux_fs_type("/dev/sda2"))
+            self.assertFalse(disk.is_linux_fs_type("/dev/sda1"))
+            self.assertFalse(disk.is_linux_fs_type("/dev/sda3"))
 
 
 if __name__ == '__main__':
