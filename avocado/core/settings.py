@@ -27,26 +27,9 @@ except ImportError:
 from pkg_resources import resource_filename
 from pkg_resources import resource_isdir
 from pkg_resources import resource_listdir
-from stevedore import ExtensionManager
 
+from .settings_dispatcher import SettingsDispatcher
 from ..utils import path
-
-
-class SettingsDispatcher(ExtensionManager):
-
-    """
-    Dispatchers that allows plugins to modify settings
-
-    It's not the standard "avocado.core.dispatcher" because that one depends
-    on settings. This dispatcher is the bare-stevedore dispatcher which is
-    executed before settings is parsed.
-    """
-
-    def __init__(self):
-        super(SettingsDispatcher, self).__init__('avocado.plugins.settings',
-                                                 invoke_on_load=True,
-                                                 invoke_kwds={},
-                                                 propagate_map_exceptions=True)
 
 
 class SettingsError(Exception):

@@ -12,7 +12,13 @@
 # Copyright: Red Hat Inc. 2015
 # Author: Cleber Rosa <cleber@redhat.com>
 
-"""Extensions/plugins dispatchers."""
+"""
+Extensions/plugins dispatchers
+
+Besides the dispatchers listed here, there's also a lower level
+dispatcher that these depend upon:
+:class:`avocado.core.settings_dispatcher.SettingsDispatcher`
+"""
 
 import copy
 import sys
@@ -21,14 +27,8 @@ from stevedore import EnabledExtensionManager
 
 from .settings import settings
 from .settings import SettingsError
-from .settings import SettingsDispatcher
 from .output import LOG_UI
 from ..utils import stacktrace
-
-
-#: Settings dispatcher is simplified and has to be available before the
-#: settings object. Let's include it here for consistency
-SettingsDispatcher = SettingsDispatcher
 
 
 class Dispatcher(EnabledExtensionManager):
