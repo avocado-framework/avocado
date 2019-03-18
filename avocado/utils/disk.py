@@ -87,3 +87,28 @@ def get_filesystem_type(mount_point='/'):
             _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
             if fs_file == mount_point:
                 return fs_vfstype
+
+
+def is_linux_fs_type(device):
+    """
+    Checks if specified partition is type 83
+
+    :param device: the device, e.g. /dev/sda3
+
+    :return: False if the supplied partition name is not type 83 linux, True
+            otherwise
+    """
+    disk_device = device.rstrip('0123456789')
+
+    # Parse fdisk output to get partition info.  Ugly but it works.
+    fdisk_fd = os.popen("/sbin/fdisk -l -u '%s'" % disk_device)
+    fdisk_lines = fdisk_fd.readlines()
+    fdisk_fd.close()
+    for line in fdisk_lines:
+        if not line.startswith(device):
+            continue
+        info_tuple = line.split()
+        for fsinfo in info_tuple[4:6]:
+            if fsinfo == '83':  # hex 83 is the linux fs partition type
+                return True
+    return False
