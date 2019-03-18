@@ -407,7 +407,7 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
     if version is not None:
         provider_args['version'] = version
     if build is not None:
-        provider_args['build'] = version
+        provider_args['build'] = build
     if arch is not None:
         provider_args['arch'] = arch
         if name == 'fedora' and arch in ('ppc64', 'ppc64le'):
