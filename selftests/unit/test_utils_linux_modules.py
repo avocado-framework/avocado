@@ -1,7 +1,6 @@
 import io
 import unittest.mock
 
-from .. import recent_mock
 from avocado.utils import linux_modules
 
 
@@ -195,10 +194,8 @@ video 45056 2 thinkpad_acpi,i915, Live 0x0000000000000000
                                       'used': 1,
                                       'submodules': ['ebtable_broute']})
 
-    @unittest.skipUnless(recent_mock(),
-                         "mock library version cannot (easily) patch open()")
     def test_is_module_loaded(self):
-        with unittest.mock.patch('avocado.utils.linux_modules.open',
+        with unittest.mock.patch('builtins.open',
                                  return_value=self._get_file_mock(self.PROC_MODULES_OUT)):
             self.assertTrue(linux_modules.module_is_loaded("rfcomm"))
             self.assertFalse(linux_modules.module_is_loaded("unknown_module"))

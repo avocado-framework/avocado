@@ -1,7 +1,5 @@
-import sys
 import unittest.mock
 
-from .. import recent_mock
 from avocado.utils import disk
 from avocado.utils import process
 
@@ -40,11 +38,6 @@ PROC_MOUNTS = (
 
 class Disk(unittest.TestCase):
 
-    @property
-    def builtin_open(self):
-        py_version = sys.version_info[0]
-        return 'builtins.open' if py_version == 3 else '__builtin__.open'
-
     def test_empty(self):
         mock_result = process.CmdResult(
             command='lsblk --json',
@@ -61,27 +54,21 @@ class Disk(unittest.TestCase):
                                  return_value=mock_result):
             self.assertEqual(disk.get_disks(), ['/dev/vda'])
 
-    @unittest.skipUnless(recent_mock(),
-                         "mock library version cannot (easily) patch open()")
     def test_get_filesystems(self):
         expected_fs = ['dax', 'bpf', 'pipefs', 'hugetlbfs', 'devpts', 'ext3']
         open_mocked = unittest.mock.mock_open(read_data=PROC_FILESYSTEMS)
-        with unittest.mock.patch(self.builtin_open, open_mocked):
+        with unittest.mock.patch('builtins.open', open_mocked):
             self.assertEqual(sorted(expected_fs),
                              sorted(disk.get_available_filesystems()))
 
-    @unittest.skipUnless(recent_mock(),
-                         "mock library version cannot (easily) patch open()")
     def test_get_filesystem_type_default_root(self):
         open_mocked = unittest.mock.mock_open(read_data=PROC_MOUNTS)
-        with unittest.mock.patch(self.builtin_open, open_mocked):
+        with unittest.mock.patch('builtins.open', open_mocked):
             self.assertEqual('ext4', disk.get_filesystem_type())
 
-    @unittest.skipUnless(recent_mock(),
-                         "mock library version cannot (easily) patch open()")
     def test_get_filesystem_type(self):
         open_mocked = unittest.mock.mock_open(read_data=PROC_MOUNTS)
-        with unittest.mock.patch(self.builtin_open, open_mocked):
+        with unittest.mock.patch('builtins.open', open_mocked):
             self.assertEqual('ext2', disk.get_filesystem_type(mount_point='/home'))
 
 

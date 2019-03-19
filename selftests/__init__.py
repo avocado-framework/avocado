@@ -13,21 +13,6 @@ AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",
                          "%s ./scripts/avocado" % sys.executable)
 
 
-def recent_mock():
-    '''
-    Checks if a recent and capable enough mock library is available
-
-    On Python 3, mock from the standard library is used, but Python
-    3.6 or later is required.
-
-    Also, it assumes that on a future Python major version, functionality
-    won't regress.
-    '''
-    if sys.version_info[0] == 3:
-        return sys.version_info[1] >= 6
-    return sys.version_info[0] > 3
-
-
 def python_module_available(module_name):
     '''
     Checks if a given Python module is available
