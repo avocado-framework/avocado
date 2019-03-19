@@ -3,11 +3,11 @@ import unittest
 
 from avocado.utils import process
 
+from selftests import AVOCADO
+
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..')
 basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 
 class Variants(unittest.TestCase):
