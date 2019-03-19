@@ -25,8 +25,6 @@ avocado core code or plugins.
 import sys
 import math
 
-from six.moves import zip
-
 
 class InvalidDataSize(ValueError):
     """

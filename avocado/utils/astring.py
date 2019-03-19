@@ -28,11 +28,6 @@ And not notice until their code starts failing.
 import itertools
 import locale
 import re
-import string
-
-from six import string_types, PY3
-from six.moves import zip
-from six.moves import xrange as range
 
 
 #: On import evaluated value representing the system encoding
@@ -45,11 +40,8 @@ ENCODING = locale.getpreferredencoding()
 FS_UNSAFE_CHARS = '<>:"/\\|?*;'
 
 # Translate table to replace fs-unfriendly chars
-if PY3:
-    _FS_TRANSLATE = bytes.maketrans(bytes(FS_UNSAFE_CHARS, "ascii"),
-                                    b'__________')
-else:
-    _FS_TRANSLATE = string.maketrans(FS_UNSAFE_CHARS, '__________')
+_FS_TRANSLATE = bytes.maketrans(bytes(FS_UNSAFE_CHARS, "ascii"),
+                                b'__________')
 
 
 def bitlist_to_string(data):
@@ -192,8 +184,6 @@ def iter_tabular_output(matrix, header=None, strip=False):
         len_matrix.append([])
         str_matrix.append([string_safe_encode(column) for column in row])
         for i, column in enumerate(str_matrix[-1]):
-            if not PY3:
-                column = column.decode("utf-8")
             col_len = len(strip_console_codes(column))
             len_matrix[-1].append(col_len)
             try:
@@ -254,16 +244,9 @@ def string_safe_encode(input_str):
                       be turned into a string
     :returns: a utf-8 encoded ascii stream
     """
-    if not isinstance(input_str, string_types):
+    if not isinstance(input_str, str):
         input_str = str(input_str)
-
-    if PY3:
-        return input_str
-
-    try:
-        return input_str.encode("utf-8")
-    except UnicodeDecodeError:
-        return input_str.decode("utf-8", "replace").encode("utf-8")
+    return input_str
 
 
 def string_to_safe_path(input_str):
@@ -337,6 +320,6 @@ def to_text(data, encoding=ENCODING, errors='strict'):
         if encoding is None:
             encoding = ENCODING
         return data.decode(encoding, errors=errors)
-    elif not isinstance(data, string_types):
+    elif not isinstance(data, str):
         return str(data)
     return data

@@ -23,8 +23,6 @@ import sys
 
 import argparse
 
-from six.moves import input
-
 
 class Parser(argparse.ArgumentParser):
 

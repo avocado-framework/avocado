@@ -21,8 +21,6 @@ import os
 import time
 import re
 
-from six.moves import input
-
 from . import path as utils_path
 
 log = logging.getLogger('avocado.test')

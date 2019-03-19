@@ -5,8 +5,6 @@ import pickle
 import sys
 import unittest
 
-from six import PY2
-
 import yaml
 
 import avocado_varianter_yaml_to_mux as yaml_to_mux
@@ -81,12 +79,8 @@ class TestMuxTree(unittest.TestCase):
 
     def test_basic_functions(self):
         # repr
-        if PY2:
-            self.assertEqual("MuxTreeNode(name=u'hw')",
-                             repr(self.tree.children[0]))
-        else:
-            self.assertEqual("MuxTreeNode(name='hw')",
-                             repr(self.tree.children[0]))
+        self.assertEqual("MuxTreeNode(name='hw')",
+                         repr(self.tree.children[0]))
         # str
         self.assertEqual(u"/distro/\u0161mint: init=systemv",
                          astring.to_text(self.tree.children[1].children[1]))
