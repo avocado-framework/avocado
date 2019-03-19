@@ -13,16 +13,12 @@
 # Author: Travis Miller <raphtee@google.com>
 
 """
-Reads the avocado settings from a .ini file (from python ConfigParser).
+Reads the avocado settings from a .ini file (with Python's configparser).
 """
 import ast
 import os
 import glob
-
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 
 from pkg_resources import resource_filename
 from pkg_resources import resource_isdir
@@ -144,7 +140,7 @@ def convert_value_type(value, value_type):
 class Settings(object):
 
     """
-    Simple wrapper around ConfigParser, with a key type conversion available.
+    Simple wrapper around configparser, with a key type conversion available.
     """
 
     no_default = object()
@@ -155,7 +151,7 @@ class Settings(object):
 
         :param config_path: Path to a config file. Useful for unittesting.
         """
-        self.config = ConfigParser.ConfigParser()
+        self.config = configparser.ConfigParser()
         self.config_paths = []
         self.all_config_paths = []
         _source_tree_root = os.path.dirname(os.path.dirname(os.path.dirname(
@@ -295,9 +291,9 @@ class Settings(object):
         """
         try:
             val = self.config.get(section, key)
-        except ConfigParser.NoSectionError:
+        except configparser.NoSectionError:
             return self._handle_no_section(section, default)
-        except ConfigParser.Error:
+        except configparser.Error:
             return self._handle_no_value(section, key, default)
 
         if not val.strip() and not allow_blank:

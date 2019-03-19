@@ -8,7 +8,7 @@ and that's why a configuration system is in place to help with those cases
 
 The Avocado config file format is based on the (informal)
 `INI file 'specification' <http://en.wikipedia.org/wiki/INI_file>`__, that is implemented by
-Python's  :mod:`ConfigParser`. The format is simple and straightforward, composed by `sections`,
+Python's  :mod:`configparser`. The format is simple and straightforward, composed by `sections`,
 that contain a number of `keys` and `values`. Take for example a basic Avocado config file:
 
 .. code-block:: ini

@@ -40,6 +40,7 @@ import shutil
 import logging
 import optparse
 import tempfile
+import configparser
 
 try:
     import yum
@@ -47,11 +48,6 @@ except ImportError:
     HAS_YUM_MODULE = False
 else:
     HAS_YUM_MODULE = True
-
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
 
 from . import process
 from . import data_factory
@@ -403,7 +399,7 @@ class YumBackend(RpmBackend):
         base_arguments = '-y'
         self.base_command = executable + ' ' + base_arguments
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
-        self.cfgparser = ConfigParser.ConfigParser()
+        self.cfgparser = configparser.ConfigParser()
         self.cfgparser.read(self.repo_file_path)
         y_cmd = executable + ' --version | head -1'
         cmd_result = process.run(y_cmd, ignore_status=True,
