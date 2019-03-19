@@ -21,10 +21,9 @@ import re
 import tempfile
 import uuid
 
-from six import itervalues
-from six.moves.urllib.request import urlopen
-from six.moves.urllib.error import HTTPError
-from six.moves.html_parser import HTMLParser
+from urllib.request import urlopen
+from urllib.error import HTTPError
+from html.parser import HTMLParser
 
 from . import archive
 from . import asset
@@ -435,7 +434,7 @@ def list_providers():
     """
     List the available Image Providers
     """
-    return set(_ for _ in itervalues(globals())
+    return set(_ for _ in globals().values()
                if (isinstance(_, type) and
                    issubclass(_, ImageProviderBase) and
                    hasattr(_, 'name')))

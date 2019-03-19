@@ -17,8 +17,6 @@ import itertools
 import os
 import sys
 
-from six import iteritems
-
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
@@ -186,7 +184,7 @@ class VarianterPict(Varianter):
                 continue
             env = set()
             for node in variant["variant"]:
-                for key, value in iteritems(node.environment):
+                for key, value in node.environment.items():
                     origin = node.environment.origin[key].path
                     env.add(("%s:%s" % (origin, key), str(value)))
             if not env:

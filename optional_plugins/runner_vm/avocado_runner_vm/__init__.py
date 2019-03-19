@@ -20,7 +20,6 @@ import time
 from xml.dom import minidom
 
 import libvirt
-from six import iteritems
 
 from avocado.core import exit_codes, exceptions
 from avocado.core.output import LOG_UI
@@ -330,7 +329,7 @@ class VM(object):
         ipversion = libvirt.VIR_IP_ADDR_TYPE_IPV4
 
         ifaces = self.domain.interfaceAddresses(querytype)
-        for _, data in iteritems(ifaces):
+        for _, data in ifaces.items():
             if data['addrs'] and data['hwaddr'] != '00:00:00:00:00:00':
                 ip_addr = data['addrs'][0]['addr']
                 ip_type = data['addrs'][0]['type']

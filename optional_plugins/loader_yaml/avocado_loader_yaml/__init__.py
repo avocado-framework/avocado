@@ -15,8 +15,6 @@
 
 import copy
 
-from six import iteritems
-
 from avocado.core import loader
 from avocado.core import parameters
 from avocado.core import output
@@ -86,7 +84,7 @@ class YamlTestsuiteLoader(loader.TestLoader):
             args = self.args
         else:
             args = copy.copy(self.args)
-            for key, value in iteritems(_args):
+            for key, value in _args.items():
                 setattr(args, key, value)
         extra_params = params.get("test_reference_resolver_extra", default={})
         if extra_params:

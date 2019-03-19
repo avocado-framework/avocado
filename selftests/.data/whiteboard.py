@@ -2,8 +2,6 @@
 
 import base64
 
-from six.moves import xrange as range
-
 from avocado import Test
 from avocado import main
 

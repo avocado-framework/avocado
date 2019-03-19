@@ -15,8 +15,6 @@
 import json
 import sys
 
-from six import iteritems
-
 from avocado.core import exit_codes
 from avocado.core import varianter
 from avocado.core.output import LOG_UI
@@ -135,7 +133,7 @@ class JsonVariants(Varianter):
                     continue
                 env = set()
                 for node in variant["variant"]:
-                    for key, value in iteritems(node.environment):
+                    for key, value in node.environment.items():
                         origin = node.environment.origin[key].path
                         env.add(("%s:%s" % (origin, key), str(value)))
                 if not env:

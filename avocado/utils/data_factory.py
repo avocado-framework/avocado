@@ -22,8 +22,6 @@ import random
 import string
 import tempfile
 
-from six.moves import xrange as range
-
 _RAND_POOL = random.SystemRandom()
 
 log = logging.getLogger('avocado.test')

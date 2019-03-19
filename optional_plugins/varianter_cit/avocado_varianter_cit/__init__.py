@@ -12,15 +12,12 @@
 #          Bestoun S. Ahmed <bestoon82@gmail.com>
 #          Cleber Rosa <crosa@redhat.com>
 
+import configparser
 import copy
 import itertools
 import os
 import random
 import sys
-
-from six import iteritems
-from six.moves import configparser
-from six.moves import zip
 
 from avocado.core import exit_codes
 from avocado.core import varianter

@@ -18,8 +18,6 @@ import os
 import re
 import sys
 
-from six.moves import xrange as range
-
 from avocado.core import exit_codes
 from avocado.core import jobdata
 from avocado.core import status

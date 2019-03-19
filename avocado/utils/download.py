@@ -22,7 +22,7 @@ import os
 import socket
 import shutil
 
-from six.moves.urllib.request import urlopen
+from urllib.request import urlopen
 
 from . import aurl
 from . import output

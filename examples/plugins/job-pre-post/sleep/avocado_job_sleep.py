@@ -1,7 +1,5 @@
 import time
 
-from six.moves import xrange as range
-
 from avocado.core.output import LOG_UI
 from avocado.core.settings import settings
 from avocado.core.plugin_interfaces import JobPre, JobPost
