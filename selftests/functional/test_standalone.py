@@ -48,10 +48,7 @@ class StandaloneTests(unittest.TestCase):
         cmd_line = '%s ./examples/tests/errortest_nasty.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty')
-        if sys.version_info[0] == 3:
-            exc = u"errortest_nasty.NastyException: Nasty-string-like-exception\u017e"
-        else:
-            exc = u"NastyException: Nasty-string-like-exception\\u017e"
+        exc = u"errortest_nasty.NastyException: Nasty-string-like-exception\u017e"
         count = result.stdout_text.count(u"\n%s" % exc)
         self.assertEqual(count, 2, "Exception \\n%s should be present twice in"
                          "the log (once from the log, second time when parsing"
@@ -68,10 +65,7 @@ class StandaloneTests(unittest.TestCase):
         cmd_line = '%s ./examples/tests/errortest_nasty3.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty3')
-        if sys.version_info[0] == 3:
-            exc = b"TypeError: exceptions must derive from BaseException"
-        else:
-            exc = b"TestError: <errortest_nasty3.NastyException instance at "
+        exc = b"TypeError: exceptions must derive from BaseException"
         self.assertIn(exc, result.stdout)
 
     def test_errortest(self):

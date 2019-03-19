@@ -28,7 +28,6 @@ And not notice until their code starts failing.
 import itertools
 import locale
 import re
-import sys
 import string
 
 from six import string_types, PY3
@@ -315,8 +314,6 @@ def is_text(data):
     That is, if it can hold text that requires more than one byte for
     each character.
     """
-    if sys.version_info[0] < 3:
-        return isinstance(data, unicode)   # pylint: disable=E0602
     return isinstance(data, str)
 
 
@@ -341,8 +338,5 @@ def to_text(data, encoding=ENCODING, errors='strict'):
             encoding = ENCODING
         return data.decode(encoding, errors=errors)
     elif not isinstance(data, string_types):
-        if sys.version_info[0] < 3:
-            return unicode(data)    # pylint: disable=E0602
-        else:
-            return str(data)
+        return str(data)
     return data

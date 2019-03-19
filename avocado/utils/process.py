@@ -28,7 +28,6 @@ import shutil
 import signal
 import stat
 import subprocess
-import sys
 import threading
 import time
 
@@ -312,14 +311,8 @@ def cmd_split(cmd):
 
     :param cmd: text (a multi byte string) encoded as 'utf-8'
     """
-    if sys.version_info[0] < 3:
-        data = cmd.encode('utf-8')
-        result = shlex.split(data)
-        result = [i.decode('utf-8') for i in result]
-    else:
-        data = astring.to_text(cmd, 'utf-8')
-        result = shlex.split(data)
-    return result
+    data = astring.to_text(cmd, 'utf-8')
+    return shlex.split(data)
 
 
 class CmdResult(object):

@@ -156,13 +156,9 @@ class RunnerOperationTest(unittest.TestCase):
     def test_show_version(self):
         result = process.run('%s -v' % AVOCADO, ignore_status=True)
         self.assertEqual(result.exit_status, 0)
-        if sys.version_info[0] == 3:
-            content = result.stdout_text
-        else:
-            content = result.stderr_text
-        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", content),
+        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", result.stdout_text),
                         "Version string does not match 'Avocado \\d\\.\\d:'\n"
-                        "%r" % (content))
+                        "%r" % (result.stdout_text))
 
     def test_alternate_config_datadir(self):
         """
@@ -438,11 +434,8 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-        if sys.version_info[0] == 3:
-            exp = b'avocado: error: the following arguments are required'
-        else:
-            exp = b'error: too few arguments'
-        self.assertIn(exp, result.stderr)
+        self.assertIn(b'avocado: error: the following arguments are required',
+                      result.stderr)
 
     def test_empty_test_list(self):
         cmd_line = '%s run --sysinfo=off --job-results-dir %s' % (AVOCADO,
@@ -1120,8 +1113,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        if sys.version_info[:2] >= (2, 7, 0):
-            self.assertNotIn(b'Disabled', result.stdout)
+        self.assertNotIn(b'Disabled', result.stdout)
 
     def test_config_plugin(self):
         cmd_line = '%s config --paginator off' % AVOCADO
