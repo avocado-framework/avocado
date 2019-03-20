@@ -204,6 +204,24 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
+    def test_runner_teardown_timeout(self):
+        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+                    '--json - -- longteardown.py' % (AVOCADO, self.tmpdir))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_JOB_INTERRUPTED
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        results = json.loads(result.stdout_text)
+        self.assertEqual(results["tests"][0]["status"], "INTERRUPTED")
+        self.assertEqual(results["tests"][0]["whiteboard"], "TEARDOWN PERFORMED")
+        # Test running time should be at least the test timeout (1.0)
+        # plus the amount of time taken on tearDown (2), but no longer
+        # then the teardown timeout itself.
+        self.assertGreaterEqual(results["tests"][0]["time"], 3)
+
     def test_runner_all_ok(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     'passtest.py passtest.py' % (AVOCADO, self.tmpdir))
