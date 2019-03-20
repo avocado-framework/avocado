@@ -183,6 +183,14 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('    data     ' + mapping['data_dir'], result.stdout_text)
         self.assertIn('    logs     ' + mapping['logs_dir'], result.stdout_text)
 
+    def test_runner_phases(self):
+        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+                    'phases.py' % (AVOCADO, self.tmpdir))
+        result = process.run(cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
     def test_runner_all_ok(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     'passtest.py passtest.py' % (AVOCADO, self.tmpdir))
