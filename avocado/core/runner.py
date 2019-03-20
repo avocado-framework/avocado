@@ -216,14 +216,12 @@ class TestStatus(object):
                notifications)
         """
         # Wait for either process termination or test status
-        wait.wait_for(lambda: not proc.is_alive() or self.status, 1, 0,
-                      step)
+        wait.wait_for(lambda: not proc.is_alive() or self.status, 1, 0, step)
         if self.status:     # status exists, wait for process to finish
             deadline = min(deadline, time.time() + TIMEOUT_PROCESS_ALIVE)
             while time.time() < deadline:
                 result_dispatcher.map_method('test_progress', False)
-                if wait.wait_for(lambda: not proc.is_alive(), 1, 0,
-                                 step):
+                if wait.wait_for(lambda: not proc.is_alive(), 1, 0, step):
                     return self._add_status_failures(self.status)
             err = "Test reported status but did not finish"
         else:   # proc finished, wait for late status delivery
