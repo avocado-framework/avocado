@@ -59,6 +59,7 @@ class TestRunnerQueue(unittest.TestCase):
         msg = self._run_test(factory)
 
         self.assertEqual(msg['whiteboard'], 'TXkgbWVzc2FnZSBlbmNvZGVkIGluIGJhc2U2NA==\n')
+        self.assertIn('phase', msg)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
