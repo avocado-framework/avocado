@@ -833,6 +833,7 @@ class Test(unittest.TestCase, TestData):
         try:
             if skip_test is False:
                 self.__phase = 'SETUP'
+                self.report_state()
                 self.setUp()
         except exceptions.TestSkipError as details:
             skip_test = True
@@ -848,6 +849,7 @@ class Test(unittest.TestCase, TestData):
         else:
             try:
                 self.__phase = 'TEST'
+                self.report_state()
                 testMethod()
             except exceptions.TestCancel as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
@@ -866,6 +868,7 @@ class Test(unittest.TestCase, TestData):
             try:
                 if skip_test is False:
                     self.__phase = 'TEARDOWN'
+                    self.report_state()
                     self.tearDown()
             except exceptions.TestSkipError as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
