@@ -306,7 +306,9 @@ class RunnerOperationTest(unittest.TestCase):
             self.assertEqual(results["tests"][0]["status"], "ERROR",
                              "%s != %s\n%s" % (results["tests"][0]["status"],
                                                "ERROR", res))
-            self.assertIn("Test died without reporting the status",
+            self.assertIn("Test reports unsupported test status",
+                          results["tests"][0]["fail_reason"])
+            self.assertIn("status: None",
                           results["tests"][0]["fail_reason"])
 
     def test_runner_tests_fail(self):
