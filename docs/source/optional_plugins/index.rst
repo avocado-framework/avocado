@@ -20,4 +20,3 @@ optional plugins:
    golang
    glib
    avocado_ec2
-   azure
