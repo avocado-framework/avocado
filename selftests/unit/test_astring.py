@@ -88,11 +88,7 @@ class AstringTest(unittest.TestCase):
         self.assertFalse(astring.is_bytes(text))
         self.assertTrue(hasattr(binary, 'decode'))
         self.assertTrue(astring.is_text(binary.decode()))
-        # on Python 2, each str member is also a single byte char
-        if sys.version_info[0] < 3:
-            self.assertTrue(astring.is_bytes(str('')))
-        else:
-            self.assertFalse(astring.is_bytes(str('')))
+        self.assertFalse(astring.is_bytes(str('')))
 
     def test_is_text(self):
         """

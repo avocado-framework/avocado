@@ -6,7 +6,6 @@ import stat
 import tempfile
 import shutil
 import signal
-import sys
 import unittest
 
 from avocado.core import exit_codes
@@ -265,8 +264,6 @@ class LoaderTestFunctional(unittest.TestCase):
                     % (AVOCADO, self.tmpdir, mytest))
         self._run_with_timeout(cmd_line, 5)
 
-    @unittest.skipIf(sys.version_info[0] == 3,
-                     "Test currently broken on Python 3")
     @unittest.skipUnless(os.path.exists("/bin/true"), "/bin/true not "
                          "available")
     @unittest.skipUnless(os.path.exists("/bin/echo"), "/bin/echo not "

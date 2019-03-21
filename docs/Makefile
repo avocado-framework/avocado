@@ -1,9 +1,12 @@
 # Makefile for Sphinx documentation
 #
+ifndef PYTHON
+PYTHON=$(shell which python3 2>/dev/null || which python 2>/dev/null)
+endif
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
+SPHINXBUILD   = $(PYTHON) -m sphinx
 PAPER         =
 BUILDDIR      = build
 
