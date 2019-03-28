@@ -203,6 +203,31 @@ def write_file_or_fail(filename, data):
                          filename, details))
 
 
+def append_file(filename, data):
+    """
+    Append data to a file.
+
+    :param filename: Path to the file.
+    :type filename: str
+    :param line: Line to be written.
+    :type line: str
+    """
+    with open(filename, 'a+') as file_obj:
+        file_obj.write(data)
+
+
+def append_one_line(filename, line):
+    """
+    Append one line of text to filename.
+
+    :param filename: Path to the file.
+    :type filename: str
+    :param line: Line to be written.
+    :type line: str
+    """
+    append_file(filename, line.rstrip('\n') + '\n')
+
+
 def is_pattern_in_file(filename,  pattern):
     """
     Check if a pattern matches in a specified file. If a non
