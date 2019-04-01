@@ -32,7 +32,6 @@ from . import varianter
 from .loader import loader
 from .status import mapping
 from ..utils import wait
-from ..utils import runtime
 from ..utils import process
 from ..utils import stacktrace
 
@@ -323,7 +322,6 @@ class TestRunner(object):
         instance = loader.load_test(test_factory)
         if instance.runner_queue is None:
             instance.set_runner_queue(queue)
-        runtime.CURRENT_TEST = instance
         early_state = instance.get_state()
         early_state['early_status'] = True
         try:
@@ -629,7 +627,6 @@ class TestRunner(object):
                     if not self.run_test(test_factory, queue, summary,
                                          deadline):
                         break
-                runtime.CURRENT_TEST = None
         except KeyboardInterrupt:
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')

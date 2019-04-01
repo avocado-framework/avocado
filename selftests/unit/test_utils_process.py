@@ -9,7 +9,6 @@ import time
 
 from avocado.utils import astring
 from avocado.utils import script
-from avocado.utils import gdb
 from avocado.utils import process
 from avocado.utils import path
 
@@ -129,64 +128,6 @@ class TestSubProcess(unittest.TestCase):
 
         self.assertTrue(subprocess.is_sudo_enabled())
         get_owner.assert_called_with(process_id)
-
-
-class TestGDBProcess(unittest.TestCase):
-
-    def setUp(self):
-        self.current_runtime_expr = gdb.GDB_RUN_BINARY_NAMES_EXPR[:]
-
-    def cleanUp(self):
-        gdb.GDB_RUN_BINARY_NAMES_EXPR = self.current_runtime_expr
-
-    def test_should_run_inside_gdb(self):
-        gdb.GDB_RUN_BINARY_NAMES_EXPR = ['foo']
-        self.assertTrue(process.should_run_inside_gdb('foo'))
-        self.assertTrue(process.should_run_inside_gdb('/usr/bin/foo'))
-        self.assertFalse(process.should_run_inside_gdb('/usr/bin/fooz'))
-
-        gdb.GDB_RUN_BINARY_NAMES_EXPR.append('foo:main')
-        self.assertTrue(process.should_run_inside_gdb('foo'))
-        self.assertFalse(process.should_run_inside_gdb('bar'))
-
-        gdb.GDB_RUN_BINARY_NAMES_EXPR.append('bar:main.c:5')
-        self.assertTrue(process.should_run_inside_gdb('bar'))
-        self.assertFalse(process.should_run_inside_gdb('baz'))
-        self.assertTrue(process.should_run_inside_gdb('bar 1 2 3'))
-        self.assertTrue(process.should_run_inside_gdb('/usr/bin/bar 1 2 3'))
-
-    def test_should_run_inside_gdb_malformed_command(self):
-        gdb.GDB_RUN_BINARY_NAMES_EXPR = ['/bin/virsh']
-        cmd = """/bin/virsh node-memory-tune --shm-sleep-millisecs ~!@#$%^*()-=[]{}|_+":;'`,>?. """
-        self.assertTrue(process.should_run_inside_gdb(cmd))
-        self.assertFalse(process.should_run_inside_gdb("foo bar baz"))
-        self.assertFalse(process.should_run_inside_gdb("foo ' "))
-
-    def test_get_sub_process_klass(self):
-        gdb.GDB_RUN_BINARY_NAMES_EXPR = []
-        self.assertIs(process.get_sub_process_klass(FICTIONAL_CMD),
-                      process.SubProcess)
-
-        gdb.GDB_RUN_BINARY_NAMES_EXPR.append('/bin/false')
-        self.assertIs(process.get_sub_process_klass('/bin/false'),
-                      process.GDBSubProcess)
-        self.assertIs(process.get_sub_process_klass('false'),
-                      process.GDBSubProcess)
-        self.assertIs(process.get_sub_process_klass(FICTIONAL_CMD),
-                      process.SubProcess)
-
-    def test_split_gdb_expr(self):
-        binary, break_point = process.split_gdb_expr('foo:debug_print')
-        self.assertEqual(binary, 'foo')
-        self.assertEqual(break_point, 'debug_print')
-        binary, break_point = process.split_gdb_expr('bar')
-        self.assertEqual(binary, 'bar')
-        self.assertEqual(break_point, 'main')
-        binary, break_point = process.split_gdb_expr('baz:main.c:57')
-        self.assertEqual(binary, 'baz')
-        self.assertEqual(break_point, 'main.c:57')
-        self.assertIsInstance(process.split_gdb_expr('foo'), tuple)
-        self.assertIsInstance(process.split_gdb_expr('foo:debug_print'), tuple)
 
 
 def mock_fail_find_cmd(cmd, default=None):  # pylint: disable=W0613
