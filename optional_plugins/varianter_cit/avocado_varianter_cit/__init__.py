@@ -145,7 +145,7 @@ class VarianterCit(Varianter):
         return "\n".join(out)
 
 
-class Cit(object):
+class Cit:
 
     MATRIX_ROW_SIZE = 20
     MAX_ITERATIONS = 15

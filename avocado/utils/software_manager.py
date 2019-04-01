@@ -60,7 +60,7 @@ log = logging.getLogger('avocado.test')
 SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper', 'dnf']
 
 
-class SystemInspector(object):
+class SystemInspector:
 
     """
     System inspector class.
@@ -113,7 +113,7 @@ class SystemInspector(object):
         return pm_supported
 
 
-class SoftwareManager(object):
+class SoftwareManager:
 
     """
     Package management abstraction layer.
@@ -159,7 +159,7 @@ class SoftwareManager(object):
         return self.backend.__getattribute__(name)
 
 
-class BaseBackend(object):
+class BaseBackend:
 
     """
     This class implements all common methods among backends.

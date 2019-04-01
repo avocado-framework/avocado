@@ -31,7 +31,7 @@ from avocado.core.plugin_interfaces import CLI, Result
 from avocado.utils import astring
 
 
-class ReportModel(object):
+class ReportModel:
 
     """
     Prepares an object that can be passed up to mustache for rendering.

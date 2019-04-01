@@ -34,7 +34,7 @@ class InvalidResultResponseError(Exception):
     """
 
 
-class BaseResponse(object):
+class BaseResponse:
 
     """
     Base class that provides commonly used features for response handling

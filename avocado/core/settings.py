@@ -120,7 +120,7 @@ def convert_value_type(value, value_type):
     return conv_val
 
 
-class Settings(object):
+class Settings:
 
     """
     Simple wrapper around configparser, with a key type conversion available.

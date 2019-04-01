@@ -33,7 +33,7 @@ DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
 READ_ONLY_MODE = (stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
 
-class Script(object):
+class Script:
 
     """
     Class that represents a script.

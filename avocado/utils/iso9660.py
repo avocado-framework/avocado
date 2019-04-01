@@ -120,7 +120,7 @@ def can_mount():
     return True
 
 
-class BaseIso9660(object):
+class BaseIso9660:
 
     """
     Represents a ISO9660 filesystem
@@ -169,7 +169,7 @@ class BaseIso9660(object):
         """
 
 
-class MixInMntDirMount(object):
+class MixInMntDirMount:
     """
     Mix in class which defines `mnt_dir` property and instantiates the
     Iso9660Mount class to provide one. It requires `self.path` to store

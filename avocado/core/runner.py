@@ -82,7 +82,7 @@ def add_runner_failure(test_state, new_status, message):
     return test_state
 
 
-class TestStatus(object):
+class TestStatus:
 
     """
     Test status handler
@@ -266,7 +266,7 @@ class TestStatus(object):
         return self._add_status_failures(test_state)
 
 
-class TestRunner(object):
+class TestRunner:
 
     """
     A test runner class that displays tests results.

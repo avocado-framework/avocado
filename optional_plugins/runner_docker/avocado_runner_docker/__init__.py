@@ -26,7 +26,7 @@ from avocado.utils.wait import wait_for
 from avocado_runner_remote import RemoteTestRunner
 
 
-class DockerRemoter(object):
+class DockerRemoter:
 
     """
     Remoter object similar to

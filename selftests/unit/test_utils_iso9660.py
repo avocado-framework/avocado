@@ -44,7 +44,7 @@ class Capabilities(unittest.TestCase):
                                           ['non-existing', 'capabilities']))
 
 
-class BaseIso9660(object):
+class BaseIso9660:
 
     """
     Base class defining setup and tests for shared Iso9660 functionality

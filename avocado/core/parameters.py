@@ -23,7 +23,7 @@ class NoMatchError(KeyError):
     pass
 
 
-class AvocadoParams(object):
+class AvocadoParams:
 
     """
     Params object used to retrieve params from given path. It supports
@@ -194,7 +194,7 @@ class AvocadoParams(object):
                 yield (path, key, value)
 
 
-class AvocadoParam(object):
+class AvocadoParam:
 
     """
     This is a single slice params. It can contain multiple leaves and tries to

@@ -464,7 +464,7 @@ class _MemInfoItem(DataSize):
         return getattr(datasize, attr)
 
 
-class MemInfo(object):
+class MemInfo:
     """
     Representation of /proc/meminfo
     """

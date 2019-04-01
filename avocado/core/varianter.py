@@ -115,7 +115,7 @@ def dump_ivariants(ivariants):
     return variants
 
 
-class FakeVariantDispatcher(object):
+class FakeVariantDispatcher:
 
     """
     This object can act instead of VarianterDispatcher to report loaded
@@ -164,7 +164,7 @@ class FakeVariantDispatcher(object):
         return sum(1 for _ in self)
 
 
-class Varianter(object):
+class Varianter:
 
     """
     This object takes care of producing test variants

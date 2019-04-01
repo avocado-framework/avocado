@@ -52,7 +52,7 @@ class UnsupportedProtocolError(EnvironmentError):
     """
 
 
-class Asset(object):
+class Asset:
     """
     Try to fetch/verify an asset file from multiple locations.
     """

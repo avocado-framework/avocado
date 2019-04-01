@@ -53,7 +53,7 @@ class TestDataStructures(unittest.TestCase):
         """
         Verify the value is initialized lazily with the correct value
         """
-        class DummyClass(object):
+        class DummyClass:
             value = False
 
             @data_structures.LazyProperty
@@ -69,7 +69,7 @@ class TestDataStructures(unittest.TestCase):
         """
         Checks CallbackRegister
         """
-        class Log(object):
+        class Log:
             msgs = []
 
             def error(self, *args, **kwargs):

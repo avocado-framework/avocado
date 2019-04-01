@@ -273,7 +273,7 @@ def remote_decode(data):
     return payload
 
 
-class CommandResult(object):
+class CommandResult:
 
     """
     A GDB command, its result, and other possible messages
@@ -308,7 +308,7 @@ class CommandResult(object):
         return "%s at %s" % (self.command, self.timestamp)
 
 
-class GDB(object):
+class GDB:
 
     """
     Wraps a GDB subprocess for easier manipulation
@@ -597,7 +597,7 @@ class GDB(object):
         return self.process.wait()
 
 
-class GDBServer(object):
+class GDBServer:
 
     """
     Wraps a gdbserver instance
@@ -711,7 +711,7 @@ class GDBServer(object):
             self.stderr.close()
 
 
-class GDBRemote(object):
+class GDBRemote:
 
     def __init__(self, host, port, no_ack_mode=True, extended_mode=True):
         """

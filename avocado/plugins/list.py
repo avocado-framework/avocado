@@ -24,7 +24,7 @@ from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import astring
 
 
-class TestLister(object):
+class TestLister:
 
     """
     Lists available test modules

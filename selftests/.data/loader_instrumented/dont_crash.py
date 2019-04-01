@@ -12,7 +12,7 @@ from avocado import Test
 
 
 # on "import avocado" this requires some skipping
-class DontCrash1(object):
+class DontCrash1:
     pass
 
 
@@ -35,7 +35,7 @@ class DiscoverMe3(object, Test, main):  # pylint: disable=E0240,E0602
         pass
 
 
-class DontCrash2p(object):
+class DontCrash2p:
     class Bar(avocado.Test):
         def test(self):
             pass
@@ -52,7 +52,7 @@ class DiscoverMe4(DiscoverMe4p):    # pylint: disable=E0601
     """:avocado: recursive"""
 
 
-class DiscoverMe4p(object):
+class DiscoverMe4p:
     def test(self):
         pass
 

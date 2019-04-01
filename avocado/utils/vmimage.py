@@ -60,7 +60,7 @@ class VMImageHtmlParser(HTMLParser):  # pylint: disable=W0223
                     self.items.append(match)
 
 
-class ImageProviderBase(object):
+class ImageProviderBase:
     """
     Base class to define the common methods and attributes of an
     image. Intended to be sub-classed by the specific image providers.
@@ -310,7 +310,7 @@ class OpenSUSEImageProvider(ImageProviderBase):
         return max(version_numbers)
 
 
-class Image(object):
+class Image:
     def __init__(self, name, url, version, arch, checksum, algorithm,
                  cache_dir, snapshot_dir=None):
         self.name = name

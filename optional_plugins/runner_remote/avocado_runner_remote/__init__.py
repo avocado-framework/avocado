@@ -205,7 +205,7 @@ class DummyLoader(loader.TestLoader):
         return {MockingTest: output.TERM_SUPPORT.healthy_str}
 
 
-class Remote(object):
+class Remote:
 
     """
     Performs remote operations.

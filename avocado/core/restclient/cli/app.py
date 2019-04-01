@@ -28,7 +28,7 @@ from ...output import LOG_UI
 __all__ = ['App']
 
 
-class App(object):
+class App:
 
     """
     Base class for CLI application

@@ -58,7 +58,7 @@ class UnexpectedHttpStatusCode(Exception):
         return msg % (self.expected, self.received)
 
 
-class Connection(object):
+class Connection:
 
     """
     Connection to the avocado server

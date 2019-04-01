@@ -56,7 +56,7 @@ from .output import LOG_UI
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
 
-class Job(object):
+class Job:
 
     """
     A Job is a set of operations performed on a test machine.
@@ -586,7 +586,7 @@ class Job(object):
                     pass
 
 
-class TestProgram(object):
+class TestProgram:
 
     """
     Convenience class to make avocado test modules executable.

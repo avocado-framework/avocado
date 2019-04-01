@@ -103,7 +103,7 @@ def find_command(cmd, default=None):
         raise CmdNotFoundError(cmd, path_paths)
 
 
-class PathInspector(object):
+class PathInspector:
 
     def __init__(self, path):
         self.path = path

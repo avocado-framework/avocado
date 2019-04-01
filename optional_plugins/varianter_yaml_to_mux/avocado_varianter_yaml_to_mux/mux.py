@@ -42,7 +42,7 @@ REMOVE_NODE = 0
 REMOVE_VALUE = 1
 
 
-class MuxTree(object):
+class MuxTree:
 
     """
     Object representing part of the tree from the root to leaves or another
@@ -150,7 +150,7 @@ class MuxTree(object):
         return True
 
 
-class MuxPlugin(object):
+class MuxPlugin:
     """
     Base implementation of Mux-like Varianter plugin. It should be used as
     a base class in conjunction with
@@ -235,7 +235,7 @@ class MuxPlugin(object):
         return sum(1 for _ in self)
 
 
-class OutputValue(object):  # only container pylint: disable=R0903
+class OutputValue:  # only container pylint: disable=R0903
 
     """ Ordinary value with some debug info """
 
@@ -319,7 +319,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
         return self.iteritems()
 
 
-class Control(object):  # Few methods pylint: disable=R0903
+class Control:  # Few methods pylint: disable=R0903
 
     """ Container used to identify node vs. control sequence """
 

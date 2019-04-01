@@ -65,7 +65,7 @@ class FileOrStdoutAction(argparse.Action):
         setattr(namespace, self.dest, values)
 
 
-class Parser(object):
+class Parser:
 
     """
     Class to Parse the command line arguments.

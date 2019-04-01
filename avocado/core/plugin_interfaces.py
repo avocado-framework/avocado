@@ -16,7 +16,7 @@
 import abc
 
 
-class Plugin(object):
+class Plugin:
 
     __metaclass__ = abc.ABCMeta
 

@@ -77,7 +77,7 @@ class ArchiveException(Exception):
     """
 
 
-class _WrapLZMA(object):
+class _WrapLZMA:
 
     """ wraps tar.xz for python 2.7's tarfile """
 
@@ -124,7 +124,7 @@ if LZMA_CAPABLE:
         return extracted_file
 
 
-class ArchiveFile(object):
+class ArchiveFile:
 
     """
     Class that represents an Archive file.

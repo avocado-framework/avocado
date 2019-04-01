@@ -114,7 +114,7 @@ class TreeEnvironment(dict):
                          astring.to_text(self.filter_out)))
 
 
-class TreeNodeEnvOnly(object):
+class TreeNodeEnvOnly:
 
     """
     Minimal TreeNode-like class providing interface for AvocadoParams
@@ -158,7 +158,7 @@ class TreeNodeEnvOnly(object):
         return self.path
 
 
-class TreeNode(object):
+class TreeNode:
 
     """
     Class for bounding nodes into tree-structure.

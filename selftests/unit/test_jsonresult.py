@@ -16,7 +16,7 @@ from .. import setup_avocado_loggers
 setup_avocado_loggers()
 
 
-class FakeJob(object):
+class FakeJob:
 
     def __init__(self, args):
         self.args = args

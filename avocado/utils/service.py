@@ -346,7 +346,7 @@ COMMANDS = (
 )
 
 
-class _ServiceResultParser(object):  # pylint: disable=too-few-public-methods
+class _ServiceResultParser:  # pylint: disable=too-few-public-methods
 
     """
     A class that contains staticmethods to parse the result of service command.
@@ -380,7 +380,7 @@ class _ServiceResultParser(object):  # pylint: disable=too-few-public-methods
         return True
 
 
-class _ServiceCommandGenerator(object):  # pylint: disable=too-few-public-methods
+class _ServiceCommandGenerator:  # pylint: disable=too-few-public-methods
 
     """
     Generate command lists for starting/stopping services.
@@ -430,7 +430,7 @@ def get_name_of_init(run=process.run):
         return os.path.basename(output)
 
 
-class _SpecificServiceManager(object):  # pylint: disable=too-few-public-methods
+class _SpecificServiceManager:  # pylint: disable=too-few-public-methods
 
     def __init__(self, service_name, service_command_generator,
                  service_result_parser, run=process.run):
@@ -507,7 +507,7 @@ class _SpecificServiceManager(object):  # pylint: disable=too-few-public-methods
         return run
 
 
-class _GenericServiceManager(object):  # pylint: disable=too-few-public-methods
+class _GenericServiceManager:  # pylint: disable=too-few-public-methods
 
     """
     Base class for SysVInitServiceManager and SystemdServiceManager.

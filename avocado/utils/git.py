@@ -26,7 +26,7 @@ from . import path
 __all__ = ["GitRepoHelper", "get_repo"]
 
 
-class GitRepoHelper(object):
+class GitRepoHelper:
 
     """
     Helps to deal with git repos, mostly fetching content from a repo
