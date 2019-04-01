@@ -593,9 +593,9 @@ class TestRunner(object):
         self.result.tests_total = test_result_total
         index = -1
         try:
-            for test_template in test_suite:
-                test_template[1]["base_logdir"] = self.job.logdir
-                test_template[1]["job"] = self.job
+            for test_factory in test_suite:
+                test_factory[1]["base_logdir"] = self.job.logdir
+                test_factory[1]["job"] = self.job
             if execution_order is None:
                 execution_order = self.DEFAULT_EXECUTION_ORDER
             for test_factory, variant in self._iter_suite(test_suite, variants,
