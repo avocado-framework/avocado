@@ -34,10 +34,7 @@ class TestRunnerQueue(unittest.TestCase):
         :param factory: the Avocado Test factory
         :return: the last queue message from the test
         """
-        if hasattr(multiprocessing, 'SimpleQueue'):
-            queue = multiprocessing.SimpleQueue()
-        else:
-            queue = multiprocessing.queues.SimpleQueue()  # pylint: disable=E1125
+        queue = multiprocessing.SimpleQueue()
         runner = TestRunner(job=self.job, result=self.result)
         runner._run_test(factory, queue)
         while not queue.empty():
