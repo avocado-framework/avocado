@@ -35,7 +35,7 @@ class VirtError(Exception):
     """
 
 
-class Hypervisor(object):
+class Hypervisor:
 
     """
     The Hypervisor connection class.
@@ -100,7 +100,7 @@ class Hypervisor(object):
         """
 
 
-class VM(object):
+class VM:
 
     """
     The Virtual Machine handler class.

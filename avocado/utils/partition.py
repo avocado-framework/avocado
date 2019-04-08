@@ -50,7 +50,7 @@ class PartitionError(Exception):
                                       super(PartitionError, self).__str__())
 
 
-class MtabLock(object):
+class MtabLock:
     device = "/etc/mtab"
 
     def __init__(self, timeout=60):
@@ -76,7 +76,7 @@ class MtabLock(object):
         self.lock.__exit__(exc_type, exc_value, exc_traceback)
 
 
-class Partition(object):
+class Partition:
 
     """
     Class for handling partitions and filesystems

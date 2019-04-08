@@ -73,7 +73,7 @@ class RobotTest(test.SimpleTest):
                       'non-0 exit code (%s)' % result)
 
 
-class NotRobotTest(object):
+class NotRobotTest:
 
     """
     Not a robot test (for reporting purposes)

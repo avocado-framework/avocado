@@ -32,7 +32,7 @@ from ..utils import path as utils_path
 log = logging.getLogger("avocado.sysinfo")
 
 
-class Collectible(object):
+class Collectible:
 
     """
     Abstract class for representing collectibles by sysinfo.
@@ -357,7 +357,7 @@ class LogWatcher(Collectible):
             log.error("Log file %s collection failed: %s", self.path, detail)
 
 
-class SysInfo(object):
+class SysInfo:
 
     """
     Log different system properties at some key control points:

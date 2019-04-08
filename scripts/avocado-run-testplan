@@ -51,7 +51,7 @@ RESULT_MAP = {"P": "PASS",
               "s": "SKIP"}
 
 
-class App(object):
+class App:
 
     def __init__(self):
         self.parser = Parser()

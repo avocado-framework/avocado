@@ -1,7 +1,7 @@
 from . import process
 
 
-class Session(object):
+class Session:
     """
     Represents an SSH session to a remote system, for the purpose of
     executing commands remotely.

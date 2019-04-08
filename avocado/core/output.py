@@ -43,7 +43,7 @@ BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
                        'none': 'disables regular output (leaving only errors enabled)'}
 
 
-class TermSupport(object):
+class TermSupport:
 
     COLOR_BLUE = '\033[94m'
     COLOR_GREEN = '\033[92m'
@@ -199,7 +199,7 @@ class TermSupport(object):
 TERM_SUPPORT = TermSupport()
 
 
-class _StdOutputFile(object):
+class _StdOutputFile:
 
     """
     File-like object which stores (_is_stdout, content) into the provided list
@@ -250,7 +250,7 @@ class _StdOutputFile(object):
                           if _[0] == self._is_stdout))
 
 
-class StdOutput(object):
+class StdOutput:
 
     """
     Class to modify sys.stdout/sys.stderr
@@ -516,7 +516,7 @@ class MemStreamHandler(logging.StreamHandler):
         """
 
 
-class Paginator(object):
+class Paginator:
 
     """
     Paginator that uses less to display contents on the terminal.
@@ -589,7 +589,7 @@ def disable_log_handler(logger):
     logger.propagate = False
 
 
-class LoggingFile(object):
+class LoggingFile:
 
     """
     File-like object that will receive messages pass them to logging.
@@ -652,7 +652,7 @@ class LoggingFile(object):
         self._prefixes = self._prefixes[:idx] + self._prefixes[idx+1:]
 
 
-class Throbber(object):
+class Throbber:
 
     """
     Produces a spinner used to notify progress in the application UI.

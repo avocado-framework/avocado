@@ -1248,7 +1248,7 @@ class::
 
    from avocado import Test
 
-   class NotInheritedFromTest(object):
+   class NotInheritedFromTest:
        """
        :avocado: enable
        """

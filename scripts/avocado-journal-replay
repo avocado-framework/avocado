@@ -45,7 +45,7 @@ class ArgumentParser(argparse.ArgumentParser):
                           help='Path to the journal file (.journal.sqlite)')
 
 
-class App(object):
+class App:
 
     def __init__(self):
         self.app_parser = ArgumentParser()

@@ -29,7 +29,7 @@ from .parser import Parser
 from ..utils import process
 
 
-class AvocadoApp(object):
+class AvocadoApp:
 
     """
     Avocado application.

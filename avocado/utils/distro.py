@@ -32,7 +32,7 @@ __all__ = ['LinuxDistro',
 
 
 # pylint: disable=R0903
-class LinuxDistro(object):
+class LinuxDistro:
 
     """
     Simple collection of information for a Linux Distribution
@@ -87,7 +87,7 @@ UNKNOWN_DISTRO = LinuxDistro(UNKNOWN_DISTRO_NAME,
                              UNKNOWN_DISTRO_ARCH)
 
 
-class Probe(object):
+class Probe:
 
     """
     Probes the machine and does it best to confirm it's the right distro
@@ -419,7 +419,7 @@ def detect():
     return distro
 
 
-class Spec(object):
+class Spec:
 
     """
     Describes a distro, usually for setting minimum distro requirements

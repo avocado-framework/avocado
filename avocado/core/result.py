@@ -18,7 +18,7 @@ Contains the Result class, used for result accounting.
 """
 
 
-class Result(object):
+class Result:
 
     """
     Result class, holder for job (and its tests) result information.

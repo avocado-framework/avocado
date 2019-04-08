@@ -27,7 +27,7 @@ class ParseXMLError(Exception):
     pass
 
 
-class FakeJob(object):
+class FakeJob:
 
     def __init__(self, args):
         self.args = args

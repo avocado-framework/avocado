@@ -27,7 +27,7 @@ import sys
 from ..utils import data_structures
 
 
-class AvocadoModule(object):
+class AvocadoModule:
     """
     Representation of a module that might contain avocado.Test tests
     """

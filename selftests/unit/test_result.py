@@ -4,13 +4,13 @@ import unittest
 from avocado.core.result import Result
 
 
-class FakeJobMissingUniqueId(object):
+class FakeJobMissingUniqueId:
 
     def __init__(self, args):
         self.args = args
 
 
-class FakeJob(object):
+class FakeJob:
 
     def __init__(self, args):
         self.args = args

@@ -21,7 +21,7 @@ import unittest
 from avocado.utils import stacktrace
 
 
-class Unpickable(object):
+class Unpickable:
     """
     Dummy class which does not support pickling
     """
@@ -30,7 +30,7 @@ class Unpickable(object):
         raise NotImplementedError()
 
 
-class InClassUnpickable(object):
+class InClassUnpickable:
     """
     Dummy class containing unpickable object inside itself
     """

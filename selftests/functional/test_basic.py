@@ -1027,7 +1027,7 @@ class ExternalRunnerTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
-class AbsPluginsTest(object):
+class AbsPluginsTest:
 
     def setUp(self):
         self.base_outputdir = tempfile.mkdtemp(prefix='avocado_' + __name__)

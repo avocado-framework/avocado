@@ -89,7 +89,7 @@ class RawFileHandler(logging.FileHandler):
             self.handleError(record)
 
 
-class TestID(object):
+class TestID:
 
     """
     Test ID construction and representation according to specification
@@ -171,7 +171,7 @@ class TestID(object):
                                % (self.str_uid, str(self)))
 
 
-class TestData(object):
+class TestData:
 
     """
     Class that adds the ability for tests to have access to data files
@@ -1192,7 +1192,7 @@ class SimpleTest(Test):
         self._execute_cmd()
 
 
-class ExternalRunnerSpec(object):
+class ExternalRunnerSpec:
     """
     Defines the basic options used by ExternalRunner
     """

@@ -56,7 +56,7 @@ ALL = DiscoverMode.ALL
 _RE_UNIT_TEST = re.compile(r'test.*')
 
 
-class MissingTest(object):
+class MissingTest:
     """
     Class representing reference which failed to be discovered
     """
@@ -198,7 +198,7 @@ class LoaderUnhandledReferenceError(LoaderError):
                    " ".join(self.unhandled_references)))
 
 
-class TestLoaderProxy(object):
+class TestLoaderProxy:
 
     def __init__(self):
         self._initialized_plugins = []
@@ -421,7 +421,7 @@ class TestLoaderProxy(object):
         self.registered_plugins = []
 
 
-class TestLoader(object):
+class TestLoader:
 
     """
     Base for test loader classes
@@ -502,11 +502,11 @@ class TestLoader(object):
         raise NotImplementedError
 
 
-class BrokenSymlink(object):
+class BrokenSymlink:
     """ Dummy object to represent reference pointing to a BrokenSymlink path """
 
 
-class AccessDeniedPath(object):
+class AccessDeniedPath:
     """ Dummy object to represent reference pointing to a inaccessible path """
 
 
@@ -549,7 +549,7 @@ def add_loader_options(parser):
                               'run tests from files'))
 
 
-class NotATest(object):
+class NotATest:
     """
     Class representing something that is not a test
     """

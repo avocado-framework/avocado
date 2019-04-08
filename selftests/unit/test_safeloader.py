@@ -96,7 +96,7 @@ class ModuleImportedAs(unittest.TestCase):
         self._test('import foo as foo', {'foo': 'foo'})
 
     def test_import_inside_class(self):
-        self._test("class Foo(object): import foo as foo", {})
+        self._test("class Foo: import foo as foo", {})
 
 
 class DocstringDirectives(unittest.TestCase):

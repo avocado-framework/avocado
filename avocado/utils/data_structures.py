@@ -162,7 +162,7 @@ class Borg:
         self.__dict__ = self.__shared_state
 
 
-class LazyProperty(object):
+class LazyProperty:
 
     """
     Lazily instantiated property.
@@ -186,7 +186,7 @@ class LazyProperty(object):
         return value
 
 
-class CallbackRegister(object):
+class CallbackRegister:
 
     """
     Registers pickable functions to be executed later.
@@ -267,7 +267,7 @@ def time_to_seconds(time):
     return seconds
 
 
-class DataSize(object):
+class DataSize:
     """
     Data Size object with builtin unit-converted attributes.
 

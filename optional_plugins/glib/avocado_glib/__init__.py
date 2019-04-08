@@ -58,7 +58,7 @@ class GLibTest(test.SimpleTest):
                       'non-0 exit code (%s)' % result)
 
 
-class NotGLibTest(object):
+class NotGLibTest:
 
     """
     Not a GLib Test (for reporting purposes)

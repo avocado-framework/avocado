@@ -314,7 +314,7 @@ def cmd_split(cmd):
     return shlex.split(data)
 
 
-class CmdResult(object):
+class CmdResult:
 
     """
     Command execution result.
@@ -376,7 +376,7 @@ class CmdResult(object):
         raise TypeError("Unable to decode stderr into a string-like type")
 
 
-class FDDrainer(object):
+class FDDrainer:
 
     def __init__(self, fd, result, name=None, logger=None, logger_prefix='%s',
                  stream_logger=None, ignore_bg_processes=False, verbose=False):
@@ -485,7 +485,7 @@ class FDDrainer(object):
                     handler.close()
 
 
-class SubProcess(object):
+class SubProcess:
 
     """
     Run a subprocess in the background, collecting stdout/stderr streams.
@@ -940,7 +940,7 @@ class WrapSubProcess(SubProcess):
                                              ignore_bg_processes, encoding)
 
 
-class GDBSubProcess(object):
+class GDBSubProcess:
 
     """
     Runs a subprocess inside the GNU Debugger

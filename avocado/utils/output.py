@@ -44,7 +44,7 @@ def display_data_size(size):
     return '%.2f %s' % (size, prefixes[i])
 
 
-class ProgressBar(object):
+class ProgressBar:
 
     """
     Displays interactively the progress of a given task

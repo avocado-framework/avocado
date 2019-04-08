@@ -24,7 +24,7 @@ from . import asset, archive, build, distro, process
 log = logging.getLogger('avocado.test')
 
 
-class KernelBuild(object):
+class KernelBuild:
 
     """
     Build the Linux Kernel from official tarballs.

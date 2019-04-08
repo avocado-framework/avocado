@@ -74,7 +74,7 @@ class GolangTest(test.SimpleTest):
                       'non-0 exit code (%s)' % result)
 
 
-class NotGolangTest(object):
+class NotGolangTest:
 
     """
     Not a golang test (for reporting purposes)

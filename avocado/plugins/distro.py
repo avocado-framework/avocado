@@ -25,7 +25,7 @@ from avocado.utils import path as utils_path
 from avocado.utils import process
 
 
-class SoftwarePackage(object):
+class SoftwarePackage:
 
     """
     Definition of relevant information on a software package
@@ -98,7 +98,7 @@ class DistroDef(utils_distro.LinuxDistro):
         return json.dumps(self.to_dict())
 
 
-class DistroPkgInfoLoader(object):
+class DistroPkgInfoLoader:
 
     """
     Loads information from the distro installation tree into a DistroDef

@@ -31,7 +31,7 @@ class LockFailed(Exception):
     pass
 
 
-class FileLock(object):
+class FileLock:
 
     """
     Creates an exclusive advisory lock for a file.

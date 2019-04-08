@@ -24,7 +24,7 @@ import random
 import signal
 import sys
 
-class FakeVMStat(object):
+class FakeVMStat:
     def __init__(self, interval):
         self.interval = interval
         self._sysrand = random.SystemRandom()
