@@ -61,7 +61,8 @@ def get_disks():
     """
     json_result = process.run('lsblk --json')
     json_data = json.loads(json_result.stdout_text)
-    return ['/dev/%s' % str(disk['name']) for disk in json_data['blockdevices']]
+    return ['/dev/%s' % str(disk['name'])
+            for disk in json_data['blockdevices']]
 
 
 def get_available_filesystems():
@@ -122,7 +123,7 @@ def get_partition_info(device):
     for line in fdisk_lines:
         if not line.startswith(device):
             continue
-        value = re.split('\s+', line)
+        value = re.split(r'\s+', line)
         if not value[1] == "*":
             device = value[0]
             boot = ''
@@ -139,5 +140,28 @@ def get_partition_info(device):
                 type_data = type_data + ' ' + value[7 + data]
             value[7] = type_data.strip(' ')
 
-        return {"Device": value[0], "Boot": value[1], "Start": value[2], "End": value[3],
-                "Sectors": value[4], "Size": value[5], "Id": value[6], "Type": value[7]}
+        return {
+            "Device": value[0],
+            "Boot": value[1],
+            "Start": value[2],
+            "End": value[3],
+            "Sectors": value[4],
+            "Size": value[5],
+            "Id": value[6],
+            "Type": value[7]}
+
+
+def is_linux_fs_type(device):
+    """
+    Checks if specified partition is type is linux (83)
+
+    :param device: the device, e.g. /dev/sda3
+    :return: False if the supplied partition name is not type 83 linux, True
+            otherwise
+
+    ##TODO : nvme kind of device still support needed
+    """
+
+    if get_partition_info(device)['Type'] == 83:
+        return True
+    return False
