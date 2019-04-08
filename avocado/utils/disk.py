@@ -34,6 +34,7 @@ class DiskUtilsError(Exception):
     Base Exception Class for all DiskUtils Error
     """
 
+
 def freespace(path):
     fs_stats = os.statvfs(path)
     return fs_stats.f_bsize * fs_stats.f_bavail
@@ -92,3 +93,51 @@ def get_filesystem_type(mount_point='/'):
             _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
             if fs_file == mount_point:
                 return fs_vfstype
+
+
+def get_partition_info(device):
+    """
+    Get partition info
+
+    :param device: the device, e.g. /dev/sda3
+
+    :return: dictionary which has all partition info
+
+    ## Todo
+    #right now this utility works for block device
+    #still nvme kind of device support need to be added
+    """
+    if device in get_disks():
+        raise DiskUtilsError('provided disk partition not disk')
+
+    values = list()
+
+    disk_device = device.rstrip('0123456789')
+    # Parse fdisk output to get partition info.  Ugly but it works.
+
+    fdisk_fd = os.popen("/sbin/fdisk -l -u  '%s'" % disk_device)
+
+    fdisk_lines = fdisk_fd.readlines()
+    fdisk_fd.close()
+    for line in fdisk_lines:
+        if not line.startswith(device):
+            continue
+        value = re.split('\s+', line)
+        if not value[1] == "*":
+            device = value[0]
+            boot = ''
+            for data in range(1, len(value)):
+                values.append(value[data])
+            del value[:]
+            value.append(device)
+            value.append(boot)
+            value.extend(values)
+        if len(value) > 7:
+            type_atribute = len(value) - 7
+            type_data = value[7]
+            for data in range(1, type_atribute):
+                type_data = type_data + ' ' + value[7 + data]
+            value[7] = type_data.strip(' ')
+
+        return {"Device": value[0], "Boot": value[1], "Start": value[2], "End": value[3],
+                "Sectors": value[4], "Size": value[5], "Id": value[6], "Type": value[7]}
