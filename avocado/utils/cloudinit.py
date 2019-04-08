@@ -19,7 +19,8 @@ This module can be easily used with :mod:`avocado.utils.vmimage`,
 to configure operating system images via the cloudinit tooling.
 """
 
-from six.moves import BaseHTTPServer
+from http.server import HTTPServer
+from http.server import BaseHTTPRequestHandler
 
 from . import astring
 from . import iso9660
@@ -120,7 +121,7 @@ def iso(output_path, instance_id, username=None, password=None,
     out.close()
 
 
-class PhoneHomeServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class PhoneHomeServerHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = self.path[1:]
@@ -134,10 +135,10 @@ class PhoneHomeServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         pass
 
 
-class PhoneHomeServer(BaseHTTPServer.HTTPServer):
+class PhoneHomeServer(HTTPServer):
 
     def __init__(self, address, instance_id):
-        BaseHTTPServer.HTTPServer.__init__(self, address, PhoneHomeServerHandler)
+        HTTPServer.__init__(self, address, PhoneHomeServerHandler)
         self.instance_id = instance_id
         self.instance_phoned_back = False
 

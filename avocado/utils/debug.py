@@ -19,9 +19,6 @@ import logging
 import time
 import os
 
-from six import iteritems
-from six import get_function_code
-
 
 # Use this for debug logging
 LOGGER = logging.getLogger("avocado.app.debug")
@@ -55,7 +52,7 @@ def log_calls_class(length=None):
     :param length: Max message length
     """
     def wrap(orig_cls):
-        for key, attr in iteritems(orig_cls.__dict__):
+        for key, attr in orig_cls.__dict__.items():
             if callable(attr):
                 setattr(orig_cls, key,
                         _log_calls(attr, length, orig_cls.__name__))
@@ -70,11 +67,11 @@ def _log_calls(func, length=None, cls_name=None):
     def wrapper(*args, **kwargs):
         """ Wrapper function """
         msg = ("CALL: %s:%s%s(%s, %s)"
-               % (os.path.relpath(get_function_code(func).co_filename),
+               % (os.path.relpath(func.__code__.co_filename),
                   cls_name, func.__name__,
                   ", ".join([str(_) for _ in args]),
                   ", ".join(["%s=%s" % (key, value)
-                             for key, value in iteritems(kwargs)])))
+                             for key, value in kwargs.items()])))
         if length:
             msg = msg[:length]
         LOGGER.debug(msg)

@@ -3,8 +3,6 @@
 import os
 import time
 
-from six.moves import xrange as range
-
 from avocado import main
 from avocado import Test
 

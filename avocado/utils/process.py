@@ -32,7 +32,6 @@ import threading
 import time
 
 from io import BytesIO, UnsupportedOperation
-from six import string_types
 
 from . import astring
 from . import gdb
@@ -364,7 +363,7 @@ class CmdResult(object):
     def stdout_text(self):
         if hasattr(self.stdout, 'decode'):
             return self.stdout.decode(self.encoding)
-        if isinstance(self.stdout, string_types):
+        if isinstance(self.stdout, str):
             return self.stdout
         raise TypeError("Unable to decode stdout into a string-like type")
 
@@ -372,7 +371,7 @@ class CmdResult(object):
     def stderr_text(self):
         if hasattr(self.stderr, 'decode'):
             return self.stderr.decode(self.encoding)
-        if isinstance(self.stderr, string_types):
+        if isinstance(self.stderr, str):
             return self.stderr
         raise TypeError("Unable to decode stderr into a string-like type")
 

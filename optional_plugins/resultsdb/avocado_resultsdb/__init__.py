@@ -21,7 +21,6 @@ import sys
 import time
 
 import resultsdb_api
-from six import iteritems
 
 from avocado.core.plugin_interfaces import CLI, ResultEvents, Result
 from avocado.core.settings import settings

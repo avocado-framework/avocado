@@ -2,8 +2,6 @@
 
 import os
 
-from six.moves import xrange as range
-
 from avocado import Test
 from avocado import main
 from avocado.utils import gdb

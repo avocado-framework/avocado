@@ -26,10 +26,6 @@ import itertools
 import re
 import os
 
-from six import iterkeys, iteritems
-from six.moves import xrange as range
-from six.moves import zip
-
 from avocado.core import tree
 from avocado.core import varianter
 from avocado.core import output
@@ -285,7 +281,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
         self.yaml = srcyaml
         self.node = node
         self.yaml_per_key = {}
-        for key, value in iteritems(values):
+        for key, value in values.items():
             self[key] = value
 
     def __setitem__(self, key, value):
@@ -311,7 +307,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
 
     def iteritems(self):
         """ Slower implementation with the use of __getitem__ """
-        for key in iterkeys(self):
+        for key in self:
             yield key, self[key]
 
     def items(self):
@@ -367,7 +363,7 @@ class MuxTreeNode(tree.TreeNode):
                 elif ctrl.code == REMOVE_VALUE:
                     remove = []
                     regexp = re.compile(ctrl.value)
-                    for key in iterkeys(self.value):
+                    for key in self.value:
                         if regexp.match(key):
                             remove.append(key)
                     for key in remove:

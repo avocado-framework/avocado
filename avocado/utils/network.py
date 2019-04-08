@@ -19,8 +19,6 @@ Module with network related utility functions
 import socket
 import random
 
-from six.moves import xrange as range
-
 from .data_structures import Borg
 
 #: Families taken into account in this class

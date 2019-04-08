@@ -24,8 +24,6 @@ import re
 import shutil
 import time
 
-from six.moves import xrange as range
-
 from . import process
 
 
