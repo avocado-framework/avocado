@@ -12,11 +12,7 @@
 #          Bestoun S. Ahmed <bestoon82@gmail.com>
 #          Cleber Rosa <crosa@redhat.com>
 
-import configparser
-import copy
-import itertools
 import os
-import random
 import sys
 
 from avocado.core import exit_codes
@@ -25,6 +21,8 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.plugin_interfaces import Varianter
 from avocado.core.tree import TreeNode
+from avocado_varianter_cit.Cit import Cit
+from avocado_varianter_cit.Parser import Parser
 
 
 class VarianterCitCLI(CLI):
@@ -77,18 +75,23 @@ class VarianterCit(Varianter):
                              "is not readable", cit_parameter_file)
                 self.error_exit(args)
 
-        config = configparser.ConfigParser()
         try:
-            config.read(cit_parameter_file)
+            parameters, constraints = Parser.parse(open(cit_parameter_file))
         except Exception as details:
             LOG_UI.error("Cannot parse parameter file: %s", details)
             self.error_exit(args)
 
-        parameters = [(key, value.split(', '))
-                      for key, value in config.items('parameters')]
+        input_data = [parameter.get_size() for parameter in parameters]
         order = args.cit_order_of_combinations
-        cit = Cit(parameters, order)
-        self.headers, self.variants = cit.combine()
+
+        cit = Cit(input_data, order, constraints)
+        final_list = cit.compute()
+        self.headers = [parameter.name for parameter in parameters]
+        results = [[parameters[j].values[final_list[i][j]] for j in range(len(final_list[i]))]
+                   for i in range(len(final_list))]
+        self.variants = []
+        for combination in results:
+            self.variants.append(dict(zip(self.headers, combination)))
 
     @staticmethod
     def error_exit(args):
@@ -140,163 +143,3 @@ class VarianterCit(Varianter):
                 out.extend(varianter.variant_to_str(variant, variants - 1,
                                                     kwargs, False))
         return "\n".join(out)
-
-
-class Cit:
-
-    MATRIX_ROW_SIZE = 20
-    MAX_ITERATIONS = 15
-
-    def __init__(self, parameters, order):
-        # Parameters come as ('key', ['value1', 'value2', 'value3'])
-        self.parameters = parameters
-        # Length (number of values) for each parameter
-        self.parameters_length = [len(param[1]) for param in self.parameters]
-        # Order of combinations
-        self.order = min(order, len(parameters))
-        self.hash_table = {}
-
-    def combine(self):
-        """
-        Computes the combination of parameters
-
-        :returns: headers (list of parameters keys) and combinations (list of
-                  dictionaries. Each dictionary represents a combination of
-                  parameters.
-        :rtype: tuple
-        """
-        self.create_interaction_hash_table()
-        final_list = self.create_final_list()
-
-        headers = [item[0] for item in self.parameters]
-        result = [[self.parameters[i][1][combination[i]]
-                   for i in range(len(combination))]
-                  for combination in final_list]
-        combinations = []
-        for combination in result:
-            combinations.append(dict(zip(headers, combination)))
-
-        return headers, combinations
-
-    def create_interaction_hash_table(self):
-        for c in itertools.combinations(range(len(self.parameters_length)), self.order):
-            self.hash_table[c] = self.get_iteration(c)
-
-    def create_final_list(self):
-        final_list = []
-        while len(self.hash_table) != 0:
-            iterations = 0
-            previous_test_case = []
-            previous_remove_list = {}
-            previous_weight = 0
-
-            while iterations < self.MAX_ITERATIONS:
-                max_width = len(self.hash_table)
-                matrix = self.create_random_matrix()
-                remove_list = {}
-                for i in matrix:
-                    width = self.get_weight(i, remove_list)
-                    if width == 0 or width <= previous_weight:
-                        remove_list.clear()
-                        continue
-                    elif width == max_width:
-                        final_list.append(i)
-                        self.remove_from_hash_table(remove_list)
-                        previous_test_case = []
-                        previous_remove_list = {}
-                        continue
-                    elif width > previous_weight:
-                        previous_weight = width
-                        previous_test_case = i
-                        previous_remove_list = dict(remove_list)
-                        remove_list.clear()
-                iterations += 1
-            if len(previous_test_case) != 0:
-                previous_remove_list = self.neighborhood_search(
-                    previous_test_case, previous_weight,
-                    max_width, previous_remove_list)
-                final_list.append(previous_test_case)
-                self.remove_from_hash_table(previous_remove_list)
-        return final_list
-
-    def get_iteration(self, parameter_combination):
-        parameters_array = []
-        for c in parameter_combination:
-            array = range(self.parameters_length[c])
-            parameters_array.append(array)
-        iterations = {}
-        for i in itertools.product(*parameters_array):
-            iterations[i] = tuple(i)
-        return iterations
-
-    def get_weight(self, test_case, remove_list):
-        weight = 0
-        for i in self.hash_table:
-            iteration = tuple(test_case[j] for j in i)
-            try:
-                value = self.hash_table[i][iteration]
-                weight += 1
-                remove_list[i] = value
-            except KeyError:
-                continue
-
-        return weight
-
-    def remove_from_hash_table(self, remove_list):
-        for i in remove_list:
-            del self.hash_table[i][remove_list[i]]
-            if len(self.hash_table[i]) == 0:
-                self.hash_table.pop(i)
-        remove_list.clear()
-
-    def create_random_matrix(self):
-        matrix = []
-        for _ in range(self.MATRIX_ROW_SIZE):
-            row = []
-            for j in self.parameters_length:
-                row.append(random.randint(0, j-1))
-            matrix.append(row)
-        return matrix
-
-    def neighborhood_search(self, test_case, width, max_width, remove_list):
-        neighborhood = list(test_case)
-        neighborhood_remove_list = {}
-        for i in range(len(test_case)):
-            # neighborhood +1
-            if (neighborhood[i] + 1) == self.parameters_length[i]:
-                neighborhood[i] = 0
-            else:
-                neighborhood[i] += 1
-            neighborhood_width = self.get_weight(neighborhood, neighborhood_remove_list)
-            if neighborhood_width > width:
-                width = neighborhood_width
-                remove_list = copy.deepcopy(neighborhood_remove_list)
-                del test_case[:]
-                for j in neighborhood:
-                    test_case.append(j)
-                if neighborhood_width == max_width:
-                    return remove_list
-            if neighborhood[i] == 0:
-                neighborhood[i] = self.parameters_length[i] - 1
-            else:
-                neighborhood[i] -= 1
-
-            # neighborhood -1
-            if neighborhood[i] == 0:
-                neighborhood[i] = self.parameters_length[i] - 1
-            else:
-                neighborhood[i] -= 1
-            neighborhood_width = self.get_weight(neighborhood, neighborhood_remove_list)
-            if neighborhood_width > width:
-                width = neighborhood_width
-                remove_list = copy.deepcopy(neighborhood_remove_list)
-                del test_case[:]
-                for j in neighborhood:
-                    test_case.append(j)
-                if neighborhood_width == max_width:
-                    return remove_list
-            if (neighborhood[i] + 1) == self.parameters_length[i]:
-                neighborhood[i] = 0
-            else:
-                neighborhood[i] += 1
-        return remove_list
