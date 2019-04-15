@@ -1,0 +1,12 @@
+PARAMETERS
+color   [black,  gold, red, green ]
+shape[square, triangle, circle]
+state[liquid, solid, gas]
+material[leather, plastic, aluminum]
+coating[anodic, cathodic]
+
+CONSTRAINTS
+color != black
+color != gold
+color != red
+
