@@ -132,21 +132,18 @@ requirements-selftests: pip
 smokecheck: clean develop
 	./scripts/avocado run passtest.py
 
-check: clean develop modules_boundaries
+check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
 	PYTHON=$(PYTHON) selftests/checkall
 	selftests/check_tmp_dirs
 
-check-full: clean develop modules_boundaries
+check-full: clean develop
 	PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=2 selftests/checkall
 	selftests/check_tmp_dirs
 
-selfcheck: clean modules_boundaries develop
+selfcheck: clean develop
 	PYTHON=$(PYTHON) AVOCADO_SELF_CHECK=1 selftests/checkall
 	selftests/check_tmp_dirs
-
-modules_boundaries:
-	selftests/modules_boundaries
 
 develop:
 	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS)
