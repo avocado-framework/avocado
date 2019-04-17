@@ -144,7 +144,7 @@ results_dir_content() {
 run_rc lint "selftests/inspekt-lint.sh"
 run_rc indent "selftests/inspekt-indent.sh"
 run_rc style "selftests/inspekt-style.sh"
-run_rc boundaries 'selftests/modules_boundaries'
+run_rc boundaries "selftests/modules-boundaries.sh"
 run_rc signed-off-by 'selftests/signedoff-check.sh'
 if [ "$AVOCADO_PARALLEL_CHECK" ]; then
     run_rc selftests parallel_selftests
