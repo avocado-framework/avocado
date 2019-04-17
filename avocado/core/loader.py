@@ -44,14 +44,6 @@ class DiscoverMode(Enum):
     ALL = object()
 
 
-#: Compatibility alias (to be removed) to :attr:`DiscoverMode.DEFAULT`
-DEFAULT = DiscoverMode.DEFAULT
-#: Compatibility alias (to be removed) to :attr:`DiscoverMode.AVAILABLE`
-AVAILABLE = DiscoverMode.AVAILABLE
-#: Compatibility alias (to be removed) to :attr:`DiscoverMode.ALL`
-ALL = DiscoverMode.ALL
-
-
 class MissingTest:
     """
     Class representing reference which failed to be discovered
