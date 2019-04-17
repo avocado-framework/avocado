@@ -88,7 +88,7 @@ class AvocadoModule:
         Keeps track of objects names and importable entities
         """
         path = os.path.abspath(os.path.dirname(self.path))
-        if hasattr(statement, 'module'):
+        if getattr(statement, 'module', None) is not None:
             module_path = statement.module.replace('.', os.path.sep)
             path = os.path.join(path, module_path)
         for name in statement.names:
