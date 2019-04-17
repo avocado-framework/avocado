@@ -65,7 +65,7 @@ class PhoneHome(unittest.TestCase):
             conn.close()
 
     def setUp(self):
-        self.port = network.find_free_port(address=self.ADDRESS)
+        self.port = network.find_free_port(address=self.ADDRESS, sequent=False)
         self.instance_id = data_factory.generate_random_string(12)
         self.server = cloudinit.PhoneHomeServer((self.ADDRESS, self.port),
                                                 self.instance_id)

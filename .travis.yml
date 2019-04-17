@@ -19,12 +19,6 @@ env:
       SELF_CHECK_CONTINUOUS=y
       AVOCADO_CHECK_LEVEL=1
 
-branches:
-    only:
-        - master
-        - 52lts
-        - 69lts
-
 cache:
     directories:
         - $HOME/.cache/pip

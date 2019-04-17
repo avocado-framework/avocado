@@ -6,11 +6,7 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process
 
-
-BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..')
-BASEDIR = os.path.abspath(BASEDIR)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+from selftests import AVOCADO, BASEDIR
 
 
 class YamlLoaderTests(unittest.TestCase):
