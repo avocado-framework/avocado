@@ -254,12 +254,13 @@ class FindClassAndMethods(UnlimitedDiff):
 
     def test_self(self):
         reference = {
-            'AvocadoModule': ['setUp',
-                              'test_add_imported_empty',
-                              'test_add_imported_object_from_module',
-                              'test_add_imported_object_from_module_asname',
-                              'test_is_not_avocado_test',
-                              'test_is_avocado_test'],
+            'PythonModule': ['setUp',
+                             'test_add_imported_empty',
+                             'test_add_imported_object_from_module',
+                             'test_add_imported_object_from_module_asname',
+                             'test_is_not_avocado_test',
+                             'test_is_not_avocado_tests',
+                             'test_is_avocado_test'],
             'ModuleImportedAs': ['_test',
                                  'test_foo',
                                  'test_foo_as_bar',
@@ -296,11 +297,12 @@ class FindClassAndMethods(UnlimitedDiff):
 
     def test_with_pattern(self):
         reference = {
-            'AvocadoModule': ['test_add_imported_empty',
-                              'test_add_imported_object_from_module',
-                              'test_add_imported_object_from_module_asname',
-                              'test_is_not_avocado_test',
-                              'test_is_avocado_test'],
+            'PythonModule': ['test_add_imported_empty',
+                             'test_add_imported_object_from_module',
+                             'test_add_imported_object_from_module_asname',
+                             'test_is_not_avocado_test',
+                             'test_is_not_avocado_tests',
+                             'test_is_avocado_test'],
             'ModuleImportedAs': ['test_foo',
                                  'test_foo_as_bar',
                                  'test_foo_as_foo',
@@ -389,11 +391,11 @@ class FindClassAndMethods(UnlimitedDiff):
         self.assertEqual(expected, tests)
 
 
-class AvocadoModule(unittest.TestCase):
+class PythonModule(unittest.TestCase):
 
     def setUp(self):
         self.path = os.path.abspath(os.path.dirname(get_this_file()))
-        self.module = safeloader.AvocadoModule(self.path)
+        self.module = safeloader.PythonModule(self.path)
 
     def test_add_imported_empty(self):
         self.assertEqual(self.module.imported_objects, {})
@@ -413,17 +415,21 @@ class AvocadoModule(unittest.TestCase):
                          os.path.join(self.path, 'foo', 'bar'))
 
     def test_is_not_avocado_test(self):
-        self.assertFalse(self.module.is_avocado_test(ast.ClassDef()))
+        self.assertFalse(self.module.is_matching_klass(ast.ClassDef()))
+
+    def test_is_not_avocado_tests(self):
+        for klass in self.module.iter_classes():
+            self.assertFalse(self.module.is_matching_klass(klass))
 
     def test_is_avocado_test(self):
         passtest_path = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
-        passtest_module = safeloader.AvocadoModule(passtest_path)
+        passtest_module = safeloader.PythonModule(passtest_path)
         classes = [klass for klass in passtest_module.iter_classes()]
         # there's only one class and one *worthy* Test import in passtest.py
         self.assertEqual(len(classes), 1)
         self.assertEqual(len(passtest_module.test_imports), 1)
         self.assertEqual(len(passtest_module.mod_imports), 0)
-        self.assertTrue(passtest_module.is_avocado_test(classes[0]))
+        self.assertTrue(passtest_module.is_matching_klass(classes[0]))
 
 
 if __name__ == '__main__':
