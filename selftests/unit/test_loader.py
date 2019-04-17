@@ -208,6 +208,8 @@ class Second(avocado.Test):
 PYTHON_UNITTEST = """#!/usr/bin/env python
 from unittest import TestCase
 
+from . import something
+
 class SampleTest(TestCase):
     def test(self):
         pass
