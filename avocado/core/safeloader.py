@@ -351,7 +351,6 @@ def _examine_class(path, class_name, is_avocado):
             continue
 
         docstring = ast.get_docstring(klass)
-        cl_tags = get_docstring_directives_tags(docstring)
 
         # Only detect 'avocado.Test' if not yet decided
         if is_avocado is False:
@@ -365,7 +364,8 @@ def _examine_class(path, class_name, is_avocado):
             if is_avocado is False:    # Still not decided, try inheritance
                 is_avocado = module.is_matching_klass(klass)
 
-        info = get_methods_info(klass.body, cl_tags)
+        info = get_methods_info(klass.body,
+                                get_docstring_directives_tags(docstring))
         disabled = set()
 
         # Getting the list of parents of the current class
@@ -463,10 +463,9 @@ def find_avocado_tests(path):
             disabled.add(klass.name)
             continue
 
-        cl_tags = get_docstring_directives_tags(docstring)
-
         if check_docstring_directive(docstring, 'enable'):
-            info = get_methods_info(klass.body, cl_tags)
+            info = get_methods_info(klass.body,
+                                    get_docstring_directives_tags(docstring))
             result[klass.name] = info
             continue
 
@@ -479,7 +478,8 @@ def find_avocado_tests(path):
             is_avocado = True
         else:
             is_avocado = module.is_matching_klass(klass)
-        info = get_methods_info(klass.body, cl_tags)
+        info = get_methods_info(klass.body,
+                                get_docstring_directives_tags(docstring))
         _disabled = set()
 
         # Getting the list of parents of the current class
