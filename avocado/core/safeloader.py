@@ -321,8 +321,6 @@ def _examine_class(path, class_name, is_avocado):
     :rtype: tuple
     """
     module = AvocadoModule(path)
-    path = module.path  # path might get updated (__init__.py)
-    ppath = os.path.dirname(path)
     info = []
     disabled = []
 
@@ -363,7 +361,7 @@ def _examine_class(path, class_name, is_avocado):
                 # a module
                 continue
             parent_class = parent.id
-            _info, _disabled, _avocado = _examine_class(path, parent_class,
+            _info, _disabled, _avocado = _examine_class(module.path, parent_class,
                                                         is_avocado)
             if _info:
                 parents.remove(parent)
@@ -402,7 +400,8 @@ def _examine_class(path, class_name, is_avocado):
                 parent_path, parent_module, parent_class = (
                     _parent.rsplit(os.path.sep, 2))
 
-            modules_paths = [parent_path, ppath] + sys.path
+            modules_paths = [parent_path,
+                             os.path.dirname(module.path)] + sys.path
             _, found_ppath, _ = imp.find_module(parent_module,
                                                 modules_paths)
             _info, _dis, _avocado = _examine_class(found_ppath,
@@ -430,8 +429,6 @@ def find_avocado_tests(path):
     :rtype: tuple
     """
     module = AvocadoModule(path)
-    path = module.path  # path might get updated (__init__.py)
-    ppath = os.path.dirname(path)
     # The resulting test classes
     result = collections.OrderedDict()
     disabled = set()
@@ -474,7 +471,7 @@ def find_avocado_tests(path):
                 # a module
                 continue
             parent_class = parent.id
-            _info, _dis, _avocado = _examine_class(path, parent_class,
+            _info, _dis, _avocado = _examine_class(module.path, parent_class,
                                                    is_avocado)
             if _info:
                 parents.remove(parent)
@@ -513,7 +510,8 @@ def find_avocado_tests(path):
                 parent_path, parent_module, parent_class = (
                     _parent.rsplit(os.path.sep, 2))
 
-            modules_paths = [parent_path, ppath] + sys.path
+            modules_paths = [parent_path,
+                             os.path.dirname(module.path)] + sys.path
             _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
             _info, _dis, _avocado = _examine_class(found_ppath,
                                                    parent_class,
