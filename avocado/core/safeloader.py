@@ -98,6 +98,20 @@ class AvocadoModule:
             else:
                 self.imported_objects[name.asname] = path
 
+    def _handle_import_from(self, statement):
+        self.add_imported_object(statement)
+        if statement.module != 'avocado':
+            return
+        name = statement_import_as(statement).get('Test', None)
+        if name is not None:
+            self.test_imports.add(name)
+
+    def _handle_import(self, statement):
+        self.add_imported_object(statement)
+        name = statement_import_as(statement).get('avocado', None)
+        if name is not None:
+            self.mod_imports.add(name)
+
     def iter_classes(self):
         """
         Iterate through classes and keep track of imported avocado statements
@@ -105,18 +119,11 @@ class AvocadoModule:
         for statement in self.mod.body:
             # Looking for a 'from avocado import Test'
             if isinstance(statement, ast.ImportFrom):
-                self.add_imported_object(statement)
-                if statement.module == 'avocado':
-                    test_imports = statement_import_as(statement).get('Test', None)
-                    if test_imports is not None:
-                        self.test_imports.add(test_imports)
+                self._handle_import_from(statement)
 
             # Looking for a 'import avocado'
             elif isinstance(statement, ast.Import):
-                self.add_imported_object(statement)
-                imp_name = statement_import_as(statement).get('avocado', None)
-                if imp_name is not None:
-                    self.mod_imports.add(imp_name)
+                self._handle_import(statement)
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
