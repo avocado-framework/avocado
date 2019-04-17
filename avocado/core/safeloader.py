@@ -107,13 +107,9 @@ class AvocadoModule:
             if isinstance(statement, ast.ImportFrom):
                 self.add_imported_object(statement)
                 if statement.module == 'avocado':
-                    for name in statement.names:
-                        if name.name == 'Test':
-                            if name.asname is not None:
-                                self.test_imports.add(name.asname)
-                            else:
-                                self.test_imports.add(name.name)
-                            break
+                    test_imports = statement_import_as(statement).get('Test', None)
+                    if test_imports is not None:
+                        self.test_imports.add(test_imports)
 
             # Looking for a 'import avocado'
             elif isinstance(statement, ast.Import):
