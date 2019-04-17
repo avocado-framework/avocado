@@ -124,16 +124,6 @@ parallel_selftests() {
 }
 
 
-signed_off_check() {
-    AUTHOR="$(git log -1 --pretty='format:%aN <%aE>')"
-    git log -1 --pretty=format:%B | grep "Signed-off-by: $AUTHOR"
-    if [ $? != 0 ]; then
-        echo "The commit message does not contain author's signature (Signed-off-by: $AUTHOR)"
-        return 1
-    fi
-}
-
-
 results_dir_content() {
     NOW="$(ls $RESULTS_DIR)"
     if [ "$(echo $* | xargs)" != "$(echo $NOW | xargs)" ]; then
@@ -164,7 +154,7 @@ run_rc lint "$LINT_CMD $PYLINT_ENABLE"
 run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'
 run_rc style 'inspekt style --exclude=.git --disable E501,E265,W601,E402,E722'
 run_rc boundaries 'selftests/modules_boundaries'
-run_rc signed-off-by signed_off_check
+run_rc signed-off-by 'selftests/signedoff-check.sh'
 if [ "$AVOCADO_PARALLEL_CHECK" ]; then
     run_rc selftests parallel_selftests
 elif [ -z "$AVOCADO_SELF_CHECK" ]; then
