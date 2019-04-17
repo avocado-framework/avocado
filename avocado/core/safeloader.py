@@ -35,7 +35,7 @@ class PythonModule:
     instrumented tests, but it's supposed to be agnostic enough to
     be used for, say, Python unittests.
     """
-    __slots__ = ('path', 'test_imports', 'mod_imports', 'mod', 'imported_objects',
+    __slots__ = ('path', 'klass_imports', 'mod_imports', 'mod', 'imported_objects',
                  'module', 'klass')
 
     def __init__(self, path, module='avocado', klass='Test'):
@@ -51,7 +51,7 @@ class PythonModule:
         :param klass: the possibly interesting class original name
         :type klass: str
         """
-        self.test_imports = set()
+        self.klass_imports = set()
         self.mod_imports = set()
         if os.path.isdir(path):
             path = os.path.join(path, "__init__.py")
@@ -83,11 +83,11 @@ class PythonModule:
         :rtype: bool
         """
         # Is it inherited from Test? 'class FooTest(Test):'
-        if self.test_imports:
+        if self.klass_imports:
             base_ids = [base.id for base in klass.bases
                         if isinstance(base, ast.Name)]
             # Looking for a 'class FooTest(Test):'
-            if not self.test_imports.isdisjoint(base_ids):
+            if not self.klass_imports.isdisjoint(base_ids):
                 return True
 
         # Is it inherited from avocado.Test? 'class FooTest(avocado.Test):'
@@ -123,7 +123,7 @@ class PythonModule:
             return
         name = statement_import_as(statement).get(self.klass, None)
         if name is not None:
-            self.test_imports.add(name)
+            self.klass_imports.add(name)
 
     def _handle_import(self, statement):
         self.add_imported_object(statement)

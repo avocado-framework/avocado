@@ -436,7 +436,7 @@ class PythonModule(unittest.TestCase):
         classes = [klass for klass in passtest_module.iter_classes()]
         # there's only one class and one *worthy* Test import in passtest.py
         self.assertEqual(len(classes), 1)
-        self.assertEqual(len(passtest_module.test_imports), 1)
+        self.assertEqual(len(passtest_module.klass_imports), 1)
         self.assertEqual(len(passtest_module.mod_imports), 0)
         self.assertTrue(passtest_module.is_matching_klass(classes[0]))
 
