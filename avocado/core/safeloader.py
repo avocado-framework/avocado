@@ -591,3 +591,110 @@ def find_avocado_tests(path):
             disabled.update(_disabled)
 
     return result, disabled
+
+
+def _determine_match_unittest(module, klass,
+                              docstring):  # pylint: disable=W0613
+    """
+    Implements the match check for Python Unittests
+    """
+    return module.is_matching_klass(klass)
+
+
+def find_python_unittests(path):
+    """
+    Attempts to find methods names from a given Python source file
+
+    This is a simpler, albeit more strict and correct, alternative version to
+    :func:`find_class_and_methods`, in the sense that it checks for the
+    (immediate) module name base class name.
+
+    :param path: path to a Python source code file
+    :type path: str
+    :returns: an ordered dictionary with classes as keys and methods as values
+    :rtype: collections.OrderedDict
+    """
+    module_name = 'unittest'
+    class_name = 'TestCase'
+
+    module = PythonModule(path, module_name, class_name)
+    result = collections.OrderedDict()
+
+    for klass in module.iter_classes():
+
+        parents = klass.bases
+        is_unittest = module.is_matching_klass(klass)
+
+        info = [st.name for st in klass.body if
+                isinstance(st, ast.FunctionDef) and
+                st.name.startswith('test')]
+        info = data_structures.ordered_list_unique(info)
+
+        # Searching the parents in the same module
+        for parent in parents[:]:
+            # Looking for a 'class FooTest(Parent)'
+            if not isinstance(parent, ast.Name):
+                # 'class FooTest(bar.Bar)' not supported within a module
+                continue
+            parent_class = parent.id
+            _info, _dis, _is_unittest = _examine_class(module.path, parent_class,
+                                                       is_unittest, module_name,
+                                                       class_name,
+                                                       _determine_match_unittest)
+            methods = [i[0] for i in _info]
+            if _info:
+                parents.remove(parent)
+                info.extend(methods)
+            if _is_unittest is not is_unittest:
+                is_unittest = _is_unittest
+
+        # If there are parents left to be discovered, they
+        # might be in a different module.
+        for parent in parents:
+            if hasattr(parent, 'value'):
+                if hasattr(parent.value, 'id'):
+                    # We know 'parent.Class' or 'asparent.Class' and need
+                    # to get path and original_module_name. Class is given
+                    # by parent definition.
+                    _parent = module.imported_objects.get(parent.value.id)
+                    if _parent is None:
+                        # We can't examine this parent (probably broken
+                        # module)
+                        continue
+                    parent_path = os.path.dirname(_parent)
+                    parent_module = os.path.basename(_parent)
+                    parent_class = parent.attr
+                else:
+                    # We don't support multi-level 'parent.parent.Class'
+                    continue
+            else:
+                # We only know 'Class' or 'AsClass' and need to get
+                # path, module and original class_name
+                _parent = module.imported_objects.get(parent.id)
+                if _parent is None:
+                    # We can't examine this parent (probably broken
+                    # module)
+                    continue
+                parent_path, parent_module, parent_class = (
+                    _parent.rsplit(os.path.sep, 2))
+
+            modules_paths = [parent_path,
+                             os.path.dirname(module.path)] + sys.path
+            _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
+            _info, _dis, _is_unittest = _examine_class(found_ppath,
+                                                       parent_class,
+                                                       is_unittest,
+                                                       module_name,
+                                                       class_name,
+                                                       _determine_match_unittest)
+            methods = [i[0] for i in _info]
+            if _info:
+                info.extend(methods)
+            if _is_unittest is not is_unittest:
+                is_unittest = _is_unittest
+
+        # Only update the results if this was detected as 'avocado.Test'
+        if is_unittest:
+            result[klass.name] = info
+
+    return result
