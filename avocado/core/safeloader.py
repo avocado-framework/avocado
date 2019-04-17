@@ -312,6 +312,9 @@ def _examine_class(path, class_name, is_avocado):
     :type path: str
     :param class_name: the specific class to be found
     :type path: str
+    :param is_avocado: whether the inheritance from 'avocado.Test' has
+                       been determined or not
+    :type is_avocado: bool
     :returns: tuple where first item is a list of test methods detected
               for given class; second item is set of class names which
               look like avocado tests but are force-disabled.
@@ -419,8 +422,6 @@ def find_avocado_tests(path):
     Attempts to find Avocado instrumented tests from Python source files
 
     :param path: path to a Python source code file
-    :type path: str
-    :param class_name: the specific class to be found
     :type path: str
     :returns: tuple where first item is dict with class name and additional
               info such as method names and tags; the second item is
