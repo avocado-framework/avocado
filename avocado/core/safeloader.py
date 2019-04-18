@@ -125,11 +125,25 @@ class PythonModule:
         if name is not None:
             self.klass_imports.add(name)
 
+    @staticmethod
+    def _all_module_level_names(full_module_name):
+        result = []
+        components = full_module_name.split(".")[:-1]
+        for topmost in range(len(components)):
+            result.append(".".join(components[-topmost:]))
+            components.pop()
+        return result
+
     def _handle_import(self, statement):
         self.add_imported_object(statement)
-        name = statement_import_as(statement).get(self.module, None)
+        imported_as = statement_import_as(statement)
+        name = imported_as.get(self.module, None)
         if name is not None:
             self.mod_imports.add(name)
+        for as_name in imported_as.values():
+            for mod_name in self._all_module_level_names(as_name):
+                if mod_name == self.module:
+                    self.mod_imports.add(mod_name)
 
     def iter_classes(self):
         """

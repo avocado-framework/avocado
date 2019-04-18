@@ -260,7 +260,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                  'test_add_imported_object_from_module_asname',
                                  'test_is_not_avocado_test',
                                  'test_is_not_avocado_tests'],
-            'PythonModule': ['test_is_avocado_test'],
+            'PythonModule': ['test_is_avocado_test',
+                             'test_import_of_all_module_level'],
             'ModuleImportedAs': ['_test',
                                  'test_foo',
                                  'test_foo_as_bar',
@@ -302,7 +303,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                  'test_add_imported_object_from_module_asname',
                                  'test_is_not_avocado_test',
                                  'test_is_not_avocado_tests'],
-            'PythonModule': ['test_is_avocado_test'],
+            'PythonModule': ['test_is_avocado_test',
+                             'test_import_of_all_module_level'],
             'ModuleImportedAs': ['test_foo',
                                  'test_foo_as_bar',
                                  'test_foo_as_foo',
@@ -439,6 +441,19 @@ class PythonModule(unittest.TestCase):
         self.assertEqual(len(passtest_module.klass_imports), 1)
         self.assertEqual(len(passtest_module.mod_imports), 0)
         self.assertTrue(passtest_module.is_matching_klass(classes[0]))
+
+    def test_import_of_all_module_level(self):
+        """
+        Checks if all levels of a module import are taken into account
+
+        This specific source file imports unittest.mock, and we want to
+        make sure that unittest is accounted for.
+        """
+        path = os.path.join(BASEDIR, 'selftests', 'unit', 'test_loader.py')
+        module = safeloader.PythonModule(path, 'unittest', 'TestCase')
+        for _ in module.iter_classes():
+            pass
+        self.assertIn('unittest', module.mod_imports)
 
 
 if __name__ == '__main__':
