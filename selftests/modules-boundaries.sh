@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # number of infringements found
 RESULT=0
