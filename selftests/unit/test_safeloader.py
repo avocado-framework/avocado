@@ -254,13 +254,13 @@ class FindClassAndMethods(UnlimitedDiff):
 
     def test_self(self):
         reference = {
-            'PythonModule': ['setUp',
-                             'test_add_imported_empty',
-                             'test_add_imported_object_from_module',
-                             'test_add_imported_object_from_module_asname',
-                             'test_is_not_avocado_test',
-                             'test_is_not_avocado_tests',
-                             'test_is_avocado_test'],
+            'PythonModuleSelf': ['setUp',
+                                 'test_add_imported_empty',
+                                 'test_add_imported_object_from_module',
+                                 'test_add_imported_object_from_module_asname',
+                                 'test_is_not_avocado_test',
+                                 'test_is_not_avocado_tests'],
+            'PythonModule': ['test_is_avocado_test'],
             'ModuleImportedAs': ['_test',
                                  'test_foo',
                                  'test_foo_as_bar',
@@ -297,12 +297,12 @@ class FindClassAndMethods(UnlimitedDiff):
 
     def test_with_pattern(self):
         reference = {
-            'PythonModule': ['test_add_imported_empty',
-                             'test_add_imported_object_from_module',
-                             'test_add_imported_object_from_module_asname',
-                             'test_is_not_avocado_test',
-                             'test_is_not_avocado_tests',
-                             'test_is_avocado_test'],
+            'PythonModuleSelf': ['test_add_imported_empty',
+                                 'test_add_imported_object_from_module',
+                                 'test_add_imported_object_from_module_asname',
+                                 'test_is_not_avocado_test',
+                                 'test_is_not_avocado_tests'],
+            'PythonModule': ['test_is_avocado_test'],
             'ModuleImportedAs': ['test_foo',
                                  'test_foo_as_bar',
                                  'test_foo_as_foo',
@@ -391,7 +391,10 @@ class FindClassAndMethods(UnlimitedDiff):
         self.assertEqual(expected, tests)
 
 
-class PythonModule(unittest.TestCase):
+class PythonModuleSelf(unittest.TestCase):
+    """
+    Has tests based on this source code file
+    """
 
     def setUp(self):
         self.path = os.path.abspath(os.path.dirname(get_this_file()))
@@ -420,6 +423,12 @@ class PythonModule(unittest.TestCase):
     def test_is_not_avocado_tests(self):
         for klass in self.module.iter_classes():
             self.assertFalse(self.module.is_matching_klass(klass))
+
+
+class PythonModule(unittest.TestCase):
+    """
+    Has tests based on other Python source code files
+    """
 
     def test_is_avocado_test(self):
         passtest_path = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
