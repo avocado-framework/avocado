@@ -340,7 +340,7 @@ def get_methods_info(statement_body, class_tags):
     return methods_info
 
 
-def _examine_class(path, class_name, is_avocado):
+def _examine_class(path, class_name, is_avocado, target_module, target_class):
     """
     Examine a class from a given path
 
@@ -351,12 +351,17 @@ def _examine_class(path, class_name, is_avocado):
     :param is_avocado: whether the inheritance from 'avocado.Test' has
                        been determined or not
     :type is_avocado: bool
+    :param target_module: the module name under which the target_class lives
+    :type target_module: str
+    :param target_class: the name of the class that class_name should
+                         ultimatetly inherit from
+    :type target_class: str
     :returns: tuple where first item is a list of test methods detected
               for given class; second item is set of class names which
               look like avocado tests but are force-disabled.
     :rtype: tuple
     """
-    module = PythonModule(path)
+    module = PythonModule(path, target_module, target_class)
     info = []
     disabled = []
 
@@ -398,7 +403,8 @@ def _examine_class(path, class_name, is_avocado):
                 continue
             parent_class = parent.id
             _info, _disabled, _avocado = _examine_class(module.path, parent_class,
-                                                        is_avocado)
+                                                        is_avocado, target_module,
+                                                        target_class)
             if _info:
                 parents.remove(parent)
                 info.extend(_info)
@@ -442,7 +448,9 @@ def _examine_class(path, class_name, is_avocado):
                                                 modules_paths)
             _info, _dis, _avocado = _examine_class(found_ppath,
                                                    parent_class,
-                                                   is_avocado)
+                                                   is_avocado,
+                                                   target_module,
+                                                   target_class)
             if _info:
                 info.extend(_info)
                 _disabled.update(_dis)
@@ -464,7 +472,10 @@ def find_avocado_tests(path):
               force-disabled.
     :rtype: tuple
     """
-    module = PythonModule(path)
+    module_name = 'avocado'
+    class_name = 'Test'
+
+    module = PythonModule(path, module_name, class_name)
     # The resulting test classes
     result = collections.OrderedDict()
     disabled = set()
@@ -508,7 +519,8 @@ def find_avocado_tests(path):
                 continue
             parent_class = parent.id
             _info, _dis, _avocado = _examine_class(module.path, parent_class,
-                                                   is_avocado)
+                                                   is_avocado, module_name,
+                                                   class_name)
             if _info:
                 parents.remove(parent)
                 info.extend(_info)
@@ -551,7 +563,9 @@ def find_avocado_tests(path):
             _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
             _info, _dis, _avocado = _examine_class(found_ppath,
                                                    parent_class,
-                                                   is_avocado)
+                                                   is_avocado,
+                                                   module_name,
+                                                   class_name)
             if _info:
                 info.extend(_info)
                 _disabled.update(_dis)
