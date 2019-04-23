@@ -248,59 +248,69 @@ class SimpleTestClassTest(unittest.TestCase):
 class MockingTest(unittest.TestCase):
 
     def setUp(self):
-        self.tests = []
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    def test_init(self):
-        # No params
-        self.tests.append(test.MockingTest())
-        # Positional
-        self.tests.append(test.MockingTest("test", test.TestID(1, "my_name"),
-                                           {}, None, "1",
-                                           None, None, "extra_param1",
-                                           "extra_param2"))
-        self.assertEqual(self.tests[-1].name, "1-my_name")
-        # Kwargs
-        self.tests.append(test.MockingTest(methodName="test",
-                                           name=test.TestID(1, "my_name2"),
-                                           params={}, base_logdir=None,
-                                           tag="a", job=None, runner_queue=None,
-                                           extra1="extra_param1",
-                                           extra2="extra_param2"))
-        self.assertEqual(self.tests[-1].name, "1-my_name2")
-        # both (theoretically impossible in python, but valid for nasty tests)
-        # keyword args are used as they explicitly represent what they mean
-        self.tests.append(test.MockingTest("not used", "who cares", {}, None, "0",
-                                           None, None, "extra_param1",
-                                           "extra_param2",
-                                           methodName="test",
-                                           name=test.TestID(1, "my_name3"),
-                                           params={}, base_logdir=None,
-                                           tag="3", job=None, runner_queue=None,
-                                           extra1="extra_param3",
-                                           extra2="extra_param4"))
-        self.assertEqual(self.tests[-1].name, "1-my_name3")
-        # combination
-        self.tests.append(test.MockingTest("test", test.TestID(1, "my_name4"),
-                                           tag="321",
-                                           other_param="Whatever"))
-        self.assertEqual(self.tests[-1].name, "1-my_name4")
-        # ugly combination (positional argument overrides kwargs, this only
-        # happens when the substituted class reorders the positional arguments.
-        # We try to first match keyword args and then fall-back to positional
-        # ones.
+    def test_init_minimal_params(self):
+        test.MockingTest(base_logdir=self.tmpdir)
+
+    def test_init_positional(self):
+        tst = test.MockingTest("test", test.TestID(1, "my_name"),
+                               {}, None, "1",
+                               None, None, "extra_param1",
+                               "extra_param2", base_logdir=self.tmpdir)
+        self.assertEqual(tst.name, "1-my_name")
+
+    def test_init_kwargs(self):
+        tst = test.MockingTest(methodName="test",
+                               name=test.TestID(1, "my_name2"),
+                               params={}, base_logdir=self.tmpdir,
+                               tag="a", job=None, runner_queue=None,
+                               extra1="extra_param1",
+                               extra2="extra_param2")
+        self.assertEqual(tst.name, "1-my_name2")
+
+    def test_positional_kwargs(self):
+        """
+        Tests both positional and kwargs (theoretically impossible in
+        python, but valid for nasty tests)
+
+        keyword args are used as they explicitly represent what they mean
+        """
+        tst = test.MockingTest("not used", "who cares", {}, None, "0",
+                               None, None, "extra_param1",
+                               "extra_param2",
+                               methodName="test",
+                               name=test.TestID(1, "my_name3"),
+                               params={}, base_logdir=self.tmpdir,
+                               tag="3", job=None, runner_queue=None,
+                               extra1="extra_param3",
+                               extra2="extra_param4")
+        self.assertEqual(tst.name, "1-my_name3")
+
+    def test_combination(self):
+        tst = test.MockingTest("test", test.TestID(1, "my_name4"),
+                               tag="321",
+                               other_param="Whatever",
+                               base_logdir=self.tmpdir)
+        self.assertEqual(tst.name, "1-my_name4")
+
+    def test_combination_2(self):
+        """
+        Tests an ugly combination (positional argument overrides
+        kwargs, this only happens when the substituted class reorders
+        the positional arguments.  We try to first match keyword args
+        and then fall-back to positional ones.
+        """
         name = "positional_method_name_becomes_test_name"
         tag = "positional_base_logdir_becomes_tag"
-        self.tests.append(test.MockingTest(test.TestID(1, name), None, None, tag,
-                                           methodName="test",
-                                           other_param="Whatever"))
-        self.assertEqual(self.tests[-1].name, "1-" + name)
+        tst = test.MockingTest(test.TestID(1, name), None, None, tag,
+                               methodName="test",
+                               other_param="Whatever",
+                               base_logdir=self.tmpdir)
+        self.assertEqual(tst.name, "1-" + name)
 
     def tearDown(self):
-        for tst in self.tests:
-            try:
-                shutil.rmtree(os.path.dirname(os.path.dirname(tst.logdir)))
-            except Exception:
-                pass
+        shutil.rmtree(self.tmpdir)
 
 
 class TestID(unittest.TestCase):

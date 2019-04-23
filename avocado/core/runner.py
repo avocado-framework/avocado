@@ -17,7 +17,7 @@
 Test runner module.
 """
 
-import multiprocessing.queues
+import multiprocessing
 import os
 import signal
 import sys
@@ -582,14 +582,7 @@ class TestRunner:
         summary = set()
         if self.job.sysinfo is not None:
             self.job.sysinfo.start_job_hook()
-
-        # Python 3 can choose a context type for queues, but SimpleQueue
-        # lives directly under the module namespace
-        if hasattr(multiprocessing, 'SimpleQueue'):
-            queue = multiprocessing.SimpleQueue()
-        else:
-            queue = multiprocessing.queues.SimpleQueue()  # pylint: disable=E1125
-
+        queue = multiprocessing.SimpleQueue()
         if timeout > 0:
             deadline = time.time() + timeout
         else:
@@ -600,9 +593,9 @@ class TestRunner:
         self.result.tests_total = test_result_total
         index = -1
         try:
-            for test_template in test_suite:
-                test_template[1]["base_logdir"] = self.job.logdir
-                test_template[1]["job"] = self.job
+            for test_factory in test_suite:
+                test_factory[1]["base_logdir"] = self.job.logdir
+                test_factory[1]["job"] = self.job
             if execution_order is None:
                 execution_order = self.DEFAULT_EXECUTION_ORDER
             for test_factory, variant in self._iter_suite(test_suite, variants,
