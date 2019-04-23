@@ -27,18 +27,37 @@ import sys
 from ..utils import data_structures
 
 
-class AvocadoModule:
+class PythonModule:
     """
-    Representation of a module that might contain avocado.Test tests
-    """
-    __slots__ = 'path', 'test_imports', 'mod_imports', 'mod', 'imported_objects'
+    Representation of a Python module that might contain interesting classes
 
-    def __init__(self, path):
+    By default, it uses module and class names that matches Avocado
+    instrumented tests, but it's supposed to be agnostic enough to
+    be used for, say, Python unittests.
+    """
+    __slots__ = ('path', 'test_imports', 'mod_imports', 'mod', 'imported_objects',
+                 'module', 'klass')
+
+    def __init__(self, path, module='avocado', klass='Test'):
+        """
+        Instantiates a new PythonModule representation
+
+        :param path: path to a Python source code file
+        :type path: str
+        :param module: the original module name from where the
+                       possibly interesting class must have been
+                       imported from
+        :type module: str
+        :param klass: the possibly interesting class original name
+        :type klass: str
+        """
         self.test_imports = set()
         self.mod_imports = set()
         if os.path.isdir(path):
             path = os.path.join(path, "__init__.py")
         self.path = path
+        self.module = module
+        self.klass = klass
         # A dict that keeps track of objects names and importable entities
         #   key => object name from this module point of view
         #   value => Something-like a directory path to the import.
@@ -48,15 +67,15 @@ class AvocadoModule:
         with open(self.path) as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
 
-    def is_avocado_test(self, klass):
+    def is_matching_klass(self, klass):
         """
-        Detect whether given class directly defines itself as avocado.Test
+        Detect whether given class directly defines itself as <module>.<klass>
 
-        It can either be a klass that inherits from a Test "symbol", like:
+        It can either be a <klass> that inherits from a test "symbol", like:
 
         ```class FooTest(Test)```
 
-        Or from an avocado.Test symbol, like in:
+        Or from an <module>.<klass> symbol, like in:
 
         ```class FooTest(avocado.Test)```
 
@@ -79,7 +98,7 @@ class AvocadoModule:
                     continue
                 cls_module = base.value.id
                 cls_name = base.attr
-                if cls_module in self.mod_imports and cls_name == 'Test':
+                if cls_module in self.mod_imports and cls_name == self.klass:
                     return True
         return False
 
@@ -98,29 +117,32 @@ class AvocadoModule:
             else:
                 self.imported_objects[name.asname] = path
 
+    def _handle_import_from(self, statement):
+        self.add_imported_object(statement)
+        if statement.module != self.module:
+            return
+        name = statement_import_as(statement).get(self.klass, None)
+        if name is not None:
+            self.test_imports.add(name)
+
+    def _handle_import(self, statement):
+        self.add_imported_object(statement)
+        name = statement_import_as(statement).get(self.module, None)
+        if name is not None:
+            self.mod_imports.add(name)
+
     def iter_classes(self):
         """
         Iterate through classes and keep track of imported avocado statements
         """
         for statement in self.mod.body:
-            # Looking for a 'from avocado import Test'
+            # Looking for a 'from <module> import <klass>'
             if isinstance(statement, ast.ImportFrom):
-                self.add_imported_object(statement)
-                if statement.module == 'avocado':
-                    for name in statement.names:
-                        if name.name == 'Test':
-                            if name.asname is not None:
-                                self.test_imports.add(name.asname)
-                            else:
-                                self.test_imports.add(name.name)
-                            break
+                self._handle_import_from(statement)
 
-            # Looking for a 'import avocado'
+            # Looking for a 'import <module>'
             elif isinstance(statement, ast.Import):
-                self.add_imported_object(statement)
-                imp_name = statement_import_as(statement).get('avocado', None)
-                if imp_name is not None:
-                    self.mod_imports.add(imp_name)
+                self._handle_import(statement)
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
@@ -312,14 +334,15 @@ def _examine_class(path, class_name, is_avocado):
     :type path: str
     :param class_name: the specific class to be found
     :type path: str
+    :param is_avocado: whether the inheritance from 'avocado.Test' has
+                       been determined or not
+    :type is_avocado: bool
     :returns: tuple where first item is a list of test methods detected
               for given class; second item is set of class names which
               look like avocado tests but are force-disabled.
     :rtype: tuple
     """
-    module = AvocadoModule(path)
-    path = module.path  # path might get updated (__init__.py)
-    ppath = os.path.dirname(path)
+    module = PythonModule(path)
     info = []
     disabled = []
 
@@ -328,7 +351,6 @@ def _examine_class(path, class_name, is_avocado):
             continue
 
         docstring = ast.get_docstring(klass)
-        cl_tags = get_docstring_directives_tags(docstring)
 
         # Only detect 'avocado.Test' if not yet decided
         if is_avocado is False:
@@ -340,9 +362,10 @@ def _examine_class(path, class_name, is_avocado):
             elif 'recursive' in directives:
                 is_avocado = True
             if is_avocado is False:    # Still not decided, try inheritance
-                is_avocado = module.is_avocado_test(klass)
+                is_avocado = module.is_matching_klass(klass)
 
-        info = get_methods_info(klass.body, cl_tags)
+        info = get_methods_info(klass.body,
+                                get_docstring_directives_tags(docstring))
         disabled = set()
 
         # Getting the list of parents of the current class
@@ -360,7 +383,7 @@ def _examine_class(path, class_name, is_avocado):
                 # a module
                 continue
             parent_class = parent.id
-            _info, _disabled, _avocado = _examine_class(path, parent_class,
+            _info, _disabled, _avocado = _examine_class(module.path, parent_class,
                                                         is_avocado)
             if _info:
                 parents.remove(parent)
@@ -399,7 +422,8 @@ def _examine_class(path, class_name, is_avocado):
                 parent_path, parent_module, parent_class = (
                     _parent.rsplit(os.path.sep, 2))
 
-            modules_paths = [parent_path, ppath] + sys.path
+            modules_paths = [parent_path,
+                             os.path.dirname(module.path)] + sys.path
             _, found_ppath, _ = imp.find_module(parent_module,
                                                 modules_paths)
             _info, _dis, _avocado = _examine_class(found_ppath,
@@ -420,17 +444,13 @@ def find_avocado_tests(path):
 
     :param path: path to a Python source code file
     :type path: str
-    :param class_name: the specific class to be found
-    :type path: str
     :returns: tuple where first item is dict with class name and additional
               info such as method names and tags; the second item is
               set of class names which look like avocado tests but are
               force-disabled.
     :rtype: tuple
     """
-    module = AvocadoModule(path)
-    path = module.path  # path might get updated (__init__.py)
-    ppath = os.path.dirname(path)
+    module = PythonModule(path)
     # The resulting test classes
     result = collections.OrderedDict()
     disabled = set()
@@ -443,10 +463,9 @@ def find_avocado_tests(path):
             disabled.add(klass.name)
             continue
 
-        cl_tags = get_docstring_directives_tags(docstring)
-
         if check_docstring_directive(docstring, 'enable'):
-            info = get_methods_info(klass.body, cl_tags)
+            info = get_methods_info(klass.body,
+                                    get_docstring_directives_tags(docstring))
             result[klass.name] = info
             continue
 
@@ -458,8 +477,9 @@ def find_avocado_tests(path):
         if check_docstring_directive(docstring, 'recursive'):
             is_avocado = True
         else:
-            is_avocado = module.is_avocado_test(klass)
-        info = get_methods_info(klass.body, cl_tags)
+            is_avocado = module.is_matching_klass(klass)
+        info = get_methods_info(klass.body,
+                                get_docstring_directives_tags(docstring))
         _disabled = set()
 
         # Getting the list of parents of the current class
@@ -473,7 +493,7 @@ def find_avocado_tests(path):
                 # a module
                 continue
             parent_class = parent.id
-            _info, _dis, _avocado = _examine_class(path, parent_class,
+            _info, _dis, _avocado = _examine_class(module.path, parent_class,
                                                    is_avocado)
             if _info:
                 parents.remove(parent)
@@ -512,7 +532,8 @@ def find_avocado_tests(path):
                 parent_path, parent_module, parent_class = (
                     _parent.rsplit(os.path.sep, 2))
 
-            modules_paths = [parent_path, ppath] + sys.path
+            modules_paths = [parent_path,
+                             os.path.dirname(module.path)] + sys.path
             _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
             _info, _dis, _avocado = _examine_class(found_ppath,
                                                    parent_class,
