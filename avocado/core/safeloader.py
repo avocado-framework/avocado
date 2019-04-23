@@ -340,7 +340,23 @@ def get_methods_info(statement_body, class_tags):
     return methods_info
 
 
-def _examine_class(path, class_name, match, target_module, target_class):
+def _determine_match_avocado(module, klass, docstring):
+    """
+    Implements the match check for Avocado Instrumented Tests
+    """
+    directives = get_docstring_directives(docstring)
+    if 'disable' in directives:
+        return True
+    if 'enable' in directives:
+        return True
+    if 'recursive' in directives:
+        return True
+    # Still not decided, try inheritance
+    return module.is_matching_klass(klass)
+
+
+def _examine_class(path, class_name, match, target_module, target_class,
+                   determine_match):
     """
     Examine a class from a given path
 
@@ -356,6 +372,9 @@ def _examine_class(path, class_name, match, target_module, target_class):
     :param target_class: the name of the class that class_name should
                          ultimatetly inherit from
     :type target_class: str
+    :param determine_match: a callable that will determine if a match has
+                            occurred or not
+    :type determine_match: function
     :returns: tuple where first item is a list of test methods detected
               for given class; second item is set of class names which
               look like avocado tests but are force-disabled.
@@ -371,17 +390,8 @@ def _examine_class(path, class_name, match, target_module, target_class):
 
         docstring = ast.get_docstring(klass)
 
-        # Only detect 'avocado.Test' if not yet decided
         if match is False:
-            directives = get_docstring_directives(docstring)
-            if 'disable' in directives:
-                match = True
-            elif 'enable' in directives:
-                match = True
-            elif 'recursive' in directives:
-                match = True
-            if match is False:    # Still not decided, try inheritance
-                match = module.is_matching_klass(klass)
+            match = determine_match(module, klass, docstring)
 
         info = get_methods_info(klass.body,
                                 get_docstring_directives_tags(docstring))
@@ -403,7 +413,8 @@ def _examine_class(path, class_name, match, target_module, target_class):
             parent_class = parent.id
             _info, _disabled, _match = _examine_class(module.path, parent_class,
                                                       match, target_module,
-                                                      target_class)
+                                                      target_class,
+                                                      _determine_match_avocado)
             if _info:
                 parents.remove(parent)
                 info.extend(_info)
@@ -449,7 +460,8 @@ def _examine_class(path, class_name, match, target_module, target_class):
                                                       parent_class,
                                                       match,
                                                       target_module,
-                                                      target_class)
+                                                      target_class,
+                                                      _determine_match_avocado)
             if _info:
                 info.extend(_info)
                 disabled.update(_disabled)
@@ -519,7 +531,8 @@ def find_avocado_tests(path):
             parent_class = parent.id
             _info, _dis, _avocado = _examine_class(module.path, parent_class,
                                                    is_avocado, module_name,
-                                                   class_name)
+                                                   class_name,
+                                                   _determine_match_avocado)
             if _info:
                 parents.remove(parent)
                 info.extend(_info)
@@ -564,7 +577,8 @@ def find_avocado_tests(path):
                                                    parent_class,
                                                    is_avocado,
                                                    module_name,
-                                                   class_name)
+                                                   class_name,
+                                                   _determine_match_avocado)
             if _info:
                 info.extend(_info)
                 _disabled.update(_dis)
