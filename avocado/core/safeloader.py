@@ -363,7 +363,7 @@ def _examine_class(path, class_name, match, target_module, target_class):
     """
     module = PythonModule(path, target_module, target_class)
     info = []
-    disabled = []
+    disabled = set()
 
     for klass in module.iter_classes():
         if class_name != klass.name:
@@ -385,7 +385,6 @@ def _examine_class(path, class_name, match, target_module, target_class):
 
         info = get_methods_info(klass.body,
                                 get_docstring_directives_tags(docstring))
-        disabled = set()
 
         # Getting the list of parents of the current class
         parents = klass.bases
@@ -446,14 +445,14 @@ def _examine_class(path, class_name, match, target_module, target_class):
                              os.path.dirname(module.path)] + sys.path
             _, found_ppath, _ = imp.find_module(parent_module,
                                                 modules_paths)
-            _info, _dis, _match = _examine_class(found_ppath,
-                                                 parent_class,
-                                                 match,
-                                                 target_module,
-                                                 target_class)
+            _info, _disabled, _match = _examine_class(found_ppath,
+                                                      parent_class,
+                                                      match,
+                                                      target_module,
+                                                      target_class)
             if _info:
                 info.extend(_info)
-                _disabled.update(_dis)
+                disabled.update(_disabled)
             if _match is not match:
                 match = _match
 
