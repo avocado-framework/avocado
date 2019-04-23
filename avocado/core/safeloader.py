@@ -340,7 +340,7 @@ def get_methods_info(statement_body, class_tags):
     return methods_info
 
 
-def _examine_class(path, class_name, is_avocado, target_module, target_class):
+def _examine_class(path, class_name, match, target_module, target_class):
     """
     Examine a class from a given path
 
@@ -348,9 +348,9 @@ def _examine_class(path, class_name, is_avocado, target_module, target_class):
     :type path: str
     :param class_name: the specific class to be found
     :type path: str
-    :param is_avocado: whether the inheritance from 'avocado.Test' has
-                       been determined or not
-    :type is_avocado: bool
+    :param match: whether the inheritance from <target_module.target_class> has
+                  been determined or not
+    :type match: bool
     :param target_module: the module name under which the target_class lives
     :type target_module: str
     :param target_class: the name of the class that class_name should
@@ -372,16 +372,16 @@ def _examine_class(path, class_name, is_avocado, target_module, target_class):
         docstring = ast.get_docstring(klass)
 
         # Only detect 'avocado.Test' if not yet decided
-        if is_avocado is False:
+        if match is False:
             directives = get_docstring_directives(docstring)
             if 'disable' in directives:
-                is_avocado = True
+                match = True
             elif 'enable' in directives:
-                is_avocado = True
+                match = True
             elif 'recursive' in directives:
-                is_avocado = True
-            if is_avocado is False:    # Still not decided, try inheritance
-                is_avocado = module.is_matching_klass(klass)
+                match = True
+            if match is False:    # Still not decided, try inheritance
+                match = module.is_matching_klass(klass)
 
         info = get_methods_info(klass.body,
                                 get_docstring_directives_tags(docstring))
@@ -402,15 +402,15 @@ def _examine_class(path, class_name, is_avocado, target_module, target_class):
                 # a module
                 continue
             parent_class = parent.id
-            _info, _disabled, _avocado = _examine_class(module.path, parent_class,
-                                                        is_avocado, target_module,
-                                                        target_class)
+            _info, _disabled, _match = _examine_class(module.path, parent_class,
+                                                      match, target_module,
+                                                      target_class)
             if _info:
                 parents.remove(parent)
                 info.extend(_info)
                 disabled.update(_disabled)
-            if _avocado is not is_avocado:
-                is_avocado = _avocado
+            if _match is not match:
+                match = _match
 
         # If there are parents left to be discovered, they
         # might be in a different module.
@@ -446,18 +446,18 @@ def _examine_class(path, class_name, is_avocado, target_module, target_class):
                              os.path.dirname(module.path)] + sys.path
             _, found_ppath, _ = imp.find_module(parent_module,
                                                 modules_paths)
-            _info, _dis, _avocado = _examine_class(found_ppath,
-                                                   parent_class,
-                                                   is_avocado,
-                                                   target_module,
-                                                   target_class)
+            _info, _dis, _match = _examine_class(found_ppath,
+                                                 parent_class,
+                                                 match,
+                                                 target_module,
+                                                 target_class)
             if _info:
                 info.extend(_info)
                 _disabled.update(_dis)
-            if _avocado is not is_avocado:
-                is_avocado = _avocado
+            if _match is not match:
+                match = _match
 
-    return info, disabled, is_avocado
+    return info, disabled, match
 
 
 def find_avocado_tests(path):
