@@ -101,6 +101,22 @@ Note that, besides the status of ``FINISHED``, and a return code which
 can be used to determine a success or failure status, it's not the
 runner's responsibility to determine test results.
 
+Task
+----
+
+A task is one specific instance/occurrence of the execution of a
+runnable with its respective runner.  They should have a unique
+identifier, although a task by itself wont't enforce its uniqueness in
+a process or any other type of collection.
+
+A task is responsible for producing and reporting status updates.
+This status updates are in a format similar to those received from a
+runner, but will add more information to them, such as its unique
+identifier.
+
+A different agreggate structure should be used to keep track of the
+execution of tasks.
+
 Recipe
 ------
 
