@@ -207,6 +207,68 @@ def subcommand_runnable_run_recipe(args, echo=print):
         echo(status)
 
 
+class Task:
+    """
+    Wraps the execution of a runnable
+
+    While a runnable describes what to be run, and gets run by a
+    runner, a task should be a unique entity to track its state,
+    that is, wether it is pending, is running or has finished.
+
+    :param identifier:
+    :param runnable:
+    """
+    def __init__(self, identifier, runnable):
+        self.identifier = identifier
+        self.runnable = runnable
+
+    def run(self):
+        runner = runner_from_runnable(self.runnable)
+        for status in runner.run():
+            status.update({"id": self.identifier})
+            yield status
+
+
+def task_from_recipe(task_path):
+    """
+    Creates a task (which contains a runnable) from a task recipe file
+    """
+    with open(task_path) as recipe_file:
+        recipe = json.load(recipe_file)
+    identifier = recipe.get('id')
+    runnable_recipe = recipe.get('runnable')
+    runnable = Runnable(runnable_recipe.get('kind'),
+                        runnable_recipe.get('uri'),
+                        *runnable_recipe.get('args', ()))
+    return Task(identifier, runnable)
+
+
+CMD_TASK_RUN_ARGS = (
+    (("-i", "--identifier"),
+     {'type': str, 'required': True, 'help': 'Task unique identifier'}),
+    )
+CMD_TASK_RUN_ARGS += CMD_RUNNABLE_RUN_ARGS
+
+
+def subcommand_task_run(args, echo=print):
+    runnable = runnable_from_args(args)
+    task = Task(getattr(args, 'identifier'), runnable)
+    for status in task.run():
+        echo(status)
+
+
+CMD_TASK_RUN_RECIPE_ARGS = (
+    (("recipe", ),
+     {'type': str, 'help': 'Path to the task recipe file'}),
+    )
+
+
+def subcommand_task_run_recipe(args, echo=print):
+    task = task_from_recipe(getattr(args, 'recipe'))
+    for status in task.run():
+        echo(status)
+
+
 def parse():
     parser = argparse.ArgumentParser(prog='nrunner')
     subcommands = parser.add_subparsers(dest='subcommand')
@@ -217,6 +279,10 @@ def parse():
     runnable_run_recipe_parser = subcommands.add_parser('runnable-run-recipe')
     for arg in CMD_RUNNABLE_RUN_RECIPE_ARGS:
         runnable_run_recipe_parser.add_argument(*arg[0], **arg[1])
+    runnable_task_parser = subcommands.add_parser('task-run')
+    for arg in CMD_TASK_RUN_ARGS:
+        runnable_task_parser.add_argument(*arg[0], **arg[1])
+
     return parser.parse_args()
 
 
@@ -226,6 +292,10 @@ def main():
         subcommand_runnable_run(args)
     if args.subcommand == 'runnable-run-recipe':
         subcommand_runnable_run_recipe(args)
+    if args.subcommand == 'task-run':
+        subcommand_task_run(args)
+    if args.subcommand == 'task-run-recipe':
+        subcommand_task_run_recipe(args)
 
 
 if __name__ == '__main__':
