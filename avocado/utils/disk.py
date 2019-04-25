@@ -29,6 +29,12 @@ import re
 from . import process
 
 
+class DiskUtilsError(Exception):
+    """
+    Base Exception Class for all DiskUtils Error
+    """
+
+
 def freespace(path):
     fs_stats = os.statvfs(path)
     return fs_stats.f_bsize * fs_stats.f_bavail
