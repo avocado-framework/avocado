@@ -1,10 +1,13 @@
 import argparse
+import asyncio
+import base64
 import io
 import json
 import multiprocessing
 import subprocess
 import time
 import unittest
+import socket
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -207,6 +210,55 @@ def subcommand_runnable_run_recipe(args, echo=print):
         echo(status)
 
 
+class StatusEncoder(json.JSONEncoder):
+
+    # pylint: disable=E0202
+    def default(self, obj):
+        if isinstance(obj, bytes):
+            return {'__base64_encoded__': base64.b64encode(obj).decode('ascii')}
+        return json.JSONEncoder.default(self, obj)
+
+
+def json_base64_decode(dct):
+    if '__base64_encoded__' in dct:
+        return base64.b64decode(dct['__base64_encoded__'])
+    return dct
+
+
+def json_dumps(data):
+    return json.dumps(data, ensure_ascii=True, cls=StatusEncoder)
+
+
+def json_loads(data):
+    if isinstance(data, bytes):
+        data = data.decode()
+    return json.loads(data, object_hook=json_base64_decode)
+
+
+class TaskStatusService:
+    """
+    Implementation of interface that a task can use to post status updates
+
+    TODO: make the interface generic and this just one of the implementations
+    """
+    def __init__(self, uri):
+        self.uri = uri
+        self.connection = None
+
+    def post(self, status):
+        host, port = self.uri.split(':')
+        port = int(port)
+        if self.connection is None:
+            self.connection = socket.create_connection((host, port))
+
+        data = json_dumps(status)
+        self.connection.send(data.encode('ascii') + "\n".encode('ascii'))
+
+    def close(self):
+        if self.connection is not None:
+            self.connection.close()
+
+
 class Task:
     """
     Wraps the execution of a runnable
@@ -218,14 +270,20 @@ class Task:
     :param identifier:
     :param runnable:
     """
-    def __init__(self, identifier, runnable):
+    def __init__(self, identifier, runnable, status_uris=None):
         self.identifier = identifier
         self.runnable = runnable
+        self.status_services = []
+        if status_uris is not None:
+            for status_uri in status_uris:
+                self.status_services.append(TaskStatusService(status_uri))
 
     def run(self):
         runner = runner_from_runnable(self.runnable)
         for status in runner.run():
             status.update({"id": self.identifier})
+            for status_service in self.status_services:
+                status_service.post(status)
             yield status
 
 
@@ -240,21 +298,106 @@ def task_from_recipe(task_path):
     runnable = Runnable(runnable_recipe.get('kind'),
                         runnable_recipe.get('uri'),
                         *runnable_recipe.get('args', ()))
-    return Task(identifier, runnable)
+    status_uris = recipe.get('status_uris')
+    return Task(identifier, runnable, status_uris)
+
+
+class StatusServer:
+
+    def __init__(self, uri, tasks_pending=None):
+        self.uri = uri
+        self.server_task = None
+        self.status = {}
+        if tasks_pending is None:
+            tasks_pending = []
+        self.tasks_pending = tasks_pending
+        self.wait_on_tasks_pending = len(self.tasks_pending) > 0
+
+    @asyncio.coroutine
+    def cb(self, reader, _):
+        while True:
+            if self.wait_on_tasks_pending:
+                if not self.tasks_pending:
+                    print('Status server: exiting due to all tasks finished')
+                    self.server_task.cancel()
+                    yield from self.server_task
+                    return True
+
+            message = yield from reader.readline()
+            if message == b'bye\n':
+                print('Status server: exiting due to user request')
+                self.server_task.cancel()
+                yield from self.server_task
+                return True
+
+            if not message:
+                return False
+
+            data = json_loads(message.strip())
+
+            if data['status'] not in ["init", "running"]:
+                try:
+                    self.tasks_pending.remove(data['id'])
+                    print('Task complete (%s): %s' % (data['status'],
+                                                      data['id']))
+                except IndexError:
+                    pass
+                except ValueError:
+                    pass
+                if data['status'] in self.status:
+                    self.status[data['status']] += 1
+                else:
+                    self.status[data['status']] = 1
+
+                if data['status'] != 'pass':
+                    stdout = data.get('stdout', b'')
+                    if stdout:
+                        print('Task %s stdout: %s' % (data['id'], stdout))
+                    stderr = data.get('stderr', b'')
+                    if stderr:
+                        print('Task %s stderr: %s' % (data['id'], stderr))
+                    output = data.get('output', '')
+                    if output:
+                        print('Task %s output: %s' % (data['id'], output))
+
+    @asyncio.coroutine
+    def create_server_task(self):
+        host, port = self.uri.split(':')
+        port = int(port)
+        server = yield from asyncio.start_server(self.cb, host=host, port=port)
+        print("Results server started at:", self.uri)
+        yield from server.wait_closed()
+
+    def start(self):
+        loop = asyncio.get_event_loop()
+        self.server_task = loop.create_task(self.create_server_task())
+
+    @asyncio.coroutine
+    def wait(self):
+        while not self.server_task.done():
+            yield from asyncio.sleep(0.1)
 
 
 CMD_TASK_RUN_ARGS = (
     (("-i", "--identifier"),
      {'type': str, 'required': True, 'help': 'Task unique identifier'}),
+    (("-s", "--status-uri"),
+     {'action': "append", 'default': None,
+      'help': 'URIs of status services to report to'}),
     )
 CMD_TASK_RUN_ARGS += CMD_RUNNABLE_RUN_ARGS
 
 
-def subcommand_task_run(args, echo=print):
-    runnable = runnable_from_args(args)
-    task = Task(getattr(args, 'identifier'), runnable)
+def task_run(task, echo):
     for status in task.run():
         echo(status)
+
+
+def subcommand_task_run(args, echo=print):
+    runnable = runnable_from_args(args)
+    task = Task(getattr(args, 'identifier'), runnable,
+                getattr(args, 'status_uri', []))
+    task_run(task, echo)
 
 
 CMD_TASK_RUN_RECIPE_ARGS = (
@@ -265,8 +408,20 @@ CMD_TASK_RUN_RECIPE_ARGS = (
 
 def subcommand_task_run_recipe(args, echo=print):
     task = task_from_recipe(getattr(args, 'recipe'))
-    for status in task.run():
-        echo(status)
+    task_run(task, echo)
+
+
+CMD_STATUS_SERVER_ARGS = (
+    (("uri", ),
+     {'type': str, 'help': 'URI to bind a status server to'}),
+    )
+
+
+def subcommand_status_server(args):
+    server = StatusServer(args.uri)
+    server.start()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(server.wait())
 
 
 def parse():
@@ -282,6 +437,12 @@ def parse():
     runnable_task_parser = subcommands.add_parser('task-run')
     for arg in CMD_TASK_RUN_ARGS:
         runnable_task_parser.add_argument(*arg[0], **arg[1])
+    runnable_task_recipe_parser = subcommands.add_parser('task-run-recipe')
+    for arg in CMD_TASK_RUN_RECIPE_ARGS:
+        runnable_task_recipe_parser.add_argument(*arg[0], **arg[1])
+    status_server_parser = subcommands.add_parser('status-server')
+    for arg in CMD_STATUS_SERVER_ARGS:
+        status_server_parser.add_argument(*arg[0], **arg[1])
 
     return parser.parse_args()
 
@@ -296,6 +457,8 @@ def main():
         subcommand_task_run(args)
     if args.subcommand == 'task-run-recipe':
         subcommand_task_run_recipe(args)
+    if args.subcommand == 'status-server':
+        subcommand_status_server(args)
 
 
 if __name__ == '__main__':
