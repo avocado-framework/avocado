@@ -23,6 +23,7 @@ Contents:
    DebuggingWithGDB
    WrapProcess
    Plugins
+   NRunner
 
 =========
 Utilities
