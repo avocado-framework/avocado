@@ -133,7 +133,7 @@ smokecheck: clean develop
 
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	PYTHON=$(PYTHON) selftests/checkall
+	PYTHON=$(PYTHON) $(PYTHON) -m avocado nrun selftests/*.sh selftests/unit/ selftests/functional/ optional_plugins/*/tests/
 	selftests/check_tmp_dirs
 
 check-full: clean develop
