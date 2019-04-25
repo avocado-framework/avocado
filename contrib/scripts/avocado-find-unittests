@@ -22,18 +22,16 @@
 #
 
 import os
-import re
 import sys
 
-from avocado.core.safeloader import find_class_and_methods
+from avocado.core.safeloader import find_python_unittests
 
 if __name__ == '__main__':
     test_module_paths = sys.argv[1:]
     result = []
     for test_module_path in test_module_paths:
         try:
-            test_class_methods = find_class_and_methods(test_module_path,
-                                                        re.compile(r'test.*'))
+            test_class_methods = find_python_unittests(test_module_path)
         except IOError as error:
             continue
         for klass, methods in test_class_methods.items():

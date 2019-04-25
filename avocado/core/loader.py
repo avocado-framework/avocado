@@ -52,10 +52,6 @@ AVAILABLE = DiscoverMode.AVAILABLE
 ALL = DiscoverMode.ALL
 
 
-# Regexp to find python unittests
-_RE_UNIT_TEST = re.compile(r'test.*')
-
-
 class MissingTest:
     """
     Class representing reference which failed to be discovered
@@ -684,8 +680,7 @@ class FileLoader(TestLoader):
 
     def _find_python_unittests(self, test_path, disabled, subtests_filter):
         result = []
-        class_methods = safeloader.find_class_and_methods(test_path,
-                                                          _RE_UNIT_TEST)
+        class_methods = safeloader.find_python_unittests(test_path)
         for klass, methods in class_methods.items():
             if klass in disabled:
                 continue
