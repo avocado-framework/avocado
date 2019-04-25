@@ -84,6 +84,8 @@ if __name__ == '__main__':
                   'sysinfo = avocado.plugins.sysinfo:SysInfo',
                   'plugins = avocado.plugins.plugins:Plugins',
                   'diff = avocado.plugins.diff:Diff',
+                  'runnable-run = avocado.plugins.runnable_run:RunnableRun',
+                  'runnable-run-recipe = avocado.plugins.runnable_run_recipe:RunnableRunRecipe',
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
