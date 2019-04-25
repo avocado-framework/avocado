@@ -349,16 +349,16 @@ class StatusServer:
                 else:
                     self.status[data['status']] = 1
 
-                if data['status'] != 'pass':
+                if data['status'] not in ('pass', 'skip'):
                     stdout = data.get('stdout', b'')
                     if stdout:
-                        print('Task %s stdout: %s' % (data['id'], stdout))
+                        print('Task %s stdout:\n%s\n' % (data['id'], stdout))
                     stderr = data.get('stderr', b'')
                     if stderr:
-                        print('Task %s stderr: %s' % (data['id'], stderr))
-                    output = data.get('output', '')
+                        print('Task %s stderr:\n%s\n' % (data['id'], stderr))
+                    output = data.get('output', b'')
                     if output:
-                        print('Task %s output: %s' % (data['id'], output))
+                        print('Task %s output:\n%s\n' % (data['id'], output))
 
     @asyncio.coroutine
     def create_server_task(self):

@@ -88,6 +88,7 @@ if __name__ == '__main__':
                   'runnable-run-recipe = avocado.plugins.runnable_run_recipe:RunnableRunRecipe',
                   'task-run = avocado.plugins.task_run:TaskRun',
                   'task-run-recipe = avocado.plugins.task_run_recipe:TaskRunRecipe',
+                  'nrun = avocado.plugins.nrun:NRun',
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
