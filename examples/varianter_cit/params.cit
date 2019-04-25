@@ -1,5 +1,5 @@
 PARAMETERS
-color   [black,  gold, red, green ]
+color[black,  gold, red, green ]
 shape[square, triangle, circle]
 state[liquid, solid, gas]
 material[leather, plastic, aluminum]
