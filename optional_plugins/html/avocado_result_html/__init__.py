@@ -227,7 +227,7 @@ class HTMLResult(Result):
                 self._open_browser(html_path)
                 open_browser = False
 
-        html_path = getattr(job.args, 'html_output', 'None')
+        html_path = getattr(job.args, 'html_output', None)
         if html_path is not None:
             self._render(result, html_path)
             if open_browser:
