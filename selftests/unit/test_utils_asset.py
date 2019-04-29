@@ -6,7 +6,7 @@ import unittest
 from avocado.utils import asset
 from avocado.utils.filelock import FileLock
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -15,7 +15,8 @@ setup_avocado_loggers()
 class TestAsset(unittest.TestCase):
 
     def setUp(self):
-        self.basedir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.basedir = tempfile.mkdtemp(prefix=prefix)
         self.assetdir = tempfile.mkdtemp(dir=self.basedir)
         self.assetname = 'foo.tgz'
         self.assethash = '3a033a8938c1af56eeb793669db83bcbd0c17ea5'

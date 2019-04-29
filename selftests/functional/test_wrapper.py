@@ -8,7 +8,7 @@ from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 SCRIPT_CONTENT = """#!/bin/bash
@@ -32,7 +32,8 @@ def missing_binary(binary):
 class WrapperTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.tmpfile = tempfile.mktemp()
         self.script = script.TemporaryScript(
             'success.sh',

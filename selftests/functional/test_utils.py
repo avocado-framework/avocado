@@ -12,6 +12,8 @@ from avocado.utils.filelock import FileLock
 from avocado.utils.stacktrace import prepare_exc_info
 from avocado.utils import process
 
+from .. import temp_dir_prefix
+
 
 # What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
@@ -125,7 +127,8 @@ if __name__ == '__main__':
 class ProcessTest(unittest.TestCase):
 
     def setUp(self):
-        self.base_logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.base_logdir = tempfile.mkdtemp(prefix=prefix)
         self.fake_vmstat = os.path.join(self.base_logdir, 'vmstat')
         with open(self.fake_vmstat, 'w') as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)
@@ -167,7 +170,8 @@ def file_lock_action(args):
 class FileLockTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "

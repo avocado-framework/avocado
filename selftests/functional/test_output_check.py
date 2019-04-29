@@ -8,7 +8,7 @@ from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 STDOUT = b"Hello, \xc4\x9b\xc5\xa1\xc4\x8d\xc5\x99\xc5\xbe\xc3\xbd\xc3\xa1\xc3\xad\xc3\xa9!"
@@ -18,7 +18,8 @@ STDERR = b"Hello, stderr!"
 class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         content = b"#!/bin/sh\n"
         content += b"echo \"" + STDOUT + b"\"\n"
         content += b"echo \"" + STDERR + b"\" >&2\n"

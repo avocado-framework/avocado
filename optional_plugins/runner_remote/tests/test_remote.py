@@ -8,7 +8,10 @@ import unittest.mock
 from avocado.core.job import Job
 from avocado.core import exit_codes, version
 from avocado.utils import process
+
 import avocado_runner_remote
+
+from selftests import temp_dir_prefix
 
 
 JSON_RESULTS = ('Something other than json\n'
@@ -27,6 +30,10 @@ JSON_RESULTS = ('Something other than json\n'
 class RemoteTestRunnerTest(unittest.TestCase):
 
     """ Tests RemoteTestRunner """
+
+    def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def test_run_suite(self):
         """
@@ -62,12 +69,11 @@ class RemoteTestRunnerTest(unittest.TestCase):
                                       env_keep=None,
                                       reference=['/tests/sleeptest.py',
                                                  '/tests/other/test',
-                                                 'passtest.py'])
+                                                 'passtest.py'],
+                                      keep_tmp='on',
+                                      base_logdir=self.tmpdir)
 
-        job = None
-        try:
-            job = Job(job_args)
-            job.setup()
+        with Job(job_args) as job:
             runner = avocado_runner_remote.RemoteTestRunner(job, job.result)
             return_value = (True, (version.MAJOR, version.MINOR))
             runner.check_remote_avocado = unittest.mock.Mock(return_value=return_value)
@@ -91,40 +97,36 @@ class RemoteTestRunnerTest(unittest.TestCase):
                     with unittest.mock.patch('avocado_runner_remote.os.remove'):
                         runner.run_suite(None, None, 61)
 
-            # The job was created with dry_run so it should have a zeroed id
-            self.assertEqual(job.result.job_unique_id, '0' * 40)
-            self.assertEqual(job.result.tests_run, 1)
-            self.assertEqual(job.result.passed, 1)
-            cmd_line = ('avocado run --force-job-id '
-                        '0000000000000000000000000000000000000000 --json - '
-                        '--archive /tests/sleeptest.py /tests/other/test '
-                        'passtest.py --mux-yaml ~/avocado/tests/foo.yaml '
-                        '~/avocado/tests/bar/baz.yaml --dry-run --filter-'
-                        'by-tags -foo --filter-by-tags -bar')
-            runner.remote.run.assert_called_with(cmd_line,
-                                                 ignore_status=True,
-                                                 timeout=61)
-        finally:
-            if job:
-                shutil.rmtree(job.args.base_logdir)
+        # The job was created with dry_run so it should have a zeroed id
+        self.assertEqual(job.result.job_unique_id, '0' * 40)
+        self.assertEqual(job.result.tests_run, 1)
+        self.assertEqual(job.result.passed, 1)
+        cmd_line = ('avocado run --force-job-id '
+                    '0000000000000000000000000000000000000000 --json - '
+                    '--archive /tests/sleeptest.py /tests/other/test '
+                    'passtest.py --mux-yaml ~/avocado/tests/foo.yaml '
+                    '~/avocado/tests/bar/baz.yaml --dry-run --filter-'
+                    'by-tags -foo --filter-by-tags -bar')
+        runner.remote.run.assert_called_with(cmd_line,
+                                             ignore_status=True,
+                                             timeout=61)
 
     def test_run_replay_remotefail(self):
         """
         Runs a replay job using remote plugin (not supported).
         """
-        tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         cmd_line = ('avocado run passtest.py '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    '--job-results-dir %s --sysinfo=off --json -' % tmpdir)
+                    '--job-results-dir %s --sysinfo=off --json -' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        jobdir = ''.join(glob.glob(os.path.join(tmpdir, 'job-*')))
+        jobdir = ''.join(glob.glob(os.path.join(self.tmpdir, 'job-*')))
         idfile = ''.join(os.path.join(jobdir, 'id'))
 
         with open(idfile, 'r') as f:
             jobid = f.read().strip('\n')
 
         cmd_line = ('avocado run --replay %s --remote-hostname '
-                    'localhost --job-results-dir %s --sysinfo=off' % (jobid, tmpdir))
+                    'localhost --job-results-dir %s --sysinfo=off' % (jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = process.run(cmd_line, ignore_status=True)
 
@@ -135,7 +137,12 @@ class RemoteTestRunnerTest(unittest.TestCase):
         msg = b"Currently we don't replay jobs in remote hosts."
         self.assertIn(msg, result.stderr)
 
-        shutil.rmtree(tmpdir)
+    def tearDown(self):
+        try:
+            shutil.rmtree(self.tmpdir)
+            # may have been clean up already on job.cleanup()
+        except FileNotFoundError:
+            pass
 
 
 if __name__ == '__main__':

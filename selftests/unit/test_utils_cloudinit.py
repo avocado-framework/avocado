@@ -10,7 +10,7 @@ from avocado.utils import iso9660
 from avocado.utils import network
 from avocado.utils import data_factory
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -30,7 +30,8 @@ class CloudInit(unittest.TestCase):
 class CloudInitISO(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     @unittest.skipUnless(has_iso_create_write(),
                          "system lacks support for creating ISO images")

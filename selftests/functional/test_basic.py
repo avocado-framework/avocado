@@ -27,17 +27,8 @@ from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
 
-from .. import AVOCADO, BASEDIR, python_module_available
+from .. import AVOCADO, BASEDIR, python_module_available, temp_dir_prefix
 
-
-LOCAL_IMPORT_TEST_CONTENTS = '''
-from avocado import Test
-from mylib import hello
-
-class LocalImportTest(Test):
-    def test(self):
-        self.log.info(hello())
-'''
 
 UNSUPPORTED_STATUS_TEST_CONTENTS = '''
 from avocado import Test
@@ -150,7 +141,8 @@ SLEEP_BINARY = probe_binary('sleep')
 class RunnerOperationTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         os.chdir(BASEDIR)
 
     def test_show_version(self):
@@ -237,18 +229,22 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def test_runner_test_with_local_imports(self):
-        mylib = script.TemporaryScript(
-            'mylib.py',
-            "def hello():\n    return 'Hello world'",
-            'avocado_simpletest_functional')
-        mylib.save()
-        mytest = script.Script(
-            os.path.join(os.path.dirname(mylib.path), 'test_local_imports.py'),
-            LOCAL_IMPORT_TEST_CONTENTS)
-        mytest.save()
-        cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
-                    "%s" % (AVOCADO, self.tmpdir, mytest))
-        process.run(cmd_line)
+        prefix = temp_dir_prefix(__name__, self,
+                                 'test_runner_test_with_local_imports')
+        libdir = tempfile.mkdtemp(prefix=prefix)
+        with script.Script(os.path.join(libdir, 'mylib.py'),
+                           "def hello():\n    return 'Hello world'"):
+            with script.Script(
+                os.path.join(libdir, 'test_local_imports.py'),
+                ('from avocado import Test\n'
+                 'from mylib import hello\n'
+                 'class LocalImportTest(Test):\n'
+                 '    def test(self):\n'
+                 '        self.log.info(hello())\n')) as mytest:
+                cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
+                            "%s" % (AVOCADO, self.tmpdir, mytest))
+                process.run(cmd_line)
+        shutil.rmtree(libdir)
 
     def test_unsupported_status(self):
         with script.TemporaryScript("fake_status.py",
@@ -593,7 +589,8 @@ class RunnerOperationTest(unittest.TestCase):
 class RunnerHumanOutputTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         os.chdir(BASEDIR)
 
     def test_output_pass(self):
@@ -681,7 +678,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
 class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.pass_script = script.TemporaryScript(
             u'\u00e1 \u00e9 \u00ed \u00f3 \u00fa',
             "#!/bin/sh\ntrue",
@@ -890,7 +888,8 @@ class RunnerSimpleTest(unittest.TestCase):
 class RunnerSimpleTestStatus(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
         self.config_file = script.TemporaryScript('avocado.conf',
                                                   "[simpletests.status]\n"
@@ -950,7 +949,8 @@ class RunnerSimpleTestStatus(unittest.TestCase):
 class ExternalRunnerTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.pass_script = script.TemporaryScript(
             'pass',
             "exit 0",
@@ -1030,7 +1030,8 @@ class ExternalRunnerTest(unittest.TestCase):
 class AbsPluginsTest:
 
     def setUp(self):
-        self.base_outputdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.base_outputdir = tempfile.mkdtemp(prefix=prefix)
         os.chdir(BASEDIR)
 
     def tearDown(self):
@@ -1236,7 +1237,8 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
     @unittest.skipUnless(SCHEMA_CAPABLE,
                          'Unable to validate schema due to missing lxml.etree library')
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         junit_xsd = os.path.join(os.path.dirname(__file__),
                                  os.path.pardir, ".data", 'jenkins-junit.xsd')
         self.junit = os.path.abspath(junit_xsd)
@@ -1322,7 +1324,8 @@ class ParseJSONError(Exception):
 class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         super(PluginsJSONTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,

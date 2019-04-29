@@ -8,7 +8,7 @@ import unittest.mock
 
 from avocado.utils import iso9660, process
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -55,7 +55,8 @@ class BaseIso9660:
                                                      os.path.pardir, ".data",
                                                      "sample.iso"))
         self.iso = None
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def test_basic_workflow(self):
         """

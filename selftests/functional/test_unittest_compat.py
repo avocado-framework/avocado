@@ -7,7 +7,7 @@ import unittest
 from avocado.utils import script
 from avocado.utils import process
 
-from .. import BASEDIR
+from .. import BASEDIR, temp_dir_prefix
 
 
 UNITTEST_GOOD = """from avocado import Test
@@ -62,7 +62,8 @@ if __name__ == '__main__':
 class UnittestCompat(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.original_pypath = os.environ.get('PYTHONPATH')
         if self.original_pypath is not None:
             os.environ['PYTHONPATH'] = '%s:%s' % (

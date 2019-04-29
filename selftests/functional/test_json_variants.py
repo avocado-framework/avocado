@@ -6,13 +6,14 @@ import unittest
 
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 class VariantsDumpLoadTests(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.variants_file = os.path.join(self.tmpdir, 'variants.json')
         os.chdir(BASEDIR)
 

@@ -1,9 +1,13 @@
 import argparse
 import shutil
+import tempfile
 import unittest.mock
 
 from avocado.core.job import Job
+
 import avocado_runner_vm
+
+from selftests import temp_dir_prefix
 
 
 class _FakeVM(avocado_runner_vm.VM):
@@ -23,6 +27,10 @@ class _FakeVM(avocado_runner_vm.VM):
 class VMTestRunnerSetup(unittest.TestCase):
 
     """ Tests the VMTestRunner setup() method """
+
+    def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def test_setup(self):
         mock_vm = _FakeVM()
@@ -45,11 +53,10 @@ class VMTestRunnerSetup(unittest.TestCase):
                                                  '/tests/other/test',
                                                  'passtest.py'],
                                       dry_run=True,
-                                      env_keep=None)
-        job = None
-        try:
-            job = Job(job_args)
-            job.setup()
+                                      env_keep=None,
+                                      keep_tmp='on',
+                                      base_logdir=self.tmpdir)
+        with Job(job_args) as job:
             with unittest.mock.patch('avocado_runner_vm.vm_connect',
                                      return_value=mock_vm):
                 # VMTestRunner()
@@ -60,9 +67,13 @@ class VMTestRunnerSetup(unittest.TestCase):
                 mock_vm.create_snapshot.assert_called_once_with()
                 mock_vm.stop.assert_called_once_with()
                 mock_vm.restore_snapshot.assert_called_once_with()
-        finally:
-            if job:
-                shutil.rmtree(job.args.base_logdir)
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(self.tmpdir)
+            # may have been clean up already on job.cleanup()
+        except FileNotFoundError:
+            pass
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ from avocado.core import test
 from avocado.utils import process
 from avocado.utils import script
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 INSTRUMENTED_SCRIPT = """import os
@@ -36,7 +36,8 @@ fi
 class TestsTmpDirTests(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.simple_test = script.TemporaryScript(
             'test_simple.sh',
             SIMPLE_SCRIPT)

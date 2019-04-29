@@ -5,18 +5,20 @@ import unittest.mock
 
 from avocado.core import settings
 
+from .. import temp_dir_prefix
+
 
 class DataDirTest(unittest.TestCase):
 
-    @staticmethod
-    def _get_temporary_dirs_mapping_and_config():
+    def _get_temporary_dirs_mapping_and_config(self):
         """
         Creates a temporary bogus base data dir
 
         And returns a dictionary containing the temporary data dir paths and
         a the path to a configuration file contain those same settings
         """
-        base_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        base_dir = tempfile.mkdtemp(prefix=prefix)
         test_dir = os.path.join(base_dir, 'tests')
         os.mkdir(test_dir)
         mapping = {'base_dir': base_dir,

@@ -11,7 +11,7 @@ from avocado.core import job
 from avocado.core import test
 from avocado.utils import path as utils_path
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -22,7 +22,8 @@ class JobTest(unittest.TestCase):
     def setUp(self):
         self.job = None
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     @staticmethod
     def _find_simple_test_candidates(candidates=None):

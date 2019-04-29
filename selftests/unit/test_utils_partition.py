@@ -14,6 +14,8 @@ from avocado.utils import partition, process
 from avocado.utils import path as utils_path
 from avocado.utils import wait
 
+from .. import temp_dir_prefix
+
 
 def missing_binary(binary):
     try:
@@ -37,7 +39,8 @@ class Base(unittest.TestCase):
                      'current user must be allowed to run "mkfs.ext2" under '
                      'sudo')
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.mountpoint = os.path.join(self.tmpdir, "disk")
         os.mkdir(self.mountpoint)
         self.disk = partition.Partition(os.path.join(self.tmpdir, "block"), 1,

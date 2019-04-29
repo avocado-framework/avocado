@@ -16,6 +16,8 @@ from avocado.utils import process
 from avocado.utils import lv_utils
 from avocado.utils import linux_modules
 
+from .. import temp_dir_prefix
+
 
 class LVUtilsTest(unittest.TestCase):
 
@@ -30,7 +32,8 @@ class LVUtilsTest(unittest.TestCase):
     @unittest.skipIf(not process.can_sudo(), "This test requires root or "
                      "passwordless sudo configured.")
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.vgs = []
 
     def tearDown(self):

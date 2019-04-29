@@ -10,7 +10,7 @@ from avocado.core import job
 from avocado.core.result import Result
 from avocado.plugins import jsonresult
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -33,7 +33,8 @@ class JSONResultTest(unittest.TestCase):
                 pass
 
         self.tmpfile = tempfile.mkstemp()
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         args = argparse.Namespace(json_output=self.tmpfile[1],
                                   base_logdir=self.tmpdir)
         self.job = job.Job(args)

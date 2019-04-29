@@ -7,13 +7,14 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 class ReplayFailfastTests(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         cmd_line = ('%s run passtest.py failtest.py passtest.py '
                     '--failfast on --job-results-dir %s --sysinfo=off --json -'
                     % (AVOCADO, self.tmpdir))

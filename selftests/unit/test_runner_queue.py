@@ -11,7 +11,7 @@ from avocado.core.result import Result
 from avocado.core.runner import TestRunner
 from avocado.core.tree import TreeNode
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -23,7 +23,8 @@ class TestRunnerQueue(unittest.TestCase):
     """
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         args = argparse.Namespace(base_logdir=self.tmpdir)
         self.job = Job(args)
         self.result = Result(self.job)
