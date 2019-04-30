@@ -8,13 +8,14 @@ from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 class ReplayExtRunnerTests(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix)
         test = script.make_script(os.path.join(self.tmpdir, 'test'), 'exit 0')
         cmd_line = ('%s run %s '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml '

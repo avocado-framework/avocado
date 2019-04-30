@@ -6,7 +6,7 @@ import unittest
 from avocado.core import test
 from avocado.plugins import replay
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -19,7 +19,8 @@ class Replay(unittest.TestCase):
     """
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

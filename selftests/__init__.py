@@ -44,6 +44,14 @@ def setup_avocado_loggers():
             logger.handlers.append(logging.NullHandler())
 
 
+def temp_dir_prefix(module_name, klass, method):
+    """
+    Returns a standard name for the temp dir prefix used by the tests
+    """
+    fmt = 'avocado__%s__%s__%s__'
+    return fmt % (module_name, klass.__class__.__name__, method)
+
+
 #: The plugin module names and directories under optional_plugins
 PLUGINS = {'varianter_yaml_to_mux': 'avocado-framework-plugin-varianter-yaml-to-mux',
            'runner_remote': 'avocado-framework-plugin-runner-remote',

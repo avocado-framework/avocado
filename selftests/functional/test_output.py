@@ -13,7 +13,7 @@ from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 # AVOCADO may contain more than a single command, as it can be
@@ -133,7 +133,8 @@ def missing_binary(binary):
 class OutputTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         os.chdir(BASEDIR)
 
     @unittest.skipIf(missing_binary('cc'),
@@ -270,7 +271,8 @@ class OutputTest(unittest.TestCase):
 class OutputPluginTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         os.chdir(BASEDIR)
 
     def check_output_files(self, debug_log):
@@ -510,11 +512,11 @@ class OutputPluginTest(unittest.TestCase):
     @unittest.skipIf(perl_tap_parser_uncapable(),
                      "Uncapable of using Perl TAP::Parser library")
     def test_tap_parser(self):
-        perl_script = script.TemporaryScript("tap_parser.pl",
-                                             PERL_TAP_PARSER_SNIPPET
-                                             % self.tmpdir)
-        perl_script.save()
-        process.run("perl %s" % perl_script)
+        with script.TemporaryScript(
+                "tap_parser.pl",
+                PERL_TAP_PARSER_SNIPPET % self.tmpdir,
+                self.tmpdir) as perl_script:
+            process.run("perl %s" % perl_script)
 
     def test_tap_totaltests(self):
         cmd_line = ("%s run passtest.py "

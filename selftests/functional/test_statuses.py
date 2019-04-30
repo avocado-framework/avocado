@@ -7,7 +7,7 @@ import unittest
 from avocado.utils import genio
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 ALL_MESSAGES = ['setup pre',
@@ -130,7 +130,8 @@ EXPECTED_RESULTS = {'SkipSetup.test': ('SKIP',
 class TestStatuses(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         test_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  os.path.pardir,
                                                  ".data",

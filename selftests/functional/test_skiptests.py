@@ -9,7 +9,7 @@ from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import script
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 AVOCADO_TEST_SKIP_DECORATORS = """
 import avocado
@@ -79,7 +79,8 @@ class TestSkipDecorators(unittest.TestCase):
 
     def setUp(self):
         os.chdir(BASEDIR)
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
         test_path = os.path.join(self.tmpdir, 'test_skip_decorators.py')
         self.test_module = script.Script(test_path,

@@ -10,7 +10,7 @@ from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import script
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 SCRIPT_CONTENT = """#!/bin/bash
@@ -48,7 +48,8 @@ class JobTimeOutTest(unittest.TestCase):
             PYTHON_CONTENT,
             'avocado_timeout_functional')
         self.py.save()
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         os.chdir(BASEDIR)
 
     def run_and_check(self, cmd_line, e_rc, e_ntests, e_nerrors, e_nfailures,

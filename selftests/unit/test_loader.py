@@ -8,7 +8,7 @@ from avocado.core import test
 from avocado.core import loader
 from avocado.utils import script
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -231,7 +231,8 @@ class LoaderTest(unittest.TestCase):
 
     def setUp(self):
         self.loader = loader.FileLoader(None, {})
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def test_load_simple(self):
         simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
@@ -295,29 +296,27 @@ class LoaderTest(unittest.TestCase):
         avocado_not_a_test.remove()
 
     def test_py_simple_test(self):
-        avocado_simple_test = script.TemporaryScript('simpletest.py',
-                                                     PY_SIMPLE_TEST,
-                                                     'avocado_loader_unittest')
-        avocado_simple_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(avocado_simple_test.path, loader.DiscoverMode.ALL)[0])
-        self.assertTrue(test_class == test.SimpleTest)
-        test_parameters['name'] = test.TestID(0, test_parameters['name'])
-        test_parameters['base_logdir'] = self.tmpdir
-        tc = test_class(**test_parameters)
-        tc.run_avocado()
-        avocado_simple_test.remove()
+        with script.TemporaryScript(
+                'simpletest.py',
+                PY_SIMPLE_TEST,
+                'avocado_loader_unittest') as avocado_simple_test:
+            test_class, test_parameters = (
+                self.loader.discover(avocado_simple_test.path, loader.DiscoverMode.ALL)[0])
+            self.assertTrue(test_class == test.SimpleTest)
+            test_parameters['name'] = test.TestID(0, test_parameters['name'])
+            test_parameters['base_logdir'] = self.tmpdir
+            tc = test_class(**test_parameters)
+            tc.run_avocado()
 
     def test_py_simple_test_notexec(self):
-        avocado_simple_test = script.TemporaryScript('simpletest.py',
-                                                     PY_SIMPLE_TEST,
-                                                     'avocado_loader_unittest',
-                                                     mode=DEFAULT_NON_EXEC_MODE)
-        avocado_simple_test.save()
-        test_class, _ = self.loader.discover(avocado_simple_test.path,
-                                             loader.DiscoverMode.ALL)[0]
+        with script.TemporaryScript(
+                'simpletest.py',
+                PY_SIMPLE_TEST,
+                'avocado_loader_unittest',
+                mode=DEFAULT_NON_EXEC_MODE) as avocado_simple_test:
+            test_class, _ = self.loader.discover(avocado_simple_test.path,
+                                                 loader.DiscoverMode.ALL)[0]
         self.assertTrue(test_class == loader.NotATest)
-        avocado_simple_test.remove()
 
     def test_multiple_methods(self):
         avocado_multiple_tests = script.TemporaryScript('multipletests.py',
@@ -469,12 +468,11 @@ class LoaderTest(unittest.TestCase):
         self._check_discovery(exps, tests)
 
     def test_list_raising_exception(self):
-        simple_test = script.TemporaryScript('simpletest.py', PY_SIMPLE_TEST)
-        simple_test.save()
-        with unittest.mock.patch('avocado.core.loader.safeloader.find_avocado_tests') as _mock:
-            _mock.side_effect = BaseException()
-            tests = self.loader.discover(simple_test.path)
-            self.assertEqual(tests[0][1]["name"], simple_test.path)
+        with script.TemporaryScript('simpletest.py', PY_SIMPLE_TEST) as simple_test:
+            with unittest.mock.patch('avocado.core.loader.safeloader.find_avocado_tests') as _mock:
+                _mock.side_effect = BaseException()
+                tests = self.loader.discover(simple_test.path)
+                self.assertEqual(tests[0][1]["name"], simple_test.path)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

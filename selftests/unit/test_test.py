@@ -6,7 +6,7 @@ import unittest.mock
 from avocado.core import test, exceptions
 from avocado.utils import astring, script
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, temp_dir_prefix
 
 
 setup_avocado_loggers()
@@ -28,7 +28,8 @@ class TestClassTestUnit(unittest.TestCase):
             pass
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def _get_fake_filename_test(self, name):
 
@@ -175,7 +176,8 @@ class TestClassTest(unittest.TestCase):
                 self.assertTrue(variable)
                 self.whiteboard = 'foo'
 
-        self.base_logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.base_logdir = tempfile.mkdtemp(prefix=prefix)
         self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir)
         self.tst_instance_pass.run_avocado()
 
@@ -212,7 +214,8 @@ class TestClassTest(unittest.TestCase):
 class SimpleTestClassTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.script = None
 
     def test_simple_test_pass_status(self):
@@ -248,7 +251,8 @@ class SimpleTestClassTest(unittest.TestCase):
 class MockingTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def test_init_minimal_params(self):
         test.MockingTest(base_logdir=self.tmpdir)

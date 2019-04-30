@@ -12,7 +12,7 @@ from avocado.core import exit_codes
 from avocado.utils import script
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
@@ -151,7 +151,8 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def setUp(self):
         os.chdir(BASEDIR)
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def _test(self, name, content, exp_str, mode=MODE_0664, count=1):
         test_script = script.TemporaryScript(name, content,

@@ -9,13 +9,14 @@ from avocado.utils import archive
 from avocado.utils import crypto
 from avocado.utils import data_factory
 
-from .. import BASEDIR
+from .. import BASEDIR, temp_dir_prefix
 
 
 class ArchiveTest(unittest.TestCase):
 
     def setUp(self):
-        self.basedir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.basedir = tempfile.mkdtemp(prefix=prefix)
         self.compressdir = tempfile.mkdtemp(dir=self.basedir)
         self.decompressdir = tempfile.mkdtemp(dir=self.basedir)
         self.sys_random = random.SystemRandom()

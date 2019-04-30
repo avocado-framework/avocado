@@ -5,11 +5,14 @@ import unittest
 
 from avocado.core import sysinfo
 
+from .. import temp_dir_prefix
+
 
 class SysinfoTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix="sysinfo_unittest")
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
 
     def test_loggables_equal(self):
         cmd1 = sysinfo.Command("ls -l")

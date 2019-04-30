@@ -6,11 +6,14 @@ import unittest
 from avocado.utils.filelock import AlreadyLocked
 from avocado.utils.filelock import FileLock
 
+from .. import temp_dir_prefix
+
 
 class TestFileLock(unittest.TestCase):
 
     def setUp(self):
-        self.basedir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.basedir = tempfile.mkdtemp(prefix=prefix)
         self.filename = os.path.join(self.basedir, 'file.img')
         self.content = 'Foo bar'
         with open(self.filename, 'w') as f:
