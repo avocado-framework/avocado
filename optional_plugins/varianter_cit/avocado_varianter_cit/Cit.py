@@ -1,23 +1,25 @@
-from __future__ import print_function
-
 import random
-import sys
+import logging
+
+from avocado.core.output import LOG_UI
+from avocado.core.output import Throbber
 
 from .Solver import Solver
 from .CombinationMatrix import CombinationMatrix
 
 ITERATIONS_SIZE = 600
+LOG = LOG_UI.getChild("Cit")
+LOG.setLevel(logging.INFO)
 
 
 class Cit:
 
-    def __init__(self, input_data, t_value, constraints, debug=False):
+    def __init__(self, input_data, t_value, constraints):
         """
         Creation of CombinationMatrix from user input
         :param input_data: parameters from user
         :param t_value: size of one combination
         :param constraints: constraints of combinations
-        :param debug: if debug statements should be produced
         """
         self.data = input_data
         self.t_value = t_value
@@ -28,7 +30,7 @@ class Cit:
         # Combinations which do not match to the constraints are disabled
         self.solver.clean_hash_table(self.combination_matrix, t_value)
         self.final_matrix = []
-        self.debug = debug
+        self.__throbber = Throbber()
 
     def final_matrix_init(self):
         """
@@ -63,21 +65,16 @@ class Cit:
                 delete_row = matrix.pop(random.randint(0, len(matrix) - 1))
                 self.combination_matrix.uncover_solution_row(delete_row)
                 deleted_rows.append(delete_row)
-            if self.debug:
-                print("I'm trying soulution with size " + str(len(matrix)) + " and " + str(iterations) + " iterations")
+            LOG.debug("I'm trying solution with size " + str(len(matrix)) + " and " + str(iterations) + " iterations")
             matrix, is_better_solution = self.find_better_solution(iterations, matrix)
             if is_better_solution:
                 self.final_matrix = matrix[:]
                 deleted_rows = []
                 step_size *= 2
-                if self.debug:
-                    print("-----solution with size " + str(len(matrix)) + " was found-----")
-                    print()
+                LOG.debug("-----solution with size " + str(len(matrix)) + " was found-----\n")
                 iterations = ITERATIONS_SIZE
             else:
-                if self.debug:
-                    print("-----solution with size " + str(len(matrix)) + " was not found-----")
-                    print()
+                LOG.debug("-----solution with size " + str(len(matrix)) + " was not found-----\n")
                 for i in range(step_size):
                     self.combination_matrix.cover_solution_row(deleted_rows[i])
                     matrix.append(deleted_rows[i])
@@ -86,8 +83,6 @@ class Cit:
                 else:
                     step_size = 0
 
-        if self.debug:
-            print("-----The best solution is-----")
         return self.final_matrix
 
     def find_better_solution(self, counter, matrix):
@@ -98,8 +93,7 @@ class Cit:
         :return: new matrix and is changes have been successful?
         """
         while self.combination_matrix.total_uncovered != 0:
-            if self.debug:
-                print_progress(counter)
+            LOG.info(self.__throbber.render(), extra={"skip_newline": True})
             solution, row_index, _ = self.use_random_algorithm(matrix)
             self.combination_matrix.uncover_solution_row(matrix[row_index])
             self.combination_matrix.cover_solution_row(solution)
@@ -240,6 +234,7 @@ class Cit:
     def change_one_value(self, matrix, row_index=None, column_index=None):
         """
         Change one cell inside the matrix
+
         :param matrix: matrix to be changed
         :param row_index: row inside matrix. If it's None it is chosen randomly
         :param column_index: column inside matrix. If it's None it is chosen randomly
@@ -299,10 +294,3 @@ class Cit:
             self.solver.clean_data_matrix(data_matrix, {"name": parameter, "value": value_choice})
             row.append(value_choice)
         return row
-
-
-def print_progress(interaction):
-    maximum = round(ITERATIONS_SIZE / 100)
-    perc = round(interaction / 100)
-    message = "Computing[" + "*" * (perc) + " " * (maximum - perc) + "]" + "."
-    sys.stdout.write('\r' + message)
