@@ -10,6 +10,7 @@ class Parser:
     def parse(file_object):
         """
         Parsing of input file with parameters and constraints
+
         :param file_object: input file for parsing
         :return: array of parameters and set of constraints
         """

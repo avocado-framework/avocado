@@ -14,6 +14,7 @@
 
 import os
 import sys
+import logging
 
 from avocado.core import exit_codes
 from avocado.core import varianter
@@ -21,7 +22,7 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.plugin_interfaces import Varianter
 from avocado.core.tree import TreeNode
-from avocado_varianter_cit.Cit import Cit
+from avocado_varianter_cit.Cit import Cit, LOG
 from avocado_varianter_cit.Parser import Parser
 
 
@@ -50,7 +51,8 @@ class VarianterCitCLI(CLI):
                                    "to parameter file content"))
 
     def run(self, args):
-        pass
+        if getattr(args, "varianter_debug", False):
+            LOG.setLevel(logging.DEBUG)
 
 
 class VarianterCit(Varianter):

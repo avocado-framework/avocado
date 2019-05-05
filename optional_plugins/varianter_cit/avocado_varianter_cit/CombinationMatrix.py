@@ -6,9 +6,10 @@ from .CombinationRow import CombinationRow as Row
 class CombinationMatrix:
     """
     CombinationMatrix object stores Rows of combinations into dictionary.
-    And also stores which rows are not covered
-    Keys in dictionary are parameters of combinations and values are CombinationRow objects
-    CombinationMatrix object has information how many combinations are ucovered and how many of them are covered more than ones
+    And also stores which rows are not covered. Keys in dictionary are parameters
+    of combinations and values are CombinationRow objects. CombinationMatrix object
+    has information about how many combinations are uncovered and how many of them
+    are covered more than ones.
     """
 
     def __init__(self, input_data, t_value):
@@ -30,6 +31,7 @@ class CombinationMatrix:
     def cover_solution_row(self, row):
         """
         Cover all combination by one row from possible solution
+
         :param row: one row from solution
         :return: number of still uncovered combinations
         """
@@ -51,6 +53,7 @@ class CombinationMatrix:
     def cover_combination(self, row, parameters):
         """
         Cover combination of specific parameters by one row from possible solution
+
         :param row: one row from solution
         :param parameters: parameters which has to be covered
         :return: number of still uncovered combinations
@@ -75,6 +78,7 @@ class CombinationMatrix:
     def uncover_solution_row(self, row):
         """
         Uncover all combination by one row from possible solution
+
         :param row: one row from solution
         :return: number of uncovered combinations
         """
@@ -96,6 +100,7 @@ class CombinationMatrix:
     def uncover_combination(self, row, parameters):
         """
         Uncover combination of specific parameters by one row from possible solution
+
         :param row: one row from solution
         :param parameters: parameters which has to be covered
         :return: number of uncovered combinations
@@ -129,7 +134,8 @@ class CombinationMatrix:
 
     def is_valid_solution(self, row):
         """
-        Is the solution row match the constraints?
+        Is the solution row match the constraints.
+
         :param row: one row from solution
         """
         for key, value in self.hash_table.items():
@@ -144,7 +150,8 @@ class CombinationMatrix:
 
     def is_valid_combination(self, row, parameters):
         """
-        Is the specific parameters from solution row match the constraints?
+        Is the specific parameters from solution row match the constraints.
+
         :param row: one row from solution
         :param parameters: parameters from row
         """
@@ -164,6 +171,7 @@ class CombinationMatrix:
         """
         Disable one combination. If combination is disabled it means that
         the combination does not match the constraints
+
         :param parameters: parameters whose combination is disabled
         :param combination: combination to be disabled
         """

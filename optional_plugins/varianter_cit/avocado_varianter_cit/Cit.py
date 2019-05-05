@@ -17,6 +17,7 @@ class Cit:
     def __init__(self, input_data, t_value, constraints):
         """
         Creation of CombinationMatrix from user input
+
         :param input_data: parameters from user
         :param t_value: size of one combination
         :param constraints: constraints of combinations
@@ -34,7 +35,9 @@ class Cit:
 
     def final_matrix_init(self):
         """
-        Creation of the first solution. This solution is the start of searching for the best solution
+        Creation of the first solution. This solution is the start of searching
+        for the best solution
+
         :return: solution matrix (list(list))
         """
         self.final_matrix = [self.create_random_row_with_constraints()]
@@ -50,9 +53,11 @@ class Cit:
 
     def compute(self):
         """
-        Searching for the best solution. It creates one solution and from that, it tries to create smaller solution
-        This searching process is limited by ITERATIONS_SIZE. When ITERATIONS_SIZE is 0 the last found solution is
-        the best solution
+        Searching for the best solution. It creates one solution and from that,
+        it tries to create smaller solution. This searching process is limited
+        by ITERATIONS_SIZE. When ITERATIONS_SIZE is 0 the last found solution is
+        the best solution.
+
         :return: The best solution
         """
         self.final_matrix = self.final_matrix_init()
@@ -88,6 +93,7 @@ class Cit:
     def find_better_solution(self, counter, matrix):
         """
         Changing the matrix to cover all combinations
+
         :param counter: maximum number of changes in the matrix
         :param matrix: matrix to be changed
         :return: new matrix and is changes have been successful?
@@ -107,6 +113,7 @@ class Cit:
         """
         Applies one of these algorithms to the matrix.
         It chooses algorithm by random in proportion 1:1:8
+
         :param matrix: matrix to be changed
         :return: new row of matrix, index of row inside matrix and parameters which has been changed
         """
@@ -122,6 +129,7 @@ class Cit:
     def compute_row(self):
         """
         Computation of one row which covers most of combinations
+
         :return: new solution row
         """
         is_valid_row = False
@@ -164,8 +172,9 @@ class Cit:
 
     def cover_missing_combination(self, matrix):
         """
-        Randomly finds one missing combination. This combination puts into each row of the matrix.
-        The row with the best coverage is the solution
+        Randomly finds one missing combination. This combination puts into each
+        row of the matrix. The row with the best coverage is the solution
+
         :param matrix: matrix to be changed
         :return: solution, index of solution inside matrix and parameters which has been changed
         """
@@ -195,6 +204,7 @@ class Cit:
     def get_missing_combination_random(self):
         """
         Randomly finds one missing combination.
+
         :return: parameter of combination and values of combination
         """
         possible_parameters = list(self.combination_matrix.uncovered_rows)
@@ -208,8 +218,9 @@ class Cit:
 
     def change_one_column(self, matrix):
         """
-        Randomly choose one column of the matrix. In each cell of this column changes value.
-        The row with the best coverage is the solution
+        Randomly choose one column of the matrix. In each cell of this column
+        changes value. The row with the best coverage is the solution.
+
         :param matrix: matrix to be changed
         :return: solution, index of solution inside matrix and parameters which has been changed
         """
