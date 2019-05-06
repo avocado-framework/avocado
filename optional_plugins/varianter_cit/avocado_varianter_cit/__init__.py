@@ -111,7 +111,7 @@ class VarianterCit(Varianter):
 
         for vid, variant in zip(variant_ids, self.variants):
             yield {"variant_id": vid,
-                   "variant": TreeNode('', variant),
+                   "variant": [TreeNode('', variant)],
                    "paths": ['/']}
 
     def __len__(self):
