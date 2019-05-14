@@ -66,7 +66,7 @@ def is_port_free(port, address):
             sock.close()
 
 
-def find_free_port(start_port=1024, end_port=65535, address="localhost", sequent=True):
+def find_free_port(start_port=1024, end_port=65535, address="localhost", sequent=False):
     """
     Return a host free port in the range [start_port, end_port].
 
@@ -86,7 +86,7 @@ def find_free_port(start_port=1024, end_port=65535, address="localhost", sequent
     return None
 
 
-def find_free_ports(start_port, end_port, count, address="localhost", sequent=True):
+def find_free_ports(start_port, end_port, count, address="localhost", sequent=False):
     """
     Return count of host free ports in the range [start_port, end_port].
 
