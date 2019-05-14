@@ -32,7 +32,10 @@ except ImportError:
 
 def get_crash_dir():
     crash_dir_path = os.path.join(data_dir.get_data_dir(), "crashes")
-    os.makedirs(crash_dir_path)
+    try:
+        os.makedirs(crash_dir_path)
+    except OSError:
+        pass
     return crash_dir_path
 
 
