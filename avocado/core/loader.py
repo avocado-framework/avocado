@@ -110,12 +110,11 @@ def must_key_val_matches(must_key_vals, test_tags, include_empty_key):
     :rtype: bool
     """
     for k, v in must_key_vals.items():
-        if k in test_tags:
-            return v in test_tags[k]
-        else:
-            if include_empty_key:
-                return True
-    return False
+        if k not in test_tags and not include_empty_key:
+            return False
+        if v not in test_tags.get(k, set()):
+            return False
+    return True
 
 
 def filter_test_tags(test_suite, filter_by_tags, include_empty=False,
