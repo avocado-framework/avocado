@@ -109,13 +109,21 @@ def must_key_val_matches(must_key_vals, test_tags, include_empty_key):
 
     :rtype: bool
     """
+    key_val_test_tags = {}
+    for k, v in test_tags.items():
+        if v is None:
+            continue
+        key_val_test_tags[k] = v
+
     for k, v in must_key_vals.items():
-        if k in test_tags:
-            return v in test_tags[k]
-        else:
+        if k not in test_tags:
             if include_empty_key:
-                return True
-    return False
+                continue
+            else:
+                return False
+        if v not in key_val_test_tags.get(k, set()):
+            return False
+    return True
 
 
 def filter_test_tags(test_suite, filter_by_tags, include_empty=False,
