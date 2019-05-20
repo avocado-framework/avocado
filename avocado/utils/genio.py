@@ -18,70 +18,15 @@ Avocado generic IO related functions.
 
 import logging
 import os
-import time
 import re
 
-from . import path as utils_path
-
 log = logging.getLogger('avocado.test')
-
-
-_open_log_files = {}
-_log_file_dir = os.environ.get('TMPDIR', '/tmp')
 
 
 class GenIOError(Exception):
     """
     Base Exception Class for all IO exceptions
     """
-
-
-def log_line(filename, line):
-    """
-    Write a line to a file.
-
-    :param filename: Path of file to write to, either absolute or relative to
-                     the dir set by set_log_file_dir().
-    :param line: Line to write.
-    """
-    global _open_log_files, _log_file_dir  # pylint: disable=W0603
-
-    path = utils_path.get_path(_log_file_dir, filename)
-    if path not in _open_log_files:
-        # First, let's close the log files opened in old directories
-        close_log_file(filename)
-        # Then, let's open the new file
-        try:
-            utils_path.init_dir(os.path.dirname(path))
-        except OSError:
-            pass
-        _open_log_files[path] = open(path, "w")
-    timestr = time.strftime("%Y-%m-%d %H:%M:%S")
-    _open_log_files[path].write("%s: %s\n" % (timestr, line))
-    _open_log_files[path].flush()
-
-
-def set_log_file_dir(directory):
-    """
-    Set the base directory for log files created by log_line().
-
-    :param dir: Directory for log files.
-    """
-    global _log_file_dir  # pylint: disable=W0603
-    _log_file_dir = directory
-
-
-def close_log_file(filename):
-    global _open_log_files, _log_file_dir  # pylint: disable=W0603
-    remove = []
-    for k in _open_log_files:
-        if os.path.basename(k) == filename:
-            f = _open_log_files[k]
-            f.close()
-            remove.append(k)
-    if remove:
-        for key_to_remove in remove:
-            _open_log_files.pop(key_to_remove)
 
 
 def ask(question, auto=False):
