@@ -75,14 +75,19 @@ class TestLister:
                 if 'tags' in params:
                     tags = params['tags']
                 else:
-                    tags = set()
-                for tag in tags:
+                    tags = {}
+                tags_repr = []
+                for tag, vals in tags.items():
                     if tag not in tag_stats:
                         tag_stats[tag] = 1
                     else:
                         tag_stats[tag] += 1
-                tags = ",".join(tags)
-                test_matrix.append((type_label, params['name'], tags))
+                    if vals:
+                        tags_repr.append("%s(%s)" % (tag, ",".join(vals)))
+                    else:
+                        tags_repr.append(tag)
+                tags_repr = ",".join(tags_repr)
+                test_matrix.append((type_label, params['name'], tags_repr))
             else:
                 test_matrix.append((type_label, params['name']))
 
