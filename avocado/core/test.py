@@ -359,9 +359,6 @@ class Test(unittest.TestCase, TestData):
                                            "should never happen: %s"
                                            % logdir)
         self.__logdir = utils_path.init_dir(logdir)
-
-        # Replace '/' with '_' to avoid splitting name into multiple dirs
-        genio.set_log_file_dir(self.logdir)
         self.__logfile = os.path.join(self.logdir, 'debug.log')
         self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
 
