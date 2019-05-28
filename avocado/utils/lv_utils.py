@@ -618,6 +618,34 @@ def lv_mount(vg_name, lv_name, mount_loc, create_filesystem=""):
         raise LVException("Fail to mount logical volume: %s" % ex)
 
 
+def vg_reactivate(vg_name, timeout=10, export=False):
+    """
+    In case of unclean shutdowns some of the vgs is still active and merging
+    is postponed. Use this function to attempt to deactivate and reactivate
+    all of them to cause the merge to happen.
+
+    :param str vg_name: name of the volume group
+    :param int timeout: timeout between operations
+    :raises: :py:class:`LVException` if the logical volume is still active
+    """
+    try:
+        process.run("vgchange -an %s" % vg_name, sudo=True)
+        time.sleep(timeout)
+
+        if export:
+            process.run("vgexport %s" % vg_name, sudo=True)
+            time.sleep(timeout)
+            process.run("vgimport %s" % vg_name, sudo=True)
+            time.sleep(timeout)
+
+        process.run("vgchange -ay %s" % vg_name, sudo=True)
+        time.sleep(timeout)
+    except process.CmdError:
+        log_msg = "Failed to reactivate %s - please, nuke the process that uses it first."
+        LOGGER.error(log_msg, vg_name)
+        raise LVException("The Volume group %s is still active" % vg_name)
+
+
 def lv_umount(vg_name, lv_name):
     """
     Unmount a Logical volume from a mount location.
