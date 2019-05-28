@@ -100,9 +100,9 @@ def get_partition_info(device):
     Get partition info
     :param device: the device, e.g. /dev/sda3
     :return: dictionary which has all partition info
-    ## Todo
-    #right now this utility works for block device
-    #still nvme kind of device support need to be added
+    # Todo
+    # right now this utility works for block device
+    # still nvme kind of device support need to be added
     """
     if device in get_disks():
         raise DiskUtilsError('provided disk partition not disk')
@@ -138,3 +138,19 @@ def get_partition_info(device):
 
         return {"Device": value[0], "Boot": value[1], "Start": value[2], "End": value[3],
                 "Sectors": value[4], "Size": value[5], "Id": value[6], "Type": value[7]}
+
+
+def is_linux_fs_type(device):
+    """
+    Checks if specified partition is type is linux (83)
+
+    :param device: the device, e.g. /dev/sda3
+    :return: False if the supplied partition name is not type 83 linux, True
+             otherwise
+
+    # TODO
+    # nvme kind of device still support needed to be added
+    """
+    if get_partition_info(device)['Type'] == 83:
+        return True
+    return False
