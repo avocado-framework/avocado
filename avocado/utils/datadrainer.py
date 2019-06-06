@@ -164,3 +164,28 @@ class BufferFDDrainer(FDDrainer):
         Returns the buffer data, as bytes
         """
         return self._data.getvalue()
+
+
+class LineLogger(FDDrainer):
+
+    name = 'avocado.utils.datadrainer.LineLogger'
+
+    def __init__(self, source, stop_check=None, name=None, logger=None):
+        super(LineLogger, self).__init__(source, stop_check, name)
+        self._logger = logger
+        self._buffer = io.BytesIO()
+
+    def write(self, data):
+        if b'\n' not in data:
+            self._buffer.write(data)
+            return
+        data = self._buffer.getvalue() + data
+        lines = data.split(b'\n')
+        if not lines[-1].endswith(b'\n'):
+            self._buffer.close()
+            self._buffer = io.BytesIO()
+            self._buffer.write(lines[-1])
+        for line in lines:
+            line = line.decode(errors='replace').rstrip('\n')
+            if line:
+                self._logger.debug(line)
