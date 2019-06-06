@@ -143,3 +143,25 @@ class FDDrainer(BaseDrainer):
     def write(self, data):
         # necessary to avoid pylint W0223
         raise NotImplementedError
+
+
+class BufferFDDrainer(FDDrainer):
+    """
+    Drains data from a file descriptor and stores it in an internal buffer
+    """
+
+    name = 'avocado.utils.datadrainer.BufferFDDrainer'
+
+    def __init__(self, source, stop_check=None, name=None):
+        super(BufferFDDrainer, self).__init__(source, stop_check, name)
+        self._data = io.BytesIO()
+
+    def write(self, data):
+        self._data.write(data)
+
+    @property
+    def data(self):
+        """
+        Returns the buffer data, as bytes
+        """
+        return self._data.getvalue()
