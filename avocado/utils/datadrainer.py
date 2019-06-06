@@ -23,6 +23,9 @@ of the user.
 """
 
 import abc
+import io
+import os
+import select
 import threading
 
 
@@ -107,3 +110,38 @@ class BaseDrainer:
         Waits on the thread completion
         """
         self._thread.join()
+
+
+class FDDrainer(BaseDrainer):
+    """
+    Drainer whose source is a file descriptor
+
+    This drainer uses select to efficiently wait for data to be available on
+    a file descriptor.  If the file descriptor is closed, the drainer responds
+    by shuting itself down.
+
+    This drainer doesn't provide a write() implementation, and is
+    consequently not a complete implementation users can pick and use.
+    """
+
+    name = 'avocado.utils.datadrainer.FDDrainer'
+
+    def data_available(self):
+        try:
+            return select.select([self._source], [], [], 1)[0]
+        except OSError as exc:
+            if exc.errno == 9:
+                return False
+
+    def read(self):
+        data = b''
+        try:
+            data = os.read(self._source, io.DEFAULT_BUFFER_SIZE)
+        except OSError as exc:
+            if exc.errno == 9:
+                self._internal_quit = True
+        return data
+
+    def write(self, data):
+        # necessary to avoid pylint W0223
+        raise NotImplementedError
