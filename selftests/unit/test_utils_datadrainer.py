@@ -74,3 +74,31 @@ class CustomSocket(unittest.TestCase):
     def tearDown(self):
         self.socket1.close()
         self.socket2.close()
+
+
+class SocketBuffer(datadrainer.BufferFDDrainer):
+
+    name = 'test_utils_datadrainer.SocketBuffer'
+
+    def __init__(self, source):
+        super(SocketBuffer, self).__init__(source)
+        self._stop_check = lambda: len(self.data) > 2
+
+
+class CustomSocketBuffer(unittest.TestCase):
+
+    def setUp(self):
+        self.socket1, self.socket2 = socket.socketpair(socket.AF_UNIX)
+
+    def test(self):
+        socket_drainer = SocketBuffer(self.socket2.fileno())
+        socket_drainer.start()
+        self.socket1.send(b'1')
+        self.socket1.send(b'2')
+        self.socket1.send(b'3')
+        socket_drainer.wait()
+        self.assertEqual(socket_drainer.data, b'123')
+
+    def tearDown(self):
+        self.socket1.close()
+        self.socket2.close()
