@@ -26,6 +26,14 @@
 # enabled by default.
 %global with_tests 1
 
+# Avocado is currently incompatible with the Fabric API in Fedora 31 and later
+# https://github.com/avocado-framework/avocado/issues/3125
+%if 0%{?fedora} >= 31
+%global with_fabric 0
+%else
+%global with_fabric 1
+%endif
+
 # Python 3 version of Fabric package is new starting with Fedora 29
 %if 0%{?fedora} >= 29
 %global with_python3_fabric 1
@@ -41,7 +49,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 69.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -53,9 +61,11 @@ Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.g
 BuildArch: noarch
 BuildRequires: procps-ng
 BuildRequires: kmod
+%if %{with_fabric}
 %if %{with_python3_fabric}
 BuildRequires: python3-fabric3
 %endif
+%endif # with_fabric
 %if 0%{?fedora} >= 30
 BuildRequires: glibc-all-langpacks
 %endif
@@ -94,7 +104,6 @@ Requires: python3-%{srcname}-common == %{version}
 Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
-Requires: pyliblzma
 Requires: python3
 Requires: python3-requests
 Requires: python3-setuptools
@@ -125,19 +134,25 @@ pushd optional_plugins/html
 %py3_build
 popd
 pushd optional_plugins/runner_remote
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_build
 %endif
+%endif # with_fabric
 popd
 pushd optional_plugins/runner_vm
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_build
 %endif
+%endif # with_fabric
 popd
 pushd optional_plugins/runner_docker
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_build
 %endif
+%endif # with_fabric
 popd
 pushd optional_plugins/resultsdb
 %py3_build
@@ -178,19 +193,25 @@ pushd optional_plugins/html
 %py3_install
 popd
 pushd optional_plugins/runner_remote
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_install
 %endif
+%endif # with_fabric
 popd
 pushd optional_plugins/runner_vm
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_install
 %endif
+%endif # with_fabric
 popd
 pushd optional_plugins/runner_docker
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_install
 %endif
+%endif # with_fabric
 popd
 pushd optional_plugins/resultsdb
 %py3_install
@@ -239,6 +260,7 @@ find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x 
 pushd optional_plugins/html
 %{__python3} setup.py develop --user
 popd
+%if %{with_fabric}
 %if %{with_python3_fabric}
 pushd optional_plugins/runner_remote
 %{__python3} setup.py develop --user
@@ -249,7 +271,8 @@ popd
 pushd optional_plugins/runner_docker
 %{__python3} setup.py develop --user
 popd
-%endif
+%endif # with_python3_fabric
+%endif # with_fabric
 pushd optional_plugins/resultsdb
 %{__python3} setup.py develop --user
 popd
@@ -358,6 +381,7 @@ arbitrary filesystem location.
 %{python3_sitelib}/avocado_result_html*
 %{python3_sitelib}/avocado_framework_plugin_result_html*
 
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %package -n python3-%{srcname}-plugins-runner-remote
 Summary: Avocado Runner for Remote Execution
@@ -371,8 +395,10 @@ connection.  Avocado must be previously installed on the remote machine.
 %files -n python3-%{srcname}-plugins-runner-remote
 %{python3_sitelib}/avocado_runner_remote*
 %{python3_sitelib}/avocado_framework_plugin_runner_remote*
-%endif
+%endif # with_python3_fabric
+%endif # with_fabric
 
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %package -n python3-%{srcname}-plugins-runner-vm
 Summary: Avocado Runner for libvirt VM Execution
@@ -388,8 +414,10 @@ itself.  Avocado must be previously installed on the VM.
 %files -n python3-%{srcname}-plugins-runner-vm
 %{python3_sitelib}/avocado_runner_vm*
 %{python3_sitelib}/avocado_framework_plugin_runner_vm*
-%endif
+%endif # with_python3_fabric
+%endif # with_fabric
 
+%if %{with_fabric}
 %if %{with_python3_fabric}
 %package -n python3-%{srcname}-plugins-runner-docker
 Summary: Avocado Runner for Execution on Docker Containers
@@ -405,7 +433,8 @@ be previously installed on the container.
 %files -n python3-%{srcname}-plugins-runner-docker
 %{python3_sitelib}/avocado_runner_docker*
 %{python3_sitelib}/avocado_framework_plugin_runner_docker*
-%endif
+%endif # with_python3_fabric
+%endif # with_fabric
 
 %package -n python3-%{srcname}-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
@@ -541,6 +570,12 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue May 28 2019 Merlin Mathesius <mmathesi@redhat.com> - 69.0-1
+- Disable components dependent upon Fiber in Fedora 31 and later,
+  since avocado is currently incompatible with the new Fiber API.
+- Remove pyliblzma as it has always been Python 2-only, and it is
+  no longer available as of F31.
+
 * Tue Feb 26 2019 Cleber Rosa <cleber@redhat.com> - 69.0-0
 - New release
 
