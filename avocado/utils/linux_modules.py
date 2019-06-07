@@ -43,14 +43,6 @@ class ModuleConfig(Enum):
     BUILTIN = object()
 
 
-#: Compatibility alias (to be removed) to :attr:`ModuleConfig.NOT_SET`
-NOT_SET = ModuleConfig.NOT_SET
-#: Compatibility alias (to be removed) to :attr:`ModuleConfig.MODULE`
-MODULE = ModuleConfig.MODULE
-#: Compatibility alias (to be removed) to :attr:`ModuleConfig.BUILTIN`
-BUILTIN = ModuleConfig.BUILTIN
-
-
 def load_module(module_name):
     """
     Checks if a module has already been loaded.
