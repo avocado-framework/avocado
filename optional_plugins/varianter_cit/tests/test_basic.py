@@ -8,18 +8,23 @@ from avocado.utils import process
 from selftests import AVOCADO, BASEDIR, temp_dir_prefix
 
 
-class Variants(unittest.TestCase):
+class Basic(unittest.TestCase):
 
     def test_max_variants(self):
         os.chdir(BASEDIR)
+        params_path = os.path.join(BASEDIR, 'examples',
+                                   'varianter_cit', 'test_params.cit')
         cmd_line = (
-            '{0} variants --cit-order-of-combinations=5 '
-            '--cit-parameter-file examples/varianter_cit/params.ini'
-        ).format(AVOCADO)
+            '{0} variants --cit-order-of-combinations=2 '
+            '--cit-parameter-file {1}'
+        ).format(AVOCADO, params_path)
         result = process.run(cmd_line)
         lines = result.stdout.splitlines()
-        self.assertEqual(b'CIT Variants (216):', lines[0])
-        self.assertEqual(217, len(lines))
+        self.assertEqual(b'CIT Variants (9):', lines[0])
+        self.assertEqual(10, len(lines))
+        for i in range(1, len(lines)):
+            with self.subTest(combination=lines[i]):
+                self.assertIn(b"green", lines[i])
 
 
 class Run(unittest.TestCase):
@@ -31,7 +36,7 @@ class Run(unittest.TestCase):
     def test(self):
         os.chdir(BASEDIR)
         params_path = os.path.join(BASEDIR, 'examples',
-                                   'varianter_cit', 'params.ini')
+                                   'varianter_cit', 'test_params.cit')
         test_path = os.path.join(BASEDIR, 'examples',
                                  'tests', 'cit_parameters.py')
         cmd_line = (
@@ -41,13 +46,7 @@ class Run(unittest.TestCase):
             '-- {3}'
         ).format(AVOCADO, self.tmpdir, params_path, test_path)
         result = process.run(cmd_line)
-        # all values of colors should be looked for at least once
-        self.assertIn(b"PARAMS (key=color, path=*, default=None) => 'black'",
-                      result.stdout)
-        self.assertIn(b"PARAMS (key=color, path=*, default=None) => 'gold'",
-                      result.stdout)
-        self.assertIn(b"PARAMS (key=color, path=*, default=None) => 'red'",
-                      result.stdout)
+        # all values should be looked for at least once
         self.assertIn(b"PARAMS (key=color, path=*, default=None) => 'green'",
                       result.stdout)
         # all values of shape should be looked for at least once
