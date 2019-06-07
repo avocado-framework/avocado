@@ -27,6 +27,9 @@ from ..utils import path as utils_path
 from .settings import settings
 
 
+#: Handle cases of logging exceptions which will lead to recursion error
+logging.raiseExceptions = False
+
 #: Pre-defined Avocado human UI logger
 LOG_UI = logging.getLogger("avocado.app")
 #: Pre-defined Avocado job/test logger
