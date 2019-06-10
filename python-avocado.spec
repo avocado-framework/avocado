@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     c4320e3f4066205a2efd1c90fdf5109592344013
+        %global commit     9ca2b94139adc909b14e3625e49fff1f91f7958e
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20181217
+        %global commit_date 20190612
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -55,7 +55,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 69.0
+Version: 69.1
 Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools

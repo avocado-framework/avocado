@@ -76,6 +76,7 @@ have 6 months of supportability overlap.
 .. toctree::
    :maxdepth: 1
 
+   lts/69_1
    lts/69_0
    lts/52_0
    lts/next

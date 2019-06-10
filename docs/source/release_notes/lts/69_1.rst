@@ -1,0 +1,73 @@
+.. _lts_69_1:
+
+========
+69.1 LTS
+========
+
+The Avocado team is proud to present a minor release in the 69.0 LTS (Long Term Stability)
+series, version 69.1 LTS, is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 69.0 to 69.1
+===========================
+
+Upgrading should be smooth, and there are no additional instructions
+besides the steps on the installation method used.  For instance,
+if using pip, it should be as simple as::
+
+  $ pip install avocado-framework==69.1
+
+Changes from 69.0
+=================
+
+Bug Fixes
+~~~~~~~~~
+
+* The second time Avocado crashes, a "crash" directory is created
+  to hold the backtrace.  On a subsequent crash, if the directory
+  already exists, an exception would be raised for the failed
+  attempted to create an existing directory, confusing users on
+  the nature of the crash.  Now a proper handling for the possibly
+  existing directory is in place.
+
+* The CIT Varianter plugin was returning variants in an invalid form
+  to the runner.  This caused the plugin to fail when actually used to
+  run tests.  A functional test has also been aded to avoid a
+  regression here.
+
+* The :mod:`avocado.utils.distro` module now properly detects RHEL 8
+  systems.
+
+* The safeloader would fail to identify Python module names when a
+  relative import was used.  This means that the experience with ``$
+  avocado list`` and ``$ avocado run`` would suffer when trying to
+  list and run tests that either directly or indirectly imported
+  modules containing a relative import such as ``from . import foo``.
+
+* The :mod:`avocado.utils.vmimage` can now find Fedora images for
+  s390x.
+
+* ``avocado list`` will now show the contents of the "key:val" tags.
+
+* The Avocado test loader will correctly apply filters with multiple
+  "key:val" tags.
+
+Utility APIs
+~~~~~~~~~~~~
+
+* Two simple utility APIs, :func:`avocado.utils.genio.append_file`
+  and :func:`avocado.utils.genio.append_one_line` have been added
+  to the benefit of some `avocado-mist-tests
+  <https://github.com/avocado-framework-tests/avocado-misc-tests>`.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (69.0) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/69.0...69.1>`_.
