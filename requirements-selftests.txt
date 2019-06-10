@@ -1,4 +1,6 @@
 # Avocado test requirements
+setuptools==41.0.1
+
 # sphinx (doc build test)
 Sphinx==1.7.8
 
