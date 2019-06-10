@@ -12,7 +12,7 @@ inspektor==0.5.2
 mock>=2.0.0; python_version <= '2.7'
 
 # six
-six==1.11.0
+six==1.12.0
 
 # funcsigs
 funcsigs>=0.4
