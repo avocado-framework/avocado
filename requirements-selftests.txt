@@ -1,3 +1,17 @@
+# On Travis CI, setuptools (pkg_resources) is finding a six installation at:
+#
+# /opt/python/3.4.6/lib/python3.4/site-packages/pkg_resources/_vendor/six.py
+#
+# But attempting to uninstall it from:
+#
+# /home/travis/virtualenv/python3.4.6/lib/python3.4/site-packages/six-1.10.0.dist-info
+#
+# Producing the following error:
+# FileNotFoundError: [Errno 2] No such file or directory: '/home/travis/virtualenv/python3.4.6/lib/python3.4/site-packages/six-1.10.0.dist-info/METADATA'[0m
+#
+# Bumping the setuptools version to attempt to fix that behavior
+setuptools==41.0.1
+
 # Avocado test requirements
 # sphinx (doc build test)
 Sphinx==1.7.8
