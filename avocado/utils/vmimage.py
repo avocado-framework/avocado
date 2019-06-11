@@ -409,7 +409,7 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
         provider_args['build'] = build
     if arch is not None:
         provider_args['arch'] = arch
-        if name == 'fedora' and arch in ('ppc64', 'ppc64le'):
+        if name == 'fedora' and arch in ('ppc64', 'ppc64le', 's390x'):
             name = 'fedorasecondary'
 
     for provider in IMAGE_PROVIDERS:
