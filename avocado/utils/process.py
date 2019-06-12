@@ -1641,3 +1641,21 @@ def get_owner_id(pid):
         return os.stat('/proc/%d/' % pid).st_uid
     except OSError:
         return None
+
+
+def get_perf_events(pattern):
+    """
+    Run 'perf list' command, with the matching pattern create a
+    list and return it.
+
+    :param pattern: Pattern to search.
+    :type pattern: str.
+
+    :return: list of events matching the 'pattern'.
+    :rtype: list of str.
+    """
+    list_of_events = []
+    for line in system_output("perf list").split('\n'):
+        if pattern in line:
+            list_of_events.append(line)
+    return list_of_events
