@@ -4,10 +4,9 @@ import shutil
 import tempfile
 import unittest
 from xml.dom import minidom
-from io import BytesIO
 
 try:
-    from lxml import etree
+    import xmlschema
     SCHEMA_CAPABLE = True
 except ImportError:
     SCHEMA_CAPABLE = False
@@ -71,7 +70,7 @@ class xUnitSucceedTest(unittest.TestCase):
                          % "\n".join(errs))
 
     @unittest.skipUnless(SCHEMA_CAPABLE,
-                         'Unable to validate schema due to missing lxml.etree library')
+                         'Unable to validate schema due to missing xmlschema library')
     def test_add_success(self):
         self.test_result.start_test(self.test1)
         self.test_result.end_test(self.test1.get_state())
@@ -97,12 +96,8 @@ class xUnitSucceedTest(unittest.TestCase):
         junit_xsd = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  os.path.pardir, ".data",
                                                  'jenkins-junit.xsd'))
-        with open(junit_xsd, 'r') as f:
-            xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
-        # pylint: disable=I1101
-        self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml))),
-                        "Failed to validate against %s, content:\n%s\nerror log:\n%s" %
-                        (junit_xsd, xml, xmlschema.error_log))
+        xml_schema = xmlschema.XMLSchema(junit_xsd)
+        self.assertTrue(xml_schema.is_valid(self.job.args.xunit_output))
 
     def test_max_test_log_size(self):
         def get_system_out(out):
