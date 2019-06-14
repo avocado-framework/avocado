@@ -250,6 +250,18 @@ def get_page_size():
     return int(output)
 
 
+def get_supported_huge_pages_size():
+    """
+    Get all supported huge page sizes for this system.
+
+    :return: list of Huge pages size (kB).
+    """
+    output = os.listdir('/sys/kernel/mm/hugepages/')
+    # Given the items in this directory are in the format hugepages-<size>kB,
+    # the <size> will always start from index 10.
+    return [int(each[10:].rstrip('kB')) for each in output]
+
+
 def get_huge_page_size():
     """
     Get size of the huge pages for this system.
