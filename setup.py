@@ -30,7 +30,7 @@ def get_long_description():
     return req_contents
 
 
-INSTALL_REQUIREMENTS = ['requests', 'stevedore>=0.14', 'setuptools']
+INSTALL_REQUIREMENTS = ['stevedore>=0.14', 'setuptools']
 
 if __name__ == '__main__':
     # Force "make develop" inside the "readthedocs.org" environment
@@ -59,8 +59,7 @@ if __name__ == '__main__':
               ],
           packages=find_packages(exclude=('selftests*',)),
           include_package_data=True,
-          scripts=['scripts/avocado',
-                   'scripts/avocado-rest-client'],
+          scripts=['scripts/avocado'],
           entry_points={
               'avocado.plugins.cli': [
                   'envkeep = avocado.plugins.envkeep:EnvKeep',
