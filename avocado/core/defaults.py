@@ -30,3 +30,6 @@ TIMEOUT_PROCESS_DIED = 10
 #: The amount of time to wait after a test has reported status
 #: but the test process has not finished
 TIMEOUT_PROCESS_ALIVE = 60
+
+#: The number of attempts to try to run an INSTRUMENTED test setUp()
+INSTRUMENTED_SETUP_ATTEMPTS = 3

@@ -27,6 +27,7 @@ import sys
 from enum import Enum
 
 from . import data_dir
+from . import defaults
 from . import output
 from . import test
 from . import safeloader
@@ -394,6 +395,10 @@ class TestLoaderProxy:
         else:
             test_path = None
         if isinstance(test_class, str):
+            # instrumented tests (only) accept the setup_attempts parameter
+            setup_attempts = settings.get_value("runner", "instrumented", int,
+                                                defaults.INSTRUMENTED_SETUP_ATTEMPTS)
+            test_parameters['setup_attempts'] = setup_attempts
             module_name = os.path.basename(test_path).split('.')[0]
             test_module_dir = os.path.abspath(os.path.dirname(test_path))
             # Tests with local dir imports need this

@@ -191,6 +191,24 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
+    def test_runner_setup_attempts_ok(self):
+        cmd_line = ('%s --show=test run --sysinfo=off --job-results-dir %s '
+                    'setup_retry.py' % (AVOCADO, self.tmpdir))
+        result = process.run(cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        self.assertIn(b"(attempt 2/3 FAILED)", result.stdout,
+                      "Could not find second attempt to run setup in output")
+
+    def test_runner_setup_attempts_test_fail(self):
+        cmd_line = ('%s run -p setup_failures=4 --sysinfo=off --job-results-dir %s '
+                    'setup_retry.py' % (AVOCADO, self.tmpdir))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
     def test_runner_all_ok(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     'passtest.py passtest.py' % (AVOCADO, self.tmpdir))

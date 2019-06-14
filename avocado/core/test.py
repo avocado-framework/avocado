@@ -61,7 +61,7 @@ TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
                          'status', 'running', 'paused',
                          'time_start', 'time_elapsed', 'time_end',
                          'fail_reason', 'fail_class', 'traceback',
-                         'timeout', 'whiteboard', 'phase')
+                         'timeout', 'whiteboard', 'phase', 'setup_attempt')
 
 
 class RawFileHandler(logging.FileHandler):
@@ -319,7 +319,8 @@ class Test(unittest.TestCase, TestData):
     timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, job=None, runner_queue=None, tags=None):
+                 base_logdir=None, job=None, runner_queue=None, tags=None,
+                 setup_attempts=defaults.INSTRUMENTED_SETUP_ATTEMPTS):
         """
         Initializes the test.
 
@@ -422,6 +423,9 @@ class Test(unittest.TestCase, TestData):
         else:
             self.log.debug("  teststmpdir: %s", teststmpdir)
         self.log.debug("  workdir: %s", self.workdir)
+
+        self.__setup_attempt = 0
+        self.__setup_attempts = setup_attempts
 
         unittest.TestCase.__init__(self, methodName=methodName)
         TestData.__init__(self)
@@ -598,6 +602,13 @@ class Test(unittest.TestCase, TestData):
         Possible (string) values are: INIT, SETUP, TEST and TEARDOWN
         """
         return self.__phase
+
+    @property
+    def setup_attempt(self):
+        """
+        The current attempt to run the setup test phase
+        """
+        return self.__setup_attempt
 
     def __str__(self):
         return str(self.name)
@@ -830,8 +841,25 @@ class Test(unittest.TestCase, TestData):
         try:
             if skip_test is False:
                 self.__phase = 'SETUP'
-                self.report_state()
-                self.setUp()
+                for _ in range(self.__setup_attempts):
+                    self.__setup_attempt += 1
+                    self.report_state()
+                    self.log.debug('SETUP %s (attempt %d/%d)', self.name,
+                                   self.setup_attempt, self.__setup_attempts)
+                    try:
+                        self.setUp()
+                    except exceptions.TestSkipError:
+                        raise
+                    except exceptions.TestCancel:
+                        raise
+                    except Exception:
+                        self.log.debug('SETUP %s (attempt %d/%d FAILED)',
+                                       self.name, self.setup_attempt,
+                                       self.__setup_attempts)
+                        if self.setup_attempt >= self.__setup_attempts:
+                            raise
+                    else:
+                        break
         except exceptions.TestSkipError as details:
             skip_test = True
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
