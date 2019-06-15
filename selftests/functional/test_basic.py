@@ -12,10 +12,9 @@ import xml.dom.minidom
 import zipfile
 import unittest
 import psutil
-from io import BytesIO
 
 try:
-    from lxml import etree
+    import xmlschema
     SCHEMA_CAPABLE = True
 except ImportError:
     SCHEMA_CAPABLE = False
@@ -1235,13 +1234,13 @@ class ParseXMLError(Exception):
 class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
 
     @unittest.skipUnless(SCHEMA_CAPABLE,
-                         'Unable to validate schema due to missing lxml.etree library')
+                         'Unable to validate schema due to missing xmlschema library')
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         junit_xsd = os.path.join(os.path.dirname(__file__),
                                  os.path.pardir, ".data", 'jenkins-junit.xsd')
-        self.junit = os.path.abspath(junit_xsd)
+        self.xml_schema = xmlschema.XMLSchema(junit_xsd)
         super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
@@ -1259,14 +1258,9 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
             raise ParseXMLError("Failed to parse content: %s\n%s" %
                                 (detail, xml_output))
 
-        with open(self.junit, 'rb') as f:
-            xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
-
         # pylint: disable=I1101
-        self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml_output))),
-                        "Failed to validate against %s, message:\n%s" %
-                        (self.junit,
-                         xmlschema.error_log.filter_from_errors()))
+        xunit_file_output = os.path.join(self.tmpdir, 'latest', 'results.xml')
+        self.assertTrue(self.xml_schema.is_valid(xunit_file_output))
 
         testsuite_list = xunit_doc.getElementsByTagName('testsuite')
         self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')

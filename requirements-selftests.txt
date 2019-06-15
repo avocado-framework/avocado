@@ -21,7 +21,6 @@ pycdlib==1.6.0
 
 # stevedore for loading "new style" plugins
 stevedore==1.29.0
-lxml==4.2.4
 
 # this is a workaround since easy_install cannot install
 # libvirt-python properly with the the current process
@@ -31,3 +30,7 @@ libvirt-python==4.6.0
 
 # For avocado.utils.network selftests
 netifaces
+
+# For tests that validate the produced XUnit output
+elementpath==1.1.8
+xmlschema==1.0.11
