@@ -130,11 +130,6 @@ class Run(CLICmd):
 
         parser.output = parser.add_argument_group('output and result format')
 
-        parser.output.add_argument('--show-job-log', action='store_true',
-                                   default=False, help="Display only the job "
-                                   "log on stdout. Useful for test debugging "
-                                   "purposes.")
-
         parser.output.add_argument("--store-logging-stream", nargs="*",
                                    default=[], metavar="STREAM[:LEVEL]",
                                    help="Store given logging STREAMs in "

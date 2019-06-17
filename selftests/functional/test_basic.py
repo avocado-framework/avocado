@@ -637,9 +637,9 @@ class RunnerHumanOutputTest(unittest.TestCase):
     @unittest.skipIf(not GNU_ECHO_BINARY,
                      'GNU style echo binary not available')
     def test_ugly_echo_cmd(self):
-        cmd_line = ('%s run --external-runner "%s -ne" '
+        cmd_line = ('%s --show=test run --external-runner "%s -ne" '
                     '"foo\\\\\\n\\\'\\\\\\"\\\\\\nbar/baz" --job-results-dir %s'
-                    ' --sysinfo=off  --show-job-log' %
+                    ' --sysinfo=off' %
                     (AVOCADO, GNU_ECHO_BINARY, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -762,8 +762,8 @@ class RunnerSimpleTest(unittest.TestCase):
         # simplewarning.sh calls "avocado exec-path" which hasn't
         # access to an installed location for the libexec scripts
         os.environ['PATH'] += ":" + os.path.join(BASEDIR, 'libexec')
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
-                    'examples/tests/simplewarning.sh --show-job-log'
+        cmd_line = ('%s --show=test run --job-results-dir %s --sysinfo=off '
+                    'examples/tests/simplewarning.sh'
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK

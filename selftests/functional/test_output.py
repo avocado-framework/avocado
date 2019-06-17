@@ -385,9 +385,9 @@ class OutputPluginTest(unittest.TestCase):
                         % output)
         self.check_output_files(debug_log)
 
-    def test_show_job_log(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
-                    'passtest.py --show-job-log' % (AVOCADO, self.tmpdir))
+    def test_show_test(self):
+        cmd_line = ('%s --show=test run --job-results-dir %s --sysinfo=off '
+                    'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -400,10 +400,10 @@ class OutputPluginTest(unittest.TestCase):
         job_id = job_id_list[0]
         self.assertEqual(len(job_id), 40)
 
-    def test_silent_trumps_show_job_log(self):
+    def test_silent_trumps_test(self):
         # Also verify --show=none can be supplied as run option
-        cmd_line = ('%s --show=none run --job-results-dir %s '
-                    '--sysinfo=off passtest.py --show-job-log'
+        cmd_line = ('%s --show=test --show=none run --job-results-dir %s '
+                    '--sysinfo=off passtest.py'
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr

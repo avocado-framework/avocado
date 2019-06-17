@@ -93,8 +93,6 @@ Options for subcommand `run` (`avocado run --help`)::
                             How to iterate through test suite and variants
 
     output and result format:
-      --show-job-log        Display only the job log on stdout. Useful for test
-                            debugging purposes.
       --store-logging-stream [STREAM[:LEVEL] [STREAM[:LEVEL] ...]]
                             Store given logging STREAMs in
                             $JOB_RESULTS_DIR/$STREAM.$LEVEL.
@@ -483,10 +481,10 @@ DEBUGGING TESTS
 
 When you are developing new tests, frequently you want to look at the
 straight output of the job log in the stdout, without having to tail the
-job log. In order to do that, you can use --show-job-log to the avocado
+job log. In order to do that, you can use --show=test to the avocado
 test runner::
 
-    $ scripts/avocado run examples/tests/sleeptest.py --show-job-log
+    $ scripts/avocado --show=test run examples/tests/sleeptest.py
     ...
     PARAMS (key=timeout, path=*, default=None) => None
     START 1-sleeptest.py:SleepTest.test
@@ -508,7 +506,7 @@ Edit your `~/.config/avocado/avocado.conf` file and add::
 
 Running the same example with this option will give you::
 
-    $ scripts/avocado run sleeptest --show-job-log
+    $ scripts/avocado --show=test run sleeptest.py
     ...
     START 1-sleeptest.py:SleepTest.test
     PASS 1-sleeptest.py:SleepTest.test
@@ -526,9 +524,7 @@ SILENCING RUNNER STDOUT
 =======================
 
 You may specify `--show=none`, that means avocado will turn off all
-runner stdout. Even if you specify things like `--show-job-log` in the
-CLI, `--show=none` will have precedence and you will not get
-application stdout.  Note that `--show=none` does not affect on disk
+runner stdout.  Note that `--show=none` does not affect on disk
 job logs, those continue to be generated normally.
 
 SILENCING SYSINFO REPORT

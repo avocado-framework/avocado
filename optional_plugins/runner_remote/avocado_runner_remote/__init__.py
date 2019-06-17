@@ -521,7 +521,7 @@ class RemoteTestRunner(TestRunner):
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
         remote_logger.addHandler(file_handler)
-        if self.job.args.show_job_log:
+        if "test" in getattr(self.job.args, "show", []):
             output.add_log_handler(paramiko_logger.name)
         logger_list = [output.LOG_JOB]
         sys.stdout = output.LoggingFile(loggers=logger_list)

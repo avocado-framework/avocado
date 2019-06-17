@@ -369,9 +369,6 @@ def reconfigure(args):
         del enabled[:]
     elif "all" in enabled:
         enabled.extend([_ for _ in BUILTIN_STREAMS if _ not in enabled])
-    elif getattr(args, "show_job_log", False):
-        del enabled[:]
-        enabled.append("test")
     if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
         enabled.append("early")
     if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
