@@ -26,3 +26,7 @@ TIMEOUT_AFTER_INTERRUPTED = 60
 #: The amount of to wait for a test status after the process
 #: has been noticed to be dead
 TIMEOUT_PROCESS_DIED = 10
+
+#: The amount of time to wait after a test has reported status
+#: but the test process has not finished
+TIMEOUT_PROCESS_ALIVE = 60

@@ -41,9 +41,6 @@ from ..utils import stacktrace
 from .output import LOG_UI as APP_LOG
 from .output import LOG_JOB as TEST_LOG
 
-#: when test reported status but the process did not finish
-TIMEOUT_PROCESS_ALIVE = 60
-
 
 def add_runner_failure(test_state, new_status, message):
     """
@@ -216,7 +213,12 @@ class TestStatus:
         # Wait for either process termination or test status
         wait.wait_for(lambda: not proc.is_alive() or self.status, 1, 0, step)
         if self.status:     # status exists, wait for process to finish
-            deadline = min(deadline, time.time() + TIMEOUT_PROCESS_ALIVE)
+            timeout_process_alive = settings.get_value(
+                'runner.timeout',
+                'process_alive',
+                key_type=int,
+                default=defaults.TIMEOUT_PROCESS_ALIVE)
+            deadline = min(deadline, time.time() + timeout_process_alive)
             while time.time() < deadline:
                 result_dispatcher.map_method('test_progress', False)
                 if wait.wait_for(lambda: not proc.is_alive(), 1, 0, step):
