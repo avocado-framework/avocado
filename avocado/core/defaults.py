@@ -22,3 +22,7 @@ ENCODING = 'utf-8'
 #: The amount of time to give to the test process after it it has been
 #: interrupted (such as with CTRL+C)
 TIMEOUT_AFTER_INTERRUPTED = 60
+
+#: The amount of to wait for a test status after the process
+#: has been noticed to be dead
+TIMEOUT_PROCESS_DIED = 10
