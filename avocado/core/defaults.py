@@ -18,3 +18,7 @@ The Avocado core defaults
 
 #: The encoding used by default on all data input
 ENCODING = 'utf-8'
+
+#: The amount of time to give to the test process after it it has been
+#: interrupted (such as with CTRL+C)
+TIMEOUT_AFTER_INTERRUPTED = 60
