@@ -42,7 +42,6 @@ on them being loaded (`avocado --help`)::
                           fabric/paramiko debug; "all": all builtin streams;
                           "none": disables regular output (leaving only errors
                           enabled). By default: 'app'
-    -s, --silent          disables regular output (leaving only errors enabled)
 
 Real use of avocado depends on running avocado subcommands. This a
 typical list of avocado subcommands::
@@ -94,10 +93,8 @@ Options for subcommand `run` (`avocado run --help`)::
                             How to iterate through test suite and variants
 
     output and result format:
-      -s, --silent          Silence stdout
       --show-job-log        Display only the job log on stdout. Useful for test
-                            debugging purposes. No output will be displayed if you
-                            also specify --silent
+                            debugging purposes.
       --store-logging-stream [STREAM[:LEVEL] [STREAM[:LEVEL] ...]]
                             Store given logging STREAMs in
                             $JOB_RESULTS_DIR/$STREAM.$LEVEL.
@@ -528,11 +525,11 @@ stdout, making this a useful feature for test development/debugging.
 SILENCING RUNNER STDOUT
 =======================
 
-You may specify `--silent`, that means avocado will turn off all runner
-stdout. Even if you specify things like `--show-job-log` in the CLI,
-`--silent` will have precedence and you will not get application stdout.
-Note that `--silent` does not affect on disk job logs, those continue to
-be generated normally.
+You may specify `--show=none`, that means avocado will turn off all
+runner stdout. Even if you specify things like `--show-job-log` in the
+CLI, `--show=none` will have precedence and you will not get
+application stdout.  Note that `--show=none` does not affect on disk
+job logs, those continue to be generated normally.
 
 SILENCING SYSINFO REPORT
 ========================

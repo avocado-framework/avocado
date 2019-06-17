@@ -94,10 +94,6 @@ class Parser:
                                       "(DEBUG,INFO,...). Builtin streams "
                                       "are: %s. By default: 'app'"
                                       % streams)
-        self.application.add_argument('-s', '--silent',
-                                      default=argparse.SUPPRESS,
-                                      action="store_true",
-                                      help=BUILTIN_STREAM_SETS['none'])
 
     def start(self):
         """

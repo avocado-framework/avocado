@@ -419,7 +419,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(excerpt, result.stdout)
 
     def test_silent_output(self):
-        cmd_line = ('%s --silent run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s --show=none run --sysinfo=off --job-results-dir %s '
                     'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)

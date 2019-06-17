@@ -98,30 +98,23 @@ class StreamsTest(unittest.TestCase):
     def test_none_success(self):
         """
         Checks that only errors are output, and that they go to stderr
-
-        Also checks the symmetry between `--show none` and `--silent`
         """
-        for cmd in (('%s --show none run --sysinfo=off --job-results-dir %s '
-                     'passtest.py' % (AVOCADO, self.tmpdir)),
-                    ('%s --silent run --sysinfo=off --job-results-dir %s '
-                     'passtest.py' % (AVOCADO, self.tmpdir))):
-            result = process.run(cmd)
-            self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertEqual(b'', result.stdout)
-            self.assertEqual(b'', result.stderr)
+        cmd = ('%s --show none run --sysinfo=off --job-results-dir %s '
+               'passtest.py' % (AVOCADO, self.tmpdir))
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertEqual(b'', result.stdout)
+        self.assertEqual(b'', result.stderr)
 
     def test_none_error(self):
         """
         Checks that only errors are output, and that they go to stderr
-
-        Also checks the symmetry between `--show none` and `--silent`
         """
-        for cmd in ('%s --show none unknown-whacky-command' % AVOCADO,
-                    '%s --silent unknown-whacky-command' % AVOCADO):
-            result = process.run(cmd, ignore_status=True)
-            self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-            self.assertEqual(b'', result.stdout)
-            self.assertNotEqual(b'', result.stderr)
+        cmd = '%s --show=none unknown-whacky-command' % AVOCADO
+        result = process.run(cmd, ignore_status=True)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
+        self.assertEqual(b'', result.stdout)
+        self.assertNotEqual(b'', result.stderr)
 
     def test_custom_stream_and_level(self):
         """
