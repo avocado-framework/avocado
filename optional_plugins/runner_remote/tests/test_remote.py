@@ -60,7 +60,6 @@ class RemoteTestRunnerTest(unittest.TestCase):
                                       remote_password='password',
                                       remote_key_file=None,
                                       remote_timeout=60,
-                                      show_job_log=False,
                                       mux_yaml=['~/avocado/tests/foo.yaml',
                                                 '~/avocado/tests/bar/baz.yaml'],
                                       filter_by_tags=["-foo", "-bar"],
