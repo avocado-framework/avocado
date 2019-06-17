@@ -41,8 +41,6 @@ from ..utils import stacktrace
 from .output import LOG_UI as APP_LOG
 from .output import LOG_JOB as TEST_LOG
 
-#: when the process died but the status was not yet delivered
-TIMEOUT_PROCESS_DIED = 10
 #: when test reported status but the process did not finish
 TIMEOUT_PROCESS_ALIVE = 60
 
@@ -225,7 +223,12 @@ class TestStatus:
                     return self._add_status_failures(self.status)
             err = "Test reported status but did not finish"
         else:   # proc finished, wait for late status delivery
-            deadline = min(deadline, time.time() + TIMEOUT_PROCESS_DIED)
+            timeout_process_died = settings.get_value(
+                'runner.timeout',
+                'process_died',
+                key_type=int,
+                default=defaults.TIMEOUT_PROCESS_DIED)
+            deadline = min(deadline, time.time() + timeout_process_died)
             while time.time() < deadline:
                 result_dispatcher.map_method('test_progress', False)
                 if wait.wait_for(lambda: self.status, 1, 0, step):
