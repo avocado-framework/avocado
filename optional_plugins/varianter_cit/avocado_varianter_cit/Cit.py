@@ -101,9 +101,10 @@ class Cit:
         while self.combination_matrix.total_uncovered != 0:
             LOG.debug(self.__throbber.render(), extra={"skip_newline": True})
             solution, row_index, _ = self.use_random_algorithm(matrix)
-            self.combination_matrix.uncover_solution_row(matrix[row_index])
-            self.combination_matrix.cover_solution_row(solution)
-            matrix[row_index] = solution
+            if len(solution) != 0:
+                self.combination_matrix.uncover_solution_row(matrix[row_index])
+                self.combination_matrix.cover_solution_row(solution)
+                matrix[row_index] = solution
             if counter == 0:
                 return matrix, False
             counter -= 1
@@ -197,8 +198,6 @@ class Cit:
                 self.combination_matrix.cover_combination(matrix[row_index], parameters)
                 if best_uncover == 0:
                     break
-        if len(best_solution) == 0:
-            return self.change_one_column(matrix)
         return best_solution, best_row_index, parameters
 
     def get_missing_combination_random(self):
@@ -229,7 +228,10 @@ class Cit:
         best_solution = []
         best_row_index = 0
         for row_index in range(len(matrix)):
-            solution, row_index, parameters = self.change_one_value(matrix, row_index, column_index)
+            try:
+                solution, row_index, parameters = self.change_one_value(matrix, row_index, column_index)
+            except ValueError:
+                continue
             self.combination_matrix.uncover_combination(matrix[row_index], parameters)
             self.combination_matrix.cover_combination(solution, parameters)
             if self.combination_matrix.total_uncovered < best_uncover:
@@ -251,10 +253,13 @@ class Cit:
         :param column_index: column inside matrix. If it's None it is chosen randomly
         :return: solution, index of solution inside matrix and parameters which has been changed
         """
+        is_cell_chosen = True
         if row_index is None:
+            is_cell_chosen = False
             row_index = random.randint(0, len(matrix) - 1)
         row = [x for x in matrix[row_index]]
         if column_index is None:
+            is_cell_chosen = False
             column_index = random.randint(0, len(row) - 1)
         possible_numbers = list(range(0, row[column_index])) + list(
             range(row[column_index] + 1, self.data[column_index]))
@@ -262,6 +267,8 @@ class Cit:
         while not self.combination_matrix.is_valid_combination(row, [column_index]):
             possible_numbers.remove(row[column_index])
             if len(possible_numbers) == 0:
+                if is_cell_chosen:
+                    raise ValueError("Selected cell can't be changed")
                 column_index = random.randint(0, len(row) - 1)
                 row_index = random.randint(0, len(matrix) - 1)
                 row = [x for x in matrix[row_index]]
