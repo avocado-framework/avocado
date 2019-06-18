@@ -61,7 +61,8 @@ TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
                          'status', 'running', 'paused',
                          'time_start', 'time_elapsed', 'time_end',
                          'fail_reason', 'fail_class', 'traceback',
-                         'timeout', 'whiteboard', 'phase', 'setup_attempt')
+                         'timeout', 'setup_timeout', 'whiteboard',
+                         'phase', 'setup_attempt')
 
 
 class RawFileHandler(logging.FileHandler):
@@ -317,6 +318,8 @@ class Test(unittest.TestCase, TestData):
     time_elapsed = -1
     #: Test timeout (the timeout from params takes precedence)
     timeout = None
+    #: Setup timeout
+    setup_timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
                  base_logdir=None, job=None, runner_queue=None, tags=None,
@@ -392,6 +395,9 @@ class Test(unittest.TestCase, TestData):
                                                  self.__log.name)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
+        default_setup_timeout = getattr(self, "setup_timeout", None)
+        self.setup_timeout = self.params.get("setup_timeout",
+                                             default=default_setup_timeout)
 
         self.__status = None
         self.__fail_reason = None

@@ -312,6 +312,13 @@ class RunnerOperationTest(unittest.TestCase):
                             "which is likely because the hanged test was not "
                             "interrupted. Results:\n%s" % res)
 
+    def test_setup_timeout(self):
+        """ Check that avocado handles hanged tests properly """
+        cmd = ("%s run --sysinfo=off --job-results-dir %s -- "
+               "examples/tests/long_setup.py " % (AVOCADO, self.tmpdir))
+        res = process.run(cmd, ignore_status=True)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
     def test_no_status_reported(self):
         with script.TemporaryScript("die_without_reporting_status.py",
                                     DIE_WITHOUT_REPORTING_STATUS,
