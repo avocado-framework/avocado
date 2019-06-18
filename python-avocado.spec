@@ -76,7 +76,6 @@ BuildRequires: python3-devel
 BuildRequires: python3-docutils
 BuildRequires: python3-lxml
 BuildRequires: python3-psutil
-BuildRequires: python3-requests
 BuildRequires: python3-resultsdb_api
 BuildRequires: python3-setuptools
 BuildRequires: python3-sphinx
@@ -105,7 +104,6 @@ Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
 Requires: python3
-Requires: python3-requests
 Requires: python3-setuptools
 Requires: python3-stevedore
 Requires: python3-pycdlib
