@@ -71,13 +71,23 @@ class CitTests(unittest.TestCase):
         final_matrix = self.cit.final_matrix_init()
         expected_row_index = 2
         expected_column_index = 0
-        row, row_index, column_index = self.cit.change_one_value(final_matrix, row_index=expected_row_index,
-                                                                 column_index=expected_column_index)
-        self.assertEqual(expected_column_index, column_index[0], "Column index is wrong")
-        self.assertEqual(expected_row_index, row_index, "Row index is wrong")
-        self.assertNotEqual(final_matrix[row_index][column_index[0]], row[column_index[0]], "Value did not change")
-        row[column_index[0]] = final_matrix[row_index][column_index[0]]
-        self.assertEqual(final_matrix[row_index], row, "Different value was changed")
+        function_state = True
+        row, row_index, column_index = (None, None, None)
+        try:
+            row, row_index, column_index = self.cit.change_one_value(final_matrix, row_index=expected_row_index,
+                                                                     column_index=expected_column_index)
+        except ValueError:
+            function_state = False
+        if function_state:
+            self.assertEqual(expected_column_index, column_index[0], "Column index is wrong")
+            self.assertEqual(expected_row_index, row_index, "Row index is wrong")
+            self.assertNotEqual(final_matrix[row_index][column_index[0]], row[column_index[0]], "Value did not change")
+            row[column_index[0]] = final_matrix[row_index][column_index[0]]
+            self.assertEqual(final_matrix[row_index], row, "Different value was changed")
+        else:
+            self.assertIsNone(row)
+            self.assertIsNone(row_index)
+            self.assertIsNone(column_index)
 
     def test_change_one_column(self):
         final_matrix = self.cit.final_matrix_init()
