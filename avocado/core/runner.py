@@ -408,12 +408,15 @@ class TestRunner:
         # for sure if there's a timeout set.
         timeout = test_status.early_status.get('timeout')
         timeout = float(timeout or self.DEFAULT_TIMEOUT)
+        setup_timeout = test_status.early_status.get('setup_timeout', 0)
 
         test_deadline = time_started + timeout
         if job_deadline is not None and job_deadline > 0:
             deadline = min(test_deadline, job_deadline)
         else:
             deadline = test_deadline
+        if setup_timeout:
+            setup_deadline = time_started + setup_timeout
 
         ctrl_c_count = 0
         ignore_window = 2.0
@@ -425,9 +428,22 @@ class TestRunner:
         abort_reason = None
         result_dispatcher = self.job._result_events_dispatcher
 
+        previous_phase = test_status.status.get('phase', 'UNKNOWN')
         while True:
+            phase = test_status.status.get('phase', 'UNKNOWN')
             try:
-                if time.time() >= deadline:
+                now = time.time()
+                if phase == 'SETUP' and setup_timeout:
+                    deadline = setup_deadline
+                elif phase != 'SETUP' and previous_phase == 'SETUP':
+                    # setup, which has its own timeout has finished,
+                    # so reset test deadline
+                    test_deadline = now + timeout
+                    if job_deadline is not None and job_deadline > 0:
+                        deadline = min(test_deadline, job_deadline)
+                    else:
+                        deadline = test_deadline
+                if now >= deadline:
                     abort_reason = "Timeout reached"
                     try:
                         os.kill(proc.pid, signal.SIGTERM)
@@ -448,6 +464,7 @@ class TestRunner:
                             result_dispatcher.map_method('test_progress', True)
                 else:
                     break
+                previous_phase = phase
             except KeyboardInterrupt:
                 time_elapsed = time.time() - ignore_time_started
                 ctrl_c_count += 1
