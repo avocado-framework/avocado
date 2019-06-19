@@ -1,7 +1,7 @@
 #!/bin/bash
 PYTHON=${PYTHON:-python3}
 ERR=()
-RESULTS_DIR=$(./scripts/avocado config | grep datadir.paths.logs_dir | awk '{print $2}')
+RESULTS_DIR=$($PYTHON -m avocado config | grep datadir.paths.logs_dir | awk '{print $2}')
 # Very basic version of expanduser
 RESULTS_DIR="${RESULTS_DIR/#\~/$HOME}"
 
