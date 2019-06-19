@@ -179,7 +179,6 @@ popd
 # python3-docutils on Fedora 28 uses a rst2man binary with -3 prefix
 %if 0%{?fedora} == 28
 /usr/bin/rst2man-3 man/avocado.rst man/avocado.1
-/usr/bin/rst2man-3 man/avocado-rest-client.rst man/avocado-rest-client.1
 %else
 %{__make} man
 %endif
@@ -237,7 +236,6 @@ pushd optional_plugins/glib
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
-%{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 %{__install} -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
 %{__install} -d -m 0755 %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/gdb-prerun-scripts %{buildroot}%{_docdir}/avocado
@@ -311,7 +309,6 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
 %{_bindir}/avocado
-%{_bindir}/avocado-rest-client
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_runner_remote*
@@ -347,7 +344,6 @@ Common files (such as configuration) for the Avocado Testing Framework.
 
 %files -n python3-%{srcname}-common
 %{_mandir}/man1/avocado.1.gz
-%{_mandir}/man1/avocado-rest-client.1.gz
 %dir %{_sysconfdir}/avocado
 %dir %{_sysconfdir}/avocado/conf.d
 %dir %{_sysconfdir}/avocado/sysinfo
