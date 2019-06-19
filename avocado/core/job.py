@@ -204,6 +204,44 @@ class Job:
             id_file_obj.flush()
             os.fsync(id_file_obj)
 
+        self._setup_job_category()
+
+    def _setup_job_category(self):
+        """
+        This has to be called after self.logdir has been defined
+
+        It attempts to create a directory one level up from the job results,
+        with the given category name.  Then, a symbolic link is created to
+        this job results directory.
+
+        This should allow a user to look at a single directory for all
+        jobs of a given category.
+        """
+        category = getattr(self.args, 'job_category', None)
+        if category is None:
+            return
+
+        if category != astring.string_to_safe_path(category):
+            LOG_JOB.warning("Unable to set category in job results: name is not "
+                            "filesystem safe: %s", category)
+            return
+
+        # we could also get "base_logdir" from args, but I believe this is
+        # the best choice because it reduces the dependency surface (depends
+        # only on self.logdir)
+        category_path = os.path.join(os.path.dirname(self.logdir),
+                                     category)
+        try:
+            os.mkdir(category_path)
+        except FileExistsError:
+            pass
+
+        try:
+            os.symlink(os.path.relpath(self.logdir, category_path),
+                       os.path.join(category_path, os.path.basename(self.logdir)))
+        except Exception:
+            LOG_JOB.warning("Unable link this job to category %s", category)
+
     def __start_job_logging(self):
         # Enable test logger
         fmt = ('%(asctime)s %(module)-16.16s L%(lineno)-.4d %('
