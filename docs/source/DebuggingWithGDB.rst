@@ -183,5 +183,5 @@ You can see that instead of running the executable using
 us to automate the interaction with the GDB in means of setting
 breakpoints, executing commands and querying for output.
 
-When you check the output (``--show-job-log``) you can see that despite
+When you check the output (``--show=test``) you can see that despite
 declaring the variable as 0, ff is injected and printed instead.

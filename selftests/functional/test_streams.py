@@ -70,58 +70,47 @@ class StreamsTest(unittest.TestCase):
     def test_test(self):
         """
         Checks that the test stream (early in this case) goes to stdout
-
-        Also checks the symmetry between `--show test` and `--show-job-log`
         """
-        for cmd in (('%s --show test run --sysinfo=off --job-results-dir %s '
-                     'passtest.py' % (AVOCADO, self.tmpdir)),
-                    ('%s run --show-job-log --sysinfo=off --job-results-dir %s'
-                     ' passtest.py' % (AVOCADO, self.tmpdir))):
-            result = process.run(cmd)
-            self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
-                             result.stdout)
-            self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
-                             result.stderr)
-            # If using the Python interpreter, Avocado won't know about it
-            if AVOCADO.startswith(sys.executable):
-                cmd_in_log = cmd[len(sys.executable)+1:]
-            else:
-                cmd_in_log = cmd
-            self.assertIn("Command line: %s" % cmd_in_log,
-                          result.stdout_text)
-            self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
-                          result.stdout)
-            self.assertIn(b"PASS 1-passtest.py:PassTest.test", result.stdout)
-            self.assertEqual(b'', result.stderr)
+        cmd = ('%s --show=test run --sysinfo=off --job-results-dir %s '
+               'passtest.py' % (AVOCADO, self.tmpdir))
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
+                         result.stdout)
+        self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
+                         result.stderr)
+        # If using the Python interpreter, Avocado won't know about it
+        if AVOCADO.startswith(sys.executable):
+            cmd_in_log = cmd[len(sys.executable)+1:]
+        else:
+            cmd_in_log = cmd
+        self.assertIn("Command line: %s" % cmd_in_log,
+                      result.stdout_text)
+        self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
+                      result.stdout)
+        self.assertIn(b"PASS 1-passtest.py:PassTest.test", result.stdout)
+        self.assertEqual(b'', result.stderr)
 
     def test_none_success(self):
         """
         Checks that only errors are output, and that they go to stderr
-
-        Also checks the symmetry between `--show none` and `--silent`
         """
-        for cmd in (('%s --show none run --sysinfo=off --job-results-dir %s '
-                     'passtest.py' % (AVOCADO, self.tmpdir)),
-                    ('%s --silent run --sysinfo=off --job-results-dir %s '
-                     'passtest.py' % (AVOCADO, self.tmpdir))):
-            result = process.run(cmd)
-            self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertEqual(b'', result.stdout)
-            self.assertEqual(b'', result.stderr)
+        cmd = ('%s --show none run --sysinfo=off --job-results-dir %s '
+               'passtest.py' % (AVOCADO, self.tmpdir))
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertEqual(b'', result.stdout)
+        self.assertEqual(b'', result.stderr)
 
     def test_none_error(self):
         """
         Checks that only errors are output, and that they go to stderr
-
-        Also checks the symmetry between `--show none` and `--silent`
         """
-        for cmd in ('%s --show none unknown-whacky-command' % AVOCADO,
-                    '%s --silent unknown-whacky-command' % AVOCADO):
-            result = process.run(cmd, ignore_status=True)
-            self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-            self.assertEqual(b'', result.stdout)
-            self.assertNotEqual(b'', result.stderr)
+        cmd = '%s --show=none unknown-whacky-command' % AVOCADO
+        result = process.run(cmd, ignore_status=True)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
+        self.assertEqual(b'', result.stdout)
+        self.assertNotEqual(b'', result.stderr)
 
     def test_custom_stream_and_level(self):
         """

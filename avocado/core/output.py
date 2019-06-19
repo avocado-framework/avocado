@@ -365,14 +365,6 @@ def reconfigure(args):
     if not isinstance(enabled, list):
         enabled = ["app"]
         args.show = enabled
-    if getattr(args, "show_job_log", False):
-        del enabled[:]
-        enabled.append("test")
-    if getattr(args, "silent", False):
-        del enabled[:]
-    # "silent" is incompatible with "paginator"
-    elif getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
-        STD_OUTPUT.enable_paginator()
     if "none" in enabled:
         del enabled[:]
     elif "all" in enabled:
@@ -384,6 +376,8 @@ def reconfigure(args):
     # TODO: Avocado relies on stdout/stderr on some places, re-log them here
     # for now. This should be removed once we replace them with logging.
     if enabled:
+        if getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
+            STD_OUTPUT.enable_paginator()
         STD_OUTPUT.enable_outputs()
     else:
         STD_OUTPUT.enable_stderr()

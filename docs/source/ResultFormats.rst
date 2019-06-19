@@ -178,11 +178,11 @@ Provides the basic `TAP <http://testanything.org/>`__ (Test Anything Protocol) r
 Silent result
 ~~~~~~~~~~~~~
 
-This result disables all stdout logging (while keeping the error messages
-being printed to stderr). One can then use the return code to learn about
-the result::
+It's possible to silence all output to stdout (while keeping the error
+messages being printed to stderr). One can then use the return code to
+learn about the result::
 
-    $ avocado --silent run failtest.py
+    $ avocado --show=none run failtest.py
     $ echo $?
     1
 
@@ -191,7 +191,7 @@ Avocado and check its results::
 
     #!/bin/bash
     ...
-    $ avocado --silent run /path/to/my/test.py
+    $ avocado --show=none run /path/to/my/test.py
     if [ $? == 0 ]; then
        echo "great success!"
     elif
