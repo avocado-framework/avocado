@@ -1,6 +1,4 @@
 # Avocado test requirements
-# sphinx (doc build test)
-Sphinx==1.7.8
 
 # inspektor (static and style checks)
 pylint==2.3.0

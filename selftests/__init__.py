@@ -78,7 +78,7 @@ def test_suite(base_selftests=True, plugin_selftests=None):
     selftests_dir = os.path.dirname(os.path.abspath(__file__))
     basedir = os.path.dirname(selftests_dir)
     if base_selftests:
-        for section in ('unit', 'functional', 'doc'):
+        for section in ('unit', 'functional'):
             start_dir = os.path.join(selftests_dir, section)
             suite.addTests(loader.discover(start_dir=start_dir,
                                            top_level_dir=basedir))
