@@ -102,7 +102,6 @@ clean:
 	$(PYTHON) setup.py clean
 	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES PYPI_UPLOAD
 	rm -f man/avocado.1
-	rm -f man/avocado-rest-client.1
 	rm -rf docs/build
 	find docs/source/api/ -name '*.rst' -delete
 	for PLUGIN in $(AVOCADO_PLUGINS); do\
@@ -165,7 +164,7 @@ link: develop
 spell:
 	pylint --errors-only --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=spell.ignore * && echo OK
 
-man: man/avocado.1 man/avocado-rest-client.1
+man: man/avocado.1
 
 variables:
 	@echo "PYTHON: $(PYTHON)"
