@@ -9,7 +9,6 @@ inspektor==0.5.2
 funcsigs>=0.4
 
 # To run make check
-Pillow==5.2.0
 aexpect==1.5.1
 psutil==5.4.7
 
