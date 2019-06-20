@@ -18,7 +18,7 @@ class GenDataTest(Test):
             from PIL import Image
             from PIL import ImageDraw
         except ImportError:
-            return
+            self.cancel("PIL not available")
 
         text = ["DREADED BLUE SCREEN OF DEATH"]
         dmesg_path = os.path.join(self.job.logdir, "sysinfo", "pre", "dmesg_-c")

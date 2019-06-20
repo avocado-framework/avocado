@@ -287,3 +287,7 @@ Build and Quality Status
   .. image:: https://img.shields.io/lgtm/grade/javascript/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
      :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:javascript
      :alt: lgtm language grade for JavaScript
+
+  .. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
+     :target: https://avocado-framework.readthedocs.io
+     :alt: Documentation Status

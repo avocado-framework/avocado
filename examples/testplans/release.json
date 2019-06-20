@@ -3,6 +3,10 @@
     "description": "Test Plan to be performed before a release is cut",
 
     "tests": [
+
+        {"name": "Check status of master branch",
+         "description": "Navigate to:\n\n   https://github.com/avocado-framework/avocado#build-and-quality-status\n\nand make sure that all build and quality services report good indicators"},
+
 	{"name": "Avocado source is sound",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make check-full`. Expected result: Make command should say OK."},
 
