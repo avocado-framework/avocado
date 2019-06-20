@@ -167,6 +167,7 @@ class Job:
         self._setup_job_results()
         self.result = result.Result(self)
         self.__start_job_logging()
+        self._setup_job_category()
         # Use "logdir" in case "keep_tmp" is enabled
         if getattr(self.args, "keep_tmp", None) == "on":
             base_tmpdir = self.logdir
@@ -204,8 +205,6 @@ class Job:
             id_file_obj.flush()
             os.fsync(id_file_obj)
 
-        self._setup_job_category()
-
     def _setup_job_category(self):
         """
         This has to be called after self.logdir has been defined
@@ -222,8 +221,10 @@ class Job:
             return
 
         if category != astring.string_to_safe_path(category):
-            LOG_JOB.warning("Unable to set category in job results: name is not "
-                            "filesystem safe: %s", category)
+            msg = ("Unable to set category in job results: name is not "
+                   "filesystem safe: %s" % category)
+            LOG_UI.warning(msg)
+            LOG_JOB.warning(msg)
             return
 
         # we could also get "base_logdir" from args, but I believe this is
@@ -240,7 +241,9 @@ class Job:
             os.symlink(os.path.relpath(self.logdir, category_path),
                        os.path.join(category_path, os.path.basename(self.logdir)))
         except Exception:
-            LOG_JOB.warning("Unable link this job to category %s", category)
+            msg = "Unable to link this job to category %s" % category
+            LOG_UI.warning(msg)
+            LOG_JOB.warning(msg)
 
     def __start_job_logging(self):
         # Enable test logger
