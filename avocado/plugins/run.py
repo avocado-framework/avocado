@@ -92,6 +92,12 @@ class Run(CLICmd):
                             help=('Forces to use of an alternate job '
                                   'results directory.'))
 
+        parser.add_argument('--job-category', action='store',
+                            default=None, metavar='CATEGORY',
+                            help=('Categorizes this within a directory with '
+                                  'the same name, by creating a link to the '
+                                  'job result directory'))
+
         parser.add_argument('--job-timeout', action='store',
                             default=None, metavar='SECONDS',
                             help='Set the maximum amount of time (in SECONDS) '
