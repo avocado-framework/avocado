@@ -245,9 +245,9 @@ def _legacy_disable(value):
     TODO: this should be removed in the near future
     Reference: https://trello.com/c/aJzNUeA5/
     '''
-    if value is 0:
+    if value == 0:
         return b'0'
-    if value is 1:
+    if value == 1:
         return b'1'
     return _bool_to_binary(value)
 
