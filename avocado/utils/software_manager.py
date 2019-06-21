@@ -283,24 +283,68 @@ class RpmBackend(BaseBackend):
         except process.CmdError:
             return []
 
-    def rpm_install(self, file_path):
+    def rpm_install(self, file_path, no_dependencies=False, replace=False):
         """
         Install the rpm file [file_path] provided.
 
-        :param file_path: Rpm file path.
-        :return True: if file is installed properly
+        :param str file_path: file path of the installed package
+        :param bool no_dependencies: whether to add "nodeps" flag
+        :param bool replace: whether to replace existing package
+        :returns: whether file is installed properly
+        :rtype: bool
         """
-        if os.path.isfile(file_path):
-            cmd = 'rpm -i %s' % file_path
-        else:
+        if not os.path.isfile(file_path):
             log.warning('Please provide proper rpm path')
             return False
+
+        nodeps = "--nodeps " if no_dependencies else ""
+        update = "-U" if replace else "-i"
+        cmd = "rpm %s %s%s" % (update, nodeps, file_path)
+
         try:
             process.system(cmd)
             return True
         except process.CmdError as details:
             log.error(details)
             return False
+
+    def rpm_verify(self, package_name):
+        """
+        Verify an RPM package with an installed one.
+
+        :param str package_name: name of the verified package
+        :returns: whether the verification was successful
+        :rtype: bool
+        """
+        logging.info("Verifying package information.")
+        cmd = "rpm -V " + package_name
+        result = process.run(cmd, ignore_status=True)
+
+        # unstable approach but currently works
+        #installed_pattern = r"\s" + package_name + r" is installed\s+"
+        #match = re.search(installed_pattern, result)
+        match = (result.exit_status == 0)
+        if match:
+            logging.info("Verification successful.")
+            return True
+        else:
+            logging.info(result.stdout_text.rstrip())
+            return False
+
+    def rpm_erase(self, package_name):
+        """
+        Erase an RPM package.
+
+        :param str package_name: name of the erased package
+        :returns: whether file is erased properly
+        :rtype: bool
+        """
+        logging.warning("Erasing rpm package %s", package_name)
+        cmd = "rpm -e " + package_name
+        result = process.run(cmd, ignore_status=True)
+        if result.exit_status:
+            return False
+        return True
 
     def prepare_source(self, spec_file, dest_path=None):
         """
@@ -322,6 +366,61 @@ class RpmBackend(BaseBackend):
         except process.CmdError as details:
             log.error(details)
             return ""
+
+    def find_rpm_packages(self, rpm_dir):
+        """
+        Extract product dependencies from a defined RPM directory and all its subdirectories.
+
+        :param str rpm_dir: directory to search in
+        :returns: found RPM packages
+        :rtype: [str]
+        """
+        subpaths = os.listdir(rpm_dir)
+        subpacks = []
+        for subpath in subpaths:
+            if subpath == "." or subpath == "..":
+                continue
+            new_filepath = rpm_dir + "/" + subpath
+            logging.debug("Checking path for rpm %s", new_filepath)
+            # if path is file validate name and inject
+            if os.path.isfile(new_filepath) and re.search(r"\s*.rpm$", os.path.basename(new_filepath)):
+                logging.info("Marking package %s for setup", new_filepath)
+                subpacks.append(new_filepath)
+            elif os.path.isdir(new_filepath):
+                subpacks += self.find_rpm_packages(new_filepath)
+        return subpacks
+
+    def perform_setup(self, packages, no_dependencies=False):
+        """
+        General RPM setup with automatic handling of dependencies based on
+        install attempts.
+
+        :param packages: the RPM packages to install in dependency-friendly order
+        :type packages: [str]
+        :returns: whether setup completed successfully
+        :rtype: bool
+        """
+        while len(packages) > 0:
+            logging.debug("Trying to install: %s", packages)
+            failed_packages = []
+            for package_path in packages:
+                package_file = os.path.basename(package_path)
+                package_name = "-".join(package_file.split('-')[0:-2])
+                logging.debug("%s -> %s", package_file, package_name)
+                installed = self.check_installed(package_name)
+                verified = self.rpm_verify(package_name) if installed else False
+                if installed and not verified:
+                    self.rpm_erase(package_name)
+                if not installed or not verified:
+                    success = self.rpm_install(package_path, no_dependencies)
+                    if not success:
+                        failed_packages.append(package_path)
+            if len(packages) == len(failed_packages) > 0:
+                logging.warning("Some of the rpm packages could not be "
+                                "installed: %s", ", ".join(failed_packages))
+                return False
+            packages = failed_packages
+        return True
 
 
 class DpkgBackend(BaseBackend):
