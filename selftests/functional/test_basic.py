@@ -502,6 +502,7 @@ class RunnerOperationTest(unittest.TestCase):
                "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
                "foo:bar:b foo:baz:c bar:bar:bar "
                "-- passtest.py failtest.py gendata.py " % AVOCADO)
+        number_of_tests = 3
         result = json.loads(process.run(cmd).stdout_text)
         debuglog = result['debuglog']
         log = genio.read_file(debuglog)
@@ -510,8 +511,8 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
         self.assertEqual(result['job_id'], u'0' * 40)
         # Check if all tests were skipped
-        self.assertEqual(result['cancel'], 4)
-        for i in range(4):
+        self.assertEqual(result['cancel'], number_of_tests)
+        for i in range(number_of_tests):
             test = result['tests'][i]
             self.assertEqual(test['fail_reason'],
                              u'Test cancelled due to --dry-run')
@@ -520,7 +521,7 @@ class RunnerOperationTest(unittest.TestCase):
         # from test.
         for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
                      "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
-            self.assertEqual(log.count(line), 4,
+            self.assertEqual(log.count(line), number_of_tests,
                              "Avocado log count for param '%s' not as expected:\n%s" % (line, log))
 
     def test_invalid_python(self):
