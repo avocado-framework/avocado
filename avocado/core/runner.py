@@ -23,14 +23,16 @@ import signal
 import sys
 import time
 
-from . import test
-from . import tree
+from . import defaults
 from . import exceptions
 from . import output
 from . import status
+from . import test
+from . import tree
 from . import varianter
 from .loader import loader
 from .status import mapping
+from .settings import settings
 from ..utils import wait
 from ..utils import runtime
 from ..utils import process
@@ -38,13 +40,6 @@ from ..utils import stacktrace
 
 from .output import LOG_UI as APP_LOG
 from .output import LOG_JOB as TEST_LOG
-
-#: when test was interrupted (ctrl+c/timeout)
-TIMEOUT_TEST_INTERRUPTED = 60
-#: when the process died but the status was not yet delivered
-TIMEOUT_PROCESS_DIED = 10
-#: when test reported status but the process did not finish
-TIMEOUT_PROCESS_ALIVE = 60
 
 
 def add_runner_failure(test_state, new_status, message):
@@ -216,18 +211,26 @@ class TestStatus:
                notifications)
         """
         # Wait for either process termination or test status
-        wait.wait_for(lambda: not proc.is_alive() or self.status, 1, 0,
-                      step)
+        wait.wait_for(lambda: not proc.is_alive() or self.status, 1, 0, step)
         if self.status:     # status exists, wait for process to finish
-            deadline = min(deadline, time.time() + TIMEOUT_PROCESS_ALIVE)
+            timeout_process_alive = settings.get_value(
+                'runner.timeout',
+                'process_alive',
+                key_type=int,
+                default=defaults.TIMEOUT_PROCESS_ALIVE)
+            deadline = min(deadline, time.time() + timeout_process_alive)
             while time.time() < deadline:
                 result_dispatcher.map_method('test_progress', False)
-                if wait.wait_for(lambda: not proc.is_alive(), 1, 0,
-                                 step):
+                if wait.wait_for(lambda: not proc.is_alive(), 1, 0, step):
                     return self._add_status_failures(self.status)
             err = "Test reported status but did not finish"
         else:   # proc finished, wait for late status delivery
-            deadline = min(deadline, time.time() + TIMEOUT_PROCESS_DIED)
+            timeout_process_died = settings.get_value(
+                'runner.timeout',
+                'process_died',
+                key_type=int,
+                default=defaults.TIMEOUT_PROCESS_DIED)
+            deadline = min(deadline, time.time() + timeout_process_died)
             while time.time() < deadline:
                 result_dispatcher.map_method('test_progress', False)
                 if wait.wait_for(lambda: self.status, 1, 0, step):
@@ -468,7 +471,11 @@ class TestRunner:
 
         # Get/update the test status (decrease timeout on abort)
         if abort_reason:
-            finish_deadline = TIMEOUT_TEST_INTERRUPTED + time.time()
+            finish_deadline = time.time() + settings.get_value(
+                'runner.timeout',
+                'after_interrupted',
+                key_type=int,
+                default=defaults.TIMEOUT_AFTER_INTERRUPTED)
         else:
             finish_deadline = deadline
         test_state = test_status.finish(proc, time_started, step,
