@@ -32,7 +32,7 @@ class NWException(Exception):
 
 def set_ip(ipaddr, netmask, interface):
     """
-    Gets interface name, IP, subnetmask and creates interface
+    Gets interface name, IP, subnet mask and creates interface
     file based on distro.
     """
     if distro.detect().name == 'rhel':

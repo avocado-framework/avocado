@@ -17,7 +17,7 @@ data drainer
 
 This module provides utility classes for draining data and dispatching
 it to different destinations.  This is intended to be used
-concurrenly with other code, usually test code producing the output
+concurrently with other code, usually test code producing the output
 to be drained/processed.  A thread is started and maintained on behalf
 of the user.
 """
@@ -116,7 +116,7 @@ class FDDrainer(BaseDrainer):
 
     This drainer uses select to efficiently wait for data to be available on
     a file descriptor.  If the file descriptor is closed, the drainer responds
-    by shuting itself down.
+    by shutting itself down.
 
     This drainer doesn't provide a write() implementation, and is
     consequently not a complete implementation users can pick and use.

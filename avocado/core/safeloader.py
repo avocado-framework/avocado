@@ -370,7 +370,7 @@ def _examine_class(path, class_name, match, target_module, target_class,
     :param target_module: the module name under which the target_class lives
     :type target_module: str
     :param target_class: the name of the class that class_name should
-                         ultimatetly inherit from
+                         ultimately inherit from
     :type target_class: str
     :param determine_match: a callable that will determine if a match has
                             occurred or not

@@ -7,7 +7,7 @@ class CombinationRow:
     Row object store all combinations between two parameters into dictionary.
     Keys in dictionary are values of combinations and values in dictionary are
     information about coverage. Row object has information how many combinations
-    are ucovered and how many of them are covered more than ones.
+    are uncovered and how many of them are covered more than ones.
     """
 
     def __init__(self, input_data, t_value, parameters):
