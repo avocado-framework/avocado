@@ -18,6 +18,11 @@ env:
       AVOCADO_LOG_DEBUG=yes
       SELF_CHECK_CONTINUOUS=y
       AVOCADO_CHECK_LEVEL=1
+    - AVOCADO_PARALLEL_CHECK=no
+      AVOCADO_LOG_DEBUG=yes
+      SELF_CHECK_CONTINUOUS=y
+      AVOCADO_CHECK_LEVEL=1
+      RUN_ONLY_COVERAGE=yes
 
 cache:
     directories:
@@ -32,4 +37,4 @@ install:
     - pip install -r requirements-selftests.txt
 
 script:
-    - make check
+    - if [ "$RUN_ONLY_COVERAGE" == yes ]; then pip install codeconv && make develop && ./selftests/run_coverage && codecov; else make check; fi
