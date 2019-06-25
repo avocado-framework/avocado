@@ -1,4 +1,3 @@
-import aexpect
 import glob
 import json
 import os
@@ -18,6 +17,12 @@ try:
     SCHEMA_CAPABLE = True
 except ImportError:
     SCHEMA_CAPABLE = False
+
+try:
+    import aexpect
+    AEXPECT_CAPABLE = True
+except ImportError:
+    AEXPECT_CAPABLE = False
 
 from avocado.core import exit_codes
 from avocado.utils import astring
@@ -842,6 +847,7 @@ class RunnerSimpleTest(unittest.TestCase):
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
+    @unittest.skipUnless(AEXPECT_CAPABLE, 'aexpect package not available')
     def test_kill_stopped_sleep(self):
         proc = aexpect.Expect("%s run 60 --job-results-dir %s "
                               "--external-runner %s --sysinfo=off "

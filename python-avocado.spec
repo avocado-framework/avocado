@@ -41,6 +41,16 @@
 %global with_python3_fabric 0
 %endif
 
+# Python 3 version of aexpect is available on a module on Fedora >= 30
+# and package build dependency resolution seems to be currently broken
+# for modules.  Other developers have reported similar scenarios as this:
+# https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/thread/V6SBSAS5TBGNORGLYW75TIRX6JDBXQ2Q/
+%if 0%{?fedora} >= 30
+%global with_python3_aexpect 0
+%else
+%global with_python3_aexpect 1
+%endif
+
 # The Python dependencies are already tracked by the python2
 # or python3 "Requires".  This filters out the python binaries
 # from the RPM automatic requires/provides scanner.
@@ -49,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 69.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -69,9 +79,11 @@ BuildRequires: python3-fabric3
 %if 0%{?fedora} >= 30
 BuildRequires: glibc-all-langpacks
 %endif
+%if %{with_python3_aexpect}
+BuildRequires: python3-aexpect
+%endif
 
 BuildRequires: python3-jinja2
-BuildRequires: python3-aexpect
 BuildRequires: python3-devel
 BuildRequires: python3-docutils
 BuildRequires: python3-lxml
@@ -146,11 +158,13 @@ pushd optional_plugins/runner_vm
 %endif # with_fabric
 popd
 pushd optional_plugins/runner_docker
+%if %{with_python3_aexpect}
 %if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_build
 %endif
 %endif # with_fabric
+%endif # with_python3_aexpect
 popd
 pushd optional_plugins/resultsdb
 %py3_build
@@ -204,11 +218,13 @@ pushd optional_plugins/runner_vm
 %endif # with_fabric
 popd
 pushd optional_plugins/runner_docker
+%if %{with_python3_aexpect}
 %if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_install
 %endif
 %endif # with_fabric
+%endif # with_python3_aexpect
 popd
 pushd optional_plugins/resultsdb
 %py3_install
@@ -265,7 +281,9 @@ pushd optional_plugins/runner_vm
 %{__python3} setup.py develop --user
 popd
 pushd optional_plugins/runner_docker
+%if %{with_python3_aexpect}
 %{__python3} setup.py develop --user
+%endif # with_python3_aexpect
 popd
 %endif # with_python3_fabric
 %endif # with_fabric
@@ -411,6 +429,7 @@ itself.  Avocado must be previously installed on the VM.
 %endif # with_python3_fabric
 %endif # with_fabric
 
+%if %{with_python3_aexpect}
 %if %{with_fabric}
 %if %{with_python3_fabric}
 %package -n python3-%{srcname}-plugins-runner-docker
@@ -429,6 +448,7 @@ be previously installed on the container.
 %{python3_sitelib}/avocado_framework_plugin_runner_docker*
 %endif # with_python3_fabric
 %endif # with_fabric
+%endif # with_python3_aexpect
 
 %package -n python3-%{srcname}-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
@@ -564,6 +584,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jun 25 2019 Cleber Rosa <cleber@redhat.com> - 69.0-2
+- Build without python3-aexpect on Fedora 30 and later
+
 * Tue May 28 2019 Merlin Mathesius <mmathesi@redhat.com> - 69.0-1
 - Disable components dependent upon Fiber in Fedora 31 and later,
   since avocado is currently incompatible with the new Fiber API.
