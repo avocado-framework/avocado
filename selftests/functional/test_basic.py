@@ -1022,6 +1022,7 @@ class ExternalRunnerTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
+    @unittest.skipIf(os.environ.get("RUNNING_COVERAGE"), "Running coverage")
     def test_externalrunner_chdir_runner_relative(self):
         avocado_split = AVOCADO.rsplit(" ", 1)
         avocado_abs = "%s %s" % (avocado_split[0],
