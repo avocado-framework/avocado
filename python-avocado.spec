@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 69.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -90,7 +90,6 @@ BuildRequires: python3-lxml
 BuildRequires: python3-psutil
 BuildRequires: python3-resultsdb_api
 BuildRequires: python3-setuptools
-BuildRequires: python3-sphinx
 BuildRequires: python3-stevedore
 BuildRequires: python3-pycdlib
 
@@ -584,6 +583,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jun 25 2019 Cleber Rosa <cleber@redhat.com> - 69.0-3
+- Drop python3-sphinx build requirement
+- Cleaned up some of the changelog history
+
 * Tue Jun 25 2019 Cleber Rosa <cleber@redhat.com> - 69.0-2
 - Build without python3-aexpect on Fedora 30 and later
 
@@ -595,155 +598,3 @@ Again Shell code (and possibly other similar shells).
 
 * Tue Feb 26 2019 Cleber Rosa <cleber@redhat.com> - 69.0-0
 - New release
-
-* Wed Feb 13 2019 Cleber Rosa <cleber@redhat.com> - 68.0-0
-- New release
-
-* Mon Feb  4 2019 Cleber Rosa <cleber@redhat.com> - 67.0-1
-- python2-resultsdb_api package has been removed in F30 so
-  python2-avocado-plugins-resultsdb was also disabled.
-
-* Mon Dec 17 2018 Cleber Rosa <cleber@redhat.com> - 67.0-0
-- New release
-
-* Mon Dec 17 2018 Cleber Rosa <cleber@redhat.com> - 66.0-3
-- Use proper name of Python netifaces module package on EL7
-
-* Mon Dec 10 2018 Cleber Rosa <cleber@redhat.com> - 66.0-2
-- Replaced pystache requirement for jinja2
-
-* Wed Dec  5 2018 Cleber Rosa <cleber@redhat.com> - 66.0-1
-- Added libcdio, genisoimage and psmisc as build deps
-
-* Tue Nov 20 2018 Cleber Rosa <cleber@redhat.com> - 66.0-0
-- New release
-
-* Tue Oct  2 2018 Cleber Rosa <cleber@redhat.com> - 65.0-0
-- New release
-
-* Mon Aug 27 2018 Cleber Rosa <cleber@redhat.com> - 64.0-0
-- Added pycdlib as requirements
-- New release
-
-* Wed Jul 25 2018 Cleber Rosa <cleber@redhat.com> - 63.0-2
-- Added CIT varianter plugin sub-packages
-
-* Mon Jul 23 2018 Merlin Mathesius <mmathesi@redhat.com> - 63.0-1
-- Enable python3 versions of runner and resultsdb plugins when
-  package dependencies are available.
-
-* Tue Jul 17 2018 Cleber Rosa <cleber@redhat.com> - 63.0-0
-- New release
-
-* Wed Jun 20 2018 Cleber Rosa <cleber@redhat.com> - 62.0-1
-- Added new python[2]-enum34 requirement
-
-* Tue Jun 12 2018 Cleber Rosa <cleber@redhat.com> - 62.0-0
-- New release
-
-* Tue May  1 2018 Cleber Rosa <cleber@redhat.com> - 61.0-1
-- Use Python version specific "avocado" scripts on tests
-
-* Tue Apr 24 2018 Cleber Rosa <cleber@redhat.com> - 61.0-0
-- New release
-- Added python3-yaml require to varianter-yaml-to-mux package
-- Force a locale with utf-8 encoding to run tests
-
-* Wed Apr  4 2018 Cleber Rosa <cleber@redhat.com> - 60.0-2
-- Moved all requirements to python2-avocado and python3-avocado
-- Added python_provides macro on Python 3 package
-- Filter out python binaries from requirements
-- Added explicit six requirement on Python 2 packages
-
-* Wed Mar 28 2018 Cleber Rosa <cleber@redhat.com> - 60.0-1
-- Moved "common" dep into python2-avocado and python3-avocado
-
-* Wed Mar 28 2018 Cleber Rosa <cleber@redhat.com> - 60.0-0
-- New release
-
-* Mon Mar 19 2018 Cleber Rosa <cleber@redhat.com> - 59.0-2
-- Removed backward compatibility with name avocado on plugins
-- Removed extra dependencies on Fedora 24 for runner-remote
-- Added python-avocado requirement for golang plugin
-- Added new common sub-package
-- Make bash package independent of Python version
-- Set supported Python major version explicitly to 2
-- Added Python 3 packages
-
-* Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
-- Remove backward compatibility with name avocado
-- Remove hack to workaround fabric bugs on Fedora 24
-- Use real package name for python YAML package on EL
-- Use exact package names on requires
-- Remove unecessary conditional for kmod
-
-* Wed Feb 28 2018 Cleber Rosa <cleber@redhat.com> - 59.0-0
-- New upstream release
-- Added glib plugin subpackage
-
-* Tue Jan 23 2018 Cleber Rosa <cleber@redhat.com> - 58.0-1
-- Require a lower six version on EL7
-
-* Tue Jan 23 2018 Cleber Rosa <cleber@redhat.com> - 58.0-0
-- New upstream release
-
-* Sat Jan  6 2018 Cleber Rosa <cleber@redhat.com> - 57.0-3
-- Move the avocado package config files to the system location
-- Add missing configuration files for sub packages
-- Adapt to change in example file installation
-- Remove man pages source files from package
-- Add bash subpackage
-
-* Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
-- Removed patch added on release 1, considering it's upstream
-
-* Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-1
-- Add patch to skip tests on EPEL 7 due to mock version
-
-* Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-0
-- New upstream release
-
-* Fri Dec 15 2017 Cleber Rosa <cleber@redhat.com> - 56.0-1
-- Added result_upload plugin
-
-* Tue Nov 21 2017 Cleber Rosa <cleber@redhat.com> - 56.0-0
-- New upstream release
-
-* Thu Nov 16 2017 Cleber Rosa <cleber@redhat.com> - 55.0-1
-- Introduced sub-package plugins-varianter-pict
-
-* Tue Oct 17 2017 Cleber Rosa <cleber@redhat.com> - 55.0-0
-- New upstream release
-
-* Mon Oct 16 2017 Cleber Rosa <cleber@redhat.com> - 54.1-3
-- Excluded avocado_loader_yaml files from main package
-- Package recently introduced golang plugin
-
-* Wed Oct  4 2017 Cleber Rosa <cleber@redhat.com> - 54.1-2
-- Remove python-flexmock requirement
-
-* Wed Oct  4 2017 Cleber Rosa <cleber@redhat.com> - 54.1-1
-- Add explicit BuildRequires for python-six
-
-* Wed Sep 20 2017 Cleber Rosa <cleber@redhat.com> - 54.1-0
-- New minor upstream release
-
-* Wed Sep 20 2017 Cleber Rosa <cleber@redhat.com> - 54.0-0
-- New upstream release
-
-* Tue Aug 22 2017 Cleber Rosa <cleber@redhat.com> - 53.0-1
-- Use variable name for configuration dir
-- Clean up old changelog entries
-- Include other example files
-
-* Tue Aug 15 2017 Cleber Rosa <cleber@redhat.com> - 53.0-0
-- New upstream release
-
-* Mon Aug 14 2017 Cleber Rosa <cleber@redhat.com> - 52.0-2
-- Add python[2]-yaml requirements
-
-* Tue Jun 27 2017 Cleber Rosa <cleber@redhat.com> - 52.0-1
-- Fix python-aexpect depedency on EL7
-
-* Mon Jun 26 2017 Cleber Rosa <cleber@redhat.com> - 52.0-0
-- New upstream release
