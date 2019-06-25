@@ -1023,7 +1023,9 @@ class ExternalRunnerTest(unittest.TestCase):
                          (expected_rc, result))
 
     def test_externalrunner_chdir_runner_relative(self):
-        avocado_abs = " ".join([os.path.abspath(_) for _ in AVOCADO.split(" ")])
+        avocado_split = AVOCADO.rsplit(" ", 1)
+        avocado_abs = "%s %s" % (avocado_split[0],
+                                 os.path.abspath(avocado_split[1]))
         pass_abs = os.path.abspath(self.pass_script.path)
         os.chdir('/')
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
