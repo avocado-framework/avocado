@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     c4320e3f4066205a2efd1c90fdf5109592344013
+        %global commit     649e5d36eb5003479a5eeb6d60ad8b2fe8836260
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20181217
+        %global commit_date 20190625
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -58,8 +58,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 69.0
-Release: 3%{?gitrel}%{?dist}
+Version: 70.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -583,6 +583,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Jun 26 2019 Cleber Rosa <cleber@redhat.com> - 70.0-0
+- New release
+
 * Tue Jun 25 2019 Cleber Rosa <cleber@redhat.com> - 69.0-3
 - Drop python3-sphinx build requirement
 - Cleaned up some of the changelog history

@@ -1,0 +1,115 @@
+================================
+70.0 The Man with the Golden Gun
+================================
+
+The Avocado team is proud to present another release: Avocado 70.0,
+AKA "The Man with the Golden Gun", is now available!
+
+Release documentation: `Avocado 70.0
+<http://avocado-framework.readthedocs.io/en/70.0/>`_
+
+Users/Test Writers
+==================
+
+* A completely new implementation of the CIT Varianter plugin
+  implementation, now with support for constraints.  Refer to
+  :ref:`cit-varianter-plugin` for more information.
+
+* Python 2 support has been removed.  Support Python versions include
+  3.4, 3.5, 3.6 and 3.7.  An effort to support Python 3.8 is also
+  underway.  If you require Python 2 support, the 69.0 LTS series
+  (currently at version 69.1) should be used.  For more information on
+  what a LTS release means, please read :ref:`rfc-long-term-stability`.
+
+* Improved safeloader support for Python unittests, including support
+  for finding test classes that use multiple inheritance.  As an
+  example, Avocado's safeloader is now able to properly find all of
+  its own tests (around 700 of them).
+
+* Removal of old and redundant command line options, such as
+  ``--silent`` and ``--show-job-log`` in favor of ``--show=none`` and
+  ``--show=test``, respectively.
+
+* Job result categorization support, by means of the
+  ``--job-category`` option to the ``run`` command, allows a user to
+  create an easy to find directory, within the job results directory,
+  for a given type of executed jobs.
+
+Bug Fixes
+=========
+
+* Log files could have been saved as "hidden" files files (``.INFO``,
+  ``.DEBUG``, ``.WARN``, ``.ERROR``) because the root logger's name is
+  an empty string.  Now, those are saved with a ``log`` prefix if one
+  is not given.
+
+* The second time Avocado crashes, a "crash" directory is created
+  to hold the backtrace.  On a subsequent crash, if the directory
+  already exists, an exception would be raised for the failed
+  attempted to create an existing directory, confusing users on
+  the nature of the crash.  Now a proper handling for the possibly
+  existing directory is in place.
+
+* The CIT Varianter plugin was returning variants in an invalid form
+  to the runner.  This caused the plugin to fail when actually used to
+  run tests.  A functional test has also been aded to avoid a
+  regression here.
+
+* The :mod:`avocado.utils.distro` module now properly detects RHEL 8
+  systems.
+
+* The safeloader would fail to identify Python module names when a
+  relative import was used.  This means that the experience with ``$
+  avocado list`` and ``$ avocado run`` would suffer when trying to
+  list and run tests that either directly or indirectly imported
+  modules containing a relative import such as ``from . import foo``.
+
+* The :mod:`avocado.utils.vmimage` can now find Fedora images for
+  s390x.
+
+* The :mod:`avocado.utils.vmimage` now properly makes use of the
+  build option.
+
+* ``avocado list`` will now show the contents of the "key:val" tags.
+
+* The Avocado test loader will correctly apply filters with multiple
+  "key:val" tags.
+
+Utility APIs
+============
+
+* Two simple utility APIs, :func:`avocado.utils.genio.append_file`
+  and :func:`avocado.utils.genio.append_one_line` have been added
+  to the benefit of some `avocado-mist-tests
+  <https://github.com/avocado-framework-tests/avocado-misc-tests>`.
+
+* The new :mod:`avocado.utils.datadrainer` provide an easy way to read
+  from and write to various input/output sources without blocking a
+  test (by spawning a thread for that).
+
+* The new :mod:`avocado.utils.diff_validator` can help test writers
+  to make sure that given changes have been applied to files.
+
+Internal Changes
+================
+
+* Removal of the ``six`` library dependency (previously used for
+  simultaneous Python 2 and 3 support).
+
+* Removal of the ``sphinx`` module and local "build doc" test,
+  in favor of increased reliance on readthedocs.org.
+
+* Removal of the ``pillow`` module used when running very simple
+  example tests as a selftests, which in reality added very little
+  value.
+
+* All selftests are now either Python unittests or standalone
+  executables scripts that can be run with Avocado itself natively.
+  This was done (also) because of the N(ext) Runner proposal.
+
+* Build improvements and fixes, supporting packaging for Fedora
+  30 and beyond.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/69.0...70.0>`_.
