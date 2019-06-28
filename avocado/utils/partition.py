@@ -82,19 +82,21 @@ class Partition:
     Class for handling partitions and filesystems
     """
 
-    def __init__(self, device, loop_size=0, mountpoint=None):
+    def __init__(self, device, loop_size=0, mountpoint=None, mkfs_flags='', mount_options=None):
         """
         :param device: The device in question (e.g."/dev/hda2"). If device is a
                 file it will be mounted as loopback.
         :param loop_size: Size of loopback device (in MB). Defaults to 0.
         :param mountpoint: Where the partition to be mounted to.
+        :param mkfs_flags: Optional flags for mkfs
+        :param mount_options: Add mount options optionally
         """
         self.device = device
         self.loop = loop_size
         self.fstype = None
         self.mountpoint = mountpoint
-        self.mkfs_flags = ''
-        self.mount_options = None
+        self.mkfs_flags = mkfs_flags
+        self.mount_options = mount_options
         if self.loop:
             process.run('dd if=/dev/zero of=%s bs=1M count=%d'
                         % (device, self.loop))
