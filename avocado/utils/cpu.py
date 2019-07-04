@@ -102,7 +102,8 @@ def get_cpu_vendor_name():
         'intel': ("GenuineIntel", ),
         'amd': ("AMD", ),
         'power7': ("POWER7", ),
-        'power8': ("POWER8", )
+        'power8': ("POWER8", ),
+        'power9': ("POWER9", )
     }
 
     cpu_info = _get_cpu_info()
