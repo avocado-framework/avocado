@@ -146,6 +146,17 @@ Once again, keeping your tests up-to-date and distinguishing between
 ``FAIL`` and ``ERROR`` will save you a lot of time while reviewing the
 test results.
 
+Turning errors into cancels
+---------------------------
+It is also possible to assume unhandled exception to be as a test ``CANCEL``
+instead of a test ``ERROR`` simply by using ``cancel_on`` decorator::
+
+    def test(self):
+        @avocado.cancel_on(TypeError)
+        def foo():
+            raise TypeError
+        foo()
+
 .. _saving-test-generated-custom-data:
 
 Saving test generated (custom) data

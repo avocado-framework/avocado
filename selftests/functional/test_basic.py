@@ -368,6 +368,18 @@ class RunnerOperationTest(unittest.TestCase):
                                                                 result))
         self.assertIn(b'"status": "FAIL"', result.stdout)
 
+    def test_cancel_on_exception(self):
+        cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
+                    "--json - cancel_on_exception.py" % (AVOCADO, self.tmpdir))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc,
+                                                                result))
+        result = json.loads(result.stdout_text)
+        for test in result['tests']:
+            self.assertEqual(test['status'], 'CANCEL')
+
     def test_assert_raises(self):
         cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
                     "-- assert.py" % (AVOCADO, self.tmpdir))
