@@ -469,23 +469,15 @@ class OutputPluginTest(unittest.TestCase):
                          (expected_rc, result))
         with open(tmpfile, 'r') as fp:
             json_results = json.load(fp)
-            bsod_dir = None
             json_dir = None
-            for test in json_results['tests']:
-                if "test_bsod" in test['id']:
-                    bsod_dir = test['logfile']
-                elif "test_json" in test['id']:
-                    json_dir = test['logfile']
-            self.assertTrue(bsod_dir, "Failed to get test_bsod output "
-                            "directory")
+            test = json_results['tests'][0]
+            if "test_json" in test['id']:
+                json_dir = test['logfile']
+
             self.assertTrue(json_dir, "Failed to get test_json output "
                             "directory")
-            bsod_dir = os.path.join(os.path.dirname(bsod_dir), "data",
-                                    "bsod.png")
             json_dir = os.path.join(os.path.dirname(json_dir), "data",
                                     "test.json")
-            self.assertTrue(os.path.exists(bsod_dir), "File %s produced by"
-                            "test does not exist" % bsod_dir)
             self.assertTrue(os.path.exists(json_dir), "File %s produced by"
                             "test does not exist" % json_dir)
 
