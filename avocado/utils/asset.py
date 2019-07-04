@@ -65,7 +65,7 @@ class Asset:
         :param name: the asset filename. url is also supported
         :param asset_hash: asset hash
         :param algorithm: hash algorithm
-        :param locations: list of locations where the asset can be fetched from
+        :param locations: location(s) where the asset can be fetched from
         :param cache_dirs: list of cache directories
         :param expire: time in seconds for the asset to expire
         """
@@ -75,7 +75,11 @@ class Asset:
             self.algorithm = DEFAULT_HASH_ALGORITHM
         else:
             self.algorithm = algorithm
-        self.locations = locations
+
+        if isinstance(locations, str):
+            self.locations = [locations]
+        else:
+            self.locations = locations
         self.cache_dirs = cache_dirs
         self.expire = expire
 
