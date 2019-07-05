@@ -1,13 +1,11 @@
 import io
 import logging
 import os
-import shlex
 import unittest.mock
 import sys
 import time
 
 
-from avocado.utils import astring
 from avocado.utils import script
 from avocado.utils import gdb
 from avocado.utils import process
@@ -394,30 +392,10 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual("./bin", res)
 
     def test_cmd_split(self):
-        plain_str = ''
-        unicode_str = u''
-        empty_bytes = b''
-        # shlex.split() can work with "plain_str" and "unicode_str" on both
-        # Python 2 and Python 3.  While we're not testing Python itself,
-        # this will help us catch possible differences in the Python
-        # standard library should they arise.
-        self.assertEqual(shlex.split(plain_str), [])
-        self.assertEqual(shlex.split(astring.to_text(plain_str)), [])
-        self.assertEqual(shlex.split(unicode_str), [])
-        self.assertEqual(shlex.split(astring.to_text(unicode_str)), [])
-        # on Python 3, shlex.split() won't work with bytes, raising:
-        # AttributeError: 'bytes' object has no attribute 'read'.
-        # To turn bytes into text (when necessary), that is, on
-        # Python 3 only, use astring.to_text()
-        self.assertEqual(shlex.split(astring.to_text(empty_bytes)), [])
-        # Now let's test our specific implementation to split commands
-        self.assertEqual(process.cmd_split(plain_str), [])
-        self.assertEqual(process.cmd_split(unicode_str), [])
-        self.assertEqual(process.cmd_split(empty_bytes), [])
-        unicode_command = u"avok\xe1do_test_runner arguments"
-        self.assertEqual(process.cmd_split(unicode_command),
-                         [u"avok\xe1do_test_runner",
-                          u"arguments"])
+        self.assertEqual(process.cmd_split(''), [])
+        self.assertEqual(process.cmd_split("avok\xe1do_test_runner arguments"),
+                         ["avok\xe1do_test_runner",
+                          "arguments"])
 
     def test_get_parent_pid(self):
         stat = b'18405 (bash) S 24139 18405 18405 34818 8056 4210688 9792 170102 0 7 11 4 257 84 20 0 1 0 44336493 235409408 4281 18446744073709551615 94723230367744 94723231442728 140723100226000 0 0 0 65536 3670020 1266777851 0 0 0 17 1 0 0 0 0 0 94723233541456 94723233588580 94723248717824 140723100229613 140723100229623 140723100229623 140723100233710 0'
