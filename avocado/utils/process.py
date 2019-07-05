@@ -628,18 +628,12 @@ class SubProcess:
 
             self.start_time = time.time()
 
-            # The Thread to be started by the FDDrainer cannot have a name
-            # from a non-ascii string (this is a Python 2 internal limitation).
-            # To keep some relation between the command name and the Thread
-            # this resorts to attempting the conversion to ascii, replacing
-            # characters it can not convert
-            cmd_name = self.cmd.encode('ascii', 'replace')
             # prepare fd drainers
             if self.allow_output_check == 'combined':
                 self._combined_drainer = FDDrainer(
                     self._popen.stdout.fileno(),
                     self.result,
-                    name="%s-combined" % cmd_name,
+                    name="%s-combined" % self.cmd,
                     logger=log,
                     logger_prefix="[output] %s",
                     # FIXME, in fact, a new log has to be used here
@@ -658,7 +652,7 @@ class SubProcess:
                 self._stdout_drainer = FDDrainer(
                     self._popen.stdout.fileno(),
                     self.result,
-                    name="%s-stdout" % cmd_name,
+                    name="%s-stdout" % self.cmd,
                     logger=log,
                     logger_prefix="[stdout] %s",
                     stream_logger=stdout_stream_logger,
@@ -667,7 +661,7 @@ class SubProcess:
                 self._stderr_drainer = FDDrainer(
                     self._popen.stderr.fileno(),
                     self.result,
-                    name="%s-stderr" % cmd_name,
+                    name="%s-stderr" % self.cmd,
                     logger=log,
                     logger_prefix="[stderr] %s",
                     stream_logger=stderr_stream_logger,
