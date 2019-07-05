@@ -34,7 +34,6 @@ all:
 	@echo "develop:     Runs 'python setup.py --develop' on this tree alone"
 	@echo "link:        Runs 'python setup.py --develop' in all subprojects and links the needed resources"
 	@echo "clean:       Get rid of scratch, byte files and removes the links to other subprojects"
-	@echo "selfcheck:   Runs tree static check, unittests and functional tests using Avocado itself"
 	@echo "spell:       Runs spell checker on comments and docstrings (requires python-enchant)"
 	@echo
 	@echo "Package requirements related targets"
@@ -138,10 +137,6 @@ check: clean develop
 
 check-full: clean develop
 	PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=2 selftests/checkall
-	selftests/check_tmp_dirs
-
-selfcheck: clean develop
-	PYTHON=$(PYTHON) AVOCADO_SELF_CHECK=1 selftests/checkall
 	selftests/check_tmp_dirs
 
 develop:
