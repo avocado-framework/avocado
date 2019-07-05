@@ -17,6 +17,7 @@ Module to help extract and create compressed archives.
 
 import gzip
 import logging
+import lzma
 import os
 import platform
 import stat
@@ -25,17 +26,6 @@ import zipfile
 
 
 LOG = logging.getLogger(__name__)
-
-
-try:
-    import lzma
-    LZMA_CAPABLE = True
-except ImportError:
-    try:
-        from backports import lzma
-        LZMA_CAPABLE = True
-    except ImportError:
-        LZMA_CAPABLE = False
 
 
 #: The first two bytes that all gzip files start with
@@ -75,51 +65,17 @@ class ArchiveException(Exception):
     """
 
 
-class _WrapLZMA:
-
-    """ wraps tar.xz for python 2.7's tarfile """
-
-    def __init__(self, filename, mode):
-        """
-        Creates an instance of :class:`ArchiveFile`.
-
-        :param filename: the archive file name.
-        :param mode: file mode, `r` read, `w` write.
-        """
-        self._engine = tarfile.open(fileobj=lzma.LZMAFile(filename, mode),
-                                    mode=mode)
-        methods = dir(self._engine)
-        for meth in dir(self):
-            try:
-                methods.remove(meth)
-            except ValueError:
-                pass
-        for method in methods:
-            setattr(self, method, getattr(self._engine, method))
-
-    @classmethod
-    def open(cls, filename, mode='r'):
-        """
-        Creates an instance of :class:`_WrapLZMA`.
-
-        :param filename: the archive file name.
-        :param mode: file mode, `r` read, `w` write.
-        """
-        return cls(filename, mode)
-
-
-if LZMA_CAPABLE:
-    def extract_lzma(path, force=False):
-        """
-        Extracts a XZ compressed file to the same directory.
-        """
-        extracted_file = os.path.splitext(path)[0]
-        if not force and os.path.exists(extracted_file):
-            return extracted_file
-        with open(path, 'rb') as file_obj:
-            with open(extracted_file, 'wb') as newfile_obj:
-                newfile_obj.write(lzma.decompress(file_obj.read()))
+def extract_lzma(path, force=False):
+    """
+    Extracts a XZ compressed file to the same directory.
+    """
+    extracted_file = os.path.splitext(path)[0]
+    if not force and os.path.exists(extracted_file):
         return extracted_file
+    with lzma.open(path, 'rb') as file_obj:
+        with open(extracted_file, 'wb') as newfile_obj:
+            newfile_obj.write(file_obj.read())
+    return extracted_file
 
 
 class ArchiveFile:
@@ -138,9 +94,6 @@ class ArchiveFile:
         '.tgz': (False, True, tarfile.open, ':gz'),
         '.tar.bz2': (False, True, tarfile.open, ':bz2'),
         '.tbz2': (False, True, tarfile.open, ':bz2')}
-
-    if LZMA_CAPABLE:
-        _extension_table['.xz'] = (False, True, _WrapLZMA.open, '')
 
     def __init__(self, filename, mode='r'):
         """
