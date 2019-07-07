@@ -31,7 +31,6 @@ RUN apt-get update && \
 	    python-pip \
 	    python-pystache \
 	    python-setuptools \
-	    python-stevedore  \
 	    python-yaml && \
     echo install extra avocado packages && \
     apt-get install -y --no-install-recommends \
