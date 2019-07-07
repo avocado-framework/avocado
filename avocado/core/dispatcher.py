@@ -20,91 +20,15 @@ dispatcher that these depend upon:
 :class:`avocado.core.settings_dispatcher.SettingsDispatcher`
 """
 
-import copy
-import sys
-
-from stevedore import EnabledExtensionManager
-
+from .extension_manager import ExtensionManager
 from .settings import settings
 from .settings import SettingsError
-from .output import LOG_UI
-from ..utils import stacktrace
 
 
-class Dispatcher(EnabledExtensionManager):
-
-    """
-    Base dispatcher for various extension types
-    """
-
-    #: Default namespace prefix for Avocado extensions
-    NAMESPACE_PREFIX = 'avocado.plugins.'
+class EnabledExtensionManager(ExtensionManager):
 
     def __init__(self, namespace, invoke_kwds=None):
-        if invoke_kwds is None:
-            invoke_kwds = {}
-        self.load_failures = []
-        super(Dispatcher, self).__init__(namespace=namespace,
-                                         check_func=self.enabled,
-                                         invoke_on_load=True,
-                                         invoke_kwds=invoke_kwds,
-                                         on_load_failure_callback=self.store_load_failure,
-                                         propagate_map_exceptions=True)
-
-    def plugin_type(self):
-        """
-        Subset of entry points namespace for this dispatcher
-
-        Given an entry point `avocado.plugins.foo`, plugin type is `foo`.  If
-        entry point does not conform to the Avocado standard prefix, it's
-        returned unchanged.
-        """
-        if self.namespace.startswith(self.NAMESPACE_PREFIX):
-            return self.namespace[len(self.NAMESPACE_PREFIX):]
-        else:
-            return self.namespace
-
-    def fully_qualified_name(self, extension):
-        """
-        Returns the Avocado fully qualified plugin name
-
-        :param extension: an Stevedore Extension instance
-        :type extension: :class:`stevedore.extension.Extension`
-        """
-        return "%s.%s" % (self.plugin_type(), extension.entry_point.name)
-
-    def settings_section(self):
-        """
-        Returns the config section name for the plugin type handled by itself
-        """
-        return "plugins.%s" % self.plugin_type()
-
-    def enabled(self, extension):
-        """
-        Checks configuration for explicit mention of plugin in a disable list
-
-        If configuration section or key doesn't exist, it means no plugin
-        is disabled.
-        """
-        try:
-            disabled = settings.get_value('plugins', 'disable', key_type=list)
-            return self.fully_qualified_name(extension) not in disabled
-        except SettingsError:
-            return True
-
-    def names(self):
-        """
-        Returns the names of the discovered extensions
-
-        This differs from :func:`stevedore.extension.ExtensionManager.names`
-        in that it returns names in a predictable order, by using standard
-        :func:`sorted`.
-        """
-        return sorted(super(Dispatcher, self).names())
-
-    def _init_plugins(self, extensions):
-        super(Dispatcher, self)._init_plugins(extensions)
-        self.extensions.sort(key=lambda x: x.name)
+        super(EnabledExtensionManager, self).__init__(namespace, invoke_kwds)
         configured_order = settings.get_value(self.settings_section(), "order",
                                               key_type=list, default=[])
         ordered = []
@@ -117,69 +41,15 @@ class Dispatcher(EnabledExtensionManager):
                 ordered.append(ext)
         self.extensions = ordered
 
-    @staticmethod
-    def store_load_failure(manager, entrypoint, exception):
-        manager.load_failures.append((entrypoint, exception))
-
-    def map_method_with_return(self, method_name, *args, **kwargs):
-        """
-        The same as `map_method` but additionally reports the list of returned
-        values and optionally deepcopies the passed arguments
-
-        :param method_name: Name of the method to be called on each ext
-        :param args: Arguments to be passed to all called functions
-        :param kwargs: Key-word arguments to be passed to all called functions
-                        if `"deepcopy" == True` is present in kwargs the
-                        args and kwargs are deepcopied before passing it
-                        to each called function.
-        """
-        deepcopy = kwargs.pop("deepcopy", False)
-        ret = []
-        for ext in self.extensions:
-            try:
-                if hasattr(ext.obj, method_name):
-                    method = getattr(ext.obj, method_name)
-                    if deepcopy:
-                        copied_args = [copy.deepcopy(arg) for arg in args]
-                        copied_kwargs = copy.deepcopy(kwargs)
-                        ret.append(method(*copied_args, **copied_kwargs))
-                    else:
-                        ret.append(method(*args, **kwargs))
-            except SystemExit:
-                raise
-            except KeyboardInterrupt:
-                raise
-            except:     # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(),
-                                        logger='avocado.app.debug')
-                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
-                             method_name, ext.name, sys.exc_info()[1])
-        return ret
-
-    def map_method(self, method_name, *args):
-        """
-        Maps method_name on each extension in case the extension has the attr
-
-        :param method_name: Name of the method to be called on each ext
-        :param args: Arguments to be passed to all called functions
-        """
-        for ext in self.extensions:
-            try:
-                if hasattr(ext.obj, method_name):
-                    method = getattr(ext.obj, method_name)
-                    method(*args)
-            except SystemExit:
-                raise
-            except KeyboardInterrupt:
-                raise
-            except:     # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(),
-                                        logger='avocado.app.debug')
-                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
-                             method_name, ext.name, sys.exc_info()[1])
+    def enabled(self, extension):
+        try:
+            disabled = settings.get_value('plugins', 'disable', key_type=list)
+            return self.fully_qualified_name(extension) not in disabled
+        except SettingsError:
+            return True
 
 
-class CLIDispatcher(Dispatcher):
+class CLIDispatcher(EnabledExtensionManager):
 
     """
     Calls extensions on configure/run
@@ -192,7 +62,7 @@ class CLIDispatcher(Dispatcher):
         super(CLIDispatcher, self).__init__('avocado.plugins.cli')
 
 
-class CLICmdDispatcher(Dispatcher):
+class CLICmdDispatcher(EnabledExtensionManager):
 
     """
     Calls extensions on configure/run
@@ -205,7 +75,7 @@ class CLICmdDispatcher(Dispatcher):
         super(CLICmdDispatcher, self).__init__('avocado.plugins.cli.cmd')
 
 
-class JobPrePostDispatcher(Dispatcher):
+class JobPrePostDispatcher(EnabledExtensionManager):
 
     """
     Calls extensions before Job execution
@@ -218,13 +88,13 @@ class JobPrePostDispatcher(Dispatcher):
         super(JobPrePostDispatcher, self).__init__('avocado.plugins.job.prepost')
 
 
-class ResultDispatcher(Dispatcher):
+class ResultDispatcher(EnabledExtensionManager):
 
     def __init__(self):
         super(ResultDispatcher, self).__init__('avocado.plugins.result')
 
 
-class ResultEventsDispatcher(Dispatcher):
+class ResultEventsDispatcher(EnabledExtensionManager):
 
     def __init__(self, args):
         super(ResultEventsDispatcher, self).__init__(
@@ -232,7 +102,7 @@ class ResultEventsDispatcher(Dispatcher):
             invoke_kwds={'args': args})
 
 
-class VarianterDispatcher(Dispatcher):
+class VarianterDispatcher(EnabledExtensionManager):
 
     def __init__(self):
         super(VarianterDispatcher, self).__init__('avocado.plugins.varianter')

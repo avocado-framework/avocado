@@ -20,8 +20,7 @@ will be read by the other dispatchers, while still being a dispatcher
 for configuration sources.
 """
 
-
-from stevedore import ExtensionManager
+from .extension_manager import ExtensionManager
 
 
 class SettingsDispatcher(ExtensionManager):
@@ -35,7 +34,4 @@ class SettingsDispatcher(ExtensionManager):
     """
 
     def __init__(self):
-        super(SettingsDispatcher, self).__init__('avocado.plugins.settings',
-                                                 invoke_on_load=True,
-                                                 invoke_kwds={},
-                                                 propagate_map_exceptions=True)
+        super(SettingsDispatcher, self).__init__('avocado.plugins.settings')

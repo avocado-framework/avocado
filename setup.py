@@ -30,8 +30,6 @@ def get_long_description():
     return readme_contents
 
 
-INSTALL_REQUIREMENTS = ['stevedore>=0.14', 'setuptools']
-
 if __name__ == '__main__':
     # Force "make develop" inside the "readthedocs.org" environment
     if os.environ.get("READTHEDOCS") and "install" in sys.argv:
@@ -107,4 +105,4 @@ if __name__ == '__main__':
           zip_safe=False,
           test_suite='selftests',
           python_requires='>=3.4',
-          install_requires=INSTALL_REQUIREMENTS)
+          install_requires=['setuptools'])
