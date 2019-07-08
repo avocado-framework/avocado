@@ -293,25 +293,17 @@ def binary_from_shell_cmd(cmd):
     :type cmd: unicode string
     :return: first found binary from the cmd
     """
-    cmds = cmd_split(cmd)
+    cmds = shlex.split(cmd)
     for item in cmds:
         if not _RE_BASH_SET_VARIABLE.match(item):
             return item
     raise ValueError("Unable to parse first binary from '%s'" % cmd)
 
 
-def cmd_split(cmd):
-    """
-    Splits a command line into individual components
-
-    This is a simple wrapper around :func:`shlex.split`, which has the
-    requirement of having text (not bytes) as its argument on Python 3,
-    but bytes on Python 2.
-
-    :param cmd: text (a multi byte string) encoded as 'utf-8'
-    """
-    data = astring.to_text(cmd, 'utf-8')
-    return shlex.split(data)
+#: This is kept for compatibility purposes, but is now deprecated and
+#: will be removed in later versions.  Please use :func:`shlex.split`
+#: instead.
+cmd_split = shlex.split
 
 
 class CmdResult:
@@ -617,7 +609,7 @@ class SubProcess:
             if self.verbose:
                 log.info("Running '%s'", self.cmd)
             if self.shell is False:
-                cmd = cmd_split(self.cmd)
+                cmd = shlex.split(self.cmd)
             else:
                 cmd = self.cmd
             try:
@@ -636,18 +628,12 @@ class SubProcess:
 
             self.start_time = time.time()
 
-            # The Thread to be started by the FDDrainer cannot have a name
-            # from a non-ascii string (this is a Python 2 internal limitation).
-            # To keep some relation between the command name and the Thread
-            # this resorts to attempting the conversion to ascii, replacing
-            # characters it can not convert
-            cmd_name = self.cmd.encode('ascii', 'replace')
             # prepare fd drainers
             if self.allow_output_check == 'combined':
                 self._combined_drainer = FDDrainer(
                     self._popen.stdout.fileno(),
                     self.result,
-                    name="%s-combined" % cmd_name,
+                    name="%s-combined" % self.cmd,
                     logger=log,
                     logger_prefix="[output] %s",
                     # FIXME, in fact, a new log has to be used here
@@ -666,7 +652,7 @@ class SubProcess:
                 self._stdout_drainer = FDDrainer(
                     self._popen.stdout.fileno(),
                     self.result,
-                    name="%s-stdout" % cmd_name,
+                    name="%s-stdout" % self.cmd,
                     logger=log,
                     logger_prefix="[stdout] %s",
                     stream_logger=stdout_stream_logger,
@@ -675,7 +661,7 @@ class SubProcess:
                 self._stderr_drainer = FDDrainer(
                     self._popen.stderr.fileno(),
                     self.result,
-                    name="%s-stderr" % cmd_name,
+                    name="%s-stderr" % self.cmd,
                     logger=log,
                     logger_prefix="[stderr] %s",
                     stream_logger=stderr_stream_logger,
@@ -968,7 +954,7 @@ class GDBSubProcess:
             encoding = astring.ENCODING
         self.cmd = cmd
 
-        self.args = cmd_split(cmd)
+        self.args = shlex.split(cmd)
         self.binary = self.args[0]
         self.binary_path = os.path.abspath(self.cmd)
         self.result = CmdResult(cmd, encoding=encoding)
@@ -1252,7 +1238,7 @@ def should_run_inside_gdb(cmd):
         return False
 
     try:
-        args = cmd_split(cmd)
+        args = shlex.split(cmd)
     except ValueError:
         log.warning("Unable to check whether command '%s' should run inside "
                     "GDB, fallback to simplified method...", cmd)
@@ -1274,7 +1260,7 @@ def should_run_inside_wrapper(cmd):
     """
     global CURRENT_WRAPPER  # pylint: disable=W0603
     CURRENT_WRAPPER = None
-    args = cmd_split(cmd)
+    args = shlex.split(cmd)
     cmd_binary_name = args[0]
 
     for script, cmd_expr in WRAP_PROCESS_NAMES_EXPR:

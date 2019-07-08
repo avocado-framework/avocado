@@ -32,8 +32,8 @@ Installing with standard Python tools
 -------------------------------------
 
 The simplest installation method is through ``pip``.  On most POSIX
-systems with Python 2.7 and ``pip`` available, installation can be
-performed with a single command::
+systems with Python 3.4 (or later) and ``pip`` available, installation
+can be performed with a single command::
 
   pip install --user avocado-framework
 
@@ -48,7 +48,7 @@ If you want even more isolation, Avocado can also be installed in a
 Python virtual environment. with no additional steps besides creating
 and activating the "venv" itself::
 
-  python -m virtualenv /path/to/new/virtual_environment
+  python -m venv /path/to/new/virtual_environment
   . /path/to/new/virtual_environment/bin/activate
   pip install avocado-framework
 
