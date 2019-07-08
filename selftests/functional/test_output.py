@@ -110,14 +110,6 @@ class OutputCheckOnOff(Test):
 """
 
 
-def image_output_uncapable():
-    try:
-        import PIL              # pylint: disable=W0611,W0612
-        return False
-    except ImportError:
-        return True
-
-
 def perl_tap_parser_uncapable():
     return os.system("perl -e 'use TAP::Parser;'") != 0
 
@@ -455,8 +447,6 @@ class OutputPluginTest(unittest.TestCase):
             self.assertTrue(os.path.exists(whiteboard_path),
                             'Missing whiteboard file %s' % whiteboard_path)
 
-    @unittest.skipIf(image_output_uncapable(),
-                     "Uncapable of generating images with PIL library")
     def test_gendata(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir)
         cmd_line = ("%s run --job-results-dir %s "
