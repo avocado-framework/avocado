@@ -138,9 +138,9 @@ def write_file_or_fail(filename, data):
     :type data: str
     :raises GenIOError: On write Failure
     """
-    fd = os.open(filename, os.O_WRONLY)
     try:
-        os.write(fd, data)
+        with open(filename, 'w') as file_obj:
+            file_obj.write(data)
     except OSError as details:
         raise GenIOError("The write to %s failed: %s" % (
                          filename, details))
