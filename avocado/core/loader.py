@@ -238,7 +238,6 @@ class TestLoaderProxy:
                                        ", ".join(_good_test_types(plugin)))
             return out.rstrip('\n')
 
-        self._initialized_plugins = []
         # Register external runner when --external-runner is used
         if getattr(args, "external_runner", None):
             self.register_plugin(ExternalLoader)
