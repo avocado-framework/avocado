@@ -263,8 +263,8 @@ class TestLoaderProxy:
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
                                         if plugin not in loaders] +
                        loaders[idx + 1:])
-            while "@DEFAULT" in loaders:  # Remove duplicate @DEFAULT entries
-                loaders.remove("@DEFAULT")
+            # Remove duplicate @DEFAULT entries
+            loaders = [item for item in loaders if item != "@DEFAULT"]
 
         loaders = [_.split(':', 1) for _ in loaders]
         priority = [_[0] for _ in loaders]
