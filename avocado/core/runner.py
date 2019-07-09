@@ -240,6 +240,7 @@ class TestStatus:
         # At this point there were failures, fill the new test status
         TEST_LOG.debug("Original status: %s", str(self.status))
         test_state = self.early_status
+        test_state['time_start'] = started
         test_state['time_elapsed'] = time.time() - started
         test_state['fail_reason'] = err
         test_state['status'] = exceptions.TestAbortError.status
