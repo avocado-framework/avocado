@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 70.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -550,6 +550,7 @@ GLib Test Framework.
 %files -n python3-%{srcname}-plugins-glib
 %{python3_sitelib}/avocado_glib*
 %{python3_sitelib}/avocado_framework_plugin_glib*
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/glib.conf
 
 %package -n python3-%{srcname}-examples
 Summary: Avocado Test Framework Example Tests
@@ -583,6 +584,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jul  9 2019 Cleber Rosa <cleber@redhat.com> - 70.0-1
+- Add config file to glib plugin subpackage
+
 * Wed Jun 26 2019 Cleber Rosa <cleber@redhat.com> - 70.0-0
 - New release
 

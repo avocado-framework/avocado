@@ -7,6 +7,12 @@ GLib Plugin
 This optional plugin enables Avocado to list and run tests written using the
 `GLib Test Framework <https://developer.gnome.org/glib/stable/glib-Testing.html>`_.
 
+.. tip:: To see the GLIB tests, it's necessary to execute the
+         binaries.  For safety reasons, this is not enable by default
+         in Avocado.  Please edit the ``unsafe`` configuration entry
+         in the ``[plugins.glib]`` section to enable it.  Also notice
+         that a ``glib.conf`` file ships with Avocado.
+
 To list the tests, just provide the test file path::
 
     $ avocado list --loaders glib -- tests/check-qnum

@@ -26,6 +26,7 @@ from avocado.core import loader
 from avocado.core import output
 from avocado.core import test
 from avocado.core.plugin_interfaces import CLI
+from avocado.core.settings import settings
 
 
 class GLibTest(test.SimpleTest):
@@ -86,7 +87,8 @@ class GLibLoader(loader.TestLoader):
             subtests_filter = re.compile(_subtests_filter)
 
         if (os.path.isfile(reference) and
-                path.PathInspector(reference).has_exec_permission()):
+                path.PathInspector(reference).has_exec_permission() and
+                settings.get_value("plugins.glib", "unsafe", bool, False)):
             try:
                 cmd = '%s -l' % (reference)
                 result = process.run(cmd)
