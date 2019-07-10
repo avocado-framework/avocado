@@ -238,16 +238,16 @@ class TestLoaderProxy:
                                        ", ".join(_good_test_types(plugin)))
             return out.rstrip('\n')
 
-        self._initialized_plugins = []
-        # Add (default) file loader if not already registered
-        if FileLoader not in self.registered_plugins:
-            self.register_plugin(FileLoader)
-        if ExternalLoader not in self.registered_plugins:
-            self.register_plugin(ExternalLoader)
         # Register external runner when --external-runner is used
         if getattr(args, "external_runner", None):
             self.register_plugin(ExternalLoader)
             args.loaders = ["external:%s" % args.external_runner]
+        else:
+            # Add (default) file loader if not already registered
+            if FileLoader not in self.registered_plugins:
+                self.register_plugin(FileLoader)
+            if ExternalLoader not in self.registered_plugins:
+                self.register_plugin(ExternalLoader)
         supported_loaders = [_.name for _ in self.registered_plugins]
         supported_types = []
         for plugin in self.registered_plugins:
@@ -263,8 +263,8 @@ class TestLoaderProxy:
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
                                         if plugin not in loaders] +
                        loaders[idx + 1:])
-            while "@DEFAULT" in loaders:  # Remove duplicate @DEFAULT entries
-                loaders.remove("@DEFAULT")
+            # Remove duplicate @DEFAULT entries
+            loaders = [item for item in loaders if item != "@DEFAULT"]
 
         loaders = [_.split(':', 1) for _ in loaders]
         priority = [_[0] for _ in loaders]
