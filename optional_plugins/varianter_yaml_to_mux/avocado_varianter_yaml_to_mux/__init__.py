@@ -21,10 +21,11 @@ import re
 import sys
 
 import yaml
+
 try:
-    from yaml import CLoader as Loader
+    from yaml import CSafeLoader as SafeLoader
 except ImportError:
-    from yaml import Loader
+    from yaml import SafeLoader
 
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
@@ -47,22 +48,26 @@ __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
 __RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
 
 
-class _BaseLoader(Loader):
+class _BaseLoader(SafeLoader):
+
     """
     YAML loader with additional features related to mux
     """
-    Loader.add_constructor(u'!include',
-                           lambda *_: mux.Control(YAML_INCLUDE))
-    Loader.add_constructor(u'!using',
-                           lambda *_: mux.Control(YAML_USING))
-    Loader.add_constructor(u'!remove_node',
-                           lambda *_: mux.Control(YAML_REMOVE_NODE))
-    Loader.add_constructor(u'!remove_value',
-                           lambda *_: mux.Control(YAML_REMOVE_VALUE))
-    Loader.add_constructor(u'!filter-only',
-                           lambda *_: mux.Control(YAML_FILTER_ONLY))
-    Loader.add_constructor(u'!filter-out',
-                           lambda *_: mux.Control(YAML_FILTER_OUT))
+
+    SafeLoader.add_constructor(u'!include',
+                               lambda *_: mux.Control(YAML_INCLUDE))
+    SafeLoader.add_constructor(u'!using',
+                               lambda *_: mux.Control(YAML_USING))
+    SafeLoader.add_constructor(u'!remove_node',
+                               lambda *_: mux.Control(YAML_REMOVE_NODE))
+    SafeLoader.add_constructor(u'!remove_value',
+                               lambda *_: mux.Control(YAML_REMOVE_VALUE))
+    SafeLoader.add_constructor(u'!filter-only',
+                               lambda *_: mux.Control(YAML_FILTER_ONLY))
+    SafeLoader.add_constructor(u'!filter-out',
+                               lambda *_: mux.Control(YAML_FILTER_OUT))
+    SafeLoader.add_constructor(u'tag:yaml.org,2002:python/dict',
+                               lambda self, node: dict(self.construct_mapping(node)))
 
 
 class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
@@ -237,7 +242,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
             if key_node.tag.startswith('!'):    # reflect tags everywhere
                 key = loader.construct_object(key_node)
             else:
-                key = loader.construct_python_str(key_node)
+                key = loader.construct_scalar(key_node)
             # If we are to keep them, use following, but we lose the control
             # for both, nodes and dicts
             # key = loader.construct_object(key_node)
