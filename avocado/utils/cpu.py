@@ -99,11 +99,11 @@ def get_cpu_vendor_name():
     :rtype: `string`
     """
     vendors_map = {
-        'intel': ("GenuineIntel", ),
-        'amd': ("AMD", ),
-        'power7': ("POWER7", ),
-        'power8': ("POWER8", ),
-        'power9': ("POWER9", )
+        'intel': (b"GenuineIntel", ),
+        'amd': (b"AMD", ),
+        'power7': (b"POWER7", ),
+        'power8': (b"POWER8", ),
+        'power9': (b"POWER9", )
     }
 
     cpu_info = _get_cpu_info()
