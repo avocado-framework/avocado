@@ -206,6 +206,10 @@ from unittest import TestCase
 from . import something
 
 class SampleTest(TestCase):
+    '''
+    :avocado: tags=flattag
+    :avocado: tags=foo:bar
+    '''
     def test(self):
         pass
 """
@@ -416,6 +420,7 @@ class LoaderTest(unittest.TestCase):
         tests = self.loader.discover(python_unittest.path)
         exp = [(test.PythonUnittest,
                 {"name": "python_unittest.SampleTest.test",
+                 "tags": {"flattag": None, "foo": {"bar"}},
                  "test_dir": os.path.dirname(python_unittest.path)})]
         self.assertEqual(tests, exp)
 

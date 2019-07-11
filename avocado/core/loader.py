@@ -688,8 +688,8 @@ class FileLoader(TestLoader):
                 test_path = test_path[:-3]
             test_module_name = os.path.relpath(test_path)
             test_module_name = test_module_name.replace(os.path.sep, ".")
-            candidates = ["%s.%s.%s" % (test_module_name, klass, method)
-                          for method in methods]
+            candidates = [("%s.%s.%s" % (test_module_name, klass, method), tags)
+                          for (method, tags) in methods]
             if subtests_filter:
                 result += [_ for _ in candidates if subtests_filter.search(_)]
             else:
@@ -745,8 +745,9 @@ class FileLoader(TestLoader):
                 os.chdir(old_dir)
             if python_unittests:
                 return [(test.PythonUnittest, {"name": name,
-                                               "test_dir": py_test_dir})
-                        for name in python_unittests]
+                                               "test_dir": py_test_dir,
+                                               "tags": tags})
+                        for (name, tags) in python_unittests]
             else:
                 return self._make_simple_or_broken_test(test_path,
                                                         subtests_filter,

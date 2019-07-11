@@ -1261,7 +1261,8 @@ class PythonUnittest(ExternalRunnerTest):
     Python unittest test
     """
     def __init__(self, name, params=None, base_logdir=None, job=None,
-                 test_dir=None, python_unittest_module=None):
+                 test_dir=None, python_unittest_module=None,
+                 tags=None):    # pylint: disable=W0613
         runner = "%s -m unittest -q -c" % sys.executable
         external_runner = ExternalRunnerSpec(runner, "test", test_dir)
         super(PythonUnittest, self).__init__(name, params, base_logdir, job,
