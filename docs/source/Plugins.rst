@@ -69,10 +69,10 @@ output.
 Registering Plugins
 ~~~~~~~~~~~~~~~~~~~
 
-Avocado makes use of the `Stevedore`_ library to load and activate plugins.
-Stevedore itself uses `setuptools`_ and its `entry points`_ to register
-and find Python objects. So, to make your new plugin visible to Avocado, you need
-to add to your setuptools based `setup.py` file something like::
+Avocado makes use of the `setuptools`_ and its `entry points`_ to
+register and find Python objects. So, to make your new plugin visible
+to Avocado, you need to add to your setuptools based `setup.py` file
+something like::
 
  setup(name='mypluginpack',
  ...
@@ -179,18 +179,16 @@ the standard Avocado ``job.prepost.jobscripts`` does.
 Wrap Up
 ~~~~~~~
 
-We have briefly discussed the making of Avocado plugins. We recommend
-the `Stevedore documentation`_ and also a look at the
-:mod:`avocado.core.plugin_interfaces` module for the various plugin interface definitions.
+We have briefly discussed the making of Avocado plugins.  We recommend
+you look at the `entry points`_ documentation and also take a look at
+the :mod:`avocado.core.plugin_interfaces` module for the various
+plugin interface definitions.
 
 Some plugins examples are available in the `Avocado source tree`_, under ``examples/plugins``.
 
 Finally, exploring the real plugins shipped with Avocado in :mod:`avocado.plugins`
 is the final "documentation" source.
 
-
-.. _Stevedore: https://github.com/openstack/stevedore
-.. _Stevedore documentation: http://docs.openstack.org/developer/stevedore/index.html
 .. _setuptools: https://setuptools.readthedocs.io/en/latest/
 .. _entry points: https://setuptools.readthedocs.io/en/latest/pkg_resources.html#entry-points
 .. _Avocado source tree: https://github.com/avocado-framework/avocado/tree/master/examples/plugins

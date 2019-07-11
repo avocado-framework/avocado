@@ -100,10 +100,6 @@ To (non-intrusively) install your module, use::
     avocado-framework 55.0 is already the active version in easy-install.pth
 
     Using /home/apahim/git/avocado
-    Searching for stevedore==1.25.0
-    Best match: stevedore 1.25.0
-    Adding stevedore 1.25.0 to easy-install.pth file
-
     Using /usr/lib/python2.7/site-packages
     Searching for six==1.10.0
     Best match: six 1.10.0

@@ -1,21 +1,21 @@
 import unittest
 
-from avocado.core import dispatcher
+from avocado.core.dispatcher import EnabledExtensionManager
 
 
 class DispatcherTest(unittest.TestCase):
 
     def test_order(self):
+        """
+        Simply checks that the default order is based on the extension names
+        """
         namespaces = ['avocado.plugins.cli',
                       'avocado.plugins.cli.cmd',
                       'avocado.plugins.job.prepost',
                       'avocado.plugins.result']
         for namespace in namespaces:
-            names = dispatcher.Dispatcher(namespace).names()
             ext_names = [ext.name for ext in
-                         dispatcher.Dispatcher(namespace).extensions]
-            self.assertEqual(names, ext_names)
-            self.assertEqual(names, sorted(names))
+                         EnabledExtensionManager(namespace).extensions]
             self.assertEqual(ext_names, sorted(ext_names))
 
 

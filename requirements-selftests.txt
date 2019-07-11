@@ -16,9 +16,6 @@ psutil==5.4.7
 # but is necessary for selftests
 pycdlib==1.6.0
 
-# stevedore for loading "new style" plugins
-stevedore==1.29.0
-
 # this is a workaround since easy_install cannot install
 # libvirt-python properly with the the current process
 # in make develop. The proper solution would be migrate

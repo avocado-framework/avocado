@@ -56,8 +56,6 @@ class StreamsTest(unittest.TestCase):
         for cmd, env in cmds:
             result = process.run(cmd, env=env, shell=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertIn(b"stevedore.extension: found extension EntryPoint.parse",
-                          result.stdout)
             # If using the Python interpreter, Avocado won't know about it
             if AVOCADO.startswith(sys.executable):
                 cmd_in_log = cmd[len(sys.executable)+1:]
@@ -75,10 +73,6 @@ class StreamsTest(unittest.TestCase):
                'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
-                         result.stdout)
-        self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
-                         result.stderr)
         # If using the Python interpreter, Avocado won't know about it
         if AVOCADO.startswith(sys.executable):
             cmd_in_log = cmd[len(sys.executable)+1:]
