@@ -748,6 +748,8 @@ class SubProcess:
     def terminate(self):
         """
         Send a :attr:`signal.SIGTERM` to the process.
+        Please consider using :meth:`stop` instead if you want to
+        do all that's possible to finalize the process and wait for it to finish.
         """
         self._init_subprocess()
         self.send_signal(signal.SIGTERM)
@@ -755,6 +757,8 @@ class SubProcess:
     def kill(self):
         """
         Send a :attr:`signal.SIGKILL` to the process.
+        Please consider using :meth:`stop` instead if you want to
+        do all that's possible to finalize the process and wait for it to finish.
         """
         self._init_subprocess()
         self.send_signal(signal.SIGKILL)
@@ -846,17 +850,24 @@ class SubProcess:
         self._fill_results(rc)
         return rc
 
-    def stop(self):
+    def stop(self, timeout=None):
         """
         Stop background subprocess.
 
         Call this method to terminate the background subprocess and
         wait for it results.
+
+        :param timeout: Time (seconds) we'll wait until the process is
+                        finished. If it's not, we'll try to terminate it
+                        and it's children using ``sig`` and get a
+                        status. When the process refuses to die
+                        within 1s we use SIGKILL and report the status
+                        (be it exit_code or zombie)
         """
         self._init_subprocess()
         if self.result.exit_status is None:
             self.terminate()
-        return self.wait()
+        return self.wait(timeout)
 
     def get_pid(self):
         """

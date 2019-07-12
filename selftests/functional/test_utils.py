@@ -27,10 +27,11 @@ import signal
 import sys
 
 class FakeVMStat:
-    def __init__(self, interval):
+    def __init__(self, interval, interrupt_delay=0):
         self.interval = interval
         self._sysrand = random.SystemRandom()
         def interrupt_handler(signum, frame):
+            time.sleep(interrupt_delay)
             sys.exit(0)
         signal.signal(signal.SIGINT, interrupt_handler)
         signal.signal(signal.SIGTERM, interrupt_handler)
@@ -113,7 +114,7 @@ class FakeVMStat:
             time.sleep(self.interval)
 
 if __name__ == '__main__':
-    vmstat = FakeVMStat(interval=float(sys.argv[1]))
+    vmstat = FakeVMStat(interval=float(sys.argv[1]), interrupt_delay=float(sys.argv[2]))
     vmstat.start()
 """.format(python=sys.executable)
 
@@ -139,8 +140,11 @@ class ProcessTest(unittest.TestCase):
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
         os.chmod(self.fake_uptime, DEFAULT_MODE)
 
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitive")
     def test_process_start(self):
-        proc = process.SubProcess('%s 1' % self.fake_vmstat)
+        proc = process.SubProcess('%s 1 0' % self.fake_vmstat)
         proc.start()
         time.sleep(3)
         proc.terminate()
@@ -148,6 +152,28 @@ class ProcessTest(unittest.TestCase):
         stdout = proc.get_stdout().decode()
         self.assertIn('memory', stdout, 'result: %s' % stdout)
         self.assertRegexpMatches(stdout, '[0-9]+')
+
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitive")
+    def test_process_stop_interrupted(self):
+        proc = process.SubProcess('%s 1 3' % self.fake_vmstat)
+        proc.start()
+        time.sleep(3)
+        proc.stop(2)
+        result = proc.result
+        self.assertIn('timeout after', result.interrupted, "Process wasn't interrupted")
+
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitive")
+    def test_process_stop_uninterrupted(self):
+        proc = process.SubProcess('%s 1 3' % self.fake_vmstat)
+        proc.start()
+        time.sleep(3)
+        proc.stop(4)
+        result = proc.result
+        self.assertFalse(result.interrupted, "Process was interrupted to early")
 
     def test_process_run(self):
         proc = process.SubProcess(self.fake_uptime)
@@ -175,7 +201,7 @@ class FileLockTest(unittest.TestCase):
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+                     "resource intensive or time sensitive")
     def test_filelock(self):
         # Calculate the timeout based on t_100_iter + 2e-5*players
         start = time.time()
