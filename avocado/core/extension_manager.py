@@ -62,7 +62,7 @@ class ExtensionManager:
                 plugin = ep.load()
                 obj = plugin(**invoke_kwds)
             except Exception as exception:
-                self.load_failures.append(exception)
+                self.load_failures.append((ep, exception))
             else:
                 ext = Extension(ep.name, ep, plugin, obj)
                 if self.enabled(ext):  # lgtm [py/init-calls-subclass]
