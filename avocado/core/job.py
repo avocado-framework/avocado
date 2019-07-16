@@ -40,6 +40,7 @@ from . import job_id
 from . import output
 from . import varianter
 from . import test
+from . import tags
 from . import jobdata
 from .output import STD_OUTPUT
 from .settings import settings
@@ -354,7 +355,7 @@ class Job:
             force = getattr(self.args, 'ignore_missing_references', 'off')
             suite = loader.loader.discover(references, force=force)
             if getattr(self.args, 'filter_by_tags', False):
-                suite = loader.filter_test_tags(
+                suite = tags.filter_test_tags(
                     suite,
                     self.args.filter_by_tags,
                     self.args.filter_by_tags_include_empty,
