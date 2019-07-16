@@ -17,6 +17,7 @@ import sys
 from avocado.core import exit_codes, output
 from avocado.core import loader
 from avocado.core import test
+from avocado.core import tags
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import astring
@@ -73,11 +74,11 @@ class TestLister:
 
             if self.args.verbose:
                 if 'tags' in params:
-                    tags = params['tags']
+                    tgs = params['tags']
                 else:
-                    tags = {}
+                    tgs = {}
                 tags_repr = []
-                for tag, vals in tags.items():
+                for tag, vals in tgs.items():
                     if tag not in tag_stats:
                         tag_stats[tag] = 1
                     else:
@@ -122,7 +123,7 @@ class TestLister:
         self._extra_listing()
         test_suite = self._get_test_suite(self.args.reference)
         if getattr(self.args, 'filter_by_tags', False):
-            test_suite = loader.filter_test_tags(
+            test_suite = tags.filter_test_tags(
                 test_suite,
                 self.args.filter_by_tags,
                 self.args.filter_by_tags_include_empty,
