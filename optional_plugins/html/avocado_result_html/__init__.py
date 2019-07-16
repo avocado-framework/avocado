@@ -68,6 +68,10 @@ class ReportModel:
         return self._get_sysinfo('hostname').strip()
 
     @property
+    def source_path(self):
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+
+    @property
     def tests(self):
         mapping = {"SKIP": "warning",
                    "ABORT": "danger",
@@ -113,6 +117,7 @@ class ReportModel:
             formatted['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
                                                     local_time_start)
             formatted['row_class'] = mapping[tst['status']]
+            formatted['whiteboard'] = tst['whiteboard']
             exhibition_limit = 40
             fail_reason = tst.get('fail_reason')
             if fail_reason is None:
