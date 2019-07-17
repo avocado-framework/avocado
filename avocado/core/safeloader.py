@@ -639,10 +639,9 @@ def find_python_unittests(path):
                                                        is_unittest, module_name,
                                                        class_name,
                                                        _determine_match_unittest)
-            methods = [i[0] for i in _info]
             if _info:
                 parents.remove(parent)
-                info.extend(methods)
+                info.extend(_info)
             if _is_unittest is not is_unittest:
                 is_unittest = _is_unittest
 
@@ -685,9 +684,8 @@ def find_python_unittests(path):
                                                        module_name,
                                                        class_name,
                                                        _determine_match_unittest)
-            methods = [i[0] for i in _info]
             if _info:
-                info.extend(methods)
+                info.extend(_info)
             if _is_unittest is not is_unittest:
                 is_unittest = _is_unittest
 
