@@ -1,0 +1,14 @@
+span .spnTooltip {
+    z-index:10;
+    display:none;
+    padding:14px 20px;
+}
+span:hover .spnTooltip{
+    display:inline;
+    position:absolute;
+    right: 50px;
+    color:#111;
+    border:1px solid #337ab7;
+    background:#fff;
+}
+.callout {z-index:20;position:absolute;top:30px;border:0;left:-12px;}

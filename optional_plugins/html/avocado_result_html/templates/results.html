@@ -13,6 +13,10 @@
     <style type="text/css">
     {% include "datatables.css" %}
     </style>
+
+    <style type="text/css">
+    {% include "style.css" %}
+    </style>
   </head>
 
   <body>
@@ -63,7 +67,7 @@
             <th>Status</th>
             <th>Time (sec)</th>
             <th>Info</th>
-            <th>Debug Log</th>
+            <th>Debug</th>
           </tr>
         </thead>
         {% for test in data.tests %}
@@ -75,7 +79,13 @@
           <td>{{ test.status }}</td>
           <td>{{ test.time }}</td>
           <td>{{ test.fail_reason|safe }}</td>
-          <td><a href="{{ test.logfile }}">{{ test.logfile_basename }}</a></td>
+          <td class="row">
+            <a class="col-md-1" href="{{ test.logfile }}"><img src="{{ data.source_path + '/images/logs_icon.svg'}}" title="Debug log"/></a>
+            <span class="col-md-1">
+              <span class="spnTooltip"><strong>Whiteboard:</strong><br>{{test.whiteboard}}</span>
+              <img src="{{ data.source_path + '/images/whiteboard_icon.svg'}}"/>
+            </span>
+          </td>
         </tr>
         {% endfor %}
       </table>
