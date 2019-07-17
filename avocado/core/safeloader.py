@@ -621,14 +621,12 @@ def find_python_unittests(path):
     result = collections.OrderedDict()
 
     for klass in module.iter_classes():
-
+        docstring = ast.get_docstring(klass)
         parents = klass.bases
         is_unittest = module.is_matching_klass(klass)
 
-        info = [st.name for st in klass.body if
-                isinstance(st, ast.FunctionDef) and
-                st.name.startswith('test')]
-        info = data_structures.ordered_list_unique(info)
+        info = get_methods_info(klass.body,
+                                get_docstring_directives_tags(docstring))
 
         # Searching the parents in the same module
         for parent in parents[:]:
