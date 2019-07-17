@@ -79,10 +79,13 @@ class Runner(unittest.TestCase):
         runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase')
         runner = nrunner.runner_from_runnable(runnable)
         results = [status for status in runner.run()]
-        output = ('----------------------------------------------------------'
-                  '------------\nRan 0 tests in 0.000s\n\nOK\n')
-        self.assertEqual(results[-1], {'status': 'pass',
-                                       'output': output})
+        output1 = ('----------------------------------------------------------'
+                   '------------\nRan 0 tests in ')
+        output2 = 's\n\nOK\n'
+        result = results[-1]
+        self.assertEqual(result['status'], 'pass')
+        self.assertTrue(result['output'].startswith(output1))
+        self.assertTrue(result['output'].endswith(output2))
 
 
 if __name__ == '__main__':
