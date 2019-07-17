@@ -13,7 +13,7 @@ run_rc() {
     if [ $? != 0 ]; then
         echo -e "\e[31m$CHECK FAILED\e[0m"
         ERR+=("$CHECK")
-        [ ! "$SELF_CHECK_CONTINUOUS" ] && exit 1
+        exit 1
     else
         echo -e "\e[32m$CHECK PASSED\e[0m\n"
     fi
@@ -148,12 +148,8 @@ run_rc boundaries "selftests/modules-boundaries.sh"
 run_rc signed-off-by 'selftests/signedoff-check.sh'
 if [ "$AVOCADO_PARALLEL_CHECK" ]; then
     run_rc selftests parallel_selftests
-elif [ -z "$AVOCADO_SELF_CHECK" ]; then
-    run_rc selftests "$PYTHON selftests/run"
 else
-    CMD='scripts/avocado run --job-results-dir=$(mktemp -d) selftests/{unit,functional,doc}'
-    [ ! $SELF_CHECK_CONTINUOUS ] && CMD+=" --failfast on"
-    run_rc selftests "$CMD"
+    run_rc selftests "$PYTHON selftests/run"
 fi
 [ "$SKIP_RESULTSDIR_CHECK" ] || run_rc job-results results_dir_content "$RESULTS_DIR_CONTENT"
 

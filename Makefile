@@ -34,7 +34,6 @@ all:
 	@echo "develop:     Runs 'python setup.py --develop' on this tree alone"
 	@echo "link:        Runs 'python setup.py --develop' in all subprojects and links the needed resources"
 	@echo "clean:       Get rid of scratch, byte files and removes the links to other subprojects"
-	@echo "selfcheck:   Runs tree static check, unittests and functional tests using Avocado itself"
 	@echo "spell:       Runs spell checker on comments and docstrings (requires python-enchant)"
 	@echo
 	@echo "Package requirements related targets"
@@ -133,15 +132,11 @@ smokecheck: clean develop
 
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	PYTHON=$(PYTHON) selftests/checkall
+	PYTHON=$(PYTHON) $(PYTHON) -m avocado nrun selftests/*.sh selftests/unit/ selftests/functional/ optional_plugins/*/tests/
 	selftests/check_tmp_dirs
 
 check-full: clean develop
 	PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=2 selftests/checkall
-	selftests/check_tmp_dirs
-
-selfcheck: clean develop
-	PYTHON=$(PYTHON) AVOCADO_SELF_CHECK=1 selftests/checkall
 	selftests/check_tmp_dirs
 
 develop:
