@@ -1,6 +1,6 @@
 import os
 import shutil
-import sys
+import shlex
 import tempfile
 import unittest
 
@@ -57,10 +57,7 @@ class StreamsTest(unittest.TestCase):
             result = process.run(cmd, env=env, shell=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             # If using the Python interpreter, Avocado won't know about it
-            if AVOCADO.startswith(sys.executable):
-                cmd_in_log = cmd[len(sys.executable)+1:]
-            else:
-                cmd_in_log = cmd
+            cmd_in_log = shlex.split(AVOCADO)[-1]
             self.assertIn("avocado.test: Command line: %s" % cmd_in_log,
                           result.stdout_text)
             self.assertEqual(b'', result.stderr)
@@ -74,10 +71,7 @@ class StreamsTest(unittest.TestCase):
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         # If using the Python interpreter, Avocado won't know about it
-        if AVOCADO.startswith(sys.executable):
-            cmd_in_log = cmd[len(sys.executable)+1:]
-        else:
-            cmd_in_log = cmd
+        cmd_in_log = shlex.split(AVOCADO)[-1]
         self.assertIn("Command line: %s" % cmd_in_log,
                       result.stdout_text)
         self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",

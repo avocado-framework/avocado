@@ -1,8 +1,8 @@
 import glob
 import os
-import sys
 import tempfile
 import shutil
+import shlex
 import unittest
 
 from avocado.core import exit_codes
@@ -50,10 +50,7 @@ class DiffTests(unittest.TestCase):
         result = self.run_and_check(cmd_line, expected_rc)
         # Avocado won't know about the Python interpreter used on the
         # command line
-        if AVOCADO.startswith(sys.executable):
-            avocado_in_log = AVOCADO[len(sys.executable)+1:]
-        else:
-            avocado_in_log = AVOCADO
+        avocado_in_log = shlex.split(AVOCADO)[-1]
         self.assertIn(b"# COMMAND LINE", result.stdout)
         self.assertIn("-%s run" % avocado_in_log, result.stdout_text)
         self.assertIn("+%s run" % avocado_in_log, result.stdout_text)
