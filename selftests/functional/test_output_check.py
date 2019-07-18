@@ -76,11 +76,46 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertFalse(os.path.isfile(stdout_file))
         self.assertFalse(os.path.isfile(stderr_file))
 
+    def test_output_record_merge_none(self):
+        os.chdir(BASEDIR)
+        params_path = os.path.join(BASEDIR, 'examples',
+                                   'varianter_cit', 'test_params.cit')
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --cit-parameter-file=%s '
+                    '--output-check-record-merge none'
+                    % (AVOCADO, self.tmpdir, self.output_script.path, params_path))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
+        stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
+        self.assertFalse(os.path.isfile(stdout_file))
+        self.assertFalse(os.path.isfile(stderr_file))
+
     def test_output_record_stdout(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record stdout'
                     % (AVOCADO, self.tmpdir, self.output_script.path))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
+        stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
+        with open(stdout_file, 'rb') as fd_stdout:
+            self.assertEqual(fd_stdout.read(), STDOUT)
+        self.assertFalse(os.path.isfile(stderr_file))
+
+    def test_output_record_merge_stdout(self):
+        os.chdir(BASEDIR)
+        params_path = os.path.join(BASEDIR, 'examples',
+                                   'varianter_cit', 'test_params.cit')
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    ' --output-check-record-merge stdout --cit-parameter-file=%s '
+                    % (AVOCADO, self.tmpdir, self.output_script.path, params_path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

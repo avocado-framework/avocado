@@ -178,6 +178,16 @@ class Run(CLICmd):
                                     " way unless it's explicitly disabled with"
                                     " value 'none'")
 
+        out_check.add_argument('--output-check-record-merge',
+                               choices=('none', 'stdout', 'stderr',
+                                        'both', 'combined', 'all'),
+                               help="It's the same like --output-check-record "
+                                    "but with this argument the records of "
+                                    "multiple variants of a single test will be "
+                                    "saved in the same stdout/stderr.expected. "
+                                    "This should be enable only when the records "
+                                    "are same for all variants.")
+
         out_check.add_argument('--output-check', choices=('on', 'off'),
                                default='on',
                                help="Enable or disable test output (stdout/"

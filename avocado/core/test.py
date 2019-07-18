@@ -720,7 +720,7 @@ class Test(unittest.TestCase, TestData):
         for name, handler in self._logging_handlers.items():
             logging.getLogger(name).removeHandler(handler)
 
-    def _record_reference(self, produced_file_path, reference_file_name):
+    def _record_reference(self, produced_file_path, reference_file_name, is_single_reference=False):
         '''
         Saves a copy of a file produced by the test into a reference file
 
@@ -742,8 +742,18 @@ class Test(unittest.TestCase, TestData):
                                     saved into a location obtained by
                                     calling :meth:`get_data()`.
         :type reference_file_name: str
+        :param is_single_reference: switch between single record or many
+                                    records for all variants.
+        :type is_single_reference: bool
         '''
-        reference_path = self.get_data(reference_file_name, must_exist=False)
+
+        source = None
+        if is_single_reference:
+            if 'test' in self.DATA_SOURCES:
+                source = 'test'
+            else:
+                source = 'file'
+        reference_path = self.get_data(reference_file_name, source=source, must_exist=False)
         if reference_path is not None:
             utils_path.init_dir(os.path.dirname(reference_path))
             shutil.copyfile(produced_file_path, reference_path)
@@ -775,33 +785,49 @@ class Test(unittest.TestCase, TestData):
                   file and thus no check was performed).
         :raises: :class:`exceptions.TestFail` when the check is performed and fails
         '''
-        reference_path = self.get_data(reference_file_name)
-        if reference_path is not None:
-            expected = genio.read_file(reference_path)
-            actual = genio.read_file(produced_file_path)
-            diff_path = os.path.join(self.logdir, diff_file_name)
 
+        diff_content = []
+        old_path = None
+        for i in range(2):
+            source = None
+            if i == 0:
+                if 'test' in self.DATA_SOURCES:
+                    source = 'test'
+                else:
+                    source = 'file'
+            reference_path = self.get_data(reference_file_name, source=source)
+            if reference_path is not None:
+                if reference_path == old_path:
+                    continue
+                else:
+                    pass
+                old_path = reference_path
+                expected = genio.read_file(reference_path)
+                actual = genio.read_file(produced_file_path)
+                diff = unified_diff(expected.splitlines(), actual.splitlines(),
+                                    fromfile=reference_path,
+                                    tofile=produced_file_path)
+                actual_diff_content = []
+                for diff_line in diff:
+                    actual_diff_content.append(diff_line.rstrip('\n'))
+
+                if actual_diff_content:
+                    diff_content += actual_diff_content
+                else:
+                    return True
+
+        if diff_content:
+            diff_path = os.path.join(self.logdir, diff_file_name)
             fmt = '%(message)s'
             formatter = logging.Formatter(fmt=fmt)
             log_diff = LOG_JOB.getChild(child_log_name)
             self._register_log_file_handler(log_diff,
                                             formatter,
                                             diff_path)
-
-            diff = unified_diff(expected.splitlines(), actual.splitlines(),
-                                fromfile=reference_path,
-                                tofile=produced_file_path)
-            diff_content = []
-            for diff_line in diff:
-                diff_content.append(diff_line.rstrip('\n'))
-
-            if diff_content:
-                self.log.debug('%s Diff:', name)
-                for line in diff_content:
-                    log_diff.debug(line)
-                self.fail('Actual test %s differs from expected one' % name)
-            else:
-                return True
+            self.log.debug('%s Diff:', name)
+            for line in diff_content:
+                log_diff.debug(line)
+            self.fail('Actual test %s differs from expected one' % name)
         return False
 
     def _run_avocado(self):
@@ -889,21 +915,29 @@ class Test(unittest.TestCase, TestData):
                                           'output_check_record', 'none')
             output_check = getattr(self.job.args, 'output_check', 'on')
 
-            # record the output if the modes are valid
-            if output_check_record == 'combined':
-                self._record_reference(self._output_file,
-                                       "output.expected")
+            output_check_record_merge = getattr(self.job.args,
+                                                'output_check_record_merge', 'none')
+            single_reference = False
+            if output_check_record_merge is not None:
+                single_reference = True
+                record = output_check_record_merge
             else:
-                if output_check_record in ['all', 'both', 'stdout']:
+                record = output_check_record
+            # record the output if the modes are valid
+            if record == 'combined':
+                self._record_reference(self._output_file,
+                                       "output.expected", single_reference)
+            else:
+                if record in ['all', 'both', 'stdout']:
                     self._record_reference(self._stdout_file,
-                                           "stdout.expected")
-                if output_check_record in ['all', 'both', 'stderr']:
+                                           "stdout.expected", single_reference)
+                if record in ['all', 'both', 'stderr']:
                     self._record_reference(self._stderr_file,
-                                           "stderr.expected")
+                                           "stderr.expected", single_reference)
 
             # check the output and produce test failures
             if ((not job_standalone or
-                 output_check_record != 'none') and output_check == 'on'):
+                 record != 'none') and output_check == 'on'):
                 output_checked = False
                 try:
                     output_checked = self._check_reference(
