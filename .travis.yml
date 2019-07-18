@@ -18,7 +18,9 @@ env:
 matrix:
   include:
     - python: "3.7"
-      env: RUN_ONLY_COVERAGE=yes
+      env:
+        - RUN_ONLY_COVERAGE=yes
+        - SELF_CHECK_CONTINUOUS=yes
   allow_failures:
     - python: "nightly"
 
