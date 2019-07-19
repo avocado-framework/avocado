@@ -2,6 +2,7 @@ import json
 import os
 import re
 import shutil
+import shlex
 import tempfile
 import unittest
 from xml.dom import minidom
@@ -18,11 +19,11 @@ from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 # AVOCADO may contain more than a single command, as it can be
 # prefixed by the Python interpreter
-AVOCADO_QUOTED = ", ".join(["'%s'" % cmd for cmd in AVOCADO.split(' ')])
+AVOCADO_QUOTED = "', '".join(shlex.split(AVOCADO))
 PERL_TAP_PARSER_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => [%s, 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--sysinfo', 'off', '--job-results-dir', '%%s'] } );
+my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--sysinfo', 'off', '--job-results-dir', '%%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";

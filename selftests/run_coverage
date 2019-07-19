@@ -5,11 +5,13 @@
 # License: GPLv2
 # Author: Lukas Doktor <ldoktor@redhat.com>
 
-coverage erase
+COVERAGE="$(which coverage3 coverage coverage2 | head -n 1)"
+
+$COVERAGE erase
 rm .coverage.*
-AVOCADO_CHECK_LEVEL=2 UNITTEST_AVOCADO_CMD="coverage run -p --include 'avocado/*' ./scripts/avocado" coverage run -p --include "avocado/*" ./selftests/run
-coverage combine .coverage*
+RUNNING_COVERAGE=1 AVOCADO_CHECK_LEVEL=2 UNITTEST_AVOCADO_CMD="$COVERAGE run -p --include 'avocado/*' ./scripts/avocado" $COVERAGE run -p --include "avocado/*" ./selftests/run
+$COVERAGE combine .coverage*
 echo
-coverage report -m --include "avocado/core/*"
+$COVERAGE report -m --include "avocado/core/*"
 echo
-coverage report -m --include "avocado/utils/*"
+$COVERAGE report -m --include "avocado/utils/*"
