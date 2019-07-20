@@ -48,14 +48,14 @@ class Wrapper(CLI):
                                 'only one global wrapper can be defined.')
 
     def run(self, args):
-        wraps = getattr(args, "wrapper", None)
+        wraps = args.get("wrapper", None)
         if wraps:
-            if getattr(args, 'gdb_run_bin', None):
+            if args.get('gdb_run_bin', None):
                 LOG_UI.error('Command line option --wrapper is incompatible'
-                             ' with option --gdb-run-bin.\n%s', args.wrapper)
+                             ' with option --gdb-run-bin.\n%s', wraps)
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-            for wrap in args.wrapper:
+            for wrap in wraps:
                 if ':' not in wrap:
                     if process.WRAP_PROCESS is None:
                         script = os.path.abspath(wrap)

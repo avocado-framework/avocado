@@ -62,7 +62,7 @@ class JsonVariants(Varianter):
     variants = None
 
     def initialize(self, args):
-        load_variants = getattr(args, "json_variants_load", None)
+        load_variants = args.get("json_variants_load", None)
 
         if load_variants is None:
             self.variants = _NO_VARIANTS
@@ -73,7 +73,7 @@ class JsonVariants(Varianter):
         except IOError:
             LOG_UI.error("JSON serialized file '%s' could not be found or "
                          "is not readable", load_variants)
-            if args.subcommand == 'run':
+            if args.get('subcommand') == 'run':
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
                 sys.exit(exit_codes.AVOCADO_FAIL)

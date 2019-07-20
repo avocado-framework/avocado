@@ -78,24 +78,24 @@ class Job:
 
         :param args: the job configuration, usually set by command
                      line options and argument parsing
-        :type args: :class:`argparse.Namespace`
+        :type args: dict
         """
-        self.args = args or argparse.Namespace()
-        self.references = getattr(args, "reference", [])
+        self.args = args or {}
+        self.references = args.get("reference", [])
         self.log = LOG_UI
         self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
                                                             'loglevel',
                                                             default='debug'),
                                          logging.DEBUG)
         self.__logging_handlers = {}
-        self.standalone = getattr(self.args, 'standalone', False)
-        if getattr(self.args, "dry_run", False):  # Modify args for dry-run
-            unique_id = getattr(self.args, 'unique_job_id', None)
+        self.standalone = self.args.get('standalone', False)
+        if self.args.get('dry_run', False):  # Modify args for dry-run
+            unique_id = self.args.get('unique_job_id', None)
             if unique_id is None:
-                self.args.unique_job_id = "0" * 40
-            self.args.sysinfo = False
+                self.args['unique_job_id'] = '0' * 40
+            self.args['sysinfo'] = False
 
-        unique_id = getattr(self.args, 'unique_job_id', None)
+        unique_id = self.args.get('unique_job_id', None)
         if unique_id is None:
             unique_id = job_id.create_unique_job_id()
         self.unique_id = unique_id
@@ -109,7 +109,7 @@ class Job:
         self.status = "RUNNING"
         self.result = None
         self.sysinfo = None
-        self.timeout = getattr(self.args, 'job_timeout', 0)
+        self.timeout = self.args.get('job_timeout', 0)
         #: The time at which the job has started or `-1` if it has not been
         #: started by means of the `run()` method.
         self.time_start = -1
@@ -123,7 +123,7 @@ class Job:
                                                            % self.unique_id,
                                                            LOG_JOB)
         self._stdout_stderr = None
-        self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
+        self.replay_sourcejob = self.args.get('replay_sourcejob', None)
         self.exitcode = exit_codes.AVOCADO_ALL_OK
         #: The list of discovered/resolved tests that will be attempted to
         #: be run by this job.  If set to None, it means that test resolution
@@ -139,7 +139,7 @@ class Job:
         self.test_parameters = None
         if "test_parameters" in self.args:
             self.test_parameters = {}
-            for parameter_name, parameter_value in self.args.test_parameters:
+            for parameter_name, parameter_value in self.args.get('test_parameters'):
                 self.test_parameters[parameter_name] = parameter_value
 
         # The result events dispatcher is shared with the test runner.
@@ -161,16 +161,15 @@ class Job:
         Setup the temporary job handlers (dirs, global setting, ...)
         """
         assert self.tmpdir is None, "Job.setup() already called"
-        if getattr(self.args, "dry_run", False):  # Create the dry-run dirs
-            base_logdir = getattr(self.args, "base_logdir", None)
-            if base_logdir is None:
-                self.args.base_logdir = tempfile.mkdtemp(prefix="avocado-dry-run-")
+        if self.args.get("dry_run", False):  # Create the dry-run dirs
+            if self.args.get("base_logdir", None) is None:
+                self.args['base_logdir'] = tempfile.mkdtemp(prefix="avocado-dry-run-")
         self._setup_job_results()
         self.result = result.Result(self)
         self.__start_job_logging()
         self._setup_job_category()
         # Use "logdir" in case "keep_tmp" is enabled
-        if getattr(self.args, "keep_tmp", None) == "on":
+        if self.args.get("keep_tmp", None) == "on":
             base_tmpdir = self.logdir
         else:
             base_tmpdir = data_dir.get_tmp_dir()
@@ -182,7 +181,7 @@ class Job:
         """
         Prepares a job result directory, also known as logdir, for this job
         """
-        base_logdir = getattr(self.args, 'base_logdir', None)
+        base_logdir = self.args.get('base_logdir', None)
         if self.standalone:
             if base_logdir is not None:
                 base_logdir = os.path.abspath(base_logdir)
@@ -197,7 +196,7 @@ class Job:
                 base_logdir = os.path.abspath(base_logdir)
                 self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
                                                            unique_id=self.unique_id)
-        if not (self.standalone or getattr(self.args, "dry_run", False)):
+        if not (self.standalone or self.args.get("dry_run", False)):
             self._update_latest_link()
         self.logfile = os.path.join(self.logdir, "job.log")
         idfile = os.path.join(self.logdir, "id")
@@ -217,7 +216,7 @@ class Job:
         This should allow a user to look at a single directory for all
         jobs of a given category.
         """
-        category = getattr(self.args, 'job_category', None)
+        category = self.args.get('job_category', None)
         if category is None:
             return
 
@@ -260,7 +259,7 @@ class Job:
         # Add --store-logging-streams
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
-        for name in getattr(self.args, "store_logging_stream", []):
+        for name in self.args.get("store_logging_stream", []):
             name = re.split(r'(?<!\\):', name, maxsplit=1)
             if len(name) == 1:
                 name = name[0]
@@ -281,7 +280,7 @@ class Job:
             else:
                 self.__logging_handlers[handler] = [name]
         # Enable console loggers
-        enabled_logs = getattr(self.args, "show", [])
+        enabled_logs = self.args.get("show", [])
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
             self._stdout_stderr = sys.stdout, sys.stderr
@@ -336,8 +335,8 @@ class Job:
                 os.unlink(proc_latest)
 
     def _start_sysinfo(self):
-        if hasattr(self.args, 'sysinfo'):
-            if self.args.sysinfo == 'on':
+        if 'sysinfo' in self.args:
+            if self.args.get('sysinfo') == 'on':
                 sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
                 self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
 
@@ -352,20 +351,20 @@ class Job:
         """
         loader.loader.load_plugins(self.args)
         try:
-            force = getattr(self.args, 'ignore_missing_references', 'off')
+            force = self.args.get('ignore_missing_references', 'off')
             suite = loader.loader.discover(references, force=force)
-            if getattr(self.args, 'filter_by_tags', False):
+            if self.args.get('filter_by_tags', False):
                 suite = tags.filter_test_tags(
                     suite,
-                    self.args.filter_by_tags,
-                    self.args.filter_by_tags_include_empty,
-                    self.args.filter_by_tags_include_empty_key)
+                    self.args.get('filter_by_tags'),
+                    self.args.get('filter_by_tags_include_empty'),
+                    self.args.get('filter_by_tags_include_empty_key'))
         except loader.LoaderUnhandledReferenceError as details:
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
             raise exceptions.JobError('Command interrupted by user...')
 
-        if not getattr(self.args, "dry_run", False):
+        if not self.args.get("dry_run", False):
             return suite
         for i in range(len(suite)):
             suite[i] = [test.DryRunTest, suite[i][1]]
@@ -505,7 +504,7 @@ class Job:
         """
         The actual test execution phase
         """
-        variant = getattr(self.args, "avocado_variants", None)
+        variant = self.args.get("avocado_variants", None)
         if variant is None:
             variant = varianter.Varianter()
         if not variant.is_parsed():   # Varianter not yet parsed, apply args
@@ -515,15 +514,15 @@ class Job:
                 raise exceptions.OptionValidationError("Unable to parse "
                                                        "variant: %s" % details)
 
-        runner_klass = getattr(self.args, 'test_runner', runner.TestRunner)
+        runner_klass = self.args.get('test_runner', runner.TestRunner)
         self.test_runner = runner_klass(job=self, result=self.result)
         self._start_sysinfo()
 
         self._log_job_debug_info(variant)
         jobdata.record(self.args, self.logdir, variant, self.references,
                        sys.argv)
-        replay_map = getattr(self.args, 'replay_map', None)
-        execution_order = getattr(self.args, "execution_order", None)
+        replay_map = self.args.get('replay_map', None)
+        execution_order = self.args.get('execution_order', None)
         summary = self.test_runner.run_suite(self.test_suite,
                                              variant,
                                              self.timeout,
@@ -611,12 +610,12 @@ class Job:
         if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
         cleanup_conditionals = (
-            getattr(self.args, "dry_run", False),
-            not getattr(self.args, "dry_run_no_cleanup", False)
+            self.args.get("dry_run", False),
+            not self.args.get("dry_run_no_cleanup", False)
         )
         if all(cleanup_conditionals):
             # Also clean up temp base directory created because of the dry-run
-            base_logdir = getattr(self.args, "base_logdir", None)
+            base_logdir = self.args.get("base_logdir", None)
             if base_logdir is not None:
                 try:
                     FileNotFoundError
@@ -649,7 +648,7 @@ class TestProgram:
         output.add_log_handler("", output.ProgressStreamHandler,
                                fmt="%(message)s")
         self.parse_args(sys.argv[1:])
-        self.args.reference = [sys.argv[0]]
+        self.args['reference'] = [sys.argv[0]]
         self.run_tests()
 
     def parse_args(self, argv):
@@ -661,15 +660,15 @@ class TestProgram:
                                  default=None, metavar='TEST_RESULTS_DIR',
                                  help="use an alternative test results "
                                  "directory")
-        self.args = self.parser.parse_args(argv)
+        self.args = vars(self.parser.parse_args(argv))
 
     def run_tests(self):
-        self.args.standalone = True
-        self.args.show = ["test"]
+        self.args['standalone'] = True
+        self.args['show'] = ["test"]
         output.reconfigure(self.args)
         with Job(self.args) as self.job:
             exit_status = self.job.run()
-            if self.args.remove_test_results is True:
+            if self.args.get('remove_test_results') is True:
                 shutil.rmtree(self.job.logdir)
         sys.exit(exit_status)
 

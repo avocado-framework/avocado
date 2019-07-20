@@ -24,7 +24,7 @@ class Archive(Result):
     description = 'Result archive (ZIP) support'
 
     def render(self, result, job):
-        if getattr(job.args, 'archive', False):
+        if job.args.get('archive', False):
             archive.compress("%s.zip" % job.logdir, job.logdir)
 
 

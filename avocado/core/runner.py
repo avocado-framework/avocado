@@ -339,7 +339,7 @@ class TestRunner:
         self.job._result_events_dispatcher.map_method('start_test',
                                                       self.result,
                                                       early_state)
-        if getattr(self.job.args, 'log_test_data_directories', False):
+        if self.job.args.get('log_test_data_directories', False):
             data_sources = getattr(instance, "DATA_SOURCES", [])
             if data_sources:
                 locations = []
@@ -504,7 +504,7 @@ class TestRunner:
         elif not mapping[test_state['status']]:
             summary.add("FAIL")
 
-            if getattr(self.job.args, 'failfast', 'off') == 'on':
+            if self.job.args.get('failfast', 'off') == 'on':
                 summary.add("INTERRUPTED")
                 self.job.log.debug("Interrupting job (failfast).")
                 return False

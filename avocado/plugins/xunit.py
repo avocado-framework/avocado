@@ -132,22 +132,22 @@ class XUnitResult(Result):
         return document.toprettyxml(encoding='UTF-8')
 
     def render(self, result, job):
-        if not (hasattr(job.args, 'xunit_job_result') or
-                hasattr(job.args, 'xunit_output')):
+        if not (job.args.get('xunit_job_result') or
+                job.args.get('xunit_output')):
             return
 
         if not result.tests_total:
             return
 
-        max_test_log_size = getattr(job.args, 'xunit_max_test_log_chars', None)
-        job_name = getattr(job.args, 'xunit_job_name', None)
+        max_test_log_size = job.args.get('xunit_max_test_log_chars', None)
+        job_name = job.args.get('xunit_job_name', None)
         content = self._render(result, max_test_log_size, job_name)
-        if getattr(job.args, 'xunit_job_result', 'off') == 'on':
+        if job.args.get('xunit_job_result', 'off') == 'on':
             xunit_path = os.path.join(job.logdir, 'results.xml')
             with open(xunit_path, 'wb') as xunit_file:
                 xunit_file.write(content)
 
-        xunit_path = getattr(job.args, 'xunit_output', 'None')
+        xunit_path = job.args.get('xunit_output', 'None')
         if xunit_path is not None:
             if xunit_path == '-':
                 LOG_UI.debug(content.decode('UTF-8'))

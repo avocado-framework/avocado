@@ -1,4 +1,3 @@
-import argparse
 import os
 import shutil
 import tempfile
@@ -45,8 +44,8 @@ class xUnitSucceedTest(unittest.TestCase):
         self.tmpfile = tempfile.mkstemp()
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.mkdtemp(prefix=prefix)
-        args = argparse.Namespace(base_logdir=self.tmpdir)
-        args.xunit_output = self.tmpfile[1]
+        args = {'base_logdir': self.tmpdir,
+                'xunit_output': self.tmpfile[1]}
         self.job = job.Job(args)
         self.test_result = Result(FakeJob(args))
         self.test_result.tests_total = 1
@@ -77,7 +76,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result.end_tests()
         xunit_result = xunit.XUnitResult()
         xunit_result.render(self.test_result, self.job)
-        with open(self.job.args.xunit_output, 'rb') as fp:
+        with open(self.job.args.get('xunit_output'), 'rb') as fp:
             xml = fp.read()
         try:
             dom = minidom.parseString(xml)
@@ -97,7 +96,7 @@ class xUnitSucceedTest(unittest.TestCase):
                                                  os.path.pardir, ".data",
                                                  'jenkins-junit.xsd'))
         xml_schema = xmlschema.XMLSchema(junit_xsd)
-        self.assertTrue(xml_schema.is_valid(self.job.args.xunit_output))
+        self.assertTrue(xml_schema.is_valid(self.job.args.get('xunit_output')))
 
     def test_max_test_log_size(self):
         def get_system_out(out):
@@ -115,15 +114,15 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result.end_tests()
         xunit_result = xunit.XUnitResult()
         xunit_result.render(self.test_result, self.job)
-        with open(self.job.args.xunit_output, 'rb') as fp:
+        with open(self.job.args.get('xunit_output'), 'rb') as fp:
             unlimited = fp.read()
-        self.job.args.xunit_max_test_log_chars = 10
+        self.job.args['xunit_max_test_log_chars'] = 10
         xunit_result.render(self.test_result, self.job)
-        with open(self.job.args.xunit_output, 'rb') as fp:
+        with open(self.job.args.get('xunit_output'), 'rb') as fp:
             limited = fp.read()
-        self.job.args.xunit_max_test_log_chars = 100000
+        self.job.args['xunit_max_test_log_chars'] = 100000
         xunit_result.render(self.test_result, self.job)
-        with open(self.job.args.xunit_output, 'rb') as fp:
+        with open(self.job.args.get('xunit_output'), 'rb') as fp:
             limited_but_fits = fp.read()
         self.assertLess(len(limited), len(unlimited) - 500,
                         "Length of xunit limitted to 10 chars was greater "

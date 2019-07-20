@@ -145,17 +145,17 @@ class NRun(CLICmd):
             sys.stderr.write('\n')
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        suite = self.create_test_suite(args.reference)
-        self.pending_tasks = self.suite_to_tasks(suite, [args.status_server])
+        suite = self.create_test_suite(args.get('reference'))
+        self.pending_tasks = self.suite_to_tasks(suite, [args.get('status_server')])
 
-        if not args.disable_task_randomization:
+        if not args.get('disable_task_randomization'):
             random.shuffle(self.pending_tasks)
 
         self.spawned_tasks = []
 
         try:
             loop = asyncio.get_event_loop()
-            self.status_server = nrunner.StatusServer(args.status_server,
+            self.status_server = nrunner.StatusServer(args.get('status_server'),
                                                       [t.identifier for t in
                                                        self.pending_tasks])
             self.status_server.start()
