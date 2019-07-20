@@ -26,6 +26,10 @@ from avocado_varianter_cit.Cit import Cit, LOG
 from avocado_varianter_cit.Parser import Parser
 
 
+#: The default order of combinations
+DEFAULT_ORDER_OF_COMBINATIONS = 2
+
+
 class VarianterCitCLI(CLI):
 
     """
@@ -45,7 +49,8 @@ class VarianterCitCLI(CLI):
             cit.add_argument('--cit-parameter-file', metavar='PATH',
                              help="Paths to a parameter file")
             cit.add_argument('--cit-order-of-combinations',
-                             metavar='ORDER', type=int, default=2,
+                             metavar='ORDER', type=int,
+                             default=DEFAULT_ORDER_OF_COMBINATIONS,
                              help=("Order of combinations. Defaults to "
                                    "%(default)s, maximum number is 6"))
 
@@ -65,7 +70,7 @@ class VarianterCit(Varianter):
 
     def initialize(self, args):
         self.variants = None
-        order = args.get('cit_order_of_combinations')
+        order = args.get('cit_order_of_combinations', DEFAULT_ORDER_OF_COMBINATIONS)
         if order > 6:
             LOG_UI.error("The order of combinations is bigger then 6")
             self.error_exit(args)
