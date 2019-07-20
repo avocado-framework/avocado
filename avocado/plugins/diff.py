@@ -107,8 +107,8 @@ class Diff(CLICmd):
         def _get_name_no_id(test):
             return str(test['id']).split('-', 1)[1]
 
-        job1_dir, job1_id = self._setup_job(args.jobids[0])
-        job2_dir, job2_id = self._setup_job(args.jobids[1])
+        job1_dir, job1_id = self._setup_job(args.get('jobids')[0])
+        job2_dir, job2_id = self._setup_job(args.get('jobids')[1])
 
         job1_data = self._get_job_data(job1_dir)
         job2_data = self._get_job_data(job2_dir)
@@ -117,7 +117,7 @@ class Diff(CLICmd):
         job1_results = [report_header]
         job2_results = [report_header]
 
-        if 'cmdline' in args.diff_filter:
+        if 'cmdline' in args.get('diff_filter'):
             cmdline1 = self._get_command_line(job1_dir)
             cmdline2 = self._get_command_line(job2_dir)
 
@@ -129,7 +129,7 @@ class Diff(CLICmd):
                 job2_results.extend(command_line_header)
                 job2_results.append(cmdline2)
 
-        if 'time' in args.diff_filter:
+        if 'time' in args.get('diff_filter'):
             time1 = '%.2f s\n' % job1_data['time']
             time2 = '%.2f s\n' % job2_data['time']
 
@@ -141,7 +141,7 @@ class Diff(CLICmd):
                 job2_results.extend(total_time_header)
                 job2_results.append(time2)
 
-        if 'variants' in args.diff_filter:
+        if 'variants' in args.get('diff_filter'):
             variants1 = self._get_variants(job1_dir)
             variants2 = self._get_variants(job2_dir)
 
@@ -153,9 +153,9 @@ class Diff(CLICmd):
                 job2_results.extend(variants_header)
                 job2_results.extend(variants2)
 
-        if 'results' in args.diff_filter:
+        if 'results' in args.get('diff_filter'):
             results1 = []
-            if args.diff_strip_id:
+            if args.get('diff_strip_id'):
                 get_name = _get_name_no_id
             else:
                 get_name = _get_name
@@ -177,7 +177,7 @@ class Diff(CLICmd):
                 job2_results.extend(test_results_header)
                 job2_results.extend(results2)
 
-        if 'config' in args.diff_filter:
+        if 'config' in args.get('diff_filter'):
             config1 = self._get_config(job1_dir)
             config2 = self._get_config(job2_dir)
 
@@ -189,7 +189,7 @@ class Diff(CLICmd):
                 job2_results.extend(config_header)
                 job2_results.extend(config2)
 
-        if 'sysinfo' in args.diff_filter:
+        if 'sysinfo' in args.get('diff_filter'):
             sysinfo_pre1 = self._get_sysinfo(job1_dir, 'pre')
             sysinfo_pre2 = self._get_sysinfo(job2_dir, 'pre')
 
@@ -212,7 +212,7 @@ class Diff(CLICmd):
                 job2_results.extend(sysinfo_header_post)
                 job2_results.extend(sysinfo_post2)
 
-        if getattr(args, 'create_reports', False):
+        if args.get('create_reports', False):
             self.std_diff_output = False
             prefix = 'avocado_diff_%s_' % job1_id[:7]
             tmp_file1 = tempfile.NamedTemporaryFile(mode='w',
@@ -232,8 +232,8 @@ class Diff(CLICmd):
 
             LOG_UI.info('%s %s', tmp_file1.name, tmp_file2.name)
 
-        if (getattr(args, 'open_browser', False) and
-                getattr(args, 'html', None) is None):
+        if (args.get('open_browser', False) and
+                args.get('html', None) is None):
 
             prefix = 'avocado_diff_%s_%s_' % (job1_id[:7], job2_id[:7])
             tmp_file = tempfile.NamedTemporaryFile(mode='w',
@@ -241,7 +241,7 @@ class Diff(CLICmd):
                                                    suffix='.html',
                                                    delete=False)
 
-            setattr(args, 'html', tmp_file.name)
+            args['html'] = tmp_file.name
 
         if getattr(args, 'html', None) is not None:
             self.std_diff_output = False
@@ -271,21 +271,21 @@ class Diff(CLICmd):
                                                     fromdesc=job1_id,
                                                     todesc=job2_id)
 
-                with open(args.html, 'w') as html_file:
+                with open(args.get('html'), 'w') as html_file:
                     html_file.writelines(job_diff_html.encode("utf-8"))
 
-                LOG_UI.info(args.html)
+                LOG_UI.info(args.get('html'))
 
             except IOError as exception:
                 LOG_UI.error(exception)
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-        if getattr(args, 'open_browser', False):
+        if args.get('open_browser', False):
             setsid = getattr(os, 'setsid', None)
             if not setsid:
                 setsid = getattr(os, 'setpgrp', None)
             with open(os.devnull, "r+") as inout:
-                cmd = ['xdg-open', args.html]
+                cmd = ['xdg-open', args.get('html')]
                 subprocess.Popen(cmd, close_fds=True, stdin=inout,
                                  stdout=inout, stderr=inout,
                                  preexec_fn=setsid)

@@ -65,20 +65,20 @@ class JSONResult(Result):
                           separators=(',', ': '))
 
     def render(self, result, job):
-        if not (hasattr(job.args, 'json_job_result') or
-                hasattr(job.args, 'json_output')):
+        if not (job.config.get('json_job_result') or
+                job.config.get('json_output')):
             return
 
         if not result.tests_total:
             return
 
         content = self._render(result)
-        if getattr(job.args, 'json_job_result', 'off') == 'on':
+        if job.config.get('json_job_result', 'off') == 'on':
             json_path = os.path.join(job.logdir, 'results.json')
             with open(json_path, 'w') as json_file:
                 json_file.write(content)
 
-        json_path = getattr(job.args, 'json_output', 'None')
+        json_path = job.config.get('json_output', 'None')
         if json_path is not None:
             if json_path == '-':
                 LOG_UI.debug(content)
@@ -113,5 +113,5 @@ class JSONCLI(CLI):
             help=('Enables default JSON result in the job results directory. '
                   'File will be named "results.json".'))
 
-    def run(self, args):
+    def run(self, config):
         pass

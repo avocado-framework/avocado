@@ -190,31 +190,32 @@ class Run(CLICmd):
         loader.add_loader_options(parser)
         parser_common_args.add_tag_filter_args(parser)
 
-    def run(self, args):
+    def run(self, config):
         """
         Run test modules or simple tests.
 
-        :param args: Command line args received from the run subparser.
+        :param config: Configuration received from command line parser and
+                       possibly other sources.
+        :type config: dict
         """
-        if 'output_check_record' in args:
-            process.OUTPUT_CHECK_RECORD_MODE = getattr(args,
-                                                       'output_check_record',
-                                                       None)
+        if 'output_check_record' in config:
+            process.OUTPUT_CHECK_RECORD_MODE = config.get('output_check_record',
+                                                          None)
 
-        if args.unique_job_id is not None:
+        if config.get('unique_job_id') is not None:
             try:
-                int(args.unique_job_id, 16)
-                if len(args.unique_job_id) != 40:
+                int(config.get('unique_job_id'), 16)
+                if len(config.get('unique_job_id')) != 40:
                     raise ValueError
             except ValueError:
                 LOG_UI.error('Unique Job ID needs to be a 40 digit hex number')
                 sys.exit(exit_codes.AVOCADO_FAIL)
         try:
-            args.job_timeout = time_to_seconds(args.job_timeout)
+            config['job_timeout'] = time_to_seconds(config.get('job_timeout'))
         except ValueError as detail:
             LOG_UI.error(detail.args[0])
             sys.exit(exit_codes.AVOCADO_FAIL)
-        with job.Job(args) as job_instance:
+        with job.Job(config) as job_instance:
             pre_post_dispatcher = JobPrePostDispatcher()
             try:
                 # Run JobPre plugins

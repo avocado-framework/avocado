@@ -62,33 +62,33 @@ class AvocadoApp:
                 self.cli_dispatcher.map_method('configure', self.parser)
             self.parser.finish()
             if self.cli_dispatcher.extensions:
-                self.cli_dispatcher.map_method('run', self.parser.args)
+                self.cli_dispatcher.map_method('run', self.parser.config)
         except SystemExit as detail:
             # If someone tries to exit Avocado, we should first close the
             # STD_OUTPUT and only then exit.
-            setattr(self.parser.args, 'paginator', 'off')
-            output.reconfigure(self.parser.args)
+            output.reconfigure({'paginator': 'off',
+                                'show': getattr(self.parser.args, 'show', None)})
             STD_OUTPUT.close()
             sys.exit(detail.code)
         except:
             # For any other exception we also need to close the STD_OUTPUT.
-            setattr(self.parser.args, 'paginator', 'off')
-            output.reconfigure(self.parser.args)
+            output.reconfigure({'paginator': 'off',
+                                'show': getattr(self.parser.args, 'show', None)})
             STD_OUTPUT.close()
             raise
         else:
             # In case of no exceptions, we just reconfigure the output.
-            output.reconfigure(self.parser.args)
+            output.reconfigure(self.parser.config)
 
     def run(self):
         try:
             try:
-                subcmd = self.parser.args.subcommand
+                subcmd = self.parser.config.get('subcommand')
                 extension = self.cli_cmd_dispatcher[subcmd]
             except KeyError:
                 return
             method = extension.obj.run
-            return method(self.parser.args)
+            return method(self.parser.config)
         finally:
             # This makes sure we cleanup the console (stty echo). The only way
             # to avoid cleaning it is to kill the less (paginator) directly

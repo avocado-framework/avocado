@@ -630,7 +630,7 @@ def collect_sysinfo(args):
     """
     output.add_log_handler(log.name)
 
-    basedir = args.sysinfodir
+    basedir = args.get('sysinfodir')
     if not basedir:
         cwd = os.getcwd()
         timestamp = time.strftime('%Y-%m-%d-%H.%M.%S')

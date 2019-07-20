@@ -1,7 +1,6 @@
 import unittest
 import os
 import json
-import argparse
 import tempfile
 import shutil
 
@@ -18,8 +17,8 @@ setup_avocado_loggers()
 
 class FakeJob:
 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, config):
+        self.config = config
         self.unique_id = '0000000000000000000000000000000000000000'
 
 
@@ -35,10 +34,10 @@ class JSONResultTest(unittest.TestCase):
         self.tmpfile = tempfile.mkstemp()
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.mkdtemp(prefix=prefix)
-        args = argparse.Namespace(json_output=self.tmpfile[1],
-                                  base_logdir=self.tmpdir)
-        self.job = job.Job(args)
-        self.test_result = Result(FakeJob(args))
+        config = {'json_output': self.tmpfile[1],
+                  'base_logdir': self.tmpdir}
+        self.job = job.Job(config)
+        self.test_result = Result(FakeJob(config))
         self.test_result.filename = self.tmpfile[1]
         self.test_result.tests_total = 1
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
@@ -56,7 +55,7 @@ class JSONResultTest(unittest.TestCase):
         self.test_result.end_tests()
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
-        with open(self.job.args.json_output) as fp:
+        with open(self.job.config.get('json_output')) as fp:
             j = fp.read()
         obj = json.loads(j)
         self.assertTrue(obj)
@@ -91,7 +90,7 @@ class JSONResultTest(unittest.TestCase):
         self.test_result.end_tests()
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
-        res = json.loads(open(self.job.args.json_output).read())
+        res = json.loads(open(self.job.config.get('json_output')).read())
         check_item("[pass]", res["pass"], 2)
         check_item("[errors]", res["errors"], 4)
         check_item("[failures]", res["failures"], 1)
@@ -109,7 +108,7 @@ class JSONResultTest(unittest.TestCase):
         self.test_result.end_tests()
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
-        res = json.loads(open(self.job.args.json_output).read())
+        res = json.loads(open(self.job.config.get('json_output')).read())
         check_item("[total]", res["total"], 1)
         check_item("[skip]", res["skip"], 0)
         check_item("[pass]", res["pass"], 1)

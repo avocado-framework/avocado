@@ -341,20 +341,20 @@ class RemoteTestRunner(TestRunner):
 
     def setup(self):
         """ Setup remote environment """
-        stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+        stdout_claimed_by = self.job.config.get('stdout_claimed_by', None)
         if not stdout_claimed_by:
             self.job.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
-                              self.job.args.remote_username,
-                              self.job.args.remote_hostname,
-                              self.job.args.remote_port,
-                              self.job.args.remote_timeout)
-        self.remote = Remote(hostname=self.job.args.remote_hostname,
-                             username=self.job.args.remote_username,
-                             password=self.job.args.remote_password,
-                             key_filename=self.job.args.remote_key_file,
-                             port=self.job.args.remote_port,
-                             timeout=self.job.args.remote_timeout,
-                             env_keep=self.job.args.env_keep)
+                              self.job.config.get('remote_username'),
+                              self.job.config.get('remote_hostname'),
+                              self.job.config.get('remote_port'),
+                              self.job.config.get('remote_timeout'))
+        self.remote = Remote(hostname=self.job.config.get('remote_hostname'),
+                             username=self.job.config.get('remote_username'),
+                             password=self.job.config.get('remote_password'),
+                             key_filename=self.job.config.get('remote_key_file'),
+                             port=self.job.config.get('remote_port'),
+                             timeout=self.job.config.get('remote_timeout'),
+                             env_keep=self.job.config.get('env_keep'))
 
     def check_remote_avocado(self):
         """
@@ -443,14 +443,14 @@ class RemoteTestRunner(TestRunner):
         # bool or nargs
         for arg in ["--mux-yaml", "--dry-run",
                     "--filter-by-tags-include-empty"]:
-            value = getattr(self.job.args, arg_to_dest(arg), None)
+            value = self.job.config.get(arg_to_dest(arg), None)
             if value is True:
                 extra_params.append(arg)
             elif value:
                 extra_params.append("%s %s" % (arg, " ".join(value)))
         # append
         for arg in ["--filter-by-tags"]:
-            value = getattr(self.job.args, arg_to_dest(arg), None)
+            value = self.job.config.get(arg_to_dest(arg), None)
             if value:
                 join = ' %s ' % arg
                 extra_params.append("%s %s" % (arg, join.join(value)))
@@ -521,7 +521,7 @@ class RemoteTestRunner(TestRunner):
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
         remote_logger.addHandler(file_handler)
-        if "test" in getattr(self.job.args, "show", []):
+        if "test" in self.job.config.get("show", []):
             output.add_log_handler(paramiko_logger.name)
         logger_list = [output.LOG_JOB]
         sys.stdout = output.LoggingFile(loggers=logger_list)
@@ -639,29 +639,30 @@ class RemoteCLI(CLI):
                                          " to %(default)s seconds."))
 
     @staticmethod
-    def _check_required_args(args, enable_arg, required_args):
+    def _check_required_config(config, enable_config, required_config):
         """
-        :return: True when enable_arg enabled and all required args are set
+        :return: True when enable_config is enabled and all required config
+                 are set
         :raise sys.exit: When missing required argument.
         """
-        if (not hasattr(args, enable_arg) or
-                not getattr(args, enable_arg)):
+        if (enable_config not in config or
+                not config.get(enable_config)):
             return False
         missing = []
-        for arg in required_args:
-            if not getattr(args, arg):
+        for arg in required_config:
+            if not config.get(arg):
                 missing.append(arg)
         if missing:
             LOG_UI.error("Use of %s requires %s arguments to be set. Please "
-                         "set %s.", enable_arg, ', '.join(required_args),
+                         "set %s.", enable_config, ', '.join(required_config),
                          ', '.join(missing))
 
             return sys.exit(exit_codes.AVOCADO_FAIL)
         return True
 
-    def run(self, args):
-        if self._check_required_args(args, 'remote_hostname',
-                                     ('remote_hostname',)):
+    def run(self, config):
+        if self._check_required_config(config, 'remote_hostname',
+                                       ('remote_hostname',)):
             loader.loader.clear_plugins()
             loader.loader.register_plugin(DummyLoader)
-            args.test_runner = RemoteTestRunner
+            config['test_runner'] = RemoteTestRunner

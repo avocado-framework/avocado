@@ -32,11 +32,11 @@ CONFIG_FILENAME = 'config'
 TEST_REFERENCES_FILENAME = 'test_references'
 VARIANTS_FILENAME = 'variants.json'
 PWD_FILENAME = 'pwd'
-ARGS_FILENAME = 'args.json'
+JOB_CONFIG_FILENAME = 'args.json'
 CMDLINE_FILENAME = 'cmdline'
 
 
-def record(args, logdir, variants, references=None, cmdline=None):
+def record(config, logdir, variants, references=None, cmdline=None):
     """
     Records all required job information.
     """
@@ -49,7 +49,7 @@ def record(args, logdir, variants, references=None, cmdline=None):
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
     path_variants = os.path.join(base_dir, VARIANTS_FILENAME)
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
-    path_args = os.path.join(base_dir, ARGS_FILENAME)
+    path_job_config = os.path.join(base_dir, JOB_CONFIG_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
     if references:
@@ -73,10 +73,10 @@ def record(args, logdir, variants, references=None, cmdline=None):
         pwd_file.flush()
         os.fsync(pwd_file)
 
-    with open(path_args, 'w') as args_file:
-        json.dump(args.__dict__, args_file, default=lambda x: None)
-        args_file.flush()
-        os.fsync(args_file)
+    with open(path_job_config, 'w') as job_config_file:
+        json.dump(config, job_config_file, default=lambda x: None)
+        job_config_file.flush()
+        os.fsync(job_config_file)
 
     with open(path_cmdline, 'w') as cmdline_file:
         cmdline_file.write('%s' % cmdline)
@@ -123,14 +123,14 @@ def retrieve_variants(resultsdir):
             return varianter.Varianter(state=json.load(variants_file))
 
 
-def retrieve_args(resultsdir):
+def retrieve_job_config(resultsdir):
     """
-    Retrieves the job args from the results directory.
+    Retrieves the job config from the results directory.
     """
-    recorded_args = _retrieve(resultsdir, ARGS_FILENAME)
-    if recorded_args:
-        with open(recorded_args, 'r') as args_file:
-            return json.load(args_file)
+    recorded_job_config = _retrieve(resultsdir, JOB_CONFIG_FILENAME)
+    if recorded_job_config:
+        with open(recorded_job_config, 'r') as job_config_file:
+            return json.load(job_config_file)
 
 
 def retrieve_config(resultsdir):
