@@ -66,14 +66,14 @@ class AvocadoApp:
         except SystemExit as detail:
             # If someone tries to exit Avocado, we should first close the
             # STD_OUTPUT and only then exit.
-            setattr(self.parser.args, 'paginator', 'off')
-            output.reconfigure(self.parser.args)
+            output.reconfigure({'paginator': 'off',
+                                'show': getattr(self.parser.args, 'show', None)})
             STD_OUTPUT.close()
             sys.exit(detail.code)
         except:
             # For any other exception we also need to close the STD_OUTPUT.
-            setattr(self.parser.args, 'paginator', 'off')
-            output.reconfigure(self.parser.args)
+            output.reconfigure({'paginator': 'off',
+                                'show': getattr(self.parser.args, 'show', None)})
             STD_OUTPUT.close()
             raise
         else:
@@ -83,7 +83,7 @@ class AvocadoApp:
     def run(self):
         try:
             try:
-                subcmd = self.parser.args.subcommand
+                subcmd = self.parser.args.get('subcommand')
                 extension = self.cli_cmd_dispatcher[subcmd]
             except KeyError:
                 return

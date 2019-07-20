@@ -218,21 +218,21 @@ class HTMLResult(Result):
     def render(self, result, job):
         if job.status == "RUNNING":
             return  # Don't create results on unfinished jobs
-        if not (hasattr(job.args, 'html_job_result') or
-                hasattr(job.args, 'html_output')):
+        if not (job.args.get('html_job_result') or
+                job.args.get('html_output')):
             return
 
-        open_browser = getattr(job.args, 'open_browser', False)
-        if getattr(job.args, 'html_job_result', 'off') == 'on':
+        open_browser = job.args.get('open_browser', False)
+        if job.args.get('html_job_result', 'off') == 'on':
             html_path = os.path.join(job.logdir, 'results.html')
             self._render(result, html_path)
-            if getattr(job.args, 'stdout_claimed_by', None) is None:
+            if job.args.get('stdout_claimed_by', None) is None:
                 LOG_UI.info("JOB HTML   : %s", html_path)
             if open_browser:
                 self._open_browser(html_path)
                 open_browser = False
 
-        html_path = getattr(job.args, 'html_output', None)
+        html_path = job.args.get('html_output', None)
         if html_path is not None:
             self._render(result, html_path)
             if open_browser:
@@ -278,7 +278,7 @@ class HTML(CLI):
                   'File will be located at "html/results.html".'))
 
     def run(self, args):
-        if 'html_output' in args and args.html_output == '-':
+        if 'html_output' in args and args.get('html_output') == '-':
             LOG_UI.error('HTML to stdout not supported (not all HTML resources'
                          ' can be embedded on a single file)')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)

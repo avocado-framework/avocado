@@ -163,29 +163,29 @@ class Replay(CLI):
         return replay_map
 
     def run(self, args):
-        if getattr(args, 'replay_jobid', None) is None:
+        if args.get('replay_jobid', None) is None:
             return
 
         err = None
-        if args.replay_teststatus and 'variants' in args.replay_ignore:
+        if args.get('replay_teststatus') and 'variants' in args.get('replay_ignore'):
             err = ("Option `--replay-test-status` is incompatible with "
                    "`--replay-ignore variants`.")
-        elif args.replay_teststatus and args.reference:
+        elif args.get('replay_teststatus') and args.get('reference'):
             err = ("Option --replay-test-status is incompatible with "
                    "test references given on the command line.")
-        elif getattr(args, "remote_hostname", False):
+        elif args.get("remote_hostname", False):
             err = "Currently we don't replay jobs in remote hosts."
         if err is not None:
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        base_logdir = getattr(args, 'base_logdir', None)
+        base_logdir = args.get('base_logdir', None)
         if base_logdir is None:
             base_logdir = settings.get_value(section='datadir.paths',
                                              key='logs_dir', key_type='path',
                                              default=None)
         try:
-            resultsdir = jobdata.get_resultsdir(base_logdir, args.replay_jobid)
+            resultsdir = jobdata.get_resultsdir(base_logdir, args.get('replay_jobid'))
         except ValueError as exception:
             LOG_UI.error(exception)
             sys.exit(exit_codes.AVOCADO_FAIL)
@@ -195,13 +195,13 @@ class Replay(CLI):
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         sourcejob = jobdata.get_id(os.path.join(resultsdir, 'id'),
-                                   args.replay_jobid)
+                                   args.get('replay_jobid'))
         if sourcejob is None:
             msg = ("Can't find matching job id '%s' in '%s' directory."
-                   % (args.replay_jobid, resultsdir))
+                   % (args.get('replay_jobid'), resultsdir))
             LOG_UI.error(msg)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        setattr(args, 'replay_sourcejob', sourcejob)
+        args['replay_sourcejob'] = sourcejob
 
         replay_args = jobdata.retrieve_args(resultsdir)
         whitelist = ['loaders',
@@ -217,16 +217,16 @@ class Replay(CLI):
                         ', '.join(whitelist))
         else:
             for option in whitelist:
-                optvalue = getattr(args, option, None)
+                optvalue = args.get(option, None)
                 if optvalue is not None:
                     LOG_UI.warn("Overriding the replay %s with the --%s value "
                                 "given on the command line.",
                                 option.replace('_', '-'),
                                 option.replace('_', '-'))
                 elif option in replay_args:
-                    setattr(args, option, replay_args[option])
+                    args[option] = replay_args[option]
 
-        if getattr(args, 'reference', None):
+        if args.get('reference', None):
             LOG_UI.warn('Overriding the replay test references with test '
                         'references given in the command line.')
         else:
@@ -236,15 +236,15 @@ class Replay(CLI):
                              'Aborting.')
                 sys.exit(exit_codes.AVOCADO_FAIL)
             else:
-                setattr(args, 'reference', references)
+                args['reference'] = references
 
-        if 'config' in args.replay_ignore:
+        if 'config' in args.get('replay_ignore'):
             LOG_UI.warn("Ignoring configuration from source job with "
                         "--replay-ignore.")
         else:
             self.load_config(resultsdir)
 
-        if 'variants' in args.replay_ignore:
+        if 'variants' in args.get('replay_ignore'):
             LOG_UI.warn("Ignoring variants from source job with "
                         "--replay-ignore.")
         else:
@@ -256,19 +256,19 @@ class Replay(CLI):
                 LOG_UI.warning("Using src job Mux data only, use "
                                "`--replay-ignore variants` to override "
                                "them.")
-                setattr(args, "avocado_variants", variants)
+                args["avocado_variants"] = variants
 
         # Extend "replay_test_status" of "INTERRUPTED" when --replay-resume
         # supplied.
-        if args.replay_resume:
-            if not args.replay_teststatus:
-                args.replay_teststatus = ["INTERRUPTED"]
-            elif "INTERRUPTED" not in args.replay_teststatus:
-                args.replay_teststatus.append("INTERRUPTED")
-        if args.replay_teststatus:
+        if args.get('replay_resume'):
+            if not args.get('replay_teststatus'):
+                args['replay_teststatus'] = ["INTERRUPTED"]
+            elif "INTERRUPTED" not in args.get('replay_teststatus'):
+                args['replay_teststatus'].append("INTERRUPTED")
+        if args.get('replay_teststatus'):
             replay_map = self._create_replay_map(resultsdir,
-                                                 args.replay_teststatus)
-            setattr(args, 'replay_map', replay_map)
+                                                 args.get('replay_teststatus'))
+            args['replay_map'] = replay_map
 
         # Use the original directory to resolve test references properly
         pwd = jobdata.retrieve_pwd(resultsdir)

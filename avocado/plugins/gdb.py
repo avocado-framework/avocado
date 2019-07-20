@@ -62,11 +62,11 @@ class GDB(CLI):
 
     def run(self, args):
         if 'gdb_run_bin' in args:
-            for binary in args.gdb_run_bin:
+            for binary in args.get('gdb_run_bin'):
                 gdb.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
 
         if 'gdb_prerun_commands' in args:
-            for commands in args.gdb_prerun_commands:
+            for commands in args.get('gdb_prerun_commands'):
                 if ':' in commands:
                     binary, commands_path = commands.split(':', 1)
                     gdb.GDB_PRERUN_COMMANDS['binary'] = commands_path
@@ -74,7 +74,7 @@ class GDB(CLI):
                     gdb.GDB_PRERUN_COMMANDS[''] = commands
 
         if 'gdb_coredump' in args:
-            gdb.GDB_ENABLE_CORE = True if args.gdb_coredump == 'on' else False
+            gdb.GDB_ENABLE_CORE = True if args.get('gdb_coredump') == 'on' else False
 
         system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
         gdb.GDB_PATH = settings.get_value('gdb.paths', 'gdb', key_type='path',

@@ -42,12 +42,12 @@ class ResultUpload(Result):
 
         """
         self.upload_url = None
-        if getattr(job.args, 'result_upload_url', None) is not None:
-            self.upload_url = job.args.result_upload_url
+        if job.args.get('result_upload_url', None) is not None:
+            self.upload_url = job.args.get('result_upload_url')
 
         self.upload_cmd = None
-        if getattr(job.args, 'result_upload_cmd', None) is not None:
-            self.upload_cmd = job.args.result_upload_cmd
+        if job.args.get('result_upload_cmd', None) is not None:
+            self.upload_cmd = job.args.get('result_upload_cmd')
 
         if self.upload_url is None:
             return
@@ -93,18 +93,18 @@ class ResultUploadCLI(CLI):
                             help='Specify the command to upload results')
 
     def run(self, args):
-        url = getattr(args, 'result_upload_url', None)
+        url = args.get('result_upload_url', None)
         if url is None:
             url = settings.get_value('plugins.result_upload',
                                      'url',
                                      default=None)
             if url is not None:
-                args.result_upload_url = url
+                args['result_upload_url'] = url
 
-        cmd = getattr(args, 'result_upload_cmd', None)
+        cmd = args.get('result_upload_cmd', None)
         if cmd is None:
             cmd = settings.get_value('plugins.result_upload',
                                      'command',
                                      default=None)
             if cmd is not None:
-                args.result_upload_cmd = cmd
+                args['result_upload_cmd'] = cmd

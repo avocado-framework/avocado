@@ -215,20 +215,19 @@ class Run(CLICmd):
         :param args: Command line args received from the run subparser.
         """
         if 'output_check_record' in args:
-            process.OUTPUT_CHECK_RECORD_MODE = getattr(args,
-                                                       'output_check_record',
-                                                       None)
+            process.OUTPUT_CHECK_RECORD_MODE = args.get('output_check_record',
+                                                        None)
 
-        if args.unique_job_id is not None:
+        if args.get('unique_job_id') is not None:
             try:
-                int(args.unique_job_id, 16)
-                if len(args.unique_job_id) != 40:
+                int(args.get('unique_job_id'), 16)
+                if len(args.get('unique_job_id')) != 40:
                     raise ValueError
             except ValueError:
                 LOG_UI.error('Unique Job ID needs to be a 40 digit hex number')
                 sys.exit(exit_codes.AVOCADO_FAIL)
         try:
-            args.job_timeout = time_to_seconds(args.job_timeout)
+            args['job_timeout'] = time_to_seconds(args.get('job_timeout'))
         except ValueError as detail:
             LOG_UI.error(detail.args[0])
             sys.exit(exit_codes.AVOCADO_FAIL)

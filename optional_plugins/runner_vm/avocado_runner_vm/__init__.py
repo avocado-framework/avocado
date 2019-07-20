@@ -375,39 +375,39 @@ class VMTestRunner(RemoteTestRunner):
         Initialize VM and establish connection
         """
         # Super called after VM is found and initialized
-        stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+        stdout_claimed_by = self.job.args.get('stdout_claimed_by', None)
         if not stdout_claimed_by:
-            self.job.log.info("DOMAIN     : %s", self.job.args.vm_domain)
+            self.job.log.info("DOMAIN     : %s", self.job.args.get('vm_domain'))
         try:
-            self.vm = vm_connect(self.job.args.vm_domain,
-                                 self.job.args.vm_hypervisor_uri)
+            self.vm = vm_connect(self.job.args.get('vm_domain'),
+                                 self.job.args.get('vm_hypervisor_uri'))
         except VirtError as exception:
             raise exceptions.JobError(exception)
         if self.vm.start() is False:
-            e_msg = "Could not start VM '%s'" % self.job.args.vm_domain
+            e_msg = "Could not start VM '%s'" % self.job.args.get('vm_domain')
             raise exceptions.JobError(e_msg)
         assert self.vm.domain.isActive() is not False
         # If hostname wasn't given, let's try to find out the IP address
-        if self.job.args.vm_hostname is None:
-            self.job.args.vm_hostname = self.vm.ip_address()
-            if self.job.args.vm_hostname is None:
+        if self.job.args.get('vm_hostname') is None:
+            self.job.args['vm_hostname'] = self.vm.ip_address()
+            if self.job.args.get('vm_hostname') is None:
                 e_msg = ("Could not find the IP address for VM '%s'. Please "
                          "set it explicitly with --vm-hostname" %
-                         self.job.args.vm_domain)
+                         self.job.args.get('vm_domain'))
                 raise exceptions.JobError(e_msg)
-        if self.job.args.vm_cleanup is True:
+        if self.job.args.get('vm_cleanup') is True:
             self.vm.create_snapshot()
             if self.vm.snapshot is None:
                 e_msg = ("Could not create snapshot on VM '%s'" %
                          self.job.args.vm_domain)
                 raise exceptions.JobError(e_msg)
         # Finish remote setup and copy the tests
-        self.job.args.remote_hostname = self.job.args.vm_hostname
-        self.job.args.remote_port = self.job.args.vm_port
-        self.job.args.remote_username = self.job.args.vm_username
-        self.job.args.remote_password = self.job.args.vm_password
-        self.job.args.remote_key_file = self.job.args.vm_key_file
-        self.job.args.remote_timeout = self.job.args.vm_timeout
+        self.job.args['remote_hostname'] = self.job.args.get('vm_hostname')
+        self.job.args['remote_port'] = self.job.args.get('vm_port')
+        self.job.args['remote_username'] = self.job.args.get('vm_username')
+        self.job.args['remote_password'] = self.job.args.get('vm_password')
+        self.job.args['remote_key_file'] = self.job.args.get('vm_key_file')
+        self.job.args['remote_timeout'] = self.job.args.get('vm_timeout')
         super(VMTestRunner, self).setup()
 
     def tear_down(self):
@@ -415,7 +415,7 @@ class VMTestRunner(RemoteTestRunner):
         Stop VM and restore snapshot (if asked for it)
         """
         super(VMTestRunner, self).tear_down()
-        if (self.job.args.vm_cleanup is True and
+        if (self.job.args.get('vm_cleanup') is True and
                 isinstance(getattr(self, 'vm', None), VM)):
             self.vm.stop()
             if self.vm.snapshot is not None:
@@ -482,12 +482,12 @@ class VMCLI(CLI):
         :return: True when enable_arg enabled and all required args are set
         :raise sys.exit: When missing required argument.
         """
-        if (not hasattr(args, enable_arg) or
-                not getattr(args, enable_arg)):
+        if (enable_arg not in args or
+                not args.get(enable_arg)):
             return False
         missing = []
         for arg in required_args:
-            if not getattr(args, arg):
+            if not args.get(arg):
                 missing.append(arg)
         if missing:
             LOG_UI.error("Use of %s requires %s arguments to be set. Please "
@@ -499,4 +499,4 @@ class VMCLI(CLI):
 
     def run(self, args):
         if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
-            args.test_runner = VMTestRunner
+            args['test_runner'] = VMTestRunner

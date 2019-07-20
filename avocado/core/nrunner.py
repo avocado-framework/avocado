@@ -183,9 +183,9 @@ CMD_RUNNABLE_RUN_ARGS = (
 
 
 def runnable_from_args(args):
-    return Runnable(getattr(args, 'kind'),
-                    getattr(args, 'uri'),
-                    *getattr(args, 'arg', ()))
+    return Runnable(args.get('kind'),
+                    args.get('uri'),
+                    *args.get('arg', ()))
 
 
 def subcommand_runnable_run(args, echo=print):
@@ -203,7 +203,7 @@ CMD_RUNNABLE_RUN_RECIPE_ARGS = (
 
 
 def subcommand_runnable_run_recipe(args, echo=print):
-    runnable = runnable_from_recipe(getattr(args, 'recipe'))
+    runnable = runnable_from_recipe(args.get('recipe'))
     runner = runner_from_runnable(runnable)
 
     for status in runner.run():
@@ -395,8 +395,8 @@ def task_run(task, echo):
 
 def subcommand_task_run(args, echo=print):
     runnable = runnable_from_args(args)
-    task = Task(getattr(args, 'identifier'), runnable,
-                getattr(args, 'status_uri', []))
+    task = Task(args.get('identifier'), runnable,
+                args.get('status_uri', []))
     task_run(task, echo)
 
 
@@ -407,7 +407,7 @@ CMD_TASK_RUN_RECIPE_ARGS = (
 
 
 def subcommand_task_run_recipe(args, echo=print):
-    task = task_from_recipe(getattr(args, 'recipe'))
+    task = task_from_recipe(args.get('recipe'))
     task_run(task, echo)
 
 
@@ -418,7 +418,7 @@ CMD_STATUS_SERVER_ARGS = (
 
 
 def subcommand_status_server(args):
-    server = StatusServer(args.uri)
+    server = StatusServer(args.get('uri'))
     server.start()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(server.wait())
@@ -448,16 +448,17 @@ def parse():
 
 
 def main():
-    args = parse()
-    if args.subcommand == 'runnable-run':
+    args = vars(parse())
+    subcommand = args.get('subcommand')
+    if subcommand == 'runnable-run':
         subcommand_runnable_run(args)
-    elif args.subcommand == 'runnable-run-recipe':
+    elif subcommand == 'runnable-run-recipe':
         subcommand_runnable_run_recipe(args)
-    elif args.subcommand == 'task-run':
+    elif subcommand == 'task-run':
         subcommand_task_run(args)
-    elif args.subcommand == 'task-run-recipe':
+    elif subcommand == 'task-run-recipe':
         subcommand_task_run_recipe(args)
-    elif args.subcommand == 'status-server':
+    elif subcommand == 'status-server':
         subcommand_status_server(args)
 
 

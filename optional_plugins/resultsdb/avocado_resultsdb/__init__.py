@@ -40,16 +40,16 @@ class ResultsdbResultEvent(ResultEvents):
 
     def __init__(self, args):
         self.rdbapi = None
-        if getattr(args, 'resultsdb_api', None) is not None:
-            self.rdbapi = resultsdb_api.ResultsDBapi(args.resultsdb_api)
+        if args.get('resultsdb_api', None) is not None:
+            self.rdbapi = resultsdb_api.ResultsDBapi(args.get('resultsdb_api'))
 
         self.rdblogs = None
-        if getattr(args, 'resultsdb_logs', None) is not None:
-            self.rdblogs = args.resultsdb_logs
+        if args.get('resultsdb_logs', None) is not None:
+            self.rdblogs = args.get('resultsdb_logs')
 
         self.rdbnote_limit = 0
-        if getattr(args, 'resultsdb_note_limit', None) is not None:
-            self.rdbnote_limit = int(args.resultsdb_note_limit)
+        if args.get('resultsdb_note_limit', None) is not None:
+            self.rdbnote_limit = int(args.get('resultsdb_note_limit'))
 
         self.job_id = None
         self.job_logdir = None
@@ -159,8 +159,8 @@ class ResultsdbResult(Result):
     description = 'Resultsdb result support'
 
     def render(self, result, job):
-        if (getattr(job.args, 'resultsdb_logs', None) is not None and
-                getattr(job.args, 'stdout_claimed_by', None) is None):
+        if (job.args.get('resultsdb_logs', None) is not None and
+                job.args.get('stdout_claimed_by', None) is None):
             log_msg = "JOB URL    : %s/%s"
             LOG_UI.info(log_msg, job.args.resultsdb_logs, os.path.basename(job.logdir))
 
@@ -194,26 +194,26 @@ class ResultsdbCLI(CLI):
         self.configured = True
 
     def run(self, args):
-        resultsdb_api_url = getattr(args, 'resultsdb_api', None)
+        resultsdb_api_url = args.get('resultsdb_api', None)
         if resultsdb_api_url is None:
             resultsdb_api_url = settings.get_value('plugins.resultsdb',
                                                    'api_url',
                                                    default=None)
             if resultsdb_api_url is not None:
-                args.resultsdb_api = resultsdb_api_url
+                args['resultsdb_api'] = resultsdb_api_url
 
-        resultsdb_logs = getattr(args, 'resultsdb_logs', None)
+        resultsdb_logs = args.get('resultsdb_logs', None)
         if resultsdb_logs is None:
             resultsdb_logs = settings.get_value('plugins.resultsdb',
                                                 'logs_url',
                                                 default=None)
             if resultsdb_logs is not None:
-                args.resultsdb_logs = resultsdb_logs
+                args['resultsdb_logs'] = resultsdb_logs
 
-        resultsdb_note_limit = getattr(args, 'resultsdb_note_limit', None)
+        resultsdb_note_limit = args.get('resultsdb_note_limit', None)
         if resultsdb_note_limit is None:
             resultsdb_note_limit = settings.get_value('plugins.resultsdb',
                                                       'note_size_limit',
                                                       default=None)
             if resultsdb_note_limit is not None:
-                args.resultsdb_note_limit = resultsdb_note_limit
+                args['resultsdb_note_limit'] = resultsdb_note_limit

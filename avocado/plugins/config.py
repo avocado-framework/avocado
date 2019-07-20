@@ -45,7 +45,7 @@ class Config(CLICmd):
             else:
                 LOG_UI.debug('      %s', cfg_path)
         LOG_UI.debug("")
-        if not args.datadir:
+        if not args.get("datadir"):
             blength = 0
             for section in settings.config.sections():
                 for value in settings.config.items(section):

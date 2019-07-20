@@ -40,14 +40,14 @@ class Human(ResultEvents):
 
     def __init__(self, args):
         self.__throbber = output.Throbber()
-        stdout_claimed_by = getattr(args, 'stdout_claimed_by', None)
+        stdout_claimed_by = args.get('stdout_claimed_by', None)
         self.owns_stdout = not stdout_claimed_by
 
     def pre_tests(self, job):
         if not self.owns_stdout:
             return
         LOG_UI.info("JOB ID     : %s", job.unique_id)
-        replay_source_job = getattr(job.args, "replay_sourcejob", False)
+        replay_source_job = job.args.get("replay_sourcejob", False)
         if replay_source_job:
             LOG_UI.info("SRC JOB ID : %s", replay_source_job)
         LOG_UI.info("JOB LOG    : %s", job.logfile)
@@ -123,5 +123,5 @@ class HumanJob(JobPre, JobPost):
 
     def post(self, job):
         if job.status == 'PASS':
-            if not getattr(job.args, 'stdout_claimed_by', None):
+            if not job.args.get('stdout_claimed_by', None):
                 LOG_UI.info("JOB TIME   : %.2f s", job.time_elapsed)

@@ -50,7 +50,7 @@ class VarianterCitCLI(CLI):
                                    "%(default)s, maximum number is 6"))
 
     def run(self, args):
-        if getattr(args, "varianter_debug", False):
+        if args.get("varianter_debug", False):
             LOG.setLevel(logging.DEBUG)
 
 
@@ -65,12 +65,12 @@ class VarianterCit(Varianter):
 
     def initialize(self, args):
         self.variants = None
-        order = args.cit_order_of_combinations
+        order = args.get('cit_order_of_combinations')
         if order > 6:
             LOG_UI.error("The order of combinations is bigger then 6")
             self.error_exit(args)
 
-        cit_parameter_file = getattr(args, "cit_parameter_file", None)
+        cit_parameter_file = args.get("cit_parameter_file", None)
         if cit_parameter_file is None:
             return
         else:
@@ -99,7 +99,7 @@ class VarianterCit(Varianter):
 
     @staticmethod
     def error_exit(args):
-        if args.subcommand == 'run':
+        if args.get('subcommand') == 'run':
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         else:
             sys.exit(exit_codes.AVOCADO_FAIL)

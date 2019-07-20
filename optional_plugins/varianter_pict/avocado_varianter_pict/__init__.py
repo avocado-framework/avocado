@@ -96,7 +96,7 @@ class VarianterPict(Varianter):
         self.variants = None
         error = False
 
-        pict_parameter_file = getattr(args, "pict_parameter_file", None)
+        pict_parameter_file = args.get("pict_parameter_file", None)
         if pict_parameter_file is None:
             return
         else:
@@ -106,7 +106,7 @@ class VarianterPict(Varianter):
                              "is not readable", pict_parameter_file)
                 error = True
 
-        pict_binary = getattr(args, "pict_binary", None)
+        pict_binary = args.get("pict_binary", None)
         if pict_binary is None:
             LOG_UI.error("pict binary could not be found in $PATH. Please set "
                          "its location with --pict-binary or put it in your "
@@ -121,16 +121,16 @@ class VarianterPict(Varianter):
                 error = True
 
         if error:
-            if args.subcommand == 'run':
+            if args.get('subcommand') == 'run':
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-        self.parameter_path = getattr(args, "pict_parameter_path")
+        self.parameter_path = args.get("pict_parameter_path")
 
         output = run_pict(pict_binary,
                           pict_parameter_file,
-                          getattr(args, "pict_order_of_combinations"))
+                          args.get("pict_order_of_combinations"))
         self.headers, self.variants = parse_pict_output(output)
 
     def __iter__(self):

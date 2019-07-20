@@ -74,7 +74,7 @@ def record(args, logdir, variants, references=None, cmdline=None):
         os.fsync(pwd_file)
 
     with open(path_args, 'w') as args_file:
-        json.dump(args.__dict__, args_file, default=lambda x: None)
+        json.dump(args, args_file, default=lambda x: None)
         args_file.flush()
         os.fsync(args_file)
 

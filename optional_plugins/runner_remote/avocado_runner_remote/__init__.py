@@ -341,20 +341,20 @@ class RemoteTestRunner(TestRunner):
 
     def setup(self):
         """ Setup remote environment """
-        stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+        stdout_claimed_by = self.job.args.get('stdout_claimed_by', None)
         if not stdout_claimed_by:
             self.job.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
-                              self.job.args.remote_username,
-                              self.job.args.remote_hostname,
-                              self.job.args.remote_port,
-                              self.job.args.remote_timeout)
-        self.remote = Remote(hostname=self.job.args.remote_hostname,
-                             username=self.job.args.remote_username,
-                             password=self.job.args.remote_password,
-                             key_filename=self.job.args.remote_key_file,
-                             port=self.job.args.remote_port,
-                             timeout=self.job.args.remote_timeout,
-                             env_keep=self.job.args.env_keep)
+                              self.job.args.get('remote_username'),
+                              self.job.args.get('remote_hostname'),
+                              self.job.args.get('remote_port'),
+                              self.job.args.get('remote_timeout'))
+        self.remote = Remote(hostname=self.job.args.get('remote_hostname'),
+                             username=self.job.args.get('remote_username'),
+                             password=self.job.args.get('remote_password'),
+                             key_filename=self.job.args.get('remote_key_file'),
+                             port=self.job.args.get('remote_port'),
+                             timeout=self.job.args.get('remote_timeout'),
+                             env_keep=self.job.args.get('env_keep'))
 
     def check_remote_avocado(self):
         """
@@ -443,14 +443,14 @@ class RemoteTestRunner(TestRunner):
         # bool or nargs
         for arg in ["--mux-yaml", "--dry-run",
                     "--filter-by-tags-include-empty"]:
-            value = getattr(self.job.args, arg_to_dest(arg), None)
+            value = self.job.args.get(arg_to_dest(arg), None)
             if value is True:
                 extra_params.append(arg)
             elif value:
                 extra_params.append("%s %s" % (arg, " ".join(value)))
         # append
         for arg in ["--filter-by-tags"]:
-            value = getattr(self.job.args, arg_to_dest(arg), None)
+            value = self.job.args.get(arg_to_dest(arg), None)
             if value:
                 join = ' %s ' % arg
                 extra_params.append("%s %s" % (arg, join.join(value)))
@@ -521,7 +521,7 @@ class RemoteTestRunner(TestRunner):
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
         remote_logger.addHandler(file_handler)
-        if "test" in getattr(self.job.args, "show", []):
+        if "test" in self.job.args.get("show", []):
             output.add_log_handler(paramiko_logger.name)
         logger_list = [output.LOG_JOB]
         sys.stdout = output.LoggingFile(loggers=logger_list)
@@ -649,8 +649,8 @@ class RemoteCLI(CLI):
         :return: True when enable_arg enabled and all required args are set
         :raise sys.exit: When missing required argument.
         """
-        if (not hasattr(args, enable_arg) or
-                not getattr(args, enable_arg)):
+        if (enable_arg not in args or
+                not args.get(enable_arg)):
             return False
         missing = []
         for arg in required_args:
@@ -669,4 +669,4 @@ class RemoteCLI(CLI):
                                      ('remote_hostname',)):
             loader.loader.clear_plugins()
             loader.loader.register_plugin(DummyLoader)
-            args.test_runner = RemoteTestRunner
+            args['test_runner'] = RemoteTestRunner

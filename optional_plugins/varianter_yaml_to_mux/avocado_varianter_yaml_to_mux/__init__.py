@@ -421,7 +421,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
     description = 'Multiplexer plugin to parse yaml files to params'
 
     def initialize(self, args):
-        debug = getattr(args, "varianter_debug", False)
+        debug = args.get("varianter_debug", False)
 
         if debug:
             data = mux.MuxTreeNodeDebug()
@@ -429,20 +429,20 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             data = mux.MuxTreeNode()
 
         # Merge the multiplex
-        multiplex_files = getattr(args, "mux_yaml", None)
+        multiplex_files = args.get("mux_yaml", None)
         if multiplex_files:
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
                 error_msg = "%s : %s" % (details.strerror, details.filename)
                 LOG_UI.error(error_msg)
-                if args.subcommand == 'run':
+                if args.get('subcommand') == 'run':
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
                     sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Extend default multiplex tree of --mux-inject values
-        for inject in getattr(args, "mux_inject", []):
+        for inject in args.get("mux_inject", []):
             entry = inject.split(':', 3)
             if len(entry) < 2:
                 raise ValueError("key:entry pairs required, found only %s"
@@ -451,11 +451,11 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                 entry.insert(0, '')  # add path='' (root)
             data.get_node(entry[0], True).value[entry[1]] = entry[2]
 
-        mux_filter_only = getattr(args, 'mux_filter_only', None)
-        mux_filter_out = getattr(args, 'mux_filter_out', None)
+        mux_filter_only = args.get('mux_filter_only', None)
+        mux_filter_out = args.get('mux_filter_out', None)
         data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
         if data != mux.MuxTreeNode():
-            paths = getattr(args, "mux_parameter_paths", ["/run/*"])
+            paths = args.get("mux_parameter_paths", ["/run/*"])
             if paths is None:
                 paths = ["/run/*"]
             self.initialize_mux(data, paths, debug)
