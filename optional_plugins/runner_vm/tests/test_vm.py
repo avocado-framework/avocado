@@ -1,4 +1,3 @@
-import argparse
 import tempfile
 import unittest.mock
 
@@ -37,24 +36,24 @@ class VMTestRunnerSetup(unittest.TestCase):
         mock_vm.create_snapshot = unittest.mock.Mock()
         mock_vm.stop = unittest.mock.Mock()
         mock_vm.restore_snapshot = unittest.mock.Mock()
-        job_args = argparse.Namespace(test_result_total=1,
-                                      vm_domain='domain',
-                                      vm_username='username',
-                                      vm_hostname='hostname',
-                                      vm_port=22,
-                                      vm_password='password',
-                                      vm_key_file=None,
-                                      vm_cleanup=True,
-                                      vm_no_copy=False,
-                                      vm_timeout=120,
-                                      vm_hypervisor_uri='my_hypervisor_uri',
-                                      reference=['/tests/sleeptest.py',
-                                                 '/tests/other/test',
-                                                 'passtest.py'],
-                                      dry_run=True,
-                                      env_keep=None,
-                                      keep_tmp='on',
-                                      base_logdir=self.tmpdir.name)
+        job_args = {'test_result_total': 1,
+                    'vm_domain': 'domain',
+                    'vm_username': 'username',
+                    'vm_hostname': 'hostname',
+                    'vm_port': 22,
+                    'vm_password': 'password',
+                    'vm_key_file': None,
+                    'vm_cleanup': True,
+                    'vm_no_copy': False,
+                    'vm_timeout': 120,
+                    'vm_hypervisor_uri': 'my_hypervisor_uri',
+                    'reference': ['/tests/sleeptest.py',
+                                  '/tests/other/test',
+                                  'passtest.py'],
+                    'dry_run': True,
+                    'env_keep': None,
+                    'keep_tmp': 'on',
+                    'base_logdir': self.tmpdir.name}
         with Job(job_args) as job:
             with unittest.mock.patch('avocado_runner_vm.vm_connect',
                                      return_value=mock_vm):

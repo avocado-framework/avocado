@@ -64,7 +64,7 @@ class VarianterPictCLI(CLI):
                                     "%(default)s, maximum number is specific "
                                     "to parameter file content"))
 
-    def run(self, args):
+    def run(self, config):
         pass
 
 
@@ -92,11 +92,11 @@ class VarianterPict(Varianter):
     name = 'pict'
     description = "PICT based Varianter"
 
-    def initialize(self, args):
+    def initialize(self, config):
         self.variants = None
         error = False
 
-        pict_parameter_file = getattr(args, "pict_parameter_file", None)
+        pict_parameter_file = config.get("pict_parameter_file", None)
         if pict_parameter_file is None:
             return
         else:
@@ -106,7 +106,7 @@ class VarianterPict(Varianter):
                              "is not readable", pict_parameter_file)
                 error = True
 
-        pict_binary = getattr(args, "pict_binary", None)
+        pict_binary = config.get("pict_binary", None)
         if pict_binary is None:
             LOG_UI.error("pict binary could not be found in $PATH. Please set "
                          "its location with --pict-binary or put it in your "
@@ -121,16 +121,16 @@ class VarianterPict(Varianter):
                 error = True
 
         if error:
-            if args.subcommand == 'run':
+            if config.get('subcommand') == 'run':
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-        self.parameter_path = getattr(args, "pict_parameter_path")
+        self.parameter_path = config.get("pict_parameter_path")
 
         output = run_pict(pict_binary,
                           pict_parameter_file,
-                          getattr(args, "pict_order_of_combinations"))
+                          config.get("pict_order_of_combinations"))
         self.headers, self.variants = parse_pict_output(output)
 
     def __iter__(self):

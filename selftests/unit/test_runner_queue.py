@@ -1,4 +1,3 @@
-import argparse
 import tempfile
 import unittest
 import multiprocessing
@@ -24,7 +23,7 @@ class TestRunnerQueue(unittest.TestCase):
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        args = argparse.Namespace(base_logdir=self.tmpdir.name)
+        args = {'base_logdir': self.tmpdir.name}
         self.job = Job(args)
         self.result = Result(self.job)
 

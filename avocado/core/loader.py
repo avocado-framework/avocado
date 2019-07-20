@@ -120,9 +120,9 @@ class TestLoaderProxy:
             return out.rstrip('\n')
 
         # Register external runner when --external-runner is used
-        if getattr(args, "external_runner", None):
+        if args.get("external_runner", None):
             self.register_plugin(ExternalLoader)
-            args.loaders = ["external:%s" % args.external_runner]
+            args['loaders'] = ["external:%s" % args.get('external_runner')]
         else:
             # Add (default) file loader if not already registered
             if FileLoader not in self.registered_plugins:
@@ -134,7 +134,7 @@ class TestLoaderProxy:
         for plugin in self.registered_plugins:
             supported_types.extend(_good_test_types(plugin))
         # Load plugin by the priority from settings
-        loaders = getattr(args, 'loaders', None)
+        loaders = args.get('loaders', None)
         if not loaders:
             loaders = settings.get_value("plugins", "loaders", list, [])
         if '?' in loaders:
@@ -746,8 +746,8 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def _process_external_runner(args, runner):
         """ Enables the external_runner when asked for """
-        chdir = getattr(args, 'external_runner_chdir', None)
-        test_dir = getattr(args, 'external_runner_testdir', None)
+        chdir = args.get('external_runner_chdir', None)
+        test_dir = args.get('external_runner_testdir', None)
 
         if runner:
             external_runner_and_args = shlex.split(runner)

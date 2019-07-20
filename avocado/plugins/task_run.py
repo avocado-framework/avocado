@@ -15,9 +15,9 @@ class TaskRun(CLICmd):
         for arg in nrunner.CMD_TASK_RUN_ARGS:
             parser.add_argument(*arg[0], **arg[1])
 
-    def run(self, args):
+    def run(self, config):
         try:
-            nrunner.subcommand_task_run(args, LOG_UI.info)
+            nrunner.subcommand_task_run(config, LOG_UI.info)
             return exit_codes.AVOCADO_ALL_OK
         except Exception as e:
             LOG_UI.error(e)
