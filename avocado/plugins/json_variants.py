@@ -47,7 +47,7 @@ class JsonVariantsCLI(CLI):
                                  help=('Load the Variants from a JSON '
                                        'serialized file'))
 
-    def run(self, args):
+    def run(self, config):
         pass
 
 
@@ -61,8 +61,8 @@ class JsonVariants(Varianter):
     description = "JSON serialized based Varianter"
     variants = None
 
-    def initialize(self, args):
-        load_variants = getattr(args, "json_variants_load", None)
+    def initialize(self, config):
+        load_variants = config.get("json_variants_load", None)
 
         if load_variants is None:
             self.variants = _NO_VARIANTS
@@ -73,7 +73,7 @@ class JsonVariants(Varianter):
         except IOError:
             LOG_UI.error("JSON serialized file '%s' could not be found or "
                          "is not readable", load_variants)
-            if args.subcommand == 'run':
+            if config.get('subcommand') == 'run':
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
                 sys.exit(exit_codes.AVOCADO_FAIL)

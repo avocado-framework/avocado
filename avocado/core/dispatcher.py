@@ -70,10 +70,10 @@ class ResultDispatcher(EnabledExtensionManager):
 
 class ResultEventsDispatcher(EnabledExtensionManager):
 
-    def __init__(self, args):
+    def __init__(self, config):
         super(ResultEventsDispatcher, self).__init__(
             'avocado.plugins.result_events',
-            invoke_kwds={'args': args})
+            invoke_kwds={'config': config})
 
 
 class VarianterDispatcher(EnabledExtensionManager):

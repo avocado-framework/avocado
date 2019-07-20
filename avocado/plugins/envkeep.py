@@ -40,5 +40,5 @@ class EnvKeep(CLI):
     def _parse_env_keep(self, string):
         return string.split(',')
 
-    def run(self, args):
+    def run(self, config):
         pass

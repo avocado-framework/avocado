@@ -49,8 +49,8 @@ class VarianterCitCLI(CLI):
                              help=("Order of combinations. Defaults to "
                                    "%(default)s, maximum number is 6"))
 
-    def run(self, args):
-        if getattr(args, "varianter_debug", False):
+    def run(self, config):
+        if config.get("varianter_debug", False):
             LOG.setLevel(logging.DEBUG)
 
 
@@ -63,14 +63,14 @@ class VarianterCit(Varianter):
     name = 'cit'
     description = "CIT Varianter"
 
-    def initialize(self, args):
+    def initialize(self, config):
         self.variants = None
-        order = args.cit_order_of_combinations
+        order = config.get('cit_order_of_combinations')
         if order > 6:
             LOG_UI.error("The order of combinations is bigger then 6")
-            self.error_exit(args)
+            self.error_exit(config)
 
-        cit_parameter_file = getattr(args, "cit_parameter_file", None)
+        cit_parameter_file = config.get("cit_parameter_file", None)
         if cit_parameter_file is None:
             return
         else:
@@ -78,13 +78,13 @@ class VarianterCit(Varianter):
             if not os.access(cit_parameter_file, os.R_OK):
                 LOG_UI.error("parameter file '%s' could not be found or "
                              "is not readable", cit_parameter_file)
-                self.error_exit(args)
+                self.error_exit(config)
 
         try:
             parameters, constraints = Parser.parse(open(cit_parameter_file))
         except Exception as details:
             LOG_UI.error("Cannot parse parameter file: %s", details)
-            self.error_exit(args)
+            self.error_exit(config)
 
         input_data = [parameter.get_size() for parameter in parameters]
 
@@ -98,8 +98,8 @@ class VarianterCit(Varianter):
             self.variants.append(dict(zip(self.headers, combination)))
 
     @staticmethod
-    def error_exit(args):
-        if args.subcommand == 'run':
+    def error_exit(config):
+        if config.get('subcommand') == 'run':
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         else:
             sys.exit(exit_codes.AVOCADO_FAIL)

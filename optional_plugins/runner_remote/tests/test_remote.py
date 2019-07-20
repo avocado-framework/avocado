@@ -1,4 +1,3 @@
-import argparse
 import glob
 import os
 import tempfile
@@ -52,24 +51,24 @@ class RemoteTestRunnerTest(unittest.TestCase):
         4) Assert that those results are properly parsed into the
            job's result
         """
-        job_args = argparse.Namespace(test_result_total=1,
-                                      remote_username='username',
-                                      remote_hostname='hostname',
-                                      remote_port=22,
-                                      remote_password='password',
-                                      remote_key_file=None,
-                                      remote_timeout=60,
-                                      mux_yaml=['~/avocado/tests/foo.yaml',
-                                                '~/avocado/tests/bar/baz.yaml'],
-                                      filter_by_tags=["-foo", "-bar"],
-                                      filter_by_tags_include_empty=False,
-                                      dry_run=True,
-                                      env_keep=None,
-                                      reference=['/tests/sleeptest.py',
-                                                 '/tests/other/test',
-                                                 'passtest.py'],
-                                      keep_tmp='on',
-                                      base_logdir=self.tmpdir.name)
+        job_args = {'test_result_total': 1,
+                    'remote_username': 'username',
+                    'remote_hostname': 'hostname',
+                    'remote_port': 22,
+                    'remote_password': 'password',
+                    'remote_key_file': None,
+                    'remote_timeout': 60,
+                    'mux_yaml': ['~/avocado/tests/foo.yaml',
+                                 '~/avocado/tests/bar/baz.yaml'],
+                    'filter_by_tags': ["-foo", "-bar"],
+                    'filter_by_tags_include_empty': False,
+                    'dry_run': True,
+                    'env_keep': None,
+                    'reference': ['/tests/sleeptest.py',
+                                  '/tests/other/test',
+                                  'passtest.py'],
+                    'keep_tmp': 'on',
+                    'base_logdir': self.tmpdir.name}
 
         with Job(job_args) as job:
             runner = avocado_runner_remote.RemoteTestRunner(job, job.result)
@@ -79,7 +78,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
             # These are mocked at their source, and will prevent fabric from
             # trying to contact remote hosts
             with unittest.mock.patch('avocado_runner_remote.Remote'):
-                runner.remote = avocado_runner_remote.Remote(job_args.remote_hostname)
+                remote_hostname = job_args.get('remote_hostname')
+                runner.remote = avocado_runner_remote.Remote(remote_hostname)
 
                 # This is the result that the run_suite() will get from remote.run
                 remote_run_result = process.CmdResult()

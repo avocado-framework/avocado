@@ -233,5 +233,5 @@ class GolangCLI(CLI):
     def configure(self, parser):
         pass
 
-    def run(self, args):
+    def run(self, config):
         loader.loader.register_plugin(GolangLoader)

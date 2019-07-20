@@ -60,21 +60,21 @@ class GDB(CLI):
                                    ' inferior process received a fatal signal '
                                    'such as SIGSEGV or SIGABRT'))
 
-    def run(self, args):
-        if 'gdb_run_bin' in args:
-            for binary in args.gdb_run_bin:
+    def run(self, config):
+        if 'gdb_run_bin' in config:
+            for binary in config.get('gdb_run_bin'):
                 gdb.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
 
-        if 'gdb_prerun_commands' in args:
-            for commands in args.gdb_prerun_commands:
+        if 'gdb_prerun_commands' in config:
+            for commands in config.get('gdb_prerun_commands'):
                 if ':' in commands:
                     binary, commands_path = commands.split(':', 1)
                     gdb.GDB_PRERUN_COMMANDS['binary'] = commands_path
                 else:
                     gdb.GDB_PRERUN_COMMANDS[''] = commands
 
-        if 'gdb_coredump' in args:
-            gdb.GDB_ENABLE_CORE = True if args.gdb_coredump == 'on' else False
+        if 'gdb_coredump' in config:
+            gdb.GDB_ENABLE_CORE = True if config.get('gdb_coredump') == 'on' else False
 
         system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
         gdb.GDB_PATH = settings.get_value('gdb.paths', 'gdb', key_type='path',

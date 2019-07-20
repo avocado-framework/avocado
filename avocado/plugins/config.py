@@ -36,7 +36,7 @@ class Config(CLICmd):
                             help='Turn the paginator on/off. '
                             'Current: %(default)s')
 
-    def run(self, args):
+    def run(self, config):
         LOG_UI.info("Config files read (in order, '*' means the file exists "
                     "and had been read):")
         for cfg_path in settings.all_config_paths:
@@ -45,7 +45,7 @@ class Config(CLICmd):
             else:
                 LOG_UI.debug('      %s', cfg_path)
         LOG_UI.debug("")
-        if not args.datadir:
+        if not config.get("datadir"):
             blength = 0
             for section in settings.config.sections():
                 for value in settings.config.items(section):
