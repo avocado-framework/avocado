@@ -259,7 +259,11 @@ def get_supported_huge_pages_size():
     output = os.listdir('/sys/kernel/mm/hugepages/')
     # Given the items in this directory are in the format hugepages-<size>kB,
     # the <size> will always start from index 10.
-    return [int(each[10:].rstrip('kB')) for each in output]
+    output = [int(each[10:].rstrip('kB')) for each in output]
+    if os.uname()[4] in ['ppc64', 'ppc64le'] and b'PowerVM'\
+            in process.system_output("pseries_platform", ignore_status=True):
+        output.remove(16777216)
+    return output
 
 
 def get_huge_page_size():
