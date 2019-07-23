@@ -12,3 +12,14 @@ span:hover .spnTooltip{
     background:#fff;
 }
 .callout {z-index:20;position:absolute;top:30px;border:0;left:-12px;}
+.font-weight-normal {
+    font-weight: normal;
+}
+/* Restrict cells to a maximum width */
+.dataTable th, .dataTable td {
+    max-width: 14.3em;
+    min-width: 5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
