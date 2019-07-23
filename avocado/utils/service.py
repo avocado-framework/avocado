@@ -412,7 +412,7 @@ def get_name_of_init(run=process.run):
     :return: executable name for PID 1, aka init
     :rtype:  str
     """
-    if run == process.run:
+    if run is process.run:
         # On a local run, there are better ways to check
         # our PID 1 executable name.
         try:
