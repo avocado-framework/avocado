@@ -140,7 +140,8 @@ def get_pci_class_name(pci_address):
     :return: class name for corresponding pci bus address
     """
     pci_class_dic = {'0104': 'scsi_host', '0c04': 'fc_host',
-                     '0200': 'net', '0108': 'nvme', '0280': 'net'}
+                     '0200': 'net', '0108': 'nvme', '0280': 'net',
+                     '0207': 'net'}
     pci_class_id = get_pci_prop(pci_address, "Class")
     if pci_class_id not in pci_class_dic:
         if pci_class_id is None:
