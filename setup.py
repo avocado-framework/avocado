@@ -62,7 +62,6 @@ if __name__ == '__main__':
           entry_points={
               'avocado.plugins.cli': [
                   'envkeep = avocado.plugins.envkeep:EnvKeep',
-                  'gdb = avocado.plugins.gdb:GDB',
                   'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnitCLI',
                   'json = avocado.plugins.jsonresult:JSONCLI',
