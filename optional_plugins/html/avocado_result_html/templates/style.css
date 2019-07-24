@@ -1,22 +1,15 @@
-span .spnTooltip {
-    z-index:10;
+.spnTooltip {
     display:none;
+    z-index: 10;
     padding:14px 20px;
-}
-span:hover .spnTooltip{
-    display:inline;
     position:absolute;
-    right: 50px;
     color:#111;
     border:1px solid #337ab7;
     background:#fff;
-}
-.callout {z-index:20;position:absolute;top:30px;border:0;left:-12px;}
-.font-weight-normal {
-    font-weight: normal;
+    white-space: pre;
 }
 /* Restrict cells to a maximum width */
-.dataTable th, .dataTable td {
+.dataTable th, .dataTable div {
     max-width: 14.3em;
     min-width: 5em;
     overflow: hidden;

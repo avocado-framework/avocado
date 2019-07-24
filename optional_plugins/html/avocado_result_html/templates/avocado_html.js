@@ -33,3 +33,10 @@ $(document).ready(function() {
     .removeClass( 'display' )
     .addClass('table table-striped table-bordered');
 } );
+
+$(".hiddenText").hover(function(){
+    var x = $(this).position();
+    $(this).parent().next(".spnTooltip").css({'display': 'block', "top": x.top + 30, "left": x.left -50});
+  }, function(){
+    $(this).parent().next(".spnTooltip").css('display', 'none');
+});

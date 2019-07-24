@@ -72,19 +72,21 @@
         </thead>
         {% for test in data.tests %}
         <tr class="{{ data.row_class }}">
-          <td>{{ test.time_start }}</td>
-          <td title="{{ test.uid }}">{{ test.uid }}</td>
-          <td><a href="{{ test.logdir }}" title="{{ test.name }} | {{ test.params }}">{{ test.name }}</a></td>
-          <td>{{ test.variant }}</td>
-          <td>{{ test.status }}</td>
-          <td>{{ test.time }}</td>
-          <td title="{{ test.fail_reason|replace('<unknown>', '')|safe }}">{{ test.fail_reason|safe }}</td>
-          <td class="row">
-            <a class="col-md-1" href="{{ test.logfile }}"><img src="{{ data.source_path + '/images/logs_icon.svg'}}" title="Debug log"/></a>
-            <span class="col-md-1">
-              <span class="spnTooltip"><strong>Whiteboard:</strong><br>{{test.whiteboard}}</span>
-              <img src="{{ data.source_path + '/images/whiteboard_icon.svg'}}"/>
-            </span>
+          <td><div>{{ test.time_start }}</div></td>
+          <td title="{{ test.uid }}"><div>{{ test.uid }}</div></td>
+          <td><div><a class="hiddenText" href="{{ test.logdir }}">{{ test.name }}</a></div>
+              <span class="spnTooltip">{{ test.name }} | {{ test.params }}</span>
+          </td>
+          <td><div>{{ test.variant }}</div></td>
+          <td><div>{{ test.status }}</div></td>
+          <td><div>{{ test.time }}</div></td>
+          <td title="{{ test.fail_reason|replace('<unknown>', '')|safe }}"><div>{{ test.fail_reason|safe }}</div></td>
+          <td>
+            <div>
+              <a class="col-xs-1" href="{{ test.logfile }}"><img src="{{ data.source_path + '/images/logs_icon.svg'}}" title="Debug log"/></a>
+              <div class="col-xs-1 hiddenText"><img src="{{ data.source_path + '/images/whiteboard_icon.svg'}}"/></div>
+            </div>
+            <span class="spnTooltip"><strong>Whiteboard:</strong><br>{{test.whiteboard}}</span>
           </td>
         </tr>
         {% endfor %}
