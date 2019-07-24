@@ -557,13 +557,9 @@ class RemoteTestRunner(TestRunner):
                              job_logdir=local_log_dir,
                              job_unique_id='')
                 self.result.start_test(state)
-                self.job._result_events_dispatcher.map_method('start_test',
-                                                              self.result,
-                                                              state)
+                self.job.result_events_dispatcher.map_method('start_test', self.result, state)
                 self.result.check_test(state)
-                self.job._result_events_dispatcher.map_method('end_test',
-                                                              self.result,
-                                                              state)
+                self.job.result_events_dispatcher.map_method('end_test', self.result, state)
                 if state['status'] == "INTERRUPTED":
                     summary.add("INTERRUPTED")
                 elif not status.mapping[state['status']]:
@@ -575,8 +571,7 @@ class RemoteTestRunner(TestRunner):
             archive.uncompress(zip_path_filename, local_log_dir)
             os.remove(zip_path_filename)
             self.result.end_tests()
-            self.job._result_events_dispatcher.map_method('post_tests',
-                                                          self.job)
+            self.job.result_events_dispatcher.map_method('post_tests', self.job)
         finally:
             try:
                 self.tear_down()

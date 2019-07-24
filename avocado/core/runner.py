@@ -180,8 +180,7 @@ class TestStatus:
                 self.interrupt = True
             elif "paused" in msg:
                 self.status = msg
-                self.job._result_events_dispatcher.map_method('test_progress',
-                                                              False)
+                self.job.result_events_dispatcher.map_method('test_progress', False)
                 paused_msg = msg['paused']
                 if paused_msg:
                     self.job.log.warning(paused_msg)
@@ -336,9 +335,7 @@ class TestRunner:
             instance.error(stacktrace.str_unpickable_object(early_state))
 
         self.result.start_test(early_state)
-        self.job._result_events_dispatcher.map_method('start_test',
-                                                      self.result,
-                                                      early_state)
+        self.job.result_events_dispatcher.map_method('start_test', self.result, early_state)
         if getattr(self.job.args, 'log_test_data_directories', False):
             data_sources = getattr(instance, "DATA_SOURCES", [])
             if data_sources:
@@ -424,7 +421,7 @@ class TestRunner:
         first = 0.01
         step = 0.01
         abort_reason = None
-        result_dispatcher = self.job._result_events_dispatcher
+        result_dispatcher = self.job.result_events_dispatcher
 
         while True:
             try:

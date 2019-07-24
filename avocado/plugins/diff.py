@@ -247,6 +247,7 @@ class Diff(CLICmd):
             self.std_diff_output = False
             try:
                 html_diff = HtmlDiff()
+                # pylint: disable=W0212
                 html_diff._legend = """
                     <table class="diff" summary="Legends">
                     <tr> <td> <table border="" summary="Colors">
