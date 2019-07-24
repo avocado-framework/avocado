@@ -20,39 +20,7 @@ dispatcher that these depend upon:
 :class:`avocado.core.settings_dispatcher.SettingsDispatcher`
 """
 
-from .extension_manager import ExtensionManager
-from .settings import settings
-from .settings import SettingsError
-
-
-class EnabledExtensionManager(ExtensionManager):
-
-    def __init__(self, namespace, invoke_kwds=None):
-        super(EnabledExtensionManager, self).__init__(namespace, invoke_kwds)
-        configured_order = settings.get_value(self.settings_section(), "order",
-                                              key_type=list, default=[])
-        ordered = []
-        for name in configured_order:
-            for ext in self.extensions:
-                if name == ext.name:
-                    ordered.append(ext)
-        for ext in self.extensions:
-            if ext not in ordered:
-                ordered.append(ext)
-        self.extensions = ordered
-
-    def enabled(self, extension):
-        """
-        Checks configuration for explicit mention of plugin in a disable list
-
-        If configuration section or key doesn't exist, it means no plugin
-        is disabled.
-        """
-        try:
-            disabled = settings.get_value('plugins', 'disable', key_type=list)
-            return self.fully_qualified_name(extension) not in disabled
-        except SettingsError:
-            return True
+from .enabled_extension_manager import EnabledExtensionManager
 
 
 class CLIDispatcher(EnabledExtensionManager):
