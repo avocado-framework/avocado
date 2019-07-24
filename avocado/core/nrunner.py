@@ -451,13 +451,13 @@ def main():
     args = parse()
     if args.subcommand == 'runnable-run':
         subcommand_runnable_run(args)
-    if args.subcommand == 'runnable-run-recipe':
+    elif args.subcommand == 'runnable-run-recipe':
         subcommand_runnable_run_recipe(args)
-    if args.subcommand == 'task-run':
+    elif args.subcommand == 'task-run':
         subcommand_task_run(args)
-    if args.subcommand == 'task-run-recipe':
+    elif args.subcommand == 'task-run-recipe':
         subcommand_task_run_recipe(args)
-    if args.subcommand == 'status-server':
+    elif args.subcommand == 'status-server':
         subcommand_status_server(args)
 
 

@@ -137,10 +137,6 @@ if __name__ == "__main__":
 
 class LoaderTestFunctional(unittest.TestCase):
 
-    MODE_0644 = (stat.S_IRUSR | stat.S_IWUSR |
-                 stat.S_IRGRP |
-                 stat.S_IROTH)
-
     MODE_0664 = (stat.S_IRUSR | stat.S_IWUSR |
                  stat.S_IRGRP | stat.S_IWGRP |
                  stat.S_IROTH)
@@ -234,7 +230,7 @@ class LoaderTestFunctional(unittest.TestCase):
             'test2.py',
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES_LIB,
             'avocado_simpletest_functional',
-            self.MODE_0644)
+            self.MODE_0664)
         mylib.save()
         mytest = script.Script(
             os.path.join(os.path.dirname(mylib.path), 'test.py'),
