@@ -52,10 +52,10 @@ class TAPResult(ResultEvents):
     name = 'tap'
     description = "TAP - Test Anything Protocol results"
 
-    def __init__(self, args):
+    def __init__(self, config):
         self.__logs = []
         self.__open_files = []
-        output = args.get('tap', None)
+        output = config.get('tap', None)
         if output == '-':
             log = LOG_UI.debug
             self.__logs.append(log)
@@ -63,7 +63,7 @@ class TAPResult(ResultEvents):
             log = open(output, "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
-        self.__include_logs = args.get('tap_include_logs', False)
+        self.__include_logs = config.get('tap_include_logs', False)
         self.is_header_printed = False
 
     def __write(self, msg, *writeargs):
@@ -86,7 +86,7 @@ class TAPResult(ResultEvents):
         Log the test plan
         """
         # Should we add default results.tap?
-        if job.args.get('tap_job_result', 'off') == 'on':
+        if job.config.get('tap_job_result', 'off') == 'on':
             log = open(os.path.join(job.logdir, 'results.tap'), "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
@@ -172,5 +172,5 @@ class TAP(CLI):
                                        'test logs as comments in TAP output.'
                                        ' Defaults to %(default)s')
 
-    def run(self, args):
+    def run(self, config):
         pass

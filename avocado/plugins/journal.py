@@ -44,7 +44,7 @@ class JournalResult(ResultEvents):
     name = 'journal'
     description = "Journal event based results implementation"
 
-    def __init__(self, args):  # pylint: disable=W0613
+    def __init__(self, config):  # pylint: disable=W0613
         """
         Creates an instance of ResultJournal.
 
@@ -135,5 +135,5 @@ class Journal(CLI):
                                                   action='store_true',
                                                   help=help_msg)
 
-    def run(self, args):
+    def run(self, config):
         pass

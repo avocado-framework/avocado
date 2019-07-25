@@ -55,7 +55,7 @@ class CLI(Plugin):
         """
 
     @abc.abstractmethod
-    def run(self, args):
+    def run(self, config):
         """
         Execute any action the plugin intends.
 

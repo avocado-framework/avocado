@@ -146,5 +146,5 @@ class Parser:
                     sub.choices[self.args.subcommand].error(msg)
 
             self.application.error(msg)
-        # from this point on, args is a dictionary, and not a argparse.Namespace
-        self.args = vars(args)
+        # from this point on, config is a dictionary based on a argparse.Namespace
+        self.config = vars(args)

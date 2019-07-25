@@ -137,25 +137,25 @@ class NRun(CLICmd):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
 
-    def run(self, args):
+    def run(self, config):
         try:
-            loader.loader.load_plugins(args)
+            loader.loader.load_plugins(config)
         except loader.LoaderError as details:
             sys.stderr.write(str(details))
             sys.stderr.write('\n')
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        suite = self.create_test_suite(args.get('references'))
-        self.pending_tasks = self.suite_to_tasks(suite, [args.get('status_server')])
+        suite = self.create_test_suite(config.get('references'))
+        self.pending_tasks = self.suite_to_tasks(suite, [config.get('status_server')])
 
-        if not args.get('disable_task_randomization'):
+        if not config.get('disable_task_randomization'):
             random.shuffle(self.pending_tasks)
 
         self.spawned_tasks = []
 
         try:
             loop = asyncio.get_event_loop()
-            self.status_server = nrunner.StatusServer(args.get('status_server'),
+            self.status_server = nrunner.StatusServer(config.get('status_server'),
                                                       [t.identifier for t in
                                                        self.pending_tasks])
             self.status_server.start()

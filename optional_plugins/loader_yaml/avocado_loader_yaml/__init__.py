@@ -144,5 +144,5 @@ class LoaderYAML(CLI):
         mux_options.add_argument("--mux-suite-out", nargs="+",
                                  help="Filter out part of the YAML suite file")
 
-    def run(self, args):
+    def run(self, config):
         loader.loader.register_plugin(YamlTestsuiteLoader)

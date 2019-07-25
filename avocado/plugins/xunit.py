@@ -132,22 +132,22 @@ class XUnitResult(Result):
         return document.toprettyxml(encoding='UTF-8')
 
     def render(self, result, job):
-        if not (job.args.get('xunit_job_result') or
-                job.args.get('xunit_output')):
+        if not (job.config.get('xunit_job_result') or
+                job.config.get('xunit_output')):
             return
 
         if not result.tests_total:
             return
 
-        max_test_log_size = job.args.get('xunit_max_test_log_chars', None)
-        job_name = job.args.get('xunit_job_name', None)
+        max_test_log_size = job.config.get('xunit_max_test_log_chars', None)
+        job_name = job.config.get('xunit_job_name', None)
         content = self._render(result, max_test_log_size, job_name)
-        if job.args.get('xunit_job_result', 'off') == 'on':
+        if job.config.get('xunit_job_result', 'off') == 'on':
             xunit_path = os.path.join(job.logdir, 'results.xml')
             with open(xunit_path, 'wb') as xunit_file:
                 xunit_file.write(content)
 
-        xunit_path = job.args.get('xunit_output', 'None')
+        xunit_path = job.config.get('xunit_output', 'None')
         if xunit_path is not None:
             if xunit_path == '-':
                 LOG_UI.debug(content.decode('UTF-8'))
@@ -196,5 +196,5 @@ class XUnitCLI(CLI):
             "attached job log to given number of characters (k/m/g suffix "
             "allowed)")
 
-    def run(self, args):
+    def run(self, config):
         pass

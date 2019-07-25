@@ -884,10 +884,10 @@ class Test(unittest.TestCase, TestData):
         genio.write_file(whiteboard_file, self.whiteboard)
 
         if self.job is not None:
-            job_standalone = self.job.args.get('standalone', False)
-            output_check_record = self.job.args.get('output_check_record',
-                                                    'none')
-            output_check = self.job.args.get('output_check', 'on')
+            job_standalone = self.job.config.get('standalone', False)
+            output_check_record = self.job.config.get('output_check_record',
+                                                      'none')
+            output_check = self.job.config.get('output_check', 'on')
 
             # record the output if the modes are valid
             if output_check_record == 'combined':
