@@ -145,6 +145,11 @@ class PythonUnittestRunner(BaseRunner):
         queue.put(result)
 
     def run(self):
+        if not self.runnable.uri:
+            yield {'status': 'error',
+                   'output': 'uri is required but was not given'}
+            return
+
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_unittest,
                                           args=(self.runnable.uri, queue))
