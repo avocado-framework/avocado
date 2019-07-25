@@ -1,0 +1,4 @@
+These files are examples of an API that are not public nor
+supported at this point.  They are provided in an attempt
+to mature and stabilize the API that will then be declared
+stable and will be supported as such.
