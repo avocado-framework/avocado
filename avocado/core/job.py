@@ -81,7 +81,6 @@ class Job:
         :type config: dict
         """
         self.config = config or {}
-        self.references = config.get("reference", [])
         self.log = LOG_UI
         self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
                                                             'loglevel',
@@ -473,18 +472,18 @@ class Job:
 
         This is a public Job API as part of the documented Job phases
         """
+        refs = self.config.get('reference', [])
         try:
-            self.test_suite = self._make_test_suite(self.references)
+            self.test_suite = self._make_test_suite(refs)
             self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
             raise exceptions.OptionValidationError(details)
 
         if not self.test_suite:
-            if self.references:
-                references = " ".join(self.references)
+            if refs:
                 e_msg = ("No tests found for given test references, try "
-                         "'avocado list -V %s' for details" % references)
+                         "'avocado list -V %s' for details") % " ".join(refs)
             else:
                 e_msg = ("No test references provided nor any other arguments "
                          "resolved into tests. Please double check the "
@@ -519,8 +518,8 @@ class Job:
         self._start_sysinfo()
 
         self._log_job_debug_info(variant)
-        jobdata.record(self.config, self.logdir, variant, self.references,
-                       sys.argv)
+        jobdata.record(self.config, self.logdir, variant,
+                       self.config.get('reference'), sys.argv)
         replay_map = self.config.get('replay_map', None)
         execution_order = self.config.get('execution_order', None)
         summary = self.test_runner.run_suite(self.test_suite,
