@@ -148,6 +148,10 @@ class NRun(CLICmd):
         suite = self.create_test_suite(args.reference)
         self.pending_tasks = self.suite_to_tasks(suite, [args.status_server])
 
+        if not self.pending_tasks:
+            LOG_UI.error('No test to be executed, exiting...')
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
         if not args.disable_task_randomization:
             random.shuffle(self.pending_tasks)
 
