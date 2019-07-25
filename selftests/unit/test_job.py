@@ -51,7 +51,6 @@ class JobTest(unittest.TestCase):
         self.assertTrue(self.job._Job__keep_tmpdir)
         self.assertEqual(self.job.args, args)
         self.assertEqual(self.job.exitcode, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual(self.job.references, [])
         self.assertEqual(self.job.status, "RUNNING")
         uid = self.job.unique_id
 
