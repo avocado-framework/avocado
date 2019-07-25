@@ -264,12 +264,20 @@ class StdOutput:
     def __init__(self):
         self.stdout = self._stdout = sys.stdout
         self.stderr = self._stderr = sys.stderr
+        self.__configured = False
 
     def _paginator_in_use(self):
         """
         :return: True when we output into paginator
         """
         return bool(isinstance(sys.stdout, Paginator))
+
+    @property
+    def configured(self):
+        """
+        Determines if a configuration of any sort has been performed
+        """
+        return self.__configured
 
     def print_records(self):
         """
@@ -298,6 +306,7 @@ class StdOutput:
         """
         sys.stdout = _StdOutputFile(True, self.records)
         sys.stderr = _StdOutputFile(False, self.records)
+        self.__configured = True
 
     def enable_outputs(self):
         """
@@ -305,6 +314,7 @@ class StdOutput:
         """
         sys.stdout = self.stdout
         sys.stderr = self.stderr
+        self.__configured = True
 
     def enable_paginator(self):
         """
@@ -318,6 +328,7 @@ class StdOutput:
                                                          "paginator: %s", details)
             return
         self.stdout = self.stderr = paginator
+        self.__configured = True
 
     def enable_stderr(self):
         """
@@ -325,6 +336,7 @@ class StdOutput:
         """
         sys.stdout = open(os.devnull, 'w')
         sys.stderr = self.stderr
+        self.__configured = True
 
     def close(self):
         """
