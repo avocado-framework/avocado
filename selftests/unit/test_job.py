@@ -109,6 +109,43 @@ class JobTest(unittest.TestCase):
         self.job.create_test_suite()
         self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
 
+    def test_job_create_first_test_suite(self):
+        """
+        Tests that the first test suite can be created and used via
+        :func:`avocado.core.job.Job.test_suites`
+        """
+        class JobSuites(job.Job):
+            def create_test_suite(self):
+                self.test_suites = [[(test.MockingTest, {})]]
+        args = {'base_logdir': self.tmpdir}
+        self.job = JobSuites(args)
+        self.job.setup()
+        self.job.create_test_suite()
+        self.assertEqual(1, len(self.job.test_suites))
+        self.assertEqual(1, len(self.job.test_suite))
+
+    def test_job_create_more_test_suites(self):
+        """
+        Tests that multiple test suites can be created
+        """
+        class JobSuites(job.Job):
+            def create_test_suite(self):
+                # first test suite has 1 member
+                self.test_suite = [(test.MockingTest, {})]
+                # adding a test suite, now has 2 test suites
+                self.test_suites.append([(test.MockingTest, {})])
+                # 2nd test suite will have 3 members
+                self.test_suites[-1].append((test.MockingTest, {}))
+                self.test_suites[-1].append((test.MockingTest, {}))
+
+        args = {'base_logdir': self.tmpdir}
+        self.job = JobSuites(args)
+        self.job.setup()
+        self.job.create_test_suite()
+        self.assertEqual(1, len(self.job.test_suite))
+        self.assertEqual(2, len(self.job.test_suites))
+        self.assertEqual(3, len(self.job.test_suites[-1]))
+
     def test_job_pre_tests(self):
         class JobFilterTime(job.Job):
             def pre_tests(self):

@@ -128,7 +128,7 @@ class Job:
         #: be run by this job.  If set to None, it means that test resolution
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
-        self.test_suite = None
+        self.__test_suites = []
         self.test_runner = None
 
         #: Placeholder for test parameters (related to --test-parameters command
@@ -465,6 +465,36 @@ class Job:
         self._log_variants(variants)
         self._log_tmp_dir()
         self._log_job_id()
+
+    @property
+    def test_suite(self):
+        """
+        Returns the first test suite
+
+        This is a compatibility property and may be removed in the near
+        future.  Please consider handling the test suites using
+        :func:`test_suites`
+        """
+        if self.__test_suites:
+            return self.__test_suites[0]
+
+    @test_suite.setter
+    def test_suite(self, suite):
+        if self.__test_suites:
+            self.__test_suites[0] = suite
+        else:
+            self.__test_suites.insert(0, suite)
+
+    @property
+    def test_suites(self):
+        """
+        The list of test suites in a job
+        """
+        return self.__test_suites
+
+    @test_suites.setter
+    def test_suites(self, suites):
+        self.__test_suites = suites
 
     def create_test_suite(self):
         """
