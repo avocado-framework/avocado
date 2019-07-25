@@ -170,7 +170,7 @@ class Replay(CLI):
         if config.get('replay_teststatus') and 'variants' in config.get('replay_ignore'):
             err = ("Option `--replay-test-status` is incompatible with "
                    "`--replay-ignore variants`.")
-        elif config.get('replay_teststatus') and config.get('reference'):
+        elif config.get('replay_teststatus') and config.get('references'):
             err = ("Option --replay-test-status is incompatible with "
                    "test references given on the command line.")
         elif config.get("remote_hostname", False):
@@ -226,7 +226,7 @@ class Replay(CLI):
                 elif option in replay_config:
                     config[option] = replay_config[option]
 
-        if config.get('reference', None):
+        if config.get('references', None):
             LOG_UI.warn('Overriding the replay test references with test '
                         'references given in the command line.')
         else:
@@ -236,7 +236,7 @@ class Replay(CLI):
                              'Aborting.')
                 sys.exit(exit_codes.AVOCADO_FAIL)
             else:
-                config['reference'] = references
+                config['references'] = references
 
         if 'config' in config.get('replay_ignore'):
             LOG_UI.warn("Ignoring configuration from source job with "
