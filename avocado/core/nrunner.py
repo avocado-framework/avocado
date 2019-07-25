@@ -30,6 +30,11 @@ class Runnable:
         self.args = args
         self.kwargs = kwargs
 
+    def __repr__(self):
+        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}"'
+        return fmt.format(self.kind, self.uri,
+                          self.args, self.kwargs)
+
 
 def runnable_from_recipe(recipe_path):
     """
@@ -258,6 +263,9 @@ class TaskStatusService:
         if self.connection is not None:
             self.connection.close()
 
+    def __repr__(self):
+        return '<TaskStatusService uri="{}">'.format(self.uri)
+
 
 class Task:
     """
@@ -285,6 +293,10 @@ class Task:
             for status_service in self.status_services:
                 status_service.post(status)
             yield status
+
+    def __repr__(self):
+        fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
+        return fmt.format(self.identifier, self.runnable, self.status_services)
 
 
 def task_from_recipe(task_path):
