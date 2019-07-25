@@ -121,7 +121,7 @@ class TestLister:
 
     def _list(self):
         self._extra_listing()
-        test_suite = self._get_test_suite(self.args.get('reference', []))
+        test_suite = self._get_test_suite(self.args.get('references', []))
         if self.args.get('filter_by_tags', False):
             test_suite = tags.filter_test_tags(
                 test_suite,
@@ -155,7 +155,7 @@ class List(CLICmd):
         :param parser: Main test runner parser.
         """
         parser = super(List, self).configure(parser)
-        parser.add_argument('reference', type=str, default=[], nargs='*',
+        parser.add_argument('references', type=str, default=[], nargs='*',
                             help="List of test references (aliases or paths). "
                             "If empty, avocado will list tests on "
                             "the configured test source, "

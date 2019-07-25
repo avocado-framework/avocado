@@ -536,7 +536,7 @@ class RemoteTestRunner(TestRunner):
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise exceptions.JobError(details)
-            results = self.run_test(self.job.args.get('reference', []), timeout)
+            results = self.run_test(self.job.args.get('references', []), timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
             self.result.tests_total = results['total']
             local_log_dir = self.job.logdir

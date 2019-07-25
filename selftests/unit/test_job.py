@@ -102,7 +102,7 @@ class JobTest(unittest.TestCase):
 
     def test_job_create_test_suite_simple(self):
         simple_tests_found = self._find_simple_test_candidates()
-        args = {'reference': simple_tests_found,
+        args = {'references': simple_tests_found,
                 'base_logdir': self.tmpdir}
         self.job = job.Job(args)
         self.job.setup()
@@ -120,7 +120,7 @@ class JobTest(unittest.TestCase):
                 self.test_suite = filtered_test_suite
                 super(JobFilterTime, self).pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = {'reference': simple_tests_found,
+        args = {'references': simple_tests_found,
                 'base_logdir': self.tmpdir}
         self.job = JobFilterTime(args)
         self.job.setup()
@@ -133,7 +133,7 @@ class JobTest(unittest.TestCase):
 
     def test_job_run_tests(self):
         simple_tests_found = self._find_simple_test_candidates(['true'])
-        args = {'reference': simple_tests_found,
+        args = {'references': simple_tests_found,
                 'base_logdir': self.tmpdir}
         self.job = job.Job(args)
         self.job.setup()
@@ -148,7 +148,7 @@ class JobTest(unittest.TestCase):
                     f.write(self.unique_id[::-1])
                 super(JobLogPost, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = {'reference': simple_tests_found,
+        args = {'references': simple_tests_found,
                 'base_logdir': self.tmpdir}
         self.job = JobLogPost(args)
         self.job.setup()
@@ -178,7 +178,7 @@ class JobTest(unittest.TestCase):
                     f.write(self.unique_id[::-1])
                 super(JobFilterLog, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = {'reference': simple_tests_found,
+        args = {'references': simple_tests_found,
                 'base_logdir': self.tmpdir}
         self.job = JobFilterLog(args)
         self.job.setup()

@@ -15,7 +15,7 @@ from selftests import temp_dir_prefix
 
 JSON_RESULTS = ('Something other than json\n'
                 '{"tests": [{"id": "1-sleeptest;0",'
-                '"reference": "sleeptest", '
+                '"references": "sleeptest", '
                 '"fail_reason": "None", '
                 '"status": "PASS", "time": 1.23, "start": 0, "end": 1.23}],'
                 '"debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.'
@@ -65,9 +65,9 @@ class RemoteTestRunnerTest(unittest.TestCase):
                     'filter_by_tags_include_empty': False,
                     'dry_run': True,
                     'env_keep': None,
-                    'reference': ['/tests/sleeptest.py',
-                                  '/tests/other/test',
-                                  'passtest.py'],
+                    'references': ['/tests/sleeptest.py',
+                                   '/tests/other/test',
+                                   'passtest.py'],
                     'keep_tmp': 'on',
                     'base_logdir': self.tmpdir}
 

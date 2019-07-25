@@ -21,7 +21,7 @@ class NRun(CLICmd):
 
     def configure(self, parser):
         parser = super(NRun, self).configure(parser)
-        parser.add_argument("reference", type=str, default=[], nargs='*',
+        parser.add_argument("references", type=str, default=[], nargs='*',
                             metavar="TEST_REFERENCE",
                             help='List of test references (aliases or paths)')
         parser.add_argument("--disable-task-randomization",
@@ -145,7 +145,7 @@ class NRun(CLICmd):
             sys.stderr.write('\n')
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        suite = self.create_test_suite(args.get('reference'))
+        suite = self.create_test_suite(args.get('references'))
         self.pending_tasks = self.suite_to_tasks(suite, [args.get('status_server')])
 
         if not args.get('disable_task_randomization'):

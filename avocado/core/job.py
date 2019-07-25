@@ -472,7 +472,7 @@ class Job:
 
         This is a public Job API as part of the documented Job phases
         """
-        refs = self.args.get('reference', [])
+        refs = self.args.get('references', [])
         try:
             self.test_suite = self._make_test_suite(refs)
             self.result.tests_total = len(self.test_suite)
@@ -519,7 +519,7 @@ class Job:
 
         self._log_job_debug_info(variant)
         jobdata.record(self.args, self.logdir, variant,
-                       self.args.get('reference'), sys.argv)
+                       self.args.get('references'), sys.argv)
         replay_map = self.args.get('replay_map', None)
         execution_order = self.args.get('execution_order', None)
         summary = self.test_runner.run_suite(self.test_suite,
@@ -647,7 +647,7 @@ class TestProgram:
         output.add_log_handler("", output.ProgressStreamHandler,
                                fmt="%(message)s")
         self.parse_args(sys.argv[1:])
-        self.args['reference'] = [sys.argv[0]]
+        self.args['references'] = [sys.argv[0]]
         self.run_tests()
 
     def parse_args(self, argv):
