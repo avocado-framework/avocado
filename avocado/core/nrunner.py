@@ -178,6 +178,7 @@ def runner_from_runnable(runnable):
         return ExecTestRunner(runnable)
     if runnable.kind == 'python-unittest':
         return PythonUnittestRunner(runnable)
+    raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
 
 
 CMD_RUNNABLE_RUN_ARGS = (
