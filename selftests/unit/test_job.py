@@ -37,7 +37,8 @@ class JobTest(unittest.TestCase):
         return found
 
     def test_job_empty_suite(self):
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         # Job without setup called
         self.assertIsNone(self.job.logdir)
@@ -71,12 +72,14 @@ class JobTest(unittest.TestCase):
         self.job.cleanup()
 
     def test_job_empty_has_id(self):
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         self.assertIsNotNone(self.job.unique_id)
 
     def test_two_jobs(self):
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         with job.Job(config) as self.job, job.Job(config) as job2:
             job1 = self.job
             # uids, logdirs and tmpdirs must be different
@@ -89,12 +92,14 @@ class JobTest(unittest.TestCase):
             self.assertEqual(os.path.dirname(job1.logdir), os.path.dirname(job2.logdir))
 
     def test_job_test_suite_not_created(self):
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         self.assertIsNone(self.job.test_suite)
 
     def test_job_create_test_suite_empty(self):
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
         self.assertRaises(exceptions.OptionValidationError,
@@ -103,7 +108,8 @@ class JobTest(unittest.TestCase):
     def test_job_create_test_suite_simple(self):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'references': simple_tests_found,
-                  'base_logdir': self.tmpdir}
+                  'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
         self.job.create_test_suite()
@@ -117,7 +123,8 @@ class JobTest(unittest.TestCase):
         class JobSuites(job.Job):
             def create_test_suite(self):
                 self.test_suites = [[(test.MockingTest, {})]]
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = JobSuites(config)
         self.job.setup()
         self.job.create_test_suite()
@@ -138,7 +145,8 @@ class JobTest(unittest.TestCase):
                 self.test_suites[-1].append((test.MockingTest, {}))
                 self.test_suites[-1].append((test.MockingTest, {}))
 
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = JobSuites(config)
         self.job.setup()
         self.job.create_test_suite()
@@ -158,7 +166,8 @@ class JobTest(unittest.TestCase):
                 super(JobFilterTime, self).pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
         config = {'references': simple_tests_found,
-                  'base_logdir': self.tmpdir}
+                  'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = JobFilterTime(config)
         self.job.setup()
         self.job.create_test_suite()
@@ -171,7 +180,8 @@ class JobTest(unittest.TestCase):
     def test_job_run_tests(self):
         simple_tests_found = self._find_simple_test_candidates(['true'])
         config = {'references': simple_tests_found,
-                  'base_logdir': self.tmpdir}
+                  'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
         self.job.create_test_suite()
@@ -186,7 +196,8 @@ class JobTest(unittest.TestCase):
                 super(JobLogPost, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
         config = {'references': simple_tests_found,
-                  'base_logdir': self.tmpdir}
+                  'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = JobLogPost(config)
         self.job.setup()
         self.job.create_test_suite()
@@ -216,7 +227,8 @@ class JobTest(unittest.TestCase):
                 super(JobFilterLog, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
         config = {'references': simple_tests_found,
-                  'base_logdir': self.tmpdir}
+                  'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = JobFilterLog(config)
         self.job.setup()
         self.assertEqual(self.job.run(),
@@ -227,7 +239,8 @@ class JobTest(unittest.TestCase):
                              reverse_id_file.read())
 
     def test_job_run_account_time(self):
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
         self.job.run()
@@ -236,7 +249,8 @@ class JobTest(unittest.TestCase):
         self.assertNotEqual(self.job.time_elapsed, -1)
 
     def test_job_self_account_time(self):
-        config = {'base_logdir': self.tmpdir}
+        config = {'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
         self.job.time_start = 10.0
@@ -250,13 +264,14 @@ class JobTest(unittest.TestCase):
         self.assertEqual(self.job.time_elapsed, 100.0)
 
     def test_job_dryrun_no_unique_job_id(self):
-        config = {'dry_run': True, 'base_logdir': self.tmpdir}
+        config = {'dry_run': True, 'base_logdir': self.tmpdir,
+                  'show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
         self.assertIsNotNone(self.job.config.get('unique_job_id'))
 
     def test_job_no_base_logdir(self):
-        config = {}
+        config = {'show': ['none']}
         with unittest.mock.patch('avocado.core.job.data_dir.get_logs_dir',
                                  return_value=self.tmpdir):
             self.job = job.Job(config)
@@ -266,7 +281,8 @@ class JobTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))
 
     def test_job_dryrun_no_base_logdir(self):
-        config = {'dry_run': True}
+        config = {'dry_run': True,
+                  'show': ['none']}
         self.job = job.Job(config)
         with self.job:
             self.assertTrue(os.path.isdir(self.job.logdir))
