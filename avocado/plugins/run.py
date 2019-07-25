@@ -23,6 +23,7 @@ from avocado.core import exit_codes
 from avocado.core import job
 from avocado.core import loader
 from avocado.core import output
+from avocado.core import parser_common_args
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.dispatcher import ResultDispatcher
@@ -187,26 +188,7 @@ class Run(CLICmd):
                                "Current: on (output check enabled)")
 
         loader.add_loader_options(parser)
-
-        filtering = parser.add_argument_group('filtering parameters')
-        filtering.add_argument('-t', '--filter-by-tags', metavar='TAGS',
-                               action='append',
-                               help='Filter INSTRUMENTED tests based on '
-                               '":avocado: tags=tag1,tag2" notation in '
-                               'their class docstring')
-        filtering.add_argument('--filter-by-tags-include-empty',
-                               action='store_true', default=False,
-                               help=('Include all tests without tags during '
-                                     'filtering. This effectively means they '
-                                     'will be kept in the test suite found '
-                                     'previously to filtering.'))
-        filtering.add_argument('--filter-by-tags-include-empty-key',
-                               action='store_true', default=False,
-                               help=('Include all tests that do not have a '
-                                     'matching key in its key:val tags. This '
-                                     'effectively means those tests will be '
-                                     'kept in the test suite found previously '
-                                     'to filtering.'))
+        parser_common_args.add_tag_filter_args(parser)
 
     def run(self, args):
         """
