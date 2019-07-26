@@ -1,16 +1,23 @@
 #!/usr/bin/env python
 
 import os
+import shutil
+import tempfile
 import unittest
 
 from avocado.utils import diff_validator
+
+from .. import temp_dir_prefix
 
 
 class ChangeValidationTest(unittest.TestCase):
 
     def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
         self.change = diff_validator.Change()
-        self.files = ["file1.cnf", "file2.cnf"]
+        self.files = [os.path.join(self.tmpdir, "file1.cnf"),
+                      os.path.join(self.tmpdir, "file2.cnf")]
         with open(self.files[0], "w") as f:
             f.write("")
         with open(self.files[1], "w") as f:
@@ -18,8 +25,7 @@ class ChangeValidationTest(unittest.TestCase):
 
     def tearDown(self):
         diff_validator.del_temp_file_copies(self.change.get_target_files())
-        for f in self.files:
-            os.unlink(f)
+        shutil.rmtree(self.tmpdir)
 
     def test_change_success(self):
         files = self.files
