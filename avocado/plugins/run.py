@@ -191,9 +191,7 @@ class Run(CLICmd):
         filtering = parser.add_argument_group('filtering parameters')
         filtering.add_argument('-t', '--filter-by-tags', metavar='TAGS',
                                action='append',
-                               help='Filter INSTRUMENTED tests based on '
-                               '":avocado: tags=tag1,tag2" notation in '
-                               'their class docstring')
+                               help='Filter tests based on tags')
         filtering.add_argument('--filter-by-tags-include-empty',
                                action='store_true', default=False,
                                help=('Include all tests without tags during '

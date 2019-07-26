@@ -182,8 +182,7 @@ Options for subcommand `run` (`avocado run --help`)::
 
     filtering parameters:
       --filter-by-tags TAGS
-                            Filter INSTRUMENTED tests based on ":avocado:
-                            tags=tag1,tag2" notation in their class docstring
+                            Filter tests based on tags
       --filter-by-tags-include-empty
                             Include all tests without tags during filtering. This
                             effectively means they will be kept in the test suite
@@ -397,8 +396,7 @@ Options for subcommand `list` (`avocado list --help`)::
 
     filtering parameters:
       --filter-by-tags TAGS
-                            Filter INSTRUMENTED tests based on ":avocado:
-                            tags=tag1,tag2" notation in their class docstring
+                            Filter tests based on tags
       --filter-by-tags-include-empty
                             Include all tests without tags during filtering. This
                             effectively means they will be kept in the test suite
