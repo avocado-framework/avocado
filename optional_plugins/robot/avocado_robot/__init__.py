@@ -71,6 +71,19 @@ class NotRobotTest:
     """
 
 
+def find_tests(reference, test_suite):
+    data = TestData(parent=None,
+                    source=reference,
+                    include_suites=SuiteNamePatterns())
+    test_suite[data.name] = []
+    for test_case in data.testcase_table:
+        test_suite[data.name].append({'test_name': test_case.name,
+                                      'test_source': test_case.source})
+    for child_data in data.children:
+        find_tests(child_data, test_suite)
+    return test_suite
+
+
 class RobotLoader(loader.TestLoader):
     """
     Robot loader class
@@ -88,10 +101,7 @@ class RobotLoader(loader.TestLoader):
             reference, _subtests_filter = reference.split(':', 1)
             subtests_filter = re.compile(_subtests_filter)
         try:
-            test_data = TestData(parent=None,
-                                 source=reference,
-                                 include_suites=SuiteNamePatterns())
-            robot_suite = self._find_tests(test_data, test_suite={})
+            robot_suite = find_tests(reference, test_suite={})
         except Exception as data:
             if which_tests == loader.DiscoverMode.ALL:
                 return [(NotRobotTest, {"name": "%s: %s" % (reference, data)})]
@@ -110,15 +120,6 @@ class RobotLoader(loader.TestLoader):
             return [(NotRobotTest, {"name": "%s: No robot-like tests found"
                                             % reference})]
         return avocado_suite
-
-    def _find_tests(self, data, test_suite):
-        test_suite[data.name] = []
-        for test_case in data.testcase_table:
-            test_suite[data.name].append({'test_name': test_case.name,
-                                          'test_source': test_case.source})
-        for child_data in data.children:
-            self._find_tests(child_data, test_suite)
-        return test_suite
 
     @staticmethod
     def get_type_label_mapping():
