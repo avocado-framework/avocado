@@ -21,6 +21,8 @@ $(document).ready(function() {
       // Add all possible status to the select
       statusColumn.data().unique().sort().each(
         function (element) {
+          // Remove status text from its enclosing tag
+          element = $(element).text();
           select.append('<option value="' + element + '">' + element + '</option>');
         }
       );

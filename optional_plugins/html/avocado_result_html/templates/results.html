@@ -80,7 +80,7 @@
           <td><div>{{ test.variant }}</div></td>
           <td><div>{{ test.status }}</div></td>
           <td><div>{{ test.time }}</div></td>
-          <td title="{{ test.fail_reason|replace('<unknown>', '')|safe }}"><div>{{ test.fail_reason|safe }}</div></td>
+          <td><div>{{ test.fail_reason|safe }}</div></td>
           <td>
             <div>
               <a class="col-xs-1" href="{{ test.logfile }}"><img src="{{ data.source_path + '/images/logs_icon.svg'}}" title="Debug log"/></a>

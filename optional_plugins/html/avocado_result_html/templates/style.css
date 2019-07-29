@@ -8,6 +8,9 @@
     background:#fff;
     white-space: pre;
 }
+.font-weight-normal {
+    font-weight: normal;
+}
 /* Restrict cells to a maximum width */
 .dataTable th, .dataTable div {
     max-width: 14.3em;
