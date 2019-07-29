@@ -25,6 +25,7 @@ setup(name='avocado-framework-plugin-robot',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['robotframework'],
+      test_suite='tests',
       entry_points={
           'avocado.plugins.cli': [
               'robot = avocado_robot:RobotCLI',
