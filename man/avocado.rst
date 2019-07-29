@@ -182,12 +182,16 @@ Options for subcommand `run` (`avocado run --help`)::
 
     filtering parameters:
       --filter-by-tags TAGS
-                            Filter INSTRUMENTED tests based on ":avocado:
-                            tags=tag1,tag2" notation in their class docstring
+                            Filter tests based on tags
       --filter-by-tags-include-empty
                             Include all tests without tags during filtering. This
                             effectively means they will be kept in the test suite
                             found previously to filtering.
+      --filter-by-tags-include-empty-key
+                            Include all tests that do not have a matching key in
+                            its key:val tags. This effectively means those tests
+                            will be kept in the test suite found previously to
+                            filtering.
 
     test execution inside docker container:
       --docker IMAGE        Name of the docker image torun tests on.
@@ -397,12 +401,16 @@ Options for subcommand `list` (`avocado list --help`)::
 
     filtering parameters:
       --filter-by-tags TAGS
-                            Filter INSTRUMENTED tests based on ":avocado:
-                            tags=tag1,tag2" notation in their class docstring
+                            Filter tests based on tags
       --filter-by-tags-include-empty
                             Include all tests without tags during filtering. This
                             effectively means they will be kept in the test suite
                             found previously to filtering.
+      --filter-by-tags-include-empty-key
+                            Include all tests that do not have a matching key in
+                            its key:val tags. This effectively means those tests
+                            will be kept in the test suite found previously to
+                            filtering.
 
 Options for subcommand `multiplex` (`avocado multiplex --help`)::
 
