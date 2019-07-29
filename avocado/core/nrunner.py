@@ -30,6 +30,11 @@ class Runnable:
         self.args = args
         self.kwargs = kwargs
 
+    def __repr__(self):
+        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}"'
+        return fmt.format(self.kind, self.uri,
+                          self.args, self.kwargs)
+
 
 def runnable_from_recipe(recipe_path):
     """
@@ -140,6 +145,11 @@ class PythonUnittestRunner(BaseRunner):
         queue.put(result)
 
     def run(self):
+        if not self.runnable.uri:
+            yield {'status': 'error',
+                   'output': 'uri is required but was not given'}
+            return
+
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_unittest,
                                           args=(self.runnable.uri, queue))
@@ -168,6 +178,7 @@ def runner_from_runnable(runnable):
         return ExecTestRunner(runnable)
     if runnable.kind == 'python-unittest':
         return PythonUnittestRunner(runnable)
+    raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
 
 
 CMD_RUNNABLE_RUN_ARGS = (
@@ -258,6 +269,9 @@ class TaskStatusService:
         if self.connection is not None:
             self.connection.close()
 
+    def __repr__(self):
+        return '<TaskStatusService uri="{}">'.format(self.uri)
+
 
 class Task:
     """
@@ -285,6 +299,10 @@ class Task:
             for status_service in self.status_services:
                 status_service.post(status)
             yield status
+
+    def __repr__(self):
+        fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
+        return fmt.format(self.identifier, self.runnable, self.status_services)
 
 
 def task_from_recipe(task_path):
