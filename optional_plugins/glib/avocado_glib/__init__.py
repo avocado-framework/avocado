@@ -35,11 +35,6 @@ class GLibTest(test.SimpleTest):
     Run a GLib test command as a SIMPLE test.
     """
 
-    def __init__(self, name, params=None, base_logdir=None, job=None,
-                 executable=None):
-        super(GLibTest, self).__init__(name, params, base_logdir, job,
-                                       executable)
-
     @property
     def filename(self):
         """
@@ -71,9 +66,6 @@ class GLibLoader(loader.TestLoader):
     GLib Test loader class
     """
     name = "glib"
-
-    def __init__(self, args, extra_params):
-        super(GLibLoader, self).__init__(args, extra_params)
 
     def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
         avocado_suite = []

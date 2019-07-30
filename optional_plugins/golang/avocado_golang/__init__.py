@@ -87,9 +87,6 @@ class GolangLoader(loader.TestLoader):
     """
     name = "golang"
 
-    def __init__(self, args, extra_params):
-        super(GolangLoader, self).__init__(args, extra_params)
-
     def discover(self, url, which_tests=loader.DiscoverMode.DEFAULT):
         if _GO_BIN is None:
             return self._no_tests(which_tests, url, 'Go binary not found.')
