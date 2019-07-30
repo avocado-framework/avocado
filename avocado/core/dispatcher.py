@@ -100,13 +100,13 @@ class VarianterDispatcher(EnabledExtensionManager):
         self.__init__()
         self.extensions = state.get("extensions")
 
-    def map_method(self, method_name, *args, **kwargs):
-        return self.map_method_with_return(method_name, deepcopy=False, *args,
-                                           **kwargs)
+    def map_method_with_return(self, method_name, *args, **kwargs):
+        return super(VarianterDispatcher, self).map_method_with_return(
+            method_name, deepcopy=False, *args, **kwargs)
 
-    def map_method_copy(self, method_name, *args, **kwargs):
+    def map_method_with_return_copy(self, method_name, *args, **kwargs):
         """
-        The same as map_method, but use copy.deepcopy on each passed arg
+        The same as map_method_with_return, but use copy.deepcopy on each passed arg
         """
-        return self.map_method_with_return(method_name, deepcopy=True, *args,
-                                           **kwargs)
+        return super(VarianterDispatcher, self).map_method_with_return(
+            method_name, deepcopy=True, *args, **kwargs)

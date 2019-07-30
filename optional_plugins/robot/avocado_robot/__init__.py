@@ -89,24 +89,24 @@ class RobotLoader(loader.TestLoader):
     def __init__(self, args, extra_params):
         super(RobotLoader, self).__init__(args, extra_params)
 
-    def discover(self, url, which_tests=loader.DiscoverMode.DEFAULT):
+    def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
         avocado_suite = []
         subtests_filter = None
 
-        if url is None:
+        if reference is None:
             return []
 
-        if ':' in url:
-            url, _subtests_filter = url.split(':', 1)
+        if ':' in reference:
+            reference, _subtests_filter = reference.split(':', 1)
             subtests_filter = re.compile(_subtests_filter)
         try:
             test_data = TestData(parent=None,
-                                 source=url,
+                                 source=reference,
                                  include_suites=SuiteNamePatterns())
             robot_suite = self._find_tests(test_data, test_suite={})
         except Exception as data:
             if which_tests == loader.DiscoverMode.ALL:
-                return [(NotRobotTest, {"name": "%s: %s" % (url, data)})]
+                return [(NotRobotTest, {"name": "%s: %s" % (reference, data)})]
             return []
 
         for item in robot_suite:
@@ -120,7 +120,7 @@ class RobotLoader(loader.TestLoader):
                                                   'executable': test_name}))
         if which_tests == loader.DiscoverMode.ALL and not avocado_suite:
             return [(NotRobotTest, {"name": "%s: No robot-like tests found"
-                                    % url})]
+                                            % reference})]
         return avocado_suite
 
     def _find_tests(self, data, test_suite):
