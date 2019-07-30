@@ -34,7 +34,7 @@ class CmdNotFoundError(Exception):
     :param paths: List of paths where we looked after.
     """
 
-    def __init__(self, cmd, paths):
+    def __init__(self, cmd, paths):  # pylint: disable=W0231
         super(CmdNotFoundError, self)
         self.cmd = cmd
         self.paths = paths

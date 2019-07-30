@@ -8,7 +8,7 @@ class NastyException(Exception):
 
     """ Please never use something like this!!! """
 
-    def __init__(self, msg):
+    def __init__(self, msg):  # pylint: disable=W0231
         self.msg = msg
 
     def __str__(self):

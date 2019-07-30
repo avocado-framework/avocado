@@ -77,7 +77,7 @@ _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
 
 class CmdError(Exception):
 
-    def __init__(self, command=None, result=None, additional_text=None):
+    def __init__(self, command=None, result=None, additional_text=None):  # pylint: disable=W0231
         self.command = command
         self.result = result
         self.additional_text = additional_text
