@@ -67,9 +67,9 @@ def __private():
 
     class GdbMiScannerBase(spark.GenericScanner):
 
-        def tokenize(self, input_message):
+        def tokenize(self, s):
             self.rv = []
-            spark.GenericScanner.tokenize(self, input_message)
+            spark.GenericScanner.tokenize(self, s)
             return self.rv
 
         def t_nl(self, s):  # pylint: disable=W0613
@@ -173,7 +173,7 @@ def __private():
                 return args[0]
             return spark.GenericASTBuilder.nonterminal(self, token_type, args)
 
-        def error(self, token, i=0, tokens=None):
+        def error(self, token, i=0, tokens=None):  # pylint: disable=W0221
             if i > 2:
                 print('%s %s %s %s' % (tokens[i - 3],
                                        tokens[i - 2],

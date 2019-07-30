@@ -90,11 +90,11 @@ class GolangLoader(loader.TestLoader):
     def __init__(self, args, extra_params):
         super(GolangLoader, self).__init__(args, extra_params)
 
-    def discover(self, url, which_tests=loader.DiscoverMode.DEFAULT):
+    def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
         if _GO_BIN is None:
-            return self._no_tests(which_tests, url, 'Go binary not found.')
+            return self._no_tests(which_tests, reference, 'Go binary not found.')
 
-        if url is None:
+        if reference is None:
             return []
 
         avocado_suite = []
@@ -103,8 +103,8 @@ class GolangLoader(loader.TestLoader):
         subtest = None
         tests_filter = None
 
-        if ':' in url:
-            url, _tests_filter = url.split(':', 1)
+        if ':' in reference:
+            reference, _tests_filter = reference.split(':', 1)
             parsed_filter = re.split(r'(?<!\\)/', _tests_filter, 1)
             _tests_filter = parsed_filter[0]
             if len(parsed_filter) > 1:
@@ -112,22 +112,22 @@ class GolangLoader(loader.TestLoader):
             tests_filter = re.compile(_tests_filter)
 
         # When a file is provided
-        if os.path.isfile(url):
-            for item in self._find_tests(url):
-                test_name = "%s:%s" % (url, item)
+        if os.path.isfile(reference):
+            for item in self._find_tests(reference):
+                test_name = "%s:%s" % (reference, item)
                 if tests_filter and not tests_filter.search(test_name):
                     continue
                 avocado_suite.append((GolangTest, {'name': test_name,
                                                    'subtest': subtest,
                                                    'executable': test_name}))
 
-            return avocado_suite or self._no_tests(which_tests, url,
+            return avocado_suite or self._no_tests(which_tests, reference,
                                                    'No test matching this '
                                                    'reference.')
 
         # When a directory is provided
-        if os.path.isdir(url):
-            for test_file in self._find_files(url, recursive=False):
+        if os.path.isdir(reference):
+            for test_file in self._find_files(reference, recursive=False):
                 for item in self._find_tests(test_file):
                     test_name = "%s:%s" % (item, item)
                     if tests_filter and not tests_filter.search(test_name):
@@ -136,7 +136,7 @@ class GolangLoader(loader.TestLoader):
                                                        'subtest': subtest,
                                                        'executable': test_name}))
 
-            return avocado_suite or self._no_tests(which_tests, url,
+            return avocado_suite or self._no_tests(which_tests, reference,
                                                    'No test matching this '
                                                    'reference.')
 
@@ -155,7 +155,7 @@ class GolangLoader(loader.TestLoader):
                 package_paths.append(pkg_path)
 
         for package_path in package_paths:
-            url_path = os.path.join(package_path, url)
+            url_path = os.path.join(package_path, reference)
             files = self._find_files(url_path)
             if files:
                 test_files.append((package_path, files))
@@ -176,7 +176,7 @@ class GolangLoader(loader.TestLoader):
                                            'subtest': subtest,
                                            'executable': test_name}))
 
-        return avocado_suite or self._no_tests(which_tests, url,
+        return avocado_suite or self._no_tests(which_tests, reference,
                                                'No test matching this '
                                                'reference.')
 

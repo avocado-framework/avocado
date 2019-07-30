@@ -128,7 +128,7 @@ class FakeVariantDispatcher:
                                   for path, env in variant["variant"]]
         self.variants = state
 
-    def map_method(self, method, *args, **kwargs):
+    def map_method_with_return(self, method, *args, **kwargs):
         """
         Reports list containing one result of map_method on self
         """
@@ -198,9 +198,9 @@ class Varianter:
             default_params.merge(default_param)
         self._default_params = default_params
         self.default_params.clear()
-        self._variant_plugins.map_method("initialize", args)
-        self._variant_plugins.map_method_copy("update_defaults", self._default_params)
-        self._no_variants = sum(self._variant_plugins.map_method("__len__"))
+        self._variant_plugins.map_method_with_return("initialize", args)
+        self._variant_plugins.map_method_with_return_copy("update_defaults", self._default_params)
+        self._no_variants = sum(self._variant_plugins.map_method_with_return("__len__"))
 
     def is_parsed(self):
         """
@@ -251,10 +251,10 @@ class Varianter:
                                                     kwargs, self.debug)))
             return "\n\n".join(out)
 
-        out = [item for item in self._variant_plugins.map_method("to_str",
-                                                                 summary,
-                                                                 variants,
-                                                                 **kwargs)
+        out = [item for item in self._variant_plugins.map_method_with_return("to_str",
+                                                                             summary,
+                                                                             variants,
+                                                                             **kwargs)
                if item]
 
         return "\n\n".join(out)
@@ -320,7 +320,7 @@ class Varianter:
         self.debug = False
         self.node_class = tree.TreeNode
         self._variant_plugins = FakeVariantDispatcher(state)
-        self._no_variants = sum(self._variant_plugins.map_method("__len__"))
+        self._no_variants = sum(self._variant_plugins.map_method_with_return("__len__"))
 
     def itertests(self):
         """
@@ -336,7 +336,7 @@ class Varianter:
         :yield variant
         """
         if self._no_variants:  # Copy template and modify it's params
-            plugins_variants = self._variant_plugins.map_method("__iter__")
+            plugins_variants = self._variant_plugins.map_method_with_return("__iter__")
             iter_variants = (variant
                              for plugin_variants in plugins_variants
                              for variant in plugin_variants)

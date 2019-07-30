@@ -224,10 +224,10 @@ def subcommand_runnable_run_recipe(args, echo=print):
 class StatusEncoder(json.JSONEncoder):
 
     # pylint: disable=E0202
-    def default(self, obj):
-        if isinstance(obj, bytes):
-            return {'__base64_encoded__': base64.b64encode(obj).decode('ascii')}
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if isinstance(o, bytes):
+            return {'__base64_encoded__': base64.b64encode(o).decode('ascii')}
+        return json.JSONEncoder.default(self, o)
 
 
 def json_base64_decode(dct):

@@ -1028,31 +1028,31 @@ class Test(unittest.TestCase, TestData):
             self.log.info("%s %s", self.status,
                           self.name)
 
-    def fail(self, message=None):
+    def fail(self, msg=None):
         """
         Fails the currently running test.
 
         After calling this method a test will be terminated and have its status
         as FAIL.
 
-        :param message: an optional message that will be recorded in the logs
-        :type message: str
+        :param msg: an optional message that will be recorded in the logs
+        :type msg: str
         """
-        raise exceptions.TestFail(message)
+        raise exceptions.TestFail(msg)
 
-    def error(self, message=None):
+    def error(self, msg=None):
         """
         Errors the currently running test.
 
         After calling this method a test will be terminated and have its status
         as ERROR.
 
-        :param message: an optional message that will be recorded in the logs
-        :type message: str
+        :param msg: an optional message that will be recorded in the logs
+        :type msg: str
         """
-        raise exceptions.TestError(message)
+        raise exceptions.TestError(msg)
 
-    def cancel(self, message=None):
+    def cancel(self, msg=None):
         """
         Cancels the test.
 
@@ -1062,10 +1062,10 @@ class Test(unittest.TestCase, TestData):
         test method, avocado will mark your test status as ERROR, and
         instruct you to fix your test in the error message.
 
-        :param message: an optional message that will be recorded in the logs
-        :type message: str
+        :param msg: an optional message that will be recorded in the logs
+        :type msg: str
         """
-        raise exceptions.TestCancel(message)
+        raise exceptions.TestCancel(msg)
 
     def fetch_asset(self, name, asset_hash=None, algorithm=None,
                     locations=None, expire=None):

@@ -193,8 +193,8 @@ class DummyLoader(loader.TestLoader):
     def __init__(self, args, extra_params):
         super(DummyLoader, self).__init__(args, extra_params)
 
-    def discover(self, url, which_tests=loader.DiscoverMode.DEFAULT):
-        return [(MockingTest, {'name': url})]
+    def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
+        return [(MockingTest, {'name': reference})]
 
     @staticmethod
     def get_type_label_mapping():
@@ -426,7 +426,7 @@ class RemoteTestRunner(TestRunner):
                              "output:\n%s" % output)
         return response
 
-    def run_test(self, references, timeout):
+    def run_test(self, references, timeout):  # pylint: disable=W0221
         """
         Run tests.
 
@@ -488,7 +488,7 @@ class RemoteTestRunner(TestRunner):
         return json_result
 
     def run_suite(self, test_suite, variants, timeout=0, replay_map=None,
-                  suite_order="variants-per-test"):
+                  execution_order="variants-per-test"):
         """
         Run one or more tests and report with test result.
 
@@ -499,10 +499,10 @@ class RemoteTestRunner(TestRunner):
         """
         del test_suite     # using self.job.references instead
         del variants            # we're not using multiplexation here
-        if suite_order != "variants-per-test" and suite_order is not None:
+        if execution_order != "variants-per-test" and execution_order is not None:
             raise exceptions.JobError("execution-order %s is not supported "
-                                      "for remote execution." % suite_order)
-        del suite_order     # suite_order is ignored for now
+                                      "for remote execution." % execution_order)
+        del execution_order     # execution_order is ignored for now
         if not timeout:     # avoid timeout = 0
             timeout = None
         summary = set()
