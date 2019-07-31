@@ -696,11 +696,11 @@ class YumBackend(RpmBackend):
             try:
                 process.run('yumdownloader --assumeyes --verbose --source %s '
                             '--destdir %s' % (name, path))
-                src_rpms = [_ for _ in os.walk(path).next()[2]
+                src_rpms = [_ for _ in next(os.walk(path))[2]
                             if _.endswith(".src.rpm")]
                 if len(src_rpms) != 1:
                     log.error("Failed to get downloaded src.rpm from %s:\n%s",
-                              path, os.walk(path).next()[2])
+                              path, next(os.walk(path))[2])
                     return ""
                 if self.rpm_install(os.path.join(path, src_rpms[-1])):
                     if self.build_dep(name):
