@@ -203,7 +203,7 @@ class Asset:
         try:
             # Temporary unique name to use while downloading
             temp = '%s.%s' % (asset_file,
-                              next(tempfile._get_candidate_names()))
+                              next(tempfile._get_candidate_names()))  # pylint: disable=W0212
             url_download(url_obj.geturl(), temp)
 
             # Acquire lock only after download the file

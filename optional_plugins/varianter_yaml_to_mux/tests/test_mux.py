@@ -545,11 +545,12 @@ class TestPathParent(unittest.TestCase):
 class TestCreateFromYaml(unittest.TestCase):
 
     def test_normalize_path(self):
-        self.assertEqual(yaml_to_mux._normalize_path(''), None)
-        self.assertEqual(yaml_to_mux._normalize_path('path'), 'path/')
+        self.assertEqual(yaml_to_mux._normalize_path(''), None)  # pylint: disable=W0212
+        self.assertEqual(yaml_to_mux._normalize_path('path'), 'path/')  # pylint: disable=W0212
 
     def test_handle_control_path_include_file_does_not_exist(self):
         with self.assertRaises(ValueError):
+            # pylint: disable=W0212
             yaml_to_mux._handle_control_tag(
                 'original_fake_file.yaml',
                 mux.MuxTreeNode, mux.MuxTreeNode(),
@@ -561,6 +562,7 @@ class TestCreateFromYaml(unittest.TestCase):
         node = klass()
         control = mux.Control(yaml_to_mux.YAML_REMOVE_NODE)
         to_be_removed = 'node_to_be_removed'
+        # pylint: disable=W0212
         yaml_to_mux._handle_control_tag('fake_path',
                                         klass, node,
                                         (control, to_be_removed))
@@ -569,10 +571,12 @@ class TestCreateFromYaml(unittest.TestCase):
 
     def test_handle_control_tag_using_multiple(self):
         with self.assertRaises(ValueError):
+            # pylint: disable=W0212
             yaml_to_mux._handle_control_tag_using('original_fake_file.yaml',
                                                   'name', True, 'using')
 
     def test_handle_control_tag_using(self):
+        # pylint: disable=W0212
         using = yaml_to_mux._handle_control_tag_using('fake_path',
                                                       'name',
                                                       False,
@@ -580,6 +584,7 @@ class TestCreateFromYaml(unittest.TestCase):
         self.assertEqual(using, 'using/path')
 
     def test_apply_using(self):
+        # pylint: disable=W0212
         node = yaml_to_mux._apply_using('bar', mux.MuxTreeNode,
                                         'foo', mux.MuxTreeNode())
         self.assertEqual(node.path, '/foo')

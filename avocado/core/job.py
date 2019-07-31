@@ -146,8 +146,8 @@ class Job:
         # Because of our goal to support using the phases of a job
         # freely, let's get the result events dispatcher ready early.
         # A future optimization may load it on demand.
-        self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.args)
-        output.log_plugin_failures(self._result_events_dispatcher.load_failures)
+        self.result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.args)
+        output.log_plugin_failures(self.result_events_dispatcher.load_failures)
 
     def __enter__(self):
         self.setup()
@@ -499,7 +499,7 @@ class Job:
         By default this runs the plugins that implement the
         :class:`avocado.core.plugin_interfaces.JobPreTests` interface.
         """
-        self._result_events_dispatcher.map_method('pre_tests', self)
+        self.result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
         """
@@ -552,7 +552,7 @@ class Job:
         By default this runs the plugins that implement the
         :class:`avocado.core.plugin_interfaces.JobPostTests` interface.
         """
-        self._result_events_dispatcher.map_method('post_tests', self)
+        self.result_events_dispatcher.map_method('post_tests', self)
 
     def run(self):
         """

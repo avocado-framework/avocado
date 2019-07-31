@@ -141,7 +141,7 @@ class Parser:
         self.args, extra = self.application.parse_known_args(namespace=self.args)
         if extra:
             msg = 'unrecognized arguments: %s' % ' '.join(extra)
-            for sub in self.application._subparsers._actions:
+            for sub in self.application._subparsers._actions:  # pylint: disable=W0212
                 if sub.dest == 'subcommand':
                     sub.choices[self.args.subcommand].error(msg)
 
