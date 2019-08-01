@@ -131,7 +131,7 @@ class PhoneHomeServerHandler(BaseHTTPRequestHandler):
             self.server.instance_phoned_back = True
         self.send_response(200)
 
-    def log_message(self, format_, *args):
+    def log_message(self, format_, *args):  # pylint: disable=W0221
         pass
 
 

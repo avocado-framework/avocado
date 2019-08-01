@@ -1028,7 +1028,7 @@ class Test(unittest.TestCase, TestData):
             self.log.info("%s %s", self.status,
                           self.name)
 
-    def fail(self, message=None):
+    def fail(self, message=None):  # pylint: disable=W0221
         """
         Fails the currently running test.
 
@@ -1037,10 +1037,12 @@ class Test(unittest.TestCase, TestData):
 
         :param message: an optional message that will be recorded in the logs
         :type message: str
+        :warning message: This parameter will changed name to "msg" in the next
+                          LTS release because of lint W0221
         """
         raise exceptions.TestFail(message)
 
-    def error(self, message=None):
+    def error(self, message=None):  # pylint: disable=W0221
         """
         Errors the currently running test.
 
@@ -1049,10 +1051,12 @@ class Test(unittest.TestCase, TestData):
 
         :param message: an optional message that will be recorded in the logs
         :type message: str
+        :warning message: This parameter will changed name to "msg" in the next
+                          LTS release because of lint W0221
         """
         raise exceptions.TestError(message)
 
-    def cancel(self, message=None):
+    def cancel(self, message=None):  # pylint: disable=W0221
         """
         Cancels the test.
 
@@ -1064,6 +1068,8 @@ class Test(unittest.TestCase, TestData):
 
         :param message: an optional message that will be recorded in the logs
         :type message: str
+        :warning message: This parameter will changed name to "msg" in the next
+                          LTS release because of lint W0221
         """
         raise exceptions.TestCancel(message)
 
