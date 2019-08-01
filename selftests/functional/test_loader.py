@@ -4,7 +4,6 @@ import subprocess
 import time
 import stat
 import tempfile
-import shutil
 import signal
 import unittest
 
@@ -148,7 +147,7 @@ class LoaderTestFunctional(unittest.TestCase):
     def setUp(self):
         os.chdir(BASEDIR)
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def _test(self, name, content, exp_str, mode=MODE_0664, count=1):
         test_script = script.TemporaryScript(name, content,
@@ -243,7 +242,7 @@ class LoaderTestFunctional(unittest.TestCase):
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
         cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
-                    % (AVOCADO, self.tmpdir, mytest))
+                    % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
@@ -258,7 +257,7 @@ class LoaderTestFunctional(unittest.TestCase):
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
         cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
-                    % (AVOCADO, self.tmpdir, mytest))
+                    % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
     @unittest.skipUnless(os.path.exists("/bin/true"), "/bin/true not "
@@ -322,7 +321,7 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_python_unittest(self):
         test_path = os.path.join(BASEDIR, "selftests", ".data", "unittests.py")
         cmd = ("%s run --sysinfo=off --job-results-dir %s --json - -- %s"
-               % (AVOCADO, self.tmpdir, test_path))
+               % (AVOCADO, self.tmpdir.name, test_path))
         result = process.run(cmd, ignore_status=True)
         jres = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, 1, result)
@@ -358,7 +357,7 @@ class LoaderTestFunctional(unittest.TestCase):
         self.assertEqual(expected, result.stdout)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

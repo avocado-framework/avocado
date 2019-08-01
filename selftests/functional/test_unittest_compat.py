@@ -1,6 +1,5 @@
 import os
 import sys
-import shutil
 import tempfile
 import unittest
 
@@ -63,7 +62,7 @@ class UnittestCompat(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.original_pypath = os.environ.get('PYTHONPATH')
         if self.original_pypath is not None:
             os.environ['PYTHONPATH'] = '%s:%s' % (
@@ -72,17 +71,17 @@ class UnittestCompat(unittest.TestCase):
             os.environ['PYTHONPATH'] = '%s' % BASEDIR
         self.unittest_script_good = script.TemporaryScript(
             'unittest_good.py',
-            UNITTEST_GOOD % self.tmpdir,
+            UNITTEST_GOOD % self.tmpdir.name,
             'avocado_as_unittest_functional')
         self.unittest_script_good.save()
         self.unittest_script_fail = script.TemporaryScript(
             'unittest_fail.py',
-            UNITTEST_FAIL % self.tmpdir,
+            UNITTEST_FAIL % self.tmpdir.name,
             'avocado_as_unittest_functional')
         self.unittest_script_fail.save()
         self.unittest_script_error = script.TemporaryScript(
             'unittest_error.py',
-            UNITTEST_ERROR % self.tmpdir,
+            UNITTEST_ERROR % self.tmpdir.name,
             'avocado_as_unittest_functional')
         self.unittest_script_error.save()
 
@@ -112,7 +111,7 @@ class UnittestCompat(unittest.TestCase):
         self.unittest_script_error.remove()
         self.unittest_script_fail.remove()
         self.unittest_script_good.remove()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

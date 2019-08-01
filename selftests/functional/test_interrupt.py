@@ -2,7 +2,6 @@ import os
 import tempfile
 import time
 import signal
-import shutil
 import stat
 import subprocess
 import unittest
@@ -98,7 +97,7 @@ class InterruptTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.test_module = None
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
@@ -117,7 +116,7 @@ class InterruptTest(unittest.TestCase):
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
-               (AVOCADO, self.test_module, self.tmpdir))
+               (AVOCADO, self.test_module, self.tmpdir.name))
         self.proc = subprocess.Popen(cmd.split(),
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
@@ -165,7 +164,7 @@ class InterruptTest(unittest.TestCase):
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
-               (AVOCADO, self.test_module, self.tmpdir))
+               (AVOCADO, self.test_module, self.tmpdir.name))
         self.proc = subprocess.Popen(cmd.split(),
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
@@ -205,7 +204,7 @@ class InterruptTest(unittest.TestCase):
         self.test_module = good_test.path
         os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
-               (AVOCADO, self.test_module, self.tmpdir))
+               (AVOCADO, self.test_module, self.tmpdir.name))
         self.proc = subprocess.Popen(cmd.split(),
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
@@ -249,7 +248,7 @@ class InterruptTest(unittest.TestCase):
         self.test_module = good_test.path
         os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
-               (AVOCADO, self.test_module, self.tmpdir))
+               (AVOCADO, self.test_module, self.tmpdir.name))
         self.proc = subprocess.Popen(cmd.split(),
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
@@ -274,7 +273,7 @@ class InterruptTest(unittest.TestCase):
         self.assertIn(b'Terminated\n', self.proc.stdout.read())
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

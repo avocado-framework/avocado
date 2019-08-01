@@ -1,5 +1,4 @@
 import argparse
-import shutil
 import tempfile
 import unittest.mock
 
@@ -30,7 +29,7 @@ class VMTestRunnerSetup(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_setup(self):
         mock_vm = _FakeVM()
@@ -55,7 +54,7 @@ class VMTestRunnerSetup(unittest.TestCase):
                                       dry_run=True,
                                       env_keep=None,
                                       keep_tmp='on',
-                                      base_logdir=self.tmpdir)
+                                      base_logdir=self.tmpdir.name)
         with Job(job_args) as job:
             with unittest.mock.patch('avocado_runner_vm.vm_connect',
                                      return_value=mock_vm):
@@ -70,7 +69,7 @@ class VMTestRunnerSetup(unittest.TestCase):
 
     def tearDown(self):
         try:
-            shutil.rmtree(self.tmpdir)
+            self.tmpdir.cleanup()
             # may have been clean up already on job.cleanup()
         except FileNotFoundError:
             pass

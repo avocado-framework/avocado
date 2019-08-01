@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import unittest.mock
 
@@ -18,13 +17,13 @@ class DataDirTest(unittest.TestCase):
         a the path to a configuration file contain those same settings
         """
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        base_dir = tempfile.mkdtemp(prefix=prefix)
-        test_dir = os.path.join(base_dir, 'tests')
+        base_dir = tempfile.TemporaryDirectory(prefix=prefix)
+        test_dir = os.path.join(base_dir.name, 'tests')
         os.mkdir(test_dir)
-        mapping = {'base_dir': base_dir,
+        mapping = {'base_dir': base_dir.name,
                    'test_dir': test_dir,
-                   'data_dir': os.path.join(base_dir, 'data'),
-                   'logs_dir': os.path.join(base_dir, 'logs')}
+                   'data_dir': os.path.join(base_dir.name, 'data'),
+                   'logs_dir': os.path.join(base_dir.name, 'logs')}
         temp_settings = ('[datadir.paths]\n'
                          'base_dir = %(base_dir)s\n'
                          'test_dir = %(test_dir)s\n'
@@ -33,10 +32,11 @@ class DataDirTest(unittest.TestCase):
         config_file = tempfile.NamedTemporaryFile('w', delete=False)
         config_file.write(temp_settings)
         config_file.close()
-        return (mapping, config_file.name)
+        return (base_dir, mapping, config_file.name)
 
     def setUp(self):
-        (self.mapping,
+        (self.base_dir,
+         self.mapping,
          self.config_file_path) = self._get_temporary_dirs_mapping_and_config()
 
     def test_datadir_from_config(self):
@@ -88,7 +88,8 @@ class DataDirTest(unittest.TestCase):
         No data_dir module reload should be necessary to get the new locations
         from data_dir APIs.
         """
-        (self.alt_mapping,
+        (self.alt_base_dir,
+         self.alt_mapping,
          self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()
         stg = settings.Settings(self.alt_config_file_path)
         with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
@@ -100,12 +101,12 @@ class DataDirTest(unittest.TestCase):
 
     def tearDown(self):
         os.unlink(self.config_file_path)
-        shutil.rmtree(self.mapping['base_dir'])
+        self.base_dir.cleanup()
         # clean up alternate configuration file if set by the test
         if hasattr(self, 'alt_config_file_path'):
             os.unlink(self.alt_config_file_path)
-        if hasattr(self, 'alt_mapping'):
-            shutil.rmtree(self.alt_mapping['base_dir'])
+        if hasattr(self, 'alt_base_dir'):
+            self.alt_base_dir.cleanup()
 
 
 if __name__ == '__main__':

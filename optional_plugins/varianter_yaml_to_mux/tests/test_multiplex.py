@@ -1,6 +1,5 @@
 import os
 import tempfile
-import shutil
 import unittest
 import sys
 
@@ -29,7 +28,7 @@ Variant mint-debug-amd-virtio-022a:    amd@optional_plugins/varianter_yaml_to_mu
 class MultiplexTests(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix='avocado_' + __name__)
 
     def run_and_check(self, cmd_line, expected_rc, tests=None):
         os.chdir(basedir)
@@ -77,7 +76,7 @@ class MultiplexTests(unittest.TestCase):
     def test_run_mplex_noid(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml'
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
@@ -85,11 +84,11 @@ class MultiplexTests(unittest.TestCase):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, (4, 0))
         # Also check whether jobdata contains correct parameter paths
-        with open(os.path.join(self.tmpdir, "latest", "jobdata",
+        with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
                   "variants.json")) as variants_file:
             variants = variants_file.read()
         self.assertIn('["/run/*"]', variants, "parameter paths stored in "
@@ -100,10 +99,10 @@ class MultiplexTests(unittest.TestCase):
                     'passtest.py passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--mux-path /foo/\\* /bar/\\* /baz/\\*'
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (8, 0))
         # Also check whether jobdata contains correct parameter paths
-        with open(os.path.join(self.tmpdir, "latest", "jobdata",
+        with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
                   "variants.json")) as variants_file:
             variants = variants_file.read()
         exp = '["/foo/*", "/bar/*", "/baz/*"]'
@@ -114,7 +113,7 @@ class MultiplexTests(unittest.TestCase):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'passtest.py failtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
         self.assertIn(b"(1/8) passtest.py:PassTest.test;short", result.stdout)
@@ -127,7 +126,7 @@ class MultiplexTests(unittest.TestCase):
                     "passtest.py failtest.py -m "
                     "examples/tests/sleeptest.py.data/sleeptest.yaml "
                     "--execution-order tests-per-variant"
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
         self.assertIn(b"(1/8) passtest.py:PassTest.test;short", result.stdout)
@@ -140,14 +139,14 @@ class MultiplexTests(unittest.TestCase):
                     'passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, (4, 0))
 
     def test_empty_file(self):
         cmd_line = ("%s run --job-results-dir %s -m optional_plugins/"
                     "varianter_yaml_to_mux/tests/.data/empty_file -- "
-                    "passtest.py" % (AVOCADO, self.tmpdir))
+                    "passtest.py" % (AVOCADO, self.tmpdir.name))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (1, 0))
 
     def test_run_mplex_params(self):
@@ -159,7 +158,7 @@ class MultiplexTests(unittest.TestCase):
                         'examples/tests/env_variables.sh '
                         '-m examples/tests/env_variables.sh.data/env_variables.yaml '
                         '--mux-filter-only %s'
-                        % (AVOCADO, self.tmpdir, variant))
+                        % (AVOCADO, self.tmpdir.name, variant))
             expected_rc = exit_codes.AVOCADO_ALL_OK
             result = self.run_and_check(cmd_line, expected_rc)
 
@@ -176,7 +175,7 @@ class MultiplexTests(unittest.TestCase):
                               % (msg_remain, "\n  ".join(result.stdout_text.splitlines())))
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

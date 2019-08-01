@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -23,12 +22,12 @@ class SysInfoTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_sysinfo_enabled(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=on '
-                    'passtest.py' % (AVOCADO, self.tmpdir))
+                    'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -54,7 +53,7 @@ class SysInfoTest(unittest.TestCase):
     def test_sysinfo_disabled(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off passtest.py'
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -72,18 +71,18 @@ class SysInfoTest(unittest.TestCase):
         self.assertFalse(os.path.isdir(sysinfo_dir), msg)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
     def run_sysinfo_interrupted(self, sleep, timeout, exp_duration):
         os.chdir(BASEDIR)
-        commands_path = os.path.join(self.tmpdir, "commands")
+        commands_path = os.path.join(self.tmpdir.name, "commands")
         script.make_script(commands_path, "sleep %s" % sleep)
-        config_path = os.path.join(self.tmpdir, "config.conf")
+        config_path = os.path.join(self.tmpdir.name, "config.conf")
         script.make_script(config_path,
                            COMMANDS_TIMEOUT_CONF % (timeout, commands_path))
         cmd_line = ("%s --show all --config %s run --job-results-dir %s "
                     "--sysinfo=on passtest.py"
-                    % (AVOCADO, config_path, self.tmpdir))
+                    % (AVOCADO, config_path, self.tmpdir.name))
         result = process.run(cmd_line)
         if timeout > 0:
             self.assertLess(result.duration, exp_duration, "Execution took "
@@ -101,7 +100,7 @@ class SysInfoTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s'
                          % (expected_rc, result))
-        sleep_log = os.path.join(self.tmpdir, "latest", "sysinfo", "pre",
+        sleep_log = os.path.join(self.tmpdir.name, "latest", "sysinfo", "pre",
                                  "sleep %s" % sleep)
         if not os.path.exists(sleep_log):
             path = os.path.abspath(sleep_log)

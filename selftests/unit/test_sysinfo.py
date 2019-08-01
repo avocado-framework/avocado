@@ -1,6 +1,5 @@
 import os
 import tempfile
-import shutil
 import unittest
 
 from avocado.core import sysinfo
@@ -12,7 +11,7 @@ class SysinfoTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_loggables_equal(self):
         cmd1 = sysinfo.Command("ls -l")
@@ -53,7 +52,7 @@ class SysinfoTest(unittest.TestCase):
         self.assertEqual(len(container), 5)
 
     def test_logger_job_hooks(self):
-        jobdir = os.path.join(self.tmpdir, 'job')
+        jobdir = os.path.join(self.tmpdir.name, 'job')
         sysinfo_logger = sysinfo.SysInfo(basedir=jobdir)
         sysinfo_logger.start_job_hook()
         self.assertTrue(os.path.isdir(jobdir))
@@ -66,7 +65,7 @@ class SysinfoTest(unittest.TestCase):
         self.assertTrue(os.path.isdir(job_postdir))
 
     def test_logger_test_hooks(self):
-        testdir = os.path.join(self.tmpdir, 'job', 'test1')
+        testdir = os.path.join(self.tmpdir.name, 'job', 'test1')
         sysinfo_logger = sysinfo.SysInfo(basedir=testdir)
         sysinfo_logger.start_test_hook()
         self.assertTrue(os.path.isdir(testdir))
@@ -89,7 +88,7 @@ class SysinfoTest(unittest.TestCase):
                         % os.listdir(job_postdir))
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

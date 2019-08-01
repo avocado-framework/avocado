@@ -1,7 +1,6 @@
 import json
 import os
 import tempfile
-import shutil
 import unittest
 
 from avocado.utils import process
@@ -13,8 +12,8 @@ class VariantsDumpLoadTests(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
-        self.variants_file = os.path.join(self.tmpdir, 'variants.json')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.variants_file = os.path.join(self.tmpdir.name, 'variants.json')
         os.chdir(BASEDIR)
 
     def test_variants_dump(self):
@@ -44,7 +43,7 @@ class VariantsDumpLoadTests(unittest.TestCase):
             file_obj.write(content)
         cmd_line = ('%s run passtest.py --json-variants-load %s '
                     '--job-results-dir %s --json -' %
-                    (AVOCADO, self.variants_file, self.tmpdir))
+                    (AVOCADO, self.variants_file, self.tmpdir.name))
         result = process.run(cmd_line)
         json_result = json.loads(result.stdout_text)
         self.assertEqual(json_result["pass"], 2)
@@ -54,7 +53,7 @@ class VariantsDumpLoadTests(unittest.TestCase):
                          "2-passtest.py:PassTest.test;bar-d06d")
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

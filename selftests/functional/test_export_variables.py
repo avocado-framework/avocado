@@ -1,6 +1,5 @@
 import os
 import tempfile
-import shutil
 import unittest
 
 from avocado import VERSION
@@ -33,7 +32,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.script = script.TemporaryScript(
             'version.sh',
             SCRIPT_CONTENT,
@@ -43,7 +42,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
     def test_environment_vars(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=on %s'
-                    % (AVOCADO, self.tmpdir, self.script.path))
+                    % (AVOCADO, self.tmpdir.name, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -52,7 +51,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
 
     def tearDown(self):
         self.script.remove()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

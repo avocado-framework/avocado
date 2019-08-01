@@ -7,7 +7,6 @@ avocado.utils.lv_utils selftests
 import glob
 import os
 import sys
-import shutil
 import tempfile
 import time
 import unittest
@@ -33,11 +32,11 @@ class LVUtilsTest(unittest.TestCase):
                      "passwordless sudo configured.")
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.vgs = []
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
         for vg_name in self.vgs:
             lv_utils.vg_remove(vg_name)
 
@@ -54,8 +53,8 @@ class LVUtilsTest(unittest.TestCase):
         ramdisk_filename = vg_ramdisk_dir = loop_device = None
         vg_name = "avocado_testing_vg_e5kj3erv11a"
         lv_name = "avocado_testing_lv_lk0ff33al5h"
-        ramdisk_basedir = os.path.join(self.tmpdir, "foo", "bar")
-        mount_loc = os.path.join(self.tmpdir, "lv_mount_location")
+        ramdisk_basedir = os.path.join(self.tmpdir.name, "foo", "bar")
+        mount_loc = os.path.join(self.tmpdir.name, "lv_mount_location")
         os.mkdir(mount_loc)
         try:
             # Create ramdisk vg

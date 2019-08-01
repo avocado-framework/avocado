@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import tempfile
 import unittest
 from xml.dom import minidom
@@ -12,7 +11,7 @@ from avocado.utils import process
 
 class HtmlResultTest(unittest.TestCase):
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix='avocado_' + __name__)
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)
@@ -36,7 +35,7 @@ class HtmlResultTest(unittest.TestCase):
 
     def test_output_incompatible_setup(self):
         cmd_line = ('avocado run --job-results-dir %s --sysinfo=off '
-                    '--html - passtest.py' % self.tmpdir)
+                    '--html - passtest.py' % self.tmpdir.name)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         output = result.stdout + result.stderr
@@ -49,13 +48,13 @@ class HtmlResultTest(unittest.TestCase):
 
     def test_output_compatible_setup_2(self):
         prefix = 'avocado_' + __name__
-        tmpfile = tempfile.mktemp(prefix=prefix, dir=self.tmpdir)
-        tmpfile2 = tempfile.mktemp(prefix=prefix, dir=self.tmpdir)
-        tmpdir = tempfile.mkdtemp(prefix=prefix, dir=self.tmpdir)
+        tmpfile = tempfile.mktemp(prefix=prefix, dir=self.tmpdir.name)
+        tmpfile2 = tempfile.mktemp(prefix=prefix, dir=self.tmpdir.name)
+        tmpdir = tempfile.mkdtemp(prefix=prefix, dir=self.tmpdir.name)
         tmpfile3 = os.path.join(tmpdir, "result.html")
         cmd_line = ('avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit %s --json %s --html %s --tap-include-logs '
-                    'passtest.py' % (self.tmpdir, tmpfile, tmpfile2, tmpfile3))
+                    'passtest.py' % (self.tmpdir.name, tmpfile, tmpfile2, tmpfile3))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -75,4 +74,4 @@ class HtmlResultTest(unittest.TestCase):
         minidom.parse(tmpfile)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()

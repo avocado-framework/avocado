@@ -5,7 +5,6 @@ avocado.utils.partition unittests
 """
 
 import os
-import shutil
 import sys
 import tempfile
 import unittest.mock
@@ -40,15 +39,15 @@ class Base(unittest.TestCase):
                      'sudo')
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
-        self.mountpoint = os.path.join(self.tmpdir, "disk")
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.mountpoint = os.path.join(self.tmpdir.name, "disk")
         os.mkdir(self.mountpoint)
-        self.disk = partition.Partition(os.path.join(self.tmpdir, "block"), 1,
+        self.disk = partition.Partition(os.path.join(self.tmpdir.name, "block"), 1,
                                         self.mountpoint)
 
     def tearDown(self):
         self.disk.unmount()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 class TestPartition(Base):

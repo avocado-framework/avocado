@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import unittest.mock
 
@@ -29,7 +28,7 @@ class TestClassTestUnit(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def _get_fake_filename_test(self, name):
 
@@ -42,20 +41,20 @@ class TestClassTestUnit(unittest.TestCase):
                 pass
 
         tst_id = test.TestID("test", name=name)
-        return FakeFilename("test", tst_id, base_logdir=self.tmpdir)
+        return FakeFilename("test", tst_id, base_logdir=self.tmpdir.name)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
     def test_ugly_name(self):
         def run(name, path_name):
             """ Initialize test and check the dirs were created """
             tst = self.DummyTest("test", test.TestID(1, name),
-                                 base_logdir=self.tmpdir)
+                                 base_logdir=self.tmpdir.name)
             self.assertEqual(os.path.basename(tst.logdir), path_name)
             self.assertTrue(os.path.exists(tst.logdir))
             self.assertEqual(os.path.dirname(os.path.dirname(tst.logdir)),
-                             self.tmpdir)
+                             self.tmpdir.name)
 
         run("/absolute/path", "1-_absolute_path")
         run("./relative/path", "1-._relative_path")
@@ -76,7 +75,7 @@ class TestClassTestUnit(unittest.TestCase):
     def test_long_name(self):
         def check(uid, name, variant, exp_logdir):
             tst = self.DummyTest("test", test.TestID(uid, name, variant),
-                                 base_logdir=self.tmpdir)
+                                 base_logdir=self.tmpdir.name)
             self.assertEqual(os.path.basename(tst.logdir), exp_logdir)
             return tst
 
@@ -103,16 +102,16 @@ class TestClassTestUnit(unittest.TestCase):
         """
         Checks `get_data()` won't report fs-unfriendly data dir name
         """
-        max_length_name = os.path.join(self.tmpdir, "a" * 250)
+        max_length_name = os.path.join(self.tmpdir.name, "a" * 250)
         tst = self._get_fake_filename_test(max_length_name)
-        self.assertEqual(os.path.join(self.tmpdir, max_length_name + ".data"),
+        self.assertEqual(os.path.join(self.tmpdir.name, max_length_name + ".data"),
                          tst.get_data('', 'file', False))
 
     def test_no_data_dir(self):
         """
         Tests that with a filename too long, no datadir is possible
         """
-        above_limit_name = os.path.join(self.tmpdir, "a" * 251)
+        above_limit_name = os.path.join(self.tmpdir.name, "a" * 251)
         tst = self._get_fake_filename_test(above_limit_name)
         self.assertFalse(tst.get_data('', 'file', False))
         tst._record_reference('stdout', 'stdout.expected')
@@ -122,10 +121,10 @@ class TestClassTestUnit(unittest.TestCase):
     def test_all_dirs_exists_no_hang(self):
         with unittest.mock.patch('os.path.exists', return_value=True):
             self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
-                              test.TestID(1, "name"), base_logdir=self.tmpdir)
+                              test.TestID(1, "name"), base_logdir=self.tmpdir.name)
 
     def test_try_override_test_variable(self):
-        dummy_test = self.DummyTest(base_logdir=self.tmpdir)
+        dummy_test = self.DummyTest(base_logdir=self.tmpdir.name)
         self.assertRaises(AttributeError, setattr, dummy_test, "name", "whatever")
         self.assertRaises(AttributeError, setattr, dummy_test, "status", "whatever")
 
@@ -142,7 +141,7 @@ class TestClassTestUnit(unittest.TestCase):
                 return filename
 
         tst = GetDataTest("test", test.TestID(1, "test"),
-                          base_logdir=self.tmpdir)
+                          base_logdir=self.tmpdir.name)
         content = 'expected content\n'
         content_path = os.path.join(tst.logdir, 'content')
         with open(content_path, 'w') as produced:
@@ -158,7 +157,7 @@ class TestClassTestUnit(unittest.TestCase):
         Tests that a check is not made for a file that does not exist
         '''
         tst = self.DummyTest("test", test.TestID(1, "test"),
-                             base_logdir=self.tmpdir)
+                             base_logdir=self.tmpdir.name)
         self.assertFalse(tst._check_reference('does_not_exist',
                                               'stdout.expected',
                                               'stdout.diff',
@@ -177,8 +176,8 @@ class TestClassTest(unittest.TestCase):
                 self.whiteboard = 'foo'
 
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.base_logdir = tempfile.mkdtemp(prefix=prefix)
-        self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir)
+        self.base_logdir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir.name)
         self.tst_instance_pass.run_avocado()
 
     def test_class_attributes_name(self):
@@ -205,17 +204,17 @@ class TestClassTest(unittest.TestCase):
                 pass
 
         self.assertRaises(exceptions.TestSetupFail, AvocadoPass,
-                          base_logdir=self.base_logdir)
+                          base_logdir=self.base_logdir.name)
 
     def tearDown(self):
-        shutil.rmtree(self.base_logdir)
+        self.base_logdir.cleanup()
 
 
 class SimpleTestClassTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.script = None
 
     def test_simple_test_pass_status(self):
@@ -226,7 +225,7 @@ class SimpleTestClassTest(unittest.TestCase):
         self.script.save()
         tst_instance = test.SimpleTest(
             name=test.TestID(1, self.script.path),
-            base_logdir=self.tmpdir)
+            base_logdir=self.tmpdir.name)
         tst_instance.run_avocado()
         self.assertEqual(tst_instance.status, 'PASS')
 
@@ -238,36 +237,36 @@ class SimpleTestClassTest(unittest.TestCase):
         self.script.save()
         tst_instance = test.SimpleTest(
             name=test.TestID(1, self.script.path),
-            base_logdir=self.tmpdir)
+            base_logdir=self.tmpdir.name)
         tst_instance.run_avocado()
         self.assertEqual(tst_instance.status, 'FAIL')
 
     def tearDown(self):
         if self.script is not None:
             self.script.remove()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 class MockingTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_init_minimal_params(self):
-        test.MockingTest(base_logdir=self.tmpdir)
+        test.MockingTest(base_logdir=self.tmpdir.name)
 
     def test_init_positional(self):
         tst = test.MockingTest("test", test.TestID(1, "my_name"),
                                {}, None, "1",
                                None, None, "extra_param1",
-                               "extra_param2", base_logdir=self.tmpdir)
+                               "extra_param2", base_logdir=self.tmpdir.name)
         self.assertEqual(tst.name, "1-my_name")
 
     def test_init_kwargs(self):
         tst = test.MockingTest(methodName="test",
                                name=test.TestID(1, "my_name2"),
-                               params={}, base_logdir=self.tmpdir,
+                               params={}, base_logdir=self.tmpdir.name,
                                tag="a", job=None, runner_queue=None,
                                extra1="extra_param1",
                                extra2="extra_param2")
@@ -285,7 +284,7 @@ class MockingTest(unittest.TestCase):
                                "extra_param2",
                                methodName="test",
                                name=test.TestID(1, "my_name3"),
-                               params={}, base_logdir=self.tmpdir,
+                               params={}, base_logdir=self.tmpdir.name,
                                tag="3", job=None, runner_queue=None,
                                extra1="extra_param3",
                                extra2="extra_param4")
@@ -295,7 +294,7 @@ class MockingTest(unittest.TestCase):
         tst = test.MockingTest("test", test.TestID(1, "my_name4"),
                                tag="321",
                                other_param="Whatever",
-                               base_logdir=self.tmpdir)
+                               base_logdir=self.tmpdir.name)
         self.assertEqual(tst.name, "1-my_name4")
 
     def test_combination_2(self):
@@ -310,11 +309,11 @@ class MockingTest(unittest.TestCase):
         tst = test.MockingTest(test.TestID(1, name), None, None, tag,
                                methodName="test",
                                other_param="Whatever",
-                               base_logdir=self.tmpdir)
+                               base_logdir=self.tmpdir.name)
         self.assertEqual(tst.name, "1-" + name)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 class TestID(unittest.TestCase):

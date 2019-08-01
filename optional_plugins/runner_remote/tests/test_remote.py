@@ -1,7 +1,6 @@
 import argparse
 import glob
 import os
-import shutil
 import tempfile
 import unittest.mock
 
@@ -33,7 +32,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_run_suite(self):
         """
@@ -70,7 +69,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
                                                  '/tests/other/test',
                                                  'passtest.py'],
                                       keep_tmp='on',
-                                      base_logdir=self.tmpdir)
+                                      base_logdir=self.tmpdir.name)
 
         with Job(job_args) as job:
             runner = avocado_runner_remote.RemoteTestRunner(job, job.result)
@@ -116,16 +115,17 @@ class RemoteTestRunnerTest(unittest.TestCase):
         """
         cmd_line = ('avocado run passtest.py '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    '--job-results-dir %s --sysinfo=off --json -' % self.tmpdir)
+                    '--job-results-dir %s --sysinfo=off --json -' % self.tmpdir.name)
         result = process.run(cmd_line, ignore_status=True)
-        jobdir = ''.join(glob.glob(os.path.join(self.tmpdir, 'job-*')))
+        jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
         idfile = ''.join(os.path.join(jobdir, 'id'))
 
         with open(idfile, 'r') as f:
             jobid = f.read().strip('\n')
 
         cmd_line = ('avocado run --replay %s --remote-hostname '
-                    'localhost --job-results-dir %s --sysinfo=off' % (jobid, self.tmpdir))
+                    'localhost --job-results-dir %s --sysinfo=off')
+        cmd_line %= (jobid, self.tmpdir.name)
         expected_rc = exit_codes.AVOCADO_FAIL
         result = process.run(cmd_line, ignore_status=True)
 
@@ -138,7 +138,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
 
     def tearDown(self):
         try:
-            shutil.rmtree(self.tmpdir)
+            self.tmpdir.cleanup()
             # may have been clean up already on job.cleanup()
         except FileNotFoundError:
             pass

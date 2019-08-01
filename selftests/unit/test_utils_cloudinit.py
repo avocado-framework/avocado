@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import threading
 import unittest.mock
@@ -31,12 +30,12 @@ class CloudInitISO(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @unittest.skipUnless(has_iso_create_write(),
                          "system lacks support for creating ISO images")
     def test_iso_no_phone_home(self):
-        path = os.path.join(self.tmpdir, "cloudinit.iso")
+        path = os.path.join(self.tmpdir.name, "cloudinit.iso")
         instance_id = b"INSTANCE_ID"
         username = b"AVOCADO_USER"
         password = b"AVOCADO_PASSWORD"
@@ -48,7 +47,7 @@ class CloudInitISO(unittest.TestCase):
         self.assertIn(password, user_data)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 class PhoneHome(unittest.TestCase):

@@ -2,7 +2,6 @@
 Verifies the avocado.utils.iso9660 functionality
 """
 import os
-import shutil
 import tempfile
 import unittest.mock
 
@@ -56,7 +55,7 @@ class BaseIso9660:
                                                      "sample.iso"))
         self.iso = None
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_basic_workflow(self):
         """
@@ -64,7 +63,7 @@ class BaseIso9660:
         """
         self.assertEqual(self.iso.read("file"),
                          b"file content\n")
-        dst = os.path.join(self.tmpdir, "file")
+        dst = os.path.join(self.tmpdir.name, "file")
         self.iso.copy(os.path.join("Dir", "in_dir_file"), dst)
         self.assertEqual(open(dst).read(), "content of in-dir-file\n")
         self.iso.close()
@@ -91,7 +90,7 @@ class BaseIso9660:
     def tearDown(self):
         if self.iso is not None:
             self.iso.close()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 class IsoInfo(BaseIso9660, unittest.TestCase):
@@ -145,7 +144,7 @@ class PyCDLib(BaseIso9660, unittest.TestCase):
         self.iso = iso9660.ISO9660PyCDLib(self.iso_path)
 
     def test_create_write(self):
-        new_iso_path = os.path.join(self.tmpdir, 'new.iso')
+        new_iso_path = os.path.join(self.tmpdir.name, 'new.iso')
         new_iso = iso9660.ISO9660PyCDLib(new_iso_path)
         new_iso.create()
         content = b"AVOCADO"

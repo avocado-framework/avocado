@@ -1,6 +1,5 @@
 import os
 import tempfile
-import shutil
 import unittest
 
 from avocado.core import exit_codes
@@ -37,7 +36,7 @@ class TestsTmpDirTests(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.simple_test = script.TemporaryScript(
             'test_simple.sh',
             SIMPLE_SCRIPT)
@@ -65,7 +64,7 @@ class TestsTmpDirTests(unittest.TestCase):
         """
         cmd_line = ("%s run --sysinfo=off "
                     "--job-results-dir %s %s %s"
-                    % (AVOCADO, self.tmpdir, self.simple_test,
+                    % (AVOCADO, self.tmpdir.name, self.simple_test,
                        self.instrumented_test))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK)
 
@@ -74,23 +73,23 @@ class TestsTmpDirTests(unittest.TestCase):
         Tests whether manually set teststmpdir is used and not deleted by
         avocado
         """
-        shared_tmp = tempfile.mkdtemp(dir=self.tmpdir)
-        cmd = ("%s run --sysinfo=off --job-results-dir %s %%s"
-               % (AVOCADO, self.tmpdir))
-        self.run_and_check(cmd % self.simple_test, exit_codes.AVOCADO_ALL_OK,
-                           {test.COMMON_TMPDIR_NAME: shared_tmp})
-        self.run_and_check(cmd % self.instrumented_test,
-                           exit_codes.AVOCADO_ALL_OK,
-                           {test.COMMON_TMPDIR_NAME: shared_tmp})
-        content = os.listdir(shared_tmp)
-        self.assertEqual(len(content), 2, "The number of tests in manually "
-                         "set teststmpdir is not 2 (%s):\n%s"
-                         % (len(content), content))
+        with tempfile.TemporaryDirectory(dir=self.tmpdir.name) as shared_tmp:
+            cmd = ("%s run --sysinfo=off --job-results-dir %s %%s"
+                   % (AVOCADO, self.tmpdir.name))
+            self.run_and_check(cmd % self.simple_test, exit_codes.AVOCADO_ALL_OK,
+                               {test.COMMON_TMPDIR_NAME: shared_tmp})
+            self.run_and_check(cmd % self.instrumented_test,
+                               exit_codes.AVOCADO_ALL_OK,
+                               {test.COMMON_TMPDIR_NAME: shared_tmp})
+            content = os.listdir(shared_tmp)
+            self.assertEqual(len(content), 2, "The number of tests in manually "
+                             "set teststmpdir is not 2 (%s):\n%s"
+                             % (len(content), content))
 
     def tearDown(self):
         self.instrumented_test.remove()
         self.simple_test.remove()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

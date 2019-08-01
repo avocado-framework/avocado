@@ -1,7 +1,6 @@
 import multiprocessing
 import os
 import random
-import shutil
 import stat
 import sys
 import tempfile
@@ -129,13 +128,13 @@ class ProcessTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.base_logdir = tempfile.mkdtemp(prefix=prefix)
-        self.fake_vmstat = os.path.join(self.base_logdir, 'vmstat')
+        self.base_logdir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.fake_vmstat = os.path.join(self.base_logdir.name, 'vmstat')
         with open(self.fake_vmstat, 'w') as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)
         os.chmod(self.fake_vmstat, DEFAULT_MODE)
 
-        self.fake_uptime = os.path.join(self.base_logdir, 'uptime')
+        self.fake_uptime = os.path.join(self.base_logdir.name, 'uptime')
         with open(self.fake_uptime, 'w') as fake_uptime_obj:
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
         os.chmod(self.fake_uptime, DEFAULT_MODE)
@@ -182,7 +181,7 @@ class ProcessTest(unittest.TestCase):
         self.assertIn(b'load average', result.stdout)
 
     def tearDown(self):
-        shutil.rmtree(self.base_logdir)
+        self.base_logdir.cleanup()
 
 
 def file_lock_action(args):
@@ -197,7 +196,7 @@ class FileLockTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
@@ -206,12 +205,12 @@ class FileLockTest(unittest.TestCase):
         # Calculate the timeout based on t_100_iter + 2e-5*players
         start = time.time()
         for _ in range(100):
-            with FileLock(self.tmpdir):
+            with FileLock(self.tmpdir.name):
                 pass
         timeout = 0.02 + (time.time() - start)
         players = 1000
         pool = multiprocessing.Pool(players)
-        args = [(self.tmpdir, players, timeout)] * players
+        args = [(self.tmpdir.name, players, timeout)] * players
         try:
             pool.map(file_lock_action, args)
         except Exception:
@@ -220,7 +219,7 @@ class FileLockTest(unittest.TestCase):
             self.fail(msg)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

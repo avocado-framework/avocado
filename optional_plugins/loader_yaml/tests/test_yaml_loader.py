@@ -1,6 +1,5 @@
 import os
 import tempfile
-import shutil
 import unittest
 
 from avocado.core import exit_codes
@@ -12,7 +11,7 @@ from selftests import AVOCADO, BASEDIR
 class YamlLoaderTests(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix='avocado_' + __name__)
 
     def run_and_check(self, cmd_line, expected_rc, stdout_strings=None):
         os.chdir(BASEDIR)
@@ -31,7 +30,7 @@ class YamlLoaderTests(unittest.TestCase):
         tests = [b"passtest.py:PassTest.test", b"passtest.sh"]
         cmd = ('%s run --sysinfo=off --job-results-dir %s -- '
                'optional_plugins/loader_yaml/tests/.data/two_tests.yaml'
-               % (AVOCADO, self.tmpdir))
+               % (AVOCADO, self.tmpdir.name))
         res = self.run_and_check(cmd, exit_codes.AVOCADO_ALL_OK, tests)
         # Run replay job
         for line in res.stdout.splitlines():
@@ -41,11 +40,11 @@ class YamlLoaderTests(unittest.TestCase):
         else:
             self.fail("Unable to find 'JOB LOG' in:\n%s" % res)
         cmd = ('%s run --sysinfo=off --job-results-dir %s '
-               '--replay %s' % (AVOCADO, self.tmpdir, srcjob.decode('utf-8')))
+               '--replay %s' % (AVOCADO, self.tmpdir.name, srcjob.decode('utf-8')))
         self.run_and_check(cmd, exit_codes.AVOCADO_ALL_OK, tests)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

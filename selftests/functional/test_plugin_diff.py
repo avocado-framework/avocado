@@ -1,7 +1,6 @@
 import glob
 import os
 import tempfile
-import shutil
 import shlex
 import unittest
 
@@ -16,24 +15,24 @@ class DiffTests(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
-        test = script.make_script(os.path.join(self.tmpdir, 'test'), 'exit 0')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        test = script.make_script(os.path.join(self.tmpdir.name, 'test'), 'exit 0')
         cmd_line = ('%s run %s '
                     '--external-runner /bin/bash '
                     '--job-results-dir %s --sysinfo=off --json -' %
-                    (AVOCADO, test, self.tmpdir))
+                    (AVOCADO, test, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
-        self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir, 'job-*')))
+        self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
 
-        self.tmpdir2 = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir2 = tempfile.TemporaryDirectory(prefix=prefix)
         cmd_line = ('%s run %s '
                     '--external-runner /bin/bash '
                     '--job-results-dir %s --sysinfo=off --json -' %
-                    (AVOCADO, test, self.tmpdir2))
+                    (AVOCADO, test, self.tmpdir2.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
-        self.jobdir2 = ''.join(glob.glob(os.path.join(self.tmpdir2, 'job-*')))
+        self.jobdir2 = ''.join(glob.glob(os.path.join(self.tmpdir2.name, 'job-*')))
 
     def run_and_check(self, cmd_line, expected_rc):
         os.chdir(BASEDIR)
@@ -63,8 +62,8 @@ class DiffTests(unittest.TestCase):
         self.assertNotIn(b"# COMMAND LINE", result.stdout)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
-        shutil.rmtree(self.tmpdir2)
+        self.tmpdir.cleanup()
+        self.tmpdir2.cleanup()
 
 
 if __name__ == '__main__':

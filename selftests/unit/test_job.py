@@ -1,6 +1,5 @@
 import argparse
 import os
-import shutil
 import tempfile
 import unittest.mock
 
@@ -23,7 +22,7 @@ class JobTest(unittest.TestCase):
         self.job = None
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @staticmethod
     def _find_simple_test_candidates(candidates=None):
@@ -38,7 +37,7 @@ class JobTest(unittest.TestCase):
         return found
 
     def test_job_empty_suite(self):
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         # Job without setup called
         self.assertIsNone(self.job.logdir)
@@ -73,12 +72,12 @@ class JobTest(unittest.TestCase):
         self.job.cleanup()
 
     def test_job_empty_has_id(self):
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.assertIsNotNone(self.job.unique_id)
 
     def test_two_jobs(self):
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         with job.Job(args) as self.job, job.Job(args) as job2:
             job1 = self.job
             # uids, logdirs and tmpdirs must be different
@@ -91,12 +90,12 @@ class JobTest(unittest.TestCase):
             self.assertEqual(os.path.dirname(job1.logdir), os.path.dirname(job2.logdir))
 
     def test_job_test_suite_not_created(self):
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.assertIsNone(self.job.test_suite)
 
     def test_job_create_test_suite_empty(self):
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.job.setup()
         self.assertRaises(exceptions.OptionValidationError,
@@ -105,7 +104,7 @@ class JobTest(unittest.TestCase):
     def test_job_create_test_suite_simple(self):
         simple_tests_found = self._find_simple_test_candidates()
         args = argparse.Namespace(reference=simple_tests_found,
-                                  base_logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.job.setup()
         self.job.create_test_suite()
@@ -123,7 +122,7 @@ class JobTest(unittest.TestCase):
                 super(JobFilterTime, self).pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
         args = argparse.Namespace(reference=simple_tests_found,
-                                  base_logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir.name)
         self.job = JobFilterTime(args)
         self.job.setup()
         self.job.create_test_suite()
@@ -136,7 +135,7 @@ class JobTest(unittest.TestCase):
     def test_job_run_tests(self):
         simple_tests_found = self._find_simple_test_candidates(['true'])
         args = argparse.Namespace(reference=simple_tests_found,
-                                  base_logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.job.setup()
         self.job.create_test_suite()
@@ -151,7 +150,7 @@ class JobTest(unittest.TestCase):
                 super(JobLogPost, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
         args = argparse.Namespace(reference=simple_tests_found,
-                                  base_logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir.name)
         self.job = JobLogPost(args)
         self.job.setup()
         self.job.create_test_suite()
@@ -181,7 +180,7 @@ class JobTest(unittest.TestCase):
                 super(JobFilterLog, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
         args = argparse.Namespace(reference=simple_tests_found,
-                                  base_logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir.name)
         self.job = JobFilterLog(args)
         self.job.setup()
         self.assertEqual(self.job.run(),
@@ -192,7 +191,7 @@ class JobTest(unittest.TestCase):
                              reverse_id_file.read())
 
     def test_job_run_account_time(self):
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.job.setup()
         self.job.run()
@@ -201,7 +200,7 @@ class JobTest(unittest.TestCase):
         self.assertNotEqual(self.job.time_elapsed, -1)
 
     def test_job_self_account_time(self):
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.job.setup()
         self.job.time_start = 10.0
@@ -215,7 +214,7 @@ class JobTest(unittest.TestCase):
         self.assertEqual(self.job.time_elapsed, 100.0)
 
     def test_job_dryrun_no_unique_job_id(self):
-        args = argparse.Namespace(dry_run=True, base_logdir=self.tmpdir)
+        args = argparse.Namespace(dry_run=True, base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.job.setup()
         self.assertIsNotNone(self.job.args.unique_job_id)
@@ -223,11 +222,11 @@ class JobTest(unittest.TestCase):
     def test_job_no_base_logdir(self):
         args = argparse.Namespace()
         with unittest.mock.patch('avocado.core.job.data_dir.get_logs_dir',
-                                 return_value=self.tmpdir):
+                                 return_value=self.tmpdir.name):
             self.job = job.Job(args)
             self.job.setup()
         self.assertTrue(os.path.isdir(self.job.logdir))
-        self.assertEqual(os.path.dirname(self.job.logdir), self.tmpdir)
+        self.assertEqual(os.path.dirname(self.job.logdir), self.tmpdir.name)
         self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))
 
     def test_job_dryrun_no_base_logdir(self):
@@ -240,7 +239,7 @@ class JobTest(unittest.TestCase):
 
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
         if self.job is not None:
             self.job.cleanup()
 

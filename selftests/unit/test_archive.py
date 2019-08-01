@@ -1,7 +1,6 @@
 import unittest
 import tempfile
 import os
-import shutil
 import sys
 import random
 
@@ -16,9 +15,9 @@ class ArchiveTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.basedir = tempfile.mkdtemp(prefix=prefix)
-        self.compressdir = tempfile.mkdtemp(dir=self.basedir)
-        self.decompressdir = tempfile.mkdtemp(dir=self.basedir)
+        self.basedir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.compressdir = tempfile.mkdtemp(dir=self.basedir.name)
+        self.decompressdir = tempfile.mkdtemp(dir=self.basedir.name)
         self.sys_random = random.SystemRandom()
 
     def compress_and_check_dir(self, extension):
@@ -50,12 +49,12 @@ class ArchiveTest(unittest.TestCase):
 
     def compress_and_check_file(self, extension):
         str_length = self.sys_random.randint(30, 50)
-        fd, filename = tempfile.mkstemp(dir=self.basedir, text=True)
+        fd, filename = tempfile.mkstemp(dir=self.basedir.name, text=True)
         with os.fdopen(fd, 'w') as f:
             f.write(data_factory.generate_random_string(str_length))
         original_hash = crypto.hash_file(filename)
         dstfile = filename + extension
-        archive_filename = os.path.join(self.basedir, dstfile)
+        archive_filename = os.path.join(self.basedir.name, dstfile)
         archive.compress(archive_filename, filename)
         ret = archive.uncompress(archive_filename, self.decompressdir)
         self.assertEqual(ret, os.path.basename(filename))
@@ -182,7 +181,7 @@ class ArchiveTest(unittest.TestCase):
 
     def tearDown(self):
         try:
-            shutil.rmtree(self.basedir)
+            self.basedir.cleanup()
         except OSError:
             pass
 
