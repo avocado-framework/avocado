@@ -31,6 +31,7 @@ from avocado.core.dispatcher import JobPrePostDispatcher
 from avocado.core.settings import settings
 from avocado.utils.data_structures import time_to_seconds
 from avocado.utils import process
+from avocado.utils import expected_files_merge
 
 
 class Run(CLICmd):
@@ -224,6 +225,8 @@ class Run(CLICmd):
                 job_run = job_instance.run()
             finally:
                 # Run JobPost plugins
+                if args.output_check_record:
+                    expected_files_merge.merge_expected_files(job_instance.references)
                 pre_post_dispatcher.map_method('post', job_instance)
 
             result_dispatcher = ResultDispatcher()

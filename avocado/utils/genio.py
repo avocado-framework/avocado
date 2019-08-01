@@ -191,3 +191,21 @@ def is_pattern_in_file(filename,  pattern):
         if re.search(pattern, content_file.read(), re.MULTILINE):
             return True
     return False
+
+
+def is_files_equal(filename, other):
+    """
+    Comparision of two files line by line
+    :param filename: path to the first file
+    :type filename: str
+    :param other: path to the second file
+    :type other: str
+    :return: equality of file
+    :rtype: boolean
+    """
+    file_lines = read_all_lines(filename)
+    other_lines = read_all_lines(other)
+    for l1, l2 in zip(file_lines, other_lines):
+        if l1 != l2:
+            return False
+    return True

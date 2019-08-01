@@ -13,6 +13,102 @@ from .. import AVOCADO, BASEDIR, temp_dir_prefix
 STDOUT = b"Hello, \xc4\x9b\xc5\xa1\xc4\x8d\xc5\x99\xc5\xbe\xc3\xbd\xc3\xa1\xc3\xad\xc3\xa9!"
 STDERR = b"Hello, stderr!"
 
+JSON_VARIANTS = """
+[{"paths": ["/run/*"],
+ "variant": [["/run/params/foo",
+            [["/run/params/foo", "p2", "foo2"],
+             ["/run/params/foo", "p1", "foo1"]]]],
+ "variant_id": "foo"},
+{"paths": ["/run/*"],
+ "variant": [["/run/params/bar",
+            [["/run/params/bar", "p2", "bar2"],
+             ["/run/params/bar", "p1", "bar1"]]]],
+ "variant_id": "bar"}]
+ """
+
+TEST_WITH_SAME_EXPECTED_OUTPUT = """
+from avocado import Test
+from avocado import main
+import logging
+
+
+class PassTest(Test):
+
+    def test_1(self):
+
+        stdout = logging.getLogger('avocado.test.stdout')
+        stdout.info('Informational line that will go to stdout')
+        stderr = logging.getLogger('avocado.test.stderr')
+        stderr.info('Informational line that will go to stderr')
+
+    def test_2(self):
+
+        stdout = logging.getLogger('avocado.test.stdout')
+        stdout.info('Informational line that will go to stdout')
+        stderr = logging.getLogger('avocado.test.stderr')
+        stderr.info('Informational line that will go to stderr')
+
+
+if __name__ == "__main__":
+    main()
+"""
+
+TEST_WITH_DIFFERENT_EXPECTED_OUTPUT = """
+from avocado import Test
+from avocado import main
+import logging
+
+
+class PassTest(Test):
+
+    def test_1(self):
+
+        stdout = logging.getLogger('avocado.test.stdout')
+        stdout.info('Informational line that will go to stdout_1')
+        stderr = logging.getLogger('avocado.test.stderr')
+        stderr.info('Informational line that will go to stderr_1')
+
+    def test_2(self):
+
+        stdout = logging.getLogger('avocado.test.stdout')
+        stdout.info('Informational line that will go to stdout_2')
+        stderr = logging.getLogger('avocado.test.stderr')
+        stderr.info('Informational line that will go to stderr_2')
+
+
+if __name__ == "__main__":
+    main()
+"""
+
+TEST_WITH_DIFFERENT_EXPECTED_OUTPUT_VARIANTS = """
+from avocado import Test
+from avocado import main
+import logging
+
+
+class PassTest(Test):
+
+    def test_1(self):
+        foo = self.params.get("p1")
+        stdout = logging.getLogger('avocado.test.stdout')
+        stdout.info('Informational line that will go to stdout_1 %s'%foo)
+        stderr = logging.getLogger('avocado.test.stderr')
+        stderr.info('Informational line that will go to stderr_1 %s'%foo)
+        print("foo %s" %foo)
+
+    def test_2(self):
+        bar = self.params.get("p2")
+        stdout = logging.getLogger('avocado.test.stdout')
+        stdout.info('Informational line that will go to stdout_2 %s'%bar)
+        stderr = logging.getLogger('avocado.test.stderr')
+        stderr.info('Informational line that will go to stderr_2 %s'%bar)
+        print("bar %s" %bar)
+
+
+if __name__ == "__main__":
+    main()
+"""
+
 
 class RunnerSimpleTest(unittest.TestCase):
 
@@ -205,6 +301,87 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         self.assertNotIn(tampered_msg, result.stdout)
+
+    def test_merge_records_same_output(self):
+        os.chdir(BASEDIR)
+        variants_file = os.path.join(self.tmpdir.name, 'variants.json')
+        with open(variants_file, 'w') as file_obj:
+            file_obj.write(JSON_VARIANTS)
+        simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
+        with open(simple_test, 'w') as file_obj:
+            file_obj.write(TEST_WITH_SAME_EXPECTED_OUTPUT)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check-record both --json-variants-load %s' %
+                    (AVOCADO, self.tmpdir.name, simple_test, variants_file))
+        process.run(cmd_line, ignore_status=True)
+        self.assertTrue(os.path.isfile(os.path.join("%s.data/stdout.expected" %
+                                                    simple_test)))
+        self.assertTrue(os.path.isfile(os.path.join("%s.data/stderr.expected" %
+                                                    simple_test)))
+
+    def test_merge_records_different_output(self):
+        os.chdir(BASEDIR)
+        variants_file = os.path.join(self.tmpdir.name, 'variants.json')
+        with open(variants_file, 'w') as file_obj:
+            file_obj.write(JSON_VARIANTS)
+        simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
+        with open(simple_test, 'w') as file_obj:
+            file_obj.write(TEST_WITH_DIFFERENT_EXPECTED_OUTPUT)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check-record both --json-variants-load %s' %
+                    (AVOCADO, self.tmpdir.name, simple_test, variants_file))
+        process.run(cmd_line, ignore_status=True)
+        self.assertFalse(os.path.isfile(os.path.join("%s.data/stdout.expected" %
+                                                     simple_test)))
+        self.assertFalse(os.path.isfile(os.path.join("%s.data/stderr.expected" %
+                                                     simple_test)))
+        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
+                                                    "stdout.expected" %
+                                                    simple_test)))
+        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
+                                                    "stderr.expected" %
+                                                    simple_test)))
+        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
+                                                    "stdout.expected" %
+                                                    simple_test)))
+        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
+                                                    "stderr.expected" %
+                                                    simple_test)))
+
+    def test_merge_records_different_output_variants(self):
+        os.chdir(BASEDIR)
+        variants_file = os.path.join(self.tmpdir.name, 'variants.json')
+        with open(variants_file, 'w') as file_obj:
+            file_obj.write(JSON_VARIANTS)
+        simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
+        with open(simple_test, 'w') as file_obj:
+            file_obj.write(TEST_WITH_DIFFERENT_EXPECTED_OUTPUT_VARIANTS)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check-record both --json-variants-load %s' %
+                    (AVOCADO, self.tmpdir.name, simple_test, variants_file))
+        process.run(cmd_line, ignore_status=True)
+        self.assertFalse(os.path.isfile(os.path.join("%s.data/stdout.expected" %
+                                                     simple_test)))
+        self.assertFalse(os.path.isfile(os.path.join("%s.data/stderr.expected" %
+                                                     simple_test)))
+        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
+                                                     "stdout.expected" %
+                                                     simple_test)))
+        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
+                                                     "stderr.expected" %
+                                                     simple_test)))
+        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
+                                                     "stdout.expected" %
+                                                     simple_test)))
+        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
+                                                     "stderr.expected" %
+                                                     simple_test)))
+        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
+                                                    "bar/stderr.expected" %
+                                                    simple_test)))
+        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
+                                                    "foo/stderr.expected" %
+                                                    simple_test)))
 
     def tearDown(self):
         self.output_script.remove()
