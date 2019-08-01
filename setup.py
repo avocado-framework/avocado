@@ -70,6 +70,7 @@ if __name__ == '__main__':
                   'tap = avocado.plugins.tap:TAP',
                   'zip_archive = avocado.plugins.archive:ArchiveCLI',
                   'json_variants = avocado.plugins.json_variants:JsonVariantsCLI',
+                  'merge_files = avocado.plugins.expected_files_merge:FilesMerge',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
@@ -92,6 +93,7 @@ if __name__ == '__main__':
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
                   'teststmpdir = avocado.plugins.teststmpdir:TestsTmpDir',
                   'human = avocado.plugins.human:HumanJob',
+                  'merge_files = avocado.plugins.expected_files_merge:FilesMerge',
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',

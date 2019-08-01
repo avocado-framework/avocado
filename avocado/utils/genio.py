@@ -19,6 +19,8 @@ Avocado generic IO related functions.
 import logging
 import os
 import re
+import hashlib
+import io
 
 log = logging.getLogger('avocado.test')
 
@@ -191,3 +193,35 @@ def is_pattern_in_file(filename,  pattern):
         if re.search(pattern, content_file.read(), re.MULTILINE):
             return True
     return False
+
+
+def get_file_hash(filename):
+    """
+    Compute hash of file content. For computation is used algorithm MD5
+    :param filename: Name of file for hashing
+    :type filename: str
+    :return: Hash of file content
+    :rtype: str
+    """
+    hasher = hashlib.md5()
+    with open(filename, 'rb') as file:
+        buf = file.read(io.DEFAULT_BUFFER_SIZE)
+        while len(buf) > 0:
+            hasher.update(buf)
+            buf = file.read(io.DEFAULT_BUFFER_SIZE)
+    return hasher.hexdigest()
+
+
+def are_files_equal(filename, other):
+    """
+    Comparision of two files line by line
+    :param filename: path to the first file
+    :type filename: str
+    :param other: path to the second file
+    :type other: str
+    :return: equality of file
+    :rtype: boolean
+    """
+    hash_1 = get_file_hash(filename)
+    hash_2 = get_file_hash(other)
+    return hash_1 == hash_2

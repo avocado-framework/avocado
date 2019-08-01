@@ -1,4 +1,7 @@
+import hashlib
 import os
+import random
+import string
 import tempfile
 import unittest
 
@@ -35,3 +38,26 @@ class TestGenio(unittest.TestCase):
             temp_file.write('123')
             temp_file.seek(0)
             self.assertFalse(genio.is_pattern_in_file(temp_file.name, r'\D{3}'))
+
+    def test_get_file_hash(self):
+        hasher = hashlib.md5()
+        text = ''
+        with tempfile.NamedTemporaryFile(mode='wb') as temp_file:
+            for _ in range(100000):
+                line = ''.join(random.choice(string.ascii_letters + string.digits
+                                             + '\n'))
+                text += line
+            text = text.encode()
+            temp_file.write(text)
+            hasher.update(text)
+            self.assertEqual(hasher.hexdigest(), genio.get_file_hash(temp_file.name))
+
+    def test_are_files_equal(self):
+        file_1 = tempfile.NamedTemporaryFile(mode='w')
+        file_2 = tempfile.NamedTemporaryFile(mode='w')
+        for _ in range(100000):
+            line = ''.join(random.choice(string.ascii_letters + string.digits
+                                         + '\n'))
+            file_1.write(line)
+            file_2.write(line)
+        self.assertTrue(genio.are_files_equal(file_1.name, file_2.name))
