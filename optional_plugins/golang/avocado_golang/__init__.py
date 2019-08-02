@@ -31,9 +31,9 @@ from avocado.utils import process
 
 
 try:
-    _GO_BIN = utils_path.find_command('go')
+    GO_BIN = utils_path.find_command('go')
 except utils_path.CmdNotFoundError:
-    _GO_BIN = None
+    GO_BIN = None
 
 
 class GolangTest(test.SimpleTest):
@@ -59,14 +59,14 @@ class GolangTest(test.SimpleTest):
         """
         Create the Golang command and execute it.
         """
-        if _GO_BIN is None:
+        if GO_BIN is None:
             raise exceptions.TestError("go binary not found")
 
         test_name = '%s$' % self._filename.split(':')[1]
         if self.subtest is not None:
             test_name += '/%s' % self.subtest
 
-        cmd = '%s test -v %s -run %s' % (_GO_BIN, self.filename, test_name)
+        cmd = '%s test -v %s -run %s' % (GO_BIN, self.filename, test_name)
 
         result = process.run(cmd, ignore_status=True)
         if result.exit_status != 0:
@@ -91,7 +91,7 @@ class GolangLoader(loader.TestLoader):
         super(GolangLoader, self).__init__(args, extra_params)
 
     def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
-        if _GO_BIN is None:
+        if GO_BIN is None:
             return self._no_tests(which_tests, reference, 'Go binary not found.')
 
         if reference is None:

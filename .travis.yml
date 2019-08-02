@@ -32,6 +32,7 @@ addons:
   apt:
     packages:
     - libvirt-dev
+    - golang
 
 install:
     - pip install -r requirements-selftests.txt
