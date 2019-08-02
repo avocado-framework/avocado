@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -43,10 +42,10 @@ class JobScriptsTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix)
-        self.pre_dir = os.path.join(self.tmpdir, 'pre.d')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix)
+        self.pre_dir = os.path.join(self.tmpdir.name, 'pre.d')
         os.mkdir(self.pre_dir)
-        self.post_dir = os.path.join(self.tmpdir, 'post.d')
+        self.post_dir = os.path.join(self.tmpdir.name, 'post.d')
         os.mkdir(self.post_dir)
         os.chdir(BASEDIR)
 
@@ -58,7 +57,7 @@ class JobScriptsTest(unittest.TestCase):
                                                   'touch.sh'),
                                      SCRIPT_PRE_TOUCH)
         touch_script.save()
-        test_check_touch = script.Script(os.path.join(self.tmpdir,
+        test_check_touch = script.Script(os.path.join(self.tmpdir.name,
                                                       'check_touch.sh'),
                                          TEST_CHECK_TOUCH)
         test_check_touch.save()
@@ -72,7 +71,7 @@ class JobScriptsTest(unittest.TestCase):
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
                    '--sysinfo=off %s'
-                   % (AVOCADO, config, self.tmpdir, test_check_touch))
+                   % (AVOCADO, config, self.tmpdir.name, test_check_touch))
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
@@ -95,7 +94,7 @@ class JobScriptsTest(unittest.TestCase):
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
                    '--sysinfo=off passtest.py' % (AVOCADO, config,
-                                                  self.tmpdir))
+                                                  self.tmpdir.name))
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
@@ -118,7 +117,7 @@ class JobScriptsTest(unittest.TestCase):
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
                    '--sysinfo=off passtest.py' % (AVOCADO, config,
-                                                  self.tmpdir))
+                                                  self.tmpdir.name))
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
@@ -128,7 +127,7 @@ class JobScriptsTest(unittest.TestCase):
                          result.stderr_text)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

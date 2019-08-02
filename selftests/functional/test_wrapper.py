@@ -1,6 +1,5 @@
 import os
 import tempfile
-import shutil
 import unittest
 
 from avocado.core import exit_codes
@@ -33,7 +32,7 @@ class WrapperTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.tmpfile = tempfile.mktemp()
         self.script = script.TemporaryScript(
             'success.sh',
@@ -52,7 +51,7 @@ class WrapperTest(unittest.TestCase):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
                     'examples/tests/datadir.py'
-                    % (AVOCADO, self.tmpdir, self.script.path))
+                    % (AVOCADO, self.tmpdir.name, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -69,7 +68,7 @@ class WrapperTest(unittest.TestCase):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
-                    % (AVOCADO, self.tmpdir, self.script.path))
+                    % (AVOCADO, self.tmpdir.name, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -86,7 +85,7 @@ class WrapperTest(unittest.TestCase):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
-                    % (AVOCADO, self.tmpdir, self.dummy.path,
+                    % (AVOCADO, self.tmpdir.name, self.dummy.path,
                        self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -105,7 +104,7 @@ class WrapperTest(unittest.TestCase):
             os.remove(self.tmpfile)
         except OSError:
             pass
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

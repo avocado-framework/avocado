@@ -3,7 +3,6 @@ import os
 import json
 import argparse
 import tempfile
-import shutil
 
 from avocado import Test
 from avocado.core import job
@@ -34,21 +33,21 @@ class JSONResultTest(unittest.TestCase):
 
         self.tmpfile = tempfile.mkstemp()
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         args = argparse.Namespace(json_output=self.tmpfile[1],
-                                  base_logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir.name)
         self.job = job.Job(args)
         self.test_result = Result(FakeJob(args))
         self.test_result.filename = self.tmpfile[1]
         self.test_result.tests_total = 1
-        self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
+        self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir.name)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
 
     def tearDown(self):
         os.close(self.tmpfile[0])
         os.remove(self.tmpfile[1])
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
     def test_add_success(self):
         self.test_result.start_test(self.test1)

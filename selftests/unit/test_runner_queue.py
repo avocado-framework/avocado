@@ -1,5 +1,4 @@
 import argparse
-import shutil
 import tempfile
 import unittest
 import multiprocessing
@@ -24,8 +23,8 @@ class TestRunnerQueue(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         self.job = Job(args)
         self.result = Result(self.job)
 
@@ -55,14 +54,14 @@ class TestRunnerQueue(unittest.TestCase):
                     'params': ([TreeNode(name='')], ['/run/*']),
                     'job': self.job,
                     'modulePath': module,
-                    'base_logdir': self.tmpdir}]
+                    'base_logdir': self.tmpdir.name}]
         msg = self._run_test(factory)
 
         self.assertEqual(msg['whiteboard'], 'TXkgbWVzc2FnZSBlbmNvZGVkIGluIGJhc2U2NA==\n')
         self.assertIn('phase', msg)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

@@ -1,6 +1,5 @@
 import argparse
 import os
-import shutil
 import tempfile
 import unittest
 from xml.dom import minidom
@@ -44,15 +43,15 @@ class xUnitSucceedTest(unittest.TestCase):
 
         self.tmpfile = tempfile.mkstemp()
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
-        args = argparse.Namespace(base_logdir=self.tmpdir)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        args = argparse.Namespace(base_logdir=self.tmpdir.name)
         args.xunit_output = self.tmpfile[1]
         self.job = job.Job(args)
         self.test_result = Result(FakeJob(args))
         self.test_result.tests_total = 1
         self.test_result.logfile = ("/.../avocado/job-results/"
                                     "job-2018-11-28T16.27-8fef221/job.log")
-        self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
+        self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir.name)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 678.23689
 
@@ -60,7 +59,7 @@ class xUnitSucceedTest(unittest.TestCase):
         errs = []
         cleanups = (lambda: os.close(self.tmpfile[0]),
                     lambda: os.remove(self.tmpfile[1]),
-                    lambda: shutil.rmtree(self.tmpdir))
+                    self.tmpdir.cleanup)
         for cleanup in cleanups:
             try:
                 cleanup()
@@ -102,7 +101,7 @@ class xUnitSucceedTest(unittest.TestCase):
     def test_max_test_log_size(self):
         def get_system_out(out):
             return out[out.find(b"<system-out>"):out.find(b"<system-out/>")]
-        log = tempfile.NamedTemporaryFile(dir=self.tmpdir, delete=False)
+        log = tempfile.NamedTemporaryFile(dir=self.tmpdir.name, delete=False)
         log_content = b"1234567890" * 100
         log_content += b"this should not be present" + b"0987654321" * 100
         log.write(log_content)

@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -19,7 +18,7 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         content = b"#!/bin/sh\n"
         content += b"echo \"" + STDOUT + b"\"\n"
         content += b"echo \"" + STDERR + b"\" >&2\n"
@@ -34,7 +33,7 @@ class RunnerSimpleTest(unittest.TestCase):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record all'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -51,7 +50,7 @@ class RunnerSimpleTest(unittest.TestCase):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record combined'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -65,7 +64,7 @@ class RunnerSimpleTest(unittest.TestCase):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record none'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -80,7 +79,7 @@ class RunnerSimpleTest(unittest.TestCase):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record stdout'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -95,7 +94,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def test_output_record_and_check(self):
         self._check_output_record_all()
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -105,7 +104,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def test_output_record_and_check_combined(self):
         self._check_output_record_combined()
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -119,7 +118,7 @@ class RunnerSimpleTest(unittest.TestCase):
         with open(stdout_file, 'wb') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --xunit -'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -134,7 +133,7 @@ class RunnerSimpleTest(unittest.TestCase):
         with open(output_file, 'wb') as output_file_obj:
             output_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --xunit -'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -156,7 +155,7 @@ class RunnerSimpleTest(unittest.TestCase):
             stderr_file_obj.write(tampered_msg_stderr)
 
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --json -'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -199,7 +198,7 @@ class RunnerSimpleTest(unittest.TestCase):
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check=off --xunit -'
-                    % (AVOCADO, self.tmpdir, self.output_script.path))
+                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -209,7 +208,7 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def tearDown(self):
         self.output_script.remove()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

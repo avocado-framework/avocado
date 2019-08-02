@@ -1,6 +1,5 @@
 import glob
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -14,14 +13,14 @@ class ReplayTests(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix)
         cmd_line = ('%s run passtest.py '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--job-results-dir %s --sysinfo=off --json -'
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
-        self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir, 'job-*')))
+        self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
         idfile = ''.join(os.path.join(self.jobdir, 'id'))
         with open(idfile, 'r') as f:
             self.jobid = f.read().strip('\n')
@@ -40,7 +39,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s '
                     '--job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, 'foo', self.tmpdir))
+                    % (AVOCADO, 'foo', self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
@@ -49,7 +48,7 @@ class ReplayTests(unittest.TestCase):
         Runs a replay job using the 'latest' keyword.
         """
         cmd_line = ('%s run --replay latest --job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.tmpdir))
+                    % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
@@ -69,7 +68,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s '
                     '--job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.jobid, self.tmpdir))
+                    % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
@@ -80,7 +79,7 @@ class ReplayTests(unittest.TestCase):
         partial_id = self.jobid[:5]
         cmd_line = ('%s run --replay %s '
                     '--job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, partial_id, self.tmpdir))
+                    % (AVOCADO, partial_id, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
@@ -90,7 +89,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s '
                     '--job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.jobdir, self.tmpdir))
+                    % (AVOCADO, self.jobdir, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
@@ -100,7 +99,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s --replay-ignore foo'
                     '--job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.jobid, self.tmpdir))
+                    % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = (b'Invalid --replay-ignore option. Valid options are '
@@ -113,7 +112,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s --replay-ignore variants '
                     '--job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.jobid, self.tmpdir))
+                    % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         msg = b'Ignoring variants from source job with --replay-ignore.'
@@ -125,7 +124,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s --replay-test-status E '
                     '--job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.jobid, self.tmpdir))
+                    % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = (b'Invalid --replay-test-status option. Valid options are (more '
@@ -138,7 +137,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s --replay-test-status '
                     'FAIL --job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.jobid, self.tmpdir))
+                    % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         msg = (b'RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 4 | WARN 0 | '
@@ -151,7 +150,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s --replay-ignore variants '
                     '--replay-test-status FAIL --job-results-dir %s '
-                    '--sysinfo=off' % (AVOCADO, self.jobid, self.tmpdir))
+                    '--sysinfo=off' % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = (b"Option `--replay-test-status` is incompatible with "
@@ -164,7 +163,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run sleeptest --replay %s '
                     '--replay-test-status FAIL --job-results-dir %s '
-                    '--sysinfo=off' % (AVOCADO, self.jobid, self.tmpdir))
+                    '--sysinfo=off' % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = (b"Option --replay-test-status is incompatible with "
@@ -178,11 +177,11 @@ class ReplayTests(unittest.TestCase):
         """
         cmdline = ("%s run --replay %s --job-results-dir %s "
                    "--sysinfo=off -m selftests/.data/mux-selftest.yaml"
-                   % (AVOCADO, self.jobid, self.tmpdir))
+                   % (AVOCADO, self.jobid, self.tmpdir.name))
         self.run_and_check(cmdline, exit_codes.AVOCADO_ALL_OK)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

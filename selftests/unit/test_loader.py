@@ -1,5 +1,4 @@
 import os
-import shutil
 import stat
 import tempfile
 import unittest.mock
@@ -170,7 +169,7 @@ class LoaderTest(unittest.TestCase):
     def setUp(self):
         self.loader = loader.FileLoader(None, {})
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_load_simple(self):
         simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
@@ -180,7 +179,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(simple_test.path, loader.DiscoverMode.ALL)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         test_parameters['name'] = test.TestID(0, test_parameters['name'])
-        test_parameters['base_logdir'] = self.tmpdir
+        test_parameters['base_logdir'] = self.tmpdir.name
         tc = test_class(**test_parameters)
         tc.run_avocado()
         suite = self.loader.discover(simple_test.path, loader.DiscoverMode.ALL)
@@ -226,7 +225,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_not_a_test.path, loader.DiscoverMode.ALL)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         test_parameters['name'] = test.TestID(0, test_parameters['name'])
-        test_parameters['base_logdir'] = self.tmpdir
+        test_parameters['base_logdir'] = self.tmpdir.name
         tc = test_class(**test_parameters)
         # The test can't be executed (no shebang), raising an OSError
         # (OSError: [Errno 8] Exec format error)
@@ -242,7 +241,7 @@ class LoaderTest(unittest.TestCase):
                 self.loader.discover(avocado_simple_test.path, loader.DiscoverMode.ALL)[0])
             self.assertTrue(test_class == test.SimpleTest)
             test_parameters['name'] = test.TestID(0, test_parameters['name'])
-            test_parameters['base_logdir'] = self.tmpdir
+            test_parameters['base_logdir'] = self.tmpdir.name
             tc = test_class(**test_parameters)
             tc.run_avocado()
 
@@ -414,7 +413,7 @@ class LoaderTest(unittest.TestCase):
                 self.assertEqual(tests[0][1]["name"], simple_test.path)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

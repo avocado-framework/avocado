@@ -2,7 +2,6 @@ import os
 import json
 import sqlite3
 import tempfile
-import shutil
 import unittest
 
 from avocado.core import exit_codes
@@ -16,10 +15,10 @@ class JournalPluginTests(unittest.TestCase):
     def setUp(self):
         os.chdir(BASEDIR)
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.cmd_line = ('%s run --job-results-dir %s --sysinfo=off --json - '
                          '--journal examples/tests/passtest.py'
-                         % (AVOCADO, self.tmpdir))
+                         % (AVOCADO, self.tmpdir.name))
         self.result = process.run(self.cmd_line, ignore_status=True)
         data = json.loads(self.result.stdout_text)
         self.job_id = data['job_id']
@@ -51,7 +50,7 @@ class JournalPluginTests(unittest.TestCase):
 
     def tearDown(self):
         self.db.close()
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

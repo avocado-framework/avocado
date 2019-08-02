@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -31,7 +30,7 @@ class Run(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test(self):
         os.chdir(BASEDIR)
@@ -44,7 +43,7 @@ class Run(unittest.TestCase):
             '--cit-order-of-combinations=1 '
             '--cit-parameter-file={2} '
             '-- {3}'
-        ).format(AVOCADO, self.tmpdir, params_path, test_path)
+        ).format(AVOCADO, self.tmpdir.name, params_path, test_path)
         result = process.run(cmd_line)
         # all values should be looked for at least once
         self.assertIn(b"PARAMS (key=color, path=*, default=None) => 'green'",
@@ -77,7 +76,7 @@ class Run(unittest.TestCase):
                       result.stdout)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

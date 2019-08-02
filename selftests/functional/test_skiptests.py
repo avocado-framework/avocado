@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -80,24 +79,24 @@ class TestSkipDecorators(unittest.TestCase):
     def setUp(self):
         os.chdir(BASEDIR)
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
-        test_path = os.path.join(self.tmpdir, 'test_skip_decorators.py')
+        test_path = os.path.join(self.tmpdir.name, 'test_skip_decorators.py')
         self.test_module = script.Script(test_path,
                                          AVOCADO_TEST_SKIP_DECORATORS)
         self.test_module.save()
 
-        lib_path = os.path.join(self.tmpdir, 'lib_skip_decorators.py')
+        lib_path = os.path.join(self.tmpdir.name, 'lib_skip_decorators.py')
         self.test_lib = script.Script(lib_path, AVOCADO_TEST_SKIP_LIB)
         self.test_lib.save()
 
-        skip_setup_path = os.path.join(self.tmpdir,
+        skip_setup_path = os.path.join(self.tmpdir.name,
                                        'test_skip_decorator_setup.py')
         self.skip_setup = script.Script(skip_setup_path,
                                         AVOCADO_SKIP_DECORATOR_SETUP)
         self.skip_setup.save()
 
-        bad_teardown_path = os.path.join(self.tmpdir,
+        bad_teardown_path = os.path.join(self.tmpdir.name,
                                          'test_skip_decorator_teardown.py')
         self.bad_teardown = script.Script(bad_teardown_path,
                                           AVOCADO_SKIP_DECORATOR_TEARDOWN)
@@ -109,7 +108,7 @@ class TestSkipDecorators(unittest.TestCase):
                     'run',
                     '--sysinfo=off',
                     '--job-results-dir',
-                    '%s' % self.tmpdir,
+                    '%s' % self.tmpdir.name,
                     '%s' % self.test_module,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
@@ -129,7 +128,7 @@ class TestSkipDecorators(unittest.TestCase):
                     'run',
                     '--sysinfo=off',
                     '--job-results-dir',
-                    '%s' % self.tmpdir,
+                    '%s' % self.tmpdir.name,
                     '%s' % self.skip_setup,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
@@ -143,7 +142,7 @@ class TestSkipDecorators(unittest.TestCase):
                     'run',
                     '--sysinfo=off',
                     '--job-results-dir',
-                    '%s' % self.tmpdir,
+                    '%s' % self.tmpdir.name,
                     '%s' % self.bad_teardown,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
@@ -152,7 +151,7 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertEqual(json_results['errors'], 1)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

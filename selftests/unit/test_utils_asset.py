@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -16,15 +15,15 @@ class TestAsset(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.basedir = tempfile.mkdtemp(prefix=prefix)
-        self.assetdir = tempfile.mkdtemp(dir=self.basedir)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.assetdir = tempfile.mkdtemp(dir=self.tmpdir.name)
         self.assetname = 'foo.tgz'
         self.assethash = '3a033a8938c1af56eeb793669db83bcbd0c17ea5'
         self.localpath = os.path.join(self.assetdir, self.assetname)
         with open(self.localpath, 'w') as f:
             f.write('Test!')
         self.url = 'file://%s' % self.localpath
-        self.cache_dir = tempfile.mkdtemp(dir=self.basedir)
+        self.cache_dir = tempfile.mkdtemp(dir=self.tmpdir.name)
 
     def test_fetch_url_cache_by_location(self):
         foo_tarball = asset.Asset(self.url,
@@ -59,7 +58,7 @@ class TestAsset(unittest.TestCase):
             content1 = f.read()
 
         # Create the file in a different location with a different content
-        new_assetdir = tempfile.mkdtemp(dir=self.basedir)
+        new_assetdir = tempfile.mkdtemp(dir=self.tmpdir.name)
         new_localpath = os.path.join(new_assetdir, self.assetname)
         new_hash = '9f1ad57044be4799f288222dc91d5eab152921e9'
         new_url = 'file://%s' % new_localpath
@@ -120,7 +119,7 @@ class TestAsset(unittest.TestCase):
         a hash is used or not.
         """
         second_assetname = self.assetname
-        second_asset_origin_dir = tempfile.mkdtemp(dir=self.basedir)
+        second_asset_origin_dir = tempfile.mkdtemp(dir=self.tmpdir.name)
         second_asset_local_path = os.path.join(second_asset_origin_dir,
                                                second_assetname)
         second_asset_content = 'This is not your first asset content!'
@@ -138,7 +137,7 @@ class TestAsset(unittest.TestCase):
             self.assertEqual(a2_file.read(), second_asset_content)
 
         third_assetname = self.assetname
-        third_asset_origin_dir = tempfile.mkdtemp(dir=self.basedir)
+        third_asset_origin_dir = tempfile.mkdtemp(dir=self.tmpdir.name)
         third_asset_local_path = os.path.join(third_asset_origin_dir,
                                               third_assetname)
         third_asset_content = 'Another content!'
@@ -152,7 +151,7 @@ class TestAsset(unittest.TestCase):
             self.assertEqual(a3_file.read(), third_asset_content)
 
     def tearDown(self):
-        shutil.rmtree(self.basedir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == "__main__":

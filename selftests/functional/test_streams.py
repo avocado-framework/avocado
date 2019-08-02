@@ -1,5 +1,4 @@
 import os
-import shutil
 import shlex
 import tempfile
 import unittest
@@ -14,7 +13,7 @@ class StreamsTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         os.chdir(BASEDIR)
 
     def test_app_info_stdout(self):
@@ -48,10 +47,10 @@ class StreamsTest(unittest.TestCase):
         variable `AVOCADO_LOG_EARLY` being set.
         """
         cmds = (('%s --show early run --sysinfo=off '
-                 '--job-results-dir %s passtest.py' % (AVOCADO, self.tmpdir),
+                 '--job-results-dir %s passtest.py' % (AVOCADO, self.tmpdir.name),
                  {}),
                 ('%s run --sysinfo=off --job-results-dir'
-                 ' %s passtest.py' % (AVOCADO, self.tmpdir),
+                 ' %s passtest.py' % (AVOCADO, self.tmpdir.name),
                  {'AVOCADO_LOG_EARLY': 'y'}))
         for cmd, env in cmds:
             result = process.run(cmd, env=env, shell=True)
@@ -67,7 +66,7 @@ class StreamsTest(unittest.TestCase):
         Checks that the test stream (early in this case) goes to stdout
         """
         cmd = ('%s --show=test run --sysinfo=off --job-results-dir %s '
-               'passtest.py' % (AVOCADO, self.tmpdir))
+               'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         # If using the Python interpreter, Avocado won't know about it
@@ -84,7 +83,7 @@ class StreamsTest(unittest.TestCase):
         Checks that only errors are output, and that they go to stderr
         """
         cmd = ('%s --show none run --sysinfo=off --job-results-dir %s '
-               'passtest.py' % (AVOCADO, self.tmpdir))
+               'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(b'', result.stdout)
@@ -124,7 +123,7 @@ class StreamsTest(unittest.TestCase):
         run("avocado.app:30", 0)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

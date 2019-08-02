@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -131,7 +130,7 @@ class TestStatuses(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         test_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  os.path.pardir,
                                                  ".data",
@@ -139,7 +138,7 @@ class TestStatuses(unittest.TestCase):
 
         os.chdir(BASEDIR)
         cmd = ('%s run %s --sysinfo=off --job-results-dir %s --json -' %
-               (AVOCADO, test_file, self.tmpdir))
+               (AVOCADO, test_file, self.tmpdir.name))
 
         results = process.run(cmd, ignore_status=True)
         self.results = json.loads(results.stdout_text)
@@ -182,7 +181,7 @@ class TestStatuses(unittest.TestCase):
                              (msg, klass_method, test, debug_log))
 
     def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':
