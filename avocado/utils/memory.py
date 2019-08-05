@@ -468,7 +468,7 @@ def get_thp_value(feature):
         return value
 
 
-class _MemInfoItem(DataSize):
+class _MemInfoItem:
     """
     Representation of one item from /proc/meminfo
     """
