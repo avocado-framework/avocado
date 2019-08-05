@@ -249,20 +249,17 @@ class Asset:
         else:
             path = url_obj.path
 
-        try:
-            with FileLock(asset_file, 1):
-                try:
+        with FileLock(asset_file, 1):
+            try:
+                os.symlink(path, asset_file)
+                self._compute_hash(asset_file)
+                return self._verify(asset_file)
+            except OSError as detail:
+                if detail.errno == errno.EEXIST:
+                    os.remove(asset_file)
                     os.symlink(path, asset_file)
                     self._compute_hash(asset_file)
                     return self._verify(asset_file)
-                except OSError as detail:
-                    if detail.errno == errno.EEXIST:
-                        os.remove(asset_file)
-                        os.symlink(path, asset_file)
-                        self._compute_hash(asset_file)
-                        return self._verify(asset_file)
-        except:
-            raise
 
     @staticmethod
     def _is_expired(path, expire):

@@ -490,7 +490,7 @@ class ProgressStreamHandler(logging.StreamHandler):
             if not skip_newline:
                 stream.write('\n')
             self.flush()
-        except (KeyboardInterrupt, SystemExit):
+        except (KeyboardInterrupt, SystemExit):  # pylint: disable=W0706
             raise
         except Exception:
             self.handleError(record)

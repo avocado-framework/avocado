@@ -236,7 +236,7 @@ def _bool_to_binary(value):
         return b'1'
     if value is False:
         return b'0'
-    raise TypeError('Value is not a boolean: %s', value)
+    raise TypeError("Value is not a boolean: %s" % value)
 
 
 def _legacy_disable(value):
