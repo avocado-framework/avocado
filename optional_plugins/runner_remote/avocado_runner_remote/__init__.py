@@ -190,9 +190,6 @@ class DummyLoader(loader.TestLoader):
     """
     name = 'dummy'
 
-    def __init__(self, args, extra_params):
-        super(DummyLoader, self).__init__(args, extra_params)
-
     def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
         return [(MockingTest, {'name': reference})]
 

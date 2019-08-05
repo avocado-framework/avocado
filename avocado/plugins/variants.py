@@ -45,9 +45,6 @@ class Variants(CLICmd):
     name = 'variants'
     description = "Tool to analyze and visualize test variants and params"
 
-    def __init__(self, *args, **kwargs):
-        super(Variants, self).__init__(*args, **kwargs)
-
     def configure(self, parser):
         parser = super(Variants, self).configure(parser)
         verbosity_levels = ("(positive integer - 0, 1, ... - or %s)"

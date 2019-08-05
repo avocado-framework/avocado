@@ -39,15 +39,6 @@ class RobotTest(test.SimpleTest):
     Run a Robot command as a SIMPLE test.
     """
 
-    def __init__(self,
-                 name,
-                 params=None,
-                 base_logdir=None,
-                 job=None,
-                 executable=None):
-        super(RobotTest, self).__init__(name, params, base_logdir, job,
-                                        executable)
-
     @property
     def filename(self):
         """
@@ -85,9 +76,6 @@ class RobotLoader(loader.TestLoader):
     Robot loader class
     """
     name = "robot"
-
-    def __init__(self, args, extra_params):
-        super(RobotLoader, self).__init__(args, extra_params)
 
     def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
         avocado_suite = []
