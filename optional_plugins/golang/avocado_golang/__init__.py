@@ -95,7 +95,6 @@ class GolangLoader(loader.TestLoader):
             return []
 
         avocado_suite = []
-        package_paths = []
         test_files = []
         subtest = None
         tests_filter = None
@@ -138,6 +137,7 @@ class GolangLoader(loader.TestLoader):
                                                    'reference.')
 
         # When a package is provided
+        package_paths = []
         go_root = os.environ.get('GOROOT')
         go_path = os.environ.get('GOPATH')
 
