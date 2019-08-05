@@ -65,6 +65,25 @@ class ThirdChild(Test, SecondChild):
 """
 
 
+RECURSIVE_DISCOVERY_PYTHON_UNITTEST = """
+from unittest import TestCase
+
+class BaseClass(TestCase):
+    '''
+    :avocado: tags=base
+    '''
+    def test_basic(self):
+        pass
+
+class Child(BaseClass):
+    '''
+    :avocado: tags=child
+    '''
+    def test_child(self):
+        pass
+"""
+
+
 def get_this_file():
     this_file = __file__
     if this_file.endswith('.py'):
@@ -290,7 +309,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_with_base_class',
                                     'test_with_pattern_and_base_class',
                                     'test_methods_order',
-                                    'test_recursive_discovery'],
+                                    'test_recursive_discovery',
+                                    'test_recursive_discovery_python_unittest'],
             'UnlimitedDiff': ['setUp']
         }
         found = safeloader.find_class_and_methods(get_this_file())
@@ -332,7 +352,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_with_base_class',
                                     'test_with_pattern_and_base_class',
                                     'test_methods_order',
-                                    'test_recursive_discovery'],
+                                    'test_recursive_discovery',
+                                    'test_recursive_discovery_python_unittest'],
             'UnlimitedDiff': []
         }
         found = safeloader.find_class_and_methods(get_this_file(),
@@ -346,7 +367,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_with_base_class',
                                     'test_with_pattern_and_base_class',
                                     'test_methods_order',
-                                    'test_recursive_discovery'],
+                                    'test_recursive_discovery',
+                                    'test_recursive_discovery_python_unittest'],
         }
         found = safeloader.find_class_and_methods(get_this_file(),
                                                   base_class='UnlimitedDiff')
@@ -390,6 +412,17 @@ class FindClassAndMethods(UnlimitedDiff):
                                    ('test_second_child', {}),
                                    ('test_first_child', {}),
                                    ('test_basic', {})]}
+        self.assertEqual(expected, tests)
+
+    def test_recursive_discovery_python_unittest(self):
+        temp_test = script.TemporaryScript(
+            'recursive_discovery_python_unittest.py',
+            RECURSIVE_DISCOVERY_PYTHON_UNITTEST)
+        temp_test.save()
+        tests = safeloader.find_python_unittests(temp_test.path)
+        expected = {'BaseClass': [('test_basic', {'base': None})],
+                    'Child': [('test_child', {'child': None}),
+                              ('test_basic', {'base': None})]}
         self.assertEqual(expected, tests)
 
 
