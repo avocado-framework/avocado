@@ -36,6 +36,30 @@ except utils_path.CmdNotFoundError:
     GO_BIN = None
 
 
+def find_tests(test_path):
+    test_suite = []
+    with open(test_path, 'r') as test_file_fd:
+        for line in test_file_fd.readlines():
+            if line.startswith('func Test'):
+                test_suite.append(line.split()[1].split('(')[0])
+
+    return test_suite
+
+
+def find_files(path, recursive=True):
+    pattern = '*_test.go'
+    if recursive:
+        matches = []
+        for root, _, filenames in os.walk(path):
+            for filename in fnmatch.filter(filenames, pattern):
+                matches.append(os.path.join(root, filename))
+        return matches
+
+    if path != '.':
+        pattern = os.path.join(path, pattern)
+    return glob.iglob(pattern)
+
+
 class GolangTest(test.SimpleTest):
 
     """
@@ -109,7 +133,7 @@ class GolangLoader(loader.TestLoader):
 
         # When a file is provided
         if os.path.isfile(reference):
-            for item in self._find_tests(reference):
+            for item in find_tests(reference):
                 test_name = "%s:%s" % (reference, item)
                 if tests_filter and not tests_filter.search(test_name):
                     continue
@@ -123,8 +147,8 @@ class GolangLoader(loader.TestLoader):
 
         # When a directory is provided
         if os.path.isdir(reference):
-            for test_file in self._find_files(reference, recursive=False):
-                for item in self._find_tests(test_file):
+            for test_file in find_files(reference, recursive=False):
+                for item in find_tests(test_file):
                     test_name = "%s:%s" % (item, item)
                     if tests_filter and not tests_filter.search(test_name):
                         continue
@@ -153,14 +177,14 @@ class GolangLoader(loader.TestLoader):
 
         for package_path in package_paths:
             url_path = os.path.join(package_path, reference)
-            files = self._find_files(url_path)
+            files = find_files(url_path)
             if files:
                 test_files.append((package_path, files))
                 break
 
         for package_path, test_files_list in test_files:
             for test_file in test_files_list:
-                for item in self._find_tests(test_file):
+                for item in find_tests(test_file):
                     common_prefix = os.path.commonprefix([package_path,
                                                           test_file])
                     match_package = os.path.relpath(test_file, common_prefix)
@@ -182,30 +206,6 @@ class GolangLoader(loader.TestLoader):
         if which_tests == loader.DiscoverMode.ALL:
             return [(NotGolangTest, {"name": "%s: %s" % (url, msg)})]
         return []
-
-    @staticmethod
-    def _find_tests(test_path):
-        test_suite = []
-        with open(test_path, 'r') as test_file_fd:
-            for line in test_file_fd.readlines():
-                if line.startswith('func Test'):
-                    test_suite.append(line.split()[1].split('(')[0])
-
-        return test_suite
-
-    @staticmethod
-    def _find_files(path, recursive=True):
-        pattern = '*_test.go'
-        if recursive:
-            matches = []
-            for root, _, filenames in os.walk(path):
-                for filename in fnmatch.filter(filenames, pattern):
-                    matches.append(os.path.join(root, filename))
-            return matches
-
-        if path != '.':
-            pattern = os.path.join(path, pattern)
-        return glob.iglob(pattern)
 
     @staticmethod
     def get_type_label_mapping():
