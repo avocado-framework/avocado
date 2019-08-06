@@ -12,12 +12,15 @@ from avocado.core import test
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import stacktrace
+from avocado.utils import path as utils_path
 
 
 class NRun(CLICmd):
 
     name = 'nrun'
     description = "*EXPERIMENTAL* runner: runs one or more tests"
+
+    KNOWN_EXTERNAL_RUNNERS = {}
 
     def configure(self, parser):
         parser = super(NRun, self).configure(parser)
@@ -103,9 +106,21 @@ class NRun(CLICmd):
             self.spawned_tasks.append(identifier)
             print("%s spawned" % identifier)
 
-    @staticmethod
+    def pick_runner(self, task):
+        runner = self.KNOWN_EXTERNAL_RUNNERS.get(task.runnable.kind)
+        if runner is False:
+            return None
+        if runner is None:
+            runner_by_name = 'avocado-runner-%s' % task.runnable.kind
+            try:
+                runner = utils_path.find_command(runner_by_name)
+                self.KNOWN_EXTERNAL_RUNNERS[task.runnable.kind] = runner
+            except utils_path.CmdNotFoundError:
+                self.KNOWN_EXTERNAL_RUNNERS[task.runnable.kind] = False
+        return runner
+
     @asyncio.coroutine
-    def spawn_task(task):
+    def spawn_task(self, task):
         status_service_args = []
         for status_service in task.status_services:
             status_service_args.append('-s')
@@ -121,8 +136,7 @@ class NRun(CLICmd):
         if task.runnable.uri is not None:
             runner_args += ['-u', task.runnable.uri]
 
-        args = ['-m', 'avocado.core.nrunner',
-                'task-run',
+        args = ['task-run',
                 '-i', task.identifier,
                 '-k', task.runnable.kind]
 
@@ -130,9 +144,15 @@ class NRun(CLICmd):
         args += list(runner_args)
         args += list(status_service_args)
 
+        runner = self.pick_runner(task)
+        if runner is None:
+            runner = sys.executable
+            args.insert(0, '-m')
+            args.insert(1, 'avocado.core.nrunner')
+
         #pylint: disable=E1133
         yield from asyncio.create_subprocess_exec(
-            sys.executable,
+            runner,
             *args,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
