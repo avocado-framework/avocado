@@ -459,7 +459,8 @@ COMMANDS_CAPABLE = {'capabilities': subcommand_capabilities,
 
 
 def parse():
-    parser = argparse.ArgumentParser(prog='nrunner')
+    parser = argparse.ArgumentParser(prog='avocado-runner',
+                                     description='*EXPERIMENTAL* N(ext) Runner')
     subcommands = parser.add_subparsers(dest='subcommand')
     subcommands.required = True
     subcommands.add_parser('capabilities')
