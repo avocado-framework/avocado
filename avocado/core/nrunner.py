@@ -173,11 +173,13 @@ RUNNABLE_KIND_CAPABLE = {'noop': NoOpRunner,
                          'python-unittest': PythonUnittestRunner}
 
 
-def runner_from_runnable(runnable):
+def runner_from_runnable(runnable, capables=None):
     """
     Gets a Runner instance from a Runnable
     """
-    runner = RUNNABLE_KIND_CAPABLE.get(runnable.kind, None)
+    if capables is None:
+        capables = RUNNABLE_KIND_CAPABLE
+    runner = capables.get(runnable.kind, None)
     if runner is not None:
         return runner(runnable)
     raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
@@ -293,9 +295,10 @@ class Task:
         if status_uris is not None:
             for status_uri in status_uris:
                 self.status_services.append(TaskStatusService(status_uri))
+        self.capables = RUNNABLE_KIND_CAPABLE
 
     def run(self):
-        runner = runner_from_runnable(self.runnable)
+        runner = runner_from_runnable(self.runnable, self.capables)
         for status in runner.run():
             status.update({"id": self.identifier})
             for status_service in self.status_services:
