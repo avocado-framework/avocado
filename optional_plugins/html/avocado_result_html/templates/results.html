@@ -83,8 +83,8 @@
           <td><div>{{ test.fail_reason|safe }}</div></td>
           <td>
             <div>
-              <a class="col-xs-1" href="{{ test.logfile }}"><img src="{{ data.source_path + '/images/logs_icon.svg'}}" title="Debug log"/></a>
-              <div class="col-xs-1 hiddenText"><img src="{{ data.source_path + '/images/whiteboard_icon.svg'}}"/></div>
+              <a class="col-xs-1" href="{{ test.logfile }}"><span class="icon" id="icon-logs" title="Debug log"></span></a>
+              <div class="col-xs-1 hiddenText"><span class="icon" id="icon-whiteboard"></span></div>
             </div>
             <span class="spnTooltip"><strong>Whiteboard:</strong><br>{{test.whiteboard}}</span>
           </td>

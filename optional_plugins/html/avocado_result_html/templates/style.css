@@ -6,7 +6,7 @@
     color:#111;
     border:1px solid #337ab7;
     background:#fff;
-    white-space: pre;
+    white-space: pre-wrap;
 }
 .font-weight-normal {
     font-weight: normal;
@@ -18,4 +18,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+/* Basic metadata for svg */
+.icon {
+    padding-left: 11px;
+    padding-right: 11px;
+    width: 22px;
+    height: 22px;
+    background-repeat: no-repeat;
+    display: table-cell;
+}
+#icon-logs {
+    background-image: url("data:image/svg+xml;base64,{{ data.logs_icon|safe }}");
+}
+#icon-whiteboard {
+    background-image: url("data:image/svg+xml;base64,{{ data.whiteboard_icon|safe }}");
 }
