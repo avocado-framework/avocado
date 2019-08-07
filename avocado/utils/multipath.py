@@ -85,7 +85,8 @@ def get_mpath_name(wwid):
     """
     if device_exists(wwid):
         cmd = "multipath -l %s" % wwid
-        return process.system_output(cmd, sudo=True).split()[0]
+        return process.system_output(cmd,
+                                     sudo=True).decode("utf-8").split()[0]
 
 
 def get_multipath_wwids():
@@ -95,7 +96,8 @@ def get_multipath_wwids():
     :return: List of multipath wwids.
     """
     cmd = "egrep -v '^($|#)' /etc/multipath/wwids"
-    wwids = process.system_output(cmd, ignore_status=True, sudo=True)
+    wwids = process.system_output(cmd, ignore_status=True,
+                                  sudo=True).decode("utf-8")
     wwids = wwids.strip("\n").replace("/", "").split("\n")
     return wwids
 
@@ -109,7 +111,8 @@ def get_paths(wwid):
     if not device_exists(wwid):
         return
     cmd = "multipath -ll %s" % wwid
-    lines = process.system_output(cmd, sudo=True).strip("\n")
+    lines = process.system_output(cmd,
+                                  sudo=True).decode("utf-8").strip("\n")
     paths = []
     for line in lines.split("\n"):
         if not (('size' in line) or ('policy' in line) or (wwid in line)):
@@ -124,7 +127,8 @@ def get_multipath_details():
 
     :return: Dictionary of multipath output in json format.
     """
-    mpath_op = process.system_output("multipathd show maps json", sudo=True)
+    mpath_op = process.system_output("multipathd show maps json",
+                                     sudo=True).decode("utf-8")
     if 'multipath-tools v' in mpath_op:
         return ''
     mpath_op = ast.literal_eval(mpath_op.replace("\n", '').replace(' ', ''))
@@ -204,8 +208,8 @@ def get_policy(wwid):
     """
     if device_exists(wwid):
         cmd = "multipath -ll %s" % wwid
-        lines = process.system_output(cmd, sudo=True).strip("\n")
-        for line in lines.split("\n"):
+        lines = process.system_output(cmd, sudo=True).decode("utf-8")
+        for line in lines.strip("\n").split("\n"):
             if 'policy' in line:
                 return line.split("'")[1].split()[0]
 
@@ -218,8 +222,8 @@ def get_size(wwid):
     """
     if device_exists(wwid):
         cmd = "multipath -ll %s" % wwid
-        lines = process.system_output(cmd, sudo=True).strip("\n")
-        for line in lines.split("\n"):
+        lines = process.system_output(cmd, sudo=True).decode("utf-8")
+        for line in lines.strip("\n").split("\n"):
             if 'size' in line:
                 return line.split("=")[1].split()[0]
 
