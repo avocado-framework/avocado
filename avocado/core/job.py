@@ -46,7 +46,6 @@ from .output import STD_OUTPUT
 from .settings import settings
 from ..utils import astring
 from ..utils import path
-from ..utils import runtime
 from ..utils import stacktrace
 from ..utils import data_structures
 from ..utils import process
@@ -567,7 +566,6 @@ class Job:
         assert self.tmpdir is not None, "Job.setup() not called"
         if self.time_start == -1:
             self.time_start = time.time()
-        runtime.CURRENT_JOB = self
         try:
             self.create_test_suite()
             self.pre_tests()
