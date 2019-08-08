@@ -331,26 +331,28 @@ class Distro(CLICmd):
         It's not uncommon for some distros to not have a release number, so
         adapt the output file name to that
         """
-        if args.distro_def_release:
-            return '%s-%s.%s-%s.distro' % (args.distro_def_name,
-                                           args.distro_def_version,
-                                           args.distro_def_release,
-                                           args.distro_def_arch)
+        if args.get('distro_def_release'):
+            return '%s-%s.%s-%s.distro' % (args.get('distro_def_name'),
+                                           args.get('distro_def_version'),
+                                           args.get('distro_def_release'),
+                                           args.get('distro_def_arch'))
         else:
-            return '%s-%s-%s.distro' % (args.distro_def_name,
-                                        args.distro_def_version,
-                                        args.distro_def_arch)
+            return '%s-%s-%s.distro' % (args.get('distro_def_name'),
+                                        args.get('distro_def_version'),
+                                        args.get('distro_def_arch'))
 
-    def run(self, args):
-        if args.distro_def_create:
-            if not (args.distro_def_name and args.distro_def_version and
-                    args.distro_def_arch and args.distro_def_type and
-                    args.distro_def_path):
+    def run(self, config):
+        if config.get('distro_def_create'):
+            if not (config.get('distro_def_name') and
+                    config.get('distro_def_version') and
+                    config.get('distro_def_arch') and
+                    config.get('distro_def_type') and
+                    config.get('distro_def_path')):
                 LOG_UI.error('Required arguments: name, version, arch, type '
                              'and path')
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-            output_file_name = self.get_output_file_name(args)
+            output_file_name = self.get_output_file_name(config)
             if os.path.exists(output_file_name):
                 error_msg = ('Output file "%s" already exists, will not '
                              'overwrite it', output_file_name)
@@ -358,12 +360,12 @@ class Distro(CLICmd):
             else:
                 LOG_UI.debug("Loading distro information from tree... "
                              "Please wait...")
-                distro = load_from_tree(args.distro_def_name,
-                                        args.distro_def_version,
-                                        args.distro_def_release,
-                                        args.distro_def_arch,
-                                        args.distro_def_type,
-                                        args.distro_def_path)
+                distro = load_from_tree(config.get('distro_def_name'),
+                                        config.get('distro_def_version'),
+                                        config.get('distro_def_release'),
+                                        config.get('distro_def_arch'),
+                                        config.get('distro_def_type'),
+                                        config.get('distro_def_path'))
                 save_distro(distro, output_file_name)
                 LOG_UI.debug('Distro information saved to "%s"',
                              output_file_name)

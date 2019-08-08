@@ -120,11 +120,12 @@ class DockerTestRunner(RemoteTestRunner):
         self.remote = None      # Will be set in `setup`
 
     def setup(self):
-        dkrcmd = self.job.args.docker_cmd
-        dkr_opt = self.job.args.docker_options
         dkr_name = os.path.basename(self.job.logdir) + '.' + 'avocado'
-        self.remote = DockerRemoter(dkrcmd, self.job.args.docker, dkr_opt, dkr_name)
-        stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+        self.remote = DockerRemoter(self.job.config.get('docker_cmd'),
+                                    self.job.config.get('docker'),
+                                    self.job.config.get('docker_options'),
+                                    dkr_name)
+        stdout_claimed_by = self.job.config.get('stdout_claimed_by', None)
         if not stdout_claimed_by:
             self.job.log.info("DOCKER     : Container id '%s'"
                               % self.remote.get_cid())
@@ -134,10 +135,10 @@ class DockerTestRunner(RemoteTestRunner):
         try:
             if self.remote:
                 self.remote.close()
-                if not self.job.args.docker_no_cleanup:
+                if not self.job.config.get('docker_no_cleanup'):
                     self.remote.cleanup()
         except Exception as details:
-            stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+            stdout_claimed_by = self.job.config.get('stdout_claimed_by', None)
             if not stdout_claimed_by:
                 self.job.log.warn("DOCKER     : Fail to cleanup: %s" % details)
 
@@ -171,6 +172,6 @@ class DockerCLI(CLI):
         cmd_parser.add_argument("--docker-no-cleanup", action="store_true",
                                 help="Preserve container after test")
 
-    def run(self, args):
-        if getattr(args, "docker", None):
-            args.test_runner = DockerTestRunner
+    def run(self, config):
+        if config.get("docker", None):
+            config['test_runner'] = DockerTestRunner

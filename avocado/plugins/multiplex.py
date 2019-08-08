@@ -26,8 +26,8 @@ class Multiplex(Variants):
 
     name = "multiplex"
 
-    def run(self, args):
+    def run(self, config):
         LOG_UI.warning("The 'avocado multiplex' command is deprecated by the "
                        "'avocado variants' one. Please start using that one "
                        "instead as this will be removed in Avocado 52.0.")
-        super(Multiplex, self).run(args)
+        super(Multiplex, self).run(config)

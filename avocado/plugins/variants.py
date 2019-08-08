@@ -78,51 +78,51 @@ class Variants(CLICmd):
                                  help="[obsoleted by --summary] Show the "
                                  "inherited values")
 
-    def run(self, args):
+    def run(self, config):
         err = None
-        if args.tree and args.varianter_debug:
+        if config.get('tree') and config.get('varianter_debug'):
             err = "Option --tree is incompatible with --debug."
-        elif not args.tree and args.inherit:
+        elif not config.get('tree') and config.get('inherit'):
             err = "Option --inherit can be only used with --tree"
         if err:
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        varianter = args.avocado_variants
+        varianter = config.get('avocado_variants')
         try:
-            varianter.parse(args)
+            varianter.parse(config)
         except (IOError, ValueError) as details:
             LOG_UI.error("Unable to parse varianter: %s", details)
             sys.exit(exit_codes.AVOCADO_FAIL)
         use_utf8 = settings.get_value("runner.output", "utf8",
                                       key_type=bool, default=None)
-        summary = args.summary or 0
-        variants = args.variants or 0
+        summary = config.get('summary') or 0
+        variants = config.get('variants') or 0
 
         # Parse obsolete options (unsafe to combine them with new args)
-        if args.tree:
+        if config.get('tree'):
             variants = 0
             summary += 1
-            if args.contents:
+            if config.get('contents'):
                 summary += 1
-            if args.inherit:
+            if config.get('inherit'):
                 summary += 2
         else:
-            if args.contents:
+            if config.get('contents'):
                 variants += 2
 
         # Export the serialized avocado_variants
-        if args.json_variants_dump is not None:
+        if config.get('json_variants_dump') is not None:
             try:
-                with open(args.json_variants_dump, 'w') as variants_file:
-                    json.dump(args.avocado_variants.dump(), variants_file)
+                with open(config.get('json_variants_dump'), 'w') as variants_file:
+                    json.dump(config.get('avocado_variants').dump(), variants_file)
             except IOError:
-                LOG_UI.error("Cannot write %s", args.json_variants_dump)
+                LOG_UI.error("Cannot write %s", config.get('json_variants_dump'))
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Produce the output
-        lines = args.avocado_variants.to_str(summary=summary,
-                                             variants=variants,
-                                             use_utf8=use_utf8)
+        lines = config.get('avocado_variants').to_str(summary=summary,
+                                                      variants=variants,
+                                                      use_utf8=use_utf8)
         for line in lines.splitlines():
             LOG_UI.debug(line)
 

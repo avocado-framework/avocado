@@ -55,7 +55,7 @@ class CLI(Plugin):
         """
 
     @abc.abstractmethod
-    def run(self, args):
+    def run(self, config):
         """
         Execute any action the plugin intends.
 
@@ -94,7 +94,7 @@ class CLICmd(Plugin):
         return parser
 
     @abc.abstractmethod
-    def run(self, args):
+    def run(self, config):
         """
         Entry point for actually running the command
         """

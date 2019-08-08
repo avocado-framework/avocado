@@ -37,7 +37,7 @@ class Plugins(CLICmd):
                             help='Turn the paginator on/off. '
                             'Current: %(default)s')
 
-    def run(self, args):
+    def run(self, config):
         plugin_types = [
             (dispatcher.CLICmdDispatcher(),
              'Plugins that add new commands (cli.cmd):'),
@@ -47,7 +47,7 @@ class Plugins(CLICmd):
              'Plugins that run before/after the execution of jobs (job.prepost):'),
             (dispatcher.ResultDispatcher(),
              'Plugins that generate job result in different formats (result):'),
-            (dispatcher.ResultEventsDispatcher(args),
+            (dispatcher.ResultEventsDispatcher(config),
              ('Plugins that generate job result based on job/test events '
               '(result_events):')),
             (dispatcher.VarianterDispatcher(),

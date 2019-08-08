@@ -26,6 +26,10 @@ from avocado_varianter_cit.Cit import Cit, LOG
 from avocado_varianter_cit.Parser import Parser
 
 
+#: The default order of combinations
+DEFAULT_ORDER_OF_COMBINATIONS = 2
+
+
 class VarianterCitCLI(CLI):
 
     """
@@ -45,12 +49,13 @@ class VarianterCitCLI(CLI):
             cit.add_argument('--cit-parameter-file', metavar='PATH',
                              help="Paths to a parameter file")
             cit.add_argument('--cit-order-of-combinations',
-                             metavar='ORDER', type=int, default=2,
+                             metavar='ORDER', type=int,
+                             default=DEFAULT_ORDER_OF_COMBINATIONS,
                              help=("Order of combinations. Defaults to "
                                    "%(default)s, maximum number is 6"))
 
-    def run(self, args):
-        if getattr(args, "varianter_debug", False):
+    def run(self, config):
+        if config.get("varianter_debug", False):
             LOG.setLevel(logging.DEBUG)
 
 
@@ -63,14 +68,14 @@ class VarianterCit(Varianter):
     name = 'cit'
     description = "CIT Varianter"
 
-    def initialize(self, args):
+    def initialize(self, config):
         self.variants = None
-        order = args.cit_order_of_combinations
+        order = config.get('cit_order_of_combinations', DEFAULT_ORDER_OF_COMBINATIONS)
         if order > 6:
             LOG_UI.error("The order of combinations is bigger then 6")
-            self.error_exit(args)
+            self.error_exit(config)
 
-        cit_parameter_file = getattr(args, "cit_parameter_file", None)
+        cit_parameter_file = config.get("cit_parameter_file", None)
         if cit_parameter_file is None:
             return
         else:
@@ -78,13 +83,13 @@ class VarianterCit(Varianter):
             if not os.access(cit_parameter_file, os.R_OK):
                 LOG_UI.error("parameter file '%s' could not be found or "
                              "is not readable", cit_parameter_file)
-                self.error_exit(args)
+                self.error_exit(config)
 
         try:
             parameters, constraints = Parser.parse(open(cit_parameter_file))
         except Exception as details:
             LOG_UI.error("Cannot parse parameter file: %s", details)
-            self.error_exit(args)
+            self.error_exit(config)
 
         input_data = [parameter.get_size() for parameter in parameters]
 
@@ -98,8 +103,8 @@ class VarianterCit(Varianter):
             self.variants.append(dict(zip(self.headers, combination)))
 
     @staticmethod
-    def error_exit(args):
-        if args.subcommand == 'run':
+    def error_exit(config):
+        if config.get('subcommand') == 'run':
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         else:
             sys.exit(exit_codes.AVOCADO_FAIL)

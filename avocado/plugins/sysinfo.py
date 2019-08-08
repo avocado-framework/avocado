@@ -39,5 +39,5 @@ class SysInfo(CLICmd):
                             help='Dir where to dump sysinfo',
                             nargs='?', default='')
 
-    def run(self, args):
-        sysinfo.collect_sysinfo(args)
+    def run(self, config):
+        sysinfo.collect_sysinfo(config)

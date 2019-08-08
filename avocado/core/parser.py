@@ -73,6 +73,7 @@ class Parser:
 
     def __init__(self):
         self.args = argparse.Namespace()
+        self.config = {}
         self.subcommands = None
         self.application = ArgumentParser(prog=PROG,
                                           add_help=False,  # see parent parsing
@@ -136,9 +137,9 @@ class Parser:
         """
         Finish the process of parsing arguments.
 
-        Side effect: set the final value for attribute `args`.
+        Side effect: set the final value on attribute `config`.
         """
-        self.args, extra = self.application.parse_known_args(namespace=self.args)
+        args, extra = self.application.parse_known_args(namespace=self.args)
         if extra:
             msg = 'unrecognized arguments: %s' % ' '.join(extra)
             for sub in self.application._subparsers._actions:  # pylint: disable=W0212
@@ -146,3 +147,5 @@ class Parser:
                     sub.choices[self.args.subcommand].error(msg)
 
             self.application.error(msg)
+        # from this point on, config is a dictionary based on a argparse.Namespace
+        self.config = vars(args)
