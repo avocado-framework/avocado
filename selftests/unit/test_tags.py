@@ -5,6 +5,8 @@ from avocado.core import loader
 from avocado.core import tags
 from avocado.utils import script
 
+from avocado.core.nrunner import Runnable
+
 
 #: What is commonly known as "0664" or "u=rw,g=rw,o=r"
 DEFAULT_NON_EXEC_MODE = (stat.S_IRUSR | stat.S_IWUSR |
@@ -306,3 +308,10 @@ class ParseFilterByTags(unittest.TestCase):
                                                     '-FOO,-BAR,-BAZ']),
                          [(set(['foo', 'bar', 'baz']), set([])),
                           (set([]), set(['FOO', 'BAR', 'BAZ']))])
+
+
+class FilterRunnable(unittest.TestCase):
+
+    def test_no_tags(self):
+        runnable = Runnable('noop', None)
+        self.assertFalse(tags.filter_test_tags_runnable(runnable, []))
