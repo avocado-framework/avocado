@@ -22,6 +22,7 @@ import shutil
 import subprocess
 import sys
 import time
+import base64
 
 import jinja2 as jinja
 
@@ -63,13 +64,24 @@ class ReportModel:
             sysinfo_contents = "Error reading %s: %s" % (sysinfo_path, details)
         return sysinfo_contents
 
+    @staticmethod
+    def _icon_data(icon_name):
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'templates', 'images', icon_name), 'rb') as icon:
+            icon_base64 = base64.b64encode(icon.read()).decode()
+        return icon_base64
+
     @property
     def hostname(self):
         return self._get_sysinfo('hostname').strip()
 
     @property
-    def source_path(self):
-        return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+    def logs_icon(self):
+        return self._icon_data('logs_icon.svg')
+
+    @property
+    def whiteboard_icon(self):
+        return self._icon_data('whiteboard_icon.svg')
 
     @property
     def tests(self):
