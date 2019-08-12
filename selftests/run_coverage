@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Execute all unittests with coverage and report code coverage.
 #
 # Copyright: Red Hat Inc.
@@ -8,7 +8,7 @@
 COVERAGE="$(which coverage3 coverage coverage2 | head -n 1)"
 
 $COVERAGE erase
-rm .coverage.*
+rm -f .coverage.*
 RUNNING_COVERAGE=1 AVOCADO_CHECK_LEVEL=2 UNITTEST_AVOCADO_CMD="$COVERAGE run -p --include 'avocado/*,optional_plugins/*' ./scripts/avocado" $COVERAGE run -p --include "avocado/*,optional_plugins/*" ./selftests/run
 $COVERAGE combine .coverage*
 echo
