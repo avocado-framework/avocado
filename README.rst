@@ -293,5 +293,5 @@ Build and Quality Status
      :alt: lgtm language grade for JavaScript
 
   .. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
-     :target: https://avocado-framework.readthedocs.io
+     :target: https://avocado-framework.readthedocs.io/en/latest
      :alt: Documentation Status
