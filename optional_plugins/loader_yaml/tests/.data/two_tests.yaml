@@ -1,5 +1,17 @@
 !mux
 instrumented:
     test_reference: passtest.py
+    test_reference_resolver_args: !!python/dict
+        this: should not interfere with anything
+    test_reference_resolver_extra: !!python/dict
+        allowed_test_types: INSTRUMENTED
 simple:
     test_reference: passtest.sh
+not_allowed:
+    test_reference: failtest.py
+    test_reference_resolver_args: !!python/dict
+        this: should not interfere with anything
+    # This should tweak the discovery to allow only SIMPLE tests,
+    # therefor it should result in no matching test.
+    test_reference_resolver_extra: !!python/dict
+        allowed_test_types: SIMPLE
