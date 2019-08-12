@@ -22,4 +22,6 @@ $COVERAGE report -m --include "avocado/core/*"
 echo
 $COVERAGE report -m --include "avocado/utils/*"
 echo
+$COVERAGE report -m --include "avocado/plugins/*"
+echo
 $COVERAGE report -m --include "optional_plugins/*"
