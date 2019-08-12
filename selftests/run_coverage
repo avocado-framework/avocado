@@ -5,7 +5,13 @@
 # License: GPLv2
 # Author: Lukas Doktor <ldoktor@redhat.com>
 
-COVERAGE="$(which coverage3 coverage coverage2 | head -n 1)"
+CANDIDATES="coverage3 coverage coverage2"
+COVERAGE="$(which $CANDIDATES 2>/dev/null| head -n 1)"
+if [ "x$COVERAGE" == "x" ]; then
+    echo "No coverage utility found, looked for: $CANDIDATES"
+    exit -1
+fi
+echo "Using coverage utilty: $COVERAGE"
 
 $COVERAGE erase
 rm -f .coverage.*
