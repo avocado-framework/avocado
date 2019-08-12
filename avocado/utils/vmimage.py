@@ -208,10 +208,7 @@ class CentOSImageProvider(ImageProviderBase):
         super(CentOSImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cloud.centos.org/centos/'
         self.url_images = self.url_versions + '{version}/images/'
-        if archive.LZMA_CAPABLE:
-            self.image_pattern = 'CentOS-{version}-{arch}-GenericCloud-{build}.qcow2.xz$'
-        else:
-            self.image_pattern = 'CentOS-{version}-{arch}-GenericCloud-{build}.qcow2$'
+        self.image_pattern = 'CentOS-{version}-{arch}-GenericCloud-{build}.qcow2.xz$'
 
 
 class UbuntuImageProvider(ImageProviderBase):
