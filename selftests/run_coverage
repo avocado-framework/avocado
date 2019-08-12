@@ -1,4 +1,4 @@
-#!/bin/bash +x
+#!/bin/bash
 # Execute all unittests with coverage and report code coverage.
 #
 # Copyright: Red Hat Inc.
