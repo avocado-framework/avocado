@@ -1,0 +1,10 @@
+version_task:
+    version_script:
+       - python3 --version || dnf -y install python3
+       - python3 setup.py develop --user
+       - python3 -m avocado --version
+    container:
+        matrix:
+          - image: fedora:30
+          - image: fedora:29
+          - image: registry.access.redhat.com/ubi8/ubi
