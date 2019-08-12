@@ -276,6 +276,10 @@ Build and Quality Status
      :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
      :alt: Copr build
 
+  .. image:: https://api.cirrus-ci.com/github/avocado-framework/avocado.svg
+     :target: https://cirrus-ci.com/github/avocado-framework/avocado
+     :alt: Basic checks on Cirrus CI
+
   .. image:: https://img.shields.io/lgtm/alerts/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
      :target: https://lgtm.com/projects/g/avocado-framework/avocado/alerts/
      :alt: lgtm total alerts
