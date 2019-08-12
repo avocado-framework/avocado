@@ -9,9 +9,11 @@ COVERAGE="$(which coverage3 coverage coverage2 | head -n 1)"
 
 $COVERAGE erase
 rm .coverage.*
-RUNNING_COVERAGE=1 AVOCADO_CHECK_LEVEL=2 UNITTEST_AVOCADO_CMD="$COVERAGE run -p --include 'avocado/*' ./scripts/avocado" $COVERAGE run -p --include "avocado/*" ./selftests/run
+RUNNING_COVERAGE=1 AVOCADO_CHECK_LEVEL=2 UNITTEST_AVOCADO_CMD="$COVERAGE run -p --include 'avocado/*,optional_plugins/*' ./scripts/avocado" $COVERAGE run -p --include "avocado/*,optional_plugins/*" ./selftests/run
 $COVERAGE combine .coverage*
 echo
 $COVERAGE report -m --include "avocado/core/*"
 echo
 $COVERAGE report -m --include "avocado/utils/*"
+echo
+$COVERAGE report -m --include "optional_plugins/*"
