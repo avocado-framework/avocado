@@ -36,3 +36,6 @@
     - name: Avocado-VT test available
       shell: avocado list boot
       changed_when: false
+    - name: Avocado-VT dry-run execution
+      shell: avocado run --dry-run -- boot
+      changed_when: false
