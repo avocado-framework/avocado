@@ -30,7 +30,8 @@ class YamlLoaderTests(unittest.TestCase):
 
     def test_replay(self):
         # Run source job
-        tests = [b"passtest.py:PassTest.test", b"passtest.sh"]
+        tests = [b"PASSTEST.PY PREFIX: passtest.py:PassTest.test",
+                 b"passtest.sh", b"executes bin true"]
         not_tests = [b"failtest.py"]
         cmd = ('%s run --sysinfo=off --job-results-dir %s -- '
                'optional_plugins/loader_yaml/tests/.data/two_tests.yaml'
