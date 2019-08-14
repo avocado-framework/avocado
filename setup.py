@@ -92,6 +92,7 @@ if __name__ == '__main__':
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
                   'teststmpdir = avocado.plugins.teststmpdir:TestsTmpDir',
                   'human = avocado.plugins.human:HumanJob',
+                  'merge_files = avocado.plugins.expected_files_merge:FilesMerge',
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',

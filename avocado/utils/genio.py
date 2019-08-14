@@ -20,6 +20,8 @@ import logging
 import os
 import re
 
+from . import crypto
+
 log = logging.getLogger('avocado.test')
 
 
@@ -191,3 +193,18 @@ def is_pattern_in_file(filename,  pattern):
         if re.search(pattern, content_file.read(), re.MULTILINE):
             return True
     return False
+
+
+def are_files_equal(filename, other):
+    """
+    Comparision of two files line by line
+    :param filename: path to the first file
+    :type filename: str
+    :param other: path to the second file
+    :type other: str
+    :return: equality of file
+    :rtype: boolean
+    """
+    hash_1 = crypto.hash_file(filename)
+    hash_2 = crypto.hash_file(other)
+    return hash_1 == hash_2
