@@ -6,9 +6,9 @@
     with_items:
       - gcc
       - nc
-      - python-netaddr
-      - python-netifaces
-      - python2-aexpect
+      - python3-netaddr
+      - python3-netifaces
+      - python3-aexpect
       - qemu-img
       - qemu-kvm
       - tcpdump
