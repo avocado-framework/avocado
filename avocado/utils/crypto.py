@@ -12,6 +12,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import io
 import os
 import logging
 import hashlib
@@ -32,7 +33,7 @@ def hash_file(filename, size=None, algorithm="md5"):
     :param size: If provided, hash only the first size bytes of the file.
     :return: Hash of the file, if something goes wrong, return None.
     """
-    chunksize = 4096
+    chunksize = io.DEFAULT_BUFFER_SIZE
     fsize = os.path.getsize(filename)
 
     if not size or size > fsize:
