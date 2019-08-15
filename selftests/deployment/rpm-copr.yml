@@ -5,23 +5,7 @@
     - include_vars: vars.yml
     - include_tasks: tasks/epel.yml
     - include_tasks: tasks/avocado_copr_repo.yml
-    - name: Install Avocado packages
-      package:
-        name: "{{ item }}"
-        state: latest
-      with_items:
-        - python3-avocado
-        - python3-avocado-plugins-glib
-        - python3-avocado-plugins-golang
-        - python3-avocado-plugins-loader-yaml
-        - python3-avocado-plugins-output-html
-        - python3-avocado-plugins-result-upload
-        - python3-avocado-plugins-runner-docker
-        - python3-avocado-plugins-runner-remote
-        - python3-avocado-plugins-runner-vm
-        - python3-avocado-plugins-varianter-cit
-        - python3-avocado-plugins-varianter-pict
-        - python3-avocado-plugins-varianter-yaml-to-mux
+    - include_tasks: tasks/avocado_rpm_pkgs.yml
     - name: Avocado version
       shell: "avocado --version"
       changed_when: false
