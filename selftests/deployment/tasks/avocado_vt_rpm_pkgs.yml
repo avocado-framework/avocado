@@ -12,4 +12,6 @@
       - qemu-img
       - qemu-kvm
       - tcpdump
+      - iproute
+      - iputils
     when: ansible_facts['distribution_file_variety'] == "RedHat"
