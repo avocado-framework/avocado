@@ -10,10 +10,16 @@
       - python3-avocado-plugins-loader-yaml
       - python3-avocado-plugins-output-html
       - python3-avocado-plugins-result-upload
-      - python3-avocado-plugins-runner-docker
       - python3-avocado-plugins-runner-remote
       - python3-avocado-plugins-runner-vm
       - python3-avocado-plugins-varianter-cit
       - python3-avocado-plugins-varianter-pict
       - python3-avocado-plugins-varianter-yaml-to-mux
     when: ansible_facts['distribution_file_variety'] == "RedHat"
+  - name: Install Avocado Docker Package
+    package:
+      name: python3-avocado-plugins-runner-docker
+      state: latest
+    when:
+      - ansible_facts['distribution'] == "Fedora"
+      - ansible_facts['distribution_major_version']|int <= 29
