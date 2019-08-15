@@ -197,7 +197,7 @@ def is_pattern_in_file(filename,  pattern):
 
 def are_files_equal(filename, other):
     """
-    Comparision of two files line by line
+    Comparison of two files line by line
     :param filename: path to the first file
     :type filename: str
     :param other: path to the second file

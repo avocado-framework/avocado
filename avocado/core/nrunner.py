@@ -279,7 +279,7 @@ class Task:
 
     While a runnable describes what to be run, and gets run by a
     runner, a task should be a unique entity to track its state,
-    that is, wether it is pending, is running or has finished.
+    that is, whether it is pending, is running or has finished.
 
     :param identifier:
     :param runnable:

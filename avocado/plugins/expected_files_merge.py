@@ -48,7 +48,7 @@ def _merge_expected_files(parent_directory):
 
 def _save_file_to_group(path, file_dict):
     """
-    Saves file in to the dic under key which is the name of equal file
+    Saves file in to the dict under key which is the name of equal file
     :param path: file name for grouping
     :type path: str
     :param file_dict: dictionary with groups of equal files
