@@ -146,6 +146,8 @@ Once again, keeping your tests up-to-date and distinguishing between
 ``FAIL`` and ``ERROR`` will save you a lot of time while reviewing the
 test results.
 
+.. _turning_errors_into_cancels:
+
 Turning errors into cancels
 ---------------------------
 It is also possible to assume unhandled exception to be as a test ``CANCEL``
@@ -761,6 +763,8 @@ Detailing the ``fetch_asset()`` attributes:
   ``d`` (day).
 
 The expected ``return`` is the asset file path or an exception.
+
+.. _output_check_record:
 
 Test Output Check and Output Record Mode
 ========================================

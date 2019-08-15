@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     649e5d36eb5003479a5eeb6d60ad8b2fe8836260
+        %global commit     c15f901f4f8d577be9e2831546b0790dc43c4b83
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20190625
+        %global commit_date 20190815
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -58,8 +58,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 70.0
-Release: 1%{?gitrel}%{?dist}
+Version: 71.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -582,6 +582,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Aug 15 2019 Cleber Rosa <cleber@redhat.com> - 71.0-0
+- New release
+
 * Tue Jul  9 2019 Cleber Rosa <cleber@redhat.com> - 70.0-1
 - Add config file to glib plugin subpackage
 
