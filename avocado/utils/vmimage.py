@@ -72,7 +72,7 @@ class ImageProviderBase:
         self.url_versions = None
         self.url_images = None
         self.image_pattern = None
-
+        self._file_name = None
         self._version = version
         self._best_version = None
         self.build = build
@@ -85,6 +85,14 @@ class ImageProviderBase:
     @property
     def version_pattern(self):
         return '^%s/$' % self._version
+
+    @property
+    def file_name(self):
+        if not self._file_name:
+            self._file_name = self.image_pattern.format(version=self.version,
+                                                        build=self.build,
+                                                        arch=self.arch)
+        return self._file_name
 
     def _feed_html_parser(self, url, parser):
         try:
@@ -149,6 +157,24 @@ class ImageProviderBase:
             raise ImageProviderError("No images matching '%s' at '%s'. "
                                      "Wrong arch?" % (image, url_images))
 
+    def get_image_parameters(self, image):
+        """
+        Computation of image parameter from image_pattern
+
+        :param image: pattern with parameters
+        :type image: str
+        :return: dict with parameters
+        :rtype: dict
+        """
+        tokens = re.split(r'\{(.*?)\}', self.image_pattern)
+        keywords = tokens[1::2]
+        matches = re.match(self.file_name, image)
+
+        if not matches:
+            return None
+
+        return {x: matches.group(x) for x in keywords}
+
 
 class FedoraImageProviderBase(ImageProviderBase):
     """
@@ -178,7 +204,7 @@ class FedoraImageProvider(FedoraImageProviderBase):
         super(FedoraImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora/linux/releases/'
         self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
-        self.image_pattern = 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2$'
+        self.image_pattern = 'Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
 
 
 class FedoraSecondaryImageProvider(FedoraImageProviderBase):
@@ -189,12 +215,12 @@ class FedoraSecondaryImageProvider(FedoraImageProviderBase):
     name = 'FedoraSecondary'
 
     def __init__(self, version='[0-9]+', build='[0-9]+.[0-9]+',
-                 arch=os.uname()[4]):
+                 arch='(ppc64|ppc64le|s390x)'):
         super(FedoraSecondaryImageProvider, self).__init__(version, build,
                                                            arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora-secondary/releases/'
         self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
-        self.image_pattern = 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2$'
+        self.image_pattern = 'Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
 
 
 class CentOSImageProvider(ImageProviderBase):
@@ -208,7 +234,7 @@ class CentOSImageProvider(ImageProviderBase):
         super(CentOSImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cloud.centos.org/centos/'
         self.url_images = self.url_versions + '{version}/images/'
-        self.image_pattern = 'CentOS-{version}-{arch}-GenericCloud-{build}.qcow2.xz$'
+        self.image_pattern = 'CentOS-(?P<version>{version})-(?P<arch>{arch})-GenericCloud-(?P<build>{build}).qcow2.xz$'
 
 
 class UbuntuImageProvider(ImageProviderBase):
@@ -230,7 +256,7 @@ class UbuntuImageProvider(ImageProviderBase):
         super(UbuntuImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'http://cloud-images.ubuntu.com/releases/'
         self.url_images = self.url_versions + 'releases/{version}/release/'
-        self.image_pattern = 'ubuntu-{version}-server-cloudimg-{arch}.img'
+        self.image_pattern = 'ubuntu-(?P<version>{version})-server-cloudimg-(?P<arch>{arch}).img'
 
 
 class DebianImageProvider(ImageProviderBase):
@@ -252,7 +278,7 @@ class DebianImageProvider(ImageProviderBase):
         super(DebianImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cdimage.debian.org/cdimage/openstack/'
         self.url_images = self.url_versions + '{version}/'
-        self.image_pattern = 'debian-{version}-openstack-{arch}.qcow2$'
+        self.image_pattern = 'debian-(?P<version>{version})-openstack-(?P<arch>{arch}).qcow2$'
 
 
 class JeosImageProvider(ImageProviderBase):
@@ -271,7 +297,7 @@ class JeosImageProvider(ImageProviderBase):
         super(JeosImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://avocado-project.org/data/assets/jeos/'
         self.url_images = self.url_versions + '{version}/'
-        self.image_pattern = 'jeos-{version}-{arch}.qcow2.xz$'
+        self.image_pattern = 'jeos-(?P<version>{version})-(?P<arch>{arch}).qcow2.xz$'
 
 
 class OpenSUSEImageProvider(ImageProviderBase):
@@ -288,9 +314,11 @@ class OpenSUSEImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + 'Leap_{version}/images/'
 
         if not build:
-            self.image_pattern = 'openSUSE-Leap-{version}-OpenStack.{arch}-((.)*).qcow2$'
+            self.image_pattern = 'openSUSE-Leap-(?P<version>{version})-OpenStack.(?P<arch>{arch})-((.)*).qcow2$'
+
         else:
-            self.image_pattern = 'openSUSE-Leap-{version}-OpenStack.{arch}-{build}.qcow2$'
+            self.image_pattern = 'openSUSE-Leap-(?P<version>{version})-OpenStack.' \
+                                 '(?P<arch>{arch})-(?P<build>{build}).qcow2$'
 
     @property
     def version_pattern(self):
@@ -337,11 +365,15 @@ class Image:
                                                     self.arch)
 
     def get(self):
+        if isinstance(self.cache_dir, list):
+            cache_dirs = self.cache_dir
+        else:
+            cache_dirs = [self.cache_dir]
         asset_path = asset.Asset(name=self.url,
                                  asset_hash=self.checksum,
                                  algorithm=self.algorithm,
                                  locations=None,
-                                 cache_dirs=[self.cache_dir],
+                                 cache_dirs=cache_dirs,
                                  expire=None).fetch()
 
         if os.path.splitext(asset_path)[1] == '.xz':
@@ -389,15 +421,40 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
     :param snapshot_dir: (optional) Local system path where the snapshot images
                          will be held.  Defaults to cache_dir if none is given.
 
-    :returns: Image Provider instance that can provide the image
+    :returns: Image instance that can provide the image
               according to the parameters.
     """
-
-    if name is not None:
-        name = name.lower()
+    provider = get_best_provider(name, version, build, arch)
 
     if cache_dir is None:
         cache_dir = tempfile.gettempdir()
+    try:
+        return Image(name=provider.name, url=provider.get_image_url(),
+                     version=provider.version, arch=provider.arch,
+                     checksum=checksum, algorithm=algorithm,
+                     cache_dir=cache_dir, snapshot_dir=snapshot_dir)
+    except ImageProviderError:
+        pass
+
+    raise AttributeError('Provider not available')
+
+
+def get_best_provider(name=None, version=None, build=None, arch=None):
+    """
+        Wrapper to get parameters of the best Image Provider, according to
+        the parameters provided.
+
+        :param name: (optional) Name of the Image Provider, usually matches
+                     the distro name.
+        :param version: (optional) Version of the system image.
+        :param build: (optional) Build number of the system image.
+        :param arch: (optional) Architecture of the system image.
+
+        :returns: Image Provider
+        """
+
+    if name is not None:
+        name = name.lower()
 
     provider_args = {}
     if version is not None:
@@ -411,16 +468,8 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
 
     for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
-            cls = provider(**provider_args)
             try:
-                return Image(name=cls.name,
-                             url=cls.get_image_url(),
-                             version=cls.version,
-                             arch=cls.arch,
-                             checksum=checksum,
-                             algorithm=algorithm,
-                             cache_dir=cache_dir,
-                             snapshot_dir=snapshot_dir)
+                return provider(**provider_args)
             except ImageProviderError:
                 pass
 
