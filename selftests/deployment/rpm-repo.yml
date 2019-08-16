@@ -9,7 +9,7 @@
     - name: Avocado version
       shell: "avocado --version"
       changed_when: false
-    - include_tasks: tasks/avocado_vt_rpm_pkgs.yml
+    - include_tasks: tasks/avocado_vt_rpm_deps.yml
     - name: Avocado-VT package
       package:
         name: python3-avocado-plugins-vt
