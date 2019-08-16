@@ -6,20 +6,8 @@
     - include_tasks: tasks/epel.yml
     - include_tasks: tasks/avocado_copr_repo.yml
     - include_tasks: tasks/avocado_rpm_pkgs.yml
-    - name: Avocado version
-      shell: "avocado --version"
-      changed_when: false
-    - include_tasks: tasks/avocado_vt_rpm_pkgs.yml
+    - include_tasks: tasks/avocado_version.yml
     - include_tasks: tasks/avocado_vt_copr_repo.yml
-    - name: Avocado-VT package
-      package:
-        name: python3-avocado-plugins-vt
-        state: latest
-    - name: Avocado-VT bootstrap
-      shell: avocado vt-bootstrap --yes-to-all --vt-skip-verify-download-assets
-    - name: Avocado-VT test available
-      shell: avocado list boot
-      changed_when: false
-    - name: Avocado-VT dry-run execution
-      shell: avocado run --dry-run -- boot
-      changed_when: false
+    - include_tasks: tasks/avocado_vt_rpm_pkg.yml
+    - include_tasks: tasks/avocado_vt_rpm_deps.yml
+    - include_tasks: tasks/avocado_vt_smoke.yml

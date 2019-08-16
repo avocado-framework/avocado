@@ -1,0 +1,4 @@
+---
+    - name: Avocado version
+      shell: avocado --version
+      changed_when: false
