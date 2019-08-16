@@ -1,0 +1,5 @@
+---
+  - name: Install the Avocado-VT RPM package
+    package:
+      name: python3-avocado-plugins-vt
+      state: latest

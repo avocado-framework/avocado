@@ -10,11 +10,8 @@
       shell: "avocado --version"
       changed_when: false
     - include_tasks: tasks/avocado_vt_copr_repo.yml
+    - include_tasks: tasks/avocado_vt_rpm_pkg.yml
     - include_tasks: tasks/avocado_vt_rpm_deps.yml
-    - name: Avocado-VT package
-      package:
-        name: python3-avocado-plugins-vt
-        state: latest
     - name: Avocado-VT bootstrap
       shell: avocado vt-bootstrap --yes-to-all --vt-skip-verify-download-assets
     - name: Avocado-VT test available
