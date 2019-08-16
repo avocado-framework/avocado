@@ -1,0 +1,20 @@
+---
+    - name: Avocado EPEL Official Releases repo
+      yum_repository:
+        name: avocado
+        description: Avocado EPEL Official Releases repo
+        baseurl: https://avocado-project.org/data/repos/epel-$releasever-noarch/
+        gpgcheck: yes
+        gpgkey: https://avocado-project.org/data/repos/crosa_redhat_com.gpg
+      when:
+        - ansible_facts['distribution_file_variety'] == "RedHat"
+        - ansible_facts['distribution_major_version'] == "7"
+    - name: Avocado Fedora Official Releases repo
+      yum_repository:
+        name: avocado
+        description: Avocado Fedora Official Releases repo
+        baseurl: https://avocado-project.org/data/repos/fedora-$releasever-noarch/
+        gpgcheck: yes
+        gpgkey: https://avocado-project.org/data/repos/crosa_redhat_com.gpg
+      when:
+        - ansible_facts['distribution'] == "Fedora"
