@@ -25,3 +25,6 @@ The following Ansible playbooks are available here:
    a Copr repository that follows the latest Avocado and Avocado-VT
    from the GitHub repository master branch. Tested on EL7, Fedora 28
    and Fedora 29.
+
+ - rpm-repo.yml: deployment of Avocado and Avocado-VT using RPM, from
+   the official release repository. Fedora 29 and Fedora 30.
