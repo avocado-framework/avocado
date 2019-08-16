@@ -31,3 +31,11 @@ following steps should be followed:
  3) (OPTIONAL) adjust your configuration on vars.yml
 
  4) Run a playbook with: ansible-playbook <PLAYBOOK_FILE_NAME>
+
+All-in-one execution in container:
+----------------------------------
+
+It may be useful to run a playbook in a fresh container.  One example
+of a onliner that can achieve that:
+
+  podman run --rm -ti fedora:30 /bin/bash -c 'dnf -y install git ansible && ansible-pull -v -U git://github.com/avocado-framework/avocado -i selftests/deployment/inventory -c local selftests/deployment/rpm-copr.yml'
