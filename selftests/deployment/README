@@ -1,21 +1,7 @@
 This is a set of ansible playbooks and supporting code to test the
 deployment of Avocado in a number of different environments, and
-installed via a number of different methods.  These are intended to be
-used as regular playbooks, so roughly the following steps should be
-followed:
-
- 1) Install ansible.  If you need help, refer to
-    https://docs.ansible.com/ansible/latest/installation_guide
-
- 2) Adjust your inventory, that is, the hosts that will be used on the
-    playbook execution.  The simplest way is to edit the inventory
-    file this directory.
-
- 3) (OPTIONAL) adjust your configuration on vars.yml
-
- 4) Run a playbook with: ansible-playbook <PLAYBOOK_FILE_NAME>
-
-The following Ansible playbooks are available here:
+installed via a number of different methods. The following Ansible
+playbooks are available here:
 
  - pip-git.yml: deployment of Avocado and Avocado-VT using pip, from a
    GIT repository, on a Python virtual environment.  Tested on EL7,
@@ -28,3 +14,20 @@ The following Ansible playbooks are available here:
 
  - rpm-repo.yml: deployment of Avocado and Avocado-VT using RPM, from
    the official release repository. Fedora 29 and Fedora 30.
+
+Usage:
+======
+
+These are intended to be used as regular playbooks, so roughly the
+following steps should be followed:
+
+ 1) Install ansible.  If you need help, refer to
+    https://docs.ansible.com/ansible/latest/installation_guide
+
+ 2) Adjust your inventory, that is, the hosts that will be used on the
+    playbook execution.  The simplest way is to edit the inventory
+    file this directory.
+
+ 3) (OPTIONAL) adjust your configuration on vars.yml
+
+ 4) Run a playbook with: ansible-playbook <PLAYBOOK_FILE_NAME>
