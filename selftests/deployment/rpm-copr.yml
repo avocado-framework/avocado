@@ -12,11 +12,4 @@
     - include_tasks: tasks/avocado_vt_copr_repo.yml
     - include_tasks: tasks/avocado_vt_rpm_pkg.yml
     - include_tasks: tasks/avocado_vt_rpm_deps.yml
-    - name: Avocado-VT bootstrap
-      shell: avocado vt-bootstrap --yes-to-all --vt-skip-verify-download-assets
-    - name: Avocado-VT test available
-      shell: avocado list boot
-      changed_when: false
-    - name: Avocado-VT dry-run execution
-      shell: avocado run --dry-run -- boot
-      changed_when: false
+    - include_tasks: tasks/avocado_vt_smoke.yml
