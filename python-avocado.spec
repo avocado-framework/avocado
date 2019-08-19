@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 71.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -95,7 +95,6 @@ BuildRequires: python3-pycdlib
 %if %{with_tests}
 BuildRequires: genisoimage
 BuildRequires: libcdio
-BuildRequires: libvirt-python
 BuildRequires: perl-Test-Harness
 BuildRequires: psmisc
 BuildRequires: python3-libvirt
@@ -127,10 +126,6 @@ these days a framework) to perform automated testing.
 %else
 %setup -q -n %{srcname}-%{commit}
 %endif
-# package plugins-runner-vm requires libvirt-python, but the RPM
-# version of libvirt-python does not publish the egg info and this
-# causes that dep to be attempted to be installed by pip
-sed -e "s/'libvirt-python'//" -i optional_plugins/runner_vm/setup.py
 
 %build
 %if 0%{?fedora} && 0%{?fedora} < 29
@@ -582,6 +577,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Aug 19 2019 Cleber Rosa <cleber@redhat.com> - 71.0-1
+- Use newer libvirt Python bindings package name
+- Dropped older libvirt Python lack of egg info workaround
+
 * Thu Aug 15 2019 Cleber Rosa <cleber@redhat.com> - 71.0-0
 - New release
 
