@@ -62,6 +62,7 @@ if __name__ == '__main__':
           entry_points={
               'console_scripts': [
                   'avocado-runner = avocado.core.nrunner:main',
+                  'avocado-runner-avocado-instrumented = avocado.core.nrunner_avocado_instrumented:main',
                   ],
               'avocado.plugins.cli': [
                   'envkeep = avocado.plugins.envkeep:EnvKeep',

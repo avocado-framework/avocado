@@ -78,6 +78,8 @@ class NRun(CLICmd):
                 runnable = nrunner.Runnable('python-unittest', unittest_path)
             elif klass == test.SimpleTest:
                 runnable = nrunner.Runnable('exec-test', args.get('executable'))
+            elif isinstance(klass, str):
+                runnable = nrunner.Runnable('avocado-instrumented', name)
             else:
                 # FIXME: This should instead raise an error
                 print('WARNING: unknown test type "%s", using "noop"' % factory[0])
