@@ -127,6 +127,19 @@ file.  The format chosen is JSON, and that should allow both
 quick and easy machine handling and also manual creation of
 recipes when necessary.
 
+Runners
+=======
+
+A runner can be capable of running one or many different kinds of
+runnables.  A runner should implement a ``capabilities`` command
+that returns, among other info, a list of runnable kinds that it
+can (to the best of its knowledge) run.  Example::
+
+  python3 -m avocado.core.nrunner capabilities
+  {'runnables': ['noop', 'exec', 'exec-test', 'python-unittest'],
+   'commands': ['capabilities', 'runnable-run', 'runnable-run-recipe',
+   'task-run', 'task-run-recipe', 'status-server']}
+
 Runner Execution
 ================
 
