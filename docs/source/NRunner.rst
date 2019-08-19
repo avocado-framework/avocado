@@ -140,6 +140,13 @@ can (to the best of its knowledge) run.  Example::
    'commands': ['capabilities', 'runnable-run', 'runnable-run-recipe',
    'task-run', 'task-run-recipe', 'status-server']}
 
+Runner scripts
+==============
+
+The primary runner implementation is a Python module that can be run,
+as shown before, with the ``avocado.core.nrunner`` module name.
+Additionally it's also available as the ``avocado-runner`` script.
+
 Runner Execution
 ================
 
