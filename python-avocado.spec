@@ -126,10 +126,6 @@ these days a framework) to perform automated testing.
 %else
 %setup -q -n %{srcname}-%{commit}
 %endif
-# package plugins-runner-vm requires libvirt-python, but the RPM
-# version of libvirt-python does not publish the egg info and this
-# causes that dep to be attempted to be installed by pip
-sed -e "s/'libvirt-python'//" -i optional_plugins/runner_vm/setup.py
 
 %build
 %if 0%{?fedora} && 0%{?fedora} < 29
@@ -583,6 +579,7 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Mon Aug 19 2019 Cleber Rosa <cleber@redhat.com> - 71.0-1
 - Use newer libvirt Python bindings package name
+- Dropped older libvirt Python lack of egg info workaround
 
 * Thu Aug 15 2019 Cleber Rosa <cleber@redhat.com> - 71.0-0
 - New release
