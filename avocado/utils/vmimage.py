@@ -364,11 +364,15 @@ class Image:
                                                     self.arch)
 
     def get(self):
+        if isinstance(self.cache_dir, str):
+            cache_dirs = [self.cache_dir]
+        else:
+            cache_dirs = self.cache_dir
         asset_path = asset.Asset(name=self.url,
                                  asset_hash=self.checksum,
                                  algorithm=self.algorithm,
                                  locations=None,
-                                 cache_dirs=[self.cache_dir],
+                                 cache_dirs=cache_dirs,
                                  expire=None).fetch()
 
         if os.path.splitext(asset_path)[1] == '.xz':
@@ -416,15 +420,40 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
     :param snapshot_dir: (optional) Local system path where the snapshot images
                          will be held.  Defaults to cache_dir if none is given.
 
-    :returns: Image Provider instance that can provide the image
+    :returns: Image instance that can provide the image
               according to the parameters.
     """
-
-    if name is not None:
-        name = name.lower()
+    provider = get_best_provider(name, version, build, arch)
 
     if cache_dir is None:
         cache_dir = tempfile.gettempdir()
+    try:
+        return Image(name=provider.name, url=provider.get_image_url(),
+                     version=provider.version, arch=provider.arch,
+                     checksum=checksum, algorithm=algorithm,
+                     cache_dir=cache_dir, snapshot_dir=snapshot_dir)
+    except ImageProviderError:
+        pass
+
+    raise AttributeError('Provider not available')
+
+
+def get_best_provider(name=None, version=None, build=None, arch=None):
+    """
+        Wrapper to get parameters of the best Image Provider, according to
+        the parameters provided.
+
+        :param name: (optional) Name of the Image Provider, usually matches
+                     the distro name.
+        :param version: (optional) Version of the system image.
+        :param build: (optional) Build number of the system image.
+        :param arch: (optional) Architecture of the system image.
+
+        :returns: Image Provider
+        """
+
+    if name is not None:
+        name = name.lower()
 
     provider_args = {}
     if version is not None:
@@ -438,16 +467,8 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
 
     for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
-            cls = provider(**provider_args)
             try:
-                return Image(name=cls.name,
-                             url=cls.get_image_url(),
-                             version=cls.version,
-                             arch=cls.arch,
-                             checksum=checksum,
-                             algorithm=algorithm,
-                             cache_dir=cache_dir,
-                             snapshot_dir=snapshot_dir)
+                return provider(**provider_args)
             except ImageProviderError:
                 pass
 
