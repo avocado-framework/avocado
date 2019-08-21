@@ -163,6 +163,29 @@ class OpenSUSEImageProvider(unittest.TestCase):
         suse_provider.get_version = unittest.mock.Mock(return_value='15.0')
         self.assertEqual(suse_provider.get_image_url(), expected_image_url)
 
+    def test_get_image_parameters_match(self):
+        expected_version = '30'
+        expected_arch = 'x86_64'
+        expected_build = '1234'
+        provider = vmimage.FedoraImageProvider(expected_version, expected_build,
+                                               expected_arch)
+        image = "Fedora-Cloud-Base-%s-%s.%s.qcow2" % (expected_version, expected_build,
+                                                      expected_arch)
+        parameters = provider.get_image_parameters(image)
+        self.assertEqual(expected_version, parameters['version'],
+                         "Founded version is wrong")
+        self.assertEqual(expected_build, parameters['build'],
+                         "Founded build is wrong")
+        self.assertEqual(expected_arch, parameters['arch'],
+                         "Founded arch is wrong")
+
+    def test_get_image_parameters_not_match(self):
+        provider = vmimage.FedoraImageProvider('30', '1234',
+                                               'x86_64')
+        image = 'openSUSE-Leap-15.0-OpenStack.x86_64-1.1.1-Buildlp111.11.11.qcow2'
+        parameters = provider.get_image_parameters(image)
+        self.assertIsNone(parameters, "get_image_parameters() finds parameters where they are not")
+
 
 if __name__ == '__main__':
     unittest.main()
