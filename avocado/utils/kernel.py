@@ -44,6 +44,7 @@ class KernelBuild:
         :param data_dirs: list of directories to keep the downloaded kernel
         :return: None.
         """
+        self.asset_path = None
         self.version = version
         self.config_path = config_path
         self.distro = distro.detect()
@@ -93,7 +94,7 @@ class KernelBuild:
         """
         Configure/prepare kernel source to build.
         """
-        self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
+        self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)  # pylint: disable=W0201
         build.make(self.linux_dir, extra_args='-C %s mrproper' %
                    self.linux_dir)
         if self.config_path is not None:

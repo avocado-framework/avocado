@@ -192,8 +192,6 @@ class ResultsdbCLI(CLI):
                             dest='resultsdb_note_limit', default=None,
                             help='Maximum note size limit')
 
-        self.configured = True
-
     def run(self, config):
         resultsdb_api_url = config.get('resultsdb_api', None)
         if resultsdb_api_url is None:

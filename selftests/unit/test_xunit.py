@@ -52,6 +52,7 @@ class xUnitSucceedTest(unittest.TestCase):
                                     "job-2018-11-28T16.27-8fef221/job.log")
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir.name)
         self.test1._Test__status = 'PASS'
+        self.test1._Test__logfile = ''
         self.test1.time_elapsed = 678.23689
 
     def tearDown(self):

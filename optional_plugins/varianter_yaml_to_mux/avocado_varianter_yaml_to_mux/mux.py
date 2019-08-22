@@ -157,6 +157,7 @@ class MuxPlugin:
     default_params = None
     paths = None
     debug = None
+    variant_ids = []
 
     def initialize_mux(self, root, paths, debug):
         """

@@ -51,6 +51,9 @@ class JournalResult(ResultEvents):
         :param job: an instance of :class:`avocado.core.job.Job`.
         """
         self.journal_initialized = False
+        self.journal_path = ''
+        self.journal = None
+        self.journal_cursor = None
 
     def _init_journal(self, logdir):
         self.journal_path = os.path.join(logdir, JOURNAL_FILENAME)
@@ -128,7 +131,6 @@ class Journal(CLI):
         if run_subcommand_parser is None:
             return
 
-        self.parser = parser
         help_msg = ('Records test status changes (for use with '
                     'avocado-journal-replay and avocado-server)')
         run_subcommand_parser.output.add_argument('--journal',

@@ -68,7 +68,7 @@ def __private():
     class GdbMiScannerBase(spark.GenericScanner):
 
         def tokenize(self, s):
-            self.rv = []
+            self.rv = []  # pylint: disable=W0201
             spark.GenericScanner.tokenize(self, s)
             return self.rv
 
@@ -161,7 +161,7 @@ def __private():
         def terminal(self, token):
             #  Homogeneous AST.
             rv = AST(token.type)
-            rv.value = token.value
+            rv.value = token.value  # pylint: disable=W0201
             return rv
 
         def nonterminal(self, token_type, args):

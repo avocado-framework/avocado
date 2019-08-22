@@ -25,7 +25,7 @@ class Magic(datadrainer.BaseDrainer):
         return self.magic
 
     def write(self, data):
-        self.destination = data
+        self.destination = data  # pylint: disable=W0201
         self._internal_quit = True
 
 

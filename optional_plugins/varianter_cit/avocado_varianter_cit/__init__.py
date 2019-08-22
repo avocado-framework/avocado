@@ -69,7 +69,7 @@ class VarianterCit(Varianter):
     description = "CIT Varianter"
 
     def initialize(self, config):
-        self.variants = None
+        self.variants = None  # pylint: disable=W0201
         order = config.get('cit_order_of_combinations', DEFAULT_ORDER_OF_COMBINATIONS)
         if order > 6:
             LOG_UI.error("The order of combinations is bigger then 6")
@@ -95,10 +95,10 @@ class VarianterCit(Varianter):
 
         cit = Cit(input_data, order, constraints)
         final_list = cit.compute()
-        self.headers = [parameter.name for parameter in parameters]
+        self.headers = [parameter.name for parameter in parameters]  # pylint: disable=W0201
         results = [[parameters[j].values[final_list[i][j]] for j in range(len(final_list[i]))]
                    for i in range(len(final_list))]
-        self.variants = []
+        self.variants = []  # pylint: disable=W0201
         for combination in results:
             self.variants.append(dict(zip(self.headers, combination)))
 

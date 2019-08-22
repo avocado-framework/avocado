@@ -487,7 +487,6 @@ class GDB:
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
         """
-        self.binary_name = os.path.basename(path)
         cmd = "-file-exec-and-symbols %s" % path
         r = self.cmd(cmd)
         if not r.result.class_ == 'done':

@@ -55,6 +55,11 @@ class App:
 
     def __init__(self):
         self.parser = Parser()
+        self.json = None
+        self.datetime = None
+        self.results = []
+        self.args = None
+        self.user_identification = None
 
     def run(self):
         self.args, _ = self.parser.parse_known_args()
@@ -75,7 +80,6 @@ class App:
         self.json = json.load(self.args.template)
         self.user_identification = None
         self.datetime = datetime.datetime.now()
-        self.results = []
 
         print("Name: %s" % self.json.get("name"))
         print("Description: %s\n" % self.json.get("description"))

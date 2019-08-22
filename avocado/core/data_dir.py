@@ -219,7 +219,7 @@ class _TmpDirTracker(Borg):
         if not hasattr(self, 'tmp_dir'):
             if basedir is not None:
                 self.basedir = basedir
-            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_',
+            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_',  # pylint: disable=W0201
                                             dir=self.basedir)
         elif basedir is not None and basedir != self.basedir:
             LOG_JOB.error("The tmp_dir was already created. The new basedir "

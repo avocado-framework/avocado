@@ -41,13 +41,9 @@ class ResultUpload(Result):
             return  # Don't create results on unfinished jobs
 
         """
-        self.upload_url = None
-        if job.config.get('result_upload_url', None) is not None:
-            self.upload_url = job.config.get('result_upload_url')
+        self.upload_url = job.config.get('result_upload_url', None)   # pylint: disable=W0201
 
-        self.upload_cmd = None
-        if job.config.get('result_upload_cmd', None) is not None:
-            self.upload_cmd = job.config.get('result_upload_cmd')
+        self.upload_cmd = job.config.get('result_upload_cmd', None)  # pylint: disable=W0201
 
         if self.upload_url is None:
             return

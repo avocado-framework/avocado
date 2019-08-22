@@ -621,7 +621,7 @@ class SubProcess:
                 details.strerror += " (%s)" % self.cmd
                 raise details
 
-            self.start_time = time.time()
+            self.start_time = time.time()  # pylint: disable=W0201
 
             # prepare fd drainers
             if self.allow_output_check == 'combined':

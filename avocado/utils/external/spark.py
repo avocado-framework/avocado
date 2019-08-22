@@ -39,6 +39,8 @@ def _namelist(instance):
 class GenericScanner:
 
     def __init__(self, flags=0):
+        self.pos = 0
+        self.string = ""
         pattern = self.reflect()
         self.re = re.compile(pattern, re.VERBOSE | flags)
 
@@ -119,6 +121,12 @@ class GenericParser:
         self.rules = {}
         self.rule2func = {}
         self.rule2name = {}
+        self.newrules = {}
+        self.new2old = {}
+        self.edges = {}
+        self.cores = {}
+        self.nullable = {}
+        self.links = {}
         self.collectRules()
         self.augment(start)
         self.ruleschanged = 1
@@ -143,7 +151,7 @@ class GenericParser:
             self.makeNewRules()
             self.ruleschanged = 0
             self.edges, self.cores = {}, {}
-            self.states = {0: self.makeState0()}
+            self.states = {0: self.makeState0()}  # pylint: disable=W0201
             self.makeState(0, self._BOF)
         #
         #  XXX - should find a better way to do this..
@@ -174,7 +182,7 @@ class GenericParser:
         self.augment(start)
         D['rule2func'] = self.rule2func
         D['makeSet'] = self.makeSet_fast
-        self.__dict__ = D
+        self.__dict__ = D  # pylint: disable=W0201
 
     #
     #  A hook for GenericASTBuilder and GenericASTMatcher.  Mess
@@ -323,7 +331,7 @@ class GenericParser:
             self.makeNewRules()
             self.ruleschanged = 0
             self.edges, self.cores = {}, {}
-            self.states = {0: self.makeState0()}
+            self.states = {0: self.makeState0()}  # pylint: disable=W0201
             self.makeState(0, self._BOF)
 
         for i in range(len(tokens)):
@@ -802,6 +810,7 @@ class GenericASTMatcher(GenericParser):
     def __init__(self, start, ast):
         GenericParser.__init__(self, start)
         self.ast = ast
+        self.input = []
 
     def preprocess(self, rule, func):
         rebind = (lambda func, self=self:

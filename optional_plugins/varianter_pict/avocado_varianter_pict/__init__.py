@@ -93,7 +93,7 @@ class VarianterPict(Varianter):
     description = "PICT based Varianter"
 
     def initialize(self, config):
-        self.variants = None
+        self.variants = None  # pylint: disable=W0201
         error = False
 
         pict_parameter_file = config.get("pict_parameter_file", None)
@@ -126,12 +126,12 @@ class VarianterPict(Varianter):
             else:
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-        self.parameter_path = config.get("pict_parameter_path")
+        self.parameter_path = config.get("pict_parameter_path")  # pylint: disable=W0201
 
         output = run_pict(pict_binary,
                           pict_parameter_file,
                           config.get("pict_order_of_combinations"))
-        self.headers, self.variants = parse_pict_output(output)
+        self.headers, self.variants = parse_pict_output(output)  # pylint: disable=W0201
 
     def __iter__(self):
         if self.variants is None:
