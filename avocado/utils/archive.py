@@ -93,7 +93,8 @@ class ArchiveFile:
         '.tar.gz': (False, True, tarfile.open, ':gz'),
         '.tgz': (False, True, tarfile.open, ':gz'),
         '.tar.bz2': (False, True, tarfile.open, ':bz2'),
-        '.tbz2': (False, True, tarfile.open, ':bz2')}
+        '.tbz2': (False, True, tarfile.open, ':bz2'),
+        '.xz': (False, True, tarfile.open, ':xz')}
 
     def __init__(self, filename, mode='r'):
         """
