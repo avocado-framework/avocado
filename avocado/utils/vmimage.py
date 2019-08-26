@@ -348,7 +348,7 @@ class Image:
                                  expire=None).fetch()
 
         if os.path.splitext(asset_path)[1] == '.xz':
-            asset_path = archive.extract_lzma(asset_path)
+            asset_path = archive.lzma_uncompress(asset_path)
 
         self._base_image = asset_path
         self._path = self._take_snapshot()

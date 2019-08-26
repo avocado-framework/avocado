@@ -179,6 +179,32 @@ class ArchiveTest(unittest.TestCase):
         with open(ret, 'rb') as decompressed:
             self.assertEqual(decompressed.read(), b'avocado\n')
 
+    def test_is_lzma_file(self):
+        xz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.xz')
+        self.assertTrue(archive.is_lzma_file(xz_path))
+
+    def test_lzma_uncompress_to_dir(self):
+        xz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.xz')
+        ret = archive.lzma_uncompress(xz_path, self.decompressdir)
+        self.assertEqual(ret, os.path.join(self.decompressdir, 'avocado'))
+
+    def test_lzma_uncompress_to_file(self):
+        xz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.xz')
+        filename = os.path.join(self.decompressdir, 'other')
+        ret = archive.lzma_uncompress(xz_path, filename)
+        self.assertEqual(ret, filename)
+
+    def test_lzma_is_archive(self):
+        xz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.xz')
+        self.assertTrue(archive.is_archive(xz_path))
+
+    def test_uncompress_lzma(self):
+        xz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.xz')
+        ret = archive.uncompress(xz_path, self.decompressdir)
+        self.assertEqual(ret, os.path.join(self.decompressdir, 'avocado'))
+        with open(ret, 'rb') as decompressed:
+            self.assertEqual(decompressed.read(), b'avocado\n')
+
     def tearDown(self):
         try:
             self.basedir.cleanup()
