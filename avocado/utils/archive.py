@@ -59,23 +59,46 @@ def gzip_uncompress(path, output_path):
         return output_path
 
 
+def is_lzma_file(path):
+    """
+    Checks if file given by path has contents that suggests lzma file
+    """
+    with lzma.LZMAFile(path, 'rb') as lzma_file:
+        try:
+            _ = lzma_file.read(1)
+        except lzma.LZMAError:
+            return False
+    return True
+
+
+def extract_lzma(path, output_path=None, force=False):
+    """
+    Extracts a XZ compressed file to the same directory.
+    """
+    if output_path is None:
+        output_path = os.path.splitext(path)[0]
+    elif os.path.isdir(output_path):
+        basename = os.path.basename(path)
+        if basename.endswith('.xz'):
+            basename = os.path.splitext(basename)[0]
+        output_path = os.path.join(output_path, basename)
+    if not force and os.path.exists(output_path):
+        return output_path
+    with lzma.open(path, 'rb') as file_obj:
+        with open(output_path, 'wb') as newfile_obj:
+            newfile_obj.write(file_obj.read())
+    return output_path
+
+
+# TODO: remove extract_lzma in favor of lzma_uncompress to make
+# API more in line with gzip_uncompress
+lzma_uncompress = extract_lzma
+
+
 class ArchiveException(Exception):
     """
     Base exception for all archive errors.
     """
-
-
-def extract_lzma(path, force=False):
-    """
-    Extracts a XZ compressed file to the same directory.
-    """
-    extracted_file = os.path.splitext(path)[0]
-    if not force and os.path.exists(extracted_file):
-        return extracted_file
-    with lzma.open(path, 'rb') as file_obj:
-        with open(extracted_file, 'wb') as newfile_obj:
-            newfile_obj.write(file_obj.read())
-    return extracted_file
 
 
 class ArchiveFile:
@@ -227,7 +250,7 @@ def is_archive(filename):
     :return: `True` if it is an archive.
     """
     return (zipfile.is_zipfile(filename) or tarfile.is_tarfile(filename) or
-            is_gzip_file(filename))
+            is_gzip_file(filename) or is_lzma_file(filename))
 
 
 def compress(filename, path):
@@ -256,8 +279,11 @@ def uncompress(filename, path):
     :param filename: archive file name.
     :param path: destination path to extract to.
     """
-    if is_gzip_file(filename) and not tarfile.is_tarfile(filename):
+    is_tar = tarfile.is_tarfile(filename)
+    if is_gzip_file(filename) and not is_tar:
         return gzip_uncompress(filename, path)
+    elif is_lzma_file(filename) and not is_tar:
+        return lzma_uncompress(filename, path)
     else:
         with ArchiveFile.open(filename) as x:
             return x.extract(path)
