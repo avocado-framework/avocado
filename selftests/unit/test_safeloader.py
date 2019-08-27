@@ -70,14 +70,16 @@ from unittest import TestCase
 
 class BaseClass(TestCase):
     '''
-    :avocado: tags=base
+    :avocado: tags=base-tag
+    :avocado: tags=base.tag
     '''
     def test_basic(self):
         pass
 
 class Child(BaseClass):
     '''
-    :avocado: tags=child
+    :avocado: tags=child-tag
+    :avocado: tags=child.tag
     '''
     def test_child(self):
         pass
@@ -420,9 +422,12 @@ class FindClassAndMethods(UnlimitedDiff):
             RECURSIVE_DISCOVERY_PYTHON_UNITTEST)
         temp_test.save()
         tests = safeloader.find_python_unittests(temp_test.path)
-        expected = {'BaseClass': [('test_basic', {'base': None})],
-                    'Child': [('test_child', {'child': None}),
-                              ('test_basic', {'base': None})]}
+        expected = {'BaseClass': [('test_basic', {'base-tag': None,
+                                                  'base.tag': None})],
+                    'Child': [('test_child', {'child-tag': None,
+                                              'child.tag': None}),
+                              ('test_basic', {'base-tag': None,
+                                              'base.tag': None})]}
         self.assertEqual(expected, tests)
 
 
