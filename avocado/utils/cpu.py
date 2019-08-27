@@ -220,7 +220,7 @@ def get_cpuidle_state():
         for state_no in states:
             state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
             try:
-                cpu_idlestate[cpu][state_no] = int(open(state_file, 'rb').read())
+                cpu_idlestate[cpu][state_no] = bool(int(open(state_file, 'rb').read()))
             except IOError as err:
                 logging.warning("Failed to read idle state on cpu %s "
                                 "for state %s:\n%s", cpu, state_no, err)
@@ -228,29 +228,16 @@ def get_cpuidle_state():
 
 
 def _bool_to_binary(value):
-    '''
-    Turns a boolean value (True or False) into data suitable for writing to
-    /proc/* and /sys/* files.
-    '''
+    """
+    Turns a Python boolean value (True or False) into binary data.
+
+    This function is suitable for writing to /proc/* and /sys/* files.
+    """
     if value is True:
         return b'1'
     if value is False:
         return b'0'
     raise TypeError("Value is not a boolean: %s" % value)
-
-
-def _legacy_disable(value):
-    '''
-    Support for the original acceptable disable parameter values
-
-    TODO: this should be removed in the near future
-    Reference: https://trello.com/c/aJzNUeA5/
-    '''
-    if value == 0:
-        return b'0'
-    if value == 1:
-        return b'1'
-    return _bool_to_binary(value)
 
 
 def set_cpuidle_state(state_number="all", disable=True, setstate=None):
@@ -259,7 +246,8 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
 
     :param state_number: cpuidle state number, default: `all` all states
     :param disable: whether to disable/enable given cpu idle state,
-                    default is to disable (True)
+                    default is to disable (True). Must be a boolean value.
+    :type disable: bool
     :param setstate: cpuidle state value, output of `get_cpuidle_state()`
     """
     cpus_list = cpu_online_list()
@@ -269,7 +257,7 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
             states = range(0, len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
         else:
             states.append(state_number)
-        disable = _legacy_disable(disable)
+        disable = _bool_to_binary(disable)
         for cpu in cpus_list:
             for state_no in states:
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
@@ -282,7 +270,7 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
-                disable = _legacy_disable(value)
+                disable = _bool_to_binary(value)
                 try:
                     open(state_file, "wb").write(disable)
                 except IOError as err:

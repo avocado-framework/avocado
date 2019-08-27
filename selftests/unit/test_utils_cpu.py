@@ -492,7 +492,7 @@ uarch	: sifive,rocket0
             self.assertEqual(cpu.get_cpu_arch(), "riscv")
 
     def test_get_cpuidle_state_off(self):
-        retval = {0: {0: 0}}
+        retval = {0: {0: False}}
         with unittest.mock.patch('avocado.utils.cpu.cpu_online_list',
                                  return_value=[0]):
             with unittest.mock.patch('glob.glob',
@@ -502,7 +502,7 @@ uarch	: sifive,rocket0
                     self.assertEqual(cpu.get_cpuidle_state(), retval)
 
     def test_get_cpuidle_state_on(self):
-        retval = {0: {0: 1}}
+        retval = {0: {0: True}}
         with unittest.mock.patch('avocado.utils.cpu.cpu_online_list',
                                  return_value=[0]):
             with unittest.mock.patch('glob.glob',
@@ -541,8 +541,18 @@ uarch	: sifive,rocket0
                                      return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with unittest.mock.patch('builtins.open',
                                          return_value=output):
-                    cpu.set_cpuidle_state(setstate={0: {0: 1}, 2: {0: 0}})
+                    cpu.set_cpuidle_state(setstate={0: {0: True}, 2: {0: False}})
                     self.assertEqual(output.getvalue(), b'10')
+
+    def test_set_cpuidle_state_disable(self):
+        output = io.BytesIO()
+        function = 'avocado.utils.cpu.cpu_online_list'
+        state_file = '/sys/devices/system/cpu/cpu0/cpuidle/state1'
+        with unittest.mock.patch(function, return_value=[0, 2]):
+            with unittest.mock.patch('glob.glob', return_value=[state_file]):
+                with unittest.mock.patch('builtins.open', return_value=output):
+                    with self.assertRaises(TypeError):
+                        cpu.set_cpuidle_state(disable=1)
 
 
 if __name__ == "__main__":
