@@ -146,7 +146,7 @@ class NRun(CLICmd):
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         suite = self.create_test_suite(config.get('references'))
-        self.pending_tasks = self.suite_to_tasks(suite, [config.get('status_server')])
+        self.pending_tasks = self.suite_to_tasks(suite, [config.get('status_server')])  # pylint: disable=W0201
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
@@ -155,11 +155,11 @@ class NRun(CLICmd):
         if not config.get('disable_task_randomization'):
             random.shuffle(self.pending_tasks)
 
-        self.spawned_tasks = []
+        self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
             loop = asyncio.get_event_loop()
-            self.status_server = nrunner.StatusServer(config.get('status_server'),
+            self.status_server = nrunner.StatusServer(config.get('status_server'),  # pylint: disable=W0201
                                                       [t.identifier for t in
                                                        self.pending_tasks])
             self.status_server.start()

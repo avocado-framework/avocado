@@ -97,7 +97,7 @@ class BaseDrainer(metaclass=abc.ABCMeta):
         """
         Starts a thread to do the data draining
         """
-        self._thread = threading.Thread(target=self._loop,
+        self._thread = threading.Thread(target=self._loop,  # pylint: disable=W0201
                                         name=self.name)
 
         self._thread.daemon = True

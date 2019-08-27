@@ -266,7 +266,7 @@ class VM:
         :param password: the password.
         """
         if not self.logged:
-            self.remote = Remote(hostname, username, password)
+            self.remote = Remote(hostname, username, password)  # pylint: disable=W0201
             res = self.remote.uptime()
             if res.succeeded:
                 self.logged = True

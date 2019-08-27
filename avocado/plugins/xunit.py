@@ -170,7 +170,6 @@ class XUnitCLI(CLI):
         if run_subcommand_parser is None:
             return
 
-        self.parser = parser
         run_subcommand_parser.output.add_argument(
             '--xunit', type=str, action=FileOrStdoutAction,
             dest='xunit_output', metavar='FILE',
