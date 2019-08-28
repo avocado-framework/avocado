@@ -420,15 +420,40 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
     :param snapshot_dir: (optional) Local system path where the snapshot images
                          will be held.  Defaults to cache_dir if none is given.
 
-    :returns: Image Provider instance that can provide the image
+    :returns: Image instance that can provide the image
               according to the parameters.
+    """
+    provider = get_best_provider(name, version, build, arch)
+
+    if cache_dir is None:
+        cache_dir = tempfile.gettempdir()
+    try:
+        return Image(name=provider.name, url=provider.get_image_url(),
+                     version=provider.version, arch=provider.arch,
+                     checksum=checksum, algorithm=algorithm,
+                     cache_dir=cache_dir, snapshot_dir=snapshot_dir)
+    except ImageProviderError:
+        pass
+
+    raise AttributeError('Provider not available')
+
+
+def get_best_provider(name=None, version=None, build=None, arch=None):
+    """
+    Wrapper to get parameters of the best Image Provider, according to
+    the parameters provided.
+
+    :param name: (optional) Name of the Image Provider, usually matches
+                 the distro name.
+    :param version: (optional) Version of the system image.
+    :param build: (optional) Build number of the system image.
+    :param arch: (optional) Architecture of the system image.
+
+    :returns: Image Provider
     """
 
     if name is not None:
         name = name.lower()
-
-    if cache_dir is None:
-        cache_dir = tempfile.gettempdir()
 
     provider_args = {}
     if version is not None:
@@ -442,16 +467,8 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
 
     for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
-            cls = provider(**provider_args)
             try:
-                return Image(name=cls.name,
-                             url=cls.get_image_url(),
-                             version=cls.version,
-                             arch=cls.arch,
-                             checksum=checksum,
-                             algorithm=algorithm,
-                             cache_dir=cache_dir,
-                             snapshot_dir=snapshot_dir)
+                return provider(**provider_args)
             except ImageProviderError:
                 pass
 
