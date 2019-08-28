@@ -87,6 +87,7 @@ if __name__ == '__main__':
                   'task-run = avocado.plugins.task_run:TaskRun',
                   'task-run-recipe = avocado.plugins.task_run_recipe:TaskRunRecipe',
                   'nrun = avocado.plugins.nrun:NRun',
+                  'vmimage = avocado.plugins.vmimage:VMimage'
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
