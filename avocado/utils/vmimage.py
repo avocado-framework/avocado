@@ -364,11 +364,15 @@ class Image:
                                                     self.arch)
 
     def get(self):
+        if isinstance(self.cache_dir, str):
+            cache_dirs = [self.cache_dir]
+        else:
+            cache_dirs = self.cache_dir
         asset_path = asset.Asset(name=self.url,
                                  asset_hash=self.checksum,
                                  algorithm=self.algorithm,
                                  locations=None,
-                                 cache_dirs=[self.cache_dir],
+                                 cache_dirs=cache_dirs,
                                  expire=None).fetch()
 
         if os.path.splitext(asset_path)[1] == '.xz':
