@@ -336,6 +336,27 @@ class OpenSUSEImageProvider(ImageProviderBase):
 class Image:
     def __init__(self, name, url, version, arch, checksum, algorithm,
                  cache_dir, snapshot_dir=None):
+        """
+        Creates an instance of Image class.
+
+        :param name: Name of image.
+        :type name: str
+        :param url: The url where the image can be fetched from.
+        :type url: str
+        :param version: Version of image.
+        :type version: int
+        :param arch: Architecture of the system image.
+        :type arch: str
+        :param checksum: Hash of the system image to match after download.
+        :type checksum: str
+        :param algorithm: Hash type, used when the checksum is provided.
+        :type algorithm: str
+        :param cache_dir: Local system path where the base images will be held.
+        :type cache_dir: str or iterable
+        :param snapshot_dir: Local system path where the snapshot images
+                            will be held.  Defaults to cache_dir if none is given.
+        :type snapshot_dir: str
+        """
         self.name = name
         self.url = url
         self.version = version
@@ -364,11 +385,15 @@ class Image:
                                                     self.arch)
 
     def get(self):
+        if isinstance(self.cache_dir, str):
+            cache_dirs = [self.cache_dir]
+        else:
+            cache_dirs = self.cache_dir
         asset_path = asset.Asset(name=self.url,
                                  asset_hash=self.checksum,
                                  algorithm=self.algorithm,
                                  locations=None,
-                                 cache_dirs=[self.cache_dir],
+                                 cache_dirs=cache_dirs,
                                  expire=None).fetch()
 
         if os.path.splitext(asset_path)[1] == '.xz':
