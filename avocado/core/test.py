@@ -381,8 +381,7 @@ class Test(unittest.TestCase, TestData):
         self.log.warn = self.log.warning = record_and_warn
 
         # Initialized by _start_logging and terminated by _stop_logging
-        self._file_handler = None
-
+        self.file_handler = None
         self.log.info('INIT %s', self.name)
 
         paths = ['/test/*']
@@ -668,19 +667,19 @@ class Test(unittest.TestCase, TestData):
         """
         Simple helper for adding a file logger to the root logger.
         """
-        self._file_handler = logging.FileHandler(filename=self.logfile)
-        self._file_handler.setLevel(logging.DEBUG)
+        self.file_handler = logging.FileHandler(filename=self.logfile)
+        self.file_handler.setLevel(logging.DEBUG)
 
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
-        self._file_handler.setFormatter(formatter)
-        self.log.addHandler(self._file_handler)
+        self.file_handler.setFormatter(formatter)
+        self.log.addHandler(self.file_handler)
 
         # add the test log handler to the root logger so that
         # everything logged while the test is running, for every
         # logger, also makes its way into the test log file
-        logging.root.addHandler(self._file_handler)
+        logging.root.addHandler(self.file_handler)
 
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
@@ -715,7 +714,7 @@ class Test(unittest.TestCase, TestData):
         """
         Stop the logging activity of the test by cleaning the logger handlers.
         """
-        self.log.removeHandler(self._file_handler)
+        self.log.removeHandler(self.file_handler)
         if isinstance(sys.stderr, output.LoggingFile):
             sys.stderr.rm_logger(LOG_JOB.getChild("stderr"))
         if isinstance(sys.stdout, output.LoggingFile):
