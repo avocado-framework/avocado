@@ -27,6 +27,8 @@ import glob
 import logging
 import random
 
+from . import process
+
 
 def _list_matches(content_list, pattern):
     """
@@ -356,3 +358,28 @@ def get_pid_cpus(pid):
         except IOError:
             continue
     return list(cpus)
+
+
+def is_smt():
+
+    """
+    Return True/False Based on if system has hyperthreading enabled
+    :return: True/False
+    :rtype: boolean
+    """
+
+    if get_cpu_vendor_name().startswith('power'):
+        try:
+            if b'is not SMT capable' in process.system_output("ppc64_cpu --smt"):
+                return False
+            return True
+        except process.CmdError as err:
+            logging.error("Unable to get Simultaneous multithreading status as errror:%s", err)
+            return False
+    else:
+        with open('/proc/cpuinfo') as cpu_file:
+            cpuinfo = dict(map(
+                lambda line: map(str.strip, line.split(':', 1)),
+                filter(lambda line: ':' in line, cpu_file)
+                ))
+    return (cpuinfo['siblings'] != cpuinfo['cpu cores'])
