@@ -38,7 +38,7 @@ import os
 import re
 import shutil
 import logging
-import optparse
+import argparse
 import tempfile
 import configparser
 
@@ -1232,11 +1232,11 @@ def install_distro_packages(distro_pkg_map, interactive=False):
 
 
 def main():
-    parser = optparse.OptionParser(
+    parser = argparse.ArgumentParser(
         "usage: %prog [install|remove|check-installed|list-all|list-files|add-repo|"
         "remove-repo| upgrade|what-provides|install-what-provides] arguments")
-    parser.add_option('--verbose', dest="debug", action='store_true',
-                      help='include debug messages in console output')
+    parser.add_argument('--verbose', dest="debug", action='store_true',
+                        help='include debug messages in console output')
 
     _, args = parser.parse_args()
     software_manager = SoftwareManager()
