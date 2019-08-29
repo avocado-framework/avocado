@@ -424,9 +424,13 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
               according to the parameters.
     """
     provider = get_best_provider(name, version, build, arch)
+    vmimage_dir = os.path.join("vmimage", provider.name, str(provider.version),
+                               provider.arch)
 
     if cache_dir is None:
-        cache_dir = tempfile.gettempdir()
+        cache_dir = os.path.join(tempfile.gettempdir(), vmimage_dir)
+    else:
+        cache_dir = os.path.join(cache_dir, vmimage_dir)
     try:
         return Image(name=provider.name, url=provider.get_image_url(),
                      version=provider.version, arch=provider.arch,
