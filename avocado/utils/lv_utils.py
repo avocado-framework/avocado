@@ -441,7 +441,7 @@ def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
                    "capable of creathing thin logical volumes")
     lv_create(vg_name=vg_name, lv_name=thinlv_name, lv_size=thinlv_size,
               pool_name=thinpool_name, pool_size=thinpool_size)
-    return (thinpool_name, thinlv_name)
+    return thinpool_name, thinlv_name
 
 
 def lv_remove(vg_name, lv_name):
