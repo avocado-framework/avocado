@@ -407,7 +407,7 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
         re_buddyinfo += "(%s)" % "|".join(nodes.split())
 
     if not re.findall(re_buddyinfo, buddy_info_content):
-        logging.warn("Can not find Nodes %s", nodes)
+        logging.warning("Can not find Nodes %s", nodes)
         return None
     re_buddyinfo += r".*?zone\s+"
     if zones == "all":
@@ -415,7 +415,7 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     else:
         re_buddyinfo += "(%s)" % "|".join(zones.split())
     if not re.findall(re_buddyinfo, buddy_info_content):
-        logging.warn("Can not find zones %s", zones)
+        logging.warning("Can not find zones %s", zones)
         return None
     re_buddyinfo += r"\s+([\s\d]+)"
 

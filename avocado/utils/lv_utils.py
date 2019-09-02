@@ -436,9 +436,9 @@ def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
     :param thinlv_name: The name of thin volume
     :param thinlv_size: The size of thin volume
     """
-    LOGGER.warn("thin_lv_create() is a deprecated API and will be removed "
-                "soon.  Please resort to using lv_create() which is now "
-                "capable of creathing thin logical volumes")
+    LOGGER.warning("thin_lv_create() is a deprecated API and will be removed "
+                   "soon.  Please resort to using lv_create() which is now "
+                   "capable of creathing thin logical volumes")
     lv_create(vg_name=vg_name, lv_name=thinlv_name, lv_size=thinlv_size,
               pool_name=thinpool_name, pool_size=thinpool_size)
     return (thinpool_name, thinlv_name)
