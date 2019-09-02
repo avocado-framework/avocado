@@ -162,7 +162,8 @@ class LoaderTestFunctional(unittest.TestCase):
     def _run_with_timeout(self, cmd_line, timeout):
         current_time = time.time()
         deadline = current_time + timeout
-        test_process = subprocess.Popen(cmd_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        test_process = subprocess.Popen(cmd_line, stdout=subprocess.PIPE,  # pylint: disable=W1509
+                                        stderr=subprocess.PIPE,
                                         preexec_fn=os.setsid, shell=True)
         while not test_process.poll():
             if time.time() > deadline:
