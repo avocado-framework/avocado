@@ -58,14 +58,14 @@ def set_ip(ipaddr, netmask, interface):
             raise NWException("ifup fails: %s" % ex)
 
     if distro.detect().name == 'SuSE':
-        conf_file = "/etc/sysconfig/ifcfg-%s" % interface
+        conf_file = "/etc/sysconfig/network/ifcfg-%s" % interface
         if os.path.exists(conf_file):
             shutil.move(conf_file, conf_file+".backup")
         else:
             raise NWException("%s interface not available" % interface)
         with open(conf_file, "w") as network_conf:
             network_conf.write("IPADDR=%s \n" % ipaddr)
-            network_conf.write("NETMASK=%s" % netmask)
+            network_conf.write("NETMASK='%s'" % netmask)
 
         cmd = "ifup %s" % interface
         try:
@@ -83,7 +83,7 @@ def unset_ip(interface):
         conf_file = "/etc/sysconfig/network-scripts/ifcfg-%s" % interface
 
     if distro.detect().name == 'SuSE':
-        conf_file = "/etc/sysconfig/ifcfg-%s" % interface
+        conf_file = "/etc/sysconfig/network/ifcfg-%s" % interface
 
     cmd = "ifdown %s" % interface
     try:
