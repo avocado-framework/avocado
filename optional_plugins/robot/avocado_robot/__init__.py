@@ -107,7 +107,7 @@ class RobotLoader(loader.TestLoader):
             subtests_filter = re.compile(_subtests_filter)
         try:
             robot_suite = find_tests(reference, test_suite={})
-        except Exception as data:
+        except Exception as data:  # pylint: disable=W0703
             if which_tests == loader.DiscoverMode.ALL:
                 return [(NotRobotTest, {"name": "%s: %s" % (reference, data)})]
             return []

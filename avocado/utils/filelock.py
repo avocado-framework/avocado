@@ -56,41 +56,22 @@ class FileLock:
                 os.close(fd)
                 self.locked = True
                 return self
-            except Exception:
+            except Exception:  # pylint: disable=W0703
                 try:
                     # Read the file to realize what's happening.
                     with open(self.filename, 'r') as f:
-                        try:
-                            content = f.read()
-                        except Exception as detail:
-                            raise LockFailed(detail)
+                        content = f.read()
 
-                    # If file is empty, I guess someone created it with 'touch'
-                    # to manually lock the file.
-                    if not content:
-                        raise AlreadyLocked('File is locked by someone else.')
-
-                    try:
-                        existing_lock_pid = int(content)
-                    except ValueError:
-                        # If the file content is not an integer, then I don't know
-                        # who created it and we better get out of here.
-                        raise AlreadyLocked('File is locked by someone else.')
-
-                    # If the PID in the lock file is not my PID, let's
-                    # handle it.
+                    existing_lock_pid = int(content)
                     if existing_lock_pid != self.pid:
                         # If there's no process with the PID in lockfile,
                         # let's try to remove the lockfile to acquire the
                         # lock in the next iteration.
                         if not pid_exists(existing_lock_pid):
-                            try:
-                                os.remove(self.filename)
-                                continue
-                            except:
-                                raise LockFailed('Not able to lock.')
+                            os.remove(self.filename)
+                            continue
 
-                except Exception:
+                except Exception:  # pylint: disable=W0703
                     # If we cannot read the lock file, let's just
                     # go on. Maybe in next iteration (if we have time)
                     # we have a better luck.
@@ -111,5 +92,5 @@ class FileLock:
             try:
                 os.remove(self.filename)
                 self.locked = False
-            except Exception:
+            except OSError:
                 pass

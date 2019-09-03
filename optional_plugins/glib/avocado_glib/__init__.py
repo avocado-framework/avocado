@@ -88,7 +88,7 @@ class GLibLoader(loader.TestLoader):
             try:
                 cmd = '%s -l' % (reference)
                 result = process.run(cmd)
-            except Exception as details:
+            except Exception as details:  # pylint: disable=W0703
                 if which_tests == loader.DiscoverMode.ALL:
                     return [(NotGLibTest,
                              {"name": "%s: %s" % (reference, details)})]
@@ -130,7 +130,7 @@ class GLibResolver(Resolver):
             try:
                 cmd = '%s -l' % (reference)
                 result = process.run(cmd)
-            except Exception as details:
+            except Exception as details:  # pylint: disable=W0703
                 return ReferenceResolution(reference,
                                            ReferenceResolutionResult.ERROR,
                                            info=details,

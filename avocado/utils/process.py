@@ -132,13 +132,13 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
         try:
             run(kill_cmd, sudo=True)
             return True
-        except Exception:
+        except CmdError:
             return False
 
     try:
         os.kill(pid, signal)
         return True
-    except Exception:
+    except Exception:  # pylint: disable=W0703
         return False
 
 
@@ -770,7 +770,7 @@ class SubProcess:
                 kill_child_cmd = 'kill -%d %d' % (int(sig), child_pid)
                 try:
                     run(kill_child_cmd, sudo=True)
-                except Exception:
+                except Exception:  # pylint: disable=W0703
                     continue
         else:
             self._popen.send_signal(sig)
@@ -803,14 +803,14 @@ class SubProcess:
                                        % (time.time() - self.start_time))
             try:
                 kill_process_tree(self.get_pid(), sig, timeout=1)
-            except Exception:
+            except RuntimeError:
                 try:
                     kill_process_tree(self.get_pid(), signal.SIGKILL,
                                       timeout=1)
                     log.warning("Process '%s' refused to die in 1s after "
                                 "sending %s to, destroyed it successfully "
                                 "using SIGKILL.", self.cmd, sig)
-                except Exception:
+                except RuntimeError:
                     log.error("Process '%s' refused to die in 1s after "
                               "sending %s, followed by SIGKILL, probably "
                               "dealing with a zombie process.", self.cmd,

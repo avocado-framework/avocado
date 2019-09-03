@@ -85,7 +85,7 @@ class RawFileHandler(logging.FileHandler):
             stream.write(astring.to_text(msg, self.encoding,
                                          'xmlcharrefreplace'))
             self.flush()
-        except Exception:
+        except Exception:  # pylint: disable=W0703
             self.handleError(record)
 
 
@@ -649,12 +649,9 @@ class Test(unittest.TestCase, TestData):
         state['class_name'] = self.__class__.__name__
         state['job_logdir'] = self.job.logdir
         state['job_unique_id'] = self.job.unique_id
-        try:
-            state['params'] = [(path, key, value)
-                               for path, key, value
-                               in self.__params.iteritems()]
-        except Exception:
-            state['params'] = None
+        state['params'] = [(path, key, value)
+                           for path, key, value
+                           in self.__params.iteritems()]
         return state
 
     def _register_log_file_handler(self, logger, formatter, filename,
@@ -920,7 +917,7 @@ class Test(unittest.TestCase, TestData):
                         'output.diff',
                         'output_diff',
                         'Output')
-                except Exception as details:
+                except exceptions.TestFail as details:
                     stacktrace.log_exc_info(sys.exc_info(),
                                             logger=LOG_JOB)
                     output_check_exception = details
@@ -931,7 +928,7 @@ class Test(unittest.TestCase, TestData):
                                               'stdout.diff',
                                               'stdout_diff',
                                               'Stdout')
-                    except Exception as details:
+                    except exceptions.TestFail as details:
                         # output check was performed (and failed)
                         output_checked = True
                         stacktrace.log_exc_info(sys.exc_info(),
@@ -943,7 +940,7 @@ class Test(unittest.TestCase, TestData):
                                               'stderr.diff',
                                               'stderr_diff',
                                               'Stderr')
-                    except Exception as details:
+                    except exceptions.TestFail as details:
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger=LOG_JOB)
                         stderr_check_exception = details
@@ -1000,7 +997,7 @@ class Test(unittest.TestCase, TestData):
             self.__fail_class = detail.__class__.__name__
             self.__fail_reason = astring.to_text(detail)
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
-        except Exception as detail:
+        except Exception as detail:  # pylint: disable=W0703
             self.__status = 'ERROR'
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())

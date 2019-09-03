@@ -70,11 +70,7 @@ def convert_value_type(value, value_type):
     :raise: TypeError, in case it was not possible to convert values.
     """
     # strip off leading and trailing white space
-    try:
-        sval = value.strip()
-    except Exception:
-        sval = value
-
+    sval = value.strip()
     if isinstance(value_type, str):
         if value_type == 'str':
             value_type = str

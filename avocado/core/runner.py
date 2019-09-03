@@ -92,7 +92,7 @@ class TestStatus:
             return self.queue.get()
         # Let's catch all exceptions, since errors here mean a
         # crash in avocado.
-        except Exception as details:
+        except Exception as details:  # pylint: disable=W0703
             self._failed = True
             TEST_LOG.error("RUNNER: Failed to read queue: %s", details)
             return None

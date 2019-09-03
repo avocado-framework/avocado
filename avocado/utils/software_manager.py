@@ -644,7 +644,7 @@ class YumBackend(RpmBackend):
             #Python API need to be passed globs along with name for searching
             #all possible occurrences of pattern 'name'
             d_provides = self.yum_base.searchPackageProvides(args=['*/' + name])
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=W0703
             log.error("Error searching for package that "
                       "provides %s: %s", name, exc)
             d_provides = []

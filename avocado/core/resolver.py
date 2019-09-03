@@ -104,7 +104,7 @@ class Resolver(EnabledExtensionManager):
                 result = ext.obj.resolve(reference)
                 if not result.origin:
                     result.origin = ext.name
-            except Exception as exc:
+            except Exception as exc:  # pylint: disable=W0703
                 result = ReferenceResolution(reference,
                                              ReferenceResolutionResult.ERROR,
                                              info=exc,

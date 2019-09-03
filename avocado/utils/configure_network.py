@@ -134,7 +134,7 @@ class HostInfo:
                                                              .split()[4]
             if mtuvalue == mtu:
                 return True
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=W0703
             log.error("setting mtu value in host failed: %s", ex)
         return False
 
@@ -152,7 +152,7 @@ class PeerInfo:
         try:
             self.session = Session(host, port=port, user=peer_user,
                                    key=key, password=peer_password)
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=W0703
             log.error("connection not established to peer machine: %s", ex)
 
     def set_mtu_peer(self, peer_interface, mtu):
@@ -166,7 +166,7 @@ class PeerInfo:
             mtuvalue = self.session.cmd(cmd).stdout.decode("utf-8").split()[4]
             if mtuvalue == mtu:
                 return True
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=W0703
             log.error("setting mtu value in peer failed: %s", ex)
         return False
 
@@ -180,7 +180,7 @@ class PeerInfo:
                                                     .splitlines():
                 if peer_ip in line:
                     peer_interface = line.split()[-1]
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=W0703
             if peer_interface == "":
                 log.error("unable to get peer interface: %s", ex)
         else:

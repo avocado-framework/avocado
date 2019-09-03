@@ -223,7 +223,7 @@ class TestLoaderProxy:
             for loader_plugin in self._initialized_plugins:
                 try:
                     tests.extend(loader_plugin.discover(None, which_tests))
-                except Exception as details:
+                except Exception as details:  # pylint: disable=W0703
                     handle_exception(loader_plugin, details)
         else:
             for reference in references:
@@ -236,7 +236,7 @@ class TestLoaderProxy:
                             handled = True
                             if which_tests != DiscoverMode.ALL:
                                 break  # Don't process other plugins
-                    except Exception as details:
+                    except Exception as details:  # pylint: disable=W0703
                         handle_exception(loader_plugin, details)
                 if not handled:
                     unhandled_references.append(reference)
@@ -634,8 +634,8 @@ class FileLoader(TestLoader):
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
-        # will not crash.
-        except BaseException as details:  # Ugly python files can raise any exc
+        # will not crash. Ugly python files can raise any exception
+        except BaseException as details:  # pylint: disable=W0703
             if isinstance(details, KeyboardInterrupt):
                 raise  # Don't ignore ctrl+c
             else:
