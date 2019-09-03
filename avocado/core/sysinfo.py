@@ -252,7 +252,7 @@ class JournalctlWatcher(Collectible):
             result = process.system_output(cmd, verbose=False)
             last_record = json.loads(astring.to_text(result, "utf-8"))
             return last_record['__CURSOR']
-        except Exception as detail:
+        except Exception as detail:  # pylint: disable=W0703
             log.debug("Journalctl collection failed: %s", detail)
 
     def run(self, logdir):
@@ -266,7 +266,7 @@ class JournalctlWatcher(Collectible):
             except IOError:
                 log.debug("Not logging journalctl (lack of permissions): %s",
                           dstpath)
-            except Exception as detail:
+            except Exception as detail:  # pylint: disable=W0703
                 log.debug("Journalctl collection failed: %s", detail)
 
 
@@ -353,7 +353,7 @@ class LogWatcher(Collectible):
             log.info(detail)
         except (IOError, OSError):
             log.debug("Not logging %s (lack of permissions)", self.path)
-        except Exception as detail:
+        except Exception as detail:  # pylint: disable=W0703
             log.error("Log file %s collection failed: %s", self.path, detail)
 
 

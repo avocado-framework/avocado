@@ -398,7 +398,7 @@ class MiscProcessTests(unittest.TestCase):
         signal = 1
         owner_mocked.return_value = owner_id
         expected_cmd = 'kill -%d %d' % (signal, process_id)
-        run_mocked.side_effect = Exception()
+        run_mocked.side_effect = process.CmdError()
 
         killed = process.safe_kill(process_id, signal)
         self.assertFalse(killed)

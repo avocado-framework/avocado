@@ -18,6 +18,7 @@ Test runner module.
 """
 
 import multiprocessing
+from queue import Full as queueFullException
 import os
 import signal
 import sys
@@ -105,7 +106,7 @@ class TestStatus:
             return self.queue.get()
         # Let's catch all exceptions, since errors here mean a
         # crash in avocado.
-        except Exception as details:
+        except Exception as details:  # pylint: disable=W0703
             self._failed = True
             TEST_LOG.error("RUNNER: Failed to read queue: %s", details)
             return None
@@ -329,7 +330,7 @@ class TestRunner:
         early_state['early_status'] = True
         try:
             queue.put(early_state)
-        except Exception:
+        except queueFullException:
             instance.error(stacktrace.str_unpickable_object(early_state))
 
         self.result.start_test(early_state)
@@ -354,7 +355,7 @@ class TestRunner:
             try:
                 state = instance.get_state()
                 queue.put(state)
-            except Exception:
+            except queueFullException:
                 instance.error(stacktrace.str_unpickable_object(state))
 
     def run_test(self, test_factory, queue, summary, job_deadline=0):

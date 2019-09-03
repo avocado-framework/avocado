@@ -162,7 +162,7 @@ class Asset:
                     with FileLock(asset_file, 1):
                         if self._verify(asset_file):
                             return asset_file
-                except Exception:
+                except Exception:  # pylint: disable=W0703
                     exc_type, exc_value = sys.exc_info()[:2]
                     log.error('%s: %s', exc_type.__name__, exc_value)
 
@@ -193,7 +193,7 @@ class Asset:
             try:
                 if fetch(urlobj, asset_file):
                     return asset_file
-            except Exception:
+            except Exception:  # pylint: disable=W0703
                 exc_type, exc_value = sys.exc_info()[:2]
                 log.error('%s: %s', exc_type.__name__, exc_value)
 

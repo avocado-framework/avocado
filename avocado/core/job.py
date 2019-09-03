@@ -240,8 +240,12 @@ class Job:
         try:
             os.symlink(os.path.relpath(self.logdir, category_path),
                        os.path.join(category_path, os.path.basename(self.logdir)))
-        except Exception:
+        except NotImplementedError:
             msg = "Unable to link this job to category %s" % category
+            LOG_UI.warning(msg)
+            LOG_JOB.warning(msg)
+        except OSError:
+            msg = "Permission denied to link this job to category %s" % category
             LOG_UI.warning(msg)
             LOG_JOB.warning(msg)
 
@@ -580,7 +584,7 @@ class Job:
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
             return self.exitcode
 
-        except Exception as details:
+        except Exception as details:  # pylint: disable=W0703
             self.status = "ERROR"
             exc_type, exc_value, exc_traceback = sys.exc_info()
             tb_info = traceback.format_exception(exc_type, exc_value,

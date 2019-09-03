@@ -86,13 +86,13 @@ def analyze_unpickable_item(path_prefix, obj):
             path_prefix += ".%s"
         else:
             return [(path_prefix, obj)]
-    except Exception:
+    except Exception:  # pylint: disable=W0703
         return [(path_prefix, obj)]
     unpickables = []
     for key, value in subitems:
         try:
             pickle.dumps(value)
-        except Exception:
+        except pickle.PickleError:
             ret = analyze_unpickable_item(path_prefix % key, value)
             if ret:
                 unpickables.extend(ret)
@@ -110,7 +110,7 @@ def str_unpickable_object(obj):
     """
     try:
         pickle.dumps(obj)
-    except Exception:
+    except pickle.PickleError:
         pass
     else:
         raise ValueError("This object is pickable:\n%s" % pformat(obj))

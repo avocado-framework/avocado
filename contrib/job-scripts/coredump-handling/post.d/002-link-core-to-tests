@@ -61,9 +61,9 @@ def symlink_coredumps():
                     try:
                         dst = os.path.join(dst_dir, os.path.basename(coredump))
                         os.symlink(os.path.relpath(coredump, dst_dir), dst)
-                    except Exception:
+                    except Exception:  # pylint: disable=W0703
                         pass
-        except Exception:
+        except Exception:  # pylint: disable=W0703
             pass
 
 
