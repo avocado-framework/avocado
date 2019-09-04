@@ -309,6 +309,22 @@ class OpenSUSEImageProvider(ImageProviderBase):
         return max(version_numbers)
 
 
+class CirrOSImageProvider(ImageProviderBase):
+    """
+    CirrOS Image Provider
+
+    CirrOS is a Tiny OS that specializes in running on a cloud.
+    """
+
+    name = 'CirrOS'
+
+    def __init__(self, version=r'[0-9]+\.[0-9]+\.[0-9]+', build=None, arch=os.uname()[4]):
+        super(CirrOSImageProvider, self).__init__(version=version, build=build, arch=arch)
+        self.url_versions = 'https://download.cirros-cloud.net/'
+        self.url_images = self.url_versions + '{version}/'
+        self.image_pattern = 'cirros-{version}-{arch}-disk.img$'
+
+
 class Image:
     def __init__(self, name, url, version, arch, checksum, algorithm,
                  cache_dir, snapshot_dir=None):
