@@ -24,7 +24,6 @@ ARCHIVE_BASE_NAME=avocado
 PYTHON_MODULE_NAME=avocado-framework
 RPM_BASE_NAME=python-avocado
 
-include Makefile.include
 
 all:
 	@echo
@@ -56,6 +55,8 @@ all:
 	@echo "rpm-release:        Generate binary RPMs for the latest tagged release"
 	@echo "propagate-version:  Propagate './VERSION' to all plugins/modules"
 	@echo
+
+include Makefile.include
 
 source-pypi: clean
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
