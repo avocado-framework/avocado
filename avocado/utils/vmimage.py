@@ -347,8 +347,9 @@ class Image:
                                  cache_dirs=[self.cache_dir],
                                  expire=None).fetch()
 
-        if os.path.splitext(asset_path)[1] == '.xz':
-            asset_path = archive.lzma_uncompress(asset_path)
+        if archive.is_archive(asset_path):
+            uncompressed_path = os.path.splitext(asset_path)[0]
+            asset_path = archive.uncompress(asset_path, uncompressed_path)
 
         self._base_image = asset_path
         self._path = self._take_snapshot()
