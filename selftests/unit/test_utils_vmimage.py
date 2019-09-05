@@ -163,6 +163,9 @@ class OpenSUSEImageProvider(unittest.TestCase):
         suse_provider.get_version = unittest.mock.Mock(return_value='15.0')
         self.assertEqual(suse_provider.get_image_url(), expected_image_url)
 
+
+class FedoraImageProvider(unittest.TestCase):
+
     def test_get_image_parameters_match(self):
         expected_version = '30'
         expected_arch = 'x86_64'
