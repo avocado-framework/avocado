@@ -286,7 +286,7 @@ class Diff(CLICmd):
                 setsid = getattr(os, 'setpgrp', None)
             with open(os.devnull, "r+") as inout:
                 cmd = ['xdg-open', config.get('html')]
-                subprocess.Popen(cmd, close_fds=True, stdin=inout,
+                subprocess.Popen(cmd, close_fds=True, stdin=inout,  # pylint: disable=W1509
                                  stdout=inout, stderr=inout,
                                  preexec_fn=setsid)
 

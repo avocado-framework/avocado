@@ -183,17 +183,17 @@ class ArchiveFile:
 
     def _update_zip_extra_attrs(self, dst_dir):
         if platform.system() != "Linux":
-            LOG.warn("Attr handling in zip files only supported on Linux.")
+            LOG.warning("Attr handling in zip files only supported on Linux.")
             return
         # Walk all files and re-create files as symlinks
         for path, info in self._engine.NameToInfo.items():
             dst = os.path.join(dst_dir, path)
             if not os.path.exists(dst):
-                LOG.warn("One or more files in the ZIP archive '%s' could "
-                         "not be found after extraction. Their paths are "
-                         "probably stored in unsupported format and their "
-                         "attributes are not going to be updated",
-                         self.filename)
+                LOG.warning("One or more files in the ZIP archive '%s' could "
+                            "not be found after extraction. Their paths are "
+                            "probably stored in unsupported format and their "
+                            "attributes are not going to be updated",
+                            self.filename)
                 return
             attr = info.external_attr >> 16
             if attr & stat.S_IFLNK == stat.S_IFLNK:

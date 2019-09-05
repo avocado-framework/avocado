@@ -150,7 +150,7 @@ class ProcessTest(unittest.TestCase):
         proc.wait(timeout=1)
         stdout = proc.get_stdout().decode()
         self.assertIn('memory', stdout, 'result: %s' % stdout)
-        self.assertRegexpMatches(stdout, '[0-9]+')
+        self.assertRegex(stdout, '[0-9]+')
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "

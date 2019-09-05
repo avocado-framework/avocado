@@ -260,7 +260,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         else:
             fname = self._get_filename_in_iso(path)
             if not fname:
-                logging.warn(
+                logging.warning(
                     "Could not find '%s' in iso '%s'", path, self.path)
                 return ""
 

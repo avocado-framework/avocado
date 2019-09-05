@@ -212,7 +212,7 @@ class HTMLResult(Result):
             setsid = getattr(os, 'setpgrp', None)
         inout = open(os.devnull, "r+")
         cmd = ['xdg-open', html_path]
-        subprocess.Popen(cmd, close_fds=True, stdin=inout,
+        subprocess.Popen(cmd, close_fds=True, stdin=inout,  # pylint: disable=W1509
                          stdout=inout, stderr=inout,
                          preexec_fn=setsid)
 

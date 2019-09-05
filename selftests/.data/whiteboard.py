@@ -36,7 +36,7 @@ class WhiteBoard(Test):
         result = ''
         for _ in range(0, iterations):
             result += data
-        self.whiteboard = base64.encodestring(result.encode()).decode('ascii')
+        self.whiteboard = base64.encodebytes(result.encode()).decode('ascii')
 
 
 if __name__ == "__main__":

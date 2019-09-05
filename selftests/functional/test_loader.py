@@ -162,7 +162,8 @@ class LoaderTestFunctional(unittest.TestCase):
     def _run_with_timeout(self, cmd_line, timeout):
         current_time = time.time()
         deadline = current_time + timeout
-        test_process = subprocess.Popen(cmd_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        test_process = subprocess.Popen(cmd_line, stdout=subprocess.PIPE,  # pylint: disable=W1509
+                                        stderr=subprocess.PIPE,
                                         preexec_fn=os.setsid, shell=True)
         while not test_process.poll():
             if time.time() > deadline:
@@ -272,12 +273,11 @@ class LoaderTestFunctional(unittest.TestCase):
                              % AVOCADO)
         # This has to be defined like this as pep8 complains about tailing
         # empty spaces when using """
-        self.assertRegexpMatches(result.stdout_text, r"Type *Test *Tag\(s\)\n"
-                                 r"INSTRUMENTED *passtest.py:PassTest.test *"
-                                 "fast\n"
-                                 r"SIMPLE.*passtest.sh *\n"
-                                 r"EXTERNAL *external_echo *\n"
-                                 r"EXTERNAL *external_false *\n")
+        self.assertRegex(result.stdout_text, r"Type *Test *Tag\(s\)\n"
+                                             r"INSTRUMENTED *passtest.py:PassTest.test * fast\n"
+                                             r"SIMPLE.*passtest.sh *\n"
+                                             r"EXTERNAL *external_echo *\n"
+                                             r"EXTERNAL *external_false *\n")
         # Also check whether list without loaders won't crash
         result = process.run("%s list -V -- "
                              "examples/yaml_to_mux_loader/loaders.yaml"
