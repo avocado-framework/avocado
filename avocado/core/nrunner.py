@@ -166,18 +166,22 @@ class PythonUnittestRunner(BaseRunner):
         yield queue.get()
 
 
-def runner_from_runnable(runnable):
+#: The runnables this specific application is capable of handling
+RUNNABLE_KIND_CAPABLE = {'noop': NoOpRunner,
+                         'exec': ExecRunner,
+                         'exec-test': ExecTestRunner,
+                         'python-unittest': PythonUnittestRunner}
+
+
+def runner_from_runnable(runnable, capables=None):
     """
     Gets a Runner instance from a Runnable
     """
-    if runnable.kind == 'noop':
-        return NoOpRunner(runnable)
-    if runnable.kind == 'exec':
-        return ExecRunner(runnable)
-    if runnable.kind == 'exec-test':
-        return ExecTestRunner(runnable)
-    if runnable.kind == 'python-unittest':
-        return PythonUnittestRunner(runnable)
+    if capables is None:
+        capables = RUNNABLE_KIND_CAPABLE
+    runner = capables.get(runnable.kind, None)
+    if runner is not None:
+        return runner(runnable)
     raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
 
 
@@ -291,9 +295,10 @@ class Task:
         if status_uris is not None:
             for status_uri in status_uris:
                 self.status_services.append(TaskStatusService(status_uri))
+        self.capables = RUNNABLE_KIND_CAPABLE
 
     def run(self):
-        runner = runner_from_runnable(self.runnable)
+        runner = runner_from_runnable(self.runnable, self.capables)
         for status in runner.run():
             status.update({"id": self.identifier})
             for status_service in self.status_services:
@@ -442,10 +447,26 @@ def subcommand_status_server(args):
     loop.run_until_complete(server.wait())
 
 
+def subcommand_capabilities(_, echo=print):
+    data = {"runnables": [k for k in RUNNABLE_KIND_CAPABLE.keys()],
+            "commands": [k for k in COMMANDS_CAPABLE.keys()]}
+    echo(json.dumps(data))
+
+
+COMMANDS_CAPABLE = {'capabilities': subcommand_capabilities,
+                    'runnable-run': subcommand_runnable_run,
+                    'runnable-run-recipe': subcommand_runnable_run_recipe,
+                    'task-run': subcommand_task_run,
+                    'task-run-recipe': subcommand_task_run_recipe,
+                    'status-server': subcommand_status_server}
+
+
 def parse():
-    parser = argparse.ArgumentParser(prog='nrunner')
+    parser = argparse.ArgumentParser(prog='avocado-runner',
+                                     description='*EXPERIMENTAL* N(ext) Runner')
     subcommands = parser.add_subparsers(dest='subcommand')
     subcommands.required = True
+    subcommands.add_parser('capabilities')
     runnable_run_parser = subcommands.add_parser('runnable-run')
     for arg in CMD_RUNNABLE_RUN_ARGS:
         runnable_run_parser.add_argument(*arg[0], **arg[1])
@@ -478,6 +499,8 @@ def main():
         subcommand_task_run_recipe(args)
     elif subcommand == 'status-server':
         subcommand_status_server(args)
+    elif subcommand == 'capabilities':
+        subcommand_capabilities(args)
 
 
 if __name__ == '__main__':

@@ -12,12 +12,15 @@ from avocado.core import test
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import stacktrace
+from avocado.utils import path as utils_path
 
 
 class NRun(CLICmd):
 
     name = 'nrun'
     description = "*EXPERIMENTAL* runner: runs one or more tests"
+
+    KNOWN_EXTERNAL_RUNNERS = {}
 
     def configure(self, parser):
         parser = super(NRun, self).configure(parser)
@@ -75,6 +78,8 @@ class NRun(CLICmd):
                 runnable = nrunner.Runnable('python-unittest', unittest_path)
             elif klass == test.SimpleTest:
                 runnable = nrunner.Runnable('exec-test', args.get('executable'))
+            elif isinstance(klass, str):
+                runnable = nrunner.Runnable('avocado-instrumented', name)
             else:
                 # FIXME: This should instead raise an error
                 print('WARNING: unknown test type "%s", using "noop"' % factory[0])
@@ -103,9 +108,38 @@ class NRun(CLICmd):
             self.spawned_tasks.append(identifier)
             print("%s spawned" % identifier)
 
-    @staticmethod
+    def pick_runner(self, task):
+        kind = task.runnable.kind
+        runner = self.KNOWN_EXTERNAL_RUNNERS.get(kind)
+        if runner is False:
+            return None
+        if runner is not None:
+            return runner
+
+        # first attempt to find Python module files that are named
+        # after the runner convention within the avocado.core
+        # namespace dir.  Looking for the file only avoids an attempt
+        # to load the module and should be a lot faster
+        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        module_name = kind.replace('-', '_')
+        module_filename = 'nrunner_%s.py' % module_name
+        if os.path.exists(os.path.join(core_dir, module_filename)):
+            full_module_name = 'avocado.core.%s' % module_name
+            runner = [sys.executable, '-m', full_module_name]
+            self.KNOWN_EXTERNAL_RUNNERS[kind] = runner
+            return runner
+
+        # try to find executable in the path
+        runner_by_name = 'avocado-runner-%s' % kind
+        try:
+            runner = utils_path.find_command(runner_by_name)
+            self.KNOWN_EXTERNAL_RUNNERS[kind] = [runner]
+            return [runner]
+        except utils_path.CmdNotFoundError:
+            self.KNOWN_EXTERNAL_RUNNERS[kind] = False
+
     @asyncio.coroutine
-    def spawn_task(task):
+    def spawn_task(self, task):
         status_service_args = []
         for status_service in task.status_services:
             status_service_args.append('-s')
@@ -121,8 +155,7 @@ class NRun(CLICmd):
         if task.runnable.uri is not None:
             runner_args += ['-u', task.runnable.uri]
 
-        args = ['-m', 'avocado.core.nrunner',
-                'task-run',
+        args = ['task-run',
                 '-i', task.identifier,
                 '-k', task.runnable.kind]
 
@@ -130,9 +163,16 @@ class NRun(CLICmd):
         args += list(runner_args)
         args += list(status_service_args)
 
+        runner = self.pick_runner(task)
+        if runner is None:
+            runner = [sys.executable, '-m', 'avocado.core.nrunner']
+
+        args = runner[1:] + args
+        runner = runner[0]
+
         #pylint: disable=E1133
         yield from asyncio.create_subprocess_exec(
-            sys.executable,
+            runner,
             *args,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
