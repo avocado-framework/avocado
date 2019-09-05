@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     c15f901f4f8d577be9e2831546b0790dc43c4b83
+        %global commit     886214908132f35cbea8a8c763f9c25084b107fe
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20190815
+        %global commit_date 20190905
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 71.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -319,6 +319,8 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
 %{_bindir}/avocado
+%{_bindir}/avocado-runner
+%{_bindir}/avocado-runner-avocado-instrumented
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_runner_remote*
@@ -577,6 +579,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Sep  5 2019 Cleber Rosa <cleber@redhat.com> - 71.0-2
+- Added nrunner standalone scripts
+
 * Mon Aug 19 2019 Cleber Rosa <cleber@redhat.com> - 71.0-1
 - Use newer libvirt Python bindings package name
 - Dropped older libvirt Python lack of egg info workaround

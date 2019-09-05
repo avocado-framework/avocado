@@ -163,10 +163,53 @@ class OpenSUSEImageProvider(unittest.TestCase):
         suse_provider.get_version = unittest.mock.Mock(return_value='15.0')
         self.assertEqual(suse_provider.get_image_url(), expected_image_url)
 
-    def test_get_image_parameters_match(self):
+
+class FedoraImageProvider(unittest.TestCase):
+
+    #: extracted from https://dl.fedoraproject.org/pub/fedora/linux/releases/
+    VERSION_LISTING = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /pub/fedora/linux/releases</title>
+ </head>
+ <body>
+<h1>Index of /pub/fedora/linux/releases</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=D">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[PARENTDIR]"> <a href="/pub/fedora/linux/">Parent Directory</a>                             -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="10/">10/</a>                     2013-04-25 08:48    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="11/">11/</a>                     2013-04-25 08:48    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="12/">12/</a>                     2013-04-25 08:48    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="13/">13/</a>                     2013-04-25 08:48    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="14/">14/</a>                     2013-04-25 08:48    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="15/">15/</a>                     2013-09-05 19:09    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="16/">16/</a>                     2013-09-05 19:20    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="17/">17/</a>                     2013-09-05 19:25    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="18/">18/</a>                     2015-02-24 00:45    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="19/">19/</a>                     2015-02-24 00:57    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="20/">20/</a>                     2015-07-16 17:32    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="21/">21/</a>                     2016-05-17 20:38    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="22/">22/</a>                     2017-09-21 17:00    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="23/">23/</a>                     2017-09-21 17:27    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="24/">24/</a>                     2017-09-22 17:36    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="25/">25/</a>                     2018-07-09 23:26    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="26/">26/</a>                     2018-07-09 23:31    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="27/">27/</a>                     2019-04-01 20:08    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="28/">28/</a>                     2019-09-02 20:37    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="29/">29/</a>                     2018-10-26 17:27    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="30/">30/</a>                     2019-04-26 20:58    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="7/">7/</a>                      2016-05-21 03:28    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="8/">8/</a>                      2016-05-21 02:12    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="9/">9/</a>                      2013-04-25 08:48    -
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="test/">test/</a>                   2019-07-16 14:04    -
+<hr></pre>
+</body></html>"""
+
+    @unittest.mock.patch('avocado.utils.vmimage.urlopen')
+    def test_get_image_parameters_match(self, urlopen_mock):
         expected_version = '30'
         expected_arch = 'x86_64'
         expected_build = '1234'
+        urlread_mocked = unittest.mock.Mock(return_value=self.VERSION_LISTING)
+        urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
         provider = vmimage.FedoraImageProvider(expected_version, expected_build,
                                                expected_arch)
         image = "Fedora-Cloud-Base-%s-%s.%s.qcow2" % (expected_version, expected_build,
@@ -176,7 +219,11 @@ class OpenSUSEImageProvider(unittest.TestCase):
         self.assertEqual(expected_build, parameters['build'])
         self.assertEqual(expected_arch, parameters['arch'])
 
-    def test_get_image_parameters_not_match(self):
+    @unittest.mock.patch('avocado.utils.vmimage.urlopen')
+    def test_get_image_parameters_not_match(self, urlopen_mock):
+        urlread_mocked = unittest.mock.Mock(return_value=self.VERSION_LISTING)
+        urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
+
         provider = vmimage.FedoraImageProvider('30', '1234',
                                                'x86_64')
         image = 'openSUSE-Leap-15.0-OpenStack.x86_64-1.1.1-Buildlp111.11.11.qcow2'
