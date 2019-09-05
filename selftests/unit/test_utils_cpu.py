@@ -9,7 +9,8 @@ class Cpu(unittest.TestCase):
     @staticmethod
     def _get_file_mock(content):
         file_mock = unittest.mock.Mock()
-        file_mock.__enter__ = unittest.mock.Mock(return_value=io.BytesIO(content))
+        file_mock.__enter__ = unittest.mock.Mock(
+            return_value=io.BytesIO(content))
         file_mock.__exit__ = unittest.mock.Mock()
         return file_mock
 
@@ -490,6 +491,68 @@ uarch	: sifive,rocket0
         with unittest.mock.patch('builtins.open',
                                  return_value=self._get_file_mock(cpu_output)):
             self.assertEqual(cpu.get_cpu_arch(), "riscv")
+
+    def test_cpu_vendor_intel(self):
+        cpu_output = b"""processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 60
+model name      : Intel(R) Core(TM) i7-4810MQ CPU @ 2.80GHz
+stepping        : 3
+microcode       : 0x24
+cpu MHz         : 1766.058
+cache size      : 6144 KB
+physical id     : 0
+siblings        : 8
+core id         : 0
+cpu cores       : 4
+apicid          : 0
+initial apicid  : 0
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 13
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpuid_fault epb invpcid_single pti tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt ibpb ibrs stibp dtherm ida arat pln pts
+bugs            : cpu_meltdown spectre_v1 spectre_v2
+bogomips        : 5586.93
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 39 bits physical, 48 bits virtual
+power management:
+"""
+        with unittest.mock.patch('builtins.open',
+                                 return_value=self._get_file_mock(cpu_output)):
+            self.assertEqual(cpu.get_cpu_vendor_name(), "intel")
+
+    def test_cpu_vendor_power8(self):
+        cpu_output = b"""processor       : 88
+cpu             : POWER8E (raw), altivec supported
+clock           : 3325.000000MHz
+revision        : 2.1 (pvr 004b 0201)
+timebase        : 512000000
+platform        : PowerNV
+model           : 8247-21L
+machine         : PowerNV 8247-21L
+firmware        : OPAL v3
+"""
+        with unittest.mock.patch('builtins.open',
+                                 return_value=self._get_file_mock(cpu_output)):
+            self.assertEqual(cpu.get_cpu_vendor_name(), "power8")
+
+    def test_cpu_vendor_power9(self):
+        cpu_output = b"""processor	: 20
+cpu		: POWER9 (raw), altivec supported
+clock		: 2050.000000MHz
+revision	: 1.0 (pvr 004e 0100)
+timebase	: 512000000
+platform	: PowerNV
+model		: 8375-42A
+machine		: PowerNV 8375-42A
+firmware	: OPAL
+"""
+        with unittest.mock.patch('builtins.open',
+                                 return_value=self._get_file_mock(cpu_output)):
+            self.assertEqual(cpu.get_cpu_vendor_name(), "power9")
 
     def test_get_cpuidle_state_off(self):
         retval = {0: {0: False}}
