@@ -356,3 +356,25 @@ def get_pid_cpus(pid):
         except IOError:
             continue
     return list(cpus)
+
+
+def is_smt_capable():
+
+    """
+    Return True/False Based on if system has hyperthreading enabled
+    :return: True/False
+    :rtype: boolean
+    """
+
+    if get_cpu_vendor_name().startswith('power'):
+        for cpu_dir in glob.glob("/sys/devices/system/cpu/cpu[0-9]*"):
+            if os.path.exists(os.path.join(cpu_dir, 'smt_snooze_delay')):
+                return True
+        return False
+    else:
+        with open('/proc/cpuinfo') as cpu_file:
+            cpuinfo = dict(map(
+                lambda line: map(str.strip, line.split(':', 1)),
+                filter(lambda line: ':' in line, cpu_file)
+                ))
+    return (cpuinfo['siblings'] != cpuinfo['cpu cores'])
