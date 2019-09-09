@@ -56,7 +56,9 @@ class Session:
         return cmd
 
     def _master_connection(self):
-        return self._ssh_cmd(self.DEFAULT_OPTIONS + self.MASTER_OPTIONS, ('-n',))
+        options = self.DEFAULT_OPTIONS + self.MASTER_OPTIONS
+        options += (('PubkeyAuthentication', 'yes' if self.key else 'no'),)
+        return self._ssh_cmd(options, ('-n',))
 
     def _master_command(self, command):
         cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ('-O', command))

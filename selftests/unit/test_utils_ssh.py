@@ -24,6 +24,16 @@ class Session(unittest.TestCase):
         self.assertIn(" -l ", ssh_cmd)
         self.assertIn(" -i ", ssh_cmd)
 
+    def test_master_connection_key(self):
+        session = ssh.Session('hostname', user='user', key='/path/to/key')
+        master_connection = session._master_connection()
+        self.assertIn(" -o 'PubkeyAuthentication=yes'", master_connection)
+
+    def test_master_connection_no_key(self):
+        session = ssh.Session('hostname', user='user')
+        master_connection = session._master_connection()
+        self.assertIn(" -o 'PubkeyAuthentication=no'", master_connection)
+
 
 if __name__ == '__main__':
     unittest.main()
