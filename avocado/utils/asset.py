@@ -26,6 +26,7 @@ import stat
 import sys
 import tempfile
 import time
+import json
 
 try:
     import urlparse
@@ -58,7 +59,7 @@ class Asset:
     """
 
     def __init__(self, name, asset_hash, algorithm, locations, cache_dirs,
-                 expire=None):
+                 expire=None, metadata=None):
         """
         Initialize the Asset() class.
 
@@ -68,6 +69,7 @@ class Asset:
         :param locations: location(s) where the asset can be fetched from
         :param cache_dirs: list of cache directories
         :param expire: time in seconds for the asset to expire
+        :param metadata: metadata which will be saved inside metadata file
         """
         self.name = name
         self.asset_hash = asset_hash
@@ -82,6 +84,7 @@ class Asset:
             self.locations = locations
         self.cache_dirs = cache_dirs
         self.expire = expire
+        self.metadata = metadata
 
     def _get_writable_cache_dir(self):
         """
@@ -155,6 +158,39 @@ class Asset:
                     log.error('%s: %s', exc_type.__name__, exc_value)
         return None
 
+    def _create_metadata_file(self, asset_file):
+        """
+        Creates JSON file with metadata.
+        The file will be saved as "asset_file"_metadata.json
+        :param asset_file: The asset whose metadata will be saved
+        :type asset_file: str
+        """
+        if self.metadata is not None:
+            basename = os.path.splitext(asset_file)[0]
+            metadata_file = "%s_metadata.json" % basename
+            metadata = json.dumps(self.metadata)
+            with open(metadata_file, "w") as f:
+                f.write(metadata)
+
+    def get_metadata(self):
+        """
+        Returns metadata of the asset if it exists or None.
+        :return: metadata
+        """
+        parsed_url = urlparse.urlparse(self.name)
+        basename = os.path.basename(parsed_url.path)
+        cache_relative_dir = self._get_relative_dir(parsed_url)
+        asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
+                                                        basename))
+        if asset_file is not None:
+            basename = os.path.splitext(asset_file)[0]
+            metadata_file = "%s_metadata.json" % basename
+            if os.path.isfile(metadata_file):
+                with open(metadata_file, "r") as f:
+                    metadata = json.loads(f.read())
+                    return metadata
+        return None
+
     def fetch(self):
         """
         Fetches the asset. First tries to find the asset on the provided
@@ -177,6 +213,8 @@ class Asset:
         asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
                                                         basename))
         if asset_file is not None:
+            if self.metadata is not None:
+                self._create_metadata_file(asset_file)
             return asset_file
 
         # If we get to this point, we have to download it from a location.
@@ -205,6 +243,8 @@ class Asset:
                 os.makedirs(dirname)
             try:
                 if fetch(urlobj, asset_file):
+                    if self.metadata is not None:
+                        self._create_metadata_file(asset_file)
                     return asset_file
             except Exception:
                 exc_type, exc_value = sys.exc_info()[:2]
