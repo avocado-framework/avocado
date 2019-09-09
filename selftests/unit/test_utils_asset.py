@@ -150,6 +150,18 @@ class TestAsset(unittest.TestCase):
         with open(a3_path, 'r') as a3_file:
             self.assertEqual(a3_file.read(), third_asset_content)
 
+    def test_create_meatadata_file(self):
+        expected_metadata = {"Name": "name", "version": 1.2}
+        foo_tarball = asset.Asset(self.url,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None,
+                                  meatadata=expected_metadata).fetch()
+        expected_file = "%s_metadata.json" % os.path.splitext(foo_tarball)[0]
+        self.assertTrue(os.path.exists(expected_file))
+
     def tearDown(self):
         self.tmpdir.cleanup()
 

@@ -26,6 +26,7 @@ import stat
 import sys
 import tempfile
 import time
+import json
 
 try:
     import urlparse
@@ -58,7 +59,7 @@ class Asset:
     """
 
     def __init__(self, name, asset_hash, algorithm, locations, cache_dirs,
-                 expire=None):
+                 expire=None, meatadata=None):
         """
         Initialize the Asset() class.
 
@@ -68,6 +69,7 @@ class Asset:
         :param locations: location(s) where the asset can be fetched from
         :param cache_dirs: list of cache directories
         :param expire: time in seconds for the asset to expire
+        :param meatadata: metadata which will be saved inside metadata file
         """
         self.name = name
         self.asset_hash = asset_hash
@@ -82,6 +84,7 @@ class Asset:
             self.locations = locations
         self.cache_dirs = cache_dirs
         self.expire = expire
+        self.metadata = meatadata
 
     def _get_writable_cache_dir(self):
         """
@@ -129,6 +132,21 @@ class Asset:
                                     base_url.encode(astring.ENCODING))
         return os.path.join('by_location', base_url_hash.hexdigest())
 
+    def _create_meatadata_file(self, asset_file):
+        """
+        Creates json file with metadata.
+        The file will be saved as "asset_file"_metadata.json
+        :param asset_file: The asset whose metadata will be saved
+        :type asset_file: str
+        """
+        if self.metadata is not None:
+            basename = os.path.splitext(asset_file)[0]
+            metadata_file = "%s_metadata.json" % basename
+            metadata = json.dumps(self.metadata)
+            f = open(metadata_file, "w")
+            f.write(metadata)
+            f.close()
+
     def fetch(self):
         """
         Fetches the asset. First tries to find the asset on the provided
@@ -161,6 +179,8 @@ class Asset:
                 try:
                     with FileLock(asset_file, 1):
                         if self._verify(asset_file):
+                            if self.metadata is not None:
+                                self._create_meatadata_file(asset_file)
                             return asset_file
                 except Exception:
                     exc_type, exc_value = sys.exc_info()[:2]
@@ -192,6 +212,8 @@ class Asset:
                 os.makedirs(dirname)
             try:
                 if fetch(urlobj, asset_file):
+                    if self.metadata is not None:
+                        self._create_meatadata_file(asset_file)
                     return asset_file
             except Exception:
                 exc_type, exc_value = sys.exc_info()[:2]
