@@ -319,7 +319,7 @@ class GDB:
 
     DEFAULT_BREAK = 'main'
 
-    def __init__(self, path='/usr/bin/gdb', *extra_args):
+    def __init__(self, path='/usr/bin/gdb', *extra_args):  # pylint: disable=W1113
 
         self.path = path
         args = [self.path]
@@ -612,7 +612,7 @@ class GDBServer:
     #: ready to accept new connections
     INIT_TIMEOUT = 5.0
 
-    def __init__(self, path='/usr/bin/gdbserver', port=None,  # pylint: disable=W0613
+    def __init__(self, path='/usr/bin/gdbserver', port=None,  # pylint: disable=W0613, W1113
                  wait_until_running=True, *extra_args):
         """
         Initializes a new gdbserver instance
