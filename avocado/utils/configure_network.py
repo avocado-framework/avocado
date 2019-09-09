@@ -92,3 +92,16 @@ def unset_ip(interface):
         return True
     except Exception as ex:
         raise NWException("ifdown fails: %s" % ex)
+
+
+def interfacewait(interface):
+    """
+    Waits for the interface link to be UP
+    """
+    for _ in range(0, 600, 5):
+        if 'UP' or 'yes' in \
+           process.system_output("timeout 120 ip link show %s | head -1"
+                                 % device, shell=True, ignore_status=True):
+            print("Interface %s link is up" % interface)
+            return True
+    return False
