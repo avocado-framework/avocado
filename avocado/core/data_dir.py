@@ -105,17 +105,17 @@ def get_test_dir():
     4) User default test dir (~/avocado/tests) is used
     """
     configured = _get_settings_dir('test_dir')
-    if utils_path.usable_ro_dir(configured, False):
+    if utils_path.usable_ro_dir(configured):
         return configured
 
     if settings.settings.intree:
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         return os.path.join(base_dir, 'examples', 'tests')
 
-    if utils_path.usable_ro_dir(SYSTEM_TEST_DIR, False):
+    if utils_path.usable_ro_dir(SYSTEM_TEST_DIR):
         return SYSTEM_TEST_DIR
 
-    if utils_path.usable_ro_dir(USER_TEST_DIR):
+    if utils_path.usable_rw_dir(USER_TEST_DIR):
         return USER_TEST_DIR
 
 
