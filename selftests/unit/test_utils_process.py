@@ -646,5 +646,23 @@ class FDDrainerTests(unittest.TestCase):
         self.assertEqual(data.getvalue(), u"Avok\ufffd\ufffddo\n")
 
 
+class GetCommandOutputPattern(unittest.TestCase):
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_matches(self):
+        res = process.get_command_output_matching("echo foo", "foo")
+        self.assertEqual(res, ["foo"])
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_matches_multiple(self):
+        res = process.get_command_output_matching("echo -e 'foo\nfoo\n'", "foo")
+        self.assertEqual(res, ["foo", "foo"])
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_does_not_match(self):
+        res = process.get_command_output_matching("echo foo", "bar")
+        self.assertEqual(res, [])
+
+
 if __name__ == "__main__":
     unittest.main()
