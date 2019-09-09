@@ -1,6 +1,8 @@
+import os
 import unittest
 
 from avocado.utils import ssh
+from avocado.utils import process
 
 
 class Session(unittest.TestCase):
@@ -33,6 +35,24 @@ class Session(unittest.TestCase):
         session = ssh.Session('hostname', user='user')
         master_connection = session._master_connection()
         self.assertIn(" -o 'PubkeyAuthentication=no'", master_connection)
+
+    def test_master_connection_password(self):
+        session = ssh.Session('hostname', user='user', password='PASSWORD')
+        master_connection = session._master_connection()
+        self.assertIn(" -o 'PasswordAuthentication=yes'", master_connection)
+
+    def test_master_connection_no_password(self):
+        session = ssh.Session('hostname', user='user')
+        master_connection = session._master_connection()
+        self.assertIn(" -o 'PasswordAuthentication=no'", master_connection)
+
+    def test_master_connection_ssh_askpass_script(self):
+        password = 'PASSWORD'
+        session = ssh.Session('hostname', user='user', password=password)
+        ssh_askpass_path = session._create_ssh_askpass()
+        ssh_askpass_password = process.run(ssh_askpass_path)
+        os.unlink(ssh_askpass_path)
+        self.assertEqual(ssh_askpass_password.stdout_text.rstrip(), password)
 
 
 if __name__ == '__main__':
