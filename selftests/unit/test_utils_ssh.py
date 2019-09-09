@@ -1,5 +1,5 @@
 import os
-import unittest
+import unittest.mock
 
 from avocado.utils import ssh
 from avocado.utils import process
@@ -53,6 +53,11 @@ class Session(unittest.TestCase):
         ssh_askpass_password = process.run(ssh_askpass_path)
         os.unlink(ssh_askpass_path)
         self.assertEqual(ssh_askpass_password.stdout_text.rstrip(), password)
+
+    def test_no_ssh_client_binary(self):
+        session = ssh.Session('hostname')
+        with unittest.mock.patch('avocado.utils.ssh.SSH_CLIENT_BINARY', None):
+            self.assertFalse(session.connect())
 
 
 if __name__ == '__main__':

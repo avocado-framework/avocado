@@ -5,7 +5,15 @@ import subprocess
 import sys
 import tempfile
 
+from . import path as path_utils
 from . import process
+
+
+try:
+    #: The SSH client binary to use, if one is found in the system
+    SSH_CLIENT_BINARY = path_utils.find_command('ssh')
+except path_utils.CmdNotFoundError:
+    SSH_CLIENT_BINARY = None
 
 
 class Session:
@@ -62,7 +70,8 @@ class Session:
                 cmd += " -i %s" % self.key
         if self.port is not None:
             cmd += " -p %s" % self.port
-        cmd = "ssh %s %s %s '%s'" % (cmd, " ".join(opts), self.host, command)
+        cmd = "%s %s %s %s '%s'" % (SSH_CLIENT_BINARY, cmd,
+                                    " ".join(opts), self.host, command)
         return cmd
 
     def _master_connection(self):
@@ -107,6 +116,9 @@ class Session:
         :returns: whether the connection is successfully established
         :rtype: bool
         """
+        if SSH_CLIENT_BINARY is None:
+            return False
+
         if not self._check():
             cmd = shlex.split(self._master_connection())
             if self.password is not None:
