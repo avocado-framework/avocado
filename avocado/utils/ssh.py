@@ -14,16 +14,21 @@ class Session:
     MASTER_OPTIONS = (('ControlMaster', 'yes'),
                       ('ControlPersist', 'yes'))
 
-    def __init__(self, address, credentials):
+    def __init__(self, host, port=None, user=None, key=None):
         """
-        :param address: a hostname or IP address and port, in the same format
-                        given to socket and other servers
-        :type address: tuple
-        :param credentials: username and path to a key for authentication purposes
-        :type credentials: tuple
+        :param host: a host name or IP address
+        :type host: str
+        :param port: port number
+        :type port: int
+        :param user: the name of the remote user
+        :type user: str
+        :param key: path to a key for authentication purpose
+        :type key: str
         """
-        self.address = address
-        self.credentials = credentials
+        self.host = host
+        self.port = port
+        self.user = user
+        self.key = key
         self._connection = None
 
     def __enter__(self):
@@ -41,13 +46,13 @@ class Session:
 
     def _ssh_cmd(self, dash_o_opts=(), opts=(), command=''):
         cmd = self._dash_o_opts_to_str(dash_o_opts)
-        if self.credentials:
-            cmd += " -l %s" % self.credentials[0]
-            if self.credentials[1] is not None:
-                cmd += " -i %s" % self.credentials[1]
-        if self.address[1] is not None:
-            cmd += " -p %s" % self.address[1]
-        cmd = "ssh %s %s %s '%s'" % (cmd, " ".join(opts), self.address[0], command)
+        if self.user is not None:
+            cmd += " -l %s" % self.user
+            if self.key is not None:
+                cmd += " -i %s" % self.key
+        if self.port is not None:
+            cmd += " -p %s" % self.port
+        cmd = "ssh %s %s %s '%s'" % (cmd, " ".join(opts), self.host, command)
         return cmd
 
     def _master_connection(self):
