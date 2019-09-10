@@ -166,27 +166,19 @@ def usable_rw_dir(directory, create=True):
     return False
 
 
-def usable_ro_dir(directory, create=True):
+def usable_ro_dir(directory):
     """
     Verify whether dir exists and we can access its contents.
 
-    If a usable RO is there, use it no questions asked. If not, let's at
-    least try to create one.
+    Check if a usable RO directory is there.
 
     :param directory: Directory
-    :param create: whether to create the directory
     """
     cwd = os.getcwd()
     if os.path.isdir(directory):
         try:
             os.chdir(directory)
             os.chdir(cwd)
-            return True
-        except OSError:
-            pass
-    elif create:
-        try:
-            init_dir(directory)
             return True
         except OSError:
             pass
