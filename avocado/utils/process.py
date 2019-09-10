@@ -1307,19 +1307,17 @@ def get_owner_id(pid):
         return None
 
 
-def get_perf_events(pattern):
+def get_command_output_matching(command, pattern):
     """
-    Run 'perf list' command, with the matching pattern create a
-    list and return it.
+    Runs a command, and if the pattern is in in the output, returns it.
 
-    :param pattern: Pattern to search.
-    :type pattern: str.
+    :param command: the command to execute
+    :type command: str
+    :param pattern: pattern to search in the output, in a line by line basis
+    :type pattern: str
 
-    :return: list of events matching the 'pattern'.
-    :rtype: list of str.
+    :return: list of lines matching the pattern
+    :rtype: list of str
     """
-    list_of_events = []
-    for line in system_output("perf list").split('\n'):
-        if pattern in line:
-            list_of_events.append(line)
-    return list_of_events
+    return [line for line in run(command).stdout_text.splitlines()
+            if pattern in line]
