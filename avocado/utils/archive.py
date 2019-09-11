@@ -68,6 +68,8 @@ def is_lzma_file(path):
             _ = lzma_file.read(1)
         except lzma.LZMAError:
             return False
+        except EOFError:
+            return False
     return True
 
 
