@@ -129,6 +129,32 @@ class Asset:
                                     base_url.encode(astring.ENCODING))
         return os.path.join('by_location', base_url_hash.hexdigest())
 
+    def _find_asset_file(self, relative_path):
+        """
+        Search for the asset file in each one of the cache locations
+        :param relative_path: Path where file should be
+        :return: asset file if exists or None
+        :rtype: str or None
+        """
+        for cache_dir in self.cache_dirs:
+            cache_dir = os.path.expanduser(cache_dir)
+            asset_file = os.path.join(cache_dir, relative_path)
+
+            # To use a cached file, it must:
+            # - Exists.
+            # - Be valid (not expired).
+            # - Be verified (hash check).
+            if (os.path.isfile(asset_file) and
+                    not self._is_expired(asset_file, self.expire)):
+                try:
+                    with FileLock(asset_file, 1):
+                        if self._verify(asset_file):
+                            return asset_file
+                except Exception:
+                    exc_type, exc_value = sys.exc_info()[:2]
+                    log.error('%s: %s', exc_type.__name__, exc_value)
+        return None
+
     def fetch(self):
         """
         Fetches the asset. First tries to find the asset on the provided
@@ -148,23 +174,10 @@ class Asset:
             urls.append(parsed_url.geturl())
 
         # First let's search for the file in each one of the cache locations
-        for cache_dir in self.cache_dirs:
-            cache_dir = os.path.expanduser(cache_dir)
-            asset_file = os.path.join(cache_dir, cache_relative_dir, basename)
-
-            # To use a cached file, it must:
-            # - Exists.
-            # - Be valid (not expired).
-            # - Be verified (hash check).
-            if (os.path.isfile(asset_file) and
-                    not self._is_expired(asset_file, self.expire)):
-                try:
-                    with FileLock(asset_file, 1):
-                        if self._verify(asset_file):
-                            return asset_file
-                except Exception:
-                    exc_type, exc_value = sys.exc_info()[:2]
-                    log.error('%s: %s', exc_type.__name__, exc_value)
+        asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
+                                                        basename))
+        if asset_file is not None:
+            return asset_file
 
         # If we get to this point, we have to download it from a location.
         # A writable cache directory is then needed. The first available
