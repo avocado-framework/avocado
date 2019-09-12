@@ -404,6 +404,9 @@ class Image:
                                                     self.arch)
 
     def get(self):
+        metadata = {"type": "vmimage", "name": self.name,
+                    "version": self.version, "arch": self.arch,
+                    "build": self.build}
         if isinstance(self.cache_dir, str):
             cache_dirs = [self.cache_dir]
         else:
@@ -413,7 +416,8 @@ class Image:
                                  algorithm=self.algorithm,
                                  locations=None,
                                  cache_dirs=cache_dirs,
-                                 expire=None).fetch()
+                                 expire=None,
+                                 metadata=metadata).fetch()
 
         if archive.is_archive(asset_path):
             uncompressed_path = os.path.splitext(asset_path)[0]
