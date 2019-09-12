@@ -350,7 +350,7 @@ class CirrOSImageProvider(ImageProviderBase):
 
 
 class Image:
-    def __init__(self, name, url, version, arch, checksum, algorithm,
+    def __init__(self, name, url, version, arch, build, checksum, algorithm,
                  cache_dir, snapshot_dir=None):
         """
         Creates an instance of Image class.
@@ -363,6 +363,8 @@ class Image:
         :type version: int
         :param arch: Architecture of the system image.
         :type arch: str
+        :param build: Build of the system image.
+        :type build: str
         :param checksum: Hash of the system image to match after download.
         :type checksum: str
         :param algorithm: Hash type, used when the checksum is provided.
@@ -377,6 +379,7 @@ class Image:
         self.url = url
         self.version = version
         self.arch = arch
+        self.build = build
         self.checksum = checksum
         self.algorithm = algorithm
         self.cache_dir = cache_dir
@@ -469,7 +472,8 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
         return Image(name=provider.name, url=provider.get_image_url(),
                      version=provider.version, arch=provider.arch,
                      checksum=checksum, algorithm=algorithm,
-                     cache_dir=cache_dir, snapshot_dir=snapshot_dir)
+                     build=provider.build, cache_dir=cache_dir,
+                     snapshot_dir=snapshot_dir)
     except ImageProviderError:
         pass
 
