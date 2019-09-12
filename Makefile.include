@@ -1,21 +1,22 @@
-ifneq "" "$(findstring fedora-31-,$(MOCK_CONFIG))$(findstring fedora-rawhide-,$(MOCK_CONFIG))"
+ifneq "" "$(findstring fedora-32-,$(MOCK_CONFIG))$(findstring fedora-rawhide-,$(MOCK_CONFIG))"
     modenable := avocado:latest
-    modrepos := --enablerepo=rawhide-modular
-else ifneq "" "$(findstring fedora-30-,$(MOCK_CONFIG))"
+    modrepos  := --enablerepo=rawhide-modular
+else ifneq "" "$(findstring fedora-30-,$(MOCK_CONFIG))$(findstring fedora-31-,$(MOCK_CONFIG))"
     modenable := avocado:69lts
-    modrepos := --enablerepo=fedora-modular
+    modrepos  := --enablerepo=fedora-modular
 else ifneq "" "$(findstring fedora-29-,$(MOCK_CONFIG))"
     modenable := avocado:stable
-    modrepos := --enablerepo=fedora-modular
+    modrepos  := --enablerepo=fedora-modular
 else
     modenable :=
 endif
+modpkgs := python3-aexpect
 
 mock-setup:
 	mock -r $(MOCK_CONFIG) --init
 ifneq "" "$(modenable)"
 	mock -r $(MOCK_CONFIG) $(modrepos) --dnf-cmd module enable $(modenable)
-	mock -r $(MOCK_CONFIG) $(modrepos) --dnf-cmd install "python3-aexpect"
+	mock -r $(MOCK_CONFIG) $(modrepos) --dnf-cmd install $(modpkgs)
 	mock -r $(MOCK_CONFIG) $(modrepos) --dnf-cmd module disable $(firstword $(subst :, ,$(modenable)))
 endif
 
