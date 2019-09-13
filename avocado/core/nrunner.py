@@ -36,6 +36,19 @@ class Runnable:
                           self.args, self.kwargs)
 
 
+def runnable_to_command_line_args(runnable):
+    args = ['-k', runnable.kind]
+    if runnable.uri is not None:
+        args.append('-u')
+        args.append(runnable.uri)
+
+    for arg in runnable.args:
+        args.append('-a')
+        args.append(arg)
+
+    return args
+
+
 def runnable_from_recipe(recipe_path):
     """
     Returns a runnable from a runnable recipe file
