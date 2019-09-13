@@ -47,6 +47,19 @@ def runnable_from_recipe(recipe_path):
                     *recipe.get('args', ()))
 
 
+def runnable_to_recipe(runnable, recipe_path):
+    """
+    Writes a recipe file for the runnable
+    """
+    recipe = {'kind': runnable.kind}
+    if runnable.uri is not None:
+        recipe['uri'] = runnable.uri
+    if runnable.args is not None:
+        recipe['args'] = runnable.args
+    with open(recipe_path, 'w') as recipe_file:
+        json.dump(recipe, recipe_file)
+
+
 class BaseRunner:
     """
     Base interface for a Runner

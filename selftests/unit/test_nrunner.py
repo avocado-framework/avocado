@@ -1,7 +1,11 @@
+import os
 import sys
+import tempfile
 import unittest.mock
 
 from avocado.core import nrunner
+
+from .. import temp_dir_prefix
 
 
 class Runnable(unittest.TestCase):
@@ -45,6 +49,43 @@ class Runnable(unittest.TestCase):
             runnable = nrunner.runnable_from_recipe("fake_path")
         self.assertEqual(runnable.kind, "exec")
         self.assertEqual(runnable.uri, "/bin/sh")
+
+
+class RunnableToRecipe(unittest.TestCase):
+
+    def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix)
+
+    def test_runnable_to_recipe_noop(self):
+        runnable = nrunner.Runnable('noop')
+        recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
+        nrunner.runnable_to_recipe(runnable, recipe_path)
+        self.assertTrue(os.path.exists(recipe_path))
+        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        self.assertEqual(loaded_runnable.kind, 'noop')
+
+    def test_runnable_to_recipe_uri(self):
+        runnable = nrunner.Runnable('exec', '/bin/true')
+        recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
+        nrunner.runnable_to_recipe(runnable, recipe_path)
+        self.assertTrue(os.path.exists(recipe_path))
+        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        self.assertEqual(loaded_runnable.kind, 'exec')
+        self.assertEqual(loaded_runnable.uri, '/bin/true')
+
+    def test_runnable_to_recipe_args(self):
+        runnable = nrunner.Runnable('exec', '/bin/sleep', '0.01')
+        recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
+        nrunner.runnable_to_recipe(runnable, recipe_path)
+        self.assertTrue(os.path.exists(recipe_path))
+        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        self.assertEqual(loaded_runnable.kind, 'exec')
+        self.assertEqual(loaded_runnable.uri, '/bin/sleep')
+        self.assertEqual(loaded_runnable.args, ('0.01', ))
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
 
 
 class Runner(unittest.TestCase):
