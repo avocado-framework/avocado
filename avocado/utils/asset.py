@@ -26,6 +26,7 @@ import stat
 import sys
 import tempfile
 import time
+import json
 
 try:
     import urlparse
@@ -58,7 +59,7 @@ class Asset:
     """
 
     def __init__(self, name, asset_hash, algorithm, locations, cache_dirs,
-                 expire=None):
+                 expire=None, metadata=None):
         """
         Initialize the Asset() class.
 
@@ -68,6 +69,7 @@ class Asset:
         :param locations: location(s) where the asset can be fetched from
         :param cache_dirs: list of cache directories
         :param expire: time in seconds for the asset to expire
+        :param metadata: metadata which will be saved inside metadata file
         """
         self.name = name
         self.asset_hash = asset_hash
@@ -82,6 +84,7 @@ class Asset:
             self.locations = locations
         self.cache_dirs = cache_dirs
         self.expire = expire
+        self.metadata = metadata
 
     def _get_writable_cache_dir(self):
         """
@@ -129,6 +132,65 @@ class Asset:
                                     base_url.encode(astring.ENCODING))
         return os.path.join('by_location', base_url_hash.hexdigest())
 
+    def _find_asset_file(self, relative_path):
+        """
+        Search for the asset file in each one of the cache locations
+        :param relative_path: Path where file should be
+        :return: asset file if exists or None
+        :rtype: str or None
+        """
+        for cache_dir in self.cache_dirs:
+            cache_dir = os.path.expanduser(cache_dir)
+            asset_file = os.path.join(cache_dir, relative_path)
+
+            # To use a cached file, it must:
+            # - Exists.
+            # - Be valid (not expired).
+            # - Be verified (hash check).
+            if (os.path.isfile(asset_file) and
+                    not self._is_expired(asset_file, self.expire)):
+                try:
+                    with FileLock(asset_file, 1):
+                        if self._verify(asset_file):
+                            return asset_file
+                except Exception:
+                    exc_type, exc_value = sys.exc_info()[:2]
+                    log.error('%s: %s', exc_type.__name__, exc_value)
+        return None
+
+    def _create_metadata_file(self, asset_file):
+        """
+        Creates JSON file with metadata.
+        The file will be saved as "asset_file"_metadata.json
+        :param asset_file: The asset whose metadata will be saved
+        :type asset_file: str
+        """
+        if self.metadata is not None:
+            basename = os.path.splitext(asset_file)[0]
+            metadata_file = "%s_metadata.json" % basename
+            metadata = json.dumps(self.metadata)
+            with open(metadata_file, "w") as f:
+                f.write(metadata)
+
+    def get_metadata(self):
+        """
+        Returns metadata of the asset if it exists or None.
+        :return: metadata
+        """
+        parsed_url = urlparse.urlparse(self.name)
+        basename = os.path.basename(parsed_url.path)
+        cache_relative_dir = self._get_relative_dir(parsed_url)
+        asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
+                                                        basename))
+        if asset_file is not None:
+            basename = os.path.splitext(asset_file)[0]
+            metadata_file = "%s_metadata.json" % basename
+            if os.path.isfile(metadata_file):
+                with open(metadata_file, "r") as f:
+                    metadata = json.loads(f.read())
+                    return metadata
+        return None
+
     def fetch(self):
         """
         Fetches the asset. First tries to find the asset on the provided
@@ -148,23 +210,12 @@ class Asset:
             urls.append(parsed_url.geturl())
 
         # First let's search for the file in each one of the cache locations
-        for cache_dir in self.cache_dirs:
-            cache_dir = os.path.expanduser(cache_dir)
-            asset_file = os.path.join(cache_dir, cache_relative_dir, basename)
-
-            # To use a cached file, it must:
-            # - Exists.
-            # - Be valid (not expired).
-            # - Be verified (hash check).
-            if (os.path.isfile(asset_file) and
-                    not self._is_expired(asset_file, self.expire)):
-                try:
-                    with FileLock(asset_file, 1):
-                        if self._verify(asset_file):
-                            return asset_file
-                except Exception:
-                    exc_type, exc_value = sys.exc_info()[:2]
-                    log.error('%s: %s', exc_type.__name__, exc_value)
+        asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
+                                                        basename))
+        if asset_file is not None:
+            if self.metadata is not None:
+                self._create_metadata_file(asset_file)
+            return asset_file
 
         # If we get to this point, we have to download it from a location.
         # A writable cache directory is then needed. The first available
@@ -192,6 +243,8 @@ class Asset:
                 os.makedirs(dirname)
             try:
                 if fetch(urlobj, asset_file):
+                    if self.metadata is not None:
+                        self._create_metadata_file(asset_file)
                     return asset_file
             except Exception:
                 exc_type, exc_value = sys.exc_info()[:2]

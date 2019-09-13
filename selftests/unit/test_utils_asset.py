@@ -150,6 +150,42 @@ class TestAsset(unittest.TestCase):
         with open(a3_path, 'r') as a3_file:
             self.assertEqual(a3_file.read(), third_asset_content)
 
+    def test_create_metadata_file(self):
+        expected_metadata = {"Name": "name", "version": 1.2}
+        foo_tarball = asset.Asset(self.url,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None,
+                                  metadata=expected_metadata).fetch()
+        expected_file = "%s_metadata.json" % os.path.splitext(foo_tarball)[0]
+        self.assertTrue(os.path.exists(expected_file))
+
+    def test_get_metadata_file_exists(self):
+        expected_metadata = {"Name": "name", "version": 1.2}
+        a = asset.Asset(self.url,
+                        asset_hash=self.assethash,
+                        algorithm='sha1',
+                        locations=None,
+                        cache_dirs=[self.cache_dir],
+                        expire=None,
+                        metadata=expected_metadata)
+        a.fetch()
+        metadata = a.get_metadata()
+        self.assertEqual(expected_metadata, metadata)
+
+    def test_get_metadata_file_not_exists(self):
+        expected_metadata = {"Name": "name", "version": 1.2}
+        a = asset.Asset(self.url,
+                        asset_hash=self.assethash,
+                        algorithm='sha1',
+                        locations=None,
+                        cache_dirs=[self.cache_dir],
+                        expire=None,
+                        metadata=expected_metadata)
+        self.assertIsNone(a.get_metadata())
+
     def tearDown(self):
         self.tmpdir.cleanup()
 
