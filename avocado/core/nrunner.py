@@ -74,6 +74,7 @@ class ExecRunner(BaseRunner):
     def run(self):
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
+            stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
 
