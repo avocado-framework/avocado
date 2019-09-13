@@ -24,7 +24,7 @@ class Runnable:
     A instance of :class:`BaseRunner` is the entity that will actually
     execute a runnable.
     """
-    def __init__(self, kind, uri=None, *args, **kwargs):  # pylint: disable=W1113
+    def __init__(self, kind, uri, *args, **kwargs):
         self.kind = kind
         self.uri = uri
         self.args = args

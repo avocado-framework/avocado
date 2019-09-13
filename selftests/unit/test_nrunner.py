@@ -33,7 +33,7 @@ class Runnable(unittest.TestCase):
         self.assertRaises(TypeError, nrunner.Runnable)
 
     def test_kind_noop(self):
-        runnable = nrunner.Runnable('noop')
+        runnable = nrunner.Runnable('noop', None)
         self.assertEqual(runnable.kind, 'noop')
 
     def test_recipe_noop(self):
@@ -58,7 +58,7 @@ class RunnableToRecipe(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix)
 
     def test_runnable_to_recipe_noop(self):
-        runnable = nrunner.Runnable('noop')
+        runnable = nrunner.Runnable('noop', None)
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         nrunner.runnable_to_recipe(runnable, recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
@@ -91,7 +91,7 @@ class RunnableToRecipe(unittest.TestCase):
 class Runner(unittest.TestCase):
 
     def test_runner_noop(self):
-        runnable = nrunner.Runnable('noop')
+        runnable = nrunner.Runnable('noop', None)
         runner = nrunner.runner_from_runnable(runnable)
         results = [status for status in runner.run()]
         self.assertEqual(results, [{'status': 'finished'}])
