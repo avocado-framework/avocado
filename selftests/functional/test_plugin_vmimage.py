@@ -54,6 +54,8 @@ class VMImagePlugin(unittest.TestCase):
         config_file.close()
         return base_dir, mapping, config_file
 
+    @unittest.skipUnless(os.environ.get('AVOCADO_SELFTESTS_NETWORK_ENABLED', False),
+                         "Network required to run these tests")
     def setUp(self):
         (self.base_dir, self.mapping, self.config_file) = self._get_temporary_config()
 
