@@ -121,11 +121,12 @@ class VMImagePlugin(unittest.TestCase):
 
     def test_list_downloaded_images(self):
         with unittest.mock.patch('avocado.core.data_dir.settings.settings', self.stg):
-            images = sorted(vmimage_plugin.list_downloaded_images(), key=lambda i: i['name'])
-            for index, image in enumerate(images):
-                for key in image:
-                    self.assertEqual(self.expected_images[index][key], image[key],
-                                     "Found image is different from the expected one")
+            with unittest.mock.patch('avocado.utils.vmimage.ImageProviderBase.get_version'):
+                images = sorted(vmimage_plugin.list_downloaded_images(), key=lambda i: i['name'])
+                for index, image in enumerate(images):
+                    for key in image:
+                        self.assertEqual(self.expected_images[index][key], image[key],
+                                         "Found image is different from the expected one")
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
