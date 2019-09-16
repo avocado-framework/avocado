@@ -1,4 +1,19 @@
+import os
+import shlex
+import stat
+import subprocess
+import sys
+import tempfile
+
+from . import path as path_utils
 from . import process
+
+
+try:
+    #: The SSH client binary to use, if one is found in the system
+    SSH_CLIENT_BINARY = path_utils.find_command('ssh')
+except path_utils.CmdNotFoundError:
+    SSH_CLIENT_BINARY = None
 
 
 class Session:
@@ -14,16 +29,24 @@ class Session:
     MASTER_OPTIONS = (('ControlMaster', 'yes'),
                       ('ControlPersist', 'yes'))
 
-    def __init__(self, address, credentials):
+    def __init__(self, host, port=None, user=None, key=None, password=None):
         """
-        :param address: a hostname or IP address and port, in the same format
-                        given to socket and other servers
-        :type address: tuple
-        :param credentials: username and path to a key for authentication purposes
-        :type credentials: tuple
+        :param host: a host name or IP address
+        :type host: str
+        :param port: port number
+        :type port: int
+        :param user: the name of the remote user
+        :type user: str
+        :param key: path to a key for authentication purpose
+        :type key: str
+        :param password: password for authentication purpose
+        :type password: str
         """
-        self.address = address
-        self.credentials = credentials
+        self.host = host
+        self.port = port
+        self.user = user
+        self.key = key
+        self.password = password
         self._connection = None
 
     def __enter__(self):
@@ -41,17 +64,38 @@ class Session:
 
     def _ssh_cmd(self, dash_o_opts=(), opts=(), command=''):
         cmd = self._dash_o_opts_to_str(dash_o_opts)
-        if self.credentials:
-            cmd += " -l %s" % self.credentials[0]
-            if self.credentials[1] is not None:
-                cmd += " -i %s" % self.credentials[1]
-        if self.address[1] is not None:
-            cmd += " -p %s" % self.address[1]
-        cmd = "ssh %s %s %s '%s'" % (cmd, " ".join(opts), self.address[0], command)
+        if self.user is not None:
+            cmd += " -l %s" % self.user
+            if self.key is not None:
+                cmd += " -i %s" % self.key
+        if self.port is not None:
+            cmd += " -p %s" % self.port
+        cmd = "%s %s %s %s '%s'" % (SSH_CLIENT_BINARY, cmd,
+                                    " ".join(opts), self.host, command)
         return cmd
 
     def _master_connection(self):
-        return self._ssh_cmd(self.DEFAULT_OPTIONS + self.MASTER_OPTIONS, ('-n',))
+        options = self.DEFAULT_OPTIONS + self.MASTER_OPTIONS
+        options += (('PubkeyAuthentication', 'yes' if self.key else 'no'),)
+        if self.password is None:
+            options += (('PasswordAuthentication', 'no'),)
+        else:
+            options += (('PasswordAuthentication', 'yes'),
+                        ('NumberOfPasswordPrompts', '1'),)
+        return self._ssh_cmd(options, ('-n',))
+
+    def _create_ssh_askpass(self):
+        """
+        Writes a simple program that complies with SSH_ASKPASS
+
+        This basically writes to stdout the password given
+        """
+        script = "#!%s\nprint('%s')" % (sys.executable, self.password)
+        fd, path = tempfile.mkstemp()
+        os.write(fd, script.encode())
+        os.fchmod(fd, stat.S_IRUSR | stat.S_IXUSR)
+        os.close(fd)
+        return path
 
     def _master_command(self, command):
         cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ('-O', command))
@@ -72,9 +116,32 @@ class Session:
         :returns: whether the connection is successfully established
         :rtype: bool
         """
+        if SSH_CLIENT_BINARY is None:
+            return False
+
         if not self._check():
-            master = process.run(self._master_connection(), ignore_status=True)
-            if not master.exit_status == 0:
+            cmd = shlex.split(self._master_connection())
+            if self.password is not None:
+                ssh_askpass_path = self._create_ssh_askpass()
+                env = {'DISPLAY': 'FAKE_VALUE_TO_SATISFY_SSH',
+                       'SSH_ASKPASS': ssh_askpass_path}
+                # pylint: disable=W1509
+                master = subprocess.Popen(cmd,
+                                          stdin=subprocess.DEVNULL,
+                                          stdout=subprocess.DEVNULL,
+                                          stderr=subprocess.DEVNULL,
+                                          env=env,
+                                          preexec_fn=os.setsid)
+            else:
+                master = subprocess.Popen(cmd,
+                                          stdin=subprocess.DEVNULL,
+                                          stdout=subprocess.DEVNULL,
+                                          stderr=subprocess.DEVNULL)
+
+            master.wait()
+            if self.password is not None:
+                os.unlink(ssh_askpass_path)
+            if not master.returncode == 0:
                 return False
             self._connection = master
         return self._check()
