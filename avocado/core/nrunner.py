@@ -24,7 +24,7 @@ class Runnable:
     A instance of :class:`BaseRunner` is the entity that will actually
     execute a runnable.
     """
-    def __init__(self, kind, uri=None, *args, **kwargs):  # pylint: disable=W1113
+    def __init__(self, kind, uri, *args, **kwargs):
         self.kind = kind
         self.uri = uri
         self.args = args
@@ -36,6 +36,19 @@ class Runnable:
                           self.args, self.kwargs)
 
 
+def runnable_to_command_line_args(runnable):
+    args = ['-k', runnable.kind]
+    if runnable.uri is not None:
+        args.append('-u')
+        args.append(runnable.uri)
+
+    for arg in runnable.args:
+        args.append('-a')
+        args.append(arg)
+
+    return args
+
+
 def runnable_from_recipe(recipe_path):
     """
     Returns a runnable from a runnable recipe file
@@ -45,6 +58,19 @@ def runnable_from_recipe(recipe_path):
     return Runnable(recipe.get('kind'),
                     recipe.get('uri'),
                     *recipe.get('args', ()))
+
+
+def runnable_to_recipe(runnable, recipe_path):
+    """
+    Writes a recipe file for the runnable
+    """
+    recipe = {'kind': runnable.kind}
+    if runnable.uri is not None:
+        recipe['uri'] = runnable.uri
+    if runnable.args is not None:
+        recipe['args'] = runnable.args
+    with open(recipe_path, 'w') as recipe_file:
+        json.dump(recipe, recipe_file)
 
 
 class BaseRunner:
@@ -74,6 +100,7 @@ class ExecRunner(BaseRunner):
     def run(self):
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
+            stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
 

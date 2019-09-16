@@ -1,7 +1,11 @@
+import os
 import sys
+import tempfile
 import unittest.mock
 
 from avocado.core import nrunner
+
+from .. import temp_dir_prefix
 
 
 class Runnable(unittest.TestCase):
@@ -29,7 +33,7 @@ class Runnable(unittest.TestCase):
         self.assertRaises(TypeError, nrunner.Runnable)
 
     def test_kind_noop(self):
-        runnable = nrunner.Runnable('noop')
+        runnable = nrunner.Runnable('noop', None)
         self.assertEqual(runnable.kind, 'noop')
 
     def test_recipe_noop(self):
@@ -47,10 +51,47 @@ class Runnable(unittest.TestCase):
         self.assertEqual(runnable.uri, "/bin/sh")
 
 
+class RunnableToRecipe(unittest.TestCase):
+
+    def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix)
+
+    def test_runnable_to_recipe_noop(self):
+        runnable = nrunner.Runnable('noop', None)
+        recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
+        nrunner.runnable_to_recipe(runnable, recipe_path)
+        self.assertTrue(os.path.exists(recipe_path))
+        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        self.assertEqual(loaded_runnable.kind, 'noop')
+
+    def test_runnable_to_recipe_uri(self):
+        runnable = nrunner.Runnable('exec', '/bin/true')
+        recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
+        nrunner.runnable_to_recipe(runnable, recipe_path)
+        self.assertTrue(os.path.exists(recipe_path))
+        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        self.assertEqual(loaded_runnable.kind, 'exec')
+        self.assertEqual(loaded_runnable.uri, '/bin/true')
+
+    def test_runnable_to_recipe_args(self):
+        runnable = nrunner.Runnable('exec', '/bin/sleep', '0.01')
+        recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
+        nrunner.runnable_to_recipe(runnable, recipe_path)
+        self.assertTrue(os.path.exists(recipe_path))
+        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        self.assertEqual(loaded_runnable.kind, 'exec')
+        self.assertEqual(loaded_runnable.uri, '/bin/sleep')
+        self.assertEqual(loaded_runnable.args, ('0.01', ))
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
+
+
 class Runner(unittest.TestCase):
 
     def test_runner_noop(self):
-        runnable = nrunner.Runnable('noop')
+        runnable = nrunner.Runnable('noop', None)
         runner = nrunner.runner_from_runnable(runnable)
         results = [status for status in runner.run()]
         self.assertEqual(results, [{'status': 'finished'}])
