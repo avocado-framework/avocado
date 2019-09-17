@@ -1,0 +1,67 @@
+=================================
+72.0 Once upon a time in Holywood
+=================================
+
+The Avocado team is proud to present another release: Avocado 70.0,
+AKA "Once upon a time in Holywood", is now available!
+
+Release documentation: `Avocado 72.0
+<http://avocado-framework.readthedocs.io/en/72.0/>`_
+
+Users/Test Writers
+==================
+
+* The new ``vmimage`` command allows a user to list the virtual
+  machine images downloaded by means of :mod:`avocado.utils.vmimage`
+  or download new images via the ``avocado vmimage get`` command.
+
+* The tags feature (see :ref:`categorizing-tests`) now supports an
+  extended character set, adding ``.`` and ``-`` to the allowed
+  characters.  A tag such as ``:avocado: tags=machine:s390-ccw-virtio``
+  is now valid.
+  
+* The still experimental "N(ext) Runner", introduced on version 71.0,
+  can now run most Avocado Instrumented tests, and possibly any test
+  who implements a matching ``avocado-runner-$(TEST_TYPE)`` script
+  that conforms to the expected interface.
+
+Bug Fixes
+=========
+
+* A bug introduced in version 71.0 rendered
+  :mod:`avocado.utils.archive` incapable of handling LZMA (also known
+  as ``xz``) archives was fixed.
+
+* A Python 3 (bytes versus text) related issue with
+  :func:`avocado.utils.cpu.get_cpu_vendor_name` has been fixed.
+
+Utility APIs
+============
+
+* :mod:`avocado.utils.ssh` now allows password based authentication,
+  in addition to public key based authentication.
+
+* :func:`avocado.utils.path.usable_ro_dir` will no longer create a
+  directory, but will just check for its existence and the right
+  level of access.
+
+* :func:`avocado.utils.archive.compress` and
+  :func:`avocado.utils.archive.uncompress` and now supports LZMA
+  compressed files transparently.
+
+* The :mod:`avocado.utils.vmimage` now has providers for the CirrOS
+  cloud images.
+
+Internal Changes
+================
+
+* Package build fixes for Fedora 31 and Fedora 32.
+
+* Increased test coverage of mux-suite and the yaml-loader features.
+
+* A number of pylint checks were added, including w0201, w1505, w1509,
+  w0402 and w1113.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/71.0...72.0>`_.

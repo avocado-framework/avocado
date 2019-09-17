@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     886214908132f35cbea8a8c763f9c25084b107fe
+        %global commit     547139bfd042bcf259c66ff11d2be8d65a6386cd
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20190905
+        %global commit_date 20190917
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -58,8 +58,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 71.0
-Release: 2%{?gitrel}%{?dist}
+Version: 72.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -579,6 +579,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Sep 17 2019 Cleber Rosa <cleber@redhat.com> - 72.0-0
+- New release
+
 * Thu Sep  5 2019 Cleber Rosa <cleber@redhat.com> - 71.0-2
 - Added nrunner standalone scripts
 
