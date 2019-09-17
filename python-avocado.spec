@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     9ca2b94139adc909b14e3625e49fff1f91f7958e
+        %global commit     4cc441daae5eb699241fc268e4199d5d5c52a47d
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20190612
+        %global commit_date 20190917
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -68,8 +68,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 69.1
-Release: 1%{?gitrel}%{?dist}
+Version: 69.2
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -1146,6 +1146,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Sep 17 2019 Cleber Rosa <cleber@redhat.com> - 69.2-0
+- New release
+
 * Tue Sep 10 2019 Merlin Mathesius <mmathesi@redhat.com> - 69.1-1
 - Drop builds for Python 2 from F31 and RHEL8 onward.
 - Disable building components dependent upon Fiber in Fedora 31 and later,

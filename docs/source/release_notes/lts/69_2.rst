@@ -1,0 +1,37 @@
+========
+69.2 LTS
+========
+
+The Avocado team is proud to present a minor release in the 69.0 LTS (Long Term Stability)
+series, version 69.2 LTS, is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 69.x to 69.2
+===========================
+
+Upgrading should be smooth, and there are no additional instructions
+besides the steps on the installation method used.  For instance,
+if using pip, it should be as simple as::
+
+  $ pip install avocado-framework==69.2
+
+Changes from 69.1
+=================
+
+Bug Fixes
+~~~~~~~~~
+
+* A Python 3 (bytes versus text) related issue with
+  :func:`avocado.utils.cpu.get_cpu_vendor_name` has been fixed.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (69.1) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/69.1...69.2>`_.
