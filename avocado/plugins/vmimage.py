@@ -47,7 +47,8 @@ def list_downloaded_images():
 
 def download_image(distro, version=None, arch=None):
     """
-    Downloads the vmimge to the vmimage cache directory if isn't already exists.
+    Downloads the vmimage to the cache directory if doesn't already exist
+
     :param distro: Name of image distribution
     :type distro: str
     :param version: Version of image

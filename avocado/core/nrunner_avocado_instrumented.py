@@ -21,8 +21,8 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         # 2) class
         # 3) method
         #
-        # TBD if the resolution uri should be composed like this, or
-        # broken down and stored into other data fields
+        # To be defined: if the resolution uri should be composed like
+        # this, or broken down and stored into other data fields
         module_path, klass_method = runnable.uri.split(':', 1)
 
         klass, method = klass_method.split('.', 1)
@@ -38,7 +38,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         instance = loader.loader.load_test(test_factory)
         instance.run_avocado()
         state = instance.get_state()
-        # This should probably be done in a xlator
+        # This should probably be done in a translator
         if 'status' in state:
             state['status'] = state['status'].lower()
         # This is a hack because the name is a TestID instance that can not
