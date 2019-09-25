@@ -50,6 +50,12 @@ class Runnable(unittest.TestCase):
         self.assertEqual(runnable.kind, "exec")
         self.assertEqual(runnable.uri, "/bin/sh")
 
+    def test_runnable_command_args(self):
+        runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2')
+        actual_args = runnable.get_command_args()
+        exp_args = ['-k', 'noop', '-u', 'uri', '-a', 'arg1', '-a', 'arg2']
+        self.assertEqual(actual_args, exp_args)
+
 
 class RunnableToRecipe(unittest.TestCase):
 

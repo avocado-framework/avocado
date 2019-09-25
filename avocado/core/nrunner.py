@@ -35,18 +35,26 @@ class Runnable:
         return fmt.format(self.kind, self.uri,
                           self.args, self.kwargs)
 
+    def get_command_args(self):
+        """
+        Returns the command arguments that adhere to the runner interface
 
-def runnable_to_command_line_args(runnable):
-    args = ['-k', runnable.kind]
-    if runnable.uri is not None:
-        args.append('-u')
-        args.append(runnable.uri)
+        This is useful for building 'runnable-run' and 'task-run' commands
+        that can be executed on a command line interface.
 
-    for arg in runnable.args:
-        args.append('-a')
-        args.append(arg)
+        :returns: the arguments that can be used on an avocado-runner command
+        :rtype: list
+        """
+        args = ['-k', self.kind]
+        if self.uri is not None:
+            args.append('-u')
+            args.append(self.uri)
 
-    return args
+        for arg in self.args:
+            args.append('-a')
+            args.append(arg)
+
+        return args
 
 
 def runnable_from_recipe(recipe_path):

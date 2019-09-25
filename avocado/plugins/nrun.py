@@ -145,12 +145,10 @@ class NRun(CLICmd):
             status_service_args.append('-s')
             status_service_args.append(status_service.uri)
 
-        runnable_args = nrunner.runnable_to_command_line_args(task.runnable)
-
         args = ['task-run',
                 '-i', task.identifier]
 
-        args += list(runnable_args)
+        args += list(task.runnable.get_command_args())
         args += list(status_service_args)
 
         runner = self.pick_runner(task)
