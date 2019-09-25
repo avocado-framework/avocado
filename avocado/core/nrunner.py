@@ -115,6 +115,12 @@ class BaseRunner:
 class NoOpRunner(BaseRunner):
     """
     Sample runner that performs no action before reporting FINISHED status
+
+    Runnable attributes usage:
+
+     * uri: not used
+
+     * args: not used
     """
     def run(self):
         yield {'status': 'finished'}
@@ -123,6 +129,13 @@ class NoOpRunner(BaseRunner):
 class ExecRunner(BaseRunner):
     """
     Runner for standalone executables with or without arguments
+
+    Runnable attributes usage:
+
+     * uri: path to a binary to be executed as another process
+
+     * args: arguments to be given on the command line to the
+       binary given by path
     """
     def run(self):
         process = subprocess.Popen(
@@ -157,6 +170,8 @@ class ExecTestRunner(ExecRunner):
     This is similar in concept to the Avocado "SIMPLE" test type, in which an
     executable returning 0 means that a test passed, and anything else means
     that a test failed.
+
+    Runnable attributes usage is identical to :class:`ExecRunner`
     """
     def run(self):
         for status in super(ExecTestRunner, self).run():
@@ -175,6 +190,12 @@ class PythonUnittestRunner(BaseRunner):
     The runnable uri is used as the test name that the native unittest
     TestLoader will use to find the test.  A native unittest test
     runner (TextTestRunner) will be used to execute the test.
+
+    Runnable attributes usage:
+
+     * uri: path to a binary to be executed as another process
+
+     * args: not used
     """
     @staticmethod
     def _run_unittest(uri, queue):
