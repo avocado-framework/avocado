@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import base64
+import collections
 import io
 import json
 import multiprocessing
@@ -35,18 +36,57 @@ class Runnable:
         return fmt.format(self.kind, self.uri,
                           self.args, self.kwargs)
 
+    def get_command_args(self):
+        """
+        Returns the command arguments that adhere to the runner interface
 
-def runnable_to_command_line_args(runnable):
-    args = ['-k', runnable.kind]
-    if runnable.uri is not None:
-        args.append('-u')
-        args.append(runnable.uri)
+        This is useful for building 'runnable-run' and 'task-run' commands
+        that can be executed on a command line interface.
 
-    for arg in runnable.args:
-        args.append('-a')
-        args.append(arg)
+        :returns: the arguments that can be used on an avocado-runner command
+        :rtype: list
+        """
+        args = ['-k', self.kind]
+        if self.uri is not None:
+            args.append('-u')
+            args.append(self.uri)
 
-    return args
+        for arg in self.args:
+            args.append('-a')
+            args.append(arg)
+
+        return args
+
+    def get_dict(self):
+        """
+        Returns a dictionary representation for the current runnable
+
+        This is usually the format that will be converted to a format
+        that can be serialized to disk, such as JSON.
+
+        :rtype: :class:`collections.OrderedDict`
+        """
+        recipe = collections.OrderedDict(kind=self.kind)
+        if self.uri is not None:
+            recipe['uri'] = self.uri
+        if self.args is not None:
+            recipe['args'] = self.args
+        return recipe
+
+    def get_json(self):
+        """
+        Returns a JSON representation
+
+        :rtype: str
+        """
+        return json.dumps(self.get_dict())
+
+    def write_json(self, recipe_path):
+        """
+        Writes a file with a JSON representation (also known as a recipe)
+        """
+        with open(recipe_path, 'w') as recipe_file:
+            recipe_file.write(self.get_json())
 
 
 def runnable_from_recipe(recipe_path):
@@ -58,19 +98,6 @@ def runnable_from_recipe(recipe_path):
     return Runnable(recipe.get('kind'),
                     recipe.get('uri'),
                     *recipe.get('args', ()))
-
-
-def runnable_to_recipe(runnable, recipe_path):
-    """
-    Writes a recipe file for the runnable
-    """
-    recipe = {'kind': runnable.kind}
-    if runnable.uri is not None:
-        recipe['uri'] = runnable.uri
-    if runnable.args is not None:
-        recipe['args'] = runnable.args
-    with open(recipe_path, 'w') as recipe_file:
-        json.dump(recipe, recipe_file)
 
 
 class BaseRunner:
@@ -516,18 +543,9 @@ def parse():
 def main():
     args = vars(parse())
     subcommand = args.get('subcommand')
-    if subcommand == 'runnable-run':
-        subcommand_runnable_run(args)
-    elif subcommand == 'runnable-run-recipe':
-        subcommand_runnable_run_recipe(args)
-    elif subcommand == 'task-run':
-        subcommand_task_run(args)
-    elif subcommand == 'task-run-recipe':
-        subcommand_task_run_recipe(args)
-    elif subcommand == 'status-server':
-        subcommand_status_server(args)
-    elif subcommand == 'capabilities':
-        subcommand_capabilities(args)
+    kallable = COMMANDS_CAPABLE.get(subcommand)
+    if kallable is not None:
+        kallable(args)
 
 
 if __name__ == '__main__':
