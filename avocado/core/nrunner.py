@@ -251,10 +251,27 @@ CMD_RUNNABLE_RUN_ARGS = (
     )
 
 
+def _arg_decode_base64(arg):
+    """
+    Decode arguments possibly endcoded as base64
+
+    :param arg: the possibly encoded argument
+    :type arg: str
+    :returns: the decoded argument
+    :rtype: str
+    """
+    prefix = 'base64:'
+    if arg.startswith(prefix):
+        content = arg[len(prefix):]
+        return base64.decodebytes(content.encode()).decode()
+    return arg
+
+
 def runnable_from_args(args):
+    decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
     return Runnable(args.get('kind'),
                     args.get('uri'),
-                    *args.get('arg', ()))
+                    *decoded_args)
 
 
 def subcommand_runnable_run(args, echo=print):
