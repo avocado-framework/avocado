@@ -58,6 +58,17 @@ class RunnableRun(unittest.TestCase):
         self.assertIn("'stdout': b'avocado'", final_status)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
 
+    def test_noop_valid_kwargs(self):
+        res = process.run("%s runnable-run -k noop foo=bar" % AVOCADO,
+                          ignore_status=True)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+    def test_noop_invalid_kwargs(self):
+        res = process.run("%s runnable-run -k noop foo" % AVOCADO,
+                          ignore_status=True)
+        self.assertIn(b'Invalid keyword parameter: "foo"', res.stderr)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_FAIL)
+
 
 class TaskRun(unittest.TestCase):
 

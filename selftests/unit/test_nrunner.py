@@ -68,6 +68,35 @@ class Runnable(unittest.TestCase):
         self.assertEqual(runnable.get_json(), expected)
 
 
+class RunnableFromCommandLineArgs(unittest.TestCase):
+
+    def test_noop(self):
+        parsed_args = {'kind': 'noop', 'uri': None}
+        runnable = nrunner.runnable_from_args(parsed_args)
+        self.assertEqual(runnable.kind, 'noop')
+        self.assertIsNone(runnable.uri)
+
+    def test_exec_args(self):
+        parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
+                       'arg': ['-a', '-b', '-c']}
+        runnable = nrunner.runnable_from_args(parsed_args)
+        self.assertEqual(runnable.kind, 'exec')
+        self.assertEqual(runnable.uri, '/path/to/executable')
+        self.assertEqual(runnable.args, ('-a', '-b', '-c'))
+        self.assertEqual(runnable.kwargs, {})
+
+    def test_exec_args_kwargs(self):
+        parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
+                       'arg': ['-a', '-b', '-c'],
+                       'kwargs': [('DEBUG', '1'), ('LC_ALL', 'C')]}
+        runnable = nrunner.runnable_from_args(parsed_args)
+        self.assertEqual(runnable.kind, 'exec')
+        self.assertEqual(runnable.uri, '/path/to/executable')
+        self.assertEqual(runnable.args, ('-a', '-b', '-c'))
+        self.assertEqual(runnable.kwargs.get('DEBUG'), '1')
+        self.assertEqual(runnable.kwargs.get('LC_ALL'), 'C')
+
+
 class RunnableToRecipe(unittest.TestCase):
 
     def setUp(self):

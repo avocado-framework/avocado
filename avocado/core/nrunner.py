@@ -260,6 +260,15 @@ def runner_from_runnable(runnable, capables=None):
     raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
 
 
+def _parse_key_val(argument):
+    key_value = argument.split('=', 1)
+    if len(key_value) < 2:
+        msg = ('Invalid keyword parameter: "%s". Valid option must '
+               'be a "KEY=VALUE" like expression' % argument)
+        raise argparse.ArgumentTypeError(msg)
+    return tuple(key_value)
+
+
 CMD_RUNNABLE_RUN_ARGS = (
     (("-k", "--kind"),
      {'type': str, 'required': True, 'help': 'Kind of runnable'}),
@@ -268,7 +277,11 @@ CMD_RUNNABLE_RUN_ARGS = (
      {'type': str, 'default': None, 'help': 'URI of runnable'}),
 
     (("-a", "--arg"),
-     {'action': "append", 'default': [], 'help': 'Simple arguments to runnable'})
+     {'action': "append", 'default': [], 'help': 'Simple arguments to runnable'}),
+
+    (('kwargs',),
+     {'default': [], 'type': _parse_key_val, 'nargs': '*',
+      'metavar': 'KEY_VAL', 'help': 'Keyword (key=val) arguments to runnable'}),
     )
 
 
@@ -288,11 +301,19 @@ def _arg_decode_base64(arg):
     return arg
 
 
+def _key_val_args_to_kwargs(kwargs):
+    result = {}
+    for key, val in kwargs:
+        result[key] = val
+    return result
+
+
 def runnable_from_args(args):
     decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
     return Runnable(args.get('kind'),
                     args.get('uri'),
-                    *decoded_args)
+                    *decoded_args,
+                    **_key_val_args_to_kwargs(args.get('kwargs', [])))
 
 
 def subcommand_runnable_run(args, echo=print):
