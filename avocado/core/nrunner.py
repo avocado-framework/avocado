@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import base64
+import collections
 import io
 import json
 import multiprocessing
@@ -56,6 +57,37 @@ class Runnable:
 
         return args
 
+    def get_dict(self):
+        """
+        Returns a dictionary representation for the current runnable
+
+        This is usually the format that will be converted to a format
+        that can be serialized to disk, such as JSON.
+
+        :rtype: :class:`collections.OrderedDict`
+        """
+        recipe = collections.OrderedDict(kind=self.kind)
+        if self.uri is not None:
+            recipe['uri'] = self.uri
+        if self.args is not None:
+            recipe['args'] = self.args
+        return recipe
+
+    def get_json(self):
+        """
+        Returns a JSON representation
+
+        :rtype: str
+        """
+        return json.dumps(self.get_dict())
+
+    def write_json(self, recipe_path):
+        """
+        Writes a file with a JSON representation (also known as a recipe)
+        """
+        with open(recipe_path, 'w') as recipe_file:
+            recipe_file.write(self.get_json())
+
 
 def runnable_from_recipe(recipe_path):
     """
@@ -66,19 +98,6 @@ def runnable_from_recipe(recipe_path):
     return Runnable(recipe.get('kind'),
                     recipe.get('uri'),
                     *recipe.get('args', ()))
-
-
-def runnable_to_recipe(runnable, recipe_path):
-    """
-    Writes a recipe file for the runnable
-    """
-    recipe = {'kind': runnable.kind}
-    if runnable.uri is not None:
-        recipe['uri'] = runnable.uri
-    if runnable.args is not None:
-        recipe['args'] = runnable.args
-    with open(recipe_path, 'w') as recipe_file:
-        json.dump(recipe, recipe_file)
 
 
 class BaseRunner:

@@ -56,6 +56,17 @@ class Runnable(unittest.TestCase):
         exp_args = ['-k', 'noop', '-u', 'uri', '-a', 'arg1', '-a', 'arg2']
         self.assertEqual(actual_args, exp_args)
 
+    def test_get_dict(self):
+        runnable = nrunner.Runnable('noop', '_uri_', 'arg1', 'arg2')
+        self.assertEqual(runnable.get_dict(),
+                         {'kind': 'noop', 'uri': '_uri_',
+                          'args': ('arg1', 'arg2')})
+
+    def test_get_json(self):
+        runnable = nrunner.Runnable('noop', '_uri_', 'arg1', 'arg2')
+        expected = '{"kind": "noop", "uri": "_uri_", "args": ["arg1", "arg2"]}'
+        self.assertEqual(runnable.get_json(), expected)
+
 
 class RunnableToRecipe(unittest.TestCase):
 
@@ -66,7 +77,7 @@ class RunnableToRecipe(unittest.TestCase):
     def test_runnable_to_recipe_noop(self):
         runnable = nrunner.Runnable('noop', None)
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
-        nrunner.runnable_to_recipe(runnable, recipe_path)
+        runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
         loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'noop')
@@ -74,7 +85,7 @@ class RunnableToRecipe(unittest.TestCase):
     def test_runnable_to_recipe_uri(self):
         runnable = nrunner.Runnable('exec', '/bin/true')
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
-        nrunner.runnable_to_recipe(runnable, recipe_path)
+        runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
         loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'exec')
@@ -83,7 +94,7 @@ class RunnableToRecipe(unittest.TestCase):
     def test_runnable_to_recipe_args(self):
         runnable = nrunner.Runnable('exec', '/bin/sleep', '0.01')
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
-        nrunner.runnable_to_recipe(runnable, recipe_path)
+        runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
         loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'exec')
