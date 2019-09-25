@@ -268,7 +268,7 @@ CMD_RUNNABLE_RUN_ARGS = (
      {'type': str, 'default': None, 'help': 'URI of runnable'}),
 
     (("-a", "--arg"),
-     {'action': "append", 'default': [], 'help': 'Positional arguments to runnable'})
+     {'action': "append", 'default': [], 'help': 'Simple arguments to runnable'})
     )
 
 
