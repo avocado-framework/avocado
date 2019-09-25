@@ -516,18 +516,9 @@ def parse():
 def main():
     args = vars(parse())
     subcommand = args.get('subcommand')
-    if subcommand == 'runnable-run':
-        subcommand_runnable_run(args)
-    elif subcommand == 'runnable-run-recipe':
-        subcommand_runnable_run_recipe(args)
-    elif subcommand == 'task-run':
-        subcommand_task_run(args)
-    elif subcommand == 'task-run-recipe':
-        subcommand_task_run_recipe(args)
-    elif subcommand == 'status-server':
-        subcommand_status_server(args)
-    elif subcommand == 'capabilities':
-        subcommand_capabilities(args)
+    kallable = COMMANDS_CAPABLE.get(subcommand)
+    if kallable is not None:
+        kallable(args)
 
 
 if __name__ == '__main__':
