@@ -137,6 +137,11 @@ class TAPResult(ResultEvents):
         pass
 
     def post_tests(self, job):
+        if job.interrupted_reason is not None:
+            for pending_test in range(job.result.tests_run + 1, job.result.tests_total + 1):
+                self.__write("ok %s # SKIP %s", pending_test, job.interrupted_reason)
+            self.__flush()
+
         for open_file in self.__open_files:
             open_file.close()
 
