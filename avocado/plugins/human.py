@@ -101,6 +101,10 @@ class Human(ResultEvents):
     def post_tests(self, job):
         if not self.owns_stdout:
             return
+
+        if job.interrupted_reason is not None:
+            LOG_UI.info(job.interrupted_reason)
+
         if job.status == 'PASS':
             LOG_UI.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
                         "WARN %d | INTERRUPT %s | CANCEL %s", job.result.passed,

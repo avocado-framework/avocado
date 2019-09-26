@@ -106,6 +106,7 @@ class Job:
         self.__keep_tmpdir = True
         self.status = "RUNNING"
         self.result = None
+        self.interrupted_reason = None
         self.sysinfo = None
         self.timeout = self.config.get('job_timeout', 0)
         #: The time at which the job has started or `-1` if it has not been
