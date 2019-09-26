@@ -33,6 +33,20 @@ $parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
 """ % AVOCADO_QUOTED
 
 
+PERL_TAP_PARSER_FAILFAST_SNIPPET = """#!/bin/env perl
+use TAP::Parser;
+
+my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'failtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--failfast', 'on', '--sysinfo', 'off', '--job-results-dir', '%%s'] } );
+
+while ( my $result = $parser->next ) {
+        $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
+}
+$parser->parse_errors == 0 || die "Parser errors!\n";
+$parser->is_good_plan || die "Plan is not a good plan!\n";
+$parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
+""" % AVOCADO_QUOTED
+
+
 OUTPUT_TEST_CONTENT = """#!/bin/env python
 import sys
 
@@ -497,6 +511,15 @@ class OutputPluginTest(unittest.TestCase):
         with script.TemporaryScript(
                 "tap_parser.pl",
                 PERL_TAP_PARSER_SNIPPET % self.tmpdir.name,
+                self.tmpdir.name) as perl_script:
+            process.run("perl %s" % perl_script)
+
+    @unittest.skipIf(perl_tap_parser_uncapable(),
+                     "Uncapable of using Perl TAP::Parser library")
+    def test_tap_parser_failfast(self):
+        with script.TemporaryScript(
+                "tap_parser.pl",
+                PERL_TAP_PARSER_FAILFAST_SNIPPET % self.tmpdir.name,
                 self.tmpdir.name) as perl_script:
             process.run("perl %s" % perl_script)
 

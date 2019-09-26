@@ -503,7 +503,7 @@ class TestRunner:
 
             if self.job.config.get('failfast', 'off') == 'on':
                 summary.add("INTERRUPTED")
-                self.job.log.debug("Interrupting job (failfast).")
+                self.job.interrupted_reason = "Interrupting job (failfast)."
                 return False
 
         if ctrl_c_count > 0:
