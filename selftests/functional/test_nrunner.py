@@ -1,5 +1,6 @@
-import unittest
 import os
+import sys
+import unittest
 
 from .. import AVOCADO, BASEDIR
 
@@ -14,6 +15,59 @@ class RunnableRun(unittest.TestCase):
                           ignore_status=True)
         self.assertEqual(res.stdout, b"{'status': 'finished'}\n")
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+    def test_exec(self):
+        # 'base64:LWM=' becomes '-c' and makes Python execute the
+        # commands on the subsequent argument
+        cmd = ("%s runnable-run -k exec -u %s -a 'base64:LWM=' -a "
+               "'import sys; sys.exit(99)'" % (AVOCADO, sys.executable))
+        res = process.run(cmd, ignore_status=True)
+        self.assertIn(b"'status': 'finished'", res.stdout)
+        self.assertIn(b"'returncode': 99", res.stdout)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+    @unittest.skipUnless(os.path.exists('/bin/echo'),
+                         ('Executable "/bin/echo" used in test is not '
+                          'available in the system'))
+    def test_exec_echo(self):
+        # 'base64:LW4=' becomes '-n' and prevents echo from printing a newline
+        cmd = ("%s runnable-run -k exec -u /bin/echo -a 'base64:LW4=' -a "
+               "_Avocado_Runner_" % AVOCADO)
+        res = process.run(cmd, ignore_status=True)
+        self.assertIn(b"'status': 'finished'", res.stdout)
+        self.assertIn(b"'stdout': b'_Avocado_Runner_'", res.stdout)
+        self.assertIn(b"'returncode': 0", res.stdout)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+    @unittest.skipUnless(os.path.exists('/bin/echo'),
+                         ('Executable "/bin/echo" used in recipe is not '
+                          'available in the system'))
+    def test_recipe(self):
+        recipe = os.path.join(BASEDIR, "examples", "recipes", "runnables",
+                              "exec_echo_no_newline.json")
+        cmd = "%s runnable-run-recipe %s" % (AVOCADO, recipe)
+        res = process.run(cmd, ignore_status=True)
+        lines = res.stdout_text.splitlines()
+        if len(lines) == 1:
+            first_status = final_status = lines[0]
+        else:
+            first_status = lines[0]
+            final_status = lines[-1]
+            self.assertIn("'status': 'running'", first_status)
+        self.assertIn("'status': 'finished'", final_status)
+        self.assertIn("'stdout': b'avocado'", final_status)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+    def test_noop_valid_kwargs(self):
+        res = process.run("%s runnable-run -k noop foo=bar" % AVOCADO,
+                          ignore_status=True)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+    def test_noop_invalid_kwargs(self):
+        res = process.run("%s runnable-run -k noop foo" % AVOCADO,
+                          ignore_status=True)
+        self.assertIn(b'Invalid keyword parameter: "foo"', res.stderr)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_FAIL)
 
 
 class TaskRun(unittest.TestCase):

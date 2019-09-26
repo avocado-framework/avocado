@@ -115,6 +115,12 @@ class BaseRunner:
 class NoOpRunner(BaseRunner):
     """
     Sample runner that performs no action before reporting FINISHED status
+
+    Runnable attributes usage:
+
+     * uri: not used
+
+     * args: not used
     """
     def run(self):
         yield {'status': 'finished'}
@@ -123,6 +129,13 @@ class NoOpRunner(BaseRunner):
 class ExecRunner(BaseRunner):
     """
     Runner for standalone executables with or without arguments
+
+    Runnable attributes usage:
+
+     * uri: path to a binary to be executed as another process
+
+     * args: arguments to be given on the command line to the
+       binary given by path
     """
     def run(self):
         process = subprocess.Popen(
@@ -157,6 +170,8 @@ class ExecTestRunner(ExecRunner):
     This is similar in concept to the Avocado "SIMPLE" test type, in which an
     executable returning 0 means that a test passed, and anything else means
     that a test failed.
+
+    Runnable attributes usage is identical to :class:`ExecRunner`
     """
     def run(self):
         for status in super(ExecTestRunner, self).run():
@@ -175,6 +190,12 @@ class PythonUnittestRunner(BaseRunner):
     The runnable uri is used as the test name that the native unittest
     TestLoader will use to find the test.  A native unittest test
     runner (TextTestRunner) will be used to execute the test.
+
+    Runnable attributes usage:
+
+     * uri: path to a binary to be executed as another process
+
+     * args: not used
     """
     @staticmethod
     def _run_unittest(uri, queue):
@@ -239,6 +260,15 @@ def runner_from_runnable(runnable, capables=None):
     raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
 
 
+def _parse_key_val(argument):
+    key_value = argument.split('=', 1)
+    if len(key_value) < 2:
+        msg = ('Invalid keyword parameter: "%s". Valid option must '
+               'be a "KEY=VALUE" like expression' % argument)
+        raise argparse.ArgumentTypeError(msg)
+    return tuple(key_value)
+
+
 CMD_RUNNABLE_RUN_ARGS = (
     (("-k", "--kind"),
      {'type': str, 'required': True, 'help': 'Kind of runnable'}),
@@ -247,14 +277,43 @@ CMD_RUNNABLE_RUN_ARGS = (
      {'type': str, 'default': None, 'help': 'URI of runnable'}),
 
     (("-a", "--arg"),
-     {'action': "append", 'default': [], 'help': 'Positional arguments to runnable'})
+     {'action': "append", 'default': [], 'help': 'Simple arguments to runnable'}),
+
+    (('kwargs',),
+     {'default': [], 'type': _parse_key_val, 'nargs': '*',
+      'metavar': 'KEY_VAL', 'help': 'Keyword (key=val) arguments to runnable'}),
     )
 
 
+def _arg_decode_base64(arg):
+    """
+    Decode arguments possibly endcoded as base64
+
+    :param arg: the possibly encoded argument
+    :type arg: str
+    :returns: the decoded argument
+    :rtype: str
+    """
+    prefix = 'base64:'
+    if arg.startswith(prefix):
+        content = arg[len(prefix):]
+        return base64.decodebytes(content.encode()).decode()
+    return arg
+
+
+def _key_val_args_to_kwargs(kwargs):
+    result = {}
+    for key, val in kwargs:
+        result[key] = val
+    return result
+
+
 def runnable_from_args(args):
+    decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
     return Runnable(args.get('kind'),
                     args.get('uri'),
-                    *args.get('arg', ()))
+                    *decoded_args,
+                    **_key_val_args_to_kwargs(args.get('kwargs', [])))
 
 
 def subcommand_runnable_run(args, echo=print):

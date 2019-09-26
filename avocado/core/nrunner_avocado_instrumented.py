@@ -12,6 +12,18 @@ from .tree import TreeNode
 
 
 class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
+    """
+    Runner for Avocado INSTRUMENTED tests
+
+    Runnable attributes usage:
+
+     * uri: path to a test file, combined with an Avocado.Test
+       inherited class name and method.  The test file path and
+       class and method names should be separated by a ":".  One
+       example of a valid uri is "mytest.py:Class.test_method".
+
+     * args: not used
+    """
 
     @staticmethod
     def _run_avocado(runnable, queue):
