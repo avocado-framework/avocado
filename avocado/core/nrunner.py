@@ -29,12 +29,13 @@ class Runnable:
         self.kind = kind
         self.uri = uri
         self.args = args
+        self.tags = kwargs.pop('tags', None)
         self.kwargs = kwargs
 
     def __repr__(self):
-        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}"'
+        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}"'
         return fmt.format(self.kind, self.uri,
-                          self.args, self.kwargs)
+                          self.args, self.kwargs, self.tags)
 
     def get_command_args(self):
         """
@@ -54,6 +55,9 @@ class Runnable:
         for arg in self.args:
             args.append('-a')
             args.append(arg)
+
+        if self.tags is not None:
+            args.append('tags=json:%s' % json.dumps(self.tags))
 
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):

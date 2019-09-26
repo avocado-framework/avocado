@@ -45,7 +45,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                          'job': job.Job(),
                          'modulePath': module_path,
                          'params': (TreeNode(), []),
-                         'tags': runnable.kwargs.get('tags')}]
+                         'tags': runnable.tags}]
 
         instance = loader.loader.load_test(test_factory)
         instance.run_avocado()
