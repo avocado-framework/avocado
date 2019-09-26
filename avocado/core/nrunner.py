@@ -136,13 +136,18 @@ class ExecRunner(BaseRunner):
 
      * args: arguments to be given on the command line to the
        binary given by path
+
+     * kwargs: key=val to be set as environment variables to the
+       process
     """
     def run(self):
+        env = self.runnable.kwargs or None
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE,
+            env=env)
 
         last_status = None
         while process.poll() is None:
