@@ -55,6 +55,11 @@ class Runnable:
             args.append('-a')
             args.append(arg)
 
+        for key, val in self.kwargs.items():
+            if not isinstance(val, str) or isinstance(val, int):
+                val = "json:%s" % json.dumps(val)
+            args.append('%s=%s' % (key, val))
+
         return args
 
     def get_dict(self):
@@ -306,10 +311,25 @@ def _arg_decode_base64(arg):
     return arg
 
 
+def _kwarg_decode_json(value):
+    """
+    Decode arguments possibly endcoded as base64
+
+    :param value: the possibly encoded argument
+    :type value: str
+    :returns: the decoded keyword argument as Python object
+    """
+    prefix = 'json:'
+    if value.startswith(prefix):
+        content = value[len(prefix):]
+        return json.loads(content)
+    return value
+
+
 def _key_val_args_to_kwargs(kwargs):
     result = {}
     for key, val in kwargs:
-        result[key] = val
+        result[key] = _kwarg_decode_json(val)
     return result
 
 

@@ -96,6 +96,25 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
         self.assertEqual(runnable.kwargs.get('DEBUG'), '1')
         self.assertEqual(runnable.kwargs.get('LC_ALL'), 'C')
 
+    def test_kwargs_json_empty_dict(self):
+        parsed_args = {'kind': 'noop', 'uri': None,
+                       'kwargs': [('tags', 'json:{}')]}
+        runnable = nrunner.runnable_from_args(parsed_args)
+        self.assertEqual(runnable.kind, 'noop')
+        self.assertIsNone(runnable.uri)
+        self.assertEqual(runnable.kwargs.get('tags'), {})
+
+    def test_kwargs_json_dict(self):
+        parsed_args = {
+            'kind': 'noop', 'uri': None,
+            'kwargs': [('tags', 'json:{"arch": ["x86_64", "ppc64"]}')]
+        }
+        runnable = nrunner.runnable_from_args(parsed_args)
+        self.assertEqual(runnable.kind, 'noop')
+        self.assertIsNone(runnable.uri)
+        self.assertEqual(runnable.kwargs.get('tags'),
+                         {"arch": ["x86_64", "ppc64"]})
+
 
 class RunnableToRecipe(unittest.TestCase):
 
