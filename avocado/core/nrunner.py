@@ -57,7 +57,13 @@ class Runnable:
             args.append(arg)
 
         if self.tags is not None:
-            args.append('tags=json:%s' % json.dumps(self.tags))
+            tags = {}
+            # sets are not serializable in json
+            for key, val in self.tags.items():
+                if isinstance(val, set):
+                    val = list(val)
+                tags[key] = val
+            args.append('tags=json:%s' % json.dumps(tags))
 
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):
