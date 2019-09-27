@@ -69,6 +69,16 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b'Invalid keyword parameter: "foo"', res.stderr)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_FAIL)
 
+    @unittest.skipUnless(os.path.exists('/bin/env'),
+                         ('Executable "/bin/env" used in test is not '
+                          'available in the system'))
+    def test_exec_kwargs(self):
+        res = process.run("%s runnable-run -k exec -u /bin/env X=Y" % AVOCADO,
+                          ignore_status=True)
+        self.assertIn(b"'status': 'finished'", res.stdout)
+        self.assertIn(b"'stdout': b'X=Y\\n'", res.stdout)
+        self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
 
 class TaskRun(unittest.TestCase):
 

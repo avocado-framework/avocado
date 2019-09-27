@@ -29,12 +29,13 @@ class Runnable:
         self.kind = kind
         self.uri = uri
         self.args = args
+        self.tags = kwargs.pop('tags', None)
         self.kwargs = kwargs
 
     def __repr__(self):
-        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}"'
+        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}"'
         return fmt.format(self.kind, self.uri,
-                          self.args, self.kwargs)
+                          self.args, self.kwargs, self.tags)
 
     def get_command_args(self):
         """
@@ -54,6 +55,14 @@ class Runnable:
         for arg in self.args:
             args.append('-a')
             args.append(arg)
+
+        if self.tags is not None:
+            args.append('tags=json:%s' % json.dumps(self.tags))
+
+        for key, val in self.kwargs.items():
+            if not isinstance(val, str) or isinstance(val, int):
+                val = "json:%s" % json.dumps(val)
+            args.append('%s=%s' % (key, val))
 
         return args
 
@@ -136,13 +145,18 @@ class ExecRunner(BaseRunner):
 
      * args: arguments to be given on the command line to the
        binary given by path
+
+     * kwargs: key=val to be set as environment variables to the
+       process
     """
     def run(self):
+        env = self.runnable.kwargs or None
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE,
+            env=env)
 
         last_status = None
         while process.poll() is None:
@@ -301,10 +315,25 @@ def _arg_decode_base64(arg):
     return arg
 
 
+def _kwarg_decode_json(value):
+    """
+    Decode arguments possibly endcoded as base64
+
+    :param value: the possibly encoded argument
+    :type value: str
+    :returns: the decoded keyword argument as Python object
+    """
+    prefix = 'json:'
+    if value.startswith(prefix):
+        content = value[len(prefix):]
+        return json.loads(content)
+    return value
+
+
 def _key_val_args_to_kwargs(kwargs):
     result = {}
     for key, val in kwargs:
-        result[key] = val
+        result[key] = _kwarg_decode_json(val)
     return result
 
 

@@ -16,18 +16,34 @@ class Runnable(unittest.TestCase):
         self.assertIn('arg2', runnable.args)
 
     def test_runnable_kwargs(self):
-        runnable = nrunner.Runnable('noop', 'uri',
-                                    tags={'arch': set(['x86_64', 'ppc64'])})
-        self.assertIn('x86_64', runnable.kwargs.get('tags').get('arch'))
-        self.assertIn('ppc64', runnable.kwargs.get('tags').get('arch'))
+        runnable = nrunner.Runnable('noop', 'uri', key1='val1', key2='val2')
+        self.assertEqual(runnable.kwargs.get('key1'), 'val1')
+        self.assertEqual(runnable.kwargs.get('key2'), 'val2')
 
     def test_runnable_args_kwargs(self):
         runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2',
-                                    tags={'arch': set(['x86_64', 'ppc64'])})
+                                    key1='val1', key2='val2')
         self.assertIn('arg1', runnable.args)
         self.assertIn('arg2', runnable.args)
-        self.assertIn('x86_64', runnable.kwargs.get('tags').get('arch'))
-        self.assertIn('ppc64', runnable.kwargs.get('tags').get('arch'))
+        self.assertEqual(runnable.kwargs.get('key1'), 'val1')
+        self.assertEqual(runnable.kwargs.get('key2'), 'val2')
+
+    def test_runnable_tags(self):
+        runnable = nrunner.Runnable('noop', 'uri',
+                                    tags={'arch': set(['x86_64', 'ppc64'])})
+        self.assertIn('x86_64', runnable.tags.get('arch'))
+        self.assertIn('ppc64', runnable.tags.get('arch'))
+
+    def test_runnable_args_kwargs_tags(self):
+        runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2',
+                                    tags={'arch': set(['x86_64', 'ppc64'])},
+                                    non_standard_option='non_standard_value')
+        self.assertIn('arg1', runnable.args)
+        self.assertIn('arg2', runnable.args)
+        self.assertIn('x86_64', runnable.tags.get('arch'))
+        self.assertIn('ppc64', runnable.tags.get('arch'))
+        self.assertEqual(runnable.kwargs.get('non_standard_option'),
+                         'non_standard_value')
 
     def test_kind_required(self):
         self.assertRaises(TypeError, nrunner.Runnable)
@@ -95,6 +111,26 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
         self.assertEqual(runnable.args, ('-a', '-b', '-c'))
         self.assertEqual(runnable.kwargs.get('DEBUG'), '1')
         self.assertEqual(runnable.kwargs.get('LC_ALL'), 'C')
+
+    def test_kwargs_json_empty_dict(self):
+        parsed_args = {'kind': 'noop', 'uri': None,
+                       'kwargs': [('empty', 'json:{}')]}
+        runnable = nrunner.runnable_from_args(parsed_args)
+        self.assertEqual(runnable.kind, 'noop')
+        self.assertIsNone(runnable.uri)
+        self.assertEqual(runnable.kwargs.get('empty'), {})
+
+    def test_kwargs_json_dict(self):
+        parsed_args = {
+            'kind': 'noop', 'uri': None,
+            'kwargs': [('tags', 'json:{"arch": ["x86_64", "ppc64"]}'),
+                       ('hi', 'json:"hello"')]
+        }
+        runnable = nrunner.runnable_from_args(parsed_args)
+        self.assertEqual(runnable.kind, 'noop')
+        self.assertIsNone(runnable.uri)
+        self.assertEqual(runnable.kwargs.get('hi'), 'hello')
+        self.assertEqual(runnable.tags.get('arch'), ["x86_64", "ppc64"])
 
 
 class RunnableToRecipe(unittest.TestCase):
