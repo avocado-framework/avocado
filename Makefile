@@ -137,7 +137,7 @@ check: clean develop
 	selftests/check_tmp_dirs
 
 check-full: clean develop
-	PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=2 selftests/checkall
+	PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=3 selftests/checkall
 	selftests/check_tmp_dirs
 
 develop:

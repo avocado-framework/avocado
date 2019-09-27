@@ -198,7 +198,7 @@ class FileLockTest(unittest.TestCase):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 3,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitive")
     def test_filelock(self):
