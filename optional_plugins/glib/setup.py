@@ -28,5 +28,8 @@ setup(name='avocado-framework-plugin-glib',
       entry_points={
           'avocado.plugins.cli': [
               'glib = avocado_glib:GLibCLI',
+          ],
+          'avocado.plugins.resolver': [
+              'glib = avocado_glib:GLibResolver'
           ]}
       )

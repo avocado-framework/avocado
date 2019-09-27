@@ -25,6 +25,10 @@ from avocado.core import exceptions
 from avocado.core import loader
 from avocado.core import output
 from avocado.core import test
+from avocado.core.plugin_interfaces import Resolver
+from avocado.core.nrunner import Runnable
+from avocado.core.resolver import ReferenceResolution
+from avocado.core.resolver import ReferenceResolutionResult
 from avocado.core.plugin_interfaces import CLI
 from avocado.utils import path as utils_path
 from avocado.utils import process
@@ -216,6 +220,54 @@ class GolangLoader(loader.TestLoader):
     def get_decorator_mapping():
         return {GolangTest: output.TERM_SUPPORT.healthy_str,
                 NotGolangTest: output.TERM_SUPPORT.fail_header_str}
+
+
+class GolangResolver(Resolver):
+
+    name = 'golang'
+    description = 'Test resolver for Go language tests'
+
+    @staticmethod
+    def resolve(reference):
+
+        if GO_BIN is None:
+            return ReferenceResolution(reference,
+                                       ReferenceResolutionResult.NOTFOUND,
+                                       info="go binary not found")
+
+        package_paths = []
+        test_files = []
+        go_path = os.environ.get('GOPATH')
+        if go_path is not None:
+            for directory in go_path.split(os.pathsep):
+                pkg_path = os.path.join(os.path.expanduser(directory), 'src')
+                package_paths.append(pkg_path)
+
+        for package_path in package_paths:
+            url_path = os.path.join(package_path, reference)
+            files = find_files(url_path)
+            if files:
+                test_files.append((package_path, files))
+                break
+
+        runnables = []
+        for package_path, test_files_list in test_files:
+            for test_file in test_files_list:
+                for item in find_tests(test_file):
+                    common_prefix = os.path.commonprefix([package_path,
+                                                          test_file])
+                    match_package = os.path.relpath(test_file, common_prefix)
+                    test_name = "%s:%s" % (os.path.dirname(match_package),
+                                           item)
+                    runnables.append(Runnable('golang', uri=test_name))
+
+        if runnables:
+            return ReferenceResolution(reference,
+                                       ReferenceResolutionResult.SUCCESS,
+                                       runnables)
+
+        return ReferenceResolution(reference,
+                                   ReferenceResolutionResult.NOTFOUND)
 
 
 class GolangCLI(CLI):

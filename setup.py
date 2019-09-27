@@ -96,6 +96,7 @@ if __name__ == '__main__':
                   'task-run-recipe = avocado.plugins.task_run_recipe:TaskRunRecipe',
                   'nrun = avocado.plugins.nrun:NRun',
                   'vmimage = avocado.plugins.vmimage:VMimage',
+                  'nlist = avocado.plugins.nlist:List',
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
@@ -115,7 +116,12 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.varianter': [
                   'json_variants = avocado.plugins.json_variants:JsonVariants',
-                 ],
+                  ],
+              'avocado.plugins.resolver': [
+                  'exec-test = avocado.plugins.resolvers:ExecTestResolver',
+                  'python-unittest = avocado.plugins.resolvers:PythonUnittestResolver',
+                  'avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedResolver',
+                  ],
               },
           zip_safe=False,
           test_suite='selftests',
