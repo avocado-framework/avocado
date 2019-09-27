@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 72.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -320,6 +320,10 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %doc README.rst LICENSE
 %{_bindir}/avocado
 %{_bindir}/avocado-runner
+%{_bindir}/avocado-runner-noop
+%{_bindir}/avocado-runner-exec
+%{_bindir}/avocado-runner-exec-test
+%{_bindir}/avocado-runner-python-unittest
 %{_bindir}/avocado-runner-avocado-instrumented
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
@@ -579,6 +583,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Sep 27 2019 Cleber Rosa <cleber@redhat.com> - 72.0-1
+- Added new avocado-runner-* runner scripts
+
 * Tue Sep 17 2019 Cleber Rosa <cleber@redhat.com> - 72.0-0
 - New release
 
