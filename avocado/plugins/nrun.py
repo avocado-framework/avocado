@@ -140,22 +140,11 @@ class NRun(CLICmd):
 
     @asyncio.coroutine
     def spawn_task(self, task):
-        status_service_args = []
-        for status_service in task.status_services:
-            status_service_args.append('-s')
-            status_service_args.append(status_service.uri)
-
-        args = ['task-run',
-                '-i', task.identifier]
-
-        args += list(task.runnable.get_command_args())
-        args += list(status_service_args)
-
         runner = self.pick_runner(task)
         if runner is None:
             runner = [sys.executable, '-m', 'avocado.core.nrunner']
 
-        args = runner[1:] + args
+        args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
 
         #pylint: disable=E1133
@@ -164,6 +153,16 @@ class NRun(CLICmd):
             *args,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
+
+    def check_tasks_requirements(self, tasks):
+        result = []
+        for task in tasks:
+            runner = self.pick_runner(task)
+            if runner:
+                result.append(task)
+            else:
+                LOG_UI.warning('Task will not be run due to missing requirements: %s', task)
+        return result
 
     def run(self, config):
         try:
@@ -174,7 +173,8 @@ class NRun(CLICmd):
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         suite = self.create_test_suite(config.get('references'))
-        self.pending_tasks = self.suite_to_tasks(suite, [config.get('status_server')])  # pylint: disable=W0201
+        tasks = self.suite_to_tasks(suite, [config.get('status_server')])  # pylint: disable=W0201
+        self.pending_tasks = self.check_tasks_requirements(tasks)  # pylint: disable=W0201
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')

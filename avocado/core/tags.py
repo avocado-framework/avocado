@@ -133,3 +133,49 @@ def filter_test_tags(test_suite, filter_by_tags, include_empty=False,
             break
 
     return filtered
+
+
+def filter_test_tags_runnable(runnable, filter_by_tags, include_empty=False,
+                              include_empty_key=False):
+    """
+    Filter the existing (unfiltered) test suite based on tags
+
+    The filtering mechanism is agnostic to test type.  It means that
+    if users request filtering by tag and the specific test type does
+    not populate the test tags, it will be considered to have empty
+    tags.
+
+    :param test_suite: the unfiltered test suite
+    :type test_suite: dict
+    :param filter_by_tags: the list of tag sets to use as filters
+    :type filter_by_tags: list of comma separated tags (['foo,bar', 'fast'])
+    :param include_empty: if true tests without tags will not be filtered out
+    :type include_empty: bool
+    :param include_empty_key: if true tests "keys" on key:val tags will be
+                              included in the filtered results
+    :type include_empty_key: bool
+    """
+    must_must_nots = _parse_filter_by_tags(filter_by_tags)
+
+    if not runnable.tags:
+        if include_empty:
+            return True
+
+    for must, must_not in must_must_nots:
+        if must_not.intersection(runnable.tags):
+            continue
+
+        must_flat, must_key_val = _must_split_flat_key_val(must)
+        if must_key_val:
+            if not _must_key_val_matches(must_key_val,
+                                         runnable.tags,
+                                         include_empty_key):
+                continue
+
+        if must_flat:
+            if not must_flat.issubset(runnable.tags):
+                continue
+
+        return True
+
+    return False
