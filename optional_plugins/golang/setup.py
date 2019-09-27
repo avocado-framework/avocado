@@ -29,5 +29,8 @@ setup(name='avocado-framework-plugin-golang',
       entry_points={
           'avocado.plugins.cli': [
               'golang = avocado_golang:GolangCLI',
+          ],
+          'avocado.plugins.resolver': [
+              'golang = avocado_golang:GolangResolver',
           ]}
       )

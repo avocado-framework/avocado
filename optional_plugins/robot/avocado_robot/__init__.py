@@ -23,6 +23,11 @@ from avocado.core import loader
 from avocado.core import output
 from avocado.core import test
 from avocado.core.plugin_interfaces import CLI
+from avocado.core.plugin_interfaces import Resolver
+from avocado.core.resolver import ReferenceResolution
+from avocado.core.resolver import ReferenceResolutionResult
+from avocado.core.resolver import check_file
+from avocado.core.nrunner import Runnable
 from robot import run
 from robot.errors import DataError
 from robot.parsing.model import TestData
@@ -130,6 +135,41 @@ class RobotLoader(loader.TestLoader):
     def get_decorator_mapping():
         return {RobotTest: output.TERM_SUPPORT.healthy_str,
                 NotRobotTest: output.TERM_SUPPORT.fail_header_str}
+
+
+class RobotResolver(Resolver):
+
+    name = 'robot'
+    description = 'Test resolver for Robot Framework tests'
+
+    @staticmethod
+    def resolve(reference):
+
+        # It may be possible to have Robot Framework tests in other
+        # types of files such as reStructuredText (.rst), but given
+        # that we're not testing that, let's restrict to files ending
+        # in .robot files
+        criteria_check = check_file(reference, reference, suffix='.robot')
+        if criteria_check is not True:
+            return criteria_check
+
+        robot_suite = find_tests(reference, test_suite={})
+        runnables = []
+        for item in robot_suite:
+            for robot_test in robot_suite[item]:
+                uri = "%s:%s.%s" % (robot_test['test_source'],
+                                    item,
+                                    robot_test['test_name'])
+
+                runnables.append(Runnable('robot', uri=uri))
+
+        if runnables:
+            return ReferenceResolution(reference,
+                                       ReferenceResolutionResult.SUCCESS,
+                                       runnables)
+
+        return ReferenceResolution(reference,
+                                   ReferenceResolutionResult.NOTFOUND)
 
 
 class RobotCLI(CLI):

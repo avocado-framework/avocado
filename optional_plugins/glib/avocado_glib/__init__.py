@@ -26,7 +26,11 @@ from avocado.core import loader
 from avocado.core import output
 from avocado.core import test
 from avocado.core.plugin_interfaces import CLI
+from avocado.core.plugin_interfaces import Resolver
 from avocado.core.settings import settings
+from avocado.core.resolver import ReferenceResolution
+from avocado.core.resolver import ReferenceResolutionResult
+from avocado.core.nrunner import Runnable
 
 
 class GLibTest(test.SimpleTest):
@@ -111,6 +115,36 @@ class GLibLoader(loader.TestLoader):
     def get_decorator_mapping():
         return {GLibTest: output.TERM_SUPPORT.healthy_str,
                 NotGLibTest: output.TERM_SUPPORT.fail_header_str}
+
+
+class GLibResolver(Resolver):
+
+    name = 'glib'
+    description = 'Test resolver for GLib tests'
+
+    @staticmethod
+    def resolve(reference):
+        if (os.path.isfile(reference) and
+                os.access(reference, os.R_OK) and
+                settings.get_value("plugins.glib", "unsafe", bool, False)):
+            try:
+                cmd = '%s -l' % (reference)
+                result = process.run(cmd)
+            except Exception as details:
+                return ReferenceResolution(reference,
+                                           ReferenceResolutionResult.ERROR,
+                                           info=details,
+                                           origin=GLibResolver.name)
+            runnables = []
+            for test_item in result.stdout_text.splitlines():
+                uri = "%s:%s" % (reference, test_item)
+                runnables.append(Runnable('glib', uri))
+            if runnables:
+                return ReferenceResolution(reference,
+                                           ReferenceResolutionResult.SUCCESS,
+                                           runnables)
+        return ReferenceResolution(reference,
+                                   ReferenceResolutionResult.NOTFOUND)
 
 
 class GLibCLI(CLI):
