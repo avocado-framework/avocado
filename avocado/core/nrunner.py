@@ -453,6 +453,25 @@ class Task:
                 status_service.post(status)
             yield status
 
+    def get_command_args(self):
+        """
+        Returns the command arguments that adhere to the runner interface
+
+        This is useful for building 'task-run' commands that can be
+        executed on a command line interface.
+
+        :returns: the arguments that can be used on an avocado-runner command
+        :rtype: list
+        """
+        args = ['-i', self.identifier]
+        args += self.runnable.get_command_args()
+
+        for status_service in self.status_services:
+            args.append('-s')
+            args.append(status_service.uri)
+
+        return args
+
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
         return fmt.format(self.identifier, self.runnable, self.status_services)
