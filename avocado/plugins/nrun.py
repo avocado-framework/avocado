@@ -8,9 +8,11 @@ from avocado.core import nrunner
 from avocado.core import resolver
 from avocado.core import exit_codes
 from avocado.core import test
+from avocado.core import parser_common_args
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import path as utils_path
+from avocado.core.tags import filter_test_tags_runnable
 
 
 class NRun(CLICmd):
@@ -30,9 +32,10 @@ class NRun(CLICmd):
         parser.add_argument("--status-server", default="127.0.0.1:8888",
                             metavar="HOST:PORT",
                             help="Host and port for status server, default is: %(default)s")
+        parser_common_args.add_tag_filter_args(parser)
 
     @staticmethod
-    def resolutions_to_tasks(resolutions, status_uris):
+    def resolutions_to_tasks(resolutions, config):
         tasks = []
         index = 0
         resolutions = [res for res in resolutions if
@@ -41,10 +44,19 @@ class NRun(CLICmd):
         for resolution in resolutions:
             name = resolution.reference
             for runnable in resolution.resolutions:
+                filter_by_tags = config.get('filter_by_tags')
+                if filter_by_tags:
+                    if not filter_test_tags_runnable(
+                            runnable,
+                            filter_by_tags,
+                            config.get('filter_by_tags_include_empty'),
+                            config.get('filter_by_tags_include_empty_key')):
+                        continue
                 if runnable.uri:
                     name = runnable.uri
                 identifier = str(test.TestID(index + 1, name, None, no_digits))
-                tasks.append(nrunner.Task(identifier, runnable, status_uris))
+                tasks.append(nrunner.Task(identifier, runnable,
+                                          [config.get('status_server')]))
                 index += 1
         return tasks
 
@@ -125,8 +137,7 @@ class NRun(CLICmd):
 
     def run(self, config):
         resolutions = resolver.resolve(config.get('references'))
-        tasks = self.resolutions_to_tasks(resolutions,
-                                          [config.get('status_server')])
+        tasks = self.resolutions_to_tasks(resolutions, config)
         self.pending_tasks = self.check_tasks_requirements(tasks)  # pylint: disable=W0201
 
         if not self.pending_tasks:
