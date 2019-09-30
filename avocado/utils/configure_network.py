@@ -30,7 +30,7 @@ class NWException(Exception):
     """
 
 
-def set_ip(ipaddr, netmask, interface):
+def set_ip(ipaddr, netmask, interface, interface_type=None):
     """
     Gets interface name, IP, subnet mask and creates interface
     file based on distro.
@@ -42,7 +42,9 @@ def set_ip(ipaddr, netmask, interface):
         else:
             raise NWException("%s interface not available" % interface)
         with open(conf_file, "w") as network_conf:
-            network_conf.write("TYPE=Ethernet \n")
+            if interface_type is None:
+                interface_type = 'Ethernet'
+            network_conf.write("TYPE=%s \n" % interface_type)
             network_conf.write("BOOTPROTO=none \n")
             network_conf.write("NAME=%s \n" % interface)
             network_conf.write("DEVICE=%s \n" % interface)
