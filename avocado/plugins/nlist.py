@@ -84,8 +84,8 @@ class List(CLICmd):
                     type_label = decorator(type_label)
 
                     if config.get('verbose'):
+                        tags_repr = []
                         if runnable.tags is not None:
-                            tags_repr = []
                             for tag, vals in runnable.tags.items():
                                 if tag not in tag_stats:
                                     tag_stats[tag] = 1
@@ -95,8 +95,8 @@ class List(CLICmd):
                                     tags_repr.append("%s(%s)" % (tag, ",".join(vals)))
                                 else:
                                     tags_repr.append(tag)
-                            tags_repr = ",".join(tags_repr)
-                            test_matrix.append((type_label, runnable.uri, tags_repr))
+                        tags_repr = ",".join(tags_repr)
+                        test_matrix.append((type_label, runnable.uri, tags_repr))
                     else:
                         test_matrix.append((type_label, runnable.uri))
             else:  # assuming that empty resolutions mean a NOTFOUND, ERROR, etc
