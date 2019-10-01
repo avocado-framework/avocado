@@ -150,7 +150,7 @@ class Asset:
             if (os.path.isfile(asset_file) and
                     not self._is_expired(asset_file, self.expire)):
                 try:
-                    with FileLock(asset_file, 1):
+                    with FileLock(asset_file, 30):
                         if self._verify(asset_file):
                             return asset_file
                 except Exception:
