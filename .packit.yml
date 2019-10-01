@@ -1,0 +1,15 @@
+specfile_path: python-avocado.spec
+synced_files:
+  - python-avocado.spec
+  - .packit.yml
+upstream_project_name: avocado-framework
+downstream_package_name: python-avocado
+jobs:
+  - job: copr_build
+    trigger: pull_request
+    metadata:
+      targets:
+      - fedora-29-x86_64
+      - fedora-30-x86_64
+      - fedora-31-x86_64
+      - fedora-rawhide-x86_64
