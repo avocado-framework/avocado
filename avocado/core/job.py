@@ -166,7 +166,7 @@ class Job:
             if self.config.get("base_logdir", None) is None:
                 self.config['base_logdir'] = tempfile.mkdtemp(prefix="avocado-dry-run-")
         self._setup_job_results()
-        self.result = result.Result(self)
+        self.result = result.Result(self.unique_id, self.logfile)
         self.__start_job_logging()
         self._setup_job_category()
         # Use "logdir" in case "keep_tmp" is enabled

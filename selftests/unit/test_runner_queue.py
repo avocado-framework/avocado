@@ -15,6 +15,10 @@ from .. import setup_avocado_loggers, temp_dir_prefix
 setup_avocado_loggers()
 
 
+UNIQUE_ID = '0000000000000000000000000000000000000000'
+LOGFILE = None
+
+
 class TestRunnerQueue(unittest.TestCase):
     """
     Test the Runner/Test Queue
@@ -25,7 +29,7 @@ class TestRunnerQueue(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         args = {'base_logdir': self.tmpdir.name}
         self.job = Job(args)
-        self.result = Result(self.job)
+        self.result = Result(UNIQUE_ID, LOGFILE)
 
     def _run_test(self, factory):
         """

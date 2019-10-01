@@ -24,14 +24,17 @@ class Result:
     Result class, holder for job (and its tests) result information.
     """
 
-    def __init__(self, job):
+    def __init__(self, job_unique_id, job_logfile):
         """
         Creates an instance of Result.
 
-        :param job: an instance of :class:`avocado.core.job.Job`.
+        :param job_unique_id: the job's unique ID, usually from
+                              :attr:`avocado.core.job.Job.unique_id`
+        :param job_logfile: the job's unique ID, usually from
+                            :attr:`avocado.core.job.Job.logfile`
         """
-        self.job_unique_id = getattr(job, "unique_id")
-        self.logfile = getattr(job, "logfile", None)
+        self.job_unique_id = job_unique_id
+        self.logfile = job_logfile
         self.tests_total = 0
         self.tests_run = 0
         self.tests_total_time = 0.0

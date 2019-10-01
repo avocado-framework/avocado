@@ -20,15 +20,12 @@ from .. import setup_avocado_loggers, temp_dir_prefix
 setup_avocado_loggers()
 
 
+UNIQUE_ID = '0000000000000000000000000000000000000000'
+LOGFILE = None
+
+
 class ParseXMLError(Exception):
     pass
-
-
-class FakeJob:
-
-    def __init__(self, config):
-        self.config = config
-        self.unique_id = '0000000000000000000000000000000000000000'
 
 
 class xUnitSucceedTest(unittest.TestCase):
@@ -46,7 +43,7 @@ class xUnitSucceedTest(unittest.TestCase):
         config = {'base_logdir': self.tmpdir.name,
                   'xunit_output': self.tmpfile[1]}
         self.job = job.Job(config)
-        self.test_result = Result(FakeJob(config))
+        self.test_result = Result(UNIQUE_ID, LOGFILE)
         self.test_result.tests_total = 1
         self.test_result.logfile = ("/.../avocado/job-results/"
                                     "job-2018-11-28T16.27-8fef221/job.log")
