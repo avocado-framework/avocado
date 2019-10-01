@@ -39,7 +39,7 @@ class TestRunnerQueue(unittest.TestCase):
         """
         queue = multiprocessing.SimpleQueue()
         runner = TestRunner(job=self.job, result=self.result)
-        runner._run_test(factory, queue)
+        runner._run_test(self.job, self.result, factory, queue)
         while not queue.empty():
             msg = queue.get()
         return msg

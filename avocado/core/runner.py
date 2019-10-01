@@ -290,7 +290,8 @@ class TestRunner:
         self.result = result
         self.sigstopped = False
 
-    def _run_test(self, test_factory, queue):
+    @staticmethod
+    def _run_test(job, result, test_factory, queue):
         """
         Run a test instance.
 
@@ -332,11 +333,11 @@ class TestRunner:
         except Exception:
             instance.error(stacktrace.str_unpickable_object(early_state))
 
-        self.result.start_test(early_state)
-        self.job.result_events_dispatcher.map_method('start_test',
-                                                     self.result,
-                                                     early_state)
-        if self.job.config.get('log_test_data_directories', False):
+        result.start_test(early_state)
+        job.result_events_dispatcher.map_method('start_test',
+                                                result,
+                                                early_state)
+        if job.config.get('log_test_data_directories', False):
             data_sources = getattr(instance, "DATA_SOURCES", [])
             if data_sources:
                 locations = []
@@ -392,7 +393,7 @@ class TestRunner:
                     self.sigstopped = True
 
         proc = multiprocessing.Process(target=self._run_test,
-                                       args=(test_factory, queue,))
+                                       args=(self.job, self.result, test_factory, queue,))
         test_status = TestStatus(self.job, queue)
 
         cycle_timeout = 1
