@@ -161,13 +161,16 @@ class Command(Collectible):
         # but the avocado.utils.process APIs define no timeouts as "None"
         if int(timeout) <= 0:
             timeout = None
-        result = process.run(self.cmd,
-                             timeout=timeout,
-                             verbose=False,
-                             ignore_status=True,
-                             allow_output_check='combined',
-                             shell=True,
-                             env=env)
+        try:
+            result = process.run(self.cmd,
+                                 timeout=timeout,
+                                 verbose=False,
+                                 ignore_status=True,
+                                 allow_output_check='combined',
+                                 env=env)
+        except Exception as exc:
+            log.warn('Could not execute "%s": %s', self.cmd, exc)
+            return
         logf_path = os.path.join(logdir, self.logf)
         if self._compress_log:
             with gzip.GzipFile(logf_path, 'wb') as logf:
