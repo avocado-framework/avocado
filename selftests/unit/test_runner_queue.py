@@ -15,6 +15,10 @@ from .. import setup_avocado_loggers, temp_dir_prefix
 setup_avocado_loggers()
 
 
+UNIQUE_ID = '0000000000000000000000000000000000000000'
+LOGFILE = None
+
+
 class TestRunnerQueue(unittest.TestCase):
     """
     Test the Runner/Test Queue
@@ -25,7 +29,7 @@ class TestRunnerQueue(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         args = {'base_logdir': self.tmpdir.name}
         self.job = Job(args)
-        self.result = Result(self.job)
+        self.result = Result(UNIQUE_ID, LOGFILE)
 
     def _run_test(self, factory):
         """
@@ -34,8 +38,8 @@ class TestRunnerQueue(unittest.TestCase):
         :return: the last queue message from the test
         """
         queue = multiprocessing.SimpleQueue()
-        runner = TestRunner(job=self.job, result=self.result)
-        runner._run_test(factory, queue)
+        runner = TestRunner()
+        runner._run_test(self.job, self.result, factory, queue)
         while not queue.empty():
             msg = queue.get()
         return msg

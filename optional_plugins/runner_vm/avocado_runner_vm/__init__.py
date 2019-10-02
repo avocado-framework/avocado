@@ -365,57 +365,57 @@ class VMTestRunner(RemoteTestRunner):
     Test runner to run tests using libvirt domain
     """
 
-    def __init__(self, job, result):
-        super(VMTestRunner, self).__init__(job, result)
+    def __init__(self):
+        super(VMTestRunner, self).__init__()
         #: VM used during testing
         self.vm = None
 
-    def setup(self):
+    def setup(self, job):
         """
         Initialize VM and establish connection
         """
         # Super called after VM is found and initialized
-        stdout_claimed_by = self.job.config.get('stdout_claimed_by', None)
+        stdout_claimed_by = job.config.get('stdout_claimed_by', None)
         if not stdout_claimed_by:
-            self.job.log.info("DOMAIN     : %s", self.job.config.get('vm_domain'))
+            job.log.info("DOMAIN     : %s", job.config.get('vm_domain'))
         try:
-            self.vm = vm_connect(self.job.config.get('vm_domain'),
-                                 self.job.config.get('vm_hypervisor_uri'))
+            self.vm = vm_connect(job.config.get('vm_domain'),
+                                 job.config.get('vm_hypervisor_uri'))
         except VirtError as exception:
             raise exceptions.JobError(exception)
         if self.vm.start() is False:
-            e_msg = "Could not start VM '%s'" % self.job.config.get('vm_domain')
+            e_msg = "Could not start VM '%s'" % job.config.get('vm_domain')
             raise exceptions.JobError(e_msg)
         assert self.vm.domain.isActive() is not False
         # If hostname wasn't given, let's try to find out the IP address
-        if self.job.config.get('vm_hostname') is None:
-            self.job.config['vm_hostname'] = self.vm.ip_address()
-            if self.job.config.get('vm_hostname') is None:
+        if job.config.get('vm_hostname') is None:
+            job.config['vm_hostname'] = self.vm.ip_address()
+            if job.config.get('vm_hostname') is None:
                 e_msg = ("Could not find the IP address for VM '%s'. Please "
                          "set it explicitly with --vm-hostname" %
-                         self.job.config.get('vm_domain'))
+                         job.config.get('vm_domain'))
                 raise exceptions.JobError(e_msg)
-        if self.job.config.get('vm_cleanup') is True:
+        if job.config.get('vm_cleanup') is True:
             self.vm.create_snapshot()
             if self.vm.snapshot is None:
                 e_msg = ("Could not create snapshot on VM '%s'" %
-                         self.job.config.get('vm_domain'))
+                         job.config.get('vm_domain'))
                 raise exceptions.JobError(e_msg)
         # Finish remote setup and copy the tests
-        self.job.config['remote_hostname'] = self.job.config.get('vm_hostname')
-        self.job.config['remote_port'] = self.job.config.get('vm_port')
-        self.job.config['remote_username'] = self.job.config.get('vm_username')
-        self.job.config['remote_password'] = self.job.config.get('vm_password')
-        self.job.config['remote_key_file'] = self.job.config.get('vm_key_file')
-        self.job.config['remote_timeout'] = self.job.config.get('vm_timeout')
-        super(VMTestRunner, self).setup()
+        job.config['remote_hostname'] = job.config.get('vm_hostname')
+        job.config['remote_port'] = job.config.get('vm_port')
+        job.config['remote_username'] = job.config.get('vm_username')
+        job.config['remote_password'] = job.config.get('vm_password')
+        job.config['remote_key_file'] = job.config.get('vm_key_file')
+        job.config['remote_timeout'] = job.config.get('vm_timeout')
+        super(VMTestRunner, self).setup(job)
 
-    def tear_down(self):
+    def tear_down(self, job):
         """
         Stop VM and restore snapshot (if asked for it)
         """
-        super(VMTestRunner, self).tear_down()
-        if (self.job.config.get('vm_cleanup') is True and
+        super(VMTestRunner, self).tear_down(job)
+        if (job.config.get('vm_cleanup') is True and
                 isinstance(getattr(self, 'vm', None), VM)):
             self.vm.stop()
             if self.vm.snapshot is not None:

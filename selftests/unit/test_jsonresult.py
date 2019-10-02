@@ -14,11 +14,8 @@ from .. import setup_avocado_loggers, temp_dir_prefix
 setup_avocado_loggers()
 
 
-class FakeJob:
-
-    def __init__(self, config):
-        self.config = config
-        self.unique_id = '0000000000000000000000000000000000000000'
+UNIQUE_ID = '0000000000000000000000000000000000000000'
+LOGFILE = None
 
 
 class JSONResultTest(unittest.TestCase):
@@ -36,7 +33,7 @@ class JSONResultTest(unittest.TestCase):
         config = {'json_output': self.tmpfile[1],
                   'base_logdir': self.tmpdir.name}
         self.job = job.Job(config)
-        self.test_result = Result(FakeJob(config))
+        self.test_result = Result(UNIQUE_ID, LOGFILE)
         self.test_result.filename = self.tmpfile[1]
         self.test_result.tests_total = 1
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir.name)

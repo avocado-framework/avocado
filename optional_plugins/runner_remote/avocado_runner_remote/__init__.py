@@ -331,27 +331,27 @@ class RemoteTestRunner(TestRunner):
     remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\r?$',
                                    re.MULTILINE)
 
-    def __init__(self, job, result):
-        super(RemoteTestRunner, self).__init__(job, result)
+    def __init__(self):
+        super(RemoteTestRunner, self).__init__()
         #: remoter connection to the remote machine
         self.remote = None
 
-    def setup(self):
+    def setup(self, job):
         """ Setup remote environment """
-        stdout_claimed_by = self.job.config.get('stdout_claimed_by', None)
+        stdout_claimed_by = job.config.get('stdout_claimed_by', None)
         if not stdout_claimed_by:
-            self.job.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
-                              self.job.config.get('remote_username'),
-                              self.job.config.get('remote_hostname'),
-                              self.job.config.get('remote_port'),
-                              self.job.config.get('remote_timeout'))
-        self.remote = Remote(hostname=self.job.config.get('remote_hostname'),
-                             username=self.job.config.get('remote_username'),
-                             password=self.job.config.get('remote_password'),
-                             key_filename=self.job.config.get('remote_key_file'),
-                             port=self.job.config.get('remote_port'),
-                             timeout=self.job.config.get('remote_timeout'),
-                             env_keep=self.job.config.get('env_keep'))
+            job.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
+                         job.config.get('remote_username'),
+                         job.config.get('remote_hostname'),
+                         job.config.get('remote_port'),
+                         job.config.get('remote_timeout'))
+        self.remote = Remote(hostname=job.config.get('remote_hostname'),
+                             username=job.config.get('remote_username'),
+                             password=job.config.get('remote_password'),
+                             key_filename=job.config.get('remote_key_file'),
+                             port=job.config.get('remote_port'),
+                             timeout=job.config.get('remote_timeout'),
+                             env_keep=job.config.get('env_keep'))
 
     def check_remote_avocado(self):
         """
@@ -423,7 +423,7 @@ class RemoteTestRunner(TestRunner):
                              "output:\n%s" % output)
         return response
 
-    def run_test(self, references, timeout):  # pylint: disable=W0221
+    def run_test(self, job, references, timeout):  # pylint: disable=W0221
         """
         Run tests.
 
@@ -440,14 +440,14 @@ class RemoteTestRunner(TestRunner):
         # bool or nargs
         for arg in ["--mux-yaml", "--dry-run",
                     "--filter-by-tags-include-empty"]:
-            value = self.job.config.get(arg_to_dest(arg), None)
+            value = job.config.get(arg_to_dest(arg), None)
             if value is True:
                 extra_params.append(arg)
             elif value:
                 extra_params.append("%s %s" % (arg, " ".join(value)))
         # append
         for arg in ["--filter-by-tags"]:
-            value = self.job.config.get(arg_to_dest(arg), None)
+            value = job.config.get(arg_to_dest(arg), None)
             if value:
                 join = ' %s ' % arg
                 extra_params.append("%s %s" % (arg, join.join(value)))
@@ -455,7 +455,7 @@ class RemoteTestRunner(TestRunner):
         references_str = " ".join(references)
 
         avocado_cmd = ('avocado run --force-job-id %s --json - '
-                       '--archive %s %s' % (self.job.unique_id,
+                       '--archive %s %s' % (job.unique_id,
                                             references_str, " ".join(extra_params)))
         try:
             result = self.remote.run(avocado_cmd, ignore_status=True,
@@ -476,7 +476,7 @@ class RemoteTestRunner(TestRunner):
             raise exceptions.JobError(result.stdout)
 
         for t_dict in json_result['tests']:
-            logdir = os.path.join(self.job.logdir, 'test-results')
+            logdir = os.path.join(job.logdir, 'test-results')
             relative_path = astring.string_to_safe_path(str(t_dict['id']))
             logdir = os.path.join(logdir, relative_path)
             t_dict['logdir'] = logdir
@@ -484,8 +484,8 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, variants, timeout=0, replay_map=None,
-                  execution_order="variants-per-test"):
+    def run_suite(self, job, result, test_suite, variants, timeout=0,
+                  replay_map=None, execution_order="variants-per-test"):
         """
         Run one or more tests and report with test result.
 
@@ -506,7 +506,7 @@ class RemoteTestRunner(TestRunner):
 
         stdout_backup = sys.stdout
         stderr_backup = sys.stderr
-        fabric_debugfile = os.path.join(self.job.logdir, 'remote.log')
+        fabric_debugfile = os.path.join(job.logdir, 'remote.log')
         paramiko_logger = logging.getLogger('paramiko')
         fabric_logger = logging.getLogger('avocado.fabric')
         remote_logger = logging.getLogger('avocado.remote')
@@ -518,14 +518,14 @@ class RemoteTestRunner(TestRunner):
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
         remote_logger.addHandler(file_handler)
-        if "test" in self.job.config.get("show", []):
+        if "test" in job.config.get("show", []):
             output.add_log_handler(paramiko_logger.name)
         logger_list = [output.LOG_JOB]
         sys.stdout = output.LoggingFile(loggers=logger_list)
         sys.stderr = output.LoggingFile(loggers=logger_list)
         try:
             try:
-                self.setup()
+                self.setup(job)
                 avocado_installed, _ = self.check_remote_avocado()
                 if not avocado_installed:
                     raise exceptions.JobError('Remote machine does not seem to'
@@ -533,10 +533,10 @@ class RemoteTestRunner(TestRunner):
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise exceptions.JobError(details)
-            results = self.run_test(self.job.config.get('references', []), timeout)
+            results = self.run_test(job, job.config.get('references', []), timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
-            self.result.tests_total = results['total']
-            local_log_dir = self.job.logdir
+            result.tests_total = results['total']
+            local_log_dir = job.logdir
             for tst in results['tests']:
                 name = tst['id'].split('-', 1)
                 name = [name[0]] + name[1].split(';')
@@ -553,10 +553,10 @@ class RemoteTestRunner(TestRunner):
                              fail_reason=tst['fail_reason'],
                              job_logdir=local_log_dir,
                              job_unique_id='')
-                self.result.start_test(state)
-                self.job.result_events_dispatcher.map_method('start_test', self.result, state)
-                self.result.check_test(state)
-                self.job.result_events_dispatcher.map_method('end_test', self.result, state)
+                result.start_test(state)
+                job.result_events_dispatcher.map_method('start_test', result, state)
+                result.check_test(state)
+                job.result_events_dispatcher.map_method('end_test', result, state)
                 if state['status'] == "INTERRUPTED":
                     summary.add("INTERRUPTED")
                 elif not status.mapping[state['status']]:
@@ -567,11 +567,11 @@ class RemoteTestRunner(TestRunner):
             self.remote.receive_files(local_log_dir, zip_filename)
             archive.uncompress(zip_path_filename, local_log_dir)
             os.remove(zip_path_filename)
-            self.result.end_tests()
-            self.job.result_events_dispatcher.map_method('post_tests', self.job)
+            result.end_tests()
+            job.result_events_dispatcher.map_method('post_tests', job)
         finally:
             try:
-                self.tear_down()
+                self.tear_down(job)
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise exceptions.JobError(details)
@@ -579,7 +579,7 @@ class RemoteTestRunner(TestRunner):
             sys.stderr = stderr_backup
         return summary
 
-    def tear_down(self):
+    def tear_down(self, job):
         """
         This method is only called when `run_suite` gets to the point of to be
         executing `setup` method and is called at the end of the execution.

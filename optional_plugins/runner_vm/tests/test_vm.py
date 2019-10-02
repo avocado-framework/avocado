@@ -58,9 +58,9 @@ class VMTestRunnerSetup(unittest.TestCase):
             with unittest.mock.patch('avocado_runner_vm.vm_connect',
                                      return_value=mock_vm):
                 # VMTestRunner()
-                runner = avocado_runner_vm.VMTestRunner(job, None)
-                runner.setup()
-                runner.tear_down()
+                runner = avocado_runner_vm.VMTestRunner()
+                runner.setup(job)
+                runner.tear_down(job)
                 mock_vm.start.assert_called_once_with()
                 mock_vm.create_snapshot.assert_called_once_with()
                 mock_vm.stop.assert_called_once_with()

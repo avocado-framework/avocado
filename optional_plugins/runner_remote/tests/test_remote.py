@@ -71,7 +71,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
                     'base_logdir': self.tmpdir.name}
 
         with Job(job_args) as job:
-            runner = avocado_runner_remote.RemoteTestRunner(job, job.result)
+            runner = avocado_runner_remote.RemoteTestRunner()
             return_value = (True, (version.MAJOR, version.MINOR))
             runner.check_remote_avocado = unittest.mock.Mock(return_value=return_value)
 
@@ -93,7 +93,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
                 # zip file instead, but it's really overkill
                 with unittest.mock.patch('avocado_runner_remote.archive.uncompress'):
                     with unittest.mock.patch('avocado_runner_remote.os.remove'):
-                        runner.run_suite(None, None, 61)
+                        runner.run_suite(job, job.result, None, None, 61)
 
         # The job was created with dry_run so it should have a zeroed id
         self.assertEqual(job.result.job_unique_id, '0' * 40)
