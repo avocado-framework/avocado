@@ -285,3 +285,34 @@ class Resolver(Plugin):
                   :class:`avocado.core.nrunner.Runnable`s
         :rtype: :class:`avocado.core.resolver.ReferenceResolution`
         """
+
+
+class Runner(Plugin):
+    """
+    Base plugin interface for test runners
+
+    This is the interface a job uses to drive the tests execution via
+    compliant test runners.
+
+    NOTE: This interface is not to be confused with the internal
+    interface or idiosyncrasys of the :ref:`nrunner`.
+    """
+
+    @abc.abstractmethod
+    def run_suite(self, job, result, test_suite, variants, timeout=0,
+                  replay_map=None, execution_order=None):
+        """
+        Run one or more tests and report with test result.
+
+        :param job: an instance of :class:`avocado.core.job.Job`.
+        :param result: an instance of :class:`avocado.core.result.Result`
+        :param test_suite: a list of tests to run.
+        :param variants: A varianter iterator to produce test params.
+        :param timeout: maximum amount of time (in seconds) to execute.
+        :param replay_map: optional list to override test class based on test
+                           index.
+        :param execution_order: Mode in which we should iterate through tests
+                                and variants.  If not provided, will default to
+                                :attr:`DEFAULT_EXECUTION_ORDER`.
+        :return: a set with types of test failures.
+        """
