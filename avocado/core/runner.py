@@ -552,22 +552,23 @@ class TestRunner:
                           "variant_id": varianter.generate_variant_id(var),
                           "paths": paths}
 
-    def _iter_suite(self, test_suite, variants, execution_order):
+    def _iter_suite(self, job, test_suite, variants, execution_order):
         """
         Iterates through test_suite and variants in defined order
 
+        :param job: an instance of :class:`avocado.core.job.Job`
         :param test_suite: a list of tests to run
         :param variants: a varianter object to produce test params
         :param execution_order: way of iterating through tests/variants
         :return: generator yielding tuple(test_factory, variant)
         """
         if execution_order == "variants-per-test":
-            return (self._template_to_factory(self.job.test_parameters,
+            return (self._template_to_factory(job.test_parameters,
                                               template, variant)
                     for template in test_suite
                     for variant in variants.itertests())
         elif execution_order == "tests-per-variant":
-            return (self._template_to_factory(self.job.test_parameters,
+            return (self._template_to_factory(job.test_parameters,
                                               template, variant)
                     for variant in variants.itertests()
                     for template in test_suite)
@@ -609,7 +610,9 @@ class TestRunner:
                 test_factory[1]["job"] = self.job
             if execution_order is None:
                 execution_order = self.DEFAULT_EXECUTION_ORDER
-            for test_factory, variant in self._iter_suite(test_suite, variants,
+            for test_factory, variant in self._iter_suite(self.job,
+                                                          test_suite,
+                                                          variants,
                                                           execution_order):
                 index += 1
                 test_parameters = test_factory[1]
