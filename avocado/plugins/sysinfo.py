@@ -40,4 +40,4 @@ class SysInfo(CLICmd):
                             nargs='?', default='')
 
     def run(self, config):
-        sysinfo.collect_sysinfo(config)
+        sysinfo.collect_sysinfo(config.get('sysinfodir'))
