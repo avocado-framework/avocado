@@ -511,10 +511,13 @@ class TestRunner:
             return False
         return True
 
-    def _template_to_factory(self, template, variant):
+    @staticmethod
+    def _template_to_factory(test_parameters, template, variant):
         """
         Applies test params from variant to the test template
 
+        :param test_parameters: a simpler set of parameters (currently
+                                given to the run command via "-p" parameters)
         :param template: a test template, containing the class name,
                          followed by parameters to the class
         :type template: tuple
@@ -529,9 +532,9 @@ class TestRunner:
 
         if "params" not in template[1]:
             factory = [template[0], template[1].copy()]
-            if self.job.test_parameters and empty_variants:
+            if test_parameters and empty_variants:
                 var[0] = tree.TreeNode().get_node("/", True)
-                var[0].value = self.job.test_parameters
+                var[0].value = test_parameters
                 paths = ["/"]
             factory[1]["params"] = (var, paths)
             return factory, variant
@@ -559,11 +562,13 @@ class TestRunner:
         :return: generator yielding tuple(test_factory, variant)
         """
         if execution_order == "variants-per-test":
-            return (self._template_to_factory(template, variant)
+            return (self._template_to_factory(self.job.test_parameters,
+                                              template, variant)
                     for template in test_suite
                     for variant in variants.itertests())
         elif execution_order == "tests-per-variant":
-            return (self._template_to_factory(template, variant)
+            return (self._template_to_factory(self.job.test_parameters,
+                                              template, variant)
                     for variant in variants.itertests()
                     for template in test_suite)
         else:
