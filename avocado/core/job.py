@@ -515,7 +515,7 @@ class Job:
                                                        "variant: %s" % details)
 
         runner_klass = self.config.get('test_runner', runner.TestRunner)
-        self.test_runner = runner_klass(job=self, result=self.result)
+        self.test_runner = runner_klass()
         self._start_sysinfo()
 
         self._log_job_debug_info(variant)
@@ -523,7 +523,9 @@ class Job:
                        self.config.get('references'), sys.argv)
         replay_map = self.config.get('replay_map', None)
         execution_order = self.config.get('execution_order', None)
-        summary = self.test_runner.run_suite(self.test_suite,
+        summary = self.test_runner.run_suite(self,
+                                             self.result,
+                                             self.test_suite,
                                              variant,
                                              self.timeout,
                                              replay_map,

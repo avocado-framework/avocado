@@ -38,7 +38,7 @@ class TestRunnerQueue(unittest.TestCase):
         :return: the last queue message from the test
         """
         queue = multiprocessing.SimpleQueue()
-        runner = TestRunner(job=self.job, result=self.result)
+        runner = TestRunner()
         runner._run_test(self.job, self.result, factory, queue)
         while not queue.empty():
             msg = queue.get()

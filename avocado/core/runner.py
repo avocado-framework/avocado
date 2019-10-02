@@ -279,15 +279,10 @@ class TestRunner:
     #: The allowed values are "variants-per-test" or "tests-per-variant"
     DEFAULT_EXECUTION_ORDER = "variants-per-test"
 
-    def __init__(self, job, result):
+    def __init__(self):
         """
         Creates an instance of TestRunner class.
-
-        :param job: an instance of :class:`avocado.core.job.Job`.
-        :param result: an instance of :class:`avocado.core.result.Result`
         """
-        self.job = job
-        self.result = result
         self.sigstopped = False
 
     @staticmethod
@@ -358,7 +353,7 @@ class TestRunner:
             except Exception:
                 instance.error(stacktrace.str_unpickable_object(state))
 
-    def run_test(self, test_factory, queue, summary, job_deadline=0):
+    def run_test(self, job, result, test_factory, queue, summary, job_deadline=0):
         """
         Run a test instance inside a subprocess.
 
@@ -393,8 +388,8 @@ class TestRunner:
                     self.sigstopped = True
 
         proc = multiprocessing.Process(target=self._run_test,
-                                       args=(self.job, self.result, test_factory, queue,))
-        test_status = TestStatus(self.job, queue)
+                                       args=(job, result, test_factory, queue,))
+        test_status = TestStatus(job, queue)
 
         cycle_timeout = 1
         time_started = time.time()
@@ -422,7 +417,7 @@ class TestRunner:
         first = 0.01
         step = 0.01
         abort_reason = None
-        result_dispatcher = self.job.result_events_dispatcher
+        result_dispatcher = job.result_events_dispatcher
 
         while True:
             try:
@@ -453,18 +448,18 @@ class TestRunner:
                 if ctrl_c_count == 1:
                     if not stage_1_msg_displayed:
                         abort_reason = "Interrupted by ctrl+c"
-                        self.job.log.debug("\nInterrupt requested. Waiting %d "
-                                           "seconds for test to finish "
-                                           "(ignoring new Ctrl+C until then)",
-                                           ignore_window)
+                        job.log.debug("\nInterrupt requested. Waiting %d "
+                                      "seconds for test to finish "
+                                      "(ignoring new Ctrl+C until then)",
+                                      ignore_window)
                         stage_1_msg_displayed = True
                     ignore_time_started = time.time()
                     process.kill_process_tree(proc.pid, signal.SIGINT)
                 if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
                     if not stage_2_msg_displayed:
                         abort_reason = "Interrupted by ctrl+c (multiple-times)"
-                        self.job.log.debug("Killing test subprocess %s",
-                                           proc.pid)
+                        job.log.debug("Killing test subprocess %s",
+                                      proc.pid)
                         stage_2_msg_displayed = True
                     process.kill_process_tree(proc.pid, signal.SIGKILL)
 
@@ -488,23 +483,23 @@ class TestRunner:
 
         # don't process other tests from the list
         if ctrl_c_count > 0:
-            self.job.log.debug('')
+            job.log.debug('')
 
         # Make sure the test status is correct
         if test_state.get('status') not in status.user_facing_status:
             test_state = add_runner_failure(test_state, "ERROR", "Test reports"
                                             " unsupported test status.")
 
-        self.result.check_test(test_state)
-        result_dispatcher.map_method('end_test', self.result, test_state)
+        result.check_test(test_state)
+        result_dispatcher.map_method('end_test', result, test_state)
         if test_state['status'] == "INTERRUPTED":
             summary.add("INTERRUPTED")
         elif not mapping[test_state['status']]:
             summary.add("FAIL")
 
-            if self.job.config.get('failfast', 'off') == 'on':
+            if job.config.get('failfast', 'off') == 'on':
                 summary.add("INTERRUPTED")
-                self.job.interrupted_reason = "Interrupting job (failfast)."
+                job.interrupted_reason = "Interrupting job (failfast)."
                 return False
 
         if ctrl_c_count > 0:
@@ -576,11 +571,13 @@ class TestRunner:
             raise NotImplementedError("Suite_order %s is not supported"
                                       % execution_order)
 
-    def run_suite(self, test_suite, variants, timeout=0, replay_map=None,
-                  execution_order=None):
+    def run_suite(self, job, result, test_suite, variants, timeout=0,
+                  replay_map=None, execution_order=None):
         """
         Run one or more tests and report with test result.
 
+        :param job: an instance of :class:`avocado.core.job.Job`.
+        :param result: an instance of :class:`avocado.core.result.Result`
         :param test_suite: a list of tests to run.
         :param variants: A varianter iterator to produce test params.
         :param timeout: maximum amount of time (in seconds) to execute.
@@ -592,8 +589,8 @@ class TestRunner:
         :return: a set with types of test failures.
         """
         summary = set()
-        if self.job.sysinfo is not None:
-            self.job.sysinfo.start_job_hook()
+        if job.sysinfo is not None:
+            job.sysinfo.start_job_hook()
         queue = multiprocessing.SimpleQueue()
         if timeout > 0:
             deadline = time.time() + timeout
@@ -602,15 +599,15 @@ class TestRunner:
 
         test_result_total = variants.get_number_of_tests(test_suite)
         no_digits = len(str(test_result_total))
-        self.result.tests_total = test_result_total
+        result.tests_total = test_result_total
         index = -1
         try:
             for test_factory in test_suite:
-                test_factory[1]["base_logdir"] = self.job.logdir
-                test_factory[1]["job"] = self.job
+                test_factory[1]["base_logdir"] = job.logdir
+                test_factory[1]["job"] = job
             if execution_order is None:
                 execution_order = self.DEFAULT_EXECUTION_ORDER
-            for test_factory, variant in self._iter_suite(self.job,
+            for test_factory, variant in self._iter_suite(job,
                                                           test_suite,
                                                           variants,
                                                           execution_order):
@@ -625,7 +622,7 @@ class TestRunner:
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (test.TimeOutSkipTest, test_parameters)
-                    if not self.run_test(test_factory, queue, summary):
+                    if not self.run_test(job, result, test_factory, queue, summary):
                         break
                 else:
                     if (replay_map is not None and
@@ -633,16 +630,16 @@ class TestRunner:
                         test_parameters["methodName"] = "test"
                         test_factory = (replay_map[index], test_parameters)
 
-                    if not self.run_test(test_factory, queue, summary,
+                    if not self.run_test(job, result, test_factory, queue, summary,
                                          deadline):
                         break
         except KeyboardInterrupt:
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')
 
-        if self.job.sysinfo is not None:
-            self.job.sysinfo.end_job_hook()
-        self.result.end_tests()
-        self.job.funcatexit.run()
+        if job.sysinfo is not None:
+            job.sysinfo.end_job_hook()
+        result.end_tests()
+        job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return summary

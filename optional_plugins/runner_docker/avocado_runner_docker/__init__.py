@@ -115,32 +115,32 @@ class DockerTestRunner(RemoteTestRunner):
     Test runner which runs the job inside a docker container
     """
 
-    def __init__(self, job, result):
-        super(DockerTestRunner, self).__init__(job, result)
+    def __init__(self):
+        super(DockerTestRunner, self).__init__()
         self.remote = None      # Will be set in `setup`
 
-    def setup(self):
-        dkr_name = os.path.basename(self.job.logdir) + '.' + 'avocado'
-        self.remote = DockerRemoter(self.job.config.get('docker_cmd'),
-                                    self.job.config.get('docker'),
-                                    self.job.config.get('docker_options'),
+    def setup(self, job):
+        dkr_name = os.path.basename(job.logdir) + '.' + 'avocado'
+        self.remote = DockerRemoter(job.config.get('docker_cmd'),
+                                    job.config.get('docker'),
+                                    job.config.get('docker_options'),
                                     dkr_name)
-        stdout_claimed_by = self.job.config.get('stdout_claimed_by', None)
+        stdout_claimed_by = job.config.get('stdout_claimed_by', None)
         if not stdout_claimed_by:
-            self.job.log.info("DOCKER     : Container id '%s'"
-                              % self.remote.get_cid())
-            self.job.log.info("DOCKER     : Container name '%s'" % dkr_name)
+            job.log.info("DOCKER     : Container id '%s'"
+                         % self.remote.get_cid())
+            job.log.info("DOCKER     : Container name '%s'" % dkr_name)
 
-    def tear_down(self):
+    def tear_down(self, job):
         try:
             if self.remote:
                 self.remote.close()
-                if not self.job.config.get('docker_no_cleanup'):
+                if not job.config.get('docker_no_cleanup'):
                     self.remote.cleanup()
         except Exception as details:
-            stdout_claimed_by = self.job.config.get('stdout_claimed_by', None)
+            stdout_claimed_by = job.config.get('stdout_claimed_by', None)
             if not stdout_claimed_by:
-                self.job.log.warn("DOCKER     : Fail to cleanup: %s" % details)
+                job.log.warn("DOCKER     : Fail to cleanup: %s" % details)
 
 
 class DockerCLI(CLI):
