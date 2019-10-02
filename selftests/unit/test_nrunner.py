@@ -176,27 +176,33 @@ class Runner(unittest.TestCase):
         runnable = nrunner.Runnable('noop', None)
         runner = nrunner.runner_from_runnable(runnable)
         results = [status for status in runner.run()]
-        self.assertEqual(results, [{'status': 'finished'}])
+        last_result = results[-1]
+        self.assertEqual(last_result['status'], 'finished')
+        self.assertIn('time_end', last_result)
 
     def test_runner_exec(self):
         runnable = nrunner.Runnable('exec', sys.executable,
                                     '-c', '"import time; time.sleep(0.01)"')
         runner = nrunner.runner_from_runnable(runnable)
         results = [status for status in runner.run()]
-        self.assertEqual(results[-1], {'status': 'finished',
-                                       'returncode': 0,
-                                       'stdout': b'',
-                                       'stderr': b''})
+        last_result = results[-1]
+        self.assertEqual(last_result['status'], 'finished')
+        self.assertEqual(last_result['returncode'], 0)
+        self.assertEqual(last_result['stdout'], b'')
+        self.assertEqual(last_result['stderr'], b'')
+        self.assertIn('time_end', last_result)
 
     def test_runner_exec_test(self):
         runnable = nrunner.Runnable('exec-test', sys.executable,
                                     '-c', '"import time; time.sleep(0.01)"')
         runner = nrunner.runner_from_runnable(runnable)
         results = [status for status in runner.run()]
-        self.assertEqual(results[-1], {'status': 'pass',
-                                       'returncode': 0,
-                                       'stdout': b'',
-                                       'stderr': b''})
+        last_result = results[-1]
+        self.assertEqual(last_result['status'], 'pass')
+        self.assertEqual(last_result['returncode'], 0)
+        self.assertEqual(last_result['stdout'], b'')
+        self.assertEqual(last_result['stderr'], b'')
+        self.assertIn('time_end', last_result)
 
     def test_runner_python_unittest(self):
         runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase')

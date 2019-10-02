@@ -57,12 +57,16 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         # at this point be converted to JSON
         if 'name' in state:
             del state['name']
+        if 'time_start' in state:
+            del state['time_start']
         queue.put(state)
 
     def run(self):
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_avocado,
                                           args=(self.runnable, queue))
+        time_start = time.time()
+        time_start_sent = False
         process.start()
 
         last_status = None
@@ -71,6 +75,10 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             now = time.time()
             if last_status is None or now > last_status + nrunner.RUNNER_RUN_STATUS_INTERVAL:
                 last_status = now
+                if not time_start_sent:
+                    time_start_sent = True
+                    yield {'status': 'running',
+                           'time_start': time_start}
                 yield {'status': 'running'}
 
         yield queue.get()

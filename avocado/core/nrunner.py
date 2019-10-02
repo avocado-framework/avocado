@@ -138,7 +138,10 @@ class NoOpRunner(BaseRunner):
      * args: not used
     """
     def run(self):
-        yield {'status': 'finished'}
+        time_start = time.time()
+        yield {'status': 'finished',
+               'time_start': time_start,
+               'time_end': time.time()}
 
 
 class ExecRunner(BaseRunner):
@@ -157,6 +160,8 @@ class ExecRunner(BaseRunner):
     """
     def run(self):
         env = self.runnable.kwargs or None
+        time_start = time.time()
+        time_start_sent = False
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,
@@ -170,6 +175,10 @@ class ExecRunner(BaseRunner):
             now = time.time()
             if last_status is None or now > last_status + RUNNER_RUN_STATUS_INTERVAL:
                 last_status = now
+                if not time_start_sent:
+                    time_start_sent = True
+                    yield {'status': 'running',
+                           'time_start': time_start}
                 yield {'status': 'running'}
 
         stdout = process.stdout.read()
@@ -180,7 +189,8 @@ class ExecRunner(BaseRunner):
         yield {'status': 'finished',
                'returncode': process.returncode,
                'stdout': stdout,
-               'stderr': stderr}
+               'stderr': stderr,
+               'time_end': time.time()}
 
 
 class ExecTestRunner(ExecRunner):
@@ -223,6 +233,7 @@ class PythonUnittestRunner(BaseRunner):
         suite = unittest.TestLoader().loadTestsFromName(uri)
         runner = unittest.TextTestRunner(stream=stream, verbosity=0)
         unittest_result = runner.run(suite)
+        time_end = time.time()
 
         if len(unittest_result.errors) > 0:
             status = 'error'
@@ -235,7 +246,8 @@ class PythonUnittestRunner(BaseRunner):
 
         stream.seek(0)
         result = {'status': status,
-                  'output': stream.read()}
+                  'output': stream.read(),
+                  'time_end': time_end}
         stream.close()
         queue.put(result)
 
@@ -248,6 +260,8 @@ class PythonUnittestRunner(BaseRunner):
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_unittest,
                                           args=(self.runnable.uri, queue))
+        time_start = time.time()
+        time_start_sent = False
         process.start()
 
         last_status = None
@@ -256,6 +270,10 @@ class PythonUnittestRunner(BaseRunner):
             now = time.time()
             if last_status is None or now > last_status + RUNNER_RUN_STATUS_INTERVAL:
                 last_status = now
+                if not time_start_sent:
+                    time_start_sent = True
+                    yield {'status': 'running',
+                           'time_start': time_start}
                 yield {'status': 'running'}
 
         yield queue.get()
