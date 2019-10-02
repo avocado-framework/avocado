@@ -28,5 +28,8 @@ setup(name='avocado-framework-plugin-runner-docker',
       entry_points={
           'avocado.plugins.cli': [
               'docker = avocado_runner_docker:DockerCLI',
-          ]}
+          ],
+          'avocado.plugins.runner': [
+              'docker = avocado_runner_docker:DockerTestRunner',
+          ]},
       )

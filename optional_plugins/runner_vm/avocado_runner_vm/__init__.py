@@ -365,6 +365,9 @@ class VMTestRunner(RemoteTestRunner):
     Test runner to run tests using libvirt domain
     """
 
+    name = 'vm'
+    description = 'Runs on a VM using SSH'
+
     def __init__(self):
         super(VMTestRunner, self).__init__()
         #: VM used during testing
@@ -500,4 +503,4 @@ class VMCLI(CLI):
 
     def run(self, config):
         if self._check_required_config(config, 'vm_domain', ('vm_domain',)):
-            config['test_runner'] = VMTestRunner
+            config['test_runner'] = 'vm'

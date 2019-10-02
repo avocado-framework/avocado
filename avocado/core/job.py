@@ -30,7 +30,6 @@ import traceback
 from . import version
 from . import data_dir
 from . import dispatcher
-from . import runner
 from . import loader
 from . import sysinfo
 from . import result
@@ -514,8 +513,13 @@ class Job:
                 raise exceptions.OptionValidationError("Unable to parse "
                                                        "variant: %s" % details)
 
-        runner_klass = self.config.get('test_runner', runner.TestRunner)
-        self.test_runner = runner_klass()
+        runner_name = self.config.get('test_runner', 'runner')
+        try:
+            runner_extension = dispatcher.RunnerDispatcher()[runner_name]
+        except KeyError:
+            return
+        self.test_runner = runner_extension.obj
+
         self._start_sysinfo()
 
         self._log_job_debug_info(variant)

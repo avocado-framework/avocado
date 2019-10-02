@@ -39,5 +39,8 @@ setup(name='avocado-framework-plugin-runner-remote',
       entry_points={
           'avocado.plugins.cli': [
               'remote = avocado_runner_remote:RemoteCLI',
-          ]}
+          ],
+          'avocado.plugins.runner': [
+              'remote = avocado_runner_remote:RemoteTestRunner',
+          ]},
       )

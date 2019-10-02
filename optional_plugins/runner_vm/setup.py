@@ -29,5 +29,8 @@ setup(name='avocado-framework-plugin-runner-vm',
       entry_points={
           'avocado.plugins.cli': [
               'vm = avocado_runner_vm:VMCLI',
-          ]}
+          ],
+          'avocado.plugins.runner': [
+              'vm = avocado_runner_vm:VMTestRunner',
+          ]},
       )

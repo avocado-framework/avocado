@@ -35,7 +35,7 @@ from avocado.core import output
 from avocado.core import status
 from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.plugin_interfaces import CLI
-from avocado.core.runner import TestRunner
+from avocado.core.plugin_interfaces import Runner
 from avocado.core.settings import settings
 from avocado.core.test import TestID, MockingTest
 from avocado.utils import archive
@@ -322,9 +322,14 @@ class Remote:
         return result_dict[self.hostname]
 
 
-class RemoteTestRunner(TestRunner):
+class RemoteTestRunner(Runner):
 
-    """ Tooled TestRunner to run on remote machine using ssh """
+    """
+    Tooled Runner to run on a remote machine using SSH
+    """
+
+    name = 'remote'
+    description = 'Runs on a remote machine using SSH'
 
     # Let's use re.MULTILINE because sometimes servers might have MOTD
     # that will introduce a line break on output.
@@ -332,7 +337,6 @@ class RemoteTestRunner(TestRunner):
                                    re.MULTILINE)
 
     def __init__(self):
-        super(RemoteTestRunner, self).__init__()
         #: remoter connection to the remote machine
         self.remote = None
 
@@ -662,4 +666,4 @@ class RemoteCLI(CLI):
                                        ('remote_hostname',)):
             loader.loader.clear_plugins()
             loader.loader.register_plugin(DummyLoader)
-            config['test_runner'] = RemoteTestRunner
+            config['test_runner'] = 'remote'

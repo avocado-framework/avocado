@@ -115,6 +115,9 @@ class DockerTestRunner(RemoteTestRunner):
     Test runner which runs the job inside a docker container
     """
 
+    name = 'docker'
+    description = 'Runs on a Docker (or compatible) container'
+
     def __init__(self):
         super(DockerTestRunner, self).__init__()
         self.remote = None      # Will be set in `setup`
@@ -174,4 +177,4 @@ class DockerCLI(CLI):
 
     def run(self, config):
         if config.get("docker", None):
-            config['test_runner'] = DockerTestRunner
+            config['test_runner'] = 'docker'
