@@ -625,15 +625,11 @@ class SysInfo:
             self._log_modified_packages(self.post_dir)
 
 
-def collect_sysinfo(args):
+def collect_sysinfo(basedir):
     """
     Collect sysinfo to a base directory.
-
-    :param args: :class:`argparse.Namespace` object with command line params.
     """
     output.add_log_handler(log.name)
-
-    basedir = args.get('sysinfodir')
     if not basedir:
         cwd = os.getcwd()
         timestamp = time.strftime('%Y-%m-%d-%H.%M.%S')

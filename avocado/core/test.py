@@ -370,7 +370,9 @@ class Test(unittest.TestCase, TestData):
         self._logging_handlers = {}
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
-        self.__sysinfo_enabled = getattr(self.job, 'sysinfo', False)
+        self.__sysinfo_enabled = (self.job is not None and
+                                  self.job.config is not None and
+                                  self.job.config.get('sysinfo', None) == 'on')
         if self.__sysinfo_enabled:
             self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
             self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)

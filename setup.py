@@ -103,6 +103,7 @@ if __name__ == '__main__':
                   'teststmpdir = avocado.plugins.teststmpdir:TestsTmpDir',
                   'human = avocado.plugins.human:HumanJob',
                   'merge_files = avocado.plugins.expected_files_merge:FilesMerge',
+                  'sysinfo = avocado.plugins.sysinfo:SysInfoJob',
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',

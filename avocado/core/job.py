@@ -32,7 +32,6 @@ from . import data_dir
 from . import dispatcher
 from . import runner
 from . import loader
-from . import sysinfo
 from . import result
 from . import exit_codes
 from . import exceptions
@@ -335,11 +334,6 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
-    def _start_sysinfo(self):
-        if self.config.get('sysinfo', None) == 'on':
-            sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
-            self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
-
     def _make_test_suite(self, references=None):
         """
         Prepares a test suite to be used for running tests
@@ -516,8 +510,6 @@ class Job:
 
         runner_klass = self.config.get('test_runner', runner.TestRunner)
         self.test_runner = runner_klass()
-        self._start_sysinfo()
-
         self._log_job_debug_info(variant)
         jobdata.record(self.config, self.logdir, variant,
                        self.config.get('references'), sys.argv)
