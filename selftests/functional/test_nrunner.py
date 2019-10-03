@@ -13,7 +13,9 @@ class RunnableRun(unittest.TestCase):
     def test_noop(self):
         res = process.run("%s runnable-run -k noop" % AVOCADO,
                           ignore_status=True)
-        self.assertEqual(res.stdout, b"{'status': 'finished'}\n")
+        self.assertIn(b"'status': 'finished'", res.stdout)
+        self.assertIn(b"'time_start': ", res.stdout)
+        self.assertIn(b"'time_end': ", res.stdout)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
 
     def test_exec(self):
@@ -54,8 +56,10 @@ class RunnableRun(unittest.TestCase):
             first_status = lines[0]
             final_status = lines[-1]
             self.assertIn("'status': 'running'", first_status)
+            self.assertIn("'time_start': ", first_status)
         self.assertIn("'status': 'finished'", final_status)
         self.assertIn("'stdout': b'avocado'", final_status)
+        self.assertIn("'time_end': ", final_status)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
 
     def test_noop_valid_kwargs(self):
