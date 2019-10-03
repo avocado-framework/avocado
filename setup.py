@@ -97,6 +97,7 @@ if __name__ == '__main__':
                   'nrun = avocado.plugins.nrun:NRun',
                   'vmimage = avocado.plugins.vmimage:VMimage',
                   'nlist = avocado.plugins.nlist:List',
+                  'assets = avocado.plugins.assets:Assets',
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
