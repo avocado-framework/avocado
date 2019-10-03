@@ -110,3 +110,9 @@ class VarianterDispatcher(EnabledExtensionManager):
         """
         return super(VarianterDispatcher, self).map_method_with_return(
             method_name, deepcopy=True, *args, **kwargs)
+
+
+class RunnerDispatcher(EnabledExtensionManager):
+
+    def __init__(self):
+        super(RunnerDispatcher, self).__init__('avocado.plugins.runner')

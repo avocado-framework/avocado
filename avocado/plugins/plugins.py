@@ -54,7 +54,9 @@ class Plugins(CLICmd):
             (dispatcher.VarianterDispatcher(),
              'Plugins that generate test variants (varianter): '),
             (Resolver(),
-             'Plugins that resolve test references (resolver): ')
+             'Plugins that resolve test references (resolver): '),
+            (dispatcher.RunnerDispatcher(),
+             'Plugins that run test suites on a job (runners): '),
         ]
         for plugins_active, msg in plugin_types:
             LOG_UI.info(msg)
