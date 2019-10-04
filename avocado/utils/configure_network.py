@@ -48,7 +48,10 @@ def set_ip(ipaddr, netmask, interface):
             network_conf.write("DEVICE=%s \n" % interface)
             network_conf.write("ONBOOT=yes \n")
             network_conf.write("IPADDR=%s \n" % ipaddr)
-            network_conf.write("NETMASK=%s" % netmask)
+            network_conf.write("NETMASK=%s \n" % netmask)
+            network_conf.write("IPV6INIT=yes \n")
+            network_conf.write("IPV6_AUTOCONF=yes \n")
+            network_conf.write("IPV6_DEFROUTE=yes")
 
         cmd = "ifup %s" % interface
         try:
@@ -65,7 +68,10 @@ def set_ip(ipaddr, netmask, interface):
             raise NWException("%s interface not available" % interface)
         with open(conf_file, "w") as network_conf:
             network_conf.write("IPADDR=%s \n" % ipaddr)
-            network_conf.write("NETMASK='%s'" % netmask)
+            network_conf.write("NETMASK='%s' \n" % netmask)
+            network_conf.write("IPV6INIT=yes \n")
+            network_conf.write("IPV6_AUTOCONF=yes \n")
+            network_conf.write("IPV6_DEFROUTE=yes")
 
         cmd = "ifup %s" % interface
         try:
