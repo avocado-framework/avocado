@@ -1,6 +1,15 @@
 $(document).ready(function() {
   $('#results').dataTable({
     "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+    drawCallback: function() {
+      $('[data-toggle="popover"]').each(function() {
+        var isIconPopover = this.getElementsByClassName('icon').length;
+        // only add a popover if the text has overflowed
+        if (isIconPopover || (this.scrollWidth > $(this).innerWidth())) {
+          $(this).popover();
+        }
+      })
+    },
     initComplete: function() {
       var statusColumn = this.api().column(4);
       var select = $('<select class="form-control"><option value=""></option></select>')
@@ -29,16 +38,7 @@ $(document).ready(function() {
     }
   });
 
-  $(function () {$('[data-toggle="popover"]').popover()})
-
   $('#results')
     .removeClass( 'display' )
     .addClass('table table-striped table-bordered');
 } );
-
-$(".hiddenText").hover(function(){
-    var x = $(this).position();
-    $(this).parent().next(".spnTooltip").css({'display': 'block', "top": x.top + 30, "left": x.left -50});
-  }, function(){
-    $(this).parent().next(".spnTooltip").css('display', 'none');
-});

@@ -73,20 +73,27 @@
         {% for test in data.tests %}
         <tr class="{{ data.row_class }}">
           <td><div>{{ test.time_start }}</div></td>
-          <td title="{{ test.uid }}"><div>{{ test.uid }}</div></td>
-          <td><div><a class="hiddenText" href="{{ test.logdir }}">{{ test.name }}</a></div>
-              <span class="spnTooltip">{{ test.name }} | {{ test.params }}</span>
-          </td>
+          <td><div data-toggle="popover" data-container="body" data-trigger="hover" data-content="{{ test.uid }}">{{ test.uid }}</div></td>
+          <td><div data-toggle="popover" data-container="body" data-trigger="hover" data-content="{{ test.name }} | {{ test.params }}">
+              <a href="{{ test.logdir }}">{{ test.name }}</a>
+          </div></td>
           <td><div>{{ test.variant }}</div></td>
           <td><div>{{ test.status }}</div></td>
           <td><div>{{ test.time }}</div></td>
-          <td><div>{{ test.fail_reason|safe }}</div></td>
+          <td>
+            <div data-toggle="popover"
+                 data-container="body"
+                 data-trigger="hover"
+                 data-placement="top"
+                 data-content="{{ test.fail_reason|safe }}">
+              {{ test.fail_reason|safe }}
+            </div>
+          </td>
           <td>
             <div>
               <a class="col-xs-1" href="{{ test.logfile }}"><span class="icon" id="icon-logs" title="Debug log"></span></a>
-              <div class="col-xs-1 hiddenText"><span class="icon" id="icon-whiteboard"></span></div>
+              <div class="col-xs-1" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" title="Whiteboard" data-content="{{test.whiteboard}}"><span class="icon" id="icon-whiteboard"></span></div>
             </div>
-            <span class="spnTooltip"><strong>Whiteboard:</strong><br>{{test.whiteboard}}</span>
           </td>
         </tr>
         {% endfor %}

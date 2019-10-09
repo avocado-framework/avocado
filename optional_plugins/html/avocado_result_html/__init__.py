@@ -129,19 +129,10 @@ class ReportModel:
                                                     local_time_start)
             formatted['row_class'] = mapping[tst['status']]
             formatted['whiteboard'] = tst.get('whiteboard', '')
-            exhibition_limit = 40
             fail_reason = tst.get('fail_reason')
             if fail_reason is None:
                 fail_reason = '<unknown>'
             fail_reason = astring.to_text(fail_reason)
-            if len(fail_reason) > exhibition_limit:
-                fail_reason = ('<a data-container="body" '
-                               'data-toggle="popover" '
-                               'data-placement="top" '
-                               'title="Error Details" '
-                               'data-content="%s">%s...</a>' %
-                               (fail_reason,
-                                fail_reason[:exhibition_limit]))
             formatted['fail_reason'] = fail_reason
             test_info.append(formatted)
         return test_info

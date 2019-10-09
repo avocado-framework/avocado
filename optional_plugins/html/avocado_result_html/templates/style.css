@@ -1,23 +1,16 @@
-.spnTooltip {
-    display:none;
-    z-index: 10;
-    padding:14px 20px;
-    position:absolute;
-    color:#111;
-    border:1px solid #337ab7;
-    background:#fff;
-    white-space: pre-wrap;
-}
 .font-weight-normal {
     font-weight: normal;
 }
 /* Restrict cells to a maximum width */
 .dataTable th, .dataTable div {
-    max-width: 14.3em;
+    max-width: 10em;
     min-width: 5em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+.popover-content {
+    word-break: break-all;
 }
 /* Basic metadata for svg */
 .icon {
