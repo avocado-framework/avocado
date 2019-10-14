@@ -18,26 +18,41 @@ CHECK_TMP_DIRS = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                               "check_tmp_dirs"))
 
 
-class MyResult(unittest.TextTestResult):
+class CheckTmpDirResult(unittest.TextTestResult):
+
+    """
+    Checks after every single test if temp dirs were left in the filesystem
+    """
+
     def stopTest(self, test):
-        # stopTest
-        super(MyResult, self).stopTest(test)
+        # stopTestRun
+        super(CheckTmpDirResult, self).stopTest(test)
         # Destroy the data_dir.get_tmpdir ...
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         # Rung garbage collection (run __del__s) and force-sync disk
         gc.collect()
         os.sync()
+        test_name = str(test)
+        try:
+            test.tearDown()
+        except Exception:
+            pass
         # ... and check whether some dirs were left behind
         dir_check = subprocess.Popen([sys.executable, CHECK_TMP_DIRS], stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
         if dir_check.wait():
             raise AssertionError("Test %s left some tmp files behind:\n%s"
-                                 % (test, dir_check.stdout.read().decode()))
+                                 % (test_name, dir_check.stdout.read().decode()))
 
 
 if __name__ == '__main__':
+    if os.environ.get('AVOCADO_CHECK_TMPDIR', False):
+        result_class = CheckTmpDirResult
+    else:
+        result_class = unittest.TextTestResult
+
     runner = unittest.TextTestRunner(failfast=not os.environ.get("SELF_CHECK_CONTINUOUS"),
-                                     verbosity=1, resultclass=MyResult)
+                                     verbosity=1, resultclass=result_class)
     result = runner.run(test_suite())
     if result.failures or result.errors:
         sys.exit(1)
