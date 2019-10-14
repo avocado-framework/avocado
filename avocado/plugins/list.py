@@ -153,7 +153,8 @@ class List(CLICmd):
         """
         Add the subparser for the list action.
 
-        :param parser: Main test runner parser.
+        :param parser: The Avocado command line application parser
+        :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
         parser = super(List, self).configure(parser)
         parser.add_argument('references', type=str, default=[], nargs='*',

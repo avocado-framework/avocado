@@ -52,7 +52,8 @@ class Diff(CLICmd):
         """
         Add the subparser for the diff action.
 
-        :param parser: Main test runner parser.
+        :param parser: The Avocado command line application parser
+        :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
         parser = super(Diff, self).configure(parser)
 
