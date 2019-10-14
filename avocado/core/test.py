@@ -332,8 +332,7 @@ class Test(unittest.TestCase, TestData):
                      such as when running random executables as tests.
         :type name: :class:`avocado.core.test.TestID`
         :param base_logdir: Directory where test logs should go. If None
-                            provided, it'll use
-                            :func:`avocado.data_dir.create_job_logs_dir`.
+                            provided a temporary directory will be created.
         :param job: The job that this test is part of.
         """
         self.__phase = 'INIT'
@@ -352,8 +351,12 @@ class Test(unittest.TestCase, TestData):
         self.__job = job
         self.__tags = tags
 
+        self.__base_logdir_tmp = None
         if base_logdir is None:
-            base_logdir = data_dir.create_job_logs_dir()
+            prefix = 'avocado_test_'
+            self.__base_logdir_tmp = tempfile.TemporaryDirectory(prefix=prefix)
+            base_logdir = self.__base_logdir_tmp.name
+
         base_logdir = os.path.join(base_logdir, 'test-results')
         logdir = os.path.join(base_logdir, self.name.str_filesystem)
         if os.path.exists(logdir):
@@ -1098,6 +1101,16 @@ class Test(unittest.TestCase, TestData):
             expire = data_structures.time_to_seconds(str(expire))
         return asset.Asset(name, asset_hash, algorithm, locations,
                            self.cache_dirs, expire).fetch()
+
+    def tearDown(self):
+        if self.__base_logdir_tmp is not None:
+            self.__base_logdir_tmp.cleanup()
+            self.__base_logdir_tmp = None
+
+    def __del__(self):
+        if self.__base_logdir_tmp is not None:
+            self.__base_logdir_tmp.cleanup()
+            self.__base_logdir_tmp = None
 
 
 class SimpleTest(Test):
