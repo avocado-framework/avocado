@@ -61,7 +61,8 @@ class SysInfo(CLICmd):
         """
         Add the subparser for the run action.
 
-        :param parser: Main test runner parser.
+        :param parser: The Avocado command line application parser
+        :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
         parser = super(SysInfo, self).configure(parser)
         parser.add_argument('sysinfodir', type=str,
