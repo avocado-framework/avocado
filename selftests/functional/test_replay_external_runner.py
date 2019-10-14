@@ -14,7 +14,7 @@ class ReplayExtRunnerTests(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         test = script.make_script(os.path.join(self.tmpdir.name, 'test'), 'exit 0')
         cmd_line = ('%s run %s '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml '

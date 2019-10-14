@@ -137,7 +137,7 @@ class RunnableToRecipe(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_runnable_to_recipe_noop(self):
         runnable = nrunner.Runnable('noop', None)
