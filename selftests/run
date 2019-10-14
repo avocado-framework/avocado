@@ -34,7 +34,7 @@ class MyResult(unittest.TextTestResult):
                                      stderr=subprocess.STDOUT)
         if dir_check.wait():
             raise AssertionError("Test %s left some tmp files behind:\n%s"
-                                 % (test, dir_check.stdout.read()))
+                                 % (test, dir_check.stdout.read().decode()))
 
 
 if __name__ == '__main__':
