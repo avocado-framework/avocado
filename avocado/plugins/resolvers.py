@@ -24,6 +24,7 @@ from avocado.core.safeloader import find_python_unittests
 from avocado.core.resolver import ReferenceResolution
 from avocado.core.resolver import ReferenceResolutionResult
 from avocado.core.resolver import check_file
+from avocado.core.references import reference_split
 from avocado.core.nrunner import Runnable
 
 
@@ -88,10 +89,7 @@ class AvocadoInstrumentedResolver(Resolver):
 
     @staticmethod
     def resolve(reference):
-        if ':' in reference:
-            module_path, _ = reference.split(':', 1)
-        else:
-            module_path = reference
+        module_path, _ = reference_split(reference)
 
         criteria_check = check_file(module_path, reference)
         if criteria_check is not True:

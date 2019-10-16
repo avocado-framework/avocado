@@ -30,6 +30,7 @@ from . import data_dir
 from . import output
 from . import test
 from . import safeloader
+from .references import reference_split
 from ..utils import stacktrace
 from .settings import settings
 from .output import LOG_UI
@@ -520,12 +521,9 @@ class FileLoader(TestLoader):
                          '__main__.py')
 
         # Look for filename:test_method pattern
-        subtests_filter = None
-        if ':' in reference:
-            _reference, _subtests_filter = reference.split(':', 1)
-            if os.path.exists(_reference):  # otherwise it's ':' in the file name
-                reference = _reference
-                subtests_filter = re.compile(_subtests_filter)
+        reference, subtests_filter = reference_split(reference)
+        if subtests_filter is not None:
+            subtests_filter = re.compile(subtests_filter)
 
         if not os.path.isdir(reference):  # Single file
             return self._make_tests(reference, which_tests == DiscoverMode.ALL,
