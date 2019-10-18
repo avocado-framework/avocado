@@ -1650,3 +1650,19 @@ def get_owner_id(pid):
         return os.stat('/proc/%d/' % pid).st_uid
     except OSError:
         return None
+
+
+def get_command_output_matching(command, pattern):
+    """
+    Runs a command, and if the pattern is in in the output, returns it.
+
+    :param command: the command to execute
+    :type command: str
+    :param pattern: pattern to search in the output, in a line by line basis
+    :type pattern: str
+
+    :return: list of lines matching the pattern
+    :rtype: list of str
+    """
+    return [line for line in run(command).stdout_text.splitlines()
+            if pattern in line]
