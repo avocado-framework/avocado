@@ -40,6 +40,25 @@ it is completely abstract to the other components of Avocado.
    by command-line switches like `--external-runner`, which
    completelly changes the meaning of the given strings.
 
+Conventions
+~~~~~~~~~~~
+
+Even though each resolver implementation is free to interpret a
+reference string as it sees fit, it's a good idea to set common user
+expectations.
+
+It's common for a single file to contain multiple tests.  In that
+case, information about the specific test to reference can be added
+after the filesystem location and a colon, that is, for the
+reference::
+
+  passtest.py:PassTest.test
+
+Unless a file with that exact name exists, most resolvers will split
+it into `passtest.py` as the filesystem path, and `PassTest.test` as
+an additional specification for the individual test.  It's also
+possible that some resolvers will support regular expressions and
+globs for the additional information component.
 
 Test Name
 ---------

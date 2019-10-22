@@ -17,6 +17,7 @@ Test resolver for builtin test types
 """
 
 import os
+import re
 
 from avocado.core.plugin_interfaces import Resolver
 from avocado.core.safeloader import find_avocado_tests
@@ -24,6 +25,7 @@ from avocado.core.safeloader import find_python_unittests
 from avocado.core.resolver import ReferenceResolution
 from avocado.core.resolver import ReferenceResolutionResult
 from avocado.core.resolver import check_file
+from avocado.core.references import reference_split
 from avocado.core.nrunner import Runnable
 
 
@@ -88,10 +90,9 @@ class AvocadoInstrumentedResolver(Resolver):
 
     @staticmethod
     def resolve(reference):
-        if ':' in reference:
-            module_path, _ = reference.split(':', 1)
-        else:
-            module_path = reference
+        module_path, tests_filter = reference_split(reference)
+        if tests_filter is not None:
+            tests_filter = re.compile(tests_filter)
 
         criteria_check = check_file(module_path, reference)
         if criteria_check is not True:
@@ -102,7 +103,11 @@ class AvocadoInstrumentedResolver(Resolver):
         runnables = []
         for klass, methods_tags in class_methods_info.items():
             for (method, tags) in methods_tags:
-                uri = "%s:%s.%s" % (module_path, klass, method)
+                klass_method = "%s.%s" % (klass, method)
+                if tests_filter is not None:
+                    if not tests_filter.search(klass_method):
+                        continue
+                uri = "%s:%s" % (module_path, klass_method)
                 runnables.append(Runnable('avocado-instrumented',
                                           uri=uri,
                                           tags=tags))
