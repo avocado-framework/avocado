@@ -112,7 +112,8 @@ def runnable_from_recipe(recipe_path):
         recipe = json.load(recipe_file)
     return Runnable(recipe.get('kind'),
                     recipe.get('uri'),
-                    *recipe.get('args', ()))
+                    *recipe.get('args', ()),
+                    **recipe.get('kwargs', {}))
 
 
 class BaseRunner:

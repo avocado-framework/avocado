@@ -61,12 +61,14 @@ class Runnable(unittest.TestCase):
     def test_recipe_exec(self):
         open_mocked = unittest.mock.mock_open(
             read_data=('{"kind": "exec", "uri": "/bin/sh", '
-                       '"args": ["/etc/profile"]}'))
+                       '"args": ["/etc/profile"], '
+                       '"kwargs": {"TERM": "vt3270"}}'))
         with unittest.mock.patch("builtins.open", open_mocked):
             runnable = nrunner.runnable_from_recipe("fake_path")
         self.assertEqual(runnable.kind, "exec")
         self.assertEqual(runnable.uri, "/bin/sh")
         self.assertEqual(runnable.args, ("/etc/profile",))
+        self.assertEqual(runnable.kwargs, {"TERM": "vt3270"})
 
     def test_runnable_command_args(self):
         runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2')

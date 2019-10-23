@@ -41,12 +41,15 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'returncode': 0", res.stdout)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
 
+    @unittest.skipUnless(os.path.exists('/bin/sh'),
+                         ('Executable "/bin/sh" used in recipe is not '
+                          'available in the system'))
     @unittest.skipUnless(os.path.exists('/bin/echo'),
                          ('Executable "/bin/echo" used in recipe is not '
                           'available in the system'))
     def test_recipe(self):
         recipe = os.path.join(BASEDIR, "examples", "recipes", "runnables",
-                              "exec_echo_no_newline.json")
+                              "exec_sh_echo_env_var.json")
         cmd = "%s runnable-run-recipe %s" % (AVOCADO, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -58,7 +61,7 @@ class RunnableRun(unittest.TestCase):
             self.assertIn("'status': 'running'", first_status)
             self.assertIn("'time_start': ", first_status)
         self.assertIn("'status': 'finished'", final_status)
-        self.assertIn("'stdout': b'avocado'", final_status)
+        self.assertIn("'stdout': b'Hello world!\\n'", final_status)
         self.assertIn("'time_end': ", final_status)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
 
