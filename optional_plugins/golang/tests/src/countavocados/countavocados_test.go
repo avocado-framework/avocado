@@ -15,3 +15,7 @@ func TestNoContainers(t *testing.T) {
       t.Errorf("No Avocados supposed to be present, but got %d", total)
    }
 }
+
+func TestingButNotReally() {
+   return
+}
