@@ -27,6 +27,9 @@ setup(name='avocado-framework-plugin-robot',
       install_requires=['robotframework'],
       test_suite='tests',
       entry_points={
+          'console_scripts': [
+              'avocado-runner-robot = avocado_robot.runner:main',
+          ],
           'avocado.plugins.cli': [
               'robot = avocado_robot:RobotCLI',
           ],
