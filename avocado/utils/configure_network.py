@@ -20,8 +20,12 @@ Configure network when interface name and interface IP is available.
 import shutil
 import os
 
+import logging
 from . import distro
 from . import process
+from .ssh import Session
+
+log = logging.getLogger('avocado.test')
 
 
 class NWException(Exception):
@@ -94,3 +98,90 @@ def unset_ip(interface):
         return True
     except Exception as ex:
         raise NWException("ifdown fails: %s" % ex)
+
+
+class HostInfo:
+    """
+    class for host function
+    """
+
+    def ping_check(self, interface, peer_ip, count, option=None, flood=False):
+        """
+        Checks if the ping to peer works.
+        """
+        cmd = "ping -I %s %s -c %s" % (interface, peer_ip, count)
+        if flood is True:
+            cmd = "%s -f" % cmd
+        elif option is not None:
+            cmd = "%s %s" % (cmd, option)
+        if process.system(cmd, shell=True, verbose=True,
+                          ignore_status=True) != 0:
+            return False
+        return True
+
+    def set_mtu_host(self, interface, mtu):
+        """
+        set mtu size in host interface
+        """
+        cmd = "ip link set %s mtu %s" % (interface, mtu)
+        try:
+            process.system(cmd, shell=True)
+        except process.CmdError as ex:
+            raise NWException("mtu size can not be set: %s" % ex)
+        try:
+            cmd = "ip add show %s" % interface
+            mtuvalue = process.system_output(cmd, shell=True).decode("utf-8") \
+                                                             .split()[4]
+            if mtuvalue == mtu:
+                return True
+        except Exception as ex:
+            log.error("setting mtu value in host failed: %s", ex)
+        return False
+
+
+class PeerInfo:
+    """
+    class for peer function
+    """
+
+    def __init__(self, host, port=None, peer_user=None,
+                 key=None, peer_password=None):
+        """
+        create a object for acsses remote machnine
+        """
+        try:
+            self.session = Session(host, port=port, user=peer_user,
+                                   key=key, password=peer_password)
+        except Exception as ex:
+            log.error("connection not established to peer machine: %s", ex)
+
+    def set_mtu_peer(self, peer_interface, mtu):
+        """
+        set mtu size in peer interface
+        """
+        cmd = "ip link set %s mtu %s" % (peer_interface, mtu)
+        try:
+            self.session.cmd(cmd)
+            cmd = "ip add show %s" % peer_interface
+            mtuvalue = self.session.cmd(cmd).stdout.decode("utf-8").split()[4]
+            if mtuvalue == mtu:
+                return True
+        except Exception as ex:
+            log.error("setting mtu value in peer failed: %s", ex)
+        return False
+
+    def get_peer_interface(self, peer_ip):
+        """
+        get peer interface from peer ip
+        """
+        cmd = "ip addr show"
+        try:
+            for line in self.session.cmd(cmd).stdout.decode("utf-8") \
+                                                    .splitlines():
+                if peer_ip in line:
+                    peer_interface = line.split()[-1]
+        except Exception as ex:
+            if peer_interface == "":
+                log.error("unable to get peer interface: %s", ex)
+        else:
+            return peer_interface
