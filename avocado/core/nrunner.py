@@ -37,6 +37,15 @@ class Runnable:
         return fmt.format(self.kind, self.uri,
                           self.args, self.kwargs, self.tags)
 
+    def get_serializable_tags(self):
+        tags = {}
+        # sets are not serializable in json
+        for key, val in self.tags.items():
+            if isinstance(val, set):
+                val = list(val)
+            tags[key] = val
+        return tags
+
     def get_command_args(self):
         """
         Returns the command arguments that adhere to the runner interface
@@ -57,13 +66,7 @@ class Runnable:
             args.append(arg)
 
         if self.tags is not None:
-            tags = {}
-            # sets are not serializable in json
-            for key, val in self.tags.items():
-                if isinstance(val, set):
-                    val = list(val)
-                tags[key] = val
-            args.append('tags=json:%s' % json.dumps(tags))
+            args.append('tags=json:%s' % json.dumps(self.get_serializable_tags()))
 
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):
@@ -86,6 +89,11 @@ class Runnable:
             recipe['uri'] = self.uri
         if self.args is not None:
             recipe['args'] = self.args
+        kwargs = self.kwargs.copy()
+        if self.tags is not None:
+            kwargs['tags'] = self.get_serializable_tags()
+        if kwargs:
+            recipe['kwargs'] = kwargs
         return recipe
 
     def get_json(self):
@@ -112,7 +120,8 @@ def runnable_from_recipe(recipe_path):
         recipe = json.load(recipe_file)
     return Runnable(recipe.get('kind'),
                     recipe.get('uri'),
-                    *recipe.get('args', ()))
+                    *recipe.get('args', ()),
+                    **recipe.get('kwargs', {}))
 
 
 class BaseRunner:

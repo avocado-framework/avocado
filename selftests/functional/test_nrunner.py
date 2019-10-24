@@ -1,8 +1,9 @@
 import os
 import sys
 import unittest
+import tempfile
 
-from .. import AVOCADO, BASEDIR
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 from avocado.utils import process
 from avocado.core import exit_codes
@@ -41,12 +42,15 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'returncode': 0", res.stdout)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
 
+    @unittest.skipUnless(os.path.exists('/bin/sh'),
+                         ('Executable "/bin/sh" used in recipe is not '
+                          'available in the system'))
     @unittest.skipUnless(os.path.exists('/bin/echo'),
                          ('Executable "/bin/echo" used in recipe is not '
                           'available in the system'))
     def test_recipe(self):
         recipe = os.path.join(BASEDIR, "examples", "recipes", "runnables",
-                              "exec_echo_no_newline.json")
+                              "exec_sh_echo_env_var.json")
         cmd = "%s runnable-run-recipe %s" % (AVOCADO, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -58,7 +62,7 @@ class RunnableRun(unittest.TestCase):
             self.assertIn("'status': 'running'", first_status)
             self.assertIn("'time_start': ", first_status)
         self.assertIn("'status': 'finished'", final_status)
-        self.assertIn("'stdout': b'avocado'", final_status)
+        self.assertIn("'stdout': b'Hello world!\\n'", final_status)
         self.assertIn("'time_end': ", final_status)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
 
@@ -153,3 +157,24 @@ class TaskRun(unittest.TestCase):
         self.assertIn("'id': 3", first_status)
         self.assertIn("'status': 'finished'", final_status)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+
+class ResolveSerializeRun(unittest.TestCase):
+    @unittest.skipUnless(os.path.exists('/bin/true'),
+                         ('Executable "/bin/true" used in test'))
+    def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+
+    def test(self):
+        cmd = "%s nlist --write-recipes-to-directory=%s -- /bin/true"
+        cmd %= (AVOCADO, self.tmpdir.name)
+        res = process.run(cmd)
+        self.assertEqual(b'exec-test /bin/true\n', res.stdout)
+        cmd = "%s runnable-run-recipe %s"
+        cmd %= (AVOCADO, os.path.join(self.tmpdir.name, '1.json'))
+        res = process.run(cmd)
+        self.assertIn(b"'status': 'pass'", res.stdout)
+
+    def tearDown(self):
+        self.tmpdir.cleanup()

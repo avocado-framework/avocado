@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2019
 # Author: Cleber Rosa <crosa@redhat.com>
 
+import os
+
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core import resolver
 from avocado.core import output
@@ -38,6 +40,10 @@ class List(CLICmd):
                             action='store_true', default=False,
                             help=("Show extra information on resolution, besides "
                                   "sucessful resolutions"))
+        parser.add_argument('--write-recipes-to-directory',
+                            metavar='DIRECTORY', default=None,
+                            help=('Writes runnable recipe files to a directory'))
+
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
@@ -46,6 +52,15 @@ class List(CLICmd):
         matrix, stats, tag_stats, resolution_matrix = self._get_resolution_matrix(config,
                                                                                   resolutions)
         self._display(matrix, stats, tag_stats, resolution_matrix, config.get('verbose'))
+        recipes_directory = config.get('write_recipes_to_directory')
+        if recipes_directory is not None:
+            fmt = '%%0%uu.json' % len(str(len(matrix)))
+            index = 1
+            for resolution in resolutions:
+                if resolution.result == resolver.ReferenceResolutionResult.SUCCESS:
+                    for res in resolution.resolutions:
+                        res.write_json(os.path.join(recipes_directory, fmt % index))
+                        index += 1
 
     @staticmethod
     def _get_resolution_matrix(config, resolutions):
