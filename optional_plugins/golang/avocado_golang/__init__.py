@@ -40,11 +40,14 @@ except utils_path.CmdNotFoundError:
     GO_BIN = None
 
 
+TEST_RE = re.compile(r'^func\s(Test|Example)[A-Z]')
+
+
 def find_tests(test_path):
     test_suite = []
     with open(test_path, 'r') as test_file_fd:
         for line in test_file_fd.readlines():
-            if line.startswith('func Test'):
+            if TEST_RE.match(line):
                 test_suite.append(line.split()[1].split('(')[0])
 
     return test_suite
