@@ -21,7 +21,7 @@ class LoaderResolverModule(unittest.TestCase):
     def test_loader_discover(self):
         loader = avocado_golang.GolangLoader(None, {})
         results = loader.discover('countavocados')
-        self.assertEqual(len(results), 2)
+        self.assertEqual(len(results), 3)
         empty_container_klass, empty_container_params = results[0]
         self.assertIs(empty_container_klass, avocado_golang.GolangTest)
         self.assertEqual(empty_container_params['name'],
@@ -30,6 +30,10 @@ class LoaderResolverModule(unittest.TestCase):
         self.assertIs(no_container_klass, avocado_golang.GolangTest)
         self.assertEqual(no_container_params['name'],
                          "countavocados:TestNoContainers")
+        example_klass, example_params = results[2]
+        self.assertIs(example_klass, avocado_golang.GolangTest)
+        self.assertEqual(example_params['name'],
+                         "countavocados:ExampleContainers")
 
     def test_resolver_no_go_bin(self):
         with unittest.mock.patch('avocado_golang.GO_BIN', None):
@@ -40,13 +44,16 @@ class LoaderResolverModule(unittest.TestCase):
     def test_resolver(self):
         res = avocado_golang.GolangResolver().resolve('countavocados')
         self.assertEqual(res.result, ReferenceResolutionResult.SUCCESS)
-        self.assertEqual(len(res.resolutions), 2)
+        self.assertEqual(len(res.resolutions), 3)
         empty_container = res.resolutions[0]
         self.assertEqual(empty_container.kind, 'golang')
         self.assertEqual(empty_container.uri, 'countavocados:TestEmptyContainers')
         no_container = res.resolutions[1]
         self.assertEqual(no_container.kind, 'golang')
         self.assertEqual(no_container.uri, 'countavocados:TestNoContainers')
+        example = res.resolutions[2]
+        self.assertEqual(example.kind, 'golang')
+        self.assertEqual(example.uri, 'countavocados:ExampleContainers')
 
     def tearDown(self):
         if self.previous_go_path is not None:

@@ -1,6 +1,7 @@
 package main
 
 import "testing"
+import "fmt"
 
 func TestEmptyContainers(t *testing.T) {
    total := Count(10, 0)
@@ -18,4 +19,9 @@ func TestNoContainers(t *testing.T) {
 
 func TestingButNotReally() {
    return
+}
+
+func ExampleContainers() {
+   fmt.Printf("Have %d Avocados", Count(3, 3))
+   // Output: Have 9 Avocados
 }

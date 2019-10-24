@@ -40,7 +40,7 @@ except utils_path.CmdNotFoundError:
     GO_BIN = None
 
 
-TEST_RE = re.compile(r'^func\sTest[A-Z]')
+TEST_RE = re.compile(r'^func\s(Test|Example)[A-Z]')
 
 
 def find_tests(test_path):
