@@ -1,1 +1,1 @@
-docs/source/ContributionGuide.rst
+docs/source/guides/contributor/index.rst

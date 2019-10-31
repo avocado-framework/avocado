@@ -1,97 +1,65 @@
-====================
-Avocado User's Guide
-====================
+.. include:: quickstart/index.rst
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :caption: Quick Start
+   :maxdepth: 3
 
-   Introduction
-   GetStartedGuide
-   WritingTests
-   ResultFormats
-   Configuration
-   Loaders
-   LoggingSystem
-   Sysinfo
-   TestParameters
-   Replay
-   Diff
-   RunningTestsRemotely
-   SubclassingAvocado
-   DebuggingWithGDB
-   WrapProcess
-   Plugins
-   NRunner
-
-=========
-Utilities
-=========
+   quickstart/index
 
 .. toctree::
-   :maxdepth: 2
+   :caption: Guides
+   :maxdepth: 3
 
-   utils/index
-
-================
-Optional Plugins
-================
-
-.. toctree::
-   :maxdepth: 2
-
-   optional_plugins/index
-
-===============================
-Advanced Topics and Maintenance
-===============================
+   guides/user/index
+   guides/writer/index
+   guides/contributor/index
 
 .. toctree::
-   :maxdepth: 2
+   :caption: Avocado Plugins
+   :maxdepth: 3
 
-   ReferenceGuide
-   ContributionGuide
-   DevelopmentTips
-   MaintenanceGuide
-   OtherResources
-
-.. _api-reference:
-
-=============
-API Reference
-=============
+   plugins/index
 
 .. toctree::
-   :maxdepth: 1
+   :caption: Our Releases
+   :maxdepth: 3
 
-   api/test/avocado.rst
-   api/utils/avocado.utils.rst
-   api/core/avocado.core.rst
-   api/plugins/avocado.plugins.rst
-   api/optional-plugins/index.rst
-
-=====================
-Avocado Release Notes
-=====================
+   releases/index
 
 .. toctree::
-   :maxdepth: 1
+   :caption: Future/Experimental
+   :maxdepth: 3
 
-   release_notes/index
-
-===========================
-Request For Comments (RFCs)
-===========================
+   future/index
 
 .. toctree::
-   :maxdepth: 1
+   :caption: Learn More
+   :maxdepth: 3
 
-   rfcs/index
+   misc/index
 
-Indices and tables
-==================
+.. toctree::
+   :caption: API Reference
+   :hidden:
+   :maxdepth: 3
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   Avocado Tests API Reference <api/tests/index.rst>
+   Avocado Libraries API Reference <api/libs/index.rst>
+   Avocado (core) API Reference <api/core/index.rst>
+
+.. .. toctree::
+..    :maxdepth: 1
+.. 
+..    api/test/avocado.rst
+..    api/utils/avocado.utils.rst
+..    api/core/avocado.core.rst
+..    api/plugins/avocado.plugins.rst
+..    api/optional-plugins/index.rst
+.. 
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
+
+.. _TAP: https://testanything.org/
