@@ -217,13 +217,13 @@ def fetch_command(references, verbose=True):
     for test_file in references:
         if os.path.isfile(test_file) and test_file.endswith('.py'):
             if verbose:
-                LOG_UI.debug('Fetching assets from %s.', test_file)
+                LOG_UI.info('Fetching assets from %s.', test_file)
             success, fail = fetch_assets(test_file)
 
             if verbose:
                 for asset_file in success:
-                    LOG_UI.debug('  File %s fetched or already on'
-                                 ' cache.', asset_file)
+                    LOG_UI.info('  File %s fetched or already on'
+                                ' cache.', asset_file)
                 for asset_file in fail:
                     LOG_UI.error(asset_file)
 
