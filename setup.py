@@ -115,6 +115,7 @@ if __name__ == '__main__':
                   'human = avocado.plugins.human:Human',
                   'tap = avocado.plugins.tap:TAPResult',
                   'journal = avocado.plugins.journal:JournalResult',
+                  'fetchasset = avocado.plugins.assets:FetchAssetJob',
                   ],
               'avocado.plugins.varianter': [
                   'json_variants = avocado.plugins.json_variants:JsonVariants',

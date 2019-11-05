@@ -24,6 +24,7 @@ from avocado.core import exit_codes
 from avocado.core import safeloader
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.plugin_interfaces import JobPreTests
 from avocado.utils.asset import Asset
 from avocado.utils import data_structures
 
@@ -203,6 +204,62 @@ def fetch_assets(test_file):
     return success, fail
 
 
+def fetch_command(references, verbose=True):
+    """
+    Iterate over the instrumented tests and try to fetch assets defined on it.
+    The objective of this function is to handle log messages, when needed.
+    :param references: Instrumented tests to be evaluated
+    :type references: list
+    :param verbose: Whether log messages should be displayed
+    :returns: exit code from assets fetch execution
+    """
+    exitcode = exit_codes.AVOCADO_ALL_OK
+    for test_file in references:
+        if os.path.isfile(test_file) and test_file.endswith('.py'):
+            if verbose:
+                LOG_UI.info('Fetching assets from %s.', test_file)
+            success, fail = fetch_assets(test_file)
+
+            if verbose:
+                for asset_file in success:
+                    LOG_UI.info('  File %s fetched or already on'
+                                ' cache.', asset_file)
+                for asset_file in fail:
+                    LOG_UI.error(asset_file)
+
+            if fail:
+                exitcode |= exit_codes.AVOCADO_FAIL
+        else:
+            if verbose:
+                LOG_UI.warning('No such file or file not supported: %s',
+                               test_file)
+            exitcode |= exit_codes.AVOCADO_FAIL
+
+    return exitcode
+
+
+class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
+    """
+    Implements the assets fetch job pre tests. This has the same effect of
+    running the 'avocado assets fetch INSTRUMENTED', but it runs during the
+    test execution, before the actual test starts.
+    """
+    name = "fetchasset"
+    description = "Fetch assets before the test run"
+
+    def __init__(self, config=None):
+        self.config = config
+
+    def pre_tests(self, job):
+        exitcode = fetch_command(self.config['references'], verbose=False)
+        # Right now, exit code do not have an effect when an asset fails to
+        # be downloaded. In this case, further, when the test runs, it will
+        # try to fetch the asset again. This is a note for future
+        # implementation of a decorator that skips the test when an asset is
+        # not available.
+        return exitcode
+
+
 class Assets(CLICmd):
     """
     Implements the avocado 'assets' subcommand
@@ -238,22 +295,6 @@ class Assets(CLICmd):
 
         if subcommand == 'fetch':
             # fetch assets from instrumented tests
-            for test_file in config['references']:
-                if os.path.isfile(test_file) and test_file.endswith('.py'):
-                    LOG_UI.debug('Fetching assets from %s.', test_file)
-                    success, fail = fetch_assets(test_file)
-
-                    for asset_file in success:
-                        LOG_UI.debug('  File %s fetched or already on'
-                                     ' cache.', asset_file)
-                    for asset_file in fail:
-                        LOG_UI.error(asset_file)
-
-                    if fail:
-                        exitcode |= exit_codes.AVOCADO_FAIL
-                else:
-                    LOG_UI.warning('No such file or file not supported: %s',
-                                   test_file)
-                    exitcode |= exit_codes.AVOCADO_FAIL
+            exitcode = fetch_command(config['references'])
 
         return exitcode
