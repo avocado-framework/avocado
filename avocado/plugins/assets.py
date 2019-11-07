@@ -24,6 +24,7 @@ from avocado.core import exit_codes
 from avocado.core import safeloader
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.plugin_interfaces import JobPreTests
 from avocado.utils.asset import Asset
 from avocado.utils import data_structures
 
@@ -212,6 +213,28 @@ def fetch_assets(test_file, klass=None, method=None):
         except EnvironmentError as failed:
             fail.append(failed)
     return success, fail
+
+
+class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
+    """
+    Implements the assets fetch job pre tests. This has the same effect of
+    running the 'avocado assets fetch INSTRUMENTED', but it runs during the
+    test execution, before the actual test starts.
+    """
+    name = "fetchasset"
+    description = "Fetch assets before the test run"
+
+    def __init__(self, config=None):
+        pass
+
+    def pre_tests(self, job):
+        for test in job.test_suite:
+            # fetch assets only on instrumented tests
+            if isinstance(test[0], str):
+                fetch_assets(test[1]['modulePath'],
+                             test[0],
+                             test[1]['methodName'],
+                             )
 
 
 class Assets(CLICmd):
