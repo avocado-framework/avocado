@@ -435,8 +435,8 @@ class OutputPluginTest(unittest.TestCase):
         self.assertGreaterEqual(len(output_lines), 6,
                                 ('Basic human interface did not produce the '
                                  'expect output. Output produced: "%s"' % output))
-        second_line = output_lines[1]
-        debug_log = second_line.split()[-1]
+        third_line = output_lines[2]
+        debug_log = third_line.split()[-1]
         self.check_output_files(debug_log)
 
     def test_verify_whiteboard_save(self):

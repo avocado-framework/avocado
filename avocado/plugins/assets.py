@@ -24,19 +24,25 @@ from avocado.core import exit_codes
 from avocado.core import safeloader
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.plugin_interfaces import JobPreTests
 from avocado.utils.asset import Asset
 from avocado.utils import data_structures
 
 
-class FetchAssetHandler(ast.NodeVisitor):
+class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
     """
     Handles the parsing of instrumented tests for `fetch_asset` statements.
     """
 
     PATTERN = 'fetch_asset'
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, klass=None, method=None):
         self.file_name = file_name
+        # fetch assets from specific test using klass and method
+        self.klass = klass
+        # we need to make sure we cover the setUp method when fetching
+        # assets for a specific test
+        self.method = [method, 'setUp']
         self.asgmts = {}
         self.calls = []
 
@@ -124,6 +130,9 @@ class FetchAssetHandler(ast.NodeVisitor):
         :type node: ast.*
         """
         if node.name in self.tests:
+            if self.klass and node.name != self.klass:
+                return
+
             self.current_klass = node.name
             self.asgmts[self.current_klass] = {}
             self.generic_visit(node)
@@ -136,6 +145,9 @@ class FetchAssetHandler(ast.NodeVisitor):
         """
         # make sure we are into a class method and not a fuction
         if self.current_klass:
+            if self.method[0] and node.name not in self.method:
+                return
+
             self.current_method = node.name
             self.asgmts[self.current_klass][self.current_method] = {}
         self.generic_visit(node)
@@ -173,7 +185,7 @@ class FetchAssetHandler(ast.NodeVisitor):
                         self.calls.append(call)
 
 
-def fetch_assets(test_file):
+def fetch_assets(test_file, klass=None, method=None):
     """
     Fetches the assets based on keywords listed on FetchAssetHandler.calls.
     :param test_file: File name of instrumented test to be evaluated
@@ -184,7 +196,7 @@ def fetch_assets(test_file):
     cache_dirs = data_dir.get_cache_dirs()
     success = []
     fail = []
-    handler = FetchAssetHandler(test_file)
+    handler = FetchAssetHandler(test_file, klass, method)
     for call in handler.calls:
         expire = call.pop('expire', None)
         if expire is not None:
@@ -201,6 +213,32 @@ def fetch_assets(test_file):
         except EnvironmentError as failed:
             fail.append(failed)
     return success, fail
+
+
+class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
+    """
+    Implements the assets fetch job pre tests. This has the same effect of
+    running the 'avocado assets fetch INSTRUMENTED', but it runs during the
+    test execution, before the actual test starts.
+    """
+    name = "fetchasset"
+    description = "Fetch assets before the test run"
+
+    def __init__(self, config=None):
+        pass
+
+    def pre_tests(self, job):
+        for test in job.test_suite:
+            # fetch assets only on instrumented tests
+            if isinstance(test[0], str):
+                if not job.config.get('stdout_claimed_by', None):
+                    job.log.info('Fetching assets from %s:%s.%s',
+                                 test[1]['modulePath'],
+                                 test[0],
+                                 test[1]['methodName'])
+                fetch_assets(test[1]['modulePath'],
+                             test[0],
+                             test[1]['methodName'],)
 
 
 class Assets(CLICmd):
