@@ -17,6 +17,7 @@ avocado.utils.stacktrace unittests
 
 import re
 import unittest
+import pickle
 
 from avocado.utils import stacktrace
 
@@ -27,7 +28,7 @@ class Unpickable:
     """
 
     def __getstate__(self):
-        raise NotImplementedError()
+        raise pickle.PickleError
 
 
 class InClassUnpickable:

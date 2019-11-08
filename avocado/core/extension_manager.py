@@ -61,7 +61,7 @@ class ExtensionManager:
             try:
                 plugin = ep.load()
                 obj = plugin(**invoke_kwds)
-            except Exception as exception:
+            except ImportError as exception:
                 self.load_failures.append((ep, exception))
             else:
                 ext = Extension(ep.name, ep, plugin, obj)

@@ -164,6 +164,6 @@ class NRun(CLICmd):
             elif self.status_server.status.get('error') is not None:
                 exit_code |= exit_codes.AVOCADO_TESTS_FAIL
             return exit_code
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0703
             LOG_UI.error(e)
             return exit_codes.AVOCADO_FAIL

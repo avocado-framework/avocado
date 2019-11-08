@@ -140,7 +140,7 @@ class DockerTestRunner(RemoteTestRunner):
                 self.remote.close()
                 if not job.config.get('docker_no_cleanup'):
                     self.remote.cleanup()
-        except Exception as details:
+        except Exception as details:  # pylint: disable=W0703
             stdout_claimed_by = job.config.get('stdout_claimed_by', None)
             if not stdout_claimed_by:
                 job.log.warn("DOCKER     : Fail to cleanup: %s" % details)

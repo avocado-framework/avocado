@@ -23,6 +23,8 @@ import time
 import signal
 import sys
 import multiprocessing
+from queue import Full as queueFullException
+
 
 from avocado.utils import process
 from avocado.utils import stacktrace
@@ -104,7 +106,7 @@ class TestRunner(Runner):
         early_state['early_status'] = True
         try:
             queue.put(early_state)
-        except Exception:
+        except queueFullException:
             instance.error(stacktrace.str_unpickable_object(early_state))
 
         result.start_test(early_state)
@@ -129,7 +131,7 @@ class TestRunner(Runner):
             try:
                 state = instance.get_state()
                 queue.put(state)
-            except Exception:
+            except queueFullException:
                 instance.error(stacktrace.str_unpickable_object(state))
 
     def run_test(self, job, result, test_factory, queue, summary, job_deadline=0):

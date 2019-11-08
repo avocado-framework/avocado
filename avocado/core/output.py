@@ -504,7 +504,7 @@ class ProgressStreamHandler(logging.StreamHandler):
             self.flush()
         except (KeyboardInterrupt, SystemExit):  # pylint: disable=W0706
             raise
-        except Exception:
+        except Exception:  # pylint: disable=W0703
             self.handleError(record)
 
 
@@ -549,13 +549,13 @@ class Paginator:
     def close(self):
         try:
             self.pipe.close()
-        except Exception:
+        except OSError:
             pass
 
     def write(self, msg):
         try:
             self.pipe.write(msg)
-        except Exception:
+        except (OSError, ValueError):
             pass
 
     def flush(self):

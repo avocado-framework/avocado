@@ -96,7 +96,7 @@ class YamlTestsuiteLoader(loader.TestLoader):
             root = mux.apply_filters(create_from_yaml([reference], False),
                                      self.args.get("mux_suite_only", []),
                                      self.args.get("mux_suite_out", []))
-        except Exception:
+        except IOError:
             return []
         mux_tree = mux.MuxTree(root)
         for variant in mux_tree:

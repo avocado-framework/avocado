@@ -18,6 +18,6 @@ class TaskRunRecipe(CLICmd):
         try:
             nrunner.subcommand_task_run_recipe(config, LOG_UI.info)
             return exit_codes.AVOCADO_ALL_OK
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0703
             LOG_UI.error(e)
             return exit_codes.AVOCADO_FAIL
