@@ -34,34 +34,26 @@ except path.CmdNotFoundError:
 # Output directory, List of directory to exclude from API  generation,
 # list of (duplicated) generated reST files to remove (and avoid warnings)
 API_SECTIONS = {"Test APIs": (None,
-                              "This is the bare mininum set of APIs that users "
-                              "should use, and can rely on, while writing tests.",
+                              genio.read_file("api/headers/test"),
                               "test",
                               ("core", "utils", "plugins"),
                               ("modules.rst", )),
-
                 "Utilities APIs": ("utils",
-                                   genio.read_file("api_utils_heading"),
+                                   genio.read_file("api/headers/utils"),
                                    "utils",
                                    ("core", "plugins"),
                                    ("avocado.rst", "modules.rst")),
-
                 "Internal (Core) APIs": ("core",
-                                         "Internal APIs that may be of interest to "
-                                         "Avocado hackers.",
+                                         genio.read_file("api/headers/core"),
                                          "core",
                                          ("utils", "plugins"),
                                          ("avocado.rst", "modules.rst")),
-
                 "Extension (plugin) APIs": ("plugins",
-                                            "Extension APIs that may be of interest to "
-                                            "plugin writers.",
+                                            genio.read_file("api/headers/plugins"),
                                             "plugins",
                                             ("core", "utils"),
                                             ("avocado.rst", "modules.rst"))}
 
-# clean up all previous rst files. RTD is known to keep them from previous runs
-process.run("find %s -name '*.rst' -delete" % base_api_output_dir)
 
 for (section, params) in API_SECTIONS.items():
     output_dir = os.path.join(base_api_output_dir, params[2])
@@ -70,6 +62,11 @@ for (section, params) in API_SECTIONS.items():
     exclude_dirs = " ".join(exclude_dirs)
     files_to_remove = [os.path.join(base_api_output_dir, output_dir, d)
                        for d in params[4]]
+
+    # clean up all previous rst files. But not those on the root api path.
+    # Now we have the headers there.
+    process.run("find %s -name '*.rst' -delete" % output_dir)
+
     # generate all rst files
     if apidoc:
         cmd = apidoc_template % locals()
@@ -77,7 +74,6 @@ for (section, params) in API_SECTIONS.items():
         # remove unnecessary ones
         for f in files_to_remove:
             os.unlink(f)
-
     # rewrite first lines of main rst file for this section
     second_level_module_name = params[0]
     if second_level_module_name is None:
@@ -148,7 +144,7 @@ extensions = ['sphinx.ext.autodoc',
 
 master_doc = 'index'
 project = u'Avocado'
-copyright = u'2014-2015, Red Hat'   # pylint: disable=W0622
+copyright = u'2014-2019, Red Hat'   # pylint: disable=W0622
 
 version_file = os.path.join(root_path, 'VERSION')
 VERSION = genio.read_file(version_file).strip()
