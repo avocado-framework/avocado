@@ -1,0 +1,14 @@
+At the most basic level, there's the Test APIs which you should use when
+writing tests in Python and planning to make use of any other utility library.
+
+The Test APIs can be found in the :mod:`avocado` main module and its most
+important member is the :class:`avocado.Test` class. By conforming to the
+:class:`avocado.Test` API, that is, by inheriting from it, you can use the full
+set of utility libraries.
+
+The Test APIs are guaranteed to be stable across a single major version of
+Avocado.  That means that a test written for a given version of Avocado should
+not break on later minor versions because of Test API changes.
+
+This is the bare mininum set of APIs that users should use, and can rely on,
+while writing tests.

@@ -1,0 +1,17 @@
+Avocado gives to you more than 40 python utility libraries (so far), that can
+be found under the :mod:`avocado.utils`. You can use these libraries to avoid
+having to write necessary routines for your tests. These are very general in
+nature and can help you speed up your test development.
+
+The utility libraries may receive incompatible changes across minor versions,
+but these will be done in a staged fashion. If a given change to an utility
+library can cause test breakage, it will first be documented and/or deprecated,
+and only on the next subsequent minor version, it will actually be changed.
+
+What this means is that upon updating to later minor versions of Avocado, you
+should look at the Avocado Release Notes for changes that may impact your
+tests.
+
+This is a set of utility APIs that Avocado provides as added value to test
+writers. It's suppose to be generic, without any knowledge of Avocado and
+reusable in different projects.
