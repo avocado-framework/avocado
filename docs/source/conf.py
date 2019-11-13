@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""This is used as config file to generate Avocado's documentation."""
 
 import errno
 import importlib
@@ -8,12 +9,13 @@ import sys
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-root_path = os.path.abspath(os.path.join("..", ".."))
-sys.path.insert(0, root_path)
+ROOT_PATH = os.path.abspath(os.path.join("..", ".."))
+sys.path.insert(0, ROOT_PATH)
 
-from avocado.utils import path
-from avocado.utils import process
-from avocado.utils import genio
+from avocado.utils import genio  # pylint: disable=C0413
+from avocado.utils import path  # pylint: disable=C0413
+from avocado.utils import process  # pylint: disable=C0413
+
 
 # Flag that tells if the docs are being built on readthedocs.org
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
@@ -21,13 +23,13 @@ ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 #
 # Auto generate API documentation
 #
-api_source_dir = os.path.join(root_path, 'avocado')
-base_api_output_dir = os.path.join(root_path, 'docs', 'source', 'api')
+API_SOURCE_DIR = os.path.join(ROOT_PATH, 'avocado')
+BASE_API_OUTPUT_DIR = os.path.join(ROOT_PATH, 'docs', 'source', 'api')
 try:
-    apidoc = path.find_command('sphinx-apidoc')
-    apidoc_template = apidoc + " -o %(output_dir)s %(api_source_dir)s %(exclude_dirs)s"
+    APIDOC = path.find_command('sphinx-apidoc')
+    APIDOC_TEMPLATE = APIDOC + " -o %(output_dir)s %(API_SOURCE_DIR)s %(exclude_dirs)s"
 except path.CmdNotFoundError:
-    apidoc = False
+    APIDOC = False
 
 # Documentation sections. Key is the name of the section, followed by:
 # Second level module name (after avocado), Module description,
@@ -56,11 +58,11 @@ API_SECTIONS = {"Test APIs": (None,
 
 
 for (section, params) in API_SECTIONS.items():
-    output_dir = os.path.join(base_api_output_dir, params[2])
-    exclude_dirs = [os.path.join(api_source_dir, d)
+    output_dir = os.path.join(BASE_API_OUTPUT_DIR, params[2])
+    exclude_dirs = [os.path.join(API_SOURCE_DIR, d)
                     for d in params[3]]
     exclude_dirs = " ".join(exclude_dirs)
-    files_to_remove = [os.path.join(base_api_output_dir, output_dir, d)
+    files_to_remove = [os.path.join(BASE_API_OUTPUT_DIR, output_dir, d)
                        for d in params[4]]
 
     # clean up all previous rst files. But not those on the root api path.
@@ -68,8 +70,8 @@ for (section, params) in API_SECTIONS.items():
     process.run("find %s -name '*.rst' -delete" % output_dir)
 
     # generate all rst files
-    if apidoc:
-        cmd = apidoc_template % locals()
+    if APIDOC:
+        cmd = APIDOC_TEMPLATE % locals()
         process.run(cmd)
         # remove unnecessary ones
         for f in files_to_remove:
@@ -82,12 +84,12 @@ for (section, params) in API_SECTIONS.items():
     else:
         main_rst = os.path.join(output_dir,
                                 "avocado.%s.rst" % second_level_module_name)
-    if not apidoc:
+    if not APIDOC:
         main_rst_content = []
         try:
             os.makedirs(os.path.dirname(main_rst))
         except OSError as details:
-            if not details.errno == errno.EEXIST:
+            if details.errno != errno.EEXIST:
                 raise
     else:
         with open(main_rst) as main_rst_file:
@@ -100,12 +102,12 @@ for (section, params) in API_SECTIONS.items():
         new_main_rst.write("".join(main_rst_content[2:]))
 
 # Generate optional-plugins
-optional_plugins_path = os.path.join(root_path, "optional_plugins")
-api_optional_plugins_path = os.path.join(base_api_output_dir,
+OPTIONAL_PLUGINS_PATH = os.path.join(ROOT_PATH, "optional_plugins")
+API_OPTIONAL_PLUGINS_PATH = os.path.join(BASE_API_OUTPUT_DIR,
                                          "optional-plugins")
-if not os.path.exists(api_optional_plugins_path):
-    os.makedirs(api_optional_plugins_path)
-with open(os.path.join(api_optional_plugins_path, "index.rst"),
+if not os.path.exists(API_OPTIONAL_PLUGINS_PATH):
+    os.makedirs(API_OPTIONAL_PLUGINS_PATH)
+with open(os.path.join(API_OPTIONAL_PLUGINS_PATH, "index.rst"),
           'w') as optional_plugins_toc:
     optional_plugins_toc.write(""".. index file for optional plugins API
 
@@ -119,64 +121,64 @@ The following pages document the private APIs of optional Avocado plugins.
    :maxdepth: 1
 
     """)
-    for path in next(os.walk(optional_plugins_path))[1]:
+    for path in next(os.walk(OPTIONAL_PLUGINS_PATH))[1]:
         name = "avocado_%s" % os.path.basename(path)
         try:
             importlib.import_module(name)
         except ImportError:
             continue
 
-        path = os.path.join(optional_plugins_path, path, name)
+        path = os.path.join(OPTIONAL_PLUGINS_PATH, path, name)
         if not os.path.exists(path):
             continue
-        output_dir = os.path.join(api_optional_plugins_path, name)
-        params = {"api_source_dir": path, "output_dir": output_dir,
+        output_dir = os.path.join(API_OPTIONAL_PLUGINS_PATH, name)
+        params = {"API_SOURCE_DIR": path, "output_dir": output_dir,
                   "exclude_dirs": ""}
-        process.run(apidoc_template % params)
+        process.run(APIDOC_TEMPLATE % params)
         # Remove the unnecessary generated files
         os.unlink(os.path.join(output_dir, "modules.rst"))
         optional_plugins_toc.write("\n   %s" % os.path.join(name, name))
 
-extensions = ['sphinx.ext.autodoc',
+extensions = ['sphinx.ext.autodoc',  # pylint: disable=C0103
               'sphinx.ext.intersphinx',
               'sphinx.ext.todo',
               'sphinx.ext.coverage']
 
-master_doc = 'index'
-project = u'Avocado'
-copyright = u'2014-2019, Red Hat'   # pylint: disable=W0622
+master_doc = 'index'  # pylint: disable=C0103
+project = u'Avocado'  # pylint: disable=C0103
+copyright = u'2014-2019, Red Hat'   # pylint: disable=W0622,C0103
 
-version_file = os.path.join(root_path, 'VERSION')
-VERSION = genio.read_file(version_file).strip()
-version = VERSION
-release = VERSION
+VERSION_FILE = os.path.join(ROOT_PATH, 'VERSION')
+VERSION = genio.read_file(VERSION_FILE).strip()
+version = VERSION  # pylint: disable=C0103
+release = VERSION  # pylint: disable=C0103
 
 if not ON_RTD:  # only import and set the theme if we're building docs locally
     try:
         import sphinx_rtd_theme
-        html_theme = 'sphinx_rtd_theme'
-        html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+        html_theme = 'sphinx_rtd_theme'  # pylint: disable=C0103
+        html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]  # pylint: disable=C0103
     except ImportError:
-        html_theme = 'default'
+        html_theme = 'default'  # pylint: disable=C0103
 
-htmlhelp_basename = 'avocadodoc'
+htmlhelp_basename = 'avocadodoc'  # pylint: disable=C0103
 
-latex_documents = [
+latex_documents = [  # pylint: disable=C0103
     ('index', 'avocado.tex', u'avocado Documentation',
      u'Avocado Development Team', 'manual'),
 ]
 
-man_pages = [
+man_pages = [  # pylint: disable=C0103
     ('index', 'avocado', u'avocado Documentation',
      [u'Avocado Development Team'], 1)
 ]
 
-texinfo_documents = [
+texinfo_documents = [  # pylint: disable=C0103
     ('index', 'avocado', u'avocado Documentation',
      u'Avocado Development Team', 'avocado', 'One line description of project.',
      'Miscellaneous'),
 ]
 
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {'http://docs.python.org/': None}  # pylint: disable=C0103
 
-autoclass_content = 'both'
+autoclass_content = 'both'  # pylint: disable=C0103
