@@ -16,8 +16,6 @@ sysinfo-*
 MANIFEST
 dist
 *.egg-info*
-
-# API documentation
 docs/source/api/core
 docs/source/api/test
 docs/source/api/utils
