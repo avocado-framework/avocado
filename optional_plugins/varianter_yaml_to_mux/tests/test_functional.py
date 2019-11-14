@@ -1,10 +1,14 @@
+import glob
+import json
 import os
 import tempfile
 import unittest
 import sys
+import shutil
 
 from avocado.core import exit_codes
 from avocado.utils import process
+from avocado.utils import genio
 
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..')
@@ -176,6 +180,74 @@ class MultiplexTests(unittest.TestCase):
 
     def tearDown(self):
         self.tmpdir.cleanup()
+
+
+class ReplayTests(unittest.TestCase):
+
+    def setUp(self):
+        prefix = 'avocado__%s__%s__%s__' % (__name__, 'ReplayTests', 'setUp')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        cmd_line = ('%s run passtest.py '
+                    '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
+                    '--job-results-dir %s --sysinfo=off --json -'
+                    % (AVOCADO, self.tmpdir.name))
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.run_and_check(cmd_line, expected_rc)
+        self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
+        idfile = ''.join(os.path.join(self.jobdir, 'id'))
+        with open(idfile, 'r') as f:
+            self.jobid = f.read().strip('\n')
+
+    def run_and_check(self, cmd_line, expected_rc):
+        os.chdir(basedir)
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Command %s did not return rc "
+                         "%d:\n%s" % (cmd_line, expected_rc, result))
+        return result
+
+    def test_run_replay_and_mux(self):
+        """
+        Runs a replay job and specifies multiplex file (which should be
+        ignored)
+        """
+        cmdline = ("%s run --replay %s --job-results-dir %s "
+                   "--sysinfo=off -m selftests/.data/mux-selftest.yaml"
+                   % (AVOCADO, self.jobid, self.tmpdir.name))
+        self.run_and_check(cmdline, exit_codes.AVOCADO_ALL_OK)
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
+
+
+class DryRun(unittest.TestCase):
+
+    def test_dry_run(self):
+        cmd = ("%s run --sysinfo=off --dry-run --dry-run-no-cleanup --json - "
+               "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
+               "foo:bar:b foo:baz:c bar:bar:bar "
+               "-- passtest.py failtest.py gendata.py " % AVOCADO)
+        number_of_tests = 3
+        result = json.loads(process.run(cmd).stdout_text)
+        debuglog = result['debuglog']
+        log = genio.read_file(debuglog)
+        # Remove the result dir
+        shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
+        self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
+        self.assertEqual(result['job_id'], u'0' * 40)
+        # Check if all tests were skipped
+        self.assertEqual(result['cancel'], number_of_tests)
+        for i in range(number_of_tests):
+            test = result['tests'][i]
+            self.assertEqual(test['fail_reason'],
+                             u'Test cancelled due to --dry-run')
+        # Check if all params are listed
+        # The "/:bar ==> 2 is in the tree, but not in any leave so inaccessible
+        # from test.
+        for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
+                     "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
+            self.assertEqual(log.count(line), number_of_tests,
+                             "Avocado log count for param '%s' not as expected:\n%s" % (line, log))
 
 
 if __name__ == '__main__':
