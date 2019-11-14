@@ -71,6 +71,9 @@ class BaseIso9660:
 
     @unittest.skipIf(not process.can_sudo("mount"),
                      "This test requires mount to run under sudo or root")
+    @unittest.skipIf(os.getenv('TRAVIS') and
+                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
+                     'TRAVIS Environment is unsuitable for these tests')
     def test_mnt_dir_workflow(self):
         """
         Check the mnt_dir functionality
@@ -127,6 +130,9 @@ class IsoMount(BaseIso9660, unittest.TestCase):
 
     @unittest.skipIf(not process.can_sudo("mount"),
                      "This test requires sudo or root")
+    @unittest.skipIf(os.getenv('TRAVIS') and
+                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
+                     'TRAVIS Environment is unsuitable for these tests')
     def setUp(self):
         super(IsoMount, self).setUp()
         self.iso = iso9660.Iso9660Mount(self.iso_path)
