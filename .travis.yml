@@ -19,8 +19,14 @@ matrix:
   include:
     - python: "3.7"
       env:
-        - RUN_ONLY_COVERAGE=yes
         - SELF_CHECK_CONTINUOUS=yes
+      install:
+        - pip install -r requirements-selftests.txt
+        - pip install codecov
+      script:
+        - make develop
+        - ./selftests/run_coverage
+        - codecov
   allow_failures:
     - python: "nightly"
 
@@ -38,4 +44,4 @@ install:
     - pip install -r requirements-selftests.txt
 
 script:
-    - if [ "$RUN_ONLY_COVERAGE" == yes ]; then pip install codecov && make develop && ./selftests/run_coverage && codecov; else make check; fi
+    - make check
