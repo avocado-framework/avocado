@@ -8,8 +8,13 @@ possible and often preferable. You can also install from your distro
 repository, if available.
 
 .. note:: Please note that this installs the Avocado core functionality.  Many
-        Avocado features are distributed as non-core plugins. Visit the Avocado
-        Plugin section on the left menu.
+          Avocado features are distributed as non-core plugins. Visit the
+          Avocado Plugin section on the left menu.
+
+
+.. tip:: If you are looking for Virtualization specific testing, also consider
+         looking at Avocado-VT_ installation instructions after finishing the
+         Avocado installation.
 
 Installing from PyPI
 --------------------
@@ -25,7 +30,7 @@ the PyPI repository, and will attempt to install it in the user's home
 directory (usually under ``~/.local``).
 
 .. tip:: If you want to perform a system-wide installation, drop the ``--user``
-  switch.
+         switch.
 
 If you want even more isolation, Avocado can also be installed in a Python
 virtual environment. with no additional steps besides creating and activating
@@ -149,3 +154,4 @@ Then to install Avocado from the git repository run::
 
 .. _repository: https://avocado-project.org/data/repos/avocado-el.repo
 .. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado
+.. _Avocado-VT: https://avocado-vt.readthedocs.io/en/latest/GetStartedGuide.html#installing-avocado-vt
