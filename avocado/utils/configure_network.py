@@ -44,7 +44,7 @@ def set_ip(ipaddr, netmask, interface, interface_type=None):
         if os.path.exists(conf_file):
             shutil.move(conf_file, conf_file+".backup")
         else:
-            raise NWException("%s interface not available" % interface)
+            open(conf_file, "w")
         with open(conf_file, "w") as network_conf:
             if interface_type is None:
                 interface_type = 'Ethernet'
@@ -132,7 +132,7 @@ class HostInfo:
             cmd = "ip add show %s" % interface
             mtuvalue = process.system_output(cmd, shell=True).decode("utf-8") \
                                                              .split()[4]
-            if mtuvalue == mtu:
+            if str(mtuvalue) == str(mtu):
                 return True
         except Exception as ex:  # pylint: disable=W0703
             log.error("setting mtu value in host failed: %s", ex)
@@ -164,7 +164,7 @@ class PeerInfo:
             self.session.cmd(cmd)
             cmd = "ip add show %s" % peer_interface
             mtuvalue = self.session.cmd(cmd).stdout.decode("utf-8").split()[4]
-            if mtuvalue == mtu:
+            if str(mtuvalue) == str(mtu):
                 return True
         except Exception as ex:  # pylint: disable=W0703
             log.error("setting mtu value in peer failed: %s", ex)
