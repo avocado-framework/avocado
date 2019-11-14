@@ -20,7 +20,7 @@ pycdlib==1.6.0
 # libvirt-python properly with the the current process
 # in make develop. The proper solution would be migrate
 # our make develop process to use pip
-libvirt-python==4.6.0
+libvirt-python==5.9.0
 
 # For avocado.utils.network selftests
 netifaces
