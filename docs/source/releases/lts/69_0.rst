@@ -1,0 +1,677 @@
+.. _lts_69_0:
+
+========
+69.0 LTS
+========
+
+The Avocado team is proud to present another LTS (Long Term Stability)
+release: Avocado 69.0, AKA "The King's Choice", is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 52.x to 69.0
+===========================
+
+Upgrading Installations
+-----------------------
+
+Avocado is available on a number of different repositories and
+installation methods.  You can find the complete details in
+`Installing Avocado`.  After looking at your installation
+options, please consider the following highlights about the changes in
+the Avocado installation:
+
+* Avocado fully supports both Python 2 and 3, and both can even be
+  installed simultaneously.  When using RPM packages, if you ask to
+  have ``python-avocado`` installed, it will be provided by the Python
+  2 based package.  If you want a Python 3 based version you must use the
+  ``python3-avocado`` package.  The same is true for plugins, which have
+  a ``python2-avocado-plugins`` or  ``python3-avocado-plugins`` prefix.
+
+* Avocado can now be properly installed without super user privileges.
+  Previously one would see an error such as ``could not create '/etc/avocado':
+  Permission denied`` when trying to do a source or PIP based installation.
+
+* When installing Avocado on Python "venvs", the user's base data
+  directory is now within the venv.  If you had content outside the venv,
+  such as results or tests directories, please make sure that you either
+  configure your data directories on the ``[datadir.paths]`` section of
+  your configuration file, or move the data over.
+
+Porting Tests (Test API compatibility)
+--------------------------------------
+
+If you're migration from the previous LTS version, these are
+the changes on the Test API that most likely will affect your
+test.
+
+.. note:: Between non-LTS releases, the Avocado Test APIs receive a
+          lot of effort to be kept as stable as possible.  When that's
+          not possible, a deprecation strategy is applied and breakage
+          can occur.  For guaranteed stability across longer periods
+          of time, LTS releases such as this one should be used.
+
+* Support for default test parameters, given via the class level
+  ``default_params`` dictionary has been removed.  If your test
+  contains a snippet similar to::
+
+    default_params = {'param1': 'value1',
+                      'param2': 'value2'}
+    def test(self):
+        value1 = self.params.get('param1')
+        value2 = self.params.get('param2')
+
+  It should be rewritten to look like this::
+
+    def test(self):
+        value1 = self.params.get('param1', default='value1')
+        value2 = self.params.get('param2', default='value2')
+
+* Support for getting parameters using the ``self.params.key`` syntax
+  has been removed.  If your test contains a snippet similar to::
+
+    def test(self):
+        value1 = self.params.key1
+
+  It should be rewritten to look like this::
+
+    def test(self):
+        value1 = self.params.get('key1')
+
+* Support for the ``datadir`` test class attribute has been removed in
+  favor of the ``get_data()`` method.  If your test contains a snippet
+  similar to::
+
+    def test(self):
+        data = os.path.join(self.datadir, 'data')
+
+  It should be rewritten to look like this::
+
+    def test(self):
+        data = self.get_data('data')
+
+* Support for for ``srcdir`` test class attribute has been removed in
+  favor of the ``workdir`` attribute.  If your test contains a snippet
+  similar to::
+
+    def test(self):
+        compiled = os.path.join(self.srcdir, 'binary')
+
+  It should be rewritten to look like this::
+
+    def test(self):
+        compiled = os.path.join(self.workdir, 'binary')
+
+* The ``:avocado: enable`` and ``:avocado: recursive`` tags may not
+  be necessary anymore, given that "recursive" is now the default
+  loader behavior.  If you test contains::
+
+    def test(self):
+       """
+       :avocado: enable
+       """
+
+  Or::
+
+    def test(self):
+       """
+       :avocado: recursive
+       """
+
+  Consider removing the tags completely, and check if the default
+  loader behavior is sufficient with::
+
+    $ avocado list your-test-file.py
+
+* Support for the ``skip`` method has been removed from the
+  ``avocado.Test`` class.  If your test contains a snippet
+  similar to::
+
+    def test(self):
+        if not condition():
+            self.skip("condition not suitable to keep test running")
+
+  It should be rewritten to look like this::
+
+    def test(self):
+        if not condition():
+            self.cancel("condition not suitable to keep test running")
+
+Porting Tests (Utility API compatibility)
+-----------------------------------------
+
+The changes in the utility APIs (those that live under the
+``avocado.utils`` namespace are too many to present porting
+suggestion.  Please refer to the :ref:`lts_069_utility_api_changes`
+section for a comprehensive list of changes, including new features
+your test may be able to leverage.
+
+Changes from previous LTS
+=========================
+
+.. note:: This is not a collection of all changes encompassing all releases
+          from 52.0 to 69.0.  This list contains changes that are relevant
+          to users of 52.0, when evaluating an upgrade to 69.0.
+
+When compared to the last LTS (version 52.1), the main changes
+introduced by this versions are:
+
+Test Writers
+------------
+
+Test APIs
+~~~~~~~~~
+
+* Test writers will get better protection against mistakes when trying
+  to overwrite :class:`avocado.core.test.Test` "properties".  Some of
+  those were previously implemented using
+  :func:`avocado.utils.data_structures.LazyProperty` which did not
+  prevent test writers from overwriting them.
+
+* The ``avocado.Test.default_parameters`` mechanism for setting
+  default parameters on tests has been removed.  This was introduced
+  quite early in the Avocado development, and allowed users to set a
+  dictionary at the class level with keys/values that would serve as
+  default parameter values.  The recommended approach now, is to just
+  provide default values when calling the ``self.params.get``
+  within a test method, such as ``self.params.get("key",
+  default="default_value_for_key")``.
+
+* The ``__getattr__`` interface for ``self.params`` has been removed.  It
+  used to allow users to use a syntax such as ``self.params.key`` when
+  attempting to access the value for key ``key``.  The supported syntax
+  is ``self.params.get("key")`` to achieve the same thing.
+
+* The support for test data files has been improved to support more
+  specific sources of data.  For instance, when a test file used to
+  contain more than one test, all of them shared the same ``datadir``
+  property value, thus the same directory which contained data files.
+  Now, tests should use the newly introduced :meth:`get_data()
+  <avocado.core.test.TestData.get_data>` API, which will attempt to
+  locate data files specific to the variant (if used), test name, and
+  finally file name.  For more information, please refer to the
+  section :ref:`accessing-test-data-files`.
+
+* The ``avocado.Test.srcdir`` attribute has been removed, and with it,
+  the ``AVOCADO_TEST_SRCDIR`` environment variable set by Avocado.
+  Tests should have been modified by now to make use of the
+  :attr:`avocado.Test.workdir` instead.
+
+* The ``avocado.Test.datadir`` attribute has been removed, and with
+  it, the ``AVOCADO_TEST_DATADIR`` environment variable set by
+  Avocado.  Tests should now to make use of the
+  :func:`avocado.Test.get_data()
+  <avocado.core.test.TestData.get_data>` instead.
+
+* Switched the `FileLoader` discovery to `:avocado: recursive` by
+  default. All tags `enable`, `disable` and `recursive` are still
+  available and might help fine-tuning the class visibility.
+
+* The deprecated ``skip`` method, previously part of the
+  :class:`avocado.Test` API, has been removed.  To skip a test,
+  you can still use the :func:`avocado.skip`, :func:`avocado.skipIf`
+  and :func:`avocado.skipUnless` decorators.
+
+* The :class:`Avocado Test class <avocado.core.test.Test>` now exposes
+  the :attr:`tags <avocado.core.test.Test.tags>` to the test.  The
+  test may use that information, for instance, to decide on default
+  behavior.
+
+* The Avocado test loader, which does not load or execute Python
+  source code that may contain tests for security reasons, now
+  operates in a way much more similar to the standard Python object
+  inheritance model.  Before, classes containing tests that would not
+  directly inherit from :class:`avocado.Test` would require a
+  docstring statement (either ``:avocado: enable`` or ``:avocado:
+  recursive``).  This is not necessary for most users anymore, as the
+  recursive detection is now the default behavior.
+
+.. _lts_069_utility_api_changes:
+
+Utility APIs
+~~~~~~~~~~~~
+
+* The :mod:`avocado.utils.archive` module now supports the handling
+  of gzip files that are not compressed tarballs.
+
+* :data:`avocado.utils.astring.ENCODING` is a new addition, and holds
+  the encoding used on many other Avocado utilities.  If your test
+  needs to convert between binary data and text, we recommend you use
+  it as the default encoding (unless your test knows better).
+
+* :func:`avocado.utils.astring.to_text` now supports setting the error
+  handler.  This means that when a perfect decoding is not possible,
+  users can choose how to handle it, like, for example, ignoring the
+  offending characters.
+
+* The :func:`avocado.utils.astring.tabular_output` will now properly
+  strip trailing whitespace from lines that don't contain data for all
+  "columns".  This is also reflected in the (tabular) output of
+  commands such as ``avocado list -v``.
+
+* Simple bytes and "unicode strings" utility functions have been added
+  to :mod:`avocado.utils.astring`, and can be used by extension and
+  test writers that need consistent results across Python major
+  versions.
+
+* The :func:`avocado.utils.cpu.set_cpuidle_state` function now takes a
+  boolean value for its ``disable`` parameter (while still allowing
+  the previous integer (0/1) values to be used).  The goal is to have
+  a more Pythonic interface, and to drop support legacy integer (0/1)
+  use in the upcoming releases.
+
+* The :mod:`avocado.utils.cpu` functions, such as
+  :func:`avocado.utils.cpu.cpu_oneline_list` now support the S390X
+  architecture.
+
+* The :mod:`avocado.utils.distro` module has dropped the probe that
+  depended on the Python standard library :func:`platform.dist`.  The
+  reason is the :func:`platform.dist` has been deprecated since Python
+  2.6, and has been removed on the upcoming Python 3.8.
+
+* The :mod:`avocado.utils.distro` module introduced a probe for the
+  Ubuntu distros.
+
+* The :mod:`avocado.core.utils.vmimage` library now allows users to
+  expand the builtin list of image providers.  If you have a local
+  cache of public images, or your own images, you can quickly and
+  easily register your own providers and thus use your images on your
+  tests.
+
+* The :mod:`avocado.utils.vmimage` library now contains support for
+  Avocado's own JeOS ("Just Enough Operating System") image.  A nice
+  addition given the fact that it's the default image used in
+  Avocado-VT and the latest version is available in the following
+  architectures: x86_64, aarch64, ppc64, ppc64le and s390x.
+
+* The :mod:`avocado.utils.vmimage` library got a provider implementation
+  for OpenSUSE.  The limitation is that it tracks the general releases,
+  and not the rolling releases (called Tumbleweed).
+
+* The :func:`avocado.utils.vmimage.get` function now provides a
+  directory in which to put the snapshot file, which is usually
+  discarded.  Previously, the snapshot file would always be kept in
+  the cache directory, resulting in its pollution.
+
+* The exception raised by the utility functions in
+  :mod:`avocado.utils.memory` has been renamed from ``MemoryError``
+  and became :class:`avocado.utils.memory.MemError`.  The reason is
+  that ``MemoryError`` is a Python standard exception, that is
+  intended to be used on different situations.
+
+* When running a process by means of the :mod:`avocado.utils.process`
+  module utilities, the output of such a process is captured and can
+  be logged in a ``stdout``/``stderr`` (or combined ``output``) file.
+  The logging is now more resilient to decode errors, and will use the
+  ``replace`` error handler by default.  Please note that the downside
+  is that this *may* produce different content in those files, from
+  what was actually output by the processes if decoding error
+  conditions happen.
+
+* The :mod:`avocado.utils.process` has seen a number of changes
+  related to how it handles data from the executed processes.  In a
+  nutshell, process output (on both ``stdout`` and ``stderr``) is now
+  considered binary data.  Users that need to deal with text instead,
+  should use the newly added
+  :attr:`avocado.utils.process.CmdResult.stdout_text` and
+  :attr:`avocado.utils.process.CmdResult.stderr_text`, which are
+  convenience properties that will attempt to decode the ``stdout`` or
+  ``stderr`` data into a string-like type using the encoding set, and
+  if none is set, falling back to the Python default encoding.  This
+  change of behavior was needed to accommodate Python's 2 and Python's
+  3 differences in bytes and string-like types and handling.
+
+* The :mod:`avocado.utils.process` library now contains helper
+  functions similar to the Python 2 :func:`commands.getstatusoutput`
+  and :func:`commands.getoutput` which can be of help to people porting
+  code from Python 2 to Python 3.
+
+* New :func:`avocado.utils.process.get_parent_pid` and
+  :func:`avocado.utils.process.get_owner_id` process related functions
+
+* The :mod:`avocado.utils.kernel` library now supports setting the URL
+  that will be used to fetch the Linux kernel from, and can also build
+  installable packages on supported distributions (such as ``.deb``
+  packages on Ubuntu).
+
+* The :mod:`avocado.utils.iso9660` module gained a pycdlib based
+  backend, which is very capable, and pure Python ISO9660 library.
+  This allows us to have a working :mod:`avocado.utils.iso9660`
+  backend on environments in which other backends may not be easily
+  installable.
+
+* The :func:`avocado.utils.iso9660.iso9660` function gained a
+  capabilities mechanism, in which users may request a backend that
+  implement a given set of features.
+
+* The :mod:`avocado.utils.iso9660` module, gained "create" and "write"
+  capabilities, currently implemented on the pycdlib based backend.
+  This allows users of the :mod:`avocado.utils.iso9660` module to
+  create ISO images programatically - a task that was previously done
+  by running ``mkisofs`` and similar tools.
+
+* The :mod:`avocado.utils.download` module, and the various utility
+  functions that use it, will have extended logging, including the
+  file size, time stamp information, etc.
+
+* A brand new module, :mod:`avocado.utils.cloudinit`, that aides in
+  the creation of ISO files containing configuration for the virtual
+  machines compatible with cloudinit.  Besides authentication
+  credentials, it's also possible to define a "phone home" address,
+  which is complemented by a simple phone home server implementation.
+  On top of that, a very easy to use function to wait on the phone
+  home is available as :func:`avocado.utils.cloudinit.wait_for_phone_home`.
+
+* A new utility library, :mod:`avocado.utils.ssh`, has been
+  introduced.  It's a simple wrapper around the OpenSSH client
+  utilities (your regular ``/usr/bin/ssh``) and allows a
+  connection/session to be easily established, and commands to be
+  executed on the remote endpoint using that previously established
+  connection.
+
+* The :mod:`avocado.utils.cloudinit` module now adds support for
+  instances to be configured to allow ``root`` logins and
+  authentication configuration via SSH keys.
+
+* New :func:`avocado.utils.disk.get_disk_blocksize` and
+  :func:`avocado.utils.disk.get_disks` disk related utilities.
+
+* A new network related utility function,
+  :class:`avocado.utils.network.PortTracker` was ported from
+  Avocado-Virt, given the perceived general value in a variety of
+  tests.
+
+* A new memory utility utility, :class:`avocado.utils.memory.MemInfo`,
+  and its ready to use instance :data:`avocado.utils.memory.meminfo`,
+  allows easy access to most memory related information on Linux
+  systems.
+
+* A number of improvements to the :mod:`avocado.utils.lv_utils` module
+  now allows users to choose if they want or not to use ramdisks, and
+  allows for a more concise experience when creating Thin Provisioning
+  LVs.
+
+* New utility function in the :mod:`avocado.utils.genio` that
+  allows for easy matching of patterns in files.  See
+  :func:`avocado.utils.is_pattern_in_file` for more information.
+
+* New utility functions are available to deal with filesystems, such
+  as :func:`avocado.utils.disk.get_available_filesystems` and
+  :func:`avocado.utils.disk.get_filesystem_type`.
+
+* The :func:`avocado.utils.process.kill_process_tree` now supports
+  waiting a given timeout, and returns the PIDs of all process that
+  had signals delivered to.
+
+* The :func:`avocado.utils.network.is_port_free` utility function now
+  supports IPv6 in addition to IPv4, as well as UDP in addition to TCP.
+
+* A new :func:`avocado.utils.cpu.get_pid_cpus` utility function allows
+  one to get all the CPUs being used by a given process and its
+  threads.
+
+* The :mod:`avocado.utils.process` module now exposes the ``timeout``
+  parameter to users of the :class:`avocado.utils.process.SubProcess`
+  class.  It allows users to define a timeout, and the type of signal
+  that will be used to attempt to kill the process after the timeout
+  is reached.
+
+Users
+-----
+
+* Passing parameters to tests is now possible directly on the Avocado
+  command line, without the use of any varianter plugin.  In fact,
+  when using variants, these parameters are (currently) ignored.  To
+  pass one parameter to a test, use ``-p NAME=VAL``, and repeat it
+  for other parameters.
+
+* The test filtering mechanism using tags now support "key:val"
+  assignments for further categorization.  See :ref:`tags_keyval` for
+  more details.
+
+* The output generated by tests on ``stdout`` and ``stderr`` are now
+  properly prefixed with ``[stdout]`` and ``[stderr]`` in the
+  ``job.log``.  The prefix is **not** applied in the case of
+  ``$test_result/stdout`` and ``$test_result/stderr`` files, as one
+  would expect.
+
+* The installation of Avocado from sources has improved and moved
+  towards a more "Pythonic" approach.  Installation of files in
+  "non-Pythonic locations" such as ``/etc`` are no longer attempted by
+  the Python ``setup.py`` code.  Configuration files, for instance,
+  are now considered package data files of the ``avocado`` package.
+  The end result is that installation from source works fine outside
+  virtual environments (in addition to installations *inside* virtual
+  environments).  For instance, the locations of ``/etc`` (config) and
+  ``/usr/libexec`` (libexec) files changed to live within the pkg_data
+  (eg.  ``/usr/lib/python2.7/site-packages/avocado/etc``) by default
+  in order to not to modify files outside the package dir, which
+  allows user installation and also the distribution of wheel
+  packages. GNU/Linux distributions might still modify this to better
+  follow their conventions (eg. for RPM the original locations are
+  used).  Please refer to the output of the ``avocado config`` command
+  to see the configuration files that are actively being used on your
+  installation.
+
+* SIMPLE tests were limited to returning PASS, FAIL and WARN statuses.
+  Now SIMPLE tests can now also return SKIP status.  At the same time,
+  SIMPLE tests were previously limited in how they would flag a WARN
+  or SKIP from the underlying executable.  This is now configurable by
+  means of regular expressions.
+
+* Sysinfo collection can now be enabled on a test level basis.
+
+* Avocado can record the output generated from a test, which can then
+  be used to determine if the test passed or failed.  This feature is
+  commonly known as "output check".  Traditionally, users would choose
+  to record the output from ``STDOUT`` and/or ``STDERR`` into separate
+  streams, which would be saved into different files.  Some tests suites
+  actually put all content of ``STDOUT`` and ``STDERR`` together, and
+  unless we record them together, it'd be impossible to record them in
+  the right order.  This version introduces the ``combined`` option
+  to ``--output-check-record`` option, which does exactly that: it
+  records both ``STDOUT`` and ``STDERR`` into a single stream and
+  into a single file (named ``output`` in the test results, and
+  ``output.expected`` in the test data directory).
+
+* The complete output of tests, that is the combination of ``STDOUT``
+  and ``STDERR`` is now also recorded in the test result directory as
+  a file named ``output``.
+
+* When the output check feature finds a mismatch between expected and
+  actual output, will now produce a unified diff of those, instead of
+  printing out their full content.  This makes it a lot easier to
+  read the logs and quickly spot the differences and possibly the
+  failure cause(s).
+
+* The output check feature will now use the to the most specific data
+  source location available, which is a consequence of the switch to
+  the use of the ``get_data()`` API discussed previously.  This means
+  that two tests in a single file can generate different output,
+  generate different ``stdout.expected`` or ``stderr.expected``.
+
+* `SIMPLE <test_type_simple>` tests can also finish with ``SKIP``
+  OR ``WARN`` status, depending on the output produced, and the
+  Avocado test runner configuration. It now supports patterns that
+  span across multiple lines.  For more information, refer to
+  :ref:`test_type_simple_status`.
+
+* A better handling of interruption related signals, such as
+  ``SIGINT`` and ``SIGTERM``.  Avocado will now try harder to not
+  leave test processes that don't respond to those signals, and will
+  itself behave better when it receives them.  For a complete
+  description refer to `signal_handlers`.
+
+* Improvements in the serialization of TestIDs allow test result
+  directories to be properly stored and accessed on Windows based
+  filesystems.
+
+* The deprecated ``jobdata/urls`` link to ``jobdata/test_references``
+  has been removed.
+
+* The ``avocado`` command line argument parser is now invoked before
+  plugins are initialized, which allows the use of ``--config`` with
+  configuration file that influence plugin behavior.
+
+* The test log now contains a number of metadata about the test,
+  under the heading ``Test metadata:``.  You'll find information
+  such as the test file name (if one exists), its ``workdir``
+  and its ``teststmpdir`` if one is set.
+
+* The test runner wil now log the test initialization (look for
+  ``INIT`` in your test logs) in addition to the already existing
+  start of test execution (logged as ``START``).
+
+* The test profilers, which are defined by default in
+  ``/etc/avocado/sysinfo/profilers``, are now executed without a backing
+  shell.  While Avocado doesn't ship with examples of shell commands
+  as profilers, or suggests users to do so, it may be that some users
+  could be using that functionality.  If that's the case, it will now
+  be necessary to write a script that wraps you previous shell command.
+  The reason for doing so, was to fix a bug that could leave profiler
+  processes after the test had already finished.
+
+* The Human UI plugin, will now show the "reason" behind test
+  failures, cancellations and others right along the test result
+  status.  This hopefully will give more information to users without
+  requiring them to resort to logs every single time.
+
+* When installing and using Avocado in a Python virtual environment,
+  the ubiquitous "venvs", the base data directory now respects the
+  virtual environment.  If you have are using the default data
+  directory outside of a venv, please be aware that the updated
+
+* Avocado packages are now available in binary "wheel" format on PyPI.
+  This brings faster, more convenient and reliable installs via
+  ``pip``.  Previously, the source-only tarballs would require the
+  source to be built on the target system, but the wheel package
+  install is mostly an unpack of the already compiled files.
+
+* The legacy options ``--filter-only``, ``--filter-out`` and ``--multiplex``
+  have now been removed.  Please adjust your usage, replacing those
+  options with ``--mux-filter-only``, ``--mux-filter-out`` and
+  ``--mux-yaml`` respectively.
+
+* The location of the Avocado configuration files can now be
+  influenced by third parties by means of a new plugin.
+
+* The configuration files that have been effectively parsed are now
+  displayed as part of ``avocado config`` command output.
+
+Output Plugins
+~~~~~~~~~~~~~~
+
+* Including test logs in TAP plugin is disabled by default and can
+  be enabled using ``--tap-include-logs``.
+
+* The TAP result format plugin received improvements, including
+  support for reporting Avocado tests with CANCEL status as SKIP
+  (which is the closest status available in the TAP specification),
+  and providing more visible warning information in the form of
+  comments when Avocado tests finish with WARN status (while
+  maintaining the test as a PASS, since TAP doesn't define a WARN
+  status).
+
+* A new (optional) plugin is available, the "result uploader".  It
+  allows job results to be copied over to a centralized results server
+  at the end of job execution.  Please refer to
+  :ref:`results-upload-plugin` for more information.
+
+* Added possibility to limit the amount of characters embedded as
+  "system-out" in the xunit output plugin (``--xunit-max-test-log-chars
+  XX``).
+
+* The ``xunit`` result plugin can now limit the amount of output
+  generated by individual tests that will make into the XML based
+  output file.  This is intended for situations where tests can
+  generate prohibitive amounts of output that can render the file too
+  large to be reused elsewhere (such as imported by Jenkins).
+
+* The xunit output now names the job after the Avocado job results
+  directory.  This should make the correlation of results displayed in
+  UIs such as Jenkins and the complete Avocado results much easier.
+
+* The xUnit plugin now should produce output that is more compatible
+  with other implementations, specifically newer Jenkin's as well as
+  Ant and Maven.  The specific change was to format the time field
+  with 3 decimal places.
+
+* Redundant (and deprecated) fields in the test sections of the JSON
+  result output were removed.  Now, instead of ``url``, ``test`` and
+  ``id`` carrying the same information, only ``id`` remains.
+
+Test Loader Plugins
+~~~~~~~~~~~~~~~~~~~
+
+* A new loader implementation, that reuses (and resembles) the YAML
+  input used for the varianter yaml_to_mux plugin.  It allows the
+  definition of test suite based on a YAML file, including different
+  variants for different tests.  For more information refer to
+  :ref:`yaml_loader`.
+
+* Users of the YAML test loader have now access to a few special keys
+  that can tweak test attributes, including adding prefixes to test
+  names.  This allows users to easily differentiate among execution of
+  the same test, but executed different configurations.  For more
+  information, look for "special keys" in the :ref:`YAML Loader plugin
+  documentation <yaml_loader>`.
+
+* A :ref:`new plugin <glib-plugin>` enables users to list and execute
+  tests based on the `GLib test framework
+  <https://developer.gnome.org/glib/stable/glib-Testing.html>`_.  This
+  plugin allows individual tests inside a single binary to be listed
+  and executed.
+
+* Avocado can now run list and run standard Python unittests, that is,
+  tests written in Python that use the :mod:`unittest` library alone.
+
+* Support for listing and running golang tests has been introduced.
+  Avocado can now discover tests written in Go, and if Go is properly
+  installed, Avocado can run them.
+
+Varianter Plugins
+~~~~~~~~~~~~~~~~~
+
+* A new varianter plugin has been introduced, based on PICT.  PICT is
+  a "Pair Wise" combinatorial tool, that can generate optimal
+  combination of parameters to tests, so that (by default) at least a
+  unique pair of parameter values will be tested at once.
+
+* A new varianter plugin, the :ref:`cit-varianter-plugin`. This plugin
+  implements a "Pair-Wise", also known as "Combinatorial Independent
+  Testing" algorithm, in pure Python.  This exciting new functionality
+  is provided thanks to a collaboration with the Czech Technical
+  University in Prague.
+
+* Users can now dump variants to a (JSON) file, and also reuse a
+  previously created file in their future jobs execution.  This allows
+  users to avoid recomputing the variants on every job, which might
+  bring significant speed ups in job execution or simply better
+  control of the variants used during a job.  Also notice that even
+  when users do not manually dump a variants file to a specific
+  location, Avocado will automatically save a suitable file at
+  ``jobdata/variants.json`` as part of a Job results directory
+  structure.  The feature has been isolated into a varianter
+  implementation called ``json_variants``, that you can see with
+  ``avocado plugins``.
+
+Test Runner Plugins
+~~~~~~~~~~~~~~~~~~~
+
+* The command line options ``--filter-by-tags`` and
+  ``--filter-by-tags-include-empty`` are now white listed for the
+  remote runner plugin.
+
+* The remote runner plugin will now respect ``~/.ssh/config``
+  configuration.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (52.1) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/52.1...69.0>`_.
