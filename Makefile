@@ -8,11 +8,13 @@ AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
 AVOCADO_EXTERNAL_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
 # List of optional plugins that have to be in setup in a giver order
 # because there may be depedencies between plugins
+ifndef AVOCADO_OPTIONAL_PLUGINS
 AVOCADO_OPTIONAL_PLUGINS_ORDERED="./optional_plugins/runner_remote"
 # Other optional plugins found in "optional_plugins" directory
 AVOCADO_OPTIONAL_PLUGINS_OTHERS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
 # Unique list of optional plugins
 AVOCADO_OPTIONAL_PLUGINS=$(shell (echo "$(AVOCADO_OPTIONAL_PLUGINS_ORDERED) $(AVOCADO_OPTIONAL_PLUGINS_OTHERS)" | tr ' ' '\n' | awk '!a[$$0]++'))
+endif
 AVOCADO_PLUGINS=$(AVOCADO_OPTIONAL_PLUGINS) $(AVOCADO_EXTERNAL_PLUGINS)
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
 RELEASE_SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1 $(VERSION))
@@ -131,9 +133,12 @@ requirements-selftests: pip
 smokecheck: clean develop
 	./scripts/avocado run passtest.py
 
+ifndef AVOCADO_OPTIONAL_PLUGINS_TESTS
+AVOCADO_OPTIONAL_PLUGINS_TESTS=$(patsubst %,%/tests/, $(AVOCADO_OPTIONAL_PLUGINS))
+endif
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	PYTHON=$(PYTHON) $(PYTHON) -m avocado nrun selftests/*.sh selftests/unit/ selftests/functional/ optional_plugins/*/tests/
+	PYTHON=$(PYTHON) $(PYTHON) -m avocado nrun selftests/*.sh selftests/unit/ selftests/functional/ $(AVOCADO_OPTIONAL_PLUGINS_TESTS)
 	selftests/check_tmp_dirs
 
 check-full: clean develop
@@ -172,6 +177,7 @@ variables:
 	@echo "AVOCADO_OPTIONAL_PLUGINS_ORDERED: $(AVOCADO_OPTIONAL_PLUGINS_ORDERED)"
 	@echo "AVOCADO_OPTIONAL_PLUGINS_OTHERS: $(AVOCADO_OPTIONAL_PLUGINS_OTHERS)"
 	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
+	@echo "AVOCADO_OPTIONAL_PLUGINS_TESTS: $(AVOCADO_OPTIONAL_PLUGINS_TESTS)"
 	@echo "AVOCADO_PLUGINS: $(AVOCADO_PLUGINS)"
 	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
 	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
