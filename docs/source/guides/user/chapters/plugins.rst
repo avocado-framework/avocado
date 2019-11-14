@@ -3,6 +3,15 @@ Understanding the plugin system
 
 Avocado has a plugin system that can be used to extended it in a clean way.
 
+.. note:: A large number of out-of-the-box Avocado features are
+  implemented as using the same plugin architecture available to
+  third-party extensions.
+
+  This guide considers "core", although still plugable, features those
+  available with an installation of Avocado by itself (``pip install
+  avocado-framework``).  If a feature is part of an optional or
+  third-party plugin package, this guide will reference to it."
+
 Listing plugins
 ---------------
 
