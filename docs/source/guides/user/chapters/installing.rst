@@ -11,6 +11,10 @@ repository, if available.
         Avocado features are distributed as non-core plugins. Visit the Avocado
         Plugin section on the left menu.
 
+.. tip:: If you are looking for Virtualization specific testing, also consider
+         looking at Avocado-VT_ installation instructions after finishing the
+         Avocado installation.
+
 Installing from PyPI
 --------------------
 
@@ -149,3 +153,4 @@ Then to install Avocado from the git repository run::
 
 .. _repository: https://avocado-project.org/data/repos/avocado-el.repo
 .. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado
+.. _Avocado-VT: https://avocado-vt.readthedocs.io/en/latest/GetStartedGuide.html#installing-avocado-vt
