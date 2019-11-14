@@ -1,5 +1,6 @@
 dist: xenial
 language: python
+arch: amd64
 
 python:
     - "3.4"
@@ -34,6 +35,7 @@ script:
 matrix:
   include:
     - python: "3.7"
+      arch: amd64
       env:
         - SELF_CHECK_CONTINUOUS=yes
       install:
@@ -43,5 +45,10 @@ matrix:
         - make develop
         - ./selftests/run_coverage
         - codecov
+    - python: "3.7"
+      arch: s390x
+      script:
+        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
+
   allow_failures:
     - python: "nightly"
