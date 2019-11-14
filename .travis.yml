@@ -15,21 +15,6 @@ env:
       SELF_CHECK_CONTINUOUS=y
       AVOCADO_CHECK_LEVEL=1
 
-matrix:
-  include:
-    - python: "3.7"
-      env:
-        - SELF_CHECK_CONTINUOUS=yes
-      install:
-        - pip install -r requirements-selftests.txt
-        - pip install codecov
-      script:
-        - make develop
-        - ./selftests/run_coverage
-        - codecov
-  allow_failures:
-    - python: "nightly"
-
 cache:
     directories:
         - $HOME/.cache/pip
@@ -45,3 +30,18 @@ install:
 
 script:
     - make check
+
+matrix:
+  include:
+    - python: "3.7"
+      env:
+        - SELF_CHECK_CONTINUOUS=yes
+      install:
+        - pip install -r requirements-selftests.txt
+        - pip install codecov
+      script:
+        - make develop
+        - ./selftests/run_coverage
+        - codecov
+  allow_failures:
+    - python: "nightly"
