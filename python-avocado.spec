@@ -45,7 +45,7 @@
 # and package build dependency resolution seems to be currently broken
 # for modules.  Other developers have reported similar scenarios as this:
 # https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/thread/V6SBSAS5TBGNORGLYW75TIRX6JDBXQ2Q/
-%if 0%{?fedora} >= 30
+%if 0%{?fedora} >= 30 || 0%{?rhel}
 %global with_python3_aexpect 0
 %else
 %global with_python3_aexpect 1
@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 72.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -88,18 +88,23 @@ BuildRequires: python3-devel
 BuildRequires: python3-docutils
 BuildRequires: python3-lxml
 BuildRequires: python3-psutil
-BuildRequires: python3-resultsdb_api
 BuildRequires: python3-setuptools
+
+%if ! 0%{?rhel}
+BuildRequires: python3-resultsdb_api
 BuildRequires: python3-pycdlib
+%endif
 
 %if %{with_tests}
 BuildRequires: genisoimage
 BuildRequires: libcdio
-BuildRequires: perl-Test-Harness
 BuildRequires: psmisc
 BuildRequires: python3-libvirt
 BuildRequires: python3-yaml
 BuildRequires: python3-netifaces
+%if ! 0%{?rhel}
+BuildRequires: perl-Test-Harness
+%endif
 %endif
 
 %description
@@ -114,7 +119,9 @@ Requires: gdb-gdbserver
 Requires: procps-ng
 Requires: python3
 Requires: python3-setuptools
+%if ! 0%{?rhel}
 Requires: python3-pycdlib
+%endif
 
 %description -n python3-%{srcname}
 Avocado is a set of tools and libraries (what people call
@@ -128,8 +135,11 @@ these days a framework) to perform automated testing.
 %endif
 
 %build
-%if 0%{?fedora} && 0%{?fedora} < 29
+%if (0%{?fedora} && 0%{?fedora} < 29) || 0%{?rhel}
 sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
+%endif
+%if 0%{?rhel}
+%{__rm} -f avocado/etc/avocado/conf.d/resultsdb.conf
 %endif
 %py3_build
 pushd optional_plugins/html
@@ -158,9 +168,11 @@ pushd optional_plugins/runner_docker
 %endif # with_fabric
 %endif # with_python3_aexpect
 popd
+%if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %py3_build
 popd
+%endif
 pushd optional_plugins/varianter_yaml_to_mux
 %py3_build
 popd
@@ -218,9 +230,11 @@ pushd optional_plugins/runner_docker
 %endif # with_fabric
 %endif # with_python3_aexpect
 popd
+%if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %py3_install
 popd
+%endif
 pushd optional_plugins/varianter_yaml_to_mux
 %py3_install
 popd
@@ -279,9 +293,11 @@ pushd optional_plugins/runner_docker
 popd
 %endif # with_python3_fabric
 %endif # with_fabric
+%if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %{__python3} setup.py develop --user
 popd
+%endif
 pushd optional_plugins/varianter_yaml_to_mux
 %{__python3} setup.py develop --user
 popd
@@ -448,6 +464,7 @@ be previously installed on the container.
 %endif # with_fabric
 %endif # with_python3_aexpect
 
+%if ! 0%{?rhel}
 %package -n python3-%{srcname}-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
 Requires: python3-%{srcname} == %{version}
@@ -461,6 +478,7 @@ server.
 %{python3_sitelib}/avocado_resultsdb*
 %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
+%endif
 
 %package -n python3-%{srcname}-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
@@ -583,6 +601,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Nov 18 2019 Cleber Rosa <cleber@redhat.com> - 72.0-2
+- Add EL/EPEL8 support
+
 * Fri Sep 27 2019 Cleber Rosa <cleber@redhat.com> - 72.0-1
 - Added new avocado-runner-* runner scripts
 
