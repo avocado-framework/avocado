@@ -524,8 +524,7 @@ class OutputPluginTest(unittest.TestCase):
             process.run("perl %s" % perl_script)
 
     def test_tap_totaltests(self):
-        cmd_line = ("%s run passtest.py "
-                    "-m examples/tests/sleeptest.py.data/sleeptest.yaml "
+        cmd_line = ("%s run passtest.py passtest.py passtest.py passtest.py "
                     "--job-results-dir %s "
                     "--tap -" % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)

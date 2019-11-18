@@ -5,7 +5,7 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, temp_dir_prefix, python_module_available
 
 
 class GetData(unittest.TestCase):
@@ -16,6 +16,15 @@ class GetData(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test(self):
+        test_path = os.path.join(BASEDIR, "selftests", ".data", "get_data.py")
+        cmd_line = "%s run --sysinfo=off --job-results-dir '%s' -- %s"
+        cmd_line %= (AVOCADO, self.tmpdir.name, test_path)
+        result = process.run(cmd_line)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+    @unittest.skipUnless(python_module_available("avocado_varianter_yaml_to_mux"),
+                         "avocado_varianter_yaml_to_mux not available")
+    def test_varianter(self):
         test_path = os.path.join(BASEDIR, "selftests", ".data", "get_data.py")
         test_variants_path = os.path.join(BASEDIR, "selftests", ".data",
                                           "get_data.py.data", "get_data.yaml")

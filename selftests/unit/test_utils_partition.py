@@ -37,6 +37,9 @@ class Base(unittest.TestCase):
     @unittest.skipIf(not process.can_sudo('mkfs.ext2 -V'),
                      'current user must be allowed to run "mkfs.ext2" under '
                      'sudo')
+    @unittest.skipIf(os.getenv('TRAVIS') and
+                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
+                     'TRAVIS Environment is unsuitable for these tests')
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
