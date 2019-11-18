@@ -185,7 +185,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
                         self.calls.append(call)
 
 
-def fetch_assets(test_file, klass=None, method=None):
+def fetch_assets(test_file, klass=None, method=None, logger=None):
     """
     Fetches the assets based on keywords listed on FetchAssetHandler.calls.
     :param test_file: File name of instrumented test to be evaluated
@@ -208,6 +208,9 @@ def fetch_assets(test_file, klass=None, method=None):
             call['cache_dirs'] = cache_dirs
             call['expire'] = expire
             asset_obj = Asset(**call)
+            if logger is not None:
+                logger.info('Fetching asset from %s:%s.%s',
+                            test_file, klass, method)
             asset_obj.fetch()
             success.append(call['name'])
         except EnvironmentError as failed:
@@ -228,17 +231,17 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
         pass
 
     def pre_tests(self, job):
+        if not job.config.get('stdout_claimed_by', None):
+            logger = job.log
+        else:
+            logger = None
         for test in job.test_suite:
             # fetch assets only on instrumented tests
             if isinstance(test[0], str):
-                if not job.config.get('stdout_claimed_by', None):
-                    job.log.info('Fetching assets from %s:%s.%s',
-                                 test[1]['modulePath'],
-                                 test[0],
-                                 test[1]['methodName'])
                 fetch_assets(test[1]['modulePath'],
                              test[0],
-                             test[1]['methodName'],)
+                             test[1]['methodName'],
+                             logger)
 
 
 class Assets(CLICmd):
