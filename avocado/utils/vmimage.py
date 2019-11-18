@@ -32,6 +32,13 @@ from . import path as utils_path
 from . import process
 
 
+#: The "qemu-img" binary used when creating the snapshot images.  If
+#: set to None (the default), it will attempt to find a suitable binary
+#: with :func:`avocado.utils.path.find_command`, which uses the the
+#: system's PATH environment variable
+QEMU_IMG = None
+
+
 class ImageProviderError(Exception):
     """
     Generic error class for ImageProvider
@@ -431,7 +438,10 @@ class Image:
         """
         Takes a snapshot from the current image.
         """
-        qemu_img = utils_path.find_command('qemu-img')
+        if QEMU_IMG is None:
+            qemu_img = utils_path.find_command('qemu-img')
+        else:
+            qemu_img = QEMU_IMG
         name, extension = os.path.splitext(self.base_image)
         new_image = '%s-%s%s' % (name, str(uuid.uuid4()).split('-')[0],
                                  extension)
