@@ -1,5 +1,6 @@
 dist: xenial
 language: python
+arch: amd64
 
 python:
     - "3.4"
@@ -9,20 +10,10 @@ python:
     - "nightly"
 
 env:
-    - AVOCADO_PARALLEL_LINT=1
-      AVOCADO_PARALLEL_CHECK=yes
+    - AVOCADO_PARALLEL_CHECK=yes
       AVOCADO_LOG_DEBUG=yes
       SELF_CHECK_CONTINUOUS=y
       AVOCADO_CHECK_LEVEL=1
-
-matrix:
-  include:
-    - python: "3.7"
-      env:
-        - RUN_ONLY_COVERAGE=yes
-        - SELF_CHECK_CONTINUOUS=yes
-  allow_failures:
-    - python: "nightly"
 
 cache:
     directories:
@@ -38,4 +29,45 @@ install:
     - pip install -r requirements-selftests.txt
 
 script:
-    - if [ "$RUN_ONLY_COVERAGE" == yes ]; then pip install codecov && make develop && ./selftests/run_coverage && codecov; else make check; fi
+    - make check
+
+matrix:
+  include:
+    - python: "3.7"
+      arch: amd64
+      env:
+        - SELF_CHECK_CONTINUOUS=yes
+      install:
+        - pip install -r requirements-selftests.txt
+        - pip install codecov
+      script:
+        - make develop
+        - ./selftests/run_coverage
+        - codecov
+    - python: "3.7"
+      arch: s390x
+      env:
+        - AVOCADO_PARALLEL_LINT_JOBS=1
+      script:
+        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
+    - python: "3.7"
+      arch: ppc64le
+      env:
+        - AVOCADO_PARALLEL_LINT_JOBS=1
+      addons:
+        apt:
+          packages:
+            - libvirt-dev
+            - golang
+            - pkg-config
+      script:
+        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
+    - python: "3.7"
+      arch: arm64
+      env:
+        - AVOCADO_PARALLEL_LINT_JOBS=1
+      script:
+        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
+
+  allow_failures:
+    - python: "nightly"

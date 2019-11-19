@@ -17,7 +17,6 @@ class ReplayExtRunnerTests(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         test = script.make_script(os.path.join(self.tmpdir.name, 'test'), 'exit 0')
         cmd_line = ('%s run %s '
-                    '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--external-runner /bin/bash '
                     '--job-results-dir %s --sysinfo=off --json -'
                     % (AVOCADO, test, self.tmpdir.name))

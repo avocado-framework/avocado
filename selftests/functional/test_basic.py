@@ -523,13 +523,10 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_dry_run(self):
         cmd = ("%s run --sysinfo=off --dry-run --dry-run-no-cleanup --json - "
-               "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
-               "foo:bar:b foo:baz:c bar:bar:bar "
                "-- passtest.py failtest.py gendata.py " % AVOCADO)
         number_of_tests = 3
         result = json.loads(process.run(cmd).stdout_text)
         debuglog = result['debuglog']
-        log = genio.read_file(debuglog)
         # Remove the result dir
         shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
         self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
@@ -540,13 +537,6 @@ class RunnerOperationTest(unittest.TestCase):
             test = result['tests'][i]
             self.assertEqual(test['fail_reason'],
                              u'Test cancelled due to --dry-run')
-        # Check if all params are listed
-        # The "/:bar ==> 2 is in the tree, but not in any leave so inaccessible
-        # from test.
-        for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
-                     "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
-            self.assertEqual(log.count(line), number_of_tests,
-                             "Avocado log count for param '%s' not as expected:\n%s" % (line, log))
 
     def test_invalid_python(self):
         test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),

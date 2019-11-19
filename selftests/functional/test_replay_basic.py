@@ -14,8 +14,7 @@ class ReplayTests(unittest.TestCase):
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        cmd_line = ('%s run passtest.py '
-                    '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
+        cmd_line = ('%s run passtest.py passtest.py passtest.py passtest.py '
                     '--job-results-dir %s --sysinfo=off --json -'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -169,16 +168,6 @@ class ReplayTests(unittest.TestCase):
         msg = (b"Option --replay-test-status is incompatible with "
                b"test references given on the command line.")
         self.assertIn(msg, result.stderr)
-
-    def test_run_replay_and_mux(self):
-        """
-        Runs a replay job and specifies multiplex file (which should be
-        ignored)
-        """
-        cmdline = ("%s run --replay %s --job-results-dir %s "
-                   "--sysinfo=off -m selftests/.data/mux-selftest.yaml"
-                   % (AVOCADO, self.jobid, self.tmpdir.name))
-        self.run_and_check(cmdline, exit_codes.AVOCADO_ALL_OK)
 
     def tearDown(self):
         self.tmpdir.cleanup()

@@ -435,8 +435,8 @@ class OutputPluginTest(unittest.TestCase):
         self.assertGreaterEqual(len(output_lines), 6,
                                 ('Basic human interface did not produce the '
                                  'expect output. Output produced: "%s"' % output))
-        third_line = output_lines[2]
-        debug_log = third_line.split()[-1]
+        second_line = output_lines[1]
+        debug_log = second_line.split()[-1]
         self.check_output_files(debug_log)
 
     def test_verify_whiteboard_save(self):
@@ -524,8 +524,7 @@ class OutputPluginTest(unittest.TestCase):
             process.run("perl %s" % perl_script)
 
     def test_tap_totaltests(self):
-        cmd_line = ("%s run passtest.py "
-                    "-m examples/tests/sleeptest.py.data/sleeptest.yaml "
+        cmd_line = ("%s run passtest.py passtest.py passtest.py passtest.py "
                     "--job-results-dir %s "
                     "--tap -" % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
