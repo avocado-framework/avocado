@@ -32,6 +32,7 @@ def get_domains():
     Example, it returns ['0000', '0001', ...]
 
     :return: List of PCI domains.
+    :rtype: list of str
     """
     cmd = "lspci -D"
     output = process.run(cmd, ignore_status=True).stdout_text
@@ -49,6 +50,7 @@ def get_pci_addresses():
     Does not return the PCI Bridges/Switches.
 
     :return: list of full PCI addresses including domain (0000:00:14.0)
+    :rtype: list of str
     """
     addresses = []
     cmd = "lspci -D"
@@ -69,6 +71,7 @@ def get_num_interfaces_in_pci(dom_pci_address):
                             address (0000, 0000:00:1f, 0000:00:1f.2, etc)
 
     :return: number of devices in a PCI domain.
+    :rtype: int
     """
     cmd = "ls -l /sys/class/*/ -1"
     output = process.run(cmd, ignore_status=True,
@@ -231,6 +234,7 @@ def get_pci_prop(pci_address, prop):
     :param part: prop of PCI ID.
 
     :return: specific PCI ID of a PCI address.
+    :rtype: str
     """
     cmd = "lspci -Dnvmm -s %s" % pci_address
     output = process.run(cmd, ignore_status=True).stdout_text
@@ -265,6 +269,7 @@ def get_driver(pci_address):
     :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
     :return: driver of a PCI address.
+    :rtype: str
     """
     cmd = "lspci -ks %s" % pci_address
     output = process.run(cmd, ignore_status=True).stdout_text
@@ -284,6 +289,7 @@ def get_memory_address(pci_address):
     :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
     :return: memory address of a pci_address.
+    :rtype: str
     """
     cmd = "lspci -bv -s %s" % pci_address
     output = process.run(cmd, ignore_status=True).stdout_text
@@ -303,6 +309,7 @@ def get_mask(pci_address):
     :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
     :return: mask of a PCI address.
+    :rtype: str
     """
     cmd = "lspci -vv -s %s" % pci_address
     output = process.run(cmd, ignore_status=True).stdout_text
@@ -328,6 +335,7 @@ def get_vpd(dom_pci_address):
                             least bus addr (0003:00, 0003:00:1f.2, ...)
 
     :return: dictionary of VPD of a PCI address.
+    :rtype: dict
     """
     cmd = "lsvpd -l %s" % dom_pci_address
     vpd = process.run(cmd).stdout_text
@@ -362,6 +370,7 @@ def get_cfg(dom_pci_address):
                             least bus addr (0003:00, 0003:00:1f.2, ...)
 
     :return: dictionary of configuration data of a PCI address.
+    :rtype: dict
     """
     cmd = "lscfg -vl %s" % dom_pci_address
     cfg = process.run(cmd).stdout_text
