@@ -34,12 +34,13 @@ def get_domains():
     :return: List of PCI domains.
     """
     cmd = "lspci -D"
-    output = process.system_output(cmd, ignore_status=True)
+    output = process.run(cmd, ignore_status=True).stdout_text
     if output:
         domains = []
         for line in output.splitlines():
             domains.append(line.split(":")[0])
         return list(set(domains))
+    return []
 
 
 def get_pci_addresses():
@@ -51,11 +52,12 @@ def get_pci_addresses():
     """
     addresses = []
     cmd = "lspci -D"
-    for line in process.system_output(cmd).splitlines():
+    for line in process.run(cmd).stdout_text.splitlines():
         if not get_pci_prop(line.split()[0], 'Class').startswith('06'):
             addresses.append(line.split()[0])
     if addresses:
         return addresses
+    return []
 
 
 def get_num_interfaces_in_pci(dom_pci_address):
@@ -69,7 +71,8 @@ def get_num_interfaces_in_pci(dom_pci_address):
     :return: number of devices in a PCI domain.
     """
     cmd = "ls -l /sys/class/*/ -1"
-    output = process.system_output(cmd, ignore_status=True, shell=True)
+    output = process.run(cmd, ignore_status=True,
+                         shell=True).stdout_text
     if output:
         filt = '/%s' % dom_pci_address
         count = 0
@@ -77,6 +80,7 @@ def get_num_interfaces_in_pci(dom_pci_address):
             if filt in line:
                 count += 1
         return count
+    return 0
 
 
 def get_disks_in_pci_address(pci_address):
@@ -229,7 +233,7 @@ def get_pci_prop(pci_address, prop):
     :return: specific PCI ID of a PCI address.
     """
     cmd = "lspci -Dnvmm -s %s" % pci_address
-    output = process.system_output(cmd, ignore_status=True)
+    output = process.run(cmd, ignore_status=True).stdout_text
     if output:
         for line in output.splitlines():
             if prop == line.split(':')[0]:
@@ -263,7 +267,7 @@ def get_driver(pci_address):
     :return: driver of a PCI address.
     """
     cmd = "lspci -ks %s" % pci_address
-    output = process.system_output(cmd, ignore_status=True)
+    output = process.run(cmd, ignore_status=True).stdout_text
     if output:
         for line in output.splitlines():
             if 'Kernel driver in use:' in line:
@@ -282,7 +286,7 @@ def get_memory_address(pci_address):
     :return: memory address of a pci_address.
     """
     cmd = "lspci -bv -s %s" % pci_address
-    output = process.system_output(cmd, ignore_status=True)
+    output = process.run(cmd, ignore_status=True).stdout_text
     if output:
         for line in output.splitlines():
             if 'Memory at' in line:
@@ -301,7 +305,7 @@ def get_mask(pci_address):
     :return: mask of a PCI address.
     """
     cmd = "lspci -vv -s %s" % pci_address
-    output = process.system_output(cmd, ignore_status=True)
+    output = process.run(cmd, ignore_status=True).stdout_text
     if output:
         dic = {'K': 1024, 'M': 1048576, 'G': 1073741824}
         for line in output.splitlines():
@@ -326,7 +330,7 @@ def get_vpd(dom_pci_address):
     :return: dictionary of VPD of a PCI address.
     """
     cmd = "lsvpd -l %s" % dom_pci_address
-    vpd = process.system_output(cmd)
+    vpd = process.run(cmd).stdout_text
     vpd_dic = {}
     dev_list = []
     for line in vpd.splitlines():
@@ -360,7 +364,7 @@ def get_cfg(dom_pci_address):
     :return: dictionary of configuration data of a PCI address.
     """
     cmd = "lscfg -vl %s" % dom_pci_address
-    cfg = process.system_output(cmd)
+    cfg = process.run(cmd).stdout_text
     cfg_dic = {}
     desc = re.match(r'  (%s)( [-\w+,\.]+)+([ \n])+([-\w+, \(\)])+'
                     % dom_pci_address, cfg).group()
