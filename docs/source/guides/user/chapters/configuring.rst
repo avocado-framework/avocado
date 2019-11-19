@@ -137,7 +137,7 @@ uses ``*`` to mark existing and used files::
     * /etc/avocado/conf.d/gdb.conf
     * /etc/avocado_vt/conf.d/vt.conf
     * /etc/avocado_vt/conf.d/vt_joblock.conf
-      /home/medic/.config/avocado/avocado.conf
+      $HOME/.config/avocado/avocado.conf
 
     Section.Key                              Value
     datadir.paths.base_dir                   /var/lib/avocado
