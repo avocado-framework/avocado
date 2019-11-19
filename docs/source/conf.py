@@ -36,28 +36,22 @@ except path.CmdNotFoundError:
 # Output directory, List of directory to exclude from API  generation,
 # list of (duplicated) generated reST files to remove (and avoid warnings)
 API_SECTIONS = {"Test APIs": (None,
-                              "This is the bare mininum set of APIs that users "
-                              "should use, and can rely on, while writing tests.",
+                              genio.read_file("api/headers/test"),
                               "test",
                               ("core", "utils", "plugins"),
                               ("modules.rst", )),
-
                 "Utilities APIs": ("utils",
-                                   genio.read_file("api_utils_heading"),
+                                   genio.read_file("api/headers/utils"),
                                    "utils",
                                    ("core", "plugins"),
                                    ("avocado.rst", "modules.rst")),
-
                 "Internal (Core) APIs": ("core",
-                                         "Internal APIs that may be of interest to "
-                                         "Avocado hackers.",
+                                         genio.read_file("api/headers/core"),
                                          "core",
                                          ("utils", "plugins"),
                                          ("avocado.rst", "modules.rst")),
-
                 "Extension (plugin) APIs": ("plugins",
-                                            "Extension APIs that may be of interest to "
-                                            "plugin writers.",
+                                            genio.read_file("api/headers/plugins"),
                                             "plugins",
                                             ("core", "utils"),
                                             ("avocado.rst", "modules.rst"))}
@@ -72,6 +66,7 @@ for (section, params) in API_SECTIONS.items():
     exclude_dirs = " ".join(exclude_dirs)
     files_to_remove = [os.path.join(BASE_API_OUTPUT_DIR, output_dir, d)
                        for d in params[4]]
+
     # generate all rst files
     if APIDOC:
         cmd = APIDOC_TEMPLATE % locals()
@@ -79,7 +74,6 @@ for (section, params) in API_SECTIONS.items():
         # remove unnecessary ones
         for f in files_to_remove:
             os.unlink(f)
-
     # rewrite first lines of main rst file for this section
     second_level_module_name = params[0]
     if second_level_module_name is None:

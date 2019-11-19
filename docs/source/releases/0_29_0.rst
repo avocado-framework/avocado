@@ -1,0 +1,60 @@
+======================
+0.29.0 Steven Universe
+======================
+
+Hello! Avocado reaches the end of Sprint 29, and with it, we have a great
+release coming! This version of avocado once brings new features and plenty
+of bugfixes:
+
+* The remote and VM plugins now work with --multiplex, so that you can use
+  both features in conjunction. * The VM plugin can now auto detect the IP of
+  a given libvirt domain you pass to it, reducing typing and providing an easier
+  and more pleasant experience. * Temporary directories are now properly cleaned
+  up and no re-creation of directories happens, making avocado more secure.
+
+* Avocado docs are now also tagged by release. You can see the specific
+  documentation of this one at our readthedocs page [1]
+
+* Test introspection/listing is safer: Now avocado does not load Python
+  modules to introspect its contents, an alternative method, based on the
+  Python AST parser is used, which means now avocado will not load possible
+  badly written/malicious code at listing stage. You can find more about
+  that in our test resolution documentation [2]
+
+* You can now specify low level loaders to avocado to customize your test
+  running experience. You can learn more about that in the Test Discovery
+  documentation [3]
+
+* The usual many bugfixes and polishing commits. You can see the full
+  amount of 96 commits at [4]
+
+For our Avocado VT plugin, the main changes are:
+
+* The vt-bootstrap process is now more robust against users interrupting
+  previous bootstrap attempts
+
+* Some issues with RPM install in RHEL hosts were fixed
+
+* Issues with unsafe temporary directories were fixed, making the VT tests
+  more secure.
+
+* Issues with unattended installed were fixed
+
+* Now the address of the virbr0 bridge is properly auto detected, which means
+  that our unattended installation content server will work out of the box as
+  long as you have a working virbr0 bridge.
+
+
+Install avocado
+
+As usual, go to https://copr.fedoraproject.org/coprs/lmr/Autotest/ to install
+our YUM/DNF repo and get the latest goodies!
+
+Happy hacking and testing!
+
+----
+
+| [1] http://avocado-framework.readthedocs.org/en/0.29.0
+| [2] http://avocado-framework.readthedocs.org/en/0.29.0/ReferenceGuide.html#test-resolution
+| [3] http://avocado-framework.readthedocs.org/en/0.29.0/Loaders.html
+| [4] https://github.com/avocado-framework/avocado/compare/0.28.0...0.29.0

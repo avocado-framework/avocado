@@ -1,0 +1,145 @@
+==================
+71.0 Downton Abbey
+==================
+
+The Avocado team is proud to present another release: Avocado 70.0,
+AKA "Downton Abbey", is now available!
+
+Release documentation: `Avocado 71.0
+<http://avocado-framework.readthedocs.io/en/71.0/>`_
+
+Users/Test Writers
+==================
+
+* Avocado can now run on systems with nothing but Python 3 (and
+  "quasi-standard-library" module ``setuptools``).  This means that it
+  won't require extra packages, and should be easier to deploy on
+  containers, embedded systems, etc.  Optional plugins may have
+  additional requirements.
+
+* A new and still experimental test runner implementation, known as
+  "N(ext) Runner" has been introduced.  It brings a number of
+  different concepts, increasing the decoupling between a test (and
+  its runner) and the job.  For more information, please refer to
+  `the early documentation <nrunner>`.
+
+* The new :func:`avocado.cancel_on` decorator has been added to the
+  Test APIs, allowing you to define the conditions for a test to be
+  considered canceled.  See one example :ref:`here
+  <turning_errors_into_cancels>`.
+
+* The ``glib`` plugin got a configuration option its safe/unsafe
+  operation, that is, whether it will execute binaries in an attempt to
+  find the whole list of tests.  Look for the ``glib.conf`` shipped
+  with the plugin to enable the unsafe mode.
+
+* Avocado can now use tags inside Python Unittests, and not only on
+  its own Instrumented tests.  It's expected that other forms or
+  providing tags for other types of tests will also be introduced in
+  the near future.
+
+* The HTML report will now show, as a handy pop-up, the contents of the
+  test whiteboard.  If you set, say, performance metrics there, you'll
+  able to see straight from the report.
+
+* The HTML report now has filtering support by test status, and can
+  show all records in the table.
+
+* The :mod:`avocado.utils.runtime` module, a badly designed mechanism
+  for sharing Avocado runtime settings with the utility libraries, has
+  been removed.
+
+* The test runner feature that would allow binaries to be run
+  transparently inside GDB was removed.  The reason for dropping such
+  a feature have to do with how it limits the test runner to run one
+  test at a time, and the use of the :mod:`avocado.utils.runtime`
+  mechanism, also removed.
+
+* Initial examples for writing custom jobs, using the so called Job
+  API, have been added to ``examples/jobs``.  These APIs are still
+  non-public (under core), but they're supposed to become public
+  and supported soon.
+
+* By means of a new plugin (``merge_files``, of type ``job.prepost``),
+  when using the :ref:`output check record <output_check_record>`
+  features, duplicate files created by different tests/variants will
+  be consolidated into unique files.
+
+Bug Fixes
+=========
+
+* The HTML plugin now correctly shows the date for tests that were
+  never executed because of interrupted jobs.
+
+* A temporarily workaround for a stack overflow problem in Python 3.7
+  has been addressed.
+
+* The pict plugin (a varianter implementaion) now properly yields the
+  variants paths as a list.
+
+* A Python 3 related fix to mod:`avocado.utils.software_manager`, that
+  was using Python 2 ``next`` on ``get_source``.
+
+* A Python 3 related fix to the docker plugin, that wasn't caught
+  earlier.
+
+Utility APIs
+============
+
+* :mod:`avocado.utils.partition` now allows ``mkfs`` and ``mount``
+  flags to be set.
+
+* :func:`avocado.utils.cpu.get_cpu_vendor_name` now returns the CPU
+  vendor name for POWER9.
+
+* :mod:`avocado.utils.asset` now allows a given location, as well as a
+  list, to be given, simplifying the most common use case.
+
+* :meth:`avocado.utils.process.SubProcess.stop` now supports setting
+  a timeout.  Please refer to the documentation for the important
+  details on its behavior.
+
+* :mod:`avocado.utils.memory` now properly handles hugepages for POWER
+  platform.
+
+Internal Changes
+================
+
+* Removal of the ``stevedore`` library dependency (previously used for
+  the dispatcher/plugins infrastructure).
+
+* ``make check`` now runs selftests using the experimental N(ext)
+  Runner.
+
+* Formal support for Python 3.7, which is now on our CI checks,
+  documentation and module information.
+
+* The Yaml to Mux plugin now uses a safe version of the Yaml loader,
+  so that the execution of arbitrary Python code from Yaml input is
+  now no longer possible.
+
+* Codecov coverage reports for have been enabled for Avocado, and
+  can be seen on every pull request.
+
+* New tests have been added to many of the optional plugins.
+
+* Various pylint compliance improvements, including w0231, w0235,
+  w0706, w0715 and w0221.
+
+* Avocado's selftests now use tempfile.TemporaryDirectory instead of
+  mkdtemp and shutil.rmtree.
+
+* :class:`avocado.core.job.Job` instantiation now takes a ``config``
+  dictionary parameter, instead of a ``argparse.Namespace`` instance,
+  and keeps it in a ``config`` attribute.
+
+* :class:`avocado.core.job.Job` instances don't have a ``references``
+  attribute anymore.  That information is available in the ``config``
+  attribute, that is, ``myjob.config['references']``.
+
+* Basic checks for Fedora and RHEL 8 using Cirrus CI have been added,
+  and will be shown on every pull request.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/70.0...71.0>`_.
