@@ -401,7 +401,7 @@ values). In total it'll produce 8 variants of each test::
 
       $ avocado run --mux-yaml examples/tests/sleeptenmin.py.data/sleeptenmin.yaml -- passtest.py
       JOB ID     : cc7ef22654c683b73174af6f97bc385da5a0f02f
-      JOB LOG    : /home/medic/avocado/job-results/job-2017-01-22T11.26-cc7ef22/job.log
+      JOB LOG    : $HOME/avocado/job-results/job-2017-01-22T11.26-cc7ef22/job.log
        (1/8) passtest.py:PassTest.test;builtin-one_cycle-f659: PASS (0.01 s)
        (2/8) passtest.py:PassTest.test;builtin-six_cycles-723b: PASS (0.01 s)
        (3/8) passtest.py:PassTest.test;builtin-one_hundred_cycles-633a: PASS (0.01 s)

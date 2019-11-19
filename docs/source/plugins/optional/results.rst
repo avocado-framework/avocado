@@ -20,7 +20,7 @@ Once installed it produces the results in job results dir::
 
     $ avocado run sleeptest.py failtest.py synctest.py
     ...
-    JOB HTML  : /home/medic/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
     ...
 
 

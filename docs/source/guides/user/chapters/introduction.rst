@@ -252,16 +252,16 @@ output in the standard output of the runner, simply use::
            <testcase classname="SleepTest" name="1-sleeptest.py:SleepTest.test" time="1.00204920769"/>
            <testcase classname="FailTest" name="2-failtest.py:FailTest.test" time="0.00120401382446">
                    <failure type="TestFail" message="This test is supposed to fail"><![CDATA[Traceback (most recent call last):
-     File "/home/medic/Work/Projekty/avocado/avocado/avocado/core/test.py", line 490, in _run_avocado
+     File "$HOME/Work/Projekty/avocado/avocado/avocado/core/test.py", line 490, in _run_avocado
        raise test_exception
    TestFail: This test is supposed to fail
    ]]></failure>
                    <system-out><![CDATA[14:46:53 ERROR| 
-   14:46:53 ERROR| Reproduced traceback from: /home/medic/Work/Projekty/avocado/avocado/avocado/core/test.py:435
+   14:46:53 ERROR| Reproduced traceback from: $HOME/Work/Projekty/avocado/avocado/avocado/core/test.py:435
    14:46:53 ERROR| Traceback (most recent call last):
-   14:46:53 ERROR|   File "/home/medic/Work/Projekty/avocado/avocado/examples/tests/failtest.py", line 17, in test
+   14:46:53 ERROR|   File "$HOME/Work/Projekty/avocado/avocado/examples/tests/failtest.py", line 17, in test
    14:46:53 ERROR|     self.fail('This test is supposed to fail')
-   14:46:53 ERROR|   File "/home/medic/Work/Projekty/avocado/avocado/avocado/core/test.py", line 585, in fail
+   14:46:53 ERROR|   File "$HOME/Work/Projekty/avocado/avocado/avocado/core/test.py", line 585, in fail
    14:46:53 ERROR|     raise exceptions.TestFail(message)
    14:46:53 ERROR| TestFail: This test is supposed to fail
    14:46:53 ERROR| 
