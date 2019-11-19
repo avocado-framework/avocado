@@ -82,6 +82,7 @@ def get_mpath_name(wwid):
     :param wwid: wwid of multipath device.
 
     :return: Name of multipath device.
+    :rtype: str
     """
     if device_exists(wwid):
         cmd = "multipath -l %s" % wwid
@@ -94,6 +95,7 @@ def get_multipath_wwids():
     Get list of multipath wwids.
 
     :return: List of multipath wwids.
+    :rtype: list of str
     """
     cmd = "egrep -v '^($|#)' /etc/multipath/wwids"
     wwids = process.run(cmd, ignore_status=True,
@@ -107,6 +109,7 @@ def get_paths(wwid):
     Get list of paths, given a multipath wwid.
 
     :return: List of paths.
+    :rtype: list of str
     """
     if not device_exists(wwid):
         return
@@ -125,7 +128,8 @@ def get_multipath_details():
     Get multipath details as a dictionary, as given by the command:
     multipathd show maps json
 
-    :return: Dictionary of multipath output in json format.
+    :return: Dictionary of multipath output in json format
+    :rtype: dict
     """
     mpath_op = process.run("multipathd show maps json",
                            sudo=True).stdout_text
@@ -205,6 +209,7 @@ def get_policy(wwid):
     Gets path_checker policy, given a multipath wwid.
 
     :return: path checker policy.
+    :rtype: str
     """
     if device_exists(wwid):
         cmd = "multipath -ll %s" % wwid
@@ -219,6 +224,7 @@ def get_size(wwid):
     Gets size of device, given a multipath wwid.
 
     :return: size of multipath device.
+    :rtype: str
     """
     if device_exists(wwid):
         cmd = "multipath -ll %s" % wwid
