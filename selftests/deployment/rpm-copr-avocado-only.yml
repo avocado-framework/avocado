@@ -1,0 +1,9 @@
+---
+- name: Installs Avocado using RPM packages from the Copr repo
+  hosts: avocado-test-deployment
+  tasks:
+    - include_vars: vars.yml
+    - include_tasks: tasks/epel.yml
+    - include_tasks: tasks/avocado_copr_repo.yml
+    - include_tasks: tasks/avocado_rpm_pkgs.yml
+    - include_tasks: tasks/avocado_version.yml
