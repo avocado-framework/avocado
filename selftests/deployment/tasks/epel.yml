@@ -5,3 +5,4 @@
     when:
       # This should work on both RHEL, CentOS, Scientific Linux, etc
       - ansible_facts['distribution_file_variety'] == "RedHat"
+      - ansible_facts['distribution'] != "Fedora"
