@@ -52,17 +52,21 @@ class TestSubProcess(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
     @unittest.mock.patch('avocado.utils.process.get_children_pids')
     @unittest.mock.patch('avocado.utils.process.run')
-    def test_send_signal_sudo_enabled(self, run, get_children, pid, sudo, init):  # pylint: disable=W0613
+    def test_send_signal_sudo_enabled(self, run, get_children, get_pid, sudo, init):  # pylint: disable=W0613
         signal = 1
+        pid = 122
         child_pid = 123
         sudo.return_value = True
+        get_pid.return_value = pid
         get_children.return_value = [child_pid]
 
         subprocess = process.SubProcess(FICTIONAL_CMD)
         subprocess.send_signal(signal)
 
-        expected_cmd = 'kill -%d %d' % (signal, child_pid)
-        run.assert_called_with(expected_cmd, sudo=True)
+        kill_cmd = 'kill -%d %d'
+        calls = [unittest.mock.call(kill_cmd % (signal, child_pid), sudo=True),
+                 unittest.mock.call(kill_cmd % (signal, pid), sudo=True)]
+        run.assert_has_calls(calls)
 
     @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
     @unittest.mock.patch('avocado.utils.process.SubProcess.is_sudo_enabled')
@@ -70,18 +74,22 @@ class TestSubProcess(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.process.get_children_pids')
     @unittest.mock.patch('avocado.utils.process.run')
     def test_send_signal_sudo_enabled_with_exception(
-            self, run, get_children, pid, sudo, init):  # pylint: disable=W0613
+            self, run, get_children, get_pid, sudo, init):  # pylint: disable=W0613
         signal = 1
+        pid = 122
         child_pid = 123
         sudo.return_value = True
+        get_pid.return_value = pid
         get_children.return_value = [child_pid]
         run.side_effect = Exception()
 
         subprocess = process.SubProcess(FICTIONAL_CMD)
         subprocess.send_signal(signal)
 
-        expected_cmd = 'kill -%d %d' % (signal, child_pid)
-        run.assert_called_with(expected_cmd, sudo=True)
+        kill_cmd = 'kill -%d %d'
+        calls = [unittest.mock.call(kill_cmd % (signal, child_pid), sudo=True),
+                 unittest.mock.call(kill_cmd % (signal, pid), sudo=True)]
+        run.assert_has_calls(calls)
 
     @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')

@@ -16,6 +16,7 @@
 Functions dedicated to find and run external commands.
 """
 
+import contextlib
 import errno
 import fnmatch
 import glob
@@ -766,12 +767,12 @@ class SubProcess:
         """
         self._init_subprocess()
         if self.is_sudo_enabled():
-            for child_pid in get_children_pids(self.get_pid()):
-                kill_child_cmd = 'kill -%d %d' % (int(sig), child_pid)
-                try:
-                    run(kill_child_cmd, sudo=True)
-                except Exception:  # pylint: disable=W0703
-                    continue
+            pids = get_children_pids(self.get_pid())
+            pids.append(self.get_pid())
+            for pid in pids:
+                kill_cmd = 'kill -%d %d' % (int(sig), pid)
+                with contextlib.suppress(Exception):
+                    run(kill_cmd, sudo=True)
         else:
             self._popen.send_signal(sig)
 
