@@ -13,11 +13,11 @@
 	{"name": "Avocado source does not contain spelling errors",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
 
-	{"name": "Avocado RPM install",
-	 "description": "On a fresh virtual machine, install Avocado using its COPR repo.  Run:\n- dnf -y copr enable @avocado/avocado-latest\n- dnf -y install python-avocado-* python2-avocado-* python3-avocado-* qemu-guest-agent rpmlint\n- systemctl start qemu-guest-agent\n- systemctl enable qemu-guest-agent"},
+	{"name": "Avocado deployment",
+	 "description": "Execute the ansible playbook located at selftests/deployments/rpm-copr.yml on one or many fresh virtual machines."},
 
-        {"name": "Avocado RPM lint",
-        "description": "On the same machine you just installed Avocado, check if there are packaging errors by running: `$ rpmlint python*-avocado*`.  Expected result: XX packages and 0 spec files checked; 0 errors, YY warnings."},
+        {"name": "Install qemu-guest-agent",
+        "description": "After deploying Avocado, install and activate qemu-guest-agent with:\n- dnf -y install qemu-guest-agent\n- systemctl start qemu-guest-agent\n- systemctl enable qemu-guest-agent"},
 
 	{"name": "Avocado Test Run on RPM based installation",
 	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
@@ -30,9 +30,6 @@
 
 	{"name": "Avocado Remote Machine HTML report",
 	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-/**/avocado/tests/**/examples/tests/passtest.py:PassTest.test` (under `Test ID`) and `debug.log` point to valid locations."},
-
-	{"name": "Avocado VT",
-	 "description": "Configure avocado vt as described in http://avocado-vt.readthedocs.org/en/latest/GetStartedGuide.html including the `avocado list` and running the migration test. Expected result: No errors."},
 
 	{"name": "Avocado HTML report sysinfo",
 	 "description": "On the HTML report, click on `Sysinfo (pre/post/profile, click to expand)` and verify that system information such as `hostname` and `cpuinfo` are present and accurate"},

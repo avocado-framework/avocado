@@ -1,0 +1,6 @@
+---
+  - name: Avocado-VT bootstrap, tp-qemu and JeOS download
+    shell: avocado vt-bootstrap --vt-type=qemu --yes-to-all
+  - name: Avocado-VT boot and migrate execution
+    shell: avocado run --vt-extra-params='nettype=user' -- boot migrate.default.tcp.default
+    changed_when: false
