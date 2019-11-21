@@ -55,9 +55,6 @@ class KernelBuild:
             self.data_dirs = data_dirs
         else:
             self.data_dirs = [self.work_dir]
-        self.build_dir = os.path.join(self.work_dir, 'build')
-        if not os.path.isdir(self.build_dir):
-            os.makedirs(self.build_dir)
 
     def __repr__(self):
         return "KernelBuild('%s, %s, %s')" % (self.version,
