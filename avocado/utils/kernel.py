@@ -86,9 +86,14 @@ class KernelBuild:
     def uncompress(self):
         """
         Uncompress kernel source.
+
+        :raises: Exception in case the tarball is not downloaded
         """
-        log.info("Uncompressing tarball")
-        archive.extract(self.asset_path, self.work_dir)
+        if self.asset_path:
+            log.info("Uncompressing tarball")
+            archive.extract(self.asset_path, self.work_dir)
+        else:
+            raise Exception("Unable to find the tarball")
 
     def configure(self):
         """
