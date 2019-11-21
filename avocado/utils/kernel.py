@@ -55,6 +55,7 @@ class KernelBuild:
             self.data_dirs = data_dirs
         else:
             self.data_dirs = [self.work_dir]
+        self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
 
     def __repr__(self):
         return "KernelBuild('%s, %s, %s')" % (self.version,
@@ -96,7 +97,6 @@ class KernelBuild:
         """
         Configure/prepare kernel source to build.
         """
-        self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)  # pylint: disable=W0201
         build.make(self.linux_dir, extra_args='-C %s mrproper' %
                    self.linux_dir)
         if self.config_path is not None:
