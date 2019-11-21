@@ -62,6 +62,16 @@ class KernelBuild:
                                               self.config_path,
                                               self.work_dir)
 
+    @property
+    def vmlinux(self):
+        """
+        Return the vmlinux path if the file exists
+        """
+        vmlinux_path = os.path.join(self.linux_dir, 'vmlinux')
+        if os.path.isfile(vmlinux_path):
+            return vmlinux_path
+        return None
+
     def _build_kernel_url(self, base_url=None):
         kernel_file = self.SOURCE.format(version=self.version)
         if base_url is None:
