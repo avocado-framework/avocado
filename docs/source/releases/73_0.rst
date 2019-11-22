@@ -1,0 +1,97 @@
+=================
+73.0 Pulp Fiction
+=================
+
+The Avocado team is proud to present another release: Avocado 73.0,
+AKA "Pulp Fiction", is now available!
+
+Release documentation: `Avocado 73.0
+<http://avocado-framework.readthedocs.io/en/73.0/>`_
+
+Users/Test Writers
+==================
+
+* ``INSTRUMENTED`` tests using the
+  :func:`avocado.core.test.Test.fetch_asset` can take advantage of
+  plugins that will attempt to download (and cache) assets before the
+  test execution.  This should make the overall test execution more
+  reliable, and give better test execution times as the download
+  time will be excluded.  Users can also manually execute the
+  ``avocado assets`` command to manually fetch assets from tests.
+
+* The still experimental "N(ext) Runner" support for Avocado
+  Instrumented tests is more complete and supports tag filtering and
+  passing tags to the tests.
+
+* A new architecture for "finding" tests has been introduced as an
+  alternative to the :mod:`avocado.core.loader` code.  It's based
+  around the :mod:`avocado.core.resolver`, and it's currently used in
+  the still experimental "N(ext) Runner".  It currently supports tests
+  of the following types: ``avocado-instrumented``, ``exec-test``,
+  ``glib``, ``golang``, ``python-unittest`` and ``robot``.  You can
+  experiment it by running ``avocado nlist``, similarly to how ``avocado
+  list`` is used.
+
+* Avocado ``sysinfo`` feature file will now work out of the box on
+  ``pip`` based installations.  Previously, it would require
+  configuration files tweaks to adjust installation paths.
+
+* A massive documentation overhaul, now designed around guides to
+  different target audiences.  The "User's Guide", "Test Writer's
+  Guide" and "Contributor's Guide" can be easily found as first lever
+  sections contain curated content for those audiences.
+
+Bug Fixes
+=========
+
+* Content supposed to be UI only could leak into TAP files, making
+  them invalid.
+
+* Avocado's ``sysinfo`` feature will now run commands without a
+  shell, resulting in more proper captured output, without shell
+  related content.
+
+* :func:`avocado.utils.process.SubProcess.send_signal` will now send a
+  signal to itself correctly even when using ``sudo`` mode.
+
+Utility APIs
+============
+
+* The :mod:`avocado.utils.vmimage` library now allows a user to
+  define the ``qemu-img`` binary that will be used for creating
+  snapshot images via the :data:`avocado.utils.vmimage.QEMU_IMG`
+  variable.
+
+* The :mod:`avocado.utils.configure_network` module introduced
+  a number of utilities, including MTU configuration support,
+  a method for validating network among peers, IPv6 support, etc.
+
+* The :func:`avocado.utils.configure_network.set_ip` function now
+  supports different interface types through a ``interface_type``
+  parameter, while still defaulting to ``Ethernet``.
+
+Internal Changes
+================
+
+* Package support for Enterprise Linux 8.
+
+* Increased CI coverage, having tests now run on four different
+  hardware architectures: amd64 (x86_64), arm64 (aarch64), ppc64le and
+  s390x.
+
+* Packit support adding extended CI coverage, with RPM packages being
+  built for Pull Requests and results shown on GitHub.
+
+* Pylint checks for w0703 were enabled.
+
+* Runners, such as the remote runner, vm runner, docker runner, and
+  the default local runner now conform to a "runner" interface and
+  can be seen as proper plugins with ``avocado plugins``.
+
+* Avocado's configuration parser will now treat values with relative
+  paths as a special value, and evaluate their content in relation
+  to the Python's distribution directory where Avocado is installed.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/72.0...73.0>`_.

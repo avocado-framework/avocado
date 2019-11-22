@@ -58,8 +58,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 72.0
-Release: 3%{?gitrel}%{?dist}
+Version: 73.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -602,6 +602,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Nov 22 2019 Cleber Rosa <cleber@redhat.com> - 73.0-0
+- New release
+
 * Fri Nov 22 2019 Cleber Rosa <cleber@redhat.com> - 72.0-3
 - Update sysinfo configuration files location
 
