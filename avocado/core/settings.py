@@ -20,6 +20,7 @@ import os
 import glob
 import configparser
 
+from pkg_resources import get_distribution
 from pkg_resources import resource_filename
 from pkg_resources import resource_isdir
 from pkg_resources import resource_listdir
@@ -29,6 +30,7 @@ from ..utils import path
 
 # pylint: disable-msg=too-many-locals
 # pylint: disable-msg=too-many-arguments
+
 
 class SettingsError(Exception):
     """
@@ -229,6 +231,12 @@ class Settings:
                 return False
             return True
 
+        def _prepend_base_path(value):
+            if not value.startswith(('/', '~')):
+                dist = get_distribution('avocado-framework')
+                return os.path.join(dist.location, 'avocado', value)
+            return value
+
         def _get_empty_value(value_type):
             returns = {'str': "",
                        'path': "",
@@ -256,6 +264,9 @@ class Settings:
             # Handle special cases
             if method_or_type == bool:
                 return _string_to_bool(value_stripped)
+
+            if method_or_type == os.path.expanduser:
+                value_stripped = _prepend_base_path(value_stripped)
 
             # Handle other cases
             return method_or_type(value_stripped)
