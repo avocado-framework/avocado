@@ -2,6 +2,7 @@ import os
 import tempfile
 import unittest
 
+from pkg_resources import get_distribution
 from avocado.core import settings
 
 example_1 = """[foo]
@@ -12,6 +13,7 @@ bool_key = True
 list_key = ['I', 'love', 'settings']
 empty_key =
 path = ~/path/at/home
+relative_path = path/at/home
 home_path = ~
 """
 
@@ -48,6 +50,13 @@ class SettingsTest(unittest.TestCase):
                                 len(raw_from_settings))
         self.assertEqual(os.path.expanduser(home_str_from_settings),
                          self.settings.get_value('foo', 'home_path', 'path'))
+
+    def test_relative_path(self):
+        dist = get_distribution('avocado-framework')
+        path_from_settings = self.settings.get_value('foo',
+                                                     'relative_path',
+                                                     'path')
+        self.assertTrue(path_from_settings.startswith(dist.location))
 
     def test_path_on_str_key(self):
         self.assertEqual(self.settings.get_value('foo', 'path', str),

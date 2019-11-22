@@ -169,7 +169,7 @@ class Command(Collectible):
                                  allow_output_check='combined',
                                  env=env)
         except Exception as exc:  # pylint: disable=W0703
-            log.warn('Could not execute "%s": %s', self.cmd, exc)
+            log.warning('Could not execute "%s": %s', self.cmd, exc)
             return
         logf_path = os.path.join(logdir, self.logf)
         if self._compress_log:
