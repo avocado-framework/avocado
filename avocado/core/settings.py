@@ -27,6 +27,8 @@ from pkg_resources import resource_listdir
 from .settings_dispatcher import SettingsDispatcher
 from ..utils import path
 
+# pylint: disable-msg=too-many-locals
+# pylint: disable-msg=too-many-arguments
 
 class SettingsError(Exception):
     """
@@ -162,8 +164,7 @@ class Settings:
             msg = ("Value '%s' not found in section '%s'" %
                    (key, section))
             raise SettingsError(msg)
-        else:
-            return default
+        return default
 
     def _handle_no_section(self, section, default):
         """
@@ -179,8 +180,7 @@ class Settings:
         if default is self.no_default:
             msg = "Section '%s' doesn't exist in configuration" % section
             raise SettingsError(msg)
-        else:
-            return default
+        return default
 
     def get_value(self, section, key, key_type=str, default=no_default,
                   allow_blank=False):
@@ -278,4 +278,4 @@ class Settings:
                                      (val, key_type, key, section, details))
 
 
-settings = Settings()
+settings = Settings()  # pylint: disable-msg=invalid-name
