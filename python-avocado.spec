@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 72.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -204,6 +204,7 @@ popd
 %install
 %py3_install
 %{__mv} %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
+%{__sed} -e 's/ etc\/avocado\/sysinfo\// \/etc\/avocado\/sysinfo\//' -i %{buildroot}/etc/avocado/avocado.conf
 pushd optional_plugins/html
 %py3_install
 popd
@@ -601,6 +602,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Nov 22 2019 Cleber Rosa <cleber@redhat.com> - 72.0-3
+- Update sysinfo configuration files location
+
 * Mon Nov 18 2019 Cleber Rosa <cleber@redhat.com> - 72.0-2
 - Add EL/EPEL8 support
 
