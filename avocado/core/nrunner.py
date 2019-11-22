@@ -334,7 +334,7 @@ CMD_RUNNABLE_RUN_ARGS = (
 
 def _arg_decode_base64(arg):
     """
-    Decode arguments possibly endcoded as base64
+    Decode arguments possibly encoded as base64
 
     :param arg: the possibly encoded argument
     :type arg: str
@@ -350,7 +350,7 @@ def _arg_decode_base64(arg):
 
 def _kwarg_decode_json(value):
     """
-    Decode arguments possibly endcoded as base64
+    Decode arguments possibly encoded as base64
 
     :param value: the possibly encoded argument
     :type value: str

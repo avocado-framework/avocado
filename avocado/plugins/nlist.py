@@ -25,6 +25,7 @@ from avocado.utils import astring
 
 class List(CLICmd):
 
+    # pylint: disable=C0402
     """
     Implements the avocado 'nlist' subcommand
     """

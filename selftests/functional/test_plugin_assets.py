@@ -75,7 +75,7 @@ def get_temporary_config(args):
 
 class AssetsFetchSuccess(unittest.TestCase):
     """
-    Assets fetch with success fuctional test class
+    Assets fetch with success functional test class
     """
 
     def setUp(self):
@@ -125,7 +125,7 @@ class AssetsFetchSuccess(unittest.TestCase):
 
 class AssetsPlugin(unittest.TestCase):
     """
-    Main assets plugin fuctional test class
+    Main assets plugin functional test class
     """
 
     def setUp(self):

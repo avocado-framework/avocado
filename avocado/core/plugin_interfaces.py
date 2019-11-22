@@ -295,7 +295,7 @@ class Runner(Plugin):
     compliant test runners.
 
     NOTE: This interface is not to be confused with the internal
-    interface or idiosyncrasys of the :ref:`nrunner`.
+    interface or idiosyncrasies of the :ref:`nrunner`.
     """
 
     @abc.abstractmethod

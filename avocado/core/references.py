@@ -24,7 +24,7 @@ def reference_split(reference):
     '''
     Splits a test reference into a path and additional info
 
-    This should be used depedent on the specific type of resolver.  If
+    This should be used dependent on the specific type of resolver.  If
     a resolver is not expected to support multiple test references inside
     a given file, then this is not suitable.
 

@@ -12,13 +12,13 @@ from avocado.plugins import assets
 
 class AssetsPlugin(unittest.TestCase):
     """
-    Unit tesits for Assets Plugin
+    Unit tests for Assets Plugin
     """
 
     @patch('avocado.plugins.assets.FetchAssetHandler')
     def test_fetch_assets_sucess_fail(self, mocked_fetch_asset_handler):
         """
-        Excersise a normal fetch for a success and a fail assets.
+        Exercise a normal fetch for a success and a fail assets.
         """
         mocked_fetch_asset_handler.return_value.calls = [
             {'name': 'success.tar.gz',
@@ -41,7 +41,7 @@ class AssetsPlugin(unittest.TestCase):
     @patch('avocado.plugins.assets.FetchAssetHandler')
     def test_fetch_assets_sucess(self, mocked_fetch_asset_handler):
         """
-        Excersise a normal fetch for a success asset.
+        Exercise a normal fetch for a success asset.
         """
         mocked_fetch_asset_handler.return_value.calls = [
             {'name': 'success.tar.gz',
@@ -60,7 +60,7 @@ class AssetsPlugin(unittest.TestCase):
     @patch('avocado.plugins.assets.FetchAssetHandler')
     def test_fetch_assets_fail(self, mocked_fetch_asset_handler):
         """
-        Excersise a normal fetch for a fail asset.
+        Exercise a normal fetch for a fail asset.
         """
         mocked_fetch_asset_handler.return_value.calls = [
             {'name': 'fail.tar.gz',
@@ -79,7 +79,7 @@ class AssetsPlugin(unittest.TestCase):
     @patch('avocado.plugins.assets.FetchAssetHandler')
     def test_fetch_assets_empty_calls(self, mocked_fetch_asset_handler):
         """
-        Excersise a normal fetch_assets for an empty `calls` variable.
+        Exercise a normal fetch_assets for an empty `calls` variable.
         """
         mocked_fetch_asset_handler.return_value.calls = []
         success, fail = assets.fetch_assets('test.py')

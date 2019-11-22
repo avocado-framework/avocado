@@ -31,7 +31,7 @@ from . import astring
 from . import path as utils_path
 from . import process
 
-
+# pylint: disable=C0401
 #: The "qemu-img" binary used when creating the snapshot images.  If
 #: set to None (the default), it will attempt to find a suitable binary
 #: with :func:`avocado.utils.path.find_command`, which uses the the

@@ -127,13 +127,13 @@ class HostInfo:
 
     def set_mtu_host(self, interface, mtu):
         """
-        set mtu size in host interface
+        Set MTU size in host interface
         """
         cmd = "ip link set %s mtu %s" % (interface, mtu)
         try:
             process.system(cmd, shell=True)
         except process.CmdError as ex:
-            raise NWException("mtu size can not be set: %s" % ex)
+            raise NWException("MTU size can not be set: %s" % ex)
         try:
             cmd = "ip add show %s" % interface
             mtuvalue = process.system_output(cmd, shell=True).decode("utf-8") \
@@ -141,7 +141,7 @@ class HostInfo:
             if mtuvalue == mtu:
                 return True
         except Exception as ex:  # pylint: disable=W0703
-            log.error("setting mtu value in host failed: %s", ex)
+            log.error("setting MTU value in host failed: %s", ex)
         return False
 
 
@@ -153,7 +153,7 @@ class PeerInfo:
     def __init__(self, host, port=None, peer_user=None,
                  key=None, peer_password=None):
         """
-        create a object for acsses remote machnine
+        create a object for accesses remote machine
         """
         try:
             self.session = Session(host, port=port, user=peer_user,
@@ -163,7 +163,7 @@ class PeerInfo:
 
     def set_mtu_peer(self, peer_interface, mtu):
         """
-        set mtu size in peer interface
+        Set MTU size in peer interface
         """
         cmd = "ip link set %s mtu %s" % (peer_interface, mtu)
         try:
@@ -173,7 +173,7 @@ class PeerInfo:
             if mtuvalue == mtu:
                 return True
         except Exception as ex:  # pylint: disable=W0703
-            log.error("setting mtu value in peer failed: %s", ex)
+            log.error("setting MTU value in peer failed: %s", ex)
         return False
 
     def get_peer_interface(self, peer_ip):

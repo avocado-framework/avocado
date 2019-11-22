@@ -143,7 +143,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         :param node: AST node to be evaluated
         :type node: ast.*
         """
-        # make sure we are into a class method and not a fuction
+        # make sure we are into a class method and not a function
         if self.current_klass:
             if self.method[0] and node.name not in self.method:
                 return
@@ -190,7 +190,7 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
     Fetches the assets based on keywords listed on FetchAssetHandler.calls.
     :param test_file: File name of instrumented test to be evaluated
     :type test_file: str
-    :returns: list of names that were successfuly fetched and list of
+    :returns: list of names that were successfully fetched and list of
     fails.
     """
     cache_dirs = data_dir.get_cache_dirs()
