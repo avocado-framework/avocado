@@ -55,67 +55,6 @@ class ConfigFileNotFound(SettingsError):
                 self.path_list)
 
 
-def convert_value_type(value, value_type):
-    """
-    Convert a string value to a given value type.
-
-    :param value: Value we want to convert.
-    :type value: str.
-    :param value_type: Type of the value we want to convert.
-    :type value_type: str or type.
-
-    :return: Converted value type.
-    :rtype: Dependent on value_type.
-
-    :raise: TypeError, in case it was not possible to convert values.
-    """
-    # strip off leading and trailing white space
-    sval = value.strip()
-    if isinstance(value_type, str):
-        if value_type == 'str':
-            value_type = str
-        elif value_type == 'bool':
-            value_type = bool
-        elif value_type == 'int':
-            value_type = int
-        elif value_type == 'float':
-            value_type = float
-        elif value_type == 'list':
-            value_type = list
-        elif value_type == 'path':
-            value_type = os.path.expanduser
-
-    if value_type is None:
-        value_type = str
-
-    # if length of string is zero then return None
-    if not sval:
-        if value_type == str:
-            return ""
-        if value_type == os.path.expanduser:
-            return ""
-        if value_type == bool:
-            return False
-        if value_type == int:
-            return 0
-        if value_type == float:
-            return 0.0
-        if value_type == list:
-            return []
-        return None
-
-    if value_type == bool:
-        if sval.lower() == "false":
-            return False
-        return True
-
-    if value_type == list:
-        return ast.literal_eval(sval)
-
-    conv_val = value_type(sval)
-    return conv_val
-
-
 class Settings:
 
     """
@@ -268,6 +207,59 @@ class Settings:
         :raises: SettingsError, in case key is not set and no default
                  was provided.
         """
+        def _get_method_or_type(value_type):
+            returns = {'str': str,
+                       'path': os.path.expanduser,
+                       'bool': bool,
+                       'int': int,
+                       'float': float,
+                       'list': ast.literal_eval}
+
+            # This is just to cover some old tests, makes no sense here
+            if isinstance(value_type, type):
+                value_type = value_type.__name__
+
+            try:
+                return returns[value_type]
+            except KeyError:
+                return str
+
+        def _string_to_bool(value):
+            if value.lower() == 'false':
+                return False
+            return True
+
+        def _get_empty_value(value_type):
+            returns = {'str': "",
+                       'path': "",
+                       'bool': False,
+                       'int': 0,
+                       'float': 0.0,
+                       'list': []}
+
+            if isinstance(value_type, type):
+                value_type = value_type.__name__
+            try:
+                return returns[value_type]
+            except KeyError:
+                return None
+
+        def _get_value_as_type(value, value_type):
+            # strip off leading and trailing white space
+            value_stripped = value.strip()
+
+            if not value_stripped:
+                return _get_empty_value(value_type)
+
+            method_or_type = _get_method_or_type(value_type)
+
+            # Handle special cases
+            if method_or_type == bool:
+                return _string_to_bool(value_stripped)
+
+            # Handle other cases
+            return method_or_type(value_stripped)
+
         try:
             val = self.config.get(section, key)
         except configparser.NoSectionError:
@@ -279,7 +271,7 @@ class Settings:
             return self._handle_no_value(section, key, default)
 
         try:
-            return convert_value_type(val, key_type)
+            return _get_value_as_type(val, key_type)
         except Exception as details:
             raise SettingsValueError("Could not convert value %r to type %s "
                                      "(settings key %s, section %s): %s" %
