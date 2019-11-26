@@ -572,7 +572,10 @@ def find_avocado_tests(path):
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
-            _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
+            try:
+                _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
+            except ImportError:
+                continue
             _info, _dis, _avocado = _examine_class(found_ppath,
                                                    parent_class,
                                                    is_avocado,
@@ -677,7 +680,10 @@ def find_python_unittests(path):
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
-            _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
+            try:
+                _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
+            except ImportError:
+                continue
             _info, _dis, _is_unittest = _examine_class(found_ppath,
                                                        parent_class,
                                                        is_unittest,
