@@ -33,6 +33,16 @@ class MyClass(Test):
         pass
 '''
 
+IMPORT_NOT_NOT_PARENT_TEST = '''
+from avocado import Test
+class SomeClass(Test):
+    def test_something(self): pass
+
+from logging import Logger, LogRecord
+class Anyclass(LogRecord): pass
+class Anyclass(Logger): pass
+'''
+
 RECURSIVE_DISCOVERY_TEST1 = """
 from avocado import Test
 
@@ -311,6 +321,7 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_with_base_class',
                                     'test_with_pattern_and_base_class',
                                     'test_methods_order',
+                                    'test_import_not_on_parent',
                                     'test_recursive_discovery',
                                     'test_recursive_discovery_python_unittest'],
             'UnlimitedDiff': ['setUp']
@@ -354,6 +365,7 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_with_base_class',
                                     'test_with_pattern_and_base_class',
                                     'test_methods_order',
+                                    'test_import_not_on_parent',
                                     'test_recursive_discovery',
                                     'test_recursive_discovery_python_unittest'],
             'UnlimitedDiff': []
@@ -369,6 +381,7 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_with_base_class',
                                     'test_with_pattern_and_base_class',
                                     'test_methods_order',
+                                    'test_import_not_on_parent',
                                     'test_recursive_discovery',
                                     'test_recursive_discovery_python_unittest'],
         }
@@ -397,6 +410,17 @@ class FindClassAndMethods(UnlimitedDiff):
         methods = [method[0] for method in tests['MyClass']]
         self.assertEqual(expected_order, methods)
         avocado_keep_methods_order.remove()
+
+    def test_import_not_on_parent(self):
+        avocado_test = script.TemporaryScript(
+            'import_not_not_parent_test.py',
+            IMPORT_NOT_NOT_PARENT_TEST)
+        avocado_test.save()
+        expected = ['test_something']
+        tests = safeloader.find_avocado_tests(avocado_test.path)[0]
+        methods = [method[0] for method in tests['SomeClass']]
+        self.assertEqual(expected, methods)
+        avocado_test.remove()
 
     def test_recursive_discovery(self):
         avocado_recursive_discovery_test1 = script.TemporaryScript(
