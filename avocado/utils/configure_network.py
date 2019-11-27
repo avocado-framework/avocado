@@ -23,6 +23,7 @@ import os
 import logging
 from . import distro
 from . import process
+from . import genio
 from .ssh import Session
 
 log = logging.getLogger('avocado.test')
@@ -191,3 +192,16 @@ class PeerInfo:
                 log.error("unable to get peer interface: %s", ex)
         else:
             return peer_interface
+
+
+def is_interface_link_up(interface):
+    """
+    Checks if the interface link is up
+    :param interface: name of the interface
+    :return: True if the interface's link comes up,
+     False otherwise.
+    """
+    if 'up' in genio.read_file("/sys/class/net/%s/operstate" % interface):
+        log.info("Interface %s link is up", interface)
+        return True
+    return False
