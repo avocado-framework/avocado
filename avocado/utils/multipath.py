@@ -70,7 +70,7 @@ def device_exists(path):
     :return: True if path exists, False if does not exist.
     """
     cmd = "multipath -l %s" % path
-    if process.system(cmd, ignore_status=True, sudo=True) != 0:
+    if process.system(cmd, ignore_status=True, sudo=True, shell=True):
         return False
     return True
 
@@ -99,7 +99,7 @@ def get_multipath_wwids():
     """
     cmd = "egrep -v '^($|#)' /etc/multipath/wwids"
     wwids = process.run(cmd, ignore_status=True,
-                        sudo=True).stdout_text
+                        sudo=True, shell=True).stdout_text
     wwids = wwids.strip("\n").replace("/", "").split("\n")
     return wwids
 
@@ -148,7 +148,7 @@ def is_path_a_multipath(disk_path):
     :return: True if part of multipath, else False.
     """
     if not process.system("multipath -c /dev/%s" % disk_path, sudo=True,
-                          ignore_status=True):
+                          ignore_status=True, shell=True):
         return True
     return False
 
@@ -241,6 +241,6 @@ def flush_path(path_name):
     :return: Returns False if command fails, True otherwise.
     """
     cmd = "multipath -f %s" % path_name
-    if process.system(cmd, ignore_status=True, sudo=True) != 0:
+    if process.system(cmd, ignore_status=True, sudo=True, shell=True):
         return False
     return True
