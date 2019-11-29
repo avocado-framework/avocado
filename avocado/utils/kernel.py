@@ -123,6 +123,11 @@ class KernelBuild:
         if self.config_path is not None:
             dotconfig = os.path.join(self.linux_dir, '.config')
             shutil.copy(self.config_path, dotconfig)
+            build.make(self.linux_dir, extra_args='-C %s olddefconfig' %
+                       self.linux_dir)
+        else:
+            build.make(self.linux_dir, extra_args='-C %s defconfig' %
+                       self.linux_dir)
 
     def build(self, binary_package=False):
         """
@@ -138,12 +143,6 @@ class KernelBuild:
         if binary_package is True:
             if self.distro.name == "Ubuntu":
                 build_output_format = "deb-pkg"
-        if self.config_path is None:
-            build.make(self.linux_dir, extra_args='-C %s defconfig' %
-                       self.linux_dir)
-        else:
-            build.make(self.linux_dir, extra_args='-C %s olddefconfig' %
-                       self.linux_dir)
         build.make(self.linux_dir, extra_args='-C %s %s' %
                    (self.linux_dir, build_output_format))
 
