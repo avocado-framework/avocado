@@ -67,9 +67,20 @@ class KernelBuild:
         """
         Return the vmlinux path if the file exists
         """
-        vmlinux_path = os.path.join(self.linux_dir, 'vmlinux')
+        if not self.build_dir:
+            return None
+        vmlinux_path = os.path.join(self.build_dir, 'vmlinux')
         if os.path.isfile(vmlinux_path):
             return vmlinux_path
+        return None
+
+    @property
+    def build_dir(self):
+        """
+        Return the build path if the directory exists
+        """
+        if os.path.isdir(self.linux_dir):
+            return self.linux_dir
         return None
 
     def _build_kernel_url(self, base_url=None):
