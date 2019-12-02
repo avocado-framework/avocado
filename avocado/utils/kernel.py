@@ -114,9 +114,15 @@ class KernelBuild:
         else:
             raise Exception("Unable to find the tarball")
 
-    def configure(self):
+    def configure(self, targets=('defconfig'), extra_configs=None):
         """
         Configure/prepare kernel source to build.
+
+        :param targets: configuration targets. Default is 'defconfig'.
+        :type targets: list of str
+        :param extra_configs: additional configurations in the form of
+                              CONFIG_NAME=VALUE.
+        :type extra_configs: list of str
         """
         build.make(self.linux_dir, extra_args='-C %s mrproper' %
                    self.linux_dir)
@@ -126,8 +132,21 @@ class KernelBuild:
             build.make(self.linux_dir, extra_args='-C %s olddefconfig' %
                        self.linux_dir)
         else:
-            build.make(self.linux_dir, extra_args='-C %s defconfig' %
-                       self.linux_dir)
+            if isinstance(targets, list):
+                _targets = " ".join(targets)
+            else:
+                _targets = targets
+            build.make(self.linux_dir,
+                       extra_args='-C %s %s' % (self.linux_dir, _targets))
+        if extra_configs:
+            with tempfile.NamedTemporaryFile(mode='w+t',
+                                             prefix='avocado_') as config_file:
+                config_file.write('\n'.join(extra_configs))
+                config_file.flush()
+                cmd = ['cd', self.build_dir, '&&',
+                       './scripts/kconfig/merge_config.sh', '.config',
+                       config_file.name]
+                process.run(" ".join(cmd), shell=True)
 
     def build(self, binary_package=False):
         """
