@@ -87,8 +87,16 @@ class TermSupport:
         term = os.environ.get("TERM")
         colored = settings.get_value('runner.output', 'colored',
                                      key_type='bool', default=True)
-        if not colored or not os.isatty(1) or term not in allowed_terms:
+        force_color = settings.get_value('runner.output', 'color',
+                                         default="auto")
+        if force_color == "never":
             self.disable()
+        elif force_color == "auto":
+            if not colored or not os.isatty(1) or term not in allowed_terms:
+                self.disable()
+        elif force_color != "always":
+            raise ValueError("The value for runner.output.color must be one of "
+                             "'always', 'never', 'auto' and not " + force_color)
 
     def disable(self):
         """
