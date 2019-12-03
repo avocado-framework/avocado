@@ -106,43 +106,39 @@ def unset_ip(interface):
         raise NWException("ifdown fails: %s" % ex)
 
 
-class HostInfo:
+def ping_check(interface, peer_ip, count, option=None, flood=False):
     """
-    class for host function
+    Checks if the ping to peer works.
     """
-
-    def ping_check(self, interface, peer_ip, count, option=None, flood=False):
-        """
-        Checks if the ping to peer works.
-        """
-        cmd = "ping -I %s %s -c %s" % (interface, peer_ip, count)
-        if flood is True:
-            cmd = "%s -f" % cmd
-        elif option is not None:
-            cmd = "%s %s" % (cmd, option)
-        if process.system(cmd, shell=True, verbose=True,
-                          ignore_status=True) != 0:
-            return False
-        return True
-
-    def set_mtu_host(self, interface, mtu):
-        """
-        Set MTU size in host interface
-        """
-        cmd = "ip link set %s mtu %s" % (interface, mtu)
-        try:
-            process.system(cmd, shell=True)
-        except process.CmdError as ex:
-            raise NWException("MTU size can not be set: %s" % ex)
-        try:
-            cmd = "ip add show %s" % interface
-            mtuvalue = process.system_output(cmd, shell=True).decode("utf-8") \
-                                                             .split()[4]
-            if mtuvalue == mtu:
-                return True
-        except Exception as ex:  # pylint: disable=W0703
-            log.error("setting MTU value in host failed: %s", ex)
+    cmd = "ping -I %s %s -c %s" % (interface, peer_ip, count)
+    if flood is True:
+        cmd = "%s -f" % cmd
+    elif option is not None:
+        cmd = "%s %s" % (cmd, option)
+    if process.system(cmd, shell=True, verbose=True,
+                      ignore_status=True) != 0:
         return False
+    return True
+
+
+def set_mtu_host(interface, mtu):
+    """
+    Set MTU size in host interface
+    """
+    cmd = "ip link set %s mtu %s" % (interface, mtu)
+    try:
+        process.system(cmd, shell=True)
+    except process.CmdError as ex:
+        raise NWException("MTU size can not be set: %s" % ex)
+    try:
+        cmd = "ip add show %s" % interface
+        mtuvalue = process.system_output(cmd, shell=True).decode("utf-8") \
+                                                         .split()[4]
+        if mtuvalue == mtu:
+            return True
+    except Exception as ex:  # pylint: disable=W0703
+        log.error("setting MTU value in host failed: %s", ex)
+    return False
 
 
 class PeerInfo:
