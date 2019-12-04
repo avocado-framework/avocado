@@ -55,7 +55,7 @@ class KernelBuild:
             self.data_dirs = data_dirs
         else:
             self.data_dirs = [self.work_dir]
-        self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
+        self._build_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
 
     def __repr__(self):
         return "KernelBuild('%s, %s, %s')" % (self.version,
@@ -79,8 +79,8 @@ class KernelBuild:
         """
         Return the build path if the directory exists
         """
-        if os.path.isdir(self.linux_dir):
-            return self.linux_dir
+        if os.path.isdir(self._build_dir):
+            return self._build_dir
         return None
 
     def _build_kernel_url(self, base_url=None):
@@ -124,26 +124,26 @@ class KernelBuild:
                               CONFIG_NAME=VALUE.
         :type extra_configs: list of str
         """
-        build.make(self.linux_dir, extra_args='-C %s mrproper' %
-                   self.linux_dir)
+        build.make(self._build_dir, extra_args='-C %s mrproper' %
+                   self._build_dir)
         if self.config_path is not None:
-            dotconfig = os.path.join(self.linux_dir, '.config')
+            dotconfig = os.path.join(self._build_dir, '.config')
             shutil.copy(self.config_path, dotconfig)
-            build.make(self.linux_dir, extra_args='-C %s olddefconfig' %
-                       self.linux_dir)
+            build.make(self._build_dir, extra_args='-C %s olddefconfig' %
+                       self._build_dir)
         else:
             if isinstance(targets, list):
                 _targets = " ".join(targets)
             else:
                 _targets = targets
-            build.make(self.linux_dir,
-                       extra_args='-C %s %s' % (self.linux_dir, _targets))
+            build.make(self.build_dir,
+                       extra_args='-C %s %s' % (self.build_dir, _targets))
         if extra_configs:
             with tempfile.NamedTemporaryFile(mode='w+t',
                                              prefix='avocado_') as config_file:
                 config_file.write('\n'.join(extra_configs))
                 config_file.flush()
-                cmd = ['cd', self.build_dir, '&&',
+                cmd = ['cd', self._build_dir, '&&',
                        './scripts/kconfig/merge_config.sh', '.config',
                        config_file.name]
                 process.run(" ".join(cmd), shell=True)
@@ -162,8 +162,8 @@ class KernelBuild:
         if binary_package is True:
             if self.distro.name == "Ubuntu":
                 build_output_format = "deb-pkg"
-        build.make(self.linux_dir, extra_args='-C %s %s' %
-                   (self.linux_dir, build_output_format))
+        build.make(self._build_dir, extra_args='-C %s %s' %
+                   (self._build_dir, build_output_format))
 
     def install(self):
         """
