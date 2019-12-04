@@ -35,7 +35,7 @@ def get_domains():
     :rtype: list of str
     """
     cmd = "lspci -D"
-    output = process.run(cmd, ignore_status=True).stdout_text
+    output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         domains = []
         for line in output.splitlines():
@@ -237,7 +237,7 @@ def get_pci_prop(pci_address, prop):
     :rtype: str
     """
     cmd = "lspci -Dnvmm -s %s" % pci_address
-    output = process.run(cmd, ignore_status=True).stdout_text
+    output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         for line in output.splitlines():
             if prop == line.split(':')[0]:
@@ -272,7 +272,7 @@ def get_driver(pci_address):
     :rtype: str
     """
     cmd = "lspci -ks %s" % pci_address
-    output = process.run(cmd, ignore_status=True).stdout_text
+    output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         for line in output.splitlines():
             if 'Kernel driver in use:' in line:
@@ -292,7 +292,7 @@ def get_memory_address(pci_address):
     :rtype: str
     """
     cmd = "lspci -bv -s %s" % pci_address
-    output = process.run(cmd, ignore_status=True).stdout_text
+    output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         for line in output.splitlines():
             if 'Memory at' in line:
@@ -312,7 +312,7 @@ def get_mask(pci_address):
     :rtype: str
     """
     cmd = "lspci -vv -s %s" % pci_address
-    output = process.run(cmd, ignore_status=True).stdout_text
+    output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         dic = {'K': 1024, 'M': 1048576, 'G': 1073741824}
         for line in output.splitlines():
