@@ -13,6 +13,10 @@
 # Author: Ruda Moura <rmoura@redhat.com>
 # Author: Santhosh G <santhog4@linux.vnet.ibm.com>
 
+"""
+Provides utilities for the Linux kernel.
+"""
+
 import os
 import shutil
 import logging
@@ -21,7 +25,7 @@ from distutils.version import LooseVersion  # pylint: disable=E0611
 
 from . import asset, archive, build, distro, process
 
-log = logging.getLogger('avocado.test')
+LOG = logging.getLogger('avocado.test')
 
 
 class KernelBuild:
@@ -109,7 +113,7 @@ class KernelBuild:
         :raises: Exception in case the tarball is not downloaded
         """
         if self.asset_path:
-            log.info("Uncompressing tarball")
+            LOG.info("Uncompressing tarball")
             archive.extract(self.asset_path, self.work_dir)
         else:
             raise Exception("Unable to find the tarball")
@@ -157,7 +161,7 @@ class KernelBuild:
                                   for install() to use
         :type binary_pacakge: bool
         """
-        log.info("Starting build the kernel")
+        LOG.info("Starting build the kernel")
         build_output_format = ""
         if binary_package is True:
             if self.distro.name == "Ubuntu":
@@ -169,12 +173,12 @@ class KernelBuild:
         """
         Install built kernel.
         """
-        log.info("Starting kernel install")
+        LOG.info("Starting kernel install")
         if self.distro.name == "Ubuntu":
             process.run('dpkg -i %s/*.deb' %
                         self.work_dir, shell=True, sudo=True)
         else:
-            log.info("Skipping kernel install")
+            LOG.info("Skipping kernel install")
 
     def __del__(self):
         shutil.rmtree(self.work_dir)
