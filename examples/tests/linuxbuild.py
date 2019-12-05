@@ -17,8 +17,8 @@ class LinuxBuildTest(Test):
     """
 
     def setUp(self):
-        kernel_src_url = self.params.get('linux_src_url', default='https://www.kernel.org/pub/linux/kernel/v3.x')
-        kernel_version = self.params.get('linux_version', default='3.19.8')
+        kernel_src_url = self.params.get('linux_src_url', default='https://www.kernel.org/pub/linux/kernel/v5.x/')
+        kernel_version = self.params.get('linux_version', default='5.4.1')
         linux_config = self.params.get('linux_config', default=None)
         self.do_kernel_install = self.params.get('do_kernel_install', default=None)
         if linux_config is not None:
