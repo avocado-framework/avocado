@@ -7,6 +7,9 @@
 :Type: Epic Blueprint
 :Status: Draft
 
+.. contents:: Table of Contents
+.. section-numbering::
+
 TL;DR
 #####
 
