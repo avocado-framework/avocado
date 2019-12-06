@@ -35,6 +35,12 @@ Contents:
    future/index
 
 .. toctree::
+   :caption: Blueprints
+   :titlesonly:
+
+   blueprints/BP001
+
+.. toctree::
    :caption: Learn More
    :maxdepth: 3
 
