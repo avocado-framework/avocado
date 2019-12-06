@@ -1,6 +1,6 @@
 ---
 - name: Installs Avocado using RPM packages from the official release repo
-  hosts: avocado-test-deployment
+  hosts: local
   tasks:
     - include_vars: vars.yml
     - include_tasks: tasks/epel.yml
