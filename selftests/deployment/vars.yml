@@ -1,4 +1,8 @@
----
-# You own variables here.  Examples include:
-# avocado_git_url: https://github.com/$YOUR_GITHUB_USERNAME/avocado.git
-# avocado_git_branch: $YOUR_DEVELOPMENT_BRANCH
+avocado_git_url: https://github.com/avocado-framework/avocado.git
+avocado_git_branch: master
+avocado_egg_name: avocado-framework
+avocado_vt_git_url: https://github.com/avocado-framework/avocado-vt.git
+avocado_vt_git_branch: master
+avocado_vt_egg_name: avocado-plugins-vt
+method: pip
+avocado_vt: false

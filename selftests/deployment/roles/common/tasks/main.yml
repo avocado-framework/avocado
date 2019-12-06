@@ -1,0 +1,108 @@
+---
+# Enable repos
+#- name: Install EPEL on Red Hat systems
+#  yum:
+#    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+#  when:
+#    # This should work on both RHEL, CentOS, Scientific Linux, etc
+#    - ansible_facts['distribution_file_variety'] == "RedHat"
+#    - ansible_facts['distribution'] != "Fedora"
+
+# Official repos
+- name: Install Avocado EPEL Official Releases repo
+  yum_repository:
+    name: avocado
+    description: Avocado EPEL Official Releases repo
+    baseurl: https://avocado-project.org/data/repos/epel-$releasever-noarch/
+    gpgcheck: yes
+    gpgkey: https://avocado-project.org/data/repos/crosa_redhat_com.gpg
+  when:
+    - method == 'official'
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+    - ansible_facts['distribution_major_version'] == "7"
+
+- name: Install Avocado Fedora Official Releases repo
+  yum_repository:
+    name: avocado
+    description: Avocado Fedora Official Releases repo
+    baseurl: https://avocado-project.org/data/repos/fedora-$releasever-noarch/
+    gpgcheck: yes
+    gpgkey: https://avocado-project.org/data/repos/crosa_redhat_com.gpg
+  when:
+    - method == 'official'
+    - ansible_facts['distribution'] == "Fedora"
+
+# Copr repos (Avocado)
+- name: Avocado EPEL Copr repo
+  yum_repository:
+    name: avocado-latest
+    description: Copr repo for avocado-latest
+    baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-latest/epel-$releasever-$basearch/
+    gpgcheck: no
+  when:
+    - method == 'copr'
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+
+- name: Avocado Fedora Copr repo
+  yum_repository:
+    name: avocado-latest
+    description: Copr repo for avocado-latest
+    baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-latest/fedora-$releasever-$basearch/
+    gpgcheck: no
+  when:
+    - method == 'copr'
+    - ansible_facts['distribution'] == "Fedora"
+
+# Copr repos (Avocado-VT)
+- name: Avocado-VT Copr repo
+  yum_repository:
+    name: avocado-vt-latest
+    description: Copr repo for avocado-vt-latest
+    baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-vt-latest/epel-7-$basearch/
+    gpgcheck: no
+  when:
+    - method == 'copr'
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+    - ansible_facts['distribution_major_version'] == "7"
+    - avocado_vt|default(false)|bool == true
+
+- name: Avocado-VT Copr repo
+  yum_repository:
+    name: avocado-vt-latest
+    description: Copr repo for avocado-vt-latest
+    baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-vt-latest/fedora-$releasever-$basearch/
+    gpgcheck: no
+  when:
+    - method == 'copr'
+    - ansible_facts['distribution'] == "Fedora"
+    - avocado_vt|default(false)|bool == true
+
+# Install dependencies
+
+- name: Install Basic Depedencies on Red Hat (like) systems
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - python3-pip
+    - git
+  when: ansible_facts['distribution_file_variety'] == "RedHat"
+
+- name: Install Avocado-VT Depedencies on Red Hat (like) systems
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - gcc
+    - nc
+    - python3-netaddr
+    - python3-netifaces
+    - python3-aexpect
+    - qemu-img
+    - qemu-kvm
+    - tcpdump
+    - iproute
+    - iputils
+  when:
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+    - avocado_vt|default(false)|bool == true
