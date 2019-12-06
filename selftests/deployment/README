@@ -41,4 +41,4 @@ All-in-one execution in container:
 It may be useful to run a playbook in a fresh container.  One example
 of a onliner that can achieve that:
 
-  podman run --rm -ti fedora:30 /bin/bash -c 'dnf -y install git ansible && ansible-pull -v -U git://github.com/avocado-framework/avocado -i selftests/deployment/inventory -c local selftests/deployment/rpm-copr.yml'
+  podman run --rm -ti fedora:30 /bin/bash -c 'dnf -y install git ansible python3-pyyaml && ansible-pull -v -U git://github.com/avocado-framework/avocado -i selftests/deployment/inventory -c local selftests/deployment/rpm-copr.yml'
