@@ -1,0 +1,16 @@
+---
+- name: Avocado test 1/1 - Checking for the Avocado version
+  shell: "{{ temporary_dir.path }}/bin/avocado --version"
+  changed_when: false
+
+- name: Avocado-VT test 1/2 - vt-bootstrap
+  shell: "{{ temporary_dir.path }}/bin/avocado vt-bootstrap --yes-to-all --vt-skip-verify-download-assets"
+  when:
+    - ansible_facts['distribution'] != "Fedora"
+    - avocado_vt|default(false)|bool == true
+
+- name: Avocado-VT test 2/2 - list boot
+  shell: "{{ temporary_dir.path }}/bin/avocado list boot"
+  when:
+    - ansible_facts['distribution'] != "Fedora"
+    - avocado_vt|default(false)|bool == true

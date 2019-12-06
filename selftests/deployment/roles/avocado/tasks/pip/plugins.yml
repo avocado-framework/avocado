@@ -1,0 +1,64 @@
+---
+- name: Avocado HTML report plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-result-html&subdirectory=optional_plugins/html"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+  
+- name: Avocado resultsdb plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-resultsdb&subdirectory=optional_plugins/resultsdb"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+
+- name: Avocado result_upload plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-result-upload&subdirectory=optional_plugins/result_upload"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+
+- name: Avocado Varianter YAML-to-Mux plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-varianter-yaml-to-mux&subdirectory=optional_plugins/varianter_yaml_to_mux"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+
+- name: Avocado Varianter CIT plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-varianter-cit&subdirectory=optional_plugins/varianter_cit"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+
+- name: Avocado Varianter PICT plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-varianter-pict&subdirectory=optional_plugins/varianter_pict"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+
+- name: Avocado glib loader plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-glib&subdirectory=optional_plugins/glib"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+
+- name: Avocado golang loader plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-golang&subdirectory=optional_plugins/golang"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+
+- name: Avocado YAML loader plugin installation via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-loader-yaml&subdirectory=optional_plugins/loader_yaml"
+    virtualenv: "{{ temporary_dir.path }}"
+  when: method == 'pip'
+
+# This is a workaround until we fix avocado-vt/issues/2193
+- name: Avocado VT plugin installation via RPM
+  package:
+    name: python3-avocado-plugins-vt
+    state: latest
+  when:
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+    - ansible_facts['distribution'] != "Fedora"
+    - avocado_vt|default(false)|bool == true
