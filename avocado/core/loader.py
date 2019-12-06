@@ -591,8 +591,8 @@ class FileLoader(TestLoader):
             return make_broken(NotATest, test_path,
                                self.NOT_TEST_STR)
 
-    def _make_existing_file_tests(self, test_path, make_broken,
-                                  subtests_filter, test_name=None):
+    def _make_python_file_tests(self, test_path, make_broken,
+                                subtests_filter, test_name=None):
         if test_name is None:
             test_name = test_path
         try:
@@ -686,8 +686,8 @@ class FileLoader(TestLoader):
                 return make_broken(AccessDeniedPath, test_path, "Is not "
                                    "readable")
             if test_path.endswith('.py'):
-                return self._make_existing_file_tests(test_path, make_broken,
-                                                      subtests_filter)
+                return self._make_python_file_tests(test_path, make_broken,
+                                                    subtests_filter)
             else:
                 return self._make_simple_or_broken_test(test_path,
                                                         subtests_filter,
@@ -705,9 +705,9 @@ class FileLoader(TestLoader):
             # Try to resolve test ID (keep compatibility)
             test_path = os.path.join(data_dir.get_test_dir(), test_name)
             if os.path.exists(test_path):
-                return self._make_existing_file_tests(test_path, make_broken,
-                                                      subtests_filter,
-                                                      test_name)
+                return self._make_python_file_tests(test_path, make_broken,
+                                                    subtests_filter,
+                                                    test_name)
             else:
                 if not subtests_filter and ':' in test_name:
                     test_name, subtests_filter = test_name.split(':', 1)
@@ -715,10 +715,10 @@ class FileLoader(TestLoader):
                                              test_name)
                     if os.path.exists(test_path):
                         subtests_filter = re.compile(subtests_filter)
-                        return self._make_existing_file_tests(test_path,
-                                                              make_broken,
-                                                              subtests_filter,
-                                                              test_name)
+                        return self._make_python_file_tests(test_path,
+                                                            make_broken,
+                                                            subtests_filter,
+                                                            test_name)
                 return make_broken(NotATest, test_name, "File not found "
                                    "('%s'; '%s')" % (test_name, test_path))
         return make_broken(NotATest, test_name, self.NOT_TEST_STR)
