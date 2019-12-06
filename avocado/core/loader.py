@@ -433,49 +433,37 @@ class NotATest:
     """
 
 
-class FileLoader(TestLoader):
+class SimpleFileLoader(TestLoader):
 
     """
     Test loader class.
     """
 
     name = 'file'
-    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based), PyUNITTEST ("
-                    "unittest.TestCase based) or SIMPLE (executable) test")
+    NOT_TEST_STR = ("Not a supported test")
 
     def __init__(self, args, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
-        super(FileLoader, self).__init__(args, extra_params)
+        super(SimpleFileLoader, self).__init__(args, extra_params)
         self.test_type = test_type
 
     @staticmethod
     def get_type_label_mapping():
-        return {test.SimpleTest: 'SIMPLE',
-                NotATest: 'NOT_A_TEST',
+        return {NotATest: 'NOT_A_TEST',
                 MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
-                AccessDeniedPath: 'ACCESS_DENIED',
-                test.Test: 'INSTRUMENTED',
-                test.PythonUnittest: 'PyUNITTEST'}
+                AccessDeniedPath: 'ACCESS_DENIED'}
 
     @staticmethod
     def get_decorator_mapping():
-        return {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
-                NotATest: output.TERM_SUPPORT.warn_header_str,
+        return {NotATest: output.TERM_SUPPORT.warn_header_str,
                 MissingTest: output.TERM_SUPPORT.fail_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
-                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
-                test.Test: output.TERM_SUPPORT.healthy_str,
-                test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
+                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str}
 
     @staticmethod
     def _is_matching_test_class(tst, test_class):
-        if test_class is test.Test:
-            # Instrumented tests are defined as string and loaded at the
-            # execution time.
-            return isinstance(tst, str)
-        else:
-            return not isinstance(tst, str) and issubclass(tst, test_class)
+        return issubclass(tst, test_class)
 
     def discover(self, reference, which_tests=DiscoverMode.DEFAULT):
         """
@@ -558,6 +546,119 @@ class FileLoader(TestLoader):
                                               subtests_filter))
         return tests
 
+    def _make_simple_test(self, test_path, subtests_filter):
+        return self._make_test(test.SimpleTest, test_path,
+                               subtests_filter=subtests_filter,
+                               executable=test_path)
+
+    def _make_simple_or_broken_test(self, test_path, subtests_filter, make_broken):
+        if os.access(test_path, os.X_OK):
+            return self._make_simple_test(test_path, subtests_filter)
+        else:
+            return make_broken(NotATest, test_path,
+                               self.NOT_TEST_STR)
+
+    def _make_existing_file_tests(self, test_path, make_broken,
+                                  subtests_filter):
+        return self._make_simple_or_broken_test(test_path, subtests_filter, make_broken)
+
+    def _make_nonexisting_file_tests(self, test_path, make_broken,
+                                     subtests_filter, test_name):  # pylint: disable=W0613
+        return make_broken(NotATest, test_name, "File not found "
+                           "('%s'; '%s')" % (test_name, test_path))
+
+    @staticmethod
+    def _make_test(klass, uid, description=None, subtests_filter=None,
+                   **test_arguments):
+        """
+        Create test template
+        :param klass: test class
+        :param uid: test uid (by default used as id and name)
+        :param description: Description appended to "uid" (for listing purpose)
+        :param subtests_filter: optional filter of methods for avocado tests
+        :param test_arguments: arguments to be passed to the klass(test_arguments)
+        """
+        if subtests_filter and not subtests_filter.search(uid):
+            return []
+
+        if description:
+            uid = "%s: %s" % (uid, description)
+        test_arguments["name"] = uid
+        return [(klass, test_arguments)]
+
+    def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
+        """
+        Create test templates from given path
+        :param test_path: File system path
+        :param list_non_tests: include bad tests (NotATest, BrokenSymlink,...)
+        :param subtests_filter: optional filter of methods for avocado tests
+        """
+        def ignore_broken(klass, uid, description=None):  # pylint: disable=W0613
+            """ Always return empty list """
+            return []
+
+        if list_non_tests:  # return broken test with params
+            make_broken = self._make_test
+        else:  # return empty set instead
+            make_broken = ignore_broken
+        test_name = test_path
+        if os.path.exists(test_path):
+            if os.access(test_path, os.R_OK) is False:
+                return make_broken(AccessDeniedPath, test_path, "Is not "
+                                   "readable")
+            return self._make_existing_file_tests(test_path, make_broken,
+                                                  subtests_filter)
+        else:
+            if os.path.islink(test_path):
+                try:
+                    if not os.path.isfile(os.readlink(test_path)):
+                        return make_broken(BrokenSymlink, test_path, "Is a "
+                                           "broken symlink")
+                except OSError:
+                    return make_broken(AccessDeniedPath, test_path, "Is not "
+                                       "accessible.")
+            return self._make_nonexisting_file_tests(test_path, make_broken,
+                                                     subtests_filter,
+                                                     test_name)
+
+
+class FileLoader(SimpleFileLoader):
+
+    """
+    Test loader class.
+    """
+
+    name = 'file'
+    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based), PyUNITTEST ("
+                    "unittest.TestCase based) or SIMPLE (executable) test")
+
+    @staticmethod
+    def get_type_label_mapping():
+        mapping = SimpleFileLoader.get_type_label_mapping()
+        mapping.update(
+            {test.SimpleTest: 'SIMPLE',
+             test.Test: 'INSTRUMENTED',
+             test.PythonUnittest: 'PyUNITTEST'})
+        return mapping
+
+    @staticmethod
+    def get_decorator_mapping():
+        mapping = SimpleFileLoader.get_decorator_mapping()
+        mapping.update(
+            {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
+             test.Test: output.TERM_SUPPORT.healthy_str,
+             test.PythonUnittest: output.TERM_SUPPORT.healthy_str})
+        return mapping
+
+    @staticmethod
+    def _is_matching_test_class(tst, test_class):
+        if test_class is test.Test:
+            # Instrumented tests are defined as string and loaded at the
+            # execution time.
+            return isinstance(tst, str)
+        else:
+            return not isinstance(tst, str) and issubclass(tst, test_class)
+
     def _find_python_unittests(self, test_path, disabled, subtests_filter):
         result = []
         class_methods = safeloader.find_python_unittests(test_path)
@@ -632,6 +733,8 @@ class FileLoader(TestLoader):
                                                "tags": tags})
                         for (name, tags) in python_unittests]
             else:
+                # Module does not have an avocado test or pyunittest class inside,
+                # but maybe it's a Python executable.
                 return self._make_simple_or_broken_test(test_path,
                                                         subtests_filter,
                                                         make_broken)
@@ -678,60 +781,6 @@ class FileLoader(TestLoader):
                                                         test_name)
             return make_broken(NotATest, test_name, "File not found "
                                "('%s'; '%s')" % (test_name, test_path))
-
-    @staticmethod
-    def _make_test(klass, uid, description=None, subtests_filter=None,
-                   **test_arguments):
-        """
-        Create test template
-        :param klass: test class
-        :param uid: test uid (by default used as id and name)
-        :param description: Description appended to "uid" (for listing purpose)
-        :param subtests_filter: optional filter of methods for avocado tests
-        :param test_arguments: arguments to be passed to the klass(test_arguments)
-        """
-        if subtests_filter and not subtests_filter.search(uid):
-            return []
-
-        if description:
-            uid = "%s: %s" % (uid, description)
-        test_arguments["name"] = uid
-        return [(klass, test_arguments)]
-
-    def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
-        """
-        Create test templates from given path
-        :param test_path: File system path
-        :param list_non_tests: include bad tests (NotATest, BrokenSymlink,...)
-        :param subtests_filter: optional filter of methods for avocado tests
-        """
-        def ignore_broken(klass, uid, description=None):  # pylint: disable=W0613
-            """ Always return empty list """
-            return []
-
-        if list_non_tests:  # return broken test with params
-            make_broken = self._make_test
-        else:  # return empty set instead
-            make_broken = ignore_broken
-        test_name = test_path
-        if os.path.exists(test_path):
-            if os.access(test_path, os.R_OK) is False:
-                return make_broken(AccessDeniedPath, test_path, "Is not "
-                                   "readable")
-            return self._make_existing_file_tests(test_path, make_broken,
-                                                  subtests_filter)
-        else:
-            if os.path.islink(test_path):
-                try:
-                    if not os.path.isfile(os.readlink(test_path)):
-                        return make_broken(BrokenSymlink, test_path, "Is a "
-                                           "broken symlink")
-                except OSError:
-                    return make_broken(AccessDeniedPath, test_path, "Is not "
-                                       "accessible.")
-            return self._make_nonexisting_file_tests(test_path, make_broken,
-                                                     subtests_filter,
-                                                     test_name)
 
 
 class ExternalLoader(TestLoader):
