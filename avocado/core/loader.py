@@ -440,8 +440,8 @@ class FileLoader(TestLoader):
     """
 
     name = 'file'
-    __not_test_str = ("Not an INSTRUMENTED (avocado.Test based), PyUNITTEST ("
-                      "unittest.TestCase based) or SIMPLE (executable) test")
+    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based), PyUNITTEST ("
+                    "unittest.TestCase based) or SIMPLE (executable) test")
 
     def __init__(self, args, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
@@ -589,7 +589,7 @@ class FileLoader(TestLoader):
             # Module does not have an avocado test class inside, and
             # it's not executable. Not a Test.
             return make_broken(NotATest, test_path,
-                               self.__not_test_str)
+                               self.NOT_TEST_STR)
 
     def _make_existing_file_tests(self, test_path, make_broken,
                                   subtests_filter, test_name=None):
@@ -721,7 +721,7 @@ class FileLoader(TestLoader):
                                                               test_name)
                 return make_broken(NotATest, test_name, "File not found "
                                    "('%s'; '%s')" % (test_name, test_path))
-        return make_broken(NotATest, test_name, self.__not_test_str)
+        return make_broken(NotATest, test_name, self.NOT_TEST_STR)
 
 
 class ExternalLoader(TestLoader):
