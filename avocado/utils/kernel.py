@@ -20,6 +20,7 @@ Provides utilities for the Linux kernel.
 import os
 import shutil
 import logging
+import math
 import tempfile
 from distutils.version import LooseVersion  # pylint: disable=E0611
 
@@ -152,7 +153,7 @@ class KernelBuild:
                        config_file.name]
                 process.run(" ".join(cmd), shell=True)
 
-    def build(self, binary_package=False):
+    def build(self, binary_package=False, njobs=1):
         """
         Build kernel from source.
 
@@ -160,14 +161,25 @@ class KernelBuild:
                                   platform package is built
                                   for install() to use
         :type binary_pacakge: bool
+        :param njobs: number of jobs. It is mapped to make's -j option. If
+                      the value passed is of infinity type then make will not
+                      limit the jobs number.
+        :type njobs: int or infinity
         """
+        make_args = []
         LOG.info("Starting build the kernel")
-        build_output_format = ""
+
+        if njobs > 1:
+            make_args.append('-j')
+            if not math.isinf(njobs):
+                make_args.append(str(njobs))
+        make_args.extend(['-C', self._build_dir])
+
         if binary_package is True:
             if self.distro.name == "Ubuntu":
-                build_output_format = "deb-pkg"
-        build.make(self._build_dir, extra_args='-C %s %s' %
-                   (self._build_dir, build_output_format))
+                make_args.append("deb-pkg")
+
+        build.make(self._build_dir, extra_args=" ".join(make_args))
 
     def install(self):
         """
