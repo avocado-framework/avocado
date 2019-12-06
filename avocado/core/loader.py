@@ -575,13 +575,17 @@ class FileLoader(TestLoader):
                 result += candidates
         return result
 
+    def _make_simple_test(self, test_path, subtests_filter):
+        return self._make_test(test.SimpleTest, test_path,
+                               subtests_filter=subtests_filter,
+                               executable=test_path)
+
+
     def _make_simple_or_broken_test(self, test_path, subtests_filter, make_broken):
         if os.access(test_path, os.X_OK):
             # Module does not have an avocado test class inside but
             # it's executable, let's execute it.
-            return self._make_test(test.SimpleTest, test_path,
-                                   subtests_filter=subtests_filter,
-                                   executable=test_path)
+            return self._make_simple_test(test_path, subtests_filter)
         else:
             # Module does not have an avocado test class inside, and
             # it's not executable. Not a Test.
@@ -686,13 +690,9 @@ class FileLoader(TestLoader):
                 return self._make_existing_file_tests(test_path, make_broken,
                                                       subtests_filter)
             else:
-                if os.access(test_path, os.X_OK):
-                    return self._make_test(test.SimpleTest, test_path,
-                                           subtests_filter=subtests_filter,
-                                           executable=test_path)
-                else:
-                    return make_broken(NotATest, test_path,
-                                       self.__not_test_str)
+                return self._make_simple_or_broken_test(test_path,
+                                                        subtests_filter,
+                                                        make_broken)
         else:
             if os.path.islink(test_path):
                 try:
