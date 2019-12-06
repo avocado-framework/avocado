@@ -468,6 +468,15 @@ class FileLoader(TestLoader):
                 test.Test: output.TERM_SUPPORT.healthy_str,
                 test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
 
+    @staticmethod
+    def _is_matching_test_class(tst, test_class):
+        if test_class is test.Test:
+            # Instrumented tests are defined as string and loaded at the
+            # execution time.
+            return isinstance(tst, str)
+        else:
+            return not isinstance(tst, str) and issubclass(tst, test_class)
+
     def discover(self, reference, which_tests=DiscoverMode.DEFAULT):
         """
         Discover (possible) tests from a directory.
@@ -487,19 +496,11 @@ class FileLoader(TestLoader):
         tests = self._discover(reference, which_tests)
         if self.test_type:
             mapping = self.get_type_label_mapping()
-            if self.test_type == 'INSTRUMENTED':
-                # Instrumented tests are defined as string and loaded at the
-                # execution time.
-                for tst in tests:
-                    if not isinstance(tst[0], str):
-                        return None
-            else:
-                test_class = next(key for key, value in mapping.items()
-                                  if value == self.test_type)
-                for tst in tests:
-                    if (isinstance(tst[0], str) or
-                            not issubclass(tst[0], test_class)):
-                        return None
+            test_class = next(key for key, value in mapping.items()
+                              if value == self.test_type)
+            for tst in tests:
+                if not self._is_matching_test_class(tst[0], test_class):
+                    return None
         return tests
 
     def _discover(self, reference, which_tests=DiscoverMode.DEFAULT):
