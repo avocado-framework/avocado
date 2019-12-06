@@ -123,6 +123,7 @@ if __name__ == '__main__':
                   'exec-test = avocado.plugins.resolvers:ExecTestResolver',
                   'python-unittest = avocado.plugins.resolvers:PythonUnittestResolver',
                   'avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedResolver',
+                  'tap = avocado.plugins.resolvers:TapResolver',
                   ],
               'avocado.plugins.runner': [
                   'runner = avocado.plugins.runner:TestRunner',

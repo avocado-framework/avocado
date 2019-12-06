@@ -118,3 +118,23 @@ class AvocadoInstrumentedResolver(Resolver):
 
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.NOTFOUND)
+
+
+class TapResolver(Resolver):
+
+    name = 'tap'
+    description = 'Test resolver for executable files to be handled as tests'
+
+    @staticmethod
+    def resolve(reference):
+
+        criteria_check = check_file(reference, reference, suffix=None,
+                                    type_name='executable file',
+                                    access_check=os.R_OK | os.X_OK,
+                                    access_name='executable')
+        if criteria_check is not True:
+            return criteria_check
+
+        return ReferenceResolution(reference,
+                                   ReferenceResolutionResult.SUCCESS,
+                                   [Runnable('tap', reference)])

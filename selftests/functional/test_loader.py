@@ -176,13 +176,15 @@ class LoaderTestFunctional(unittest.TestCase):
         self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', self.MODE_0775)
 
     def test_simple_not_exec(self):
-        self._test('simpletest.sh', SIMPLE_TEST, 'NOT_A_TEST')
+        # 2 because both FileLoader and the TAP loader cannot recognize the test
+        self._test('simpletest.sh', SIMPLE_TEST, 'NOT_A_TEST', count=2)
 
     def test_pass(self):
         self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
 
     def test_not_python_module(self):
-        self._test('passtest', AVOCADO_TEST_OK, 'NOT_A_TEST')
+        # 2 because both FileLoader and the TAP loader cannot recognize the test
+        self._test('passtest', AVOCADO_TEST_OK, 'NOT_A_TEST', count=2)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
@@ -220,7 +222,8 @@ class LoaderTestFunctional(unittest.TestCase):
         self._test('notatest.py', NOT_A_TEST, 'SIMPLE', self.MODE_0775)
 
     def test_load_not_a_test_not_exec(self):
-        self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST')
+        # 2 because both FileLoader and the TAP loader cannot recognize the test
+        self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST', count=2)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
