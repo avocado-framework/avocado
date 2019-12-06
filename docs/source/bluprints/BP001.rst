@@ -1,0 +1,487 @@
+:Number: BP001
+:Title: Configuration by convention
+:Author: Beraldo Leal <bleal@redhat.com>
+:Discussions-To: avocado-devel@redhat.com
+:Reviewers: Cleber Rosa, Lukáš Doktor and Plamen Dimitrov
+:Created: 06-Dec-2019
+:Type: Epic Blueprint
+:Status: Draft
+
+TL;DR
+#####
+
+The number of plugins made by many people and the lack of some name, config
+options, and argument type conventions may turn Avocado's usability difficult.
+This also makes it challenging to create a future API for executing more
+complex jobs. Even without plugins the lack of convention (or another type or
+order setting mechanism) can induce growth pains. 
+
+After an initial discussion on avocado-devel, we came up with this "blueprint"
+to change some config file settings and argparse options in Avocado.
+
+This document has the intention to list the requirements before coding. And
+note that, since this is a relatively big change, this blueprint will be broken
+into small cards/issues. At the end of this document you can find a list of all
+issues that we should solve in order to solve this big epic Blueprint.
+
+Motivation
+##########
+
+An Avocado Job is primarily executed through the `avocado run` command line.
+The behavior of such an Avocado Job is determined by parsing the following
+settings (listed in parsed order):
+
+ 1) Default values in source code
+ 2) Configuration file contents
+ 3) Command-line options
+
+Currently, the Avocado config file is an .ini file that is parsed by Python's
+`configparser` library and this config is broken into sections. Each Avocado
+plugin has its dedicated section.
+
+Today, the parsing of the command line options is made by `argparse` library
+and produces a dictionary that is given to the `avocado.core.job.Job()` class
+as its `config` parameter.
+
+There is a lack of convention/order in the item 1. For instance, we have
+"avocado/core/defaults.py" with some defaults, but there are other such
+defaults scattered around the project, with ad-hoc names.
+
+There is also no convention on the naming pattern used either on configuration
+files or on command-line options. Besides the name convention, there is also a
+lack of convention for some argument types. For instance::
+
+ $ avocado run -d
+
+and::
+
+ $ avocado run --sysinfo on
+
+Both are boolean variables, but with different "execution model" (the former
+doesn't need arguments and the latter needs `on` or `off` as argument).
+
+Since the Avocado trend is to have more and more plugins, we need to design a
+name convention on command-line arguments and settings to avoid chaos.
+
+But, most important: It would be valuable for our users if Avocado provides a
+Python API in such a way that developers could write more complex jobs
+programmatically and advanced users that know the configuration entries used on
+jobs, could do a quick one-off execution on command-line.
+
+Example::
+
+ import sys
+ from avocado.core.job import Job
+
+ config = {'references': ['tests/passtest.py:PassTest.test']}
+
+ with Job(config) as j:
+   sys.exit(j.run())
+
+Before we address this API use-case, it is important to create this convention
+so we can have an intuitive use of Avocado config options.
+
+We understand that, plugin developers have the flexibility to configure they
+options as desired but inside Avocado core and plugin, settings should have a
+good naming convention.
+
+
+Specification
+#############
+
+Basics on Defaults
+------------------
+
+The Oxford dictionary lists the following as one of the meanings of the word
+"default" (noum):
+
+   *"a preselected option adopted by a computer program or other
+   mechanism when no alternative is specified by the user or
+   programmer."*
+
+The basic behavior on defaults values vs config files vs command line arguments
+should be:
+
+  1. Avocado has all default values inside the source code;
+  2. Avocado parses the config files and override the defined values;
+  3. Avocado parses the command-line options and override the defined values;
+
+If the config files or configuration options are missing, Avocado should still
+be able to use the default values. Users can only change 2 and 3.
+
+.. note:: New Issue: Converte all "currently configured settings" into a
+          default value.
+
+Mapping between configuration options
+-------------------------------------
+
+Currently, Avocado has the following options to configure it:
+
+  1. Default values;
+  2. Configuration files;
+  3. Command-line options;
+
+Soon, we will have a fourth option:
+
+  4. Job API config argument;
+
+Although we should keep an eye on item 4 while implementing this blueprint, it
+is not intended to address the API at this time.
+
+The default values (within the source code) should have an 1:1 mapping to the
+configuration file options. Must follow the same naming convention and
+sections. Exempla::
+
+        #avocado.conf:
+        [core]
+        foo = bar
+        [core.sysinfo]
+        foo = bar
+        [pluginx]
+        foo = bar
+
+Should generate a dictionary or object in memory with a 1:1 mapping, respecting
+chained sections::
+
+        {'core': {'foo': 'bar',
+                  'sysinfo': {'foo': 'bar'}},
+         'pluginx': {'foo': 'bar'}}
+
+Again, if the config file is missing or some option is missing the result
+should be the same, but with the default values.
+
+Since the command-line options are only the most used and basic ones, there is
+no need to have a 1:1 mapping between item 2 and item 3. 
+
+When naming subcommands options you don’t have to worry about name conflicts
+outside the subcommand scope, just keep them short, simple and intuitive.
+
+When naming a command-line option on the core functionality we should remove
+the "core" word section and replace "_" by "-". For instance::
+
+        [core]
+        execution_timeout = 30
+
+Should be::
+
+        avocado --execution-timeout 30
+
+
+When naming plugin options, we should try to use the following standard::
+
+        [pluginx]
+        foo = bar
+
+Becames::
+
+        avocado --pluginx-foo bar
+
+This only makes sense if the plugins' names are short.
+
+.. warning:: Maybe I have to get more used with all the Avocado options to
+         understand better. Or someone could help here.
+
+Standards for Command Line Interface
+------------------------------------
+
+When it comes to the command line interface, a very interesting recommendation
+is the POSIX Standard's recommendation for arguments[1]. Avocado should try to
+follow this standard and its recommendations.
+
+This pattern does not cover long options (starting with --). For this, we should
+also embrace the GNU extension[2].
+
+One of the goals of this extension, by introducing long options, was to make
+command-line utilities user-friendly. Also, another aim was to try to create a
+norm among different command-line utilities. Thus, --verbose, --debug,
+--version (with other options) would have the same behavior in many programs.
+Avocado should try to, where applicable, use the GNU long options table[3] as
+reference.
+
+.. note:: New Issue: Review the command line options to see if we can use the
+          GNU long options table.
+
+Many of these recommendations are obvious and already used by Avocado or
+enforced by default, thanks to libraries like `argparse`.
+
+However, those libraries do not force the developer to follow all
+recommendations.
+
+Besides the basic ones, there is a particular case to pay attention:
+"option-arguments".
+
+Option-arguments should not be optional (Guideline 7, from POSIX). So we should
+avoid this::
+     
+        avocado run --loaders [LOADERS [LOADERS ...]]
+
+or::
+  
+        avocado run --store-logging-stream [STREAM[:LEVEL] [STREAM[:LEVEL] ...]]
+
+As discussed we should try to have this::
+
+        avocado run --loaders LOADERS [LOADERS ...]
+
+.. note:: New Issue: Make the option-arguments not optional.
+
+Argument Types
+~~~~~~~~~~~~~~
+
+Basic types, like strings and integers, are clear how to use. But here is a
+list of what should expect when using other types:
+
+1. **Booleans**: Boolean options should be expressed as "flags" args (without
+   the "option-argument"). Flags, when present, should represent a
+   True/Active value.  This will reduce the command line size. We should
+   avoid using this::
+
+        avocado run --json-job-result {on,off}
+
+   So, if the default it is enabled, we should have only one option on the
+   command-line::
+
+        avocado run --disable-json-job-result
+
+   This is just an example, the name and syntax may be diferent.
+
+.. note:: New Issue: Fix boolean command line options
+
+2. **Lists**: When an option argument has multiple values we should use the
+   space as the separator.
+
+.. note:: New Issue: Review if we have any command line list using non space as
+          separator.
+
+
+Presentation
+~~~~~~~~~~~~
+
+Finding options easily, either in the manual or in the help, favor usability
+and avoids chaos.
+
+We can arrange the display of these options in alphabetical order within each
+section.
+
+
+Standards for Config File Interface
+-----------------------------------
+
+Many other config file options could be used here, but since that this is
+another discussion, we are assuming that we are going to keep using
+`configparser` for a while.
+
+As one of the main motivations of this Blueprint is to create a convention to
+avoid chaos and make the job execution API use as straightforward as possible,
+We believe that the config file should be as close as possible to the
+dictionary that will be passed to this API.
+
+For this reason, this may be the most critical point of this blueprint. We
+should create a pattern that is intuitive for the developer to convert from one
+format to another without much juggling.
+
+Nested Sections
+~~~~~~~~~~~~~~~
+
+While the current `configparser` library does not support nested sections,
+Avocado can use the dot character as a convention for that. i.e:
+`[runner.output]`.
+
+This convention will be important soon, when converting a dictionary into a
+config file and vice-versa.
+
+And since almost everything in Avocado is a plugin, each plugin section should
+**not** use the "plugins" prefix and **must** respect the reserved sections
+mentioned before. Currently, we have a mix of sections that start with
+"plugins" and sections that don't.
+
+.. note:: New Issue: Remove "plugins" from the configuration section names.
+
+Plugin section name
+~~~~~~~~~~~~~~~~~~~
+
+Most plugins currently have the same name as the python module. Example: human,
+diff, tap, nrun, run, journal, replay, sysinfo, etc.
+
+These are examples of "good" names.
+
+However, some other plugins do not follow this convention. Ex: runnable_run,
+runnable_run_recipe, task_run, task_run_recipe, archive, etc.
+
+We believe that having a convention here helps when writing more complex tests,
+configfiles, as well as easily finding plugins in various parts of the project,
+either on a manual page or during the installation procedure.
+
+We understand that the name of the plugin is different from the module name in
+python, but in any case we should try to follow the PEP8:
+
+        From PEP8: *Modules should have short, all-lowercase names. Underscores
+        can be used in the module name if it improves readability. Python
+        packages should also have short, all-lowercase names, although the use
+        of underscores is discouraged.*
+
+Let's get the `human` example:
+
+  * Python module name: human
+  * Plugin name: human
+
+Let's get the `task_run_recipe` example:
+
+  * Python module name: task_run_recipe
+  * Plugin name: task-run-recipe
+
+Let's get another example:
+
+  * Python module name: archive
+  * Plugin name: zip_archive
+
+One suggestion should be to have a namespace like `resolvers.tests.exec`,
+`resolvers.tests.unit.python`.
+
+And all the duplicated code could be imported from a common module inside the
+plugin. But yes, it is a "delicate issue".
+
+.. note:: New Issue: Rename the plugins modules and names. This might be
+          tricky.
+
+Reserved Sections
+~~~~~~~~~~~~~~~~~
+
+We should have one reserved section, the `core` section for the Avocado's core
+functionalities.
+
+All plugin code that it is considered "core" should be inside core as a "nested
+section". Example::
+
+        [core]
+        foo = bar
+        
+        [core.sysinfo]
+        collect_enabled = True
+
+
+.. note:: New Issue: Move all 'core' related settings to the core section.
+
+Config Types
+~~~~~~~~~~~~
+
+`configparser` do not guess datatypes of values in configuration files, always
+storing them internally as strings. This means that if you need other
+datatypes, you should convert on your own
+
+There are few methods on this library to help us: `getboolean()`, `getint()`
+and `getfloat()`. Basic types here, are also straightforward.
+
+Regarding boolean values, `getboolean()` can accept `yes/no`, `on/off`,
+`true/false` or `1/0`. But we should adopt one style and stick with it.
+
+.. note:: New Issue: Create a simple but effective type system for
+          configuration files and argument options.
+
+Presentation
+------------
+
+As the avocado trend is to have more and more plugins, We believe that to make
+it easier for the user to find where each configuration is, we should split the
+file into smaller files, leaving one file for each plugin. Avocado already
+supports that with the conf.d directory. What do you think?
+
+.. note:: New Issue: Split config files into small ones (if necessary).
+
+Backwards Comaptibility
+#######################
+
+In order to keep a good naming convention, this set of changes probably will
+rename some args and/or config file options.
+
+While some changes proposed here are simple and do not affect Avocado's
+behavior, others are critical and may break Avocado jobs.
+
+Command line syntax changes
+---------------------------
+
+These command-line conversions will lead to a "syntax error". We should have a
+transition period with a "deprecated message".
+
+Plugin name changes
+-------------------
+
+Changing the modules names and/or the 'name' attribute of plugins will require
+to change the config files inside Avocado as well. This will not break unless
+the user is using an old config file. In that case, we should also have a
+"deprecated message" and accept the old config file option for some time. 
+
+Security Implications
+#####################
+
+Avocado users should have the warranty that their jobs are running on isolated
+environment.
+
+We should consider this and keep in mind that any moves here should continue
+with this assumption.
+
+How to Teach This
+#################
+
+We should provide a complete configuration reference guide section in our
+User's Documentation.
+
+.. note:: New Issue: Create a complete configuration reference.
+
+In the future, the Job API should also be very well detailed so sphinx could
+generate good documentation on our Test Writer's Guide.
+
+Besides a good documentation, there is no better way to learn than by example.
+If our plugins, options and settings follow a good convention it will serve as
+template to new plugins.
+
+If these changes are accepted by the community and implemented, this RFC could
+be adapted to become a section on one of our guides, maybe something like the a
+Python PEP that should be followed when developing new plugins.
+
+.. note:: New Issue: Create a new section in our Contributor's Guide describing
+          all the conventions on this blueprint.
+
+Related Issues
+##############
+
+Here a list of all issues related to this blueprint:
+
+#. Create a new section in our Contributor's Guide describing all the
+   conventions on this blueprint.
+
+#. Create a complete configuration reference.
+
+#. Split config files into small ones (if necessary).
+
+#. Create a simple but effective type system for configuration files and
+   argument options.
+
+#. Move all 'core' related settings to the core section.
+
+#. Rename the plugins modules and names. This might be tricky.
+
+#. Remove "plugins" from the configuration section names.
+
+#.  Review if we have any command line list using non space as separator.
+
+#. Fix boolean command line options.
+
+#. Make the option-arguments not optional.
+
+#. Review the command line options to see if we can use the GNU long options
+   table.
+
+#. Converte all "currently configured settings" into a default value.
+
+.. warning:: After this blueprint get approved, I will open all issues on GH,
+             add links here and remove all the notes.
+
+References
+##########
+
+[1] - https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html
+
+[2] - https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html
+
+[3] - https://www.gnu.org/prep/standards/html_node/Option-Table.html#Option-Table
