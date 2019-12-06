@@ -120,6 +120,7 @@ class TestLoaderProxy:
                                        ", ".join(_good_test_types(plugin)))
             return out.rstrip('\n')
 
+        self.register_plugin(TapLoader)
         # Register external runner when --external-runner is used
         if args.get("external_runner", None):
             self.register_plugin(ExternalLoader)
@@ -855,6 +856,32 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def get_decorator_mapping():
         return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
+
+
+class TapLoader(SimpleFileLoader):
+    """
+    Test Anything Protocol loader class
+    """
+    name = "tap"
+
+    @staticmethod
+    def get_type_label_mapping():
+        mapping = SimpleFileLoader.get_type_label_mapping()
+        mapping.update(
+            {test.TapTest: 'TAP'})
+        return mapping
+
+    @staticmethod
+    def get_decorator_mapping():
+        mapping = SimpleFileLoader.get_decorator_mapping()
+        mapping.update(
+            {test.TapTest: output.TERM_SUPPORT.healthy_str})
+        return mapping
+
+    def _make_simple_test(self, test_path, subtests_filter):
+        return self._make_test(test.TapTest, test_path,
+                               subtests_filter=subtests_filter,
+                               executable=test_path)
 
 
 loader = TestLoaderProxy()

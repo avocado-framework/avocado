@@ -11,6 +11,7 @@ Optional plugins
    optional/remote_runners
    optional/results
    optional/robot
+   optional/tap
    optional/varianter_cit
    optional/varianter_pict
    optional/varianter_yaml_to_mux
