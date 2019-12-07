@@ -63,13 +63,13 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
     wait.wait_for(mpath_svc.status, timeout=10)
 
 
-def device_exists(path):
+def device_exists(mpath):
     """
-    Checks if a given path exists.
+    Checks if a given mpath exists.
 
     :return: True if path exists, False if does not exist.
     """
-    cmd = "multipath -l %s" % path
+    cmd = "multipath -l %s" % mpath
     if process.system(cmd, ignore_status=True, sudo=True, shell=True):
         return False
     return True
@@ -186,6 +186,7 @@ def fail_path(path):
     cmd = 'multipathd -k"fail path %s"' % path
     if process.system(cmd) == 0:
         return wait.wait_for(is_failed, timeout=10) or False
+    return False
 
 
 def reinstate_path(path):
@@ -202,6 +203,7 @@ def reinstate_path(path):
     cmd = 'multipathd -k"reinstate path %s"' % path
     if process.system(cmd) == 0:
         return wait.wait_for(is_reinstated, timeout=10) or False
+    return False
 
 
 def get_policy(wwid):
@@ -244,3 +246,82 @@ def flush_path(path_name):
     if process.system(cmd, ignore_status=True, sudo=True, shell=True):
         return False
     return True
+
+
+def get_mpath_status(mpath):
+    """
+    get the status of mpathX of multipaths
+    :param mpath_name: mpath names. Example: mpatha, mpathb.
+    :return: state of mpathX eg: Active, Suspend, None
+    """
+    cmd = 'multipathd -k"show maps status" | grep -i %s' % mpath
+    mpath_status = process.getoutput(cmd).split()[-2]
+    return mpath_status
+
+
+def suspend_mpath(mpath):
+    """
+    suspending the given mpathX of multipaths
+    :param mpath_name: mpath names. Example: mpatha, mpathb.
+    :return: True or False
+    """
+    def is_mpath_suspended():
+        if get_mpath_status(mpath) == 'suspend':
+            return True
+        return False
+
+    cmd = 'multipathd -k"suspend map %s"' % mpath
+    if process.system(cmd) == 0:
+        return wait.wait_for(is_mpath_suspended, timeout=10) or False
+    return False
+
+
+def resume_mpath(mpath):
+    """
+    resuming the suspended mpathX of multipaths
+    :param mpath_name: mpath names. Example: mpatha, mpathb.
+    :return: True or False
+    """
+    def is_mpath_resumed():
+        if get_mpath_status(mpath) == 'active':
+            return True
+        return False
+
+    cmd = 'multipathd -k"resume map %s"' % mpath
+    if process.system(cmd) == 0:
+        return wait.wait_for(is_mpath_resumed, timeout=10) or False
+    return False
+
+
+def remove_mpath(mpath):
+    """
+    removing the mpathX of multipaths
+    :param mpath_name: mpath names. Example: mpatha, mpathb.
+    :return: True or False
+    """
+    def is_mpath_removed():
+        if device_exists(mpath):
+            return False
+        return True
+
+    cmd = 'multipathd -k"remove map %s"' % mpath
+    if process.system(cmd) == 0:
+        return wait.wait_for(is_mpath_removed, timeout=10) or False
+    return False
+
+
+def add_mpath(mpath):
+    """
+    Adding Back the removed mpathX of multipath
+    :param mpath_name: mpath names. Example: mpatha, mpathb.
+    :return: True or False
+    """
+    def is_mpath_added():
+        if device_exists(mpath):
+            return True
+        return False
+
+    cmd = 'multipathd -k"add map %s"' % mpath
+    if process.system(cmd) == 0:
+        return wait.wait_for(is_mpath_added, timeout=10) or False
+    return False
