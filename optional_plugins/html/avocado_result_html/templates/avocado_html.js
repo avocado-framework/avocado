@@ -1,6 +1,6 @@
 $(document).ready(function() {
   $('#results').dataTable({
-    "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     drawCallback: function() {
       $('[data-toggle="popover"]').each(function() {
         var isIconPopover = this.getElementsByClassName('icon').length;
@@ -12,7 +12,7 @@ $(document).ready(function() {
     },
     initComplete: function() {
       var statusColumn = this.api().column(4);
-      var select = $('<select class="form-control"><option value=""></option></select>')
+      var select = $('<select class="form-control input-sm"><option value=""></option></select>')
         .on('change', function () {
           var val = $(this).val()
           statusColumn.search(val ? '^' + val + '$' : '', true, false).draw();
@@ -37,8 +37,4 @@ $(document).ready(function() {
       );
     }
   });
-
-  $('#results')
-    .removeClass( 'display' )
-    .addClass('table table-striped table-bordered');
-} );
+});

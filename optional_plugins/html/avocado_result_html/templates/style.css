@@ -1,6 +1,17 @@
 .font-weight-normal {
     font-weight: normal;
 }
+
+.popover-content {
+    word-break: break-all;
+}
+
+#results {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: separate;
+}
+
 /* Restrict cells to a maximum width */
 .dataTable th, .dataTable div {
     max-width: 10em;
@@ -9,9 +20,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.popover-content {
-    word-break: break-all;
-}
+
 /* Basic metadata for svg */
 .icon {
     padding-left: 11px;
@@ -21,9 +30,11 @@
     background-repeat: no-repeat;
     display: table-cell;
 }
-#icon-logs {
+
+.icon.icon-logs {
     background-image: url("data:image/svg+xml;base64,{{ data.logs_icon|safe }}");
 }
-#icon-whiteboard {
+
+.icon.icon-whiteboard {
     background-image: url("data:image/svg+xml;base64,{{ data.whiteboard_icon|safe }}");
 }

@@ -131,7 +131,7 @@ class ReportModel:
             formatted['whiteboard'] = tst.get('whiteboard', '')
             fail_reason = tst.get('fail_reason')
             if fail_reason is None:
-                fail_reason = '<unknown>'
+                fail_reason = ''
             fail_reason = astring.to_text(fail_reason)
             formatted['fail_reason'] = fail_reason
             test_info.append(formatted)

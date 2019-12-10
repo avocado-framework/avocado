@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Avocado Job Report</title>
 
-    <style type="text/css">
+    <style>
     {% include "bootstrap.min.css" %}
     </style>
 
-    <style type="text/css">
+    <style>
     {% include "datatables.css" %}
     </style>
 
-    <style type="text/css">
+    <style>
     {% include "style.css" %}
     </style>
   </head>
@@ -33,15 +33,15 @@
           <table class="table table-bordered">
             <tr>
               <td>ID</td>
-              <td><tt>{{ data.result.job_unique_id }}</tt></td>
+              <td><samp>{{ data.result.job_unique_id }}</samp></td>
             </tr>
             <tr>
               <td>Host</td>
-              <td><tt>{{ data.hostname }}</tt></td>
+              <td><samp>{{ data.hostname }}</samp></td>
             </tr>
             <tr>
               <td>Results Dir</td>
-              <td><a href="{{ data.results_dir() }}"><tt>{{ data.results_dir_basename() }}</tt></a></td>
+              <td><a href="{{ data.results_dir() }}"><samp>{{ data.results_dir_basename() }}</samp></a></td>
             </tr>
             <tr>
               <td>Cumulative test time</td>
@@ -50,15 +50,16 @@
             <tr>
               <td>Stats</td>
               <td>From {{ data.result.tests_total }} tests executed,
-                {{ data.result.passed }} passed and 
-                {{ data.result.warned }} warned - success rate of 
+                {{ data.result.passed }} passed and
+                {{ data.result.warned }} warned - success rate of
                 {{ '%.2f'|format(data.result.rate) }}% (excluding SKIP and CANCEL)</td>
             </tr>
           </table>
         </div>
       </div>
 
-      <table id="results" class="display" cellspacing="0" width="100%"><thead>
+      <table id="results" class="table table-striped table-bordered">
+        <thead>
           <tr>
             <th>Start Time</th>
             <th>UID</th>
@@ -91,8 +92,8 @@
           </td>
           <td>
             <div>
-              <a class="col-xs-1" href="{{ test.logfile }}"><span class="icon" id="icon-logs" title="Debug log"></span></a>
-              <div class="col-xs-1" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" title="Whiteboard" data-content="{{test.whiteboard}}"><span class="icon" id="icon-whiteboard"></span></div>
+              <a class="col-xs-1" href="{{ test.logfile }}"><span class="icon icon-logs" title="Debug log"></span></a>
+              <div class="col-xs-1" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" title="Whiteboard" data-content="{{test.whiteboard}}"><span class="icon icon-whiteboard"></span></div>
             </div>
           </td>
         </tr>
@@ -196,20 +197,20 @@
       </div>
     </div>
 
-    <script type="text/javascript">
+    <script>
       {% include "jquery.min.js" %}
     </script>
 
-    <script type="text/javascript">
+    <script>
       {% include "bootstrap.min.js" %}
     </script>
 
-    <script type="text/javascript">
+    <script>
       {% include "datatables.min.js" %}
       {% include "datatables.bootstrap.js" %}
     </script>
 
-    <script type="text/javascript">
+    <script>
       {% include "avocado_html.js" %}
     </script>
   </body>
