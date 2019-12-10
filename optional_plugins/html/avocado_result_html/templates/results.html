@@ -61,43 +61,75 @@
       <table id="results" class="table table-striped table-bordered">
         <thead>
           <tr>
-            <th>Start Time</th>
-            <th>UID</th>
-            <th>Test Name</th>
-            <th>Variant</th>
-            <th>Status</th>
-            <th>Time (sec)</th>
-            <th>Info</th>
-            <th>Debug</th>
+            <th>
+              <span>Start Time</span>
+              <div class="resizer"></div>
+            </th>
+            <th>
+              <span>UID</span>
+              <div class="resizer"></div>
+            </th>
+            <th>
+              <span>Test Name</span>
+              <div class="resizer"></div>
+            </th>
+            <th>
+              <span>Variant</span>
+              <div class="resizer"></div>
+            </th>
+            <th>
+              <span>Status</span>
+              <div class="resizer"></div>
+            </th>
+            <th>
+              <span>Time (sec)</span>
+              <div class="resizer"></div>
+            </th>
+            <th>
+              <span>Info</span>
+              <div class="resizer"></div>
+            </th>
+            <th>
+              <span>Debug</span>
+              <div class="resizer"></div>
+            </th>
           </tr>
         </thead>
+        <tbody>
         {% for test in data.tests %}
         <tr class="{{ data.row_class }}">
-          <td><div>{{ test.time_start }}</div></td>
-          <td><div data-toggle="popover" data-container="body" data-trigger="hover" data-content="{{ test.uid }}">{{ test.uid }}</div></td>
-          <td><div data-toggle="popover" data-container="body" data-trigger="hover" data-content="{{ test.name }} | {{ test.params }}">
+          <td data-toggle="popover" data-container="body" data-trigger="hover" data-content="{{ test.time_start }}"><div>{{ test.time_start }}</div></td>
+          <td data-toggle="popover" data-container="body" data-trigger="hover" data-content="{{ test.uid }}"><div>{{ test.uid }}</div></td>
+          <td data-toggle="popover" data-container="body" data-trigger="hover" data-content="{{ test.name }} | {{ test.params }}">
+            <div>
               <a href="{{ test.logdir }}">{{ test.name }}</a>
-          </div></td>
+            </div>
+          </td>
           <td><div>{{ test.variant }}</div></td>
           <td><div>{{ test.status }}</div></td>
           <td><div>{{ test.time }}</div></td>
-          <td>
-            <div data-toggle="popover"
-                 data-container="body"
-                 data-trigger="hover"
-                 data-placement="top"
-                 data-content="{{ test.fail_reason }}">
+          <td data-toggle="popover"
+              data-container="body"
+              data-trigger="hover"
+              data-placement="top"
+              data-content="{{ test.fail_reason }}">
+            <div>
               {{ test.fail_reason }}
             </div>
           </td>
           <td>
             <div>
-              <a class="col-xs-1" href="{{ test.logfile }}"><span class="icon icon-logs" title="Debug log"></span></a>
-              <div class="col-xs-1" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" title="Whiteboard" data-content="{{test.whiteboard}}"><span class="icon icon-whiteboard"></span></div>
+              <a href="{{ test.logfile }}">
+                <span class="icon icon-logs" title="Debug log"></span>
+              </a>
+            </div>
+            <div data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" title="Whiteboard" data-content="{{test.whiteboard}}">
+              <span class="icon icon-whiteboard"></span>
             </div>
           </td>
         </tr>
         {% endfor %}
+        </tbody>
       </table>
 
       <div class="panel panel-default">
