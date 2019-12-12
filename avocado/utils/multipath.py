@@ -325,3 +325,37 @@ def add_mpath(mpath):
     if process.system(cmd) == 0:
         return wait.wait_for(is_mpath_added, timeout=10) or False
     return False
+
+
+def remove_path(path):
+    """
+    removing the individual paths
+    :param disk_path: disk path. Example: sda, sdb.
+    :return: True or False
+    """
+    def is_path_removed():
+        if get_path_status(path) is None:
+            return True
+        return False
+
+    cmd = 'multipathd -k"remove path %s"' % path
+    if process.system(cmd) == 0:
+        return wait.wait_for(is_path_removed, timeout=10) or False
+    return False
+
+
+def add_path(path):
+    """
+    Add Back the removed the individual paths
+    :param disk_path: disk path. Example: sda, sdb.
+    :return: True or False
+    """
+    def is_path_added():
+        if get_path_status(path) is None:
+            return False
+        return True
+
+    cmd = 'multipathd -k"add path %s"' % path
+    if process.system(cmd) == 0:
+        return wait.wait_for(is_path_added, timeout=10) or False
+    return False
