@@ -1,0 +1,63 @@
+{
+    "name": "Release Plan",
+    "description": "Release Plan to be performed during the release itself",
+
+    "tests": [
+         {
+	 "name": "Version Bump: Version number",
+         "description": "For the Avocado versioning, two files need to receive a manual version update: `VERSION` and `python-avocado.spec`."
+	 },
+         {
+	 "name": "Version Bump: Propagate to plugins",
+         "description": "Run the command: `make propagate-version` to propagate this change to all optional and “linkabe” plugins sharing the parent dir (eg. avocado-vt)."
+	 },
+         {
+	 "name": "Version Bump: Commit the bump",
+         "description": "Commit the version bump. Don't forget to commit the changes of 'linked' plugins as they live in different repositories."
+	 },
+         {
+	 "name": "Changelog: Create a Changelog",
+         "description": "Under `docs/source/releases/` create a new .rst file describing the release changes. Also, update the `docs/source/releases/index.rst` file"
+	 },
+         {
+	 "name": "Build RPMs",
+         "description": "Go to the source directory and do:\n\n`make rpm-release && echo $?`\n\nThis should be all. It will build packages using mock, targeting your default configuration. That usually means the same platform you’re currently on."
+	 },
+         {
+	 "name": "Sign Packages",
+         "description": "All the packages should be signed for safer public consumption. The process is, of course, dependent on the private keys, put is based on running:\n\nrpm --resign"
+	 },
+         {
+	 "name": "Upload packages to repository: Create the metadata",
+         "description": "The current distribution method is based on serving content over HTTP. That means that repository metadata is created locally and synchronized to the well know public Web server. Create the repo metadata with the command:\n\n`cd $REPO_ROOT && for DIR in epel-?-noarch fedora-??-noarch; do cd $DIR && createrepo -v . && cd ..; done;`"
+	 },
+         {
+	 "name": "Version Bump: Tag the repository",
+         "description": "When everything is in good shape, commit the version changes and tag that commit in master with:\n\n`git tag -u $(GPG_ID) -s $(RELEASE) -m 'Avocado Release $(RELEASE)'`"
+	 },
+         {
+	 "name": "Version Bump: Push the tag",
+         "description": "The tag should be pushed to the GIT repository with:\n\n`git push --tags`"
+	 },
+         {
+	 "name": "Upload packages to repository: Copy the content",
+         "description": "Copy the content with the command:\n\n`rsync -va $REPO_ROOT user@repo_web_server:/path`"
+	 },
+         {
+	 "name": "Write release notes",
+         "description": "Release notes give an idea of what has changed on a given development cycle. Good places to go for release notes are: 1) git logs; 2) Trello cards (look for the done list); 3) Github compare views.\n\nGo there and try to write a text that represents the changes that the release encompasses."
+	 },
+         {
+	 "name": "Upload package to PyPI",
+         "description": "Users may also want to get Avocado from the PyPI repository, so please upload there as well. To help with the process, please run:\n\n`make pypi`\n\nAnd follow the URL and brief instructions given."
+	 },
+         {
+	 "name": "Configure Read The Docs",
+         "description": "Visit the link below:\n\nhttps://readthedocs.org/dashboard/avocado-framework/edit/\n\n 1) Click in *Versions*. In *Choose Active Versions*, find the version you're releasing and check the *Active* option. *Submit*;\n 2) Click in *Versions* again. In *Default Version*, select the new version you're releasing. *Submit*."
+	 },
+         {
+	 "name": "Send e-emails",
+         "description": "Send the e-email with the release notes to avocado-devel and virt-test-devel."
+	 }
+    ]
+}
