@@ -3,7 +3,6 @@ language: python
 arch: amd64
 
 python:
-    - "3.4"
     - "3.5"
     - "3.6"
     - "3.7"
