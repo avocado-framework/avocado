@@ -433,40 +433,37 @@ class NotATest:
     """
 
 
-class FileLoader(TestLoader):
+class SimpleFileLoader(TestLoader):
 
     """
     Test loader class.
     """
 
     name = 'file'
-    __not_test_str = ("Not an INSTRUMENTED (avocado.Test based), PyUNITTEST ("
-                      "unittest.TestCase based) or SIMPLE (executable) test")
+    NOT_TEST_STR = ("Not a supported test")
 
     def __init__(self, args, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
-        super(FileLoader, self).__init__(args, extra_params)
+        super(SimpleFileLoader, self).__init__(args, extra_params)
         self.test_type = test_type
 
     @staticmethod
     def get_type_label_mapping():
-        return {test.SimpleTest: 'SIMPLE',
-                NotATest: 'NOT_A_TEST',
+        return {NotATest: 'NOT_A_TEST',
                 MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
-                AccessDeniedPath: 'ACCESS_DENIED',
-                test.Test: 'INSTRUMENTED',
-                test.PythonUnittest: 'PyUNITTEST'}
+                AccessDeniedPath: 'ACCESS_DENIED'}
 
     @staticmethod
     def get_decorator_mapping():
-        return {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
-                NotATest: output.TERM_SUPPORT.warn_header_str,
+        return {NotATest: output.TERM_SUPPORT.warn_header_str,
                 MissingTest: output.TERM_SUPPORT.fail_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
-                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
-                test.Test: output.TERM_SUPPORT.healthy_str,
-                test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
+                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str}
+
+    @staticmethod
+    def _is_matching_test_class(tst, test_class):
+        return issubclass(tst, test_class)
 
     def discover(self, reference, which_tests=DiscoverMode.DEFAULT):
         """
@@ -487,19 +484,11 @@ class FileLoader(TestLoader):
         tests = self._discover(reference, which_tests)
         if self.test_type:
             mapping = self.get_type_label_mapping()
-            if self.test_type == 'INSTRUMENTED':
-                # Instrumented tests are defined as string and loaded at the
-                # execution time.
-                for tst in tests:
-                    if not isinstance(tst[0], str):
-                        return None
-            else:
-                test_class = next(key for key, value in mapping.items()
-                                  if value == self.test_type)
-                for tst in tests:
-                    if (isinstance(tst[0], str) or
-                            not issubclass(tst[0], test_class)):
-                        return None
+            test_class = next(key for key, value in mapping.items()
+                              if value == self.test_type)
+            for tst in tests:
+                if not self._is_matching_test_class(tst[0], test_class):
+                    return None
         return tests
 
     def _discover(self, reference, which_tests=DiscoverMode.DEFAULT):
@@ -557,91 +546,26 @@ class FileLoader(TestLoader):
                                               subtests_filter))
         return tests
 
-    def _find_python_unittests(self, test_path, disabled, subtests_filter):
-        result = []
-        class_methods = safeloader.find_python_unittests(test_path)
-        for klass, methods in class_methods.items():
-            if klass in disabled:
-                continue
-            if test_path.endswith(".py"):
-                test_path = test_path[:-3]
-            test_module_name = os.path.relpath(test_path)
-            test_module_name = test_module_name.replace(os.path.sep, ".")
-            candidates = [("%s.%s.%s" % (test_module_name, klass, method), tags)
-                          for (method, tags) in methods]
-            if subtests_filter:
-                result += [_ for _ in candidates if subtests_filter.search(_)]
-            else:
-                result += candidates
-        return result
+    def _make_simple_test(self, test_path, subtests_filter):
+        return self._make_test(test.SimpleTest, test_path,
+                               subtests_filter=subtests_filter,
+                               executable=test_path)
 
     def _make_simple_or_broken_test(self, test_path, subtests_filter, make_broken):
         if os.access(test_path, os.X_OK):
-            # Module does not have an avocado test class inside but
-            # it's executable, let's execute it.
-            return self._make_test(test.SimpleTest, test_path,
-                                   subtests_filter=subtests_filter,
-                                   executable=test_path)
+            return self._make_simple_test(test_path, subtests_filter)
         else:
-            # Module does not have an avocado test class inside, and
-            # it's not executable. Not a Test.
             return make_broken(NotATest, test_path,
-                               self.__not_test_str)
+                               self.NOT_TEST_STR)
 
     def _make_existing_file_tests(self, test_path, make_broken,
-                                  subtests_filter, test_name=None):
-        if test_name is None:
-            test_name = test_path
-        try:
-            # Avocado tests
-            avocado_tests, disabled = safeloader.find_avocado_tests(test_path)
-            if avocado_tests:
-                test_factories = []
-                for test_class, info in avocado_tests.items():
-                    if isinstance(test_class, str):
-                        for test_method, tgs in info:
-                            name = test_name + \
-                                ':%s.%s' % (test_class, test_method)
-                            if (subtests_filter and
-                                    not subtests_filter.search(name)):
-                                continue
-                            tst = (test_class, {'name': name,
-                                                'modulePath': test_path,
-                                                'methodName': test_method,
-                                                'tags': tgs})
-                            test_factories.append(tst)
-                return test_factories
-            # Python unittests
-            old_dir = os.getcwd()
-            try:
-                py_test_dir = os.path.abspath(os.path.dirname(test_path))
-                py_test_name = os.path.basename(test_path)
-                os.chdir(py_test_dir)
-                python_unittests = self._find_python_unittests(py_test_name,
-                                                               disabled,
-                                                               subtests_filter)
-            finally:
-                os.chdir(old_dir)
-            if python_unittests:
-                return [(test.PythonUnittest, {"name": name,
-                                               "test_dir": py_test_dir,
-                                               "tags": tags})
-                        for (name, tags) in python_unittests]
-            else:
-                return self._make_simple_or_broken_test(test_path,
-                                                        subtests_filter,
-                                                        make_broken)
+                                  subtests_filter):
+        return self._make_simple_or_broken_test(test_path, subtests_filter, make_broken)
 
-        # Since a lot of things can happen here, the broad exception is
-        # justified. The user will get it unadulterated anyway, and avocado
-        # will not crash. Ugly python files can raise any exception
-        except BaseException as details:  # pylint: disable=W0703
-            if isinstance(details, KeyboardInterrupt):
-                raise  # Don't ignore ctrl+c
-            else:
-                return self._make_simple_or_broken_test(test_path,
-                                                        subtests_filter,
-                                                        make_broken)
+    def _make_nonexisting_file_tests(self, test_path, make_broken,
+                                     subtests_filter, test_name):  # pylint: disable=W0613
+        return make_broken(NotATest, test_name, "File not found "
+                           "('%s'; '%s')" % (test_name, test_path))
 
     @staticmethod
     def _make_test(klass, uid, description=None, subtests_filter=None,
@@ -682,17 +606,8 @@ class FileLoader(TestLoader):
             if os.access(test_path, os.R_OK) is False:
                 return make_broken(AccessDeniedPath, test_path, "Is not "
                                    "readable")
-            if test_path.endswith('.py'):
-                return self._make_existing_file_tests(test_path, make_broken,
-                                                      subtests_filter)
-            else:
-                if os.access(test_path, os.X_OK):
-                    return self._make_test(test.SimpleTest, test_path,
-                                           subtests_filter=subtests_filter,
-                                           executable=test_path)
-                else:
-                    return make_broken(NotATest, test_path,
-                                       self.__not_test_str)
+            return self._make_existing_file_tests(test_path, make_broken,
+                                                  subtests_filter)
         else:
             if os.path.islink(test_path):
                 try:
@@ -702,27 +617,170 @@ class FileLoader(TestLoader):
                 except OSError:
                     return make_broken(AccessDeniedPath, test_path, "Is not "
                                        "accessible.")
+            return self._make_nonexisting_file_tests(test_path, make_broken,
+                                                     subtests_filter,
+                                                     test_name)
 
-            # Try to resolve test ID (keep compatibility)
-            test_path = os.path.join(data_dir.get_test_dir(), test_name)
-            if os.path.exists(test_path):
-                return self._make_existing_file_tests(test_path, make_broken,
-                                                      subtests_filter,
-                                                      test_name)
+
+class FileLoader(SimpleFileLoader):
+
+    """
+    Test loader class.
+    """
+
+    name = 'file'
+    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based), PyUNITTEST ("
+                    "unittest.TestCase based) or SIMPLE (executable) test")
+
+    @staticmethod
+    def get_type_label_mapping():
+        mapping = SimpleFileLoader.get_type_label_mapping()
+        mapping.update(
+            {test.SimpleTest: 'SIMPLE',
+             test.Test: 'INSTRUMENTED',
+             test.PythonUnittest: 'PyUNITTEST'})
+        return mapping
+
+    @staticmethod
+    def get_decorator_mapping():
+        mapping = SimpleFileLoader.get_decorator_mapping()
+        mapping.update(
+            {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
+             test.Test: output.TERM_SUPPORT.healthy_str,
+             test.PythonUnittest: output.TERM_SUPPORT.healthy_str})
+        return mapping
+
+    @staticmethod
+    def _is_matching_test_class(tst, test_class):
+        if test_class is test.Test:
+            # Instrumented tests are defined as string and loaded at the
+            # execution time.
+            return isinstance(tst, str)
+        else:
+            return not isinstance(tst, str) and issubclass(tst, test_class)
+
+    def _find_python_unittests(self, test_path, disabled, subtests_filter):
+        result = []
+        class_methods = safeloader.find_python_unittests(test_path)
+        for klass, methods in class_methods.items():
+            if klass in disabled:
+                continue
+            if test_path.endswith(".py"):
+                test_path = test_path[:-3]
+            test_module_name = os.path.relpath(test_path)
+            test_module_name = test_module_name.replace(os.path.sep, ".")
+            candidates = [("%s.%s.%s" % (test_module_name, klass, method), tags)
+                          for (method, tags) in methods]
+            if subtests_filter:
+                result += [_ for _ in candidates if subtests_filter.search(_)]
             else:
-                if not subtests_filter and ':' in test_name:
-                    test_name, subtests_filter = test_name.split(':', 1)
-                    test_path = os.path.join(data_dir.get_test_dir(),
-                                             test_name)
-                    if os.path.exists(test_path):
-                        subtests_filter = re.compile(subtests_filter)
-                        return self._make_existing_file_tests(test_path,
-                                                              make_broken,
-                                                              subtests_filter,
-                                                              test_name)
-                return make_broken(NotATest, test_name, "File not found "
-                                   "('%s'; '%s')" % (test_name, test_path))
-        return make_broken(NotATest, test_name, self.__not_test_str)
+                result += candidates
+        return result
+
+    def _make_simple_test(self, test_path, subtests_filter):
+        return self._make_test(test.SimpleTest, test_path,
+                               subtests_filter=subtests_filter,
+                               executable=test_path)
+
+    def _make_simple_or_broken_test(self, test_path, subtests_filter, make_broken):
+        if os.access(test_path, os.X_OK):
+            # Module does not have an avocado test class inside but
+            # it's executable, let's execute it.
+            return self._make_simple_test(test_path, subtests_filter)
+        else:
+            # Module does not have an avocado test class inside, and
+            # it's not executable. Not a Test.
+            return make_broken(NotATest, test_path,
+                               self.NOT_TEST_STR)
+
+    def _make_python_file_tests(self, test_path, make_broken,
+                                subtests_filter, test_name=None):
+        if test_name is None:
+            test_name = test_path
+        try:
+            # Avocado tests
+            avocado_tests, disabled = safeloader.find_avocado_tests(test_path)
+            if avocado_tests:
+                test_factories = []
+                for test_class, info in avocado_tests.items():
+                    if isinstance(test_class, str):
+                        for test_method, tgs in info:
+                            name = test_name + \
+                                ':%s.%s' % (test_class, test_method)
+                            if (subtests_filter and
+                                    not subtests_filter.search(name)):
+                                continue
+                            tst = (test_class, {'name': name,
+                                                'modulePath': test_path,
+                                                'methodName': test_method,
+                                                'tags': tgs})
+                            test_factories.append(tst)
+                return test_factories
+            # Python unittests
+            old_dir = os.getcwd()
+            try:
+                py_test_dir = os.path.abspath(os.path.dirname(test_path))
+                py_test_name = os.path.basename(test_path)
+                os.chdir(py_test_dir)
+                python_unittests = self._find_python_unittests(py_test_name,
+                                                               disabled,
+                                                               subtests_filter)
+            finally:
+                os.chdir(old_dir)
+            if python_unittests:
+                return [(test.PythonUnittest, {"name": name,
+                                               "test_dir": py_test_dir,
+                                               "tags": tags})
+                        for (name, tags) in python_unittests]
+            else:
+                # Module does not have an avocado test or pyunittest class inside,
+                # but maybe it's a Python executable.
+                return self._make_simple_or_broken_test(test_path,
+                                                        subtests_filter,
+                                                        make_broken)
+
+        # Since a lot of things can happen here, the broad exception is
+        # justified. The user will get it unadulterated anyway, and avocado
+        # will not crash. Ugly python files can raise any exception
+        except BaseException as details:  # pylint: disable=W0703
+            if isinstance(details, KeyboardInterrupt):
+                raise  # Don't ignore ctrl+c
+            else:
+                return self._make_simple_or_broken_test(test_path,
+                                                        subtests_filter,
+                                                        make_broken)
+
+    def _make_existing_file_tests(self, test_path, make_broken,
+                                  subtests_filter):
+        if test_path.endswith('.py'):
+            return self._make_python_file_tests(test_path, make_broken,
+                                                subtests_filter)
+        else:
+            return self._make_simple_or_broken_test(test_path,
+                                                    subtests_filter,
+                                                    make_broken)
+
+    def _make_nonexisting_file_tests(self, test_path, make_broken,
+                                     subtests_filter, test_name):
+        # Try to resolve test ID (keep compatibility)
+        test_path = os.path.join(data_dir.get_test_dir(), test_name)
+        if os.path.exists(test_path):
+            return self._make_python_file_tests(test_path, make_broken,
+                                                subtests_filter,
+                                                test_name)
+        else:
+            if not subtests_filter and ':' in test_name:
+                test_name, subtests_filter = test_name.split(':', 1)
+                test_path = os.path.join(data_dir.get_test_dir(),
+                                         test_name)
+                if os.path.exists(test_path):
+                    subtests_filter = re.compile(subtests_filter)
+                    return self._make_python_file_tests(test_path,
+                                                        make_broken,
+                                                        subtests_filter,
+                                                        test_name)
+            return make_broken(NotATest, test_name, "File not found "
+                               "('%s'; '%s')" % (test_name, test_path))
 
 
 class ExternalLoader(TestLoader):
