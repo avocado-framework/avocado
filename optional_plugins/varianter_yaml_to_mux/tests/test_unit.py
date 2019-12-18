@@ -450,7 +450,7 @@ class TestMultipleLoaders(unittest.TestCase):
             children_type = ("<class 'avocado_varianter_yaml_to_mux."
                              "NamedTreeNodeDebug'>")
         self.assertEqual(children_type, str(type(debug.children[0])))
-        plain = yaml.load("foo: bar")
+        plain = yaml.load("foo: bar", Loader=yaml.SafeLoader)
         self.assertEqual(type(plain), dict)
 
 
