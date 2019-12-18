@@ -557,7 +557,7 @@ class Paginator:
     def close(self):
         try:
             self.pipe.close()
-        except OSError:
+        except (OSError, AttributeError):
             pass
 
     def write(self, msg):
