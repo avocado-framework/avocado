@@ -24,7 +24,7 @@
 import os
 import re
 import logging
-from tempfile import mktemp
+from tempfile import mkstemp
 
 from . import process
 
@@ -655,7 +655,7 @@ class _SystemdServiceManager(_GenericServiceManager):
         :param runlevel: default systemd target
         :type runlevel: str
         """
-        tmp_symlink = mktemp(dir="/etc/systemd/system")
+        tmp_symlink = mkstemp(dir="/etc/systemd/system")
         os.symlink("/usr/lib/systemd/system/%s" % runlevel, tmp_symlink)
         os.rename(tmp_symlink, "/etc/systemd/system/default.target")
 
