@@ -209,7 +209,7 @@ class TestSystemdServiceManager(unittest.TestCase):
         symlink_mock = unittest.mock.Mock()
         rename_mock = unittest.mock.Mock()
 
-        @unittest.mock.patch.object(service, "mktemp", mktemp_mock)
+        @unittest.mock.patch.object(service, "mkstemp", mktemp_mock)
         @unittest.mock.patch("os.symlink", symlink_mock)
         @unittest.mock.patch("os.rename", rename_mock)
         def _():
