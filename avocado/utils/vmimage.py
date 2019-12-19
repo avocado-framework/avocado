@@ -394,7 +394,6 @@ class Image:
 
         self._path = None
         self._base_image = None
-        self.get()
 
     @property
     def path(self):
@@ -402,7 +401,7 @@ class Image:
 
     @property
     def base_image(self):
-        return self._base_image
+        return self._base_image or self.download()
 
     def __repr__(self):
         return "<%s name=%s version=%s arch=%s>" % (self.__class__.__name__,
@@ -410,7 +409,7 @@ class Image:
                                                     self.version,
                                                     self.arch)
 
-    def get(self):
+    def download(self):
         metadata = {"type": "vmimage", "name": self.name,
                     "version": self.version, "arch": self.arch,
                     "build": self.build}
@@ -429,8 +428,11 @@ class Image:
         if archive.is_archive(asset_path):
             uncompressed_path = os.path.splitext(asset_path)[0]
             asset_path = archive.uncompress(asset_path, uncompressed_path)
-
         self._base_image = asset_path
+        return self._base_image
+
+    def get(self):
+        self.download()
         self._path = self._take_snapshot()
         return self._path
 
