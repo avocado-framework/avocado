@@ -25,6 +25,24 @@ class TestAsset(unittest.TestCase):
         self.url = 'file://%s' % self.localpath
         self.cache_dir = tempfile.mkdtemp(dir=self.tmpdir.name)
 
+    def test_empty_locations(self):
+        self.assertRaises(EnvironmentError, asset.Asset, self.assetname)
+
+    def test_empty_cache_dirs(self):
+        with self.assertRaises(EnvironmentError):
+            asset.Asset(self.assetname,
+                        asset_hash=self.assethash,
+                        locations=['foo'])
+
+    def test_fetch_unsupported_protocol(self):
+        a = asset.Asset(self.assetname,
+                        asset_hash=self.assethash,
+                        algorithm='sha1',
+                        locations=['foo'],
+                        cache_dirs=[self.cache_dir],
+                        expire=None)
+        self.assertRaises(asset.UnsupportedProtocolError, a.fetch)
+
     def test_fetch_url_cache_by_location(self):
         foo_tarball = asset.Asset(self.url,
                                   asset_hash=self.assethash,
@@ -36,17 +54,6 @@ class TestAsset(unittest.TestCase):
         self.assertTrue(foo_tarball.startswith(expected_location))
         self.assertTrue(foo_tarball.endswith(self.assetname))
 
-    def test_fetch_name_cache_by_name(self):
-        foo_tarball = asset.Asset(self.assetname,
-                                  asset_hash=self.assethash,
-                                  algorithm='sha1',
-                                  locations=[self.url],
-                                  cache_dirs=[self.cache_dir],
-                                  expire=None).fetch()
-        expected_location = os.path.join(self.cache_dir, 'by_name',
-                                         self.assetname)
-        self.assertEqual(foo_tarball, expected_location)
-
     def test_fetch_expire(self):
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
@@ -56,7 +63,6 @@ class TestAsset(unittest.TestCase):
                                   expire=None).fetch()
         with open(foo_tarball, 'r') as f:
             content1 = f.read()
-
         # Create the file in a different location with a different content
         new_assetdir = tempfile.mkdtemp(dir=self.tmpdir.name)
         new_localpath = os.path.join(new_assetdir, self.assetname)
@@ -66,12 +72,13 @@ class TestAsset(unittest.TestCase):
             f.write('Changed!')
 
         # Don't expire cached file
-        foo_tarball = asset.Asset(self.assetname,
-                                  asset_hash=self.assethash,
-                                  algorithm='sha1',
-                                  locations=[new_url],
-                                  cache_dirs=[self.cache_dir],
-                                  expire=None).fetch()
+        a = asset.Asset(self.assetname,
+                        asset_hash=self.assethash,
+                        algorithm='sha1',
+                        locations=[new_url],
+                        cache_dirs=[self.cache_dir],
+                        expire=None)
+        self.assertRaises(EnvironmentError, a.fetch)
         with open(foo_tarball, 'r') as f:
             content2 = f.read()
         self.assertEqual(content1, content2)
@@ -90,7 +97,7 @@ class TestAsset(unittest.TestCase):
 
     def test_exception(self):
         a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
-                        locations=None, cache_dirs=[self.cache_dir],
+                        locations='foo', cache_dirs=[self.cache_dir],
                         expire=None)
         self.assertRaises(EnvironmentError, a.fetch)
 
@@ -101,15 +108,10 @@ class TestAsset(unittest.TestCase):
             a = asset.Asset(self.assetname,
                             asset_hash=self.assethash,
                             algorithm='sha1',
-                            locations=None,
+                            locations='foo',
                             cache_dirs=[self.cache_dir],
                             expire=None)
             self.assertRaises(EnvironmentError, a.fetch)
-
-    def test_unknown_scheme(self):
-        invalid = asset.Asset("weird-protocol://location/?params=foo",
-                              None, None, None, [self.cache_dir], None)
-        self.assertRaises(asset.UnsupportedProtocolError, invalid.fetch)
 
     def test_fetch_different_files(self):
         """
@@ -159,7 +161,7 @@ class TestAsset(unittest.TestCase):
                                   cache_dirs=[self.cache_dir],
                                   expire=None,
                                   metadata=expected_metadata).fetch()
-        expected_file = "%s_metadata.json" % os.path.splitext(foo_tarball)[0]
+        expected_file = "%s_metadata.json" % foo_tarball
         self.assertTrue(os.path.exists(expected_file))
 
     def test_get_metadata_file_exists(self):
