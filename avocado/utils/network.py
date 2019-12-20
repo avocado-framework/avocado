@@ -72,18 +72,11 @@ def find_free_port(start_port=1024, end_port=65535, address="localhost", sequent
 
     :param start_port: header of candidate port range, defaults to 1024
     :param end_port: ender of candidate port range, defaults to 65535
-    :param sequent: Find port sequentially, random order if it's False
     :param address: Socket address to bind or connect
+    :param sequent: Find port sequentially, random order if it's False
     :rtype: int or None if no free port found
     """
-    port_range = range(start_port, end_port)
-    if not sequent:
-        port_range = list(port_range)
-        random.shuffle(port_range)
-    for i in port_range:
-        if is_port_free(i, address):
-            return i
-    return None
+    return find_free_ports(start_port, end_port, 1, address, sequent)[0]
 
 
 def find_free_ports(start_port, end_port, count, address="localhost", sequent=False):
