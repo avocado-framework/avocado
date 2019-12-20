@@ -7,13 +7,26 @@ customize this process.
 Test Loaders
 ------------
 
-.. warning:: Define a test loader here.
+A Test Loader is an Avocado component that is responsible for
+discovering tests that Avocado can run.  In the process, Avocado
+gathers enough information to allow the test to be run.  Additionally,
+Avocado collects extra information available within the test, such as
+tags that can be used to filter out tests from actual execution.
 
+This whole process is, unless otherwise stated or manually configured,
+safe, in the sense that no test code will be executed.
 
 How Loaders discover tests
 --------------------------
 
-.. warning:: Document here what are the paths that the loaders will use.
+Avocado will apply ordering to the discovery process, so loaders that
+run earlier, will have higher precedence in discovering tests.
+
+A loader implementation is free to implement whatever logic it needs
+to discover tests.  The important fact about how a loader discover
+tests is that it should return one or more "test factory", an internal
+data structure that, as stated before, contains enough information to
+allow the test to be executed.
 
 The order of test loaders
 -------------------------
