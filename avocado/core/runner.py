@@ -240,7 +240,7 @@ class TestStatus:
         TEST_LOG.error('ERROR %s -> TestAbortError: %s.', err,
                        test_state['name'])
         if proc.is_alive():
-            TEST_LOG.warning("Killing hanged test process %s" % proc.pid)
+            TEST_LOG.warning("Killing hanged test process %s", proc.pid)
             os.kill(proc.pid, signal.SIGTERM)
             if not wait.wait_for(lambda: not proc.is_alive(), 1, 0, 0.01):
                 os.kill(proc.pid, signal.SIGKILL)
