@@ -542,6 +542,7 @@ class Paginator:
     """
 
     def __init__(self):
+        self.pipe = None
         paginator = os.environ.get('PAGER')
         if not paginator:
             try:
@@ -555,19 +556,21 @@ class Paginator:
         self.close()
 
     def close(self):
-        try:
-            self.pipe.close()
-        except OSError:
-            pass
+        if self.pipe:
+            try:
+                self.pipe.close()
+            except OSError:
+                pass
 
     def write(self, msg):
-        try:
-            self.pipe.write(msg)
-        except (OSError, ValueError):
-            pass
+        if self.pipe:
+            try:
+                self.pipe.write(msg)
+            except (OSError, ValueError):
+                pass
 
     def flush(self):
-        if not self.pipe.closed:
+        if self.pipe and not self.pipe.closed:
             self.pipe.flush()
 
 
