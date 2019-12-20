@@ -19,6 +19,7 @@ framework tests.
 """
 
 import inspect
+import io
 import logging
 import os
 import pipes
@@ -37,6 +38,7 @@ from . import exceptions
 from . import output
 from . import parameters
 from . import sysinfo
+from . import tapparser
 from ..utils import asset
 from ..utils import astring
 from ..utils import data_structures
@@ -1316,6 +1318,58 @@ class PythonUnittest(ExternalRunnerTest):
         status = self._find_result("OK")
         if "skipped" in status:
             self.cancel("Unittest reported skip")
+
+
+class TapTest(SimpleTest):
+
+    """
+    Run a test command as a TAP test.
+    """
+
+    def _execute_cmd(self):
+        try:
+            test_params = {str(key): str(val)
+                           for _, key, val in self.params.iteritems()}
+
+            result = process.run(self._command, verbose=True,
+                                 allow_output_check='stdout',
+                                 env=test_params, encoding=defaults.ENCODING)
+
+            self._log_detailed_cmd_info(result)
+        except process.CmdError as details:
+            self._log_detailed_cmd_info(details.result)
+            raise exceptions.TestFail(details)
+
+        if result.exit_status != 0:
+            self.fail('TAP Test execution returned a '
+                      'non-0 exit code (%s)' % result)
+        parser = tapparser.TapParser(io.StringIO(result.stdout_text))
+        fail = 0
+        count = 0
+        bad_errormsg = 'there were test failures'
+        for event in parser.parse():
+            if isinstance(event, tapparser.TapParser.Error):
+                self.error('TAP parsing error: ' + event.message)
+                continue
+            if isinstance(event, tapparser.TapParser.Bailout):
+                self.error(event.message)
+                continue
+            if isinstance(event, tapparser.TapParser.Test):
+                bad = event.result in (tapparser.TestResult.XPASS, tapparser.TestResult.FAIL)
+                if event.result != tapparser.TestResult.SKIP:
+                    count += 1
+                if bad:
+                    self.log.error('%s %s %s', event.result.name, event.number, event.name)
+                    fail += 1
+                    if event.result == tapparser.TestResult.XPASS:
+                        bad_errormsg = 'there were test failures or unexpected passes'
+                else:
+                    self.log.info('%s %s %s', event.result.name, event.number, event.name)
+
+        if not count:
+            raise exceptions.TestSkipError('no tests were run')
+        if fail:
+            self.fail(bad_errormsg)
 
 
 class MockingTest(Test):

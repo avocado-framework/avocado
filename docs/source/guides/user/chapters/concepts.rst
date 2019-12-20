@@ -200,6 +200,15 @@ Test statuses ``PASS``, ``WARN``, ``START`` and ``SKIP`` are considered as
 successful builds. The ``ABORT``, ``ERROR``, ``FAIL``, ``ALERT``, ``RUNNING``,
 ``NOSTATUS`` and ``INTERRUPTED`` are considered as failed ones.
 
+TAP
+~~~
+
+TAP tests are pretty much like Simple tests in the sense tha they are
+programs (either binaries or scripts) that will executed.  The
+difference is that the test result will be decided based on the
+produced output, that should be in `Test Anything Protocol
+<https://testanything.org>`_ format.
+
 Test statuses
 -------------
 
