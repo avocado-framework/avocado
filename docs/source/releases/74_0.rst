@@ -1,0 +1,74 @@
+===============
+74.0 Home Alone
+===============
+
+The Avocado team is proud to present another release: Avocado 74.0,
+AKA "Home Alone", is now available!
+
+Release documentation: `Avocado 74.0
+<http://avocado-framework.readthedocs.io/en/74.0/>`_
+
+Users/Test Writers
+==================
+
+* A new test type, ``TAP`` has been introduced along with a new loader
+  and resolver.  With a ``TAP`` test, it's possible to execute a
+  binary or script, similar to a ``SIMPLE`` test, and part its `Test
+  Anything Protocol <https://testanything.org>`_ output to determine
+  the test status.
+
+* It's now possible to enforce colored or non-colored output, no
+  matter if the output is a terminal or not.  The configuration item
+  ``color`` was introduced in the ``runner.output`` section, and
+  recognize the values ``auto``, ``always`` or ``never``.
+
+Bug Fixes
+=========
+
+* The ``safeloader`` mechanism that discovers both Avocado's Python
+  based ``INSTRUMENTED`` tests, and Python's native unittests, would
+  fail to find any tests if any of the classes on a given file
+  contained references to a module that was not on a parent location.
+  Now, the ``safeloader`` code will continue the discovery process,
+  ignoring the modules that were not found at parent locations.
+
+Utility APIs
+============
+
+* :mod:`avocado.utils.kernel` received a number of fixes and cleanups,
+  and also new features.  It's now possible to configure the kernel for
+  multiple targets, and also set kernel configurations at configuration
+  time without manually touching the kernel configuration files.  It
+  also introduced the :func:`avocado.utils.kernel.KernelBuild.vmlinux`
+  property, allowing users to access that image if it was built.
+
+* :mod:`avocado.utils.network` utilities
+  :func:`avocado.utils.network.ping_check` and
+  :func:`avocado.utils.network.set_mtu_host` now are plain functions,
+  instead of methods of a class that shared nothing between them.
+
+* New functions such as
+  :func:`avocado.utils.multipath.add_path`,
+  :func::func:`avocado.utils.multipath.remove_path`
+  :func:`avocado.utils.multipath.get_mpath_status` and
+  :func:`avocado.utils.multipath.suspend_mpath` have been introduced
+  :func:to the :mod:`avocado.utils.multipath` module.
+
+* The :mod:`avocado.utils.vmimage` module will not try to create
+  snapshot images when it's not needed, acting lazily in that regard.
+  It now provides a different method for download-only operations,
+  :meth:`avocado.utils.vmimage.Image.download` that returns the base
+  image location.  The behavior of the
+  :meth:`avocado.utils.vmimage.Image.get` method is unchanged in the
+  sense that it returns the path of a snapshot image.
+
+Internal Changes
+================
+
+* A PyLint configuration file was added to the tree, facilitating the
+  use of the standard Python linter when developing Avocado in IDEs
+  that support this feature.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/73.0...74.0>`_.
