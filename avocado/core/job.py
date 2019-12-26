@@ -311,7 +311,8 @@ class Job:
         """
         def soft_abort(msg):
             """ Only log the problem """
-            LOG_JOB.warning("Unable to update the latest link: %s" % msg)
+            formatted = "Unable to update the latest link: {}".format(msg)
+            LOG_JOB.warning(formatted)
         basedir = os.path.dirname(self.logdir)
         basename = os.path.basename(self.logdir)
         proc_latest = os.path.join(basedir, "latest.%s" % os.getpid())

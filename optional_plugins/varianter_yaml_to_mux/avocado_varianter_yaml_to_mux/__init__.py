@@ -32,7 +32,7 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 from avocado.utils import astring
 
-from . import mux
+from . import mux  # pylint: disable=W0406
 
 
 # Mapping for yaml flags
