@@ -1081,7 +1081,7 @@ class Test(unittest.TestCase, TestData):
         raise exceptions.TestCancel(message)
 
     def fetch_asset(self, name, asset_hash=None, algorithm=None,
-                    locations=None, expire=None):
+                    locations=None, expire=None, cancel_on_fail=False):
         """
         Method o call the utils.asset in order to fetch and asset file
         supporting hash check, caching and multiple locations.
@@ -1093,13 +1093,20 @@ class Test(unittest.TestCase, TestData):
         :param locations: list of URLs from where the asset can be
                           fetched (optional)
         :param expire: time for the asset to expire
+        :param cancel_on_fail: Cancel the test if fetch failed (optional,
+                               defaults to False)
         :raise EnvironmentError: When it fails to fetch the asset
         :returns: asset file local path
         """
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
-        return asset.Asset(name, asset_hash, algorithm, locations,
-                           self.cache_dirs, expire).fetch()
+        try:
+            return asset.Asset(name, asset_hash, algorithm, locations,
+                               self.cache_dirs, expire).fetch()
+        except EnvironmentError as error:
+            if cancel_on_fail:
+                self.cancel("Failed to fetch asset: %s" % name)
+            raise error
 
     def tearDown(self):
         if self.__base_logdir_tmp is not None:
