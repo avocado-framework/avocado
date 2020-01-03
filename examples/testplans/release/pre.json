@@ -31,9 +31,6 @@
 	{"name": "Avocado Remote Machine HTML report",
 	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-/**/avocado/tests/**/examples/tests/passtest.py:PassTest.test` (under `Test ID`) and `debug.log` point to valid locations."},
 
-	{"name": "Avocado HTML report sysinfo",
-	 "description": "On the HTML report, click on `Sysinfo (pre/post/profile, click to expand)` and verify that system information such as `hostname` and `cpuinfo` are present and accurate"},
-
 	{"name": "Avocado HTML report links",
 	 "description": "On the HTML report, verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-type_specific.io-github-autotest-qemu.migrate.default.tcp` (under `Test ID`) and `debug.log` point to valid locations."},
 
