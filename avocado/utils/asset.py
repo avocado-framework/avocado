@@ -18,6 +18,7 @@ Asset fetcher from multiple locations
 
 import errno
 import hashlib
+import json
 import logging
 import os
 import re
@@ -26,7 +27,6 @@ import stat
 import sys
 import tempfile
 import time
-import json
 
 try:
     import urlparse
