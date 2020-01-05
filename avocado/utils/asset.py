@@ -18,6 +18,7 @@ Asset fetcher from multiple locations
 
 import errno
 import hashlib
+import json
 import logging
 import os
 import re
@@ -26,12 +27,7 @@ import stat
 import sys
 import tempfile
 import time
-import json
-
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
+import urllib.parse
 
 from . import astring
 from . import crypto
@@ -177,7 +173,7 @@ class Asset:
         Returns metadata of the asset if it exists or None.
         :return: metadata
         """
-        parsed_url = urlparse.urlparse(self.name)
+        parsed_url = urllib.parse.urlparse(self.name)
         basename = os.path.basename(parsed_url.path)
         cache_relative_dir = self._get_relative_dir(parsed_url)
         asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
@@ -201,7 +197,7 @@ class Asset:
         :returns: The path for the file on the cache directory.
         """
         urls = []
-        parsed_url = urlparse.urlparse(self.name)
+        parsed_url = urllib.parse.urlparse(self.name)
         basename = os.path.basename(parsed_url.path)
         cache_relative_dir = self._get_relative_dir(parsed_url)
 
@@ -229,7 +225,7 @@ class Asset:
 
         cache_relative_dir = self._get_relative_dir(parsed_url)
         for url in urls:
-            urlobj = urlparse.urlparse(url)
+            urlobj = urllib.parse.urlparse(url)
             if urlobj.scheme in ['http', 'https', 'ftp']:
                 fetch = self._download
             elif urlobj.scheme == 'file':
