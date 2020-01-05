@@ -6,7 +6,6 @@ import http.client
 
 from avocado.utils import cloudinit
 from avocado.utils import iso9660
-from avocado.utils import network
 from avocado.utils import data_factory
 
 from .. import setup_avocado_loggers, temp_dir_prefix
@@ -55,7 +54,8 @@ class PhoneHome(unittest.TestCase):
     ADDRESS = '127.0.0.1'
 
     def post_ignore_response(self, url):
-        conn = http.client.HTTPConnection(self.ADDRESS, self.port)
+        port = self.server.socket.getsockname()[1]
+        conn = http.client.HTTPConnection(self.ADDRESS, port)
         conn.request('POST', url)
         try:
             conn.getresponse()
@@ -65,9 +65,8 @@ class PhoneHome(unittest.TestCase):
             conn.close()
 
     def setUp(self):
-        self.port = network.find_free_port(address=self.ADDRESS, sequent=False)
         self.instance_id = data_factory.generate_random_string(12)
-        self.server = cloudinit.PhoneHomeServer((self.ADDRESS, self.port),
+        self.server = cloudinit.PhoneHomeServer((self.ADDRESS, 0),
                                                 self.instance_id)
 
     def test_phone_home_bad(self):
