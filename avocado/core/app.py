@@ -19,6 +19,7 @@ The core Avocado application.
 import os
 import signal
 import sys
+import warnings
 
 from . import data_dir
 from . import output

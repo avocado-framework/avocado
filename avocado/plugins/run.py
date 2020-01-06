@@ -18,6 +18,7 @@ Base Test Runner Plugins.
 
 import argparse
 import sys
+import warnings
 
 from avocado.core import exit_codes
 from avocado.core import job
@@ -127,7 +128,8 @@ class Run(CLICmd):
         parser.add_argument('--sysinfo', choices=('on', 'off'),
                             default=sysinfo_default, help="Enable or disable "
                             "system information (hardware details, profilers, "
-                            "etc.). Current:  %(default)s")
+                            "etc.). 'on' and 'off' will be deprecated soon. "
+                            "Current:  %(default)s")
 
         parser.add_argument("--execution-order",
                             choices=("tests-per-variant",
@@ -201,6 +203,8 @@ class Run(CLICmd):
         if 'output_check_record' in config:
             process.OUTPUT_CHECK_RECORD_MODE = config.get('output_check_record',
                                                           None)
+
+        warnings.warn("sysinfo={on,off} will be deprecated soon.", FutureWarning)
 
         if config.get('unique_job_id') is not None:
             try:
