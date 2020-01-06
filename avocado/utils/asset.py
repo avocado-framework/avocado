@@ -256,21 +256,27 @@ class Asset:
             # Acquire lock only after download the file
             with FileLock(asset_file, 1):
                 shutil.copy(temp, asset_file)
-                self._compute_hash(asset_file)
+                self._create_hash_file(asset_file)
                 return self._verify(asset_file)
         finally:
             os.remove(temp)
 
-    def _compute_hash(self, asset_file):
-        result = crypto.hash_file(asset_file, algorithm=self.algorithm)
-        with open(self._get_hash_file(asset_file), 'w') as f:
-            f.write('%s %s\n' % (self.algorithm, result))
+    def _create_hash_file(self, asset_path):
+        """
+        Compute the hash of the asset file and add it to the CHECKSUM
+        file.
+
+        :param asset_path: full path of the asset file.
+        """
+        result = crypto.hash_file(asset_path, algorithm=self.algorithm)
+        with open(self._get_hash_file(asset_path), 'w') as hash_file:
+            hash_file.write('%s %s\n' % (self.algorithm, result))
 
     def _get_hash_from_file(self, asset_file):
         discovered = None
         hash_file = self._get_hash_file(asset_file)
         if not os.path.isfile(hash_file):
-            self._compute_hash(asset_file)
+            self._create_hash_file(asset_file)
 
         with open(hash_file, 'r') as hash_file:
             for line in hash_file:
@@ -299,13 +305,13 @@ class Asset:
         with FileLock(asset_file, 1):
             try:
                 os.symlink(path, asset_file)
-                self._compute_hash(asset_file)
+                self._create_hash_file(asset_file)
                 return self._verify(asset_file)
             except OSError as detail:
                 if detail.errno == errno.EEXIST:
                     os.remove(asset_file)
                     os.symlink(path, asset_file)
-                    self._compute_hash(asset_file)
+                    self._create_hash_file(asset_file)
                     return self._verify(asset_file)
 
     @staticmethod
