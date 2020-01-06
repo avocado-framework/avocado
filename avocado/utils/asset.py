@@ -36,9 +36,7 @@ from .download import url_download
 from .filelock import FileLock
 
 
-log = logging.getLogger('avocado.test')
-
-
+LOG = logging.getLogger('avocado.test')
 #: The default hash algorithm to use on asset cache operations
 DEFAULT_HASH_ALGORITHM = 'sha1'
 
@@ -151,7 +149,7 @@ class Asset:
                             return asset_file
                 except Exception:  # pylint: disable=W0703
                     exc_type, exc_value = sys.exc_info()[:2]
-                    log.error('%s: %s', exc_type.__name__, exc_value)
+                    LOG.error('%s: %s', exc_type.__name__, exc_value)
         return None
 
     def _create_metadata_file(self, asset_file):
@@ -244,7 +242,7 @@ class Asset:
                     return asset_file
             except Exception:  # pylint: disable=W0703
                 exc_type, exc_value = sys.exc_info()[:2]
-                log.error('%s: %s', exc_type.__name__, exc_value)
+                LOG.error('%s: %s', exc_type.__name__, exc_value)
 
         raise EnvironmentError("Failed to fetch %s." % basename)
 
