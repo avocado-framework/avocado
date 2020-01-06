@@ -80,55 +80,59 @@ class Asset:
         self.expire = expire
         self.metadata = metadata
 
-    def _get_writable_cache_dir(self):
+    def _create_hash_file(self, asset_path):
         """
-        Returns the first available writable cache directory
+        Compute the hash of the asset file and add it to the CHECKSUM
+        file.
 
-        When a asset has to be downloaded, a writable cache directory
-        is then needed. The first available writable cache directory
-        will be used.
+        :param asset_path: full path of the asset file.
+        """
+        result = crypto.hash_file(asset_path, algorithm=self.algorithm)
+        with open(self._get_hash_file(asset_path), 'w') as hash_file:
+            hash_file.write('%s %s\n' % (self.algorithm, result))
 
-        :returns: the first writable cache dir
-        :rtype: str
-        :raises: EnvironmentError
+    def _create_metadata_file(self, asset_file):
         """
-        for cache_dir in self.cache_dirs:
-            cache_dir = os.path.expanduser(cache_dir)
-            if utils_path.usable_rw_dir(cache_dir):
-                return cache_dir
-        raise EnvironmentError("Can't find a writable cache directory.")
+        Creates JSON file with metadata.
+        The file will be saved as `asset_file`_metadata.json
 
-    @staticmethod
-    def _get_hash_file(asset_file):
+        :param asset_file: The asset whose metadata will be saved
+        :type asset_file: str
         """
-        Returns the file name that contains the hash for a given asset file
-        """
-        return '%s-CHECKSUM' % asset_file
+        if self.metadata:
+            basename = os.path.splitext(asset_file)[0]
+            metadata_file = "%s_metadata.json" % basename
+            metadata = json.dumps(self.metadata)
+            with open(metadata_file, "w") as f:
+                f.write(metadata)
 
-    def _get_relative_dir(self, parsed_url):
+    def _download(self, url_obj, asset_path):
         """
-        When an asset name is not an URL, and it also has a hash,
-        there's a clear intention for it to be unique *by name*,
-        overwriting it if the file is corrupted or expired.  These
-        will be stored in the cache directory indexed by name.
+        Download the asset from an uri.
 
-        When an asset name is an URL, whether it has a hash or not, it
-        will be saved according to their locations, so that multiple
-        assets with the same file name, but completely unrelated to
-        each other, will still coexist.
+        :param url_obj: object from urlparse.
+        :param asset_path: full path of the asset file.
+        :returns: if the downloaded file matches the hash.
+        :rtype: bool
         """
-        if self.asset_hash and not parsed_url.scheme:
-            return 'by_name'
-        base_url = "%s://%s/%s" % (parsed_url.scheme,
-                                   parsed_url.netloc,
-                                   os.path.dirname(parsed_url.path))
-        base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
-                                    base_url.encode(astring.ENCODING))
-        return os.path.join('by_location', base_url_hash.hexdigest())
+        try:
+            # Temporary unique name to use while downloading
+            temp = '%s.%s' % (asset_path,
+                              next(tempfile._get_candidate_names()))  # pylint: disable=W0212
+            url_download(url_obj.geturl(), temp)
+
+            # Acquire lock only after download the file
+            with FileLock(asset_path, 1):
+                shutil.copy(temp, asset_path)
+                self._create_hash_file(asset_path)
+                return self._verify(asset_path)
+        finally:
+            os.remove(temp)
 
     def _find_asset_file(self, relative_path):
         """
         Search for the asset file in each one of the cache locations
+
         :param relative_path: Path where file should be
         :return: asset file if exists or None
         :rtype: str or None
@@ -152,38 +156,141 @@ class Asset:
                     LOG.error('%s: %s', exc_type.__name__, exc_value)
         return None
 
-    def _create_metadata_file(self, asset_file):
+    @staticmethod
+    def _get_hash_file(asset_path):
         """
-        Creates JSON file with metadata.
-        The file will be saved as "asset_file"_metadata.json
-        :param asset_file: The asset whose metadata will be saved
-        :type asset_file: str
-        """
-        if self.metadata:
-            basename = os.path.splitext(asset_file)[0]
-            metadata_file = "%s_metadata.json" % basename
-            metadata = json.dumps(self.metadata)
-            with open(metadata_file, "w") as f:
-                f.write(metadata)
+        Returns the file name that contains the hash for a given asset file
 
-    def get_metadata(self):
+        :param asset_path: full path of the asset file.
+        :returns: the CHECKSUM path
+        :rtype: str
         """
-        Returns metadata of the asset if it exists or None.
-        :return: metadata
+        return '%s-CHECKSUM' % asset_path
+
+    def _get_hash_from_file(self, asset_path):
         """
-        parsed_url = urllib.parse.urlparse(self.name)
-        basename = os.path.basename(parsed_url.path)
-        cache_relative_dir = self._get_relative_dir(parsed_url)
-        asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
-                                                        basename))
-        if asset_file:
-            basename = os.path.splitext(asset_file)[0]
-            metadata_file = "%s_metadata.json" % basename
-            if os.path.isfile(metadata_file):
-                with open(metadata_file, "r") as f:
-                    metadata = json.loads(f.read())
-                    return metadata
-        return None
+        Read the CHECKSUM file from the asset and return the hash.
+
+        :param asset_path: full path of the asset file.
+        :returns: the hash, if it exists.
+        :rtype: str
+        """
+        discovered = None
+        hash_file = self._get_hash_file(asset_path)
+        if not os.path.isfile(hash_file):
+            self._create_hash_file(asset_path)
+
+        with open(hash_file, 'r') as hash_file:
+            for line in hash_file:
+                # md5 is 32 chars big and sha512 is 128 chars big.
+                # others supported algorithms are between those.
+                pattern = '%s [a-f0-9]{32,128}' % self.algorithm
+                if re.match(pattern, line):
+                    discovered = line.split()[1]
+                    break
+        return discovered
+
+    def _get_local_file(self, url_obj, asset_path):
+        """
+        Create a symlink for a local file into the cache.
+
+        :param url_obj: object from urlparse.
+        :param asset_path: full path of the asset file.
+        :returns: if the local file matches the hash.
+        :rtype: bool
+        """
+        if os.path.isdir(url_obj.path):
+            path = os.path.join(url_obj.path, self.name)
+        else:
+            path = url_obj.path
+
+        with FileLock(asset_path, 1):
+            try:
+                os.symlink(path, asset_path)
+                self._create_hash_file(asset_path)
+                return self._verify(asset_path)
+            except OSError as detail:
+                if detail.errno == errno.EEXIST:
+                    os.remove(asset_path)
+                    os.symlink(path, asset_path)
+                    self._create_hash_file(asset_path)
+                    return self._verify(asset_path)
+
+    def _get_relative_dir(self, parsed_url):
+        """
+        When an asset name is not an URL, and it also has a hash,
+        there's a clear intention for it to be unique *by name*,
+        overwriting it if the file is corrupted or expired.  These
+        will be stored in the cache directory indexed by name.
+
+        When an asset name is an URL, whether it has a hash or not, it
+        will be saved according to their locations, so that multiple
+        assets with the same file name, but completely unrelated to
+        each other, will still coexist.
+
+        :param url: parsed url object.
+        :returns: target location of asset the file.
+        :rtype: str
+        """
+        if self.asset_hash and not parsed_url.scheme:
+            return 'by_name'
+        base_url = "%s://%s/%s" % (parsed_url.scheme,
+                                   parsed_url.netloc,
+                                   os.path.dirname(parsed_url.path))
+        base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
+                                    base_url.encode(astring.ENCODING))
+        return os.path.join('by_location', base_url_hash.hexdigest())
+
+    def _get_writable_cache_dir(self):
+        """
+        Returns the first available writable cache directory
+
+        When a asset has to be downloaded, a writable cache directory
+        is then needed. The first available writable cache directory
+        will be used.
+
+        :returns: the first writable cache dir
+        :rtype: str
+        :raises: EnvironmentError
+        """
+        for cache_dir in self.cache_dirs:
+            cache_dir = os.path.expanduser(cache_dir)
+            if utils_path.usable_rw_dir(cache_dir):
+                return cache_dir
+        raise EnvironmentError("Can't find a writable cache directory.")
+
+    @staticmethod
+    def _is_expired(path, expire):
+        """
+        Checks if a file is expired according to expired parameter.
+
+        :param path: full path of the asset file.
+        :returns: the expired status of an asset.
+        :rtype: bool
+        """
+        if not expire:
+            return False
+        creation_time = os.lstat(path)[stat.ST_CTIME]
+        expire_time = creation_time + expire
+        if time.time() > expire_time:
+            return True
+        return False
+
+    def _verify(self, asset_path):
+        """
+        Verify if the `asset_path` hash matches the hash in the hash file.
+
+        :param asset_path: full path of the asset file.
+        :returns: True when self.asset_hash is None or when it has the same
+        value as the hash of the asset_file, otherwise return False.
+        :rtype: bool
+        """
+        if not self.asset_hash:
+            return True
+        if self._get_hash_from_file(asset_path) == self.asset_hash:
+            return True
+        else:
+            return False
 
     def fetch(self):
         """
@@ -193,6 +300,7 @@ class Asset:
 
         :raise EnvironmentError: When it fails to fetch the asset
         :returns: The path for the file on the cache directory.
+        :rtype: str
         """
         urls = []
         parsed_url = urllib.parse.urlparse(self.name)
@@ -246,80 +354,23 @@ class Asset:
 
         raise EnvironmentError("Failed to fetch %s." % basename)
 
-    def _download(self, url_obj, asset_file):
-        try:
-            # Temporary unique name to use while downloading
-            temp = '%s.%s' % (asset_file,
-                              next(tempfile._get_candidate_names()))  # pylint: disable=W0212
-            url_download(url_obj.geturl(), temp)
-
-            # Acquire lock only after download the file
-            with FileLock(asset_file, 1):
-                shutil.copy(temp, asset_file)
-                self._create_hash_file(asset_file)
-                return self._verify(asset_file)
-        finally:
-            os.remove(temp)
-
-    def _create_hash_file(self, asset_path):
+    def get_metadata(self):
         """
-        Compute the hash of the asset file and add it to the CHECKSUM
-        file.
+        Returns metadata of the asset if it exists or None.
 
-        :param asset_path: full path of the asset file.
+        :return: metadata
+        :rtype: dict or None
         """
-        result = crypto.hash_file(asset_path, algorithm=self.algorithm)
-        with open(self._get_hash_file(asset_path), 'w') as hash_file:
-            hash_file.write('%s %s\n' % (self.algorithm, result))
-
-    def _get_hash_from_file(self, asset_file):
-        discovered = None
-        hash_file = self._get_hash_file(asset_file)
-        if not os.path.isfile(hash_file):
-            self._create_hash_file(asset_file)
-
-        with open(hash_file, 'r') as hash_file:
-            for line in hash_file:
-                # md5 is 32 chars big and sha512 is 128 chars big.
-                # others supported algorithms are between those.
-                pattern = '%s [a-f0-9]{32,128}' % self.algorithm
-                if re.match(pattern, line):
-                    discovered = line.split()[1]
-                    break
-        return discovered
-
-    def _verify(self, asset_file):
-        if not self.asset_hash:
-            return True
-        if self._get_hash_from_file(asset_file) == self.asset_hash:
-            return True
-        else:
-            return False
-
-    def _get_local_file(self, url_obj, asset_file):
-        if os.path.isdir(url_obj.path):
-            path = os.path.join(url_obj.path, self.name)
-        else:
-            path = url_obj.path
-
-        with FileLock(asset_file, 1):
-            try:
-                os.symlink(path, asset_file)
-                self._create_hash_file(asset_file)
-                return self._verify(asset_file)
-            except OSError as detail:
-                if detail.errno == errno.EEXIST:
-                    os.remove(asset_file)
-                    os.symlink(path, asset_file)
-                    self._create_hash_file(asset_file)
-                    return self._verify(asset_file)
-
-    @staticmethod
-    def _is_expired(path, expire):
-        if not expire:
-            return False
-        creation_time = os.lstat(path)[stat.ST_CTIME]
-        expire_time = creation_time + expire
-        if time.time() > expire_time:
-            return True
-        return False
+        parsed_url = urllib.parse.urlparse(self.name)
+        basename = os.path.basename(parsed_url.path)
+        cache_relative_dir = self._get_relative_dir(parsed_url)
+        asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
+                                                        basename))
+        if asset_file:
+            basename = os.path.splitext(asset_file)[0]
+            metadata_file = "%s_metadata.json" % basename
+            if os.path.isfile(metadata_file):
+                with open(metadata_file, "r") as f:
+                    metadata = json.loads(f.read())
+                    return metadata
+        return None
