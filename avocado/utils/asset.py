@@ -67,10 +67,10 @@ class Asset:
         """
         self.name = name
         self.asset_hash = asset_hash
-        if algorithm is None:
-            self.algorithm = DEFAULT_HASH_ALGORITHM
-        else:
+        if algorithm:
             self.algorithm = algorithm
+        else:
+            self.algorithm = DEFAULT_HASH_ALGORITHM
 
         if isinstance(locations, str):
             self.locations = [locations]
@@ -159,7 +159,7 @@ class Asset:
         :param asset_file: The asset whose metadata will be saved
         :type asset_file: str
         """
-        if self.metadata is not None:
+        if self.metadata:
             basename = os.path.splitext(asset_file)[0]
             metadata_file = "%s_metadata.json" % basename
             metadata = json.dumps(self.metadata)
@@ -176,7 +176,7 @@ class Asset:
         cache_relative_dir = self._get_relative_dir(parsed_url)
         asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
                                                         basename))
-        if asset_file is not None:
+        if asset_file:
             basename = os.path.splitext(asset_file)[0]
             metadata_file = "%s_metadata.json" % basename
             if os.path.isfile(metadata_file):
@@ -206,8 +206,8 @@ class Asset:
         # First let's search for the file in each one of the cache locations
         asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
                                                         basename))
-        if asset_file is not None:
-            if self.metadata is not None:
+        if asset_file:
+            if self.metadata:
                 self._create_metadata_file(asset_file)
             return asset_file
 
@@ -217,7 +217,7 @@ class Asset:
         cache_dir = self._get_writable_cache_dir()
         # Now we have a writable cache_dir. Let's get the asset.
         # Adding the user defined locations to the urls list:
-        if self.locations is not None:
+        if self.locations:
             for item in self.locations:
                 urls.append(item)
 
@@ -237,7 +237,7 @@ class Asset:
                 os.makedirs(dirname)
             try:
                 if fetch(urlobj, asset_file):
-                    if self.metadata is not None:
+                    if self.metadata:
                         self._create_metadata_file(asset_file)
                     return asset_file
             except Exception:  # pylint: disable=W0703
@@ -310,7 +310,7 @@ class Asset:
 
     @staticmethod
     def _is_expired(path, expire):
-        if expire is None:
+        if not expire:
             return False
         creation_time = os.lstat(path)[stat.ST_CTIME]
         expire_time = creation_time + expire
