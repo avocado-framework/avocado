@@ -138,11 +138,11 @@ AVOCADO_OPTIONAL_PLUGINS_TESTS=$(patsubst %,%/tests/, $(AVOCADO_OPTIONAL_PLUGINS
 endif
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	PYTHON=$(PYTHON) $(PYTHON) -m avocado nrun selftests/*.sh selftests/unit/ selftests/functional/ $(AVOCADO_OPTIONAL_PLUGINS_TESTS)
+	export PYTHONWARNINGS=ignore;PYTHON=$(PYTHON) $(PYTHON) -m avocado nrun selftests/*.sh selftests/unit/ selftests/functional/ $(AVOCADO_OPTIONAL_PLUGINS_TESTS)
 	selftests/check_tmp_dirs
 
 check-full: clean develop
-	PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=3 selftests/checkall
+	export PYTHONWARNINGS=ignore;PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=3 selftests/checkall
 	selftests/check_tmp_dirs
 
 develop:

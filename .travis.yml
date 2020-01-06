@@ -13,6 +13,7 @@ env:
       AVOCADO_LOG_DEBUG=yes
       SELF_CHECK_CONTINUOUS=y
       AVOCADO_CHECK_LEVEL=1
+      PYTHONWARNINGS=ignore
 
 cache:
     directories:
@@ -36,6 +37,7 @@ matrix:
       arch: amd64
       env:
         - SELF_CHECK_CONTINUOUS=yes
+          PYTHONWARNINGS=ignore
       install:
         - pip install -r requirements-selftests.txt
         - pip install codecov
