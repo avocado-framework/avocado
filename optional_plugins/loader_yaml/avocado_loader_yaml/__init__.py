@@ -92,6 +92,8 @@ class YamlTestsuiteLoader(loader.TestLoader):
 
     def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
         tests = []
+        if reference is None:
+            return tests
         try:
             root = mux.apply_filters(create_from_yaml([reference], False),
                                      self.args.get("mux_suite_only", []),
