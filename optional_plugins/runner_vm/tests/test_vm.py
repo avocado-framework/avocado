@@ -17,6 +17,10 @@ class _FakeVM(avocado_runner_vm.VM):
 
     def __init__(self):  # pylint: disable=W0231
         # don't call avocado_runner_vm.VM.__init__
+        self.start = None
+        self.create_snapshot = None
+        self.stop = None
+        self.restore_snapshot = None
         self.snapshot = True
         self.domain = unittest.mock.Mock()
         self.domain.isActive = unittest.mock.Mock(return_value=True)
