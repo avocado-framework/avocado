@@ -135,7 +135,7 @@ is not intended to address the API at this time.
 
 The default values (within the source code) should have an 1:1 mapping to the
 configuration file options. Must follow the same naming convention and
-sections. Exempla::
+sections. Example::
 
         #avocado.conf:
         [core]
@@ -393,7 +393,7 @@ supports that with the conf.d directory. What do you think?
 
 .. note:: New Issue: Split config files into small ones (if necessary).
 
-Backwards Comaptibility
+Backwards Compatibility
 ***********************
 
 In order to keep a good naming convention, this set of changes probably will
