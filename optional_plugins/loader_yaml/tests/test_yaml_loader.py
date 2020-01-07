@@ -41,7 +41,8 @@ class YamlLoaderTests(unittest.TestCase):
         # Run replay job
         for line in res.stdout.splitlines():
             if line.startswith(b"JOB LOG"):
-                srcjob = line[13:]
+                joblog = line[13:]
+                srcjob = os.path.dirname(joblog)
                 break
         else:
             self.fail("Unable to find 'JOB LOG' in:\n%s" % res)

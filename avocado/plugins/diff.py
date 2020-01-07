@@ -33,7 +33,6 @@ from avocado.core import output
 
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.settings import settings
 
 
 class Diff(CLICmd):
@@ -346,32 +345,13 @@ class Diff(CLICmd):
 
     @staticmethod
     def _setup_job(job_id):
-        if os.path.isdir(job_id):
-            resultsdir = os.path.expanduser(job_id)
-            job_id = ''
-        elif os.path.isfile(job_id):
-            resultsdir = os.path.dirname(os.path.expanduser(job_id))
-            job_id = ''
-        else:
-            logdir = settings.get_value(section='datadir.paths',
-                                        key='logs_dir', key_type='path',
-                                        default=None)
-            try:
-                resultsdir = data_dir.get_resultsdir(logdir, job_id)
-            except ValueError as exception:
-                LOG_UI.error(exception)
-                sys.exit(exit_codes.AVOCADO_FAIL)
-
+        resultsdir = data_dir.get_job_results_dir(job_id)
         if resultsdir is None:
-            LOG_UI.error("Can't find job results directory for '%s' in '%s'",
-                         job_id, logdir)
+            LOG_UI.error("Can't find job results directory for '%s'", job_id)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        sourcejob = data_dir.get_id(os.path.join(resultsdir, 'id'), job_id)
-        if sourcejob is None:
-            LOG_UI.error("Can't find matching job id '%s' in '%s' directory.",
-                         job_id, resultsdir)
-            sys.exit(exit_codes.AVOCADO_FAIL)
+        with open(os.path.join(resultsdir, 'id'), 'r') as id_file:
+            sourcejob = id_file.read().strip()
 
         return resultsdir, sourcejob
 

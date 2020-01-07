@@ -287,54 +287,62 @@ def clean_tmp_files():
         pass
 
 
-def get_resultsdir(logdir, jobid):
+def get_job_results_dir(job_ref, logs_dir=None):
     """
-    Gets the job results directory using a Job ID.
+    Get the job results directory from a job reference.
+
+    :param job_ref: job reference, which can be:
+                    * an valid path to the job results directory. In this case
+                      it is checked if 'id' file exists
+                    * the path to 'id' file
+                    * the job id, which can be 'latest'
+                    * an partial job id
+    :param logs_dir: path to base logs directory (optional), otherwise it uses
+                     the value from settings.
     """
-    if os.path.isdir(jobid):
-        return os.path.expanduser(jobid)
-    elif os.path.isfile(jobid):
-        return os.path.dirname(os.path.expanduser(jobid))
-    elif jobid == 'latest':
+    # Check if job_ref is actually the path to either the job logs
+    # directory itself or the job id file.
+    path_ref = os.path.expanduser(job_ref)
+    if os.path.isdir(path_ref):
+        # The id file should exists otherwise it is not the expected
+        # directory.
+        if os.path.isfile(os.path.join(path_ref, 'id')):
+            return os.path.abspath(path_ref)
+        return None
+    elif os.path.isfile(path_ref):
+        if os.path.basename(path_ref) == 'id':
+            return os.path.abspath(os.path.dirname(path_ref))
+        return None
+
+    # At this point job_ref is expected to be an id (can be partial) or
+    # the 'latest' symlink.
+    #
+
+    if logs_dir is None:
+        logs_dir = get_logs_dir()
+    else:
+        logs_dir = os.path.expanduser(logs_dir)
+
+    if job_ref == 'latest':
         try:
-            actual_dir = os.readlink(os.path.join(logdir, 'latest'))
-            return os.path.join(logdir, actual_dir)
+            actual_dir = os.readlink(os.path.join(logs_dir, 'latest'))
+            return os.path.join(logs_dir, actual_dir)
         except IOError:
             return None
 
     matches = 0
-    short_jobid = jobid[:7]
+    short_jobid = job_ref[:7]
     if len(short_jobid) < 7:
         short_jobid += '*'
-    idfile_pattern = os.path.join(logdir, 'job-*-%s' % short_jobid, 'id')
+    idfile_pattern = os.path.join(logs_dir, 'job-*-%s' % short_jobid, 'id')
     for id_file in glob.glob(idfile_pattern):
-        if get_id(id_file, jobid) is not None:
-            match_file = id_file
-            matches += 1
+        with open(id_file, 'r') as fid:
+            line = fid.read().strip('\n')
+            if line.startswith(job_ref):
+                match_file = id_file
+                matches += 1
             if matches > 1:
-                raise ValueError("hash '%s' is not unique enough" % jobid)
+                raise ValueError("hash '%s' is not unique enough" % job_ref)
     if matches == 1:
         return os.path.dirname(match_file)
-    else:
-        return None
-
-
-def get_id(path, jobid):
-    """
-    Gets the full Job ID using the results directory path and a partial
-    Job ID or the string 'latest'.
-    """
-    if os.path.isdir(jobid) or os.path.isfile(jobid):
-        jobid = ''
-    elif jobid == 'latest':
-        jobid = os.path.basename(os.path.dirname(path))[-7:]
-
-    if not os.path.exists(path):
-        return None
-
-    with open(path, 'r') as jobid_file:
-        content = jobid_file.read().strip('\n')
-    if content.startswith(jobid):
-        return content
-    else:
-        return None
+    return None
