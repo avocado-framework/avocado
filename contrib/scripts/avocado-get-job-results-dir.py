@@ -30,23 +30,10 @@ if __name__ == '__main__':
         sys.stderr.write("Please inform the Job ID.\n")
         sys.exit(-1)
 
-    logdir = settings.get_value(section='datadir.paths',
-                                key='logs_dir', key_type='path',
-                                default=None)
-
-    if logdir is None:
-        sys.sterr.write("Log directory not configured in Avocado settings.\n")
+    resultsdir = data_dir.get_job_results_dir(sys.argv[1])
+    if resultsdir is None:
+        sys.stderr.write("Can't find job results directory for '%s'\n" %
+                         sys.argv[1])
         sys.exit(-1)
 
-    try:
-        resultsdir = data_dir.get_resultsdir(logdir, sys.argv[1])
-    except ValueError as exception:
-        sys.stderr.write('%s\n' % exception)
-        sys.exit(-1)
-    else:
-        if resultsdir is None:
-            sys.stderr.write("Can't find job results directory in '%s'\n" %
-                             logdir)
-            sys.exit(-1)
-
-        sys.stdout.write('%s\n' % resultsdir)
+    sys.stdout.write('%s\n' % resultsdir)

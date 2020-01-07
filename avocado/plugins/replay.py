@@ -180,30 +180,15 @@ class Replay(CLI):
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        base_logdir = config.get('base_logdir', None)
-        if base_logdir is None:
-            base_logdir = settings.get_value(section='datadir.paths',
-                                             key='logs_dir', key_type='path',
-                                             default=None)
-        try:
-            resultsdir = data_dir.get_resultsdir(base_logdir,
-                                                 config.get('replay_jobid'))
-        except ValueError as exception:
-            LOG_UI.error(exception)
-            sys.exit(exit_codes.AVOCADO_FAIL)
-
+        resultsdir = data_dir.get_job_results_dir(config.get('replay_jobid'),
+                                                  config.get('base_logdir', None))
         if resultsdir is None:
-            LOG_UI.error("Can't find job results directory in '%s'", base_logdir)
+            LOG_UI.error("Can't find job results directory for '%s'",
+                         config.get('replay_jobid'))
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        sourcejob = data_dir.get_id(os.path.join(resultsdir, 'id'),
-                                    config.get('replay_jobid'))
-        if sourcejob is None:
-            msg = ("Can't find matching job id '%s' in '%s' directory."
-                   % (config.get('replay_jobid'), resultsdir))
-            LOG_UI.error(msg)
-            sys.exit(exit_codes.AVOCADO_FAIL)
-        config['replay_sourcejob'] = sourcejob
+        with open(os.path.join(resultsdir, 'id'), 'r') as id_file:
+            config['replay_sourcejob'] = id_file.read().strip()
 
         replay_config = jobdata.retrieve_job_config(resultsdir)
         whitelist = ['loaders',
