@@ -22,7 +22,7 @@
 
 import sys
 
-from avocado.core import jobdata
+from avocado.core import data_dir
 from avocado.core.settings import settings
 
 if __name__ == '__main__':
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     try:
-        resultsdir = jobdata.get_resultsdir(logdir, sys.argv[1])
+        resultsdir = data_dir.get_resultsdir(logdir, sys.argv[1])
     except ValueError as exception:
         sys.stderr.write('%s\n' % exception)
         sys.exit(-1)
