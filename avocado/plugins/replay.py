@@ -18,6 +18,7 @@ import os
 import re
 import sys
 
+from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import jobdata
 from avocado.core import status
@@ -185,7 +186,8 @@ class Replay(CLI):
                                              key='logs_dir', key_type='path',
                                              default=None)
         try:
-            resultsdir = jobdata.get_resultsdir(base_logdir, config.get('replay_jobid'))
+            resultsdir = data_dir.get_resultsdir(base_logdir,
+                                                 config.get('replay_jobid'))
         except ValueError as exception:
             LOG_UI.error(exception)
             sys.exit(exit_codes.AVOCADO_FAIL)
@@ -194,8 +196,8 @@ class Replay(CLI):
             LOG_UI.error("Can't find job results directory in '%s'", base_logdir)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        sourcejob = jobdata.get_id(os.path.join(resultsdir, 'id'),
-                                   config.get('replay_jobid'))
+        sourcejob = data_dir.get_id(os.path.join(resultsdir, 'id'),
+                                    config.get('replay_jobid'))
         if sourcejob is None:
             msg = ("Can't find matching job id '%s' in '%s' directory."
                    % (config.get('replay_jobid'), resultsdir))
