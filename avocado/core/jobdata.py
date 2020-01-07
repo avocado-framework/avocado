@@ -17,7 +17,6 @@ Record/retrieve job information
 """
 
 import ast
-import glob
 import json
 import os
 
@@ -165,56 +164,3 @@ def retrieve_cmdline(resultsdir):
     with open(recorded_cmdline, 'r') as cmdline_file:
         return ast.literal_eval(cmdline_file.read())
 
-
-def get_resultsdir(logdir, jobid):
-    """
-    Gets the job results directory using a Job ID.
-    """
-    if os.path.isdir(jobid):
-        return os.path.expanduser(jobid)
-    elif os.path.isfile(jobid):
-        return os.path.dirname(os.path.expanduser(jobid))
-    elif jobid == 'latest':
-        try:
-            actual_dir = os.readlink(os.path.join(logdir, 'latest'))
-            return os.path.join(logdir, actual_dir)
-        except IOError:
-            return None
-
-    matches = 0
-    short_jobid = jobid[:7]
-    if len(short_jobid) < 7:
-        short_jobid += '*'
-    idfile_pattern = os.path.join(logdir, 'job-*-%s' % short_jobid, 'id')
-    for id_file in glob.glob(idfile_pattern):
-        if get_id(id_file, jobid) is not None:
-            match_file = id_file
-            matches += 1
-            if matches > 1:
-                raise ValueError("hash '%s' is not unique enough" % jobid)
-
-    if matches == 1:
-        return os.path.dirname(match_file)
-    else:
-        return None
-
-
-def get_id(path, jobid):
-    """
-    Gets the full Job ID using the results directory path and a partial
-    Job ID or the string 'latest'.
-    """
-    if os.path.isdir(jobid) or os.path.isfile(jobid):
-        jobid = ''
-    elif jobid == 'latest':
-        jobid = os.path.basename(os.path.dirname(path))[-7:]
-
-    if not os.path.exists(path):
-        return None
-
-    with open(path, 'r') as jobid_file:
-        content = jobid_file.read().strip('\n')
-    if content.startswith(jobid):
-        return content
-    else:
-        return None

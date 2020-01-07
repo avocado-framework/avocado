@@ -26,6 +26,7 @@ import tempfile
 
 from difflib import unified_diff, HtmlDiff
 
+from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import jobdata
 from avocado.core import output
@@ -356,7 +357,7 @@ class Diff(CLICmd):
                                         key='logs_dir', key_type='path',
                                         default=None)
             try:
-                resultsdir = jobdata.get_resultsdir(logdir, job_id)
+                resultsdir = data_dir.get_resultsdir(logdir, job_id)
             except ValueError as exception:
                 LOG_UI.error(exception)
                 sys.exit(exit_codes.AVOCADO_FAIL)
@@ -366,7 +367,7 @@ class Diff(CLICmd):
                          job_id, logdir)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        sourcejob = jobdata.get_id(os.path.join(resultsdir, 'id'), job_id)
+        sourcejob = data_dir.get_id(os.path.join(resultsdir, 'id'), job_id)
         if sourcejob is None:
             LOG_UI.error("Can't find matching job id '%s' in '%s' directory.",
                          job_id, resultsdir)
