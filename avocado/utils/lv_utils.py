@@ -423,27 +423,6 @@ def lv_create(vg_name, lv_name, lv_size, force_flag=True,
     LOGGER.debug("Created thin volume:%s", lv_name)
 
 
-def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
-                   thinlv_name="lvthin", thinlv_size="1G"):
-    """
-    Create a thin volume from given volume group.
-
-    Note: this is a deprecated API and will be removed soon.
-
-    :param vg_name: An exist volume group
-    :param thinpool_name: The name of thin pool
-    :param thinpool_size: The size of thin pool to be created
-    :param thinlv_name: The name of thin volume
-    :param thinlv_size: The size of thin volume
-    """
-    LOGGER.warning("thin_lv_create() is a deprecated API and will be removed "
-                   "soon.  Please resort to using lv_create() which is now "
-                   "capable of creathing thin logical volumes")
-    lv_create(vg_name=vg_name, lv_name=thinlv_name, lv_size=thinlv_size,
-              pool_name=thinpool_name, pool_size=thinpool_size)
-    return thinpool_name, thinlv_name
-
-
 def lv_remove(vg_name, lv_name):
     """
     Remove a logical volume.
