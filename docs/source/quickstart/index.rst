@@ -1,6 +1,6 @@
-==================================
-Welcome to Avocado's Documentation
-==================================
+==================
+Welcome to Avocado
+==================
 
 Avocado is a set of tools and libraries to help with automated testing.
 
