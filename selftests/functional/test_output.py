@@ -446,8 +446,8 @@ class OutputPluginTest(unittest.TestCase):
                    % os.path.relpath(self.tmpdir.name, "."))
         script.Script(config, content).save()
         cmd_line = ('%s --config %s --show all run '
-                    '--sysinfo=off whiteboard.py --json %s'
-                    % (AVOCADO, config, tmpfile))
+                    '--job-results-dir %s --sysinfo=off whiteboard.py '
+                    '--json %s' % (AVOCADO, config, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
