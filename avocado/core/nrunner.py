@@ -33,7 +33,7 @@ class Runnable:
         self.kwargs = kwargs
 
     def __repr__(self):
-        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}"'
+        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}">'
         return fmt.format(self.kind, self.uri,
                           self.args, self.kwargs, self.tags)
 
