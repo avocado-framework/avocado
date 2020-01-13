@@ -69,10 +69,12 @@ def device_exists(mpath):
 
     :return: True if path exists, False if does not exist.
     """
-    cmd = "multipath -l %s" % mpath
-    if process.system(cmd, ignore_status=True, sudo=True, shell=True):
-        return False
-    return True
+    cmd = "multipath -ll"
+    out = process.run(cmd, ignore_status=True, sudo=True,
+                      shell=True).stdout_text
+    if mpath in out:
+        return True
+    return False
 
 
 def get_mpath_name(wwid):
