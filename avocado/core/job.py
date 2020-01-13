@@ -391,7 +391,7 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
-    def _make_test_suite(self, references):
+    def _make_test_suite_loader(self, references):
         """
         Prepares a test suite to be used for running tests
 
@@ -420,6 +420,10 @@ class Job:
         for i in range(len(suite)):
             suite[i] = [test.DryRunTest, suite[i][1]]
         return suite
+
+    def _make_test_suite_resolver(self, references):
+        resolutions = resolver.resolve(references)
+        return resolutions_to_tasks(resolutions, self.config)
 
     def _log_job_id(self):
         LOG_JOB.info('Job ID: %s', self.unique_id)
@@ -525,8 +529,12 @@ class Job:
         This is a public Job API as part of the documented Job phases
         """
         refs = self.config.get('references', [])
+        runner_name = self.config.get('test_runner', 'runner')
         try:
-            self.test_suite = self._make_test_suite(refs)
+            if runner_name == 'nrunner':
+                self.test_suite = self._make_test_suite_resolver(refs)
+            else:
+                self.test_suite = self._make_test_suite_loader(refs)
             self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
