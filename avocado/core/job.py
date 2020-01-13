@@ -27,28 +27,28 @@ import tempfile
 import time
 import traceback
 
-from . import version
 from . import data_dir
 from . import dispatcher
-from . import loader
-from . import result
-from . import exit_codes
 from . import exceptions
+from . import exit_codes
 from . import job_id
-from . import output
-from . import varianter
-from . import test
-from . import tags
 from . import jobdata
-from .output import STD_OUTPUT
-from .settings import settings
+from . import loader
+from . import output
+from . import result
+from . import tags
+from . import test
+from . import varianter
+from . import version
 from ..utils import astring
-from ..utils import path
-from ..utils import stacktrace
 from ..utils import data_structures
+from ..utils import path
 from ..utils import process
+from ..utils import stacktrace
 from .output import LOG_JOB
 from .output import LOG_UI
+from .output import STD_OUTPUT
+from .settings import settings
 
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
