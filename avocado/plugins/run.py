@@ -18,6 +18,7 @@ Base Test Runner Plugins.
 
 import argparse
 import sys
+import warnings
 
 from avocado.core import exit_codes
 from avocado.core import job
@@ -108,16 +109,19 @@ class Run(CLICmd):
                             ' s (seconds), m (minutes), h (hours). ')
 
         parser.add_argument('--failfast', choices=('on', 'off'),
-                            help='Enable or disable the job interruption on '
-                            'first failed test.')
+                            help="Enable or disable the job interruption on "
+                            "first failed test. 'on' and 'off' will be "
+                            "deprecated soon. ")
 
         parser.add_argument('--keep-tmp', choices=('on', 'off'),
-                            default='off', help='Keep job temporary files '
-                            '(useful for avocado debugging). Defaults to off.')
+                            default='off', help="Keep job temporary files "
+                            "(useful for avocado debugging). 'on' and 'off' "
+                            "will be deprecated soon. Defaults to off.")
 
         parser.add_argument('--ignore-missing-references', choices=('on', 'off'),
                             help="Force the job execution, even if some of "
-                            "the test references are not resolved to tests.")
+                            "the test references are not resolved to tests."
+                            "'on' and 'off' will be deprecated soon.")
 
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
@@ -127,7 +131,8 @@ class Run(CLICmd):
         parser.add_argument('--sysinfo', choices=('on', 'off'),
                             default=sysinfo_default, help="Enable or disable "
                             "system information (hardware details, profilers, "
-                            "etc.). Current:  %(default)s")
+                            "etc.). 'on' and 'off' will be deprecated soon. "
+                            "Current:  %(default)s")
 
         parser.add_argument("--execution-order",
                             choices=("tests-per-variant",
@@ -185,7 +190,8 @@ class Run(CLICmd):
                                "stderr) check. If this option is off, no "
                                "output will be checked, even if there are "
                                "reference files present for the test. "
-                               "Current: on (output check enabled)")
+                               "'on' and 'off' will be deprecated soon. "
+                               "Current: on (output check enabled). ")
 
         loader.add_loader_options(parser)
         parser_common_args.add_tag_filter_args(parser)
@@ -201,6 +207,11 @@ class Run(CLICmd):
         if 'output_check_record' in config:
             process.OUTPUT_CHECK_RECORD_MODE = config.get('output_check_record',
                                                           None)
+
+        warnings.warn("The following arguments will be changed to boolean soon: "
+                      "sysinfo, output-check, failfast, keep-tmp, "
+                      "ignore-missing-references, sysinfo and output-check",
+                      FutureWarning)
 
         if config.get('unique_job_id') is not None:
             try:
