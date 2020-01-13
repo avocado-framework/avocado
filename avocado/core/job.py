@@ -337,7 +337,7 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
-    def _make_test_suite(self, references=None):
+    def _make_test_suite(self, references):
         """
         Prepares a test suite to be used for running tests
 
