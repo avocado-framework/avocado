@@ -4,15 +4,15 @@ import os
 import random
 import sys
 
-from avocado.core import nrunner
-from avocado.core import resolver
 from avocado.core import exit_codes
-from avocado.core import test
+from avocado.core import nrunner
 from avocado.core import parser_common_args
+from avocado.core import resolver
+from avocado.core import test
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.utils import path as utils_path
 from avocado.core.tags import filter_test_tags_runnable
+from avocado.utils import path as utils_path
 
 
 class NRun(CLICmd):
