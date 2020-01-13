@@ -82,12 +82,15 @@ class NRun(CLICmd):
         except utils_path.CmdNotFoundError:
             self.KNOWN_EXTERNAL_RUNNERS[kind] = False
 
-    @asyncio.coroutine
-    def spawn_task(self, task):
+    def pick_runner_or_default(self, task):
         runner = self.pick_runner(task)
         if runner is None:
             runner = [sys.executable, '-m', 'avocado.core.nrunner']
+        return runner
 
+    @asyncio.coroutine
+    def spawn_task(self, task):
+        runner = self.pick_runner_or_default(task)
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
 
