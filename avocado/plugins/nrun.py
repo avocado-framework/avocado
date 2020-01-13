@@ -61,6 +61,26 @@ def pick_runner(task, runners_registry):
         runners_registry[kind] = False
 
 
+def check_tasks_requirements(tasks, runners_registry):
+    """
+    Checks if tasks have runner requirements fulfilled
+
+    :param tasks: the tasks whose runner requirements will be checked
+    :type tasks: list of :class:`avocado.core.nrunner.Task`
+    :param runners_registry: a registry with previously found (and not
+                             found) runners keyed by task kind
+    :param runners_registry: dict
+    """
+    result = []
+    for task in tasks:
+        runner = pick_runner(task, runners_registry)
+        if runner:
+            result.append(task)
+        else:
+            LOG_UI.warning('Task will not be run due to missing requirements: %s', task)
+    return result
+
+
 class NRun(CLICmd):
 
     name = 'nrun'
@@ -118,20 +138,12 @@ class NRun(CLICmd):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
 
-    def check_tasks_requirements(self, tasks):
-        result = []
-        for task in tasks:
-            runner = pick_runner(task, self.KNOWN_EXTERNAL_RUNNERS)
-            if runner:
-                result.append(task)
-            else:
-                LOG_UI.warning('Task will not be run due to missing requirements: %s', task)
-        return result
-
     def run(self, config):
         resolutions = resolver.resolve(config.get('references'))
         tasks = job.resolutions_to_tasks(resolutions, config)
-        self.pending_tasks = self.check_tasks_requirements(tasks)  # pylint: disable=W0201
+        self.pending_tasks = check_tasks_requirements(   # pylint: disable=W0201
+            tasks,
+            self.KNOWN_EXTERNAL_RUNNERS)
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
