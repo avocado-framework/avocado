@@ -36,6 +36,31 @@ class NRun(CLICmd):
 
     @staticmethod
     def resolutions_to_tasks(resolutions, config):
+        """
+        Transforms resolver resolutions into tasks
+
+        A resolver resolution
+        (:class:`avocado.core.resolver.ReferenceResolution`) contains
+        information about the resolution process (if it was successful
+        or not) and in case of sucessful resolutions a list of
+        resolutions.  It's expected that the resolution are
+        :class:`avocado.core.nrunner.Runnable`.
+
+        This method transforms those runnables into Tasks
+        (:class:`avocado.core.nrunner.Task`), which will include an
+        unique sequential identification and a status reporting URI.
+        It also performs tag based filtering on the runnables for
+        possibly excluding some of the Runnables.
+
+        :param resolutions: possible multiple resolutions for multiple
+                            references
+        :type resolutions: list of :class:`avocado.core.resolver.ReferenceResolution`
+        :param config: job configuration
+        :type config: dict
+        :returns: the resolutions converted to tasks
+        :rtype: list of :class:`avocado.core.nrunner.Task`
+        """
+
         tasks = []
         index = 0
         resolutions = [res for res in resolutions if
