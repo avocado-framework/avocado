@@ -341,9 +341,9 @@ class Job:
         """
         Prepares a test suite to be used for running tests
 
-        :param references: String with tests references to be resolved, and
-                           then run, separated by whitespace. Optionally, a
-                           list of tests (each test a string).
+        :param references: List of tests references to be resolved and
+                           transformed into test factories
+        :type references: list of str
         :returns: a test suite (a list of test factories)
         """
         loader.loader.load_plugins(self.config)
