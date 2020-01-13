@@ -5,13 +5,12 @@ import random
 import sys
 
 from avocado.core import exit_codes
+from avocado.core import job
 from avocado.core import nrunner
 from avocado.core import parser_common_args
 from avocado.core import resolver
-from avocado.core import test
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.tags import filter_test_tags_runnable
 from avocado.utils import path as utils_path
 
 
@@ -33,57 +32,6 @@ class NRun(CLICmd):
                             metavar="HOST:PORT",
                             help="Host and port for status server, default is: %(default)s")
         parser_common_args.add_tag_filter_args(parser)
-
-    @staticmethod
-    def resolutions_to_tasks(resolutions, config):
-        """
-        Transforms resolver resolutions into tasks
-
-        A resolver resolution
-        (:class:`avocado.core.resolver.ReferenceResolution`) contains
-        information about the resolution process (if it was successful
-        or not) and in case of sucessful resolutions a list of
-        resolutions.  It's expected that the resolution are
-        :class:`avocado.core.nrunner.Runnable`.
-
-        This method transforms those runnables into Tasks
-        (:class:`avocado.core.nrunner.Task`), which will include an
-        unique sequential identification and a status reporting URI.
-        It also performs tag based filtering on the runnables for
-        possibly excluding some of the Runnables.
-
-        :param resolutions: possible multiple resolutions for multiple
-                            references
-        :type resolutions: list of :class:`avocado.core.resolver.ReferenceResolution`
-        :param config: job configuration
-        :type config: dict
-        :returns: the resolutions converted to tasks
-        :rtype: list of :class:`avocado.core.nrunner.Task`
-        """
-
-        tasks = []
-        index = 0
-        resolutions = [res for res in resolutions if
-                       res.result == resolver.ReferenceResolutionResult.SUCCESS]
-        no_digits = len(str(len(resolutions)))
-        for resolution in resolutions:
-            name = resolution.reference
-            for runnable in resolution.resolutions:
-                filter_by_tags = config.get('filter_by_tags')
-                if filter_by_tags:
-                    if not filter_test_tags_runnable(
-                            runnable,
-                            filter_by_tags,
-                            config.get('filter_by_tags_include_empty'),
-                            config.get('filter_by_tags_include_empty_key')):
-                        continue
-                if runnable.uri:
-                    name = runnable.uri
-                identifier = str(test.TestID(index + 1, name, None, no_digits))
-                tasks.append(nrunner.Task(identifier, runnable,
-                                          [config.get('status_server')]))
-                index += 1
-        return tasks
 
     @asyncio.coroutine
     def spawn_tasks(self):
@@ -162,7 +110,7 @@ class NRun(CLICmd):
 
     def run(self, config):
         resolutions = resolver.resolve(config.get('references'))
-        tasks = self.resolutions_to_tasks(resolutions, config)
+        tasks = job.resolutions_to_tasks(resolutions, config)
         self.pending_tasks = self.check_tasks_requirements(tasks)  # pylint: disable=W0201
 
         if not self.pending_tasks:
