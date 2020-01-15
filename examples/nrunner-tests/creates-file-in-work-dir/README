@@ -1,0 +1,4 @@
+This test creates a temporary file in the work directory provided by
+the Avocado runner.  The test should fail if Avocado's work directory
+is not set (as an environment variable) or if the directory set does
+not exist.

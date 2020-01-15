@@ -159,6 +159,16 @@ The runner's main method (``run()``) operates like a generator, and
 yields results which are dictionaries with relevant information about
 it.
 
+Runnable's Requirements
+-----------------------
+
+A Runnable may have some requirements defined, and those will be fulfilled
+on its behalf.  Requirements can vary wildly in complexity, and can range
+from a directory (to be used during the runnable execution) or requiring
+a package to be installed in the system (in theory also to be used during
+the runnable execution).
+
+
 Trying it out - standalone
 --------------------------
 

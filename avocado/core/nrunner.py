@@ -5,9 +5,12 @@ import collections
 import io
 import json
 import multiprocessing
+import os
 import subprocess
+import tempfile
 import time
 import unittest
+import shutil
 import socket
 
 #: The amount of time (in seconds) between each internal status check
@@ -31,6 +34,16 @@ class Runnable:
         self.args = args
         self.tags = kwargs.pop('tags', None)
         self.kwargs = kwargs
+        #: Wether this runnable needs a managed temporary directory, which
+        #: will be created and cleaned up by the runner.  The goal of such
+        #: a temporary directory is to hold content that the test will create
+        #: durings its workings, but that can be removed later.  This is
+        #: similar in purpose to :meth:`avocado.Test.workdir`, and can be
+        #: used on tasks such as decompressing source tarballs, building
+        #: software, etc.  If it's set to True, it means that a work_dir is
+        #: required.  It can also be set to a specific location to be used
+        #: as a work directory, if the runnable already has one crated.
+        self.work_dir = False
 
     def __repr__(self):
         fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}">'
@@ -64,6 +77,9 @@ class Runnable:
         for arg in self.args:
             args.append('-a')
             args.append(arg)
+
+        if self.work_dir:
+            args.append('--requires-work-dir')
 
         if self.tags is not None:
             args.append('tags=json:%s' % json.dumps(self.get_serializable_tags()))
@@ -124,6 +140,14 @@ def runnable_from_recipe(recipe_path):
                     **recipe.get('kwargs', {}))
 
 
+def work_dir_setup():
+    return tempfile.mkdtemp(prefix='avocado-runner-work-dir-')
+
+
+def work_dir_cleanup(work_dir):
+    shutil.rmtree(work_dir)
+
+
 class BaseRunner:
     """
     Base interface for a Runner
@@ -131,6 +155,17 @@ class BaseRunner:
 
     def __init__(self, runnable):
         self.runnable = runnable
+
+    def setup_requirements(self):
+        if self.runnable.work_dir:
+            if not os.path.isdir(self.runnable.work_dir):
+                self.runnable.work_dir = work_dir_setup()
+
+    def cleanup_requirements(self):
+        if self.runnable.work_dir:
+            if os.path.isdir(self.runnable.work_dir):
+                work_dir_cleanup(self.runnable.work_dir)
+                self.work_dir = False
 
     def run(self):
         yield {}
@@ -171,6 +206,15 @@ class ExecRunner(BaseRunner):
         env = self.runnable.kwargs or None
         time_start = time.time()
         time_start_sent = False
+
+        self.setup_requirements()
+
+        # Advertise the temporary directory as a "private" environment variable
+        if self.runnable.work_dir:
+            if env is None:
+                env = {}
+            env['AVOCADO_WORK_DIR'] = self.runnable.work_dir
+
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,
@@ -194,6 +238,8 @@ class ExecRunner(BaseRunner):
         process.stdout.close()
         stderr = process.stderr.read()
         process.stderr.close()
+
+        self.cleanup_requirements()
 
         yield {'status': 'finished',
                'returncode': process.returncode,
@@ -326,6 +372,12 @@ CMD_RUNNABLE_RUN_ARGS = (
     (("-a", "--arg"),
      {'action': "append", 'default': [], 'help': 'Simple arguments to runnable'}),
 
+    (('--requires-work-dir', ),
+     {'action': 'store_true', 'default': False,
+      'help': ('Wether the runnable needs a writable directory during its '
+               'execution, which will be provided by the runner. Defaults to: '
+               ' %(default)s')}),
+
     (('kwargs',),
      {'default': [], 'type': _parse_key_val, 'nargs': '*',
       'metavar': 'KEY_VAL', 'help': 'Keyword (key=val) arguments to runnable'}),
@@ -372,10 +424,12 @@ def _key_val_args_to_kwargs(kwargs):
 
 def runnable_from_args(args):
     decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
-    return Runnable(args.get('kind'),
+    rnb = Runnable(args.get('kind'),
                     args.get('uri'),
                     *decoded_args,
                     **_key_val_args_to_kwargs(args.get('kwargs', [])))
+    rnb.work_dir = args.get('requires_work_dir')
+    return rnb
 
 
 def subcommand_runnable_run(args, echo=print):

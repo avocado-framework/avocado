@@ -87,6 +87,18 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'stdout': b'X=Y\\n'", res.stdout)
         self.assertEqual(res.exit_status, exit_codes.AVOCADO_ALL_OK)
 
+    @unittest.skipUnless(os.path.exists('/bin/sh'),
+                         ('Executable "/bin/sh" used in test is not '
+                          'available in the system'))
+    def test_work_dir(self):
+        test = os.path.join(BASEDIR, "examples", "nrunner-tests",
+                            "creates-file-in-work-dir", "run.sh")
+        cmd = "%s runnable-run -k exec -u %s --requires-work-dir" % (AVOCADO,
+                                                                     test)
+        res = process.run(cmd)
+        self.assertIn(b"'status': 'finished'", res.stdout)
+        self.assertIn(b"'returncode': 0", res.stdout)
+
 
 class TaskRun(unittest.TestCase):
 
