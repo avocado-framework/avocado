@@ -1,0 +1,10 @@
+---
+- name: Basic install test on Avocado + Plugins
+  hosts: local
+  vars_files:
+    - vars.yml
+  roles:
+    - common
+    - virtualenv
+    - avocado
+    - tests

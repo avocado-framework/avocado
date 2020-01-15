@@ -1,0 +1,8 @@
+---
+- name: Avocado must be installed via specific method
+  include_tasks: "roles/avocado/tasks/{{ method }}/avocado.yml"
+  when: method is defined
+
+- name: Avocado Plugins must be installed via specific method
+  include_tasks: "roles/avocado/tasks/{{ method }}/plugins.yml"
+  when: method is defined

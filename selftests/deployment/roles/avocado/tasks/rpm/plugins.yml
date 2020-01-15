@@ -1,0 +1,27 @@
+---
+- name: Install Avocado plugins using RPM
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - python3-avocado-plugins-glib
+    - python3-avocado-plugins-golang
+    - python3-avocado-plugins-loader-yaml
+    - python3-avocado-plugins-output-html
+    - python3-avocado-plugins-result-upload
+    - python3-avocado-plugins-varianter-cit
+    - python3-avocado-plugins-varianter-pict
+    - python3-avocado-plugins-varianter-yaml-to-mux
+  when:
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+    - ansible_facts['distribution_major_version']|int >= 30
+    - method != "pip"
+
+- name: Install the Avocado VT plugin using RPM
+  package:
+    name: python3-avocado-plugins-vt
+    state: latest
+  when:
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+    - method != "pip" 
+    - avocado_vt|default(false)|bool == true

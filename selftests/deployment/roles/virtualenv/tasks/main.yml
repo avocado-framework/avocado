@@ -1,0 +1,14 @@
+---
+- name: Ensure that Virtualenv is installed
+  package:
+    name: python3-virtualenv
+    state: present
+  when:
+    - method == 'pip'
+
+- name: Temporary dir for Avocado venv
+  tempfile:
+    state: directory
+  register: temporary_dir
+  when:
+    - method == 'pip'
