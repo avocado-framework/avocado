@@ -215,3 +215,33 @@ By contributing you agree that these contributions are your own (or approved by
 your employer) and you grant a full, complete, irrevocable copyright license to
 all users and developers of the Avocado project, present and future, pursuant
 to the license of the project.
+
+Build and Quality Status
+========================
+
+  .. image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/status_image/last_build.png
+     :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
+     :alt: Copr build
+
+  .. image:: https://api.cirrus-ci.com/github/avocado-framework/avocado.svg
+     :target: https://cirrus-ci.com/github/avocado-framework/avocado
+     :alt: Basic checks on Cirrus CI
+
+  .. image:: https://img.shields.io/lgtm/alerts/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+     :target: https://lgtm.com/projects/g/avocado-framework/avocado/alerts/
+     :alt: lgtm total alerts
+
+  .. image:: https://img.shields.io/lgtm/grade/python/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+     :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:python
+     :alt: lgtm language grade for Python
+
+  .. image:: https://img.shields.io/lgtm/grade/javascript/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+     :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:javascript
+     :alt: lgtm language grade for JavaScript
+
+  .. image:: https://codecov.io/gh/avocado-framework/avocado/branch/master/graph/badge.svg
+     :target: https://codecov.io/gh/avocado-framework/avocado
+
+  .. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
+     :target: https://avocado-framework.readthedocs.io/en/latest
+     :alt: Documentation Status
