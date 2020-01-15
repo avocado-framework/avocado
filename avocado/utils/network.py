@@ -27,7 +27,7 @@ FAMILIES = (socket.AF_INET, socket.AF_INET6)
 PROTOCOLS = (socket.SOCK_STREAM, socket.SOCK_DGRAM)
 
 
-def is_port_free(port, address):
+def is_port_free(port, address=""):
     """
     Return True if the given port is available for use.
 
@@ -50,7 +50,7 @@ def is_port_free(port, address):
                 try:
                     sock = socket.socket(family, protocol)
                     if localhost:
-                        sock.bind(("", port))
+                        sock.bind((address, port))
                     else:
                         sock.connect((address, port))
                         return False
