@@ -1,0 +1,8 @@
+---
+- name: Installing Avocado using RPM
+  package:
+    name: python3-avocado
+    state: latest
+  when:
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+    - method != "pip"

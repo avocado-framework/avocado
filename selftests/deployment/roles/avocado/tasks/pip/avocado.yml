@@ -1,0 +1,7 @@
+---
+- name: Avocado must be installed via pip
+  pip:
+    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg={{ avocado_egg_name }}"
+    virtualenv: "{{ temporary_dir.path }}"
+    virtualenv_site_packages: yes
+  when: method == 'pip'
