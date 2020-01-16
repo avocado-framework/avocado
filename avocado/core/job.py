@@ -27,31 +27,85 @@ import tempfile
 import time
 import traceback
 
-from . import version
 from . import data_dir
 from . import dispatcher
-from . import loader
-from . import result
-from . import exit_codes
 from . import exceptions
+from . import exit_codes
 from . import job_id
-from . import output
-from . import varianter
-from . import test
-from . import tags
 from . import jobdata
-from .output import STD_OUTPUT
-from .settings import settings
+from . import loader
+from . import nrunner
+from . import output
+from . import resolver
+from . import result
+from . import tags
+from . import test
+from . import varianter
+from . import version
 from ..utils import astring
-from ..utils import path
-from ..utils import stacktrace
 from ..utils import data_structures
+from ..utils import path
 from ..utils import process
+from ..utils import stacktrace
 from .output import LOG_JOB
 from .output import LOG_UI
+from .output import STD_OUTPUT
+from .settings import settings
+from .tags import filter_test_tags_runnable
 
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
+
+
+def resolutions_to_tasks(resolutions, config):
+    """
+    Transforms resolver resolutions into tasks
+
+    A resolver resolution
+    (:class:`avocado.core.resolver.ReferenceResolution`) contains
+    information about the resolution process (if it was successful
+    or not) and in case of sucessful resolutions a list of
+    resolutions.  It's expected that the resolution are
+    :class:`avocado.core.nrunner.Runnable`.
+
+    This method transforms those runnables into Tasks
+    (:class:`avocado.core.nrunner.Task`), which will include an
+    unique sequential identification and a status reporting URI.
+    It also performs tag based filtering on the runnables for
+    possibly excluding some of the Runnables.
+
+    :param resolutions: possible multiple resolutions for multiple
+                        references
+    :type resolutions: list of :class:`avocado.core.resolver.ReferenceResolution`
+    :param config: job configuration
+    :type config: dict
+    :returns: the resolutions converted to tasks
+    :rtype: list of :class:`avocado.core.nrunner.Task`
+    """
+
+    tasks = []
+    index = 0
+    resolutions = [res for res in resolutions if
+                   res.result == resolver.ReferenceResolutionResult.SUCCESS]
+    no_digits = len(str(len(resolutions)))
+    for resolution in resolutions:
+        name = resolution.reference
+        for runnable in resolution.resolutions:
+            filter_by_tags = config.get('filter_by_tags')
+            if filter_by_tags:
+                if not filter_test_tags_runnable(
+                        runnable,
+                        filter_by_tags,
+                        config.get('filter_by_tags_include_empty'),
+                        config.get('filter_by_tags_include_empty_key')):
+                    continue
+            if runnable.uri:
+                name = runnable.uri
+            identifier = str(test.TestID(index + 1, name, None, no_digits))
+            tasks.append(nrunner.Task(identifier, runnable,
+                                      [config.get('status_server')]))
+            index += 1
+    return tasks
 
 
 class Job:
@@ -337,13 +391,13 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
-    def _make_test_suite(self, references=None):
+    def _make_test_suite_loader(self, references):
         """
         Prepares a test suite to be used for running tests
 
-        :param references: String with tests references to be resolved, and
-                           then run, separated by whitespace. Optionally, a
-                           list of tests (each test a string).
+        :param references: List of tests references to be resolved and
+                           transformed into test factories
+        :type references: list of str
         :returns: a test suite (a list of test factories)
         """
         loader.loader.load_plugins(self.config)
@@ -366,6 +420,10 @@ class Job:
         for i in range(len(suite)):
             suite[i] = [test.DryRunTest, suite[i][1]]
         return suite
+
+    def _make_test_suite_resolver(self, references):
+        resolutions = resolver.resolve(references)
+        return resolutions_to_tasks(resolutions, self.config)
 
     def _log_job_id(self):
         LOG_JOB.info('Job ID: %s', self.unique_id)
@@ -471,8 +529,12 @@ class Job:
         This is a public Job API as part of the documented Job phases
         """
         refs = self.config.get('references', [])
+        runner_name = self.config.get('test_runner', 'runner')
         try:
-            self.test_suite = self._make_test_suite(refs)
+            if runner_name == 'nrunner':
+                self.test_suite = self._make_test_suite_resolver(refs)
+            else:
+                self.test_suite = self._make_test_suite_loader(refs)
             self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))

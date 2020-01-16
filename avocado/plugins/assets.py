@@ -22,6 +22,7 @@ import os
 from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import safeloader
+from avocado.core.nrunner import Task
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.plugin_interfaces import JobPreTests
@@ -236,6 +237,11 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
         else:
             logger = None
         for test in job.test_suite:
+            # ignore nrunner/resolver based test suites that contain
+            # task, because the requirements resolution planned is
+            # completely different from the traditional job runner
+            if isinstance(test, Task):
+                continue
             # fetch assets only on instrumented tests
             if isinstance(test[0], str):
                 fetch_assets(test[1]['modulePath'],

@@ -127,6 +127,7 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.runner': [
                   'runner = avocado.plugins.runner:TestRunner',
+                  'nrunner = avocado.plugins.runner_nrunner:Runner',
                   ],
               },
           zip_safe=False,

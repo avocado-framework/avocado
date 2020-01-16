@@ -6,6 +6,7 @@ from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.core import exit_codes
 from avocado.core import job
+from avocado.core import nrunner
 from avocado.core import test
 from avocado.utils import path as utils_path
 
@@ -248,6 +249,19 @@ class JobTest(unittest.TestCase):
             self.assertTrue(os.path.isdir(self.job.logdir))
             self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))
         self.assertFalse(os.path.isdir(self.job.logdir))
+
+    def test_job_make_test_suite_resolver(self):
+        simple_tests_found = self._find_simple_test_candidates()
+        config = {'references': simple_tests_found,
+                  'base_logdir': self.tmpdir.name,
+                  'test_runner': 'nrunner',
+                  'show': ['none']}
+        self.job = job.Job(config)
+        self.job.setup()
+        self.job.create_test_suite()
+        self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
+        if self.job.test_suite:
+            self.assertIsInstance(self.job.test_suite[0], nrunner.Task)
 
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()

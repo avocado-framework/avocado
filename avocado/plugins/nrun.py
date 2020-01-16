@@ -4,15 +4,81 @@ import os
 import random
 import sys
 
-from avocado.core import nrunner
-from avocado.core import resolver
 from avocado.core import exit_codes
-from avocado.core import test
+from avocado.core import job
+from avocado.core import nrunner
 from avocado.core import parser_common_args
+from avocado.core import resolver
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import path as utils_path
-from avocado.core.tags import filter_test_tags_runnable
+
+
+def pick_runner(task, runners_registry):
+    """
+    Selects a runner based on the task and keeps found runners in registry
+
+    This utility function will lool at the given task and try to find
+    a matching runner.  The matching runner probe results are kept in
+    a registry (that is modified by this function) so that further
+    executions take advantage of previous probes.
+
+    :param task: the task that needs a runner to be selected
+    :type task: :class:`avocado.core.nrunner.Task`
+    :param runners_registry: a registry with previously found (and not
+                             found) runners keyed by task kind
+    :param runners_registry: dict
+    :returns: command line arguments to execute the runner
+    :rtype: list of str
+    """
+    kind = task.runnable.kind
+    runner = runners_registry.get(kind)
+    if runner is False:
+        return None
+    if runner is not None:
+        return runner
+
+    # first attempt to find Python module files that are named
+    # after the runner convention within the avocado.core
+    # namespace dir.  Looking for the file only avoids an attempt
+    # to load the module and should be a lot faster
+    core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    module_name = kind.replace('-', '_')
+    module_filename = 'nrunner_%s.py' % module_name
+    if os.path.exists(os.path.join(core_dir, module_filename)):
+        full_module_name = 'avocado.core.%s' % module_name
+        runner = [sys.executable, '-m', full_module_name]
+        runners_registry[kind] = runner
+        return runner
+
+    # try to find executable in the path
+    runner_by_name = 'avocado-runner-%s' % kind
+    try:
+        runner = utils_path.find_command(runner_by_name)
+        runners_registry[kind] = [runner]
+        return [runner]
+    except utils_path.CmdNotFoundError:
+        runners_registry[kind] = False
+
+
+def check_tasks_requirements(tasks, runners_registry):
+    """
+    Checks if tasks have runner requirements fulfilled
+
+    :param tasks: the tasks whose runner requirements will be checked
+    :type tasks: list of :class:`avocado.core.nrunner.Task`
+    :param runners_registry: a registry with previously found (and not
+                             found) runners keyed by task kind
+    :param runners_registry: dict
+    """
+    result = []
+    for task in tasks:
+        runner = pick_runner(task, runners_registry)
+        if runner:
+            result.append(task)
+        else:
+            LOG_UI.warning('Task will not be run due to missing requirements: %s', task)
+    return result
 
 
 class NRun(CLICmd):
@@ -34,32 +100,6 @@ class NRun(CLICmd):
                             help="Host and port for status server, default is: %(default)s")
         parser_common_args.add_tag_filter_args(parser)
 
-    @staticmethod
-    def resolutions_to_tasks(resolutions, config):
-        tasks = []
-        index = 0
-        resolutions = [res for res in resolutions if
-                       res.result == resolver.ReferenceResolutionResult.SUCCESS]
-        no_digits = len(str(len(resolutions)))
-        for resolution in resolutions:
-            name = resolution.reference
-            for runnable in resolution.resolutions:
-                filter_by_tags = config.get('filter_by_tags')
-                if filter_by_tags:
-                    if not filter_test_tags_runnable(
-                            runnable,
-                            filter_by_tags,
-                            config.get('filter_by_tags_include_empty'),
-                            config.get('filter_by_tags_include_empty_key')):
-                        continue
-                if runnable.uri:
-                    name = runnable.uri
-                identifier = str(test.TestID(index + 1, name, None, no_digits))
-                tasks.append(nrunner.Task(identifier, runnable,
-                                          [config.get('status_server')]))
-                index += 1
-        return tasks
-
     @asyncio.coroutine
     def spawn_tasks(self):
         number_of_runnables = 2 * multiprocessing.cpu_count() - 1
@@ -79,42 +119,15 @@ class NRun(CLICmd):
             self.spawned_tasks.append(identifier)
             print("%s spawned" % identifier)
 
-    def pick_runner(self, task):
-        kind = task.runnable.kind
-        runner = self.KNOWN_EXTERNAL_RUNNERS.get(kind)
-        if runner is False:
-            return None
-        if runner is not None:
-            return runner
-
-        # first attempt to find Python module files that are named
-        # after the runner convention within the avocado.core
-        # namespace dir.  Looking for the file only avoids an attempt
-        # to load the module and should be a lot faster
-        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        module_name = kind.replace('-', '_')
-        module_filename = 'nrunner_%s.py' % module_name
-        if os.path.exists(os.path.join(core_dir, module_filename)):
-            full_module_name = 'avocado.core.%s' % module_name
-            runner = [sys.executable, '-m', full_module_name]
-            self.KNOWN_EXTERNAL_RUNNERS[kind] = runner
-            return runner
-
-        # try to find executable in the path
-        runner_by_name = 'avocado-runner-%s' % kind
-        try:
-            runner = utils_path.find_command(runner_by_name)
-            self.KNOWN_EXTERNAL_RUNNERS[kind] = [runner]
-            return [runner]
-        except utils_path.CmdNotFoundError:
-            self.KNOWN_EXTERNAL_RUNNERS[kind] = False
+    def pick_runner_or_default(self, task):
+        runner = pick_runner(task, self.KNOWN_EXTERNAL_RUNNERS)
+        if runner is None:
+            runner = [sys.executable, '-m', 'avocado.core.nrunner']
+        return runner
 
     @asyncio.coroutine
     def spawn_task(self, task):
-        runner = self.pick_runner(task)
-        if runner is None:
-            runner = [sys.executable, '-m', 'avocado.core.nrunner']
-
+        runner = self.pick_runner_or_default(task)
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
 
@@ -125,20 +138,12 @@ class NRun(CLICmd):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
 
-    def check_tasks_requirements(self, tasks):
-        result = []
-        for task in tasks:
-            runner = self.pick_runner(task)
-            if runner:
-                result.append(task)
-            else:
-                LOG_UI.warning('Task will not be run due to missing requirements: %s', task)
-        return result
-
     def run(self, config):
         resolutions = resolver.resolve(config.get('references'))
-        tasks = self.resolutions_to_tasks(resolutions, config)
-        self.pending_tasks = self.check_tasks_requirements(tasks)  # pylint: disable=W0201
+        tasks = job.resolutions_to_tasks(resolutions, config)
+        self.pending_tasks = check_tasks_requirements(   # pylint: disable=W0201
+            tasks,
+            self.KNOWN_EXTERNAL_RUNNERS)
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
