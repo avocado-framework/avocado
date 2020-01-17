@@ -1,3 +1,4 @@
 ---
+- include: aexpect.yml
 - include: repos.yml
 - include: dependencies.yml

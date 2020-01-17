@@ -1,0 +1,9 @@
+- name: Install python3-aexpect first
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python3-aexpect
+  when:
+    - ansible_facts['distribution_file_variety'] == "RedHat"
+    - avocado_vt|default(false)|bool == true
