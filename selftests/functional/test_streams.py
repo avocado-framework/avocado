@@ -59,7 +59,6 @@ class StreamsTest(unittest.TestCase):
             cmd_in_log = shlex.split(AVOCADO)[-1]
             self.assertIn("avocado.test: Command line: %s" % cmd_in_log,
                           result.stdout_text)
-            self.assertEqual(b'', result.stderr)
 
     def test_test(self):
         """
@@ -76,7 +75,6 @@ class StreamsTest(unittest.TestCase):
         self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
                       result.stdout)
         self.assertIn(b"PASS 1-passtest.py:PassTest.test", result.stdout)
-        self.assertEqual(b'', result.stderr)
 
     def test_none_success(self):
         """
@@ -87,7 +85,6 @@ class StreamsTest(unittest.TestCase):
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(b'', result.stdout)
-        self.assertEqual(b'', result.stderr)
 
     def test_none_error(self):
         """

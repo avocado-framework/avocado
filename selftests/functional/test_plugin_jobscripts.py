@@ -99,8 +99,8 @@ class JobScriptsTest(unittest.TestCase):
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual('Pre job script "%s" exited with status "1"\n' % non_zero_script,
-                         result.stderr_text)
+        self.assertIn('Pre job script "%s" exited with status "1"\n' % non_zero_script,
+                      result.stderr_text)
 
     def test_non_existing_dir(self):
         """
