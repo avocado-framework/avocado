@@ -64,7 +64,7 @@ def resolutions_to_tasks(resolutions, config):
     A resolver resolution
     (:class:`avocado.core.resolver.ReferenceResolution`) contains
     information about the resolution process (if it was successful
-    or not) and in case of sucessful resolutions a list of
+    or not) and in case of successful resolutions a list of
     resolutions.  It's expected that the resolution are
     :class:`avocado.core.nrunner.Runnable`.
 

@@ -18,7 +18,7 @@ def pick_runner(task, runners_registry):
     """
     Selects a runner based on the task and keeps found runners in registry
 
-    This utility function will lool at the given task and try to find
+    This utility function will look at the given task and try to find
     a matching runner.  The matching runner probe results are kept in
     a registry (that is modified by this function) so that further
     executions take advantage of previous probes.

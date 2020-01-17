@@ -41,7 +41,7 @@ class Runner(RunnerInterface):
 
         for index, task in enumerate(test_suite):
             index += 1
-            # this is all rubish data
+            # this is all rubbish data
             early_state = {
                 'name': test.TestID(index, task.identifier),
                 'job_logdir': job.logdir,
