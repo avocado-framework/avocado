@@ -1,3 +1,24 @@
+# Official + Copr Modules disable
+- name: Disable Fedora module to avoid conflict
+  ini_file:
+    path: /etc/yum.repos.d/fedora-modular.repo
+    section: fedora-modular
+    option: enabled
+    value: '0'
+  when:
+    - method == 'official' or method == 'copr'
+    - ansible_facts['distribution'] == "Fedora"
+
+- name: Disable Fedora module updates to avoid conflict
+  ini_file:
+    path: /etc/yum.repos.d/fedora-updates-modular.repo
+    section: updates-modular
+    option: enabled
+    value: '0'
+  when:
+    - method == 'official' or method == 'copr'
+    - ansible_facts['distribution'] == "Fedora"
+
 # Official repos
 - name: Install Avocado EPEL Official Releases repo
   yum_repository:
