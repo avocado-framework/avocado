@@ -831,14 +831,14 @@ class BaseRunnerApp:
 
     #: The command line arguments to the "runnable-run" command
     CMD_RUNNABLE_RUN_ARGS = (
-        (("-k", "--kind"),
+        (('-k', '--kind'),
          {'type': str, 'required': True, 'help': 'Kind of runnable'}),
 
-        (("-u", "--uri"),
+        (('-u', '--uri'),
          {'type': str, 'default': None, 'help': 'URI of runnable'}),
 
-        (("-a", "--arg"),
-         {'action': "append", 'default': [],
+        (('-a', '--arg'),
+         {'action': 'append', 'default': [],
           'help': 'Simple arguments to runnable'}),
 
         (('kwargs',),
@@ -848,26 +848,26 @@ class BaseRunnerApp:
     )
 
     CMD_RUNNABLE_RUN_RECIPE_ARGS = (
-        (("recipe", ),
+        (('recipe', ),
          {'type': str, 'help': 'Path to the runnable recipe file'}),
     )
 
     CMD_TASK_RUN_ARGS = (
-        (("-i", "--identifier"),
+        (('-i', '--identifier'),
          {'type': str, 'required': True, 'help': 'Task unique identifier'}),
-        (("-s", "--status-uri"),
-         {'action': "append", 'default': None,
+        (('-s', '--status-uri'),
+         {'action': 'append', 'default': None,
           'help': 'URIs of status services to report to'}),
     )
     CMD_TASK_RUN_ARGS += CMD_RUNNABLE_RUN_ARGS
 
     CMD_TASK_RUN_RECIPE_ARGS = (
-        (("recipe", ),
+        (('recipe', ),
          {'type': str, 'help': 'Path to the task recipe file'}),
     )
 
     CMD_STATUS_SERVER_ARGS = (
-        (("uri", ),
+        (('uri', ),
          {'type': str, 'help': 'URI to bind a status server to'}),
     )
 
