@@ -20,7 +20,6 @@
     - nc
     - python3-netaddr
     - python3-netifaces
-    - python3-aexpect
     - qemu-img
     - qemu-kvm
     - tcpdump
