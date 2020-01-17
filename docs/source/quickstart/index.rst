@@ -243,5 +243,5 @@ Build and Quality Status
      :target: https://codecov.io/gh/avocado-framework/avocado
 
   .. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
-     :target: https://avocado-framework.readthedocs.io/en/latest
+     :target: https://avocado-framework.readthedocs.io/en/latest/
      :alt: Documentation Status
