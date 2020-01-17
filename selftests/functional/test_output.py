@@ -329,7 +329,7 @@ class OutputPluginTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         # Check if we are producing valid outputs
-        json.loads(output)
+        json.loads(result.stdout_text)
         minidom.parse(tmpfile)
 
     def test_output_compatible_setup_2(self):
