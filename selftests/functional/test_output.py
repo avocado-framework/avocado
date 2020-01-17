@@ -323,13 +323,12 @@ class OutputPluginTest(unittest.TestCase):
                     '--journal --xunit %s --json - passtest.py' %
                     (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout_text + result.stderr_text
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         # Check if we are producing valid outputs
-        json.loads(output)
+        json.loads(result.stdout_text)
         minidom.parse(tmpfile)
 
     def test_output_compatible_setup_2(self):
@@ -338,7 +337,6 @@ class OutputPluginTest(unittest.TestCase):
                     '--xunit - --json %s --tap-include-logs passtest.py'
                     % (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
@@ -348,7 +346,7 @@ class OutputPluginTest(unittest.TestCase):
             json_results = json.load(fp)
             debug_log = json_results['debuglog']
             self.check_output_files(debug_log)
-        minidom.parseString(output)
+        minidom.parseString(result.stdout_text)
 
     def test_output_compatible_setup_nooutput(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
@@ -358,12 +356,12 @@ class OutputPluginTest(unittest.TestCase):
                     '--sysinfo=off --xunit %s --json %s --tap-include-logs '
                     'passtest.py' % (AVOCADO, self.tmpdir.name, tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertEqual(output, b"", "Output is not empty:\n%s" % output)
+        self.assertEqual(result.stdout, b"",
+                         "Output is not empty:\n%s" % result.stdout)
         # Check if we are producing valid outputs
         with open(tmpfile2, 'r') as fp:
             json_results = json.load(fp)
@@ -412,12 +410,11 @@ class OutputPluginTest(unittest.TestCase):
                     '--sysinfo=off passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertEqual(output, b"")
+        self.assertEqual(result.stdout, b"")
 
     def test_default_enabled_plugins(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -491,13 +488,12 @@ class OutputPluginTest(unittest.TestCase):
                     '--sysinfo=off passtest.py > %s'
                     % (AVOCADO, self.tmpdir.name, redirected_output_path))
         result = process.run(cmd_line, ignore_status=True, shell=True)
-        output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertEqual(output, b'',
-                         'After redirecting to file, output is not empty: %s' % output)
+        self.assertEqual(result.stdout, b'',
+                         'After redirecting to file, output is not empty: %s' % result.stdout)
         with open(redirected_output_path, 'r') as redirected_output_file_obj:
             redirected_output = redirected_output_file_obj.read()
             for code in TermSupport.ESCAPE_CODES:
