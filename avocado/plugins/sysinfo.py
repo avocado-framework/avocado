@@ -15,6 +15,7 @@
 System information plugin
 """
 
+from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.plugin_interfaces import JobPre
 from avocado.core.plugin_interfaces import JobPost
@@ -36,13 +37,13 @@ class SysInfoJob(JobPre, JobPost):
             self.sysinfo = sysinfo.SysInfo(basedir=basedir)
 
     def pre(self, job):
-        if job.config.get('sysinfo', None) != 'on':
+        if not settings.get('sysinfo.collect', 'enabled', bool):
             return
         self._init_sysinfo(job.logdir)
         self.sysinfo.start_job_hook()
 
     def post(self, job):
-        if job.config.get('sysinfo', None) != 'on':
+        if not settings.get('sysinfo.collect', 'enabled', bool):
             return
         self._init_sysinfo(job.logdir)
         self.sysinfo.end_job_hook()

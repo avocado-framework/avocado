@@ -48,6 +48,7 @@ from ..utils import process
 from ..utils import stacktrace
 from .decorators import skip
 from .settings import settings
+from .future.settings import settings as future_settings
 from .version import VERSION
 from .output import LOG_JOB
 
@@ -377,7 +378,7 @@ class Test(unittest.TestCase, TestData):
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
         self.__sysinfo_enabled = (self.job is not None and
                                   self.job.config is not None and
-                                  self.job.config.get('sysinfo', None) == 'on')
+                                  future_settings.get('sysinfo.collect', 'enabled', bool))
         if self.__sysinfo_enabled:
             self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
             self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)

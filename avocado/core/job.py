@@ -42,16 +42,17 @@ from . import tags
 from . import test
 from . import varianter
 from . import version
-from ..utils import astring
-from ..utils import data_structures
-from ..utils import path
-from ..utils import process
-from ..utils import stacktrace
+from .future.settings import settings as future_settings
 from .output import LOG_JOB
 from .output import LOG_UI
 from .output import STD_OUTPUT
 from .settings import settings
 from .tags import filter_test_tags_runnable
+from ..utils import astring
+from ..utils import data_structures
+from ..utils import path
+from ..utils import process
+from ..utils import stacktrace
 
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
@@ -143,7 +144,9 @@ class Job:
             unique_id = self.config.get('unique_job_id', None)
             if unique_id is None:
                 self.config['unique_job_id'] = '0' * 40
-            self.config['sysinfo'] = False
+            future_settings.update_settings('sysinfo.collect',
+                                            'enabled',
+                                            False)
 
         unique_id = self.config.get('unique_job_id', None)
         if unique_id is None:
