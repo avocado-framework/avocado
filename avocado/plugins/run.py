@@ -25,11 +25,11 @@ from avocado.core import job
 from avocado.core import loader
 from avocado.core import output
 from avocado.core import parser_common_args
-from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.dispatcher import ResultDispatcher
 from avocado.core.dispatcher import JobPrePostDispatcher
+from avocado.core.output import LOG_UI
 from avocado.core.settings import settings
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils.data_structures import time_to_seconds
 from avocado.utils import process
 
