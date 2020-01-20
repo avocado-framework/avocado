@@ -5,7 +5,7 @@ Welcome to Avocado
 Avocado is a set of tools and libraries to help with automated testing.
 
 One can call it a test framework with benefits.  Native tests are written in
-Python and they follow the :mod:`unittest` pattern, but any executable can
+Python and they follow the ``unittest`` pattern, but any executable can
 serve as a test.
 
 How does it work?
@@ -30,7 +30,7 @@ You probably noticed that we used ``/bin/true`` as a test, and in accordance
 with our expectations, it passed! These are known as `simple tests`, but there
 is also another type of test, which we call `instrumented tests`.
 
-.. seealso:: See more at :ref:`test-types` to understand Avocado's test types.
+.. tip:: See more at the "Test types" sections to understand Avocado's test types.
 
 Why should I use?
 =================
