@@ -26,6 +26,7 @@ from .dispatcher import CLICmdDispatcher
 from .dispatcher import CLIDispatcher
 from .output import STD_OUTPUT
 from .parser import Parser
+from .future.settings import settings
 from ..utils import process
 
 
@@ -61,6 +62,9 @@ class AvocadoApp:
             if self.cli_dispatcher.extensions:
                 self.cli_dispatcher.map_method('configure', self.parser)
             self.parser.finish()
+            settings.merge_with_configs()
+            settings.merge_with_arguments(self.parser.config)
+            self.parser.config['_future'] = settings.as_dict()
             if self.cli_dispatcher.extensions:
                 self.cli_dispatcher.map_method('run', self.parser.config)
         except SystemExit as detail:
