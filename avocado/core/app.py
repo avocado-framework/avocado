@@ -26,6 +26,7 @@ from .dispatcher import CLICmdDispatcher
 from .dispatcher import CLIDispatcher
 from .output import STD_OUTPUT
 from .parser import Parser
+from .future.settings import settings
 from ..utils import process
 
 
@@ -88,6 +89,7 @@ class AvocadoApp:
             except KeyError:
                 return
             method = extension.obj.run
+            settings.merge_with_arguments(self.parser.config)
             return method(self.parser.config)
         finally:
             # This makes sure we cleanup the console (stty echo). The only way
