@@ -1,0 +1,80 @@
+=====================================
+75.0 Voyage to the Prehistoric Planet
+=====================================
+
+The Avocado team is proud to present another release: Avocado 75.0,
+AKA "Voyage to the Prehistoric Planet", is now available!
+
+Release documentation: `Avocado 75.0
+<http://avocado-framework.readthedocs.io/en/75.0/>`_
+
+Users/Test Writers
+==================
+
+* The very first blueprint was approved (and committed) to Avocado.
+  It's about a "Configuration by convention" proposal, which will
+  positively impact users deploying and using Avocado, and will
+  end up making the Job API have a much better usability.
+
+* Warnings for the deprecation of some options, as determined by the
+  design decisions on the "Configuration by convention" blueprint have
+  been added to the command line tool.  Users should pay attention to
+  not rely on the content on ``STDERR``, as it may contain those
+  warnings.
+
+* The ``jsonresult`` plugin, that generated a JSON representation of
+  the job results, added ``warn`` and ``interrupt`` fields containing
+  counters for the tests that ended with WARN and INTERRUPTED status,
+  respectively.
+
+* The still experimental "N(ext) Runner" has introduced an initial
+  integration with the Avocado Job.  Users running ``avocado plugins``
+  will see a new entry under "Plugins that run test suites on a job
+  (runners)".  The only way to activate this runner right now is to
+  run a custom job such as the one in ``examples/job/nrunner.py``.
+
+Bug Fixes
+=========
+
+* The YAML Loader did not behave correctly when a ``None`` reference
+  was given to it.  It would previously try to open a file named
+  ``None``.
+
+Utility APIs
+============
+
+* A previously deprecated function called ``thin_lv_created`` was removed
+  from the :mod:`avocado.utils.lv_utils` module.
+
+* :func:`avocado.utils.configure_network.is_interface_link_up` is a
+  new utility function that returns, quite obviously, whether an
+  interface link is up.
+
+Internal Changes
+================
+
+* Inspektor was replaced with a PyLint for the lint checks due to parallel
+  execution errors that were plaguing CI, mostly on non-x86 architectures.
+
+* The :mod:`avocado.utils.asset` received a number of refactors, in
+  preparation for some major changes expected for the next releases.
+
+* The :mod:`avocado.utils.cloudinit` selftest now queries the
+  allocated port from the created socket itself, which removes a race
+  condition that existed previously and caused intermittent test
+  failures.
+
+* A test for the sysinfo content on the HTML report was added,
+  removing the need for the manual test on the release test plan.
+
+* The deployment selftests have been reorganized, and now are based
+  on Ansible roles (and other best practices).
+
+* The handling of a "Job results directory" resolution, based either
+  on its ID (partial or complete) or path has been improved, and has
+  internally been moved from the :mod:`avocado.core.jobdata` to
+  :mod:`avocado.core.data_dir`.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/74.0...75.0>`_.
