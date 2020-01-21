@@ -209,8 +209,8 @@ class Run(CLICmd):
                                                           None)
 
         warnings.warn("The following arguments will be changed to boolean soon: "
-                      "sysinfo, output-check, failfast, keep-tmp, "
-                      "ignore-missing-references, sysinfo and output-check",
+                      "sysinfo, output-check, failfast, keep-tmp "
+                      "and ignore-missing-references.",
                       FutureWarning)
 
         if config.get('unique_job_id') is not None:
