@@ -4,6 +4,11 @@ Undestanding the test discovery (Avocado Loaders)
 In this section you can learn how tests are being discovered and how to
 customize this process.
 
+.. note:: Some definitions here may be out of date. The current runner can
+   still be using some of these definitions in its design, however, we are
+   working on an improved version of the runner, the NextRunner that will use
+   an alternative strategy.
+
 Test Loaders
 ------------
 

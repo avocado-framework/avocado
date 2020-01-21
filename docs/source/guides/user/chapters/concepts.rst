@@ -8,6 +8,11 @@ It is important to understand some basic concepts before start using Avocado.
 Test Resolution
 ---------------
 
+.. note:: Some definitions here may be out of date. The current runner can
+   still be using some of these definitions in its design, however, we are
+   working on an improved version of the runner, the NextRunner that will use
+   an alternative strategy.
+
 When you use the Avocado runner, frequently you'll provide paths to files,
 that will be inspected, and acted upon depending on their contents. The
 diagram below shows how Avocado analyzes a file and decides what to do with
