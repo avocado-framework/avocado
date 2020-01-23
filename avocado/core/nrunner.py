@@ -232,9 +232,15 @@ class PythonUnittestRunner(BaseRunner):
 
     Runnable attributes usage:
 
-     * uri: path to a binary to be executed as another process
+     * uri: a "dotted name" that can be given to Python standard
+            library's :meth:`unittest.TestLoader.loadTestsFromName`
+            method. While it's not enforced, it's highly recommended
+            that this is "a test method within a test case class" within
+            a test module.  Example is: "module.Class.test_method".
 
      * args: not used
+
+     * kwargs: not used
     """
     @staticmethod
     def _run_unittest(uri, queue):
