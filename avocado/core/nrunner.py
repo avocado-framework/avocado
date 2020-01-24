@@ -10,6 +10,9 @@ import time
 import unittest
 import socket
 
+from .tapparser import TapParser
+from .tapparser import TestResult
+
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
 
@@ -307,11 +310,57 @@ class PythonUnittestRunner(BaseRunner):
         yield queue.get()
 
 
+class TAPRunner(BaseRunner):
+    """Runner for standalone executables treated as TAP."""
+    def run(self):
+        env = self.runnable.kwargs or None
+        process = subprocess.Popen(
+            [self.runnable.uri] + list(self.runnable.args),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env)
+
+        yield {'status': 'started',
+               'timestamp': time.time()}
+
+        while process.poll() is None:
+            time.sleep(RUNNER_RUN_STATUS_INTERVAL)
+            yield {'status': 'running',
+                   'timestamp': time.time()}
+
+        stdout = io.TextIOWrapper(process.stdout)
+        parser = TapParser(stdout)
+        aborted = False
+        for event in parser.parse():
+            if isinstance(event, TapParser.Bailout):
+                aborted = True
+                break
+            elif isinstance(event, TapParser.Error):
+                result = 'error'
+                break
+            elif isinstance(event, TapParser.Test):
+                if event.result in (TestResult.XPASS, TestResult.FAIL):
+                    result = 'fail'
+                    break
+                elif event.result == TestResult.SKIP:
+                    result = 'skip'
+                    break
+                else:
+                    result = 'pass'
+
+        yield {'status': 'aborted' if aborted else 'finished',
+               'returncode': process.returncode,
+               'timestamp': time.time(),
+               'result': result}
+
+
 #: The runnables this specific application is capable of handling
 RUNNABLE_KIND_CAPABLE = {'noop': NoOpRunner,
                          'exec': ExecRunner,
                          'exec-test': ExecTestRunner,
-                         'python-unittest': PythonUnittestRunner}
+                         'python-unittest': PythonUnittestRunner,
+                         'tap': TAPRunner}
 
 
 def runner_from_runnable(runnable, capables=None):

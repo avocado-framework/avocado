@@ -176,6 +176,10 @@ class RunnableToRecipe(unittest.TestCase):
 
 class Runner(unittest.TestCase):
 
+    def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+
     def test_runner_noop(self):
         runnable = nrunner.Runnable('noop', None)
         runner = nrunner.runner_from_runnable(runnable)
@@ -219,6 +223,63 @@ class Runner(unittest.TestCase):
         self.assertEqual(result['status'], 'pass')
         self.assertTrue(result['output'].startswith(output1))
         self.assertTrue(result['output'].endswith(output2))
+
+    def test_runner_tap_fail(self):
+        tap_script = """#!/bin/bash
+echo '1..2'
+echo '# Defining an basic test'
+echo 'ok 1 - description 1'
+echo 'not ok 2 - description 2'"""
+        tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
+
+        with open(tap_path, 'w') as fp:
+            fp.write(tap_script)
+
+        runnable = nrunner.Runnable('tap', '/bin/bash', tap_path)
+        runner = nrunner.runner_from_runnable(runnable)
+        results = [status for status in runner.run()]
+        last_result = results[-1]
+        self.assertEqual(last_result['result'], 'fail')
+        self.assertEqual(last_result['returncode'], 0)
+
+    def test_runner_tap_ok(self):
+        tap_script = """#!/bin/bash
+echo '1..2'
+echo '# Defining an basic test'
+echo 'ok 1 - description 1'
+echo 'ok 2 - description 2'"""
+        tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
+
+        with open(tap_path, 'w') as fp:
+            fp.write(tap_script)
+
+        runnable = nrunner.Runnable('tap', '/bin/bash', tap_path)
+        runner = nrunner.runner_from_runnable(runnable)
+        results = [status for status in runner.run()]
+        last_result = results[-1]
+        self.assertEqual(last_result['result'], 'pass')
+        self.assertEqual(last_result['returncode'], 0)
+
+    def test_runner_tap_skip(self):
+        tap_script = """#!/bin/bash
+echo '1..2'
+echo '# Defining an basic test'
+echo 'ok 1 - # SKIP description 1'
+echo 'ok 2 - description 2'"""
+        tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
+
+        with open(tap_path, 'w') as fp:
+            fp.write(tap_script)
+
+        runnable = nrunner.Runnable('tap', '/bin/bash', tap_path)
+        runner = nrunner.runner_from_runnable(runnable)
+        results = [status for status in runner.run()]
+        last_result = results[-1]
+        self.assertEqual(last_result['result'], 'skip')
+        self.assertEqual(last_result['returncode'], 0)
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':
