@@ -46,6 +46,22 @@ class Runnable:
                    *decoded_args,
                    **_key_val_args_to_kwargs(args.get('kwargs', [])))
 
+    @classmethod
+    def from_recipe(cls, recipe_path):
+        """
+        Returns a runnable from a runnable recipe file
+
+        :param recipe_path: Path to a recipe file
+
+        :rtype: instance of :class:`Runnable`
+        """
+        with open(recipe_path) as recipe_file:
+            recipe = json.load(recipe_file)
+        return cls(recipe.get('kind'),
+                   recipe.get('uri'),
+                   *recipe.get('args', ()),
+                   **recipe.get('kwargs', {}))
+
     def get_command_args(self):
         """
         Returns the command arguments that adhere to the runner interface
@@ -119,18 +135,6 @@ class Runnable:
         """
         with open(recipe_path, 'w') as recipe_file:
             recipe_file.write(self.get_json())
-
-
-def runnable_from_recipe(recipe_path):
-    """
-    Returns a runnable from a runnable recipe file
-    """
-    with open(recipe_path) as recipe_file:
-        recipe = json.load(recipe_file)
-    return Runnable(recipe.get('kind'),
-                    recipe.get('uri'),
-                    *recipe.get('args', ()),
-                    **recipe.get('kwargs', {}))
 
 
 class BaseRunner:
@@ -394,7 +398,7 @@ CMD_RUNNABLE_RUN_RECIPE_ARGS = (
 
 
 def subcommand_runnable_run_recipe(args, echo=print):
-    runnable = runnable_from_recipe(args.get('recipe'))
+    runnable = Runnable.from_recipe(args.get('recipe'))
     runner = runner_from_runnable(runnable)
 
     for status in runner.run():
