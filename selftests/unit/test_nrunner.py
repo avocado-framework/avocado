@@ -186,7 +186,7 @@ class Runner(unittest.TestCase):
 
     def test_runner_exec(self):
         runnable = nrunner.Runnable('exec', sys.executable,
-                                    '-c', '"import time; time.sleep(0.01)"')
+                                    '-c', 'import time; time.sleep(0.01)')
         runner = nrunner.runner_from_runnable(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
@@ -198,7 +198,7 @@ class Runner(unittest.TestCase):
 
     def test_runner_exec_test(self):
         runnable = nrunner.Runnable('exec-test', sys.executable,
-                                    '-c', '"import time; time.sleep(0.01)"')
+                                    '-c', 'import time; time.sleep(0.01)')
         runner = nrunner.runner_from_runnable(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
