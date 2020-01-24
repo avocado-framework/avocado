@@ -53,22 +53,100 @@ Runnable
 ~~~~~~~~
 
 A runnable is a description of an entity that can be executed and
-produce some kind of result.  The description is abstract on purpose.
-A simple and obvious candidate for filling the description is a
-standalone executable, such as the ones available on your ``/bin``
-directory.
+produce some kind of result.  It's a passive entity that can not
+execute itself and can not produce results itself.
 
-A runnable must declare its kind.  Using the previous example of
-standalone executables, those may be given the unique kind identifier
-such as ``exec``.
+This description of a runnable is abstract on purpose.  While the most
+common use case for a Runnable is to describe how to execute a
+test, there seems to be no reason to bind that concept to a
+test. Other Avocado subsystems, such as ``sysinfo``, could very well
+leverage the same concept to describe say, commands to be executed.
 
-Each runnable kind may require a different amount of information to be
-provided so that it can be instantiated.  Using standalone executables
-as an example, the information required should be limtied to the
-location of the the standalone executable file.  The following
-pseudo-code may help to put these ideas together::
+A Runnable's ``kind``
++++++++++++++++++++++
 
-  runnable_instance = create_runnable('exec', uri='/bin/true')
+The most important information about a runnable is the declaration of
+its kind.  A kind should be a globally unique name across the entire
+Avocado community and users.
+
+When choosing a Runnable ``kind`` name, it's advisable that it should
+be:
+
+ * Informative
+ * Succinct
+ * Unique
+
+If a kind is thought to be generally useful to more than one user
+(where a user may mean a project using Avocado), it's a good idea
+to also have a generic name.  For instance, if a Runnable is going
+to describe how to run native tests for the Go programming language,
+its ``kind`` should probably be ``go``.
+
+On the other hand, if a Runnable is going to be used to describe tests
+that behave in a very peculiar way for a specific project, it's
+probably a good idea to map its ``kind`` name to the project name.
+For instance, if one is describing how to run an ``iotest`` that is
+part of the ``QEMU`` project, it may be a good idea to name this kind
+``qemu-iotest``.
+
+A Runnable's ``uri``
+++++++++++++++++++++
+
+Besides a ``kind``, each runnable kind may require a different amount
+of information to be provided so that it can be instantiated.
+
+Based on the accumulated experience so far, it's expected that a
+Runnable's ``uri`` is always going to be required.  Think of the URI
+as the one piece of information that can uniquely distinguish the
+entity (of a given ``kind``) that will be executed.
+
+If, for instance, a given runnable describes the execution of a
+executable file already present in the system, it may use its path,
+say ``/bin/true``, as its ``uri`` value.  If a runnable describes a
+web service endpoint, its ``uri`` value may just as well be its
+network URI, such as ``https://example.org:8080``.
+
+Runnable examples
++++++++++++++++++
+
+Possibly the simplest example for the use of a Runnable is to describe
+how to run a standalone executable, such as the ones available on your
+``/bin`` directory.
+
+As stated earlier, a runnable must declare its kind.  For standalone
+executables, a name such as ``exec`` fulfills the naming suggestions
+given earlier.
+
+A Runnable can be created in a number of ways.  The first one is
+through :class:`avocado.core.nrunner.Runnable`, a very low level (and
+internal) API.  Still, it serves as an example::
+
+  >>> from avocado.core import nrunner
+  >>> runnable = nrunner.Runnable('exec', '/bin/true')
+  >>> runnable
+  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
+
+The second way is through JSON based file, which, for the lack of a
+better term, we're calling a (Runnable) "recipe".  The recipe file itself
+will look like::
+
+  {"kind": "exec", "uri": "/bin/true"}
+
+And example the code to create it::
+
+  >>> from avocado.core import nrunner
+  >>> runnable = nrunner.Runnable.from_recipe("/path/to/recipe.json")
+  >>> runnable
+  >>> <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
+
+The third way to create a Runnable, is even more internal.  Its usage
+is **discouraged**, unless you are creating a tool that needs to
+create Runnables based on the user's input from the command line::
+
+  >>> from avocado.core import nrunner
+  >>> runnable = nrunner.Runnable.from_args({kind: 'exec', uri: '/bin/true'})
+  >>> runnable
+  >>> <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
 
 Runner
 ~~~~~~
