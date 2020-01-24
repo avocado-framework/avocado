@@ -55,7 +55,7 @@ class Runnable(unittest.TestCase):
     def test_recipe_noop(self):
         open_mocked = unittest.mock.mock_open(read_data='{"kind": "noop"}')
         with unittest.mock.patch("builtins.open", open_mocked):
-            runnable = nrunner.runnable_from_recipe("fake_path")
+            runnable = nrunner.Runnable.from_recipe("fake_path")
         self.assertEqual(runnable.kind, "noop")
 
     def test_recipe_exec(self):
@@ -64,7 +64,7 @@ class Runnable(unittest.TestCase):
                        '"args": ["/etc/profile"], '
                        '"kwargs": {"TERM": "vt3270"}}'))
         with unittest.mock.patch("builtins.open", open_mocked):
-            runnable = nrunner.runnable_from_recipe("fake_path")
+            runnable = nrunner.Runnable.from_recipe("fake_path")
         self.assertEqual(runnable.kind, "exec")
         self.assertEqual(runnable.uri, "/bin/sh")
         self.assertEqual(runnable.args, ("/etc/profile",))
@@ -92,14 +92,14 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
 
     def test_noop(self):
         parsed_args = {'kind': 'noop', 'uri': None}
-        runnable = nrunner.runnable_from_args(parsed_args)
+        runnable = nrunner.Runnable.from_args(parsed_args)
         self.assertEqual(runnable.kind, 'noop')
         self.assertIsNone(runnable.uri)
 
     def test_exec_args(self):
         parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
                        'arg': ['-a', '-b', '-c']}
-        runnable = nrunner.runnable_from_args(parsed_args)
+        runnable = nrunner.Runnable.from_args(parsed_args)
         self.assertEqual(runnable.kind, 'exec')
         self.assertEqual(runnable.uri, '/path/to/executable')
         self.assertEqual(runnable.args, ('-a', '-b', '-c'))
@@ -109,7 +109,7 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
         parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
                        'arg': ['-a', '-b', '-c'],
                        'kwargs': [('DEBUG', '1'), ('LC_ALL', 'C')]}
-        runnable = nrunner.runnable_from_args(parsed_args)
+        runnable = nrunner.Runnable.from_args(parsed_args)
         self.assertEqual(runnable.kind, 'exec')
         self.assertEqual(runnable.uri, '/path/to/executable')
         self.assertEqual(runnable.args, ('-a', '-b', '-c'))
@@ -119,7 +119,7 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
     def test_kwargs_json_empty_dict(self):
         parsed_args = {'kind': 'noop', 'uri': None,
                        'kwargs': [('empty', 'json:{}')]}
-        runnable = nrunner.runnable_from_args(parsed_args)
+        runnable = nrunner.Runnable.from_args(parsed_args)
         self.assertEqual(runnable.kind, 'noop')
         self.assertIsNone(runnable.uri)
         self.assertEqual(runnable.kwargs.get('empty'), {})
@@ -130,7 +130,7 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
             'kwargs': [('tags', 'json:{"arch": ["x86_64", "ppc64"]}'),
                        ('hi', 'json:"hello"')]
         }
-        runnable = nrunner.runnable_from_args(parsed_args)
+        runnable = nrunner.Runnable.from_args(parsed_args)
         self.assertEqual(runnable.kind, 'noop')
         self.assertIsNone(runnable.uri)
         self.assertEqual(runnable.kwargs.get('hi'), 'hello')
@@ -148,7 +148,7 @@ class RunnableToRecipe(unittest.TestCase):
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        loaded_runnable = nrunner.Runnable.from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'noop')
 
     def test_runnable_to_recipe_uri(self):
@@ -156,7 +156,7 @@ class RunnableToRecipe(unittest.TestCase):
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        loaded_runnable = nrunner.Runnable.from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'exec')
         self.assertEqual(loaded_runnable.uri, '/bin/true')
 
@@ -165,7 +165,7 @@ class RunnableToRecipe(unittest.TestCase):
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        loaded_runnable = nrunner.Runnable.from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'exec')
         self.assertEqual(loaded_runnable.uri, '/bin/sleep')
         self.assertEqual(loaded_runnable.args, ('0.01', ))

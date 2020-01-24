@@ -91,7 +91,7 @@ def subcommand_capabilities(_, echo=print):
 
 
 def subcommand_runnable_run(args, echo=print):
-    runnable = nrunner.runnable_from_args(args)
+    runnable = nrunner.Runnable.from_args(args)
     runner = nrunner.runner_from_runnable(runnable, RUNNABLE_KIND_CAPABLE)
 
     for status in runner.run():
@@ -99,7 +99,7 @@ def subcommand_runnable_run(args, echo=print):
 
 
 def subcommand_task_run(args, echo=print):
-    runnable = nrunner.runnable_from_args(args)
+    runnable = nrunner.Runnable.from_args(args)
     task = nrunner.Task(args.get('identifier'), runnable,
                         args.get('status_uri', []))
     task.capables = RUNNABLE_KIND_CAPABLE

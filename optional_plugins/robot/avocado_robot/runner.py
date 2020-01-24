@@ -29,7 +29,7 @@ from avocado.core.nrunner import CMD_TASK_RUN_ARGS
 from avocado.core.nrunner import RUNNER_RUN_CHECK_INTERVAL
 from avocado.core.nrunner import RUNNER_RUN_STATUS_INTERVAL
 from avocado.core.nrunner import Task
-from avocado.core.nrunner import runnable_from_args
+from avocado.core.nrunner import Runnable
 from avocado.core.nrunner import runner_from_runnable
 from avocado.core.nrunner import task_run
 
@@ -102,7 +102,7 @@ def subcommand_capabilities(_, echo=print):
 
 
 def subcommand_runnable_run(args, echo=print):
-    runnable = runnable_from_args(args)
+    runnable = Runnable.from_args(args)
     runner = runner_from_runnable(runnable, RUNNABLE_KIND_CAPABLE)
 
     for status in runner.run():
@@ -110,7 +110,7 @@ def subcommand_runnable_run(args, echo=print):
 
 
 def subcommand_task_run(args, echo=print):
-    runnable = runnable_from_args(args)
+    runnable = Runnable.from_args(args)
     task = Task(args.get('identifier'), runnable,
                 args.get('status_uri', []))
     task.capables = RUNNABLE_KIND_CAPABLE

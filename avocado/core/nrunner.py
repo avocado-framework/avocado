@@ -37,14 +37,30 @@ class Runnable:
         return fmt.format(self.kind, self.uri,
                           self.args, self.kwargs, self.tags)
 
-    def get_serializable_tags(self):
-        tags = {}
-        # sets are not serializable in json
-        for key, val in self.tags.items():
-            if isinstance(val, set):
-                val = list(val)
-            tags[key] = val
-        return tags
+    @classmethod
+    def from_args(cls, args):
+        """Returns a runnable from arguments"""
+        decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
+        return cls(args.get('kind'),
+                   args.get('uri'),
+                   *decoded_args,
+                   **_key_val_args_to_kwargs(args.get('kwargs', [])))
+
+    @classmethod
+    def from_recipe(cls, recipe_path):
+        """
+        Returns a runnable from a runnable recipe file
+
+        :param recipe_path: Path to a recipe file
+
+        :rtype: instance of :class:`Runnable`
+        """
+        with open(recipe_path) as recipe_file:
+            recipe = json.load(recipe_file)
+        return cls(recipe.get('kind'),
+                   recipe.get('uri'),
+                   *recipe.get('args', ()),
+                   **recipe.get('kwargs', {}))
 
     def get_command_args(self):
         """
@@ -104,24 +120,21 @@ class Runnable:
         """
         return json.dumps(self.get_dict())
 
+    def get_serializable_tags(self):
+        tags = {}
+        # sets are not serializable in json
+        for key, val in self.tags.items():
+            if isinstance(val, set):
+                val = list(val)
+            tags[key] = val
+        return tags
+
     def write_json(self, recipe_path):
         """
         Writes a file with a JSON representation (also known as a recipe)
         """
         with open(recipe_path, 'w') as recipe_file:
             recipe_file.write(self.get_json())
-
-
-def runnable_from_recipe(recipe_path):
-    """
-    Returns a runnable from a runnable recipe file
-    """
-    with open(recipe_path) as recipe_file:
-        recipe = json.load(recipe_file)
-    return Runnable(recipe.get('kind'),
-                    recipe.get('uri'),
-                    *recipe.get('args', ()),
-                    **recipe.get('kwargs', {}))
 
 
 class BaseRunner:
@@ -370,16 +383,8 @@ def _key_val_args_to_kwargs(kwargs):
     return result
 
 
-def runnable_from_args(args):
-    decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
-    return Runnable(args.get('kind'),
-                    args.get('uri'),
-                    *decoded_args,
-                    **_key_val_args_to_kwargs(args.get('kwargs', [])))
-
-
 def subcommand_runnable_run(args, echo=print):
-    runnable = runnable_from_args(args)
+    runnable = Runnable.from_args(args)
     runner = runner_from_runnable(runnable)
 
     for status in runner.run():
@@ -393,7 +398,7 @@ CMD_RUNNABLE_RUN_RECIPE_ARGS = (
 
 
 def subcommand_runnable_run_recipe(args, echo=print):
-    runnable = runnable_from_recipe(args.get('recipe'))
+    runnable = Runnable.from_recipe(args.get('recipe'))
     runner = runner_from_runnable(runnable)
 
     for status in runner.run():
@@ -472,13 +477,29 @@ class Task:
                 self.status_services.append(TaskStatusService(status_uri))
         self.capables = RUNNABLE_KIND_CAPABLE
 
-    def run(self):
-        runner = runner_from_runnable(self.runnable, self.capables)
-        for status in runner.run():
-            status.update({"id": self.identifier})
-            for status_service in self.status_services:
-                status_service.post(status)
-            yield status
+    def __repr__(self):
+        fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
+        return fmt.format(self.identifier, self.runnable, self.status_services)
+
+    @classmethod
+    def from_recipe(cls, task_path):
+        """
+        Creates a task (which contains a runnable) from a task recipe file
+
+        :param task_path: Path to a recipe file
+
+        :rtype: instance of :class:`Task`
+        """
+        with open(task_path) as recipe_file:
+            recipe = json.load(recipe_file)
+
+        identifier = recipe.get('id')
+        runnable_recipe = recipe.get('runnable')
+        runnable = Runnable(runnable_recipe.get('kind'),
+                            runnable_recipe.get('uri'),
+                            *runnable_recipe.get('args', ()))
+        status_uris = recipe.get('status_uris')
+        return cls(identifier, runnable, status_uris)
 
     def get_command_args(self):
         """
@@ -499,24 +520,13 @@ class Task:
 
         return args
 
-    def __repr__(self):
-        fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
-        return fmt.format(self.identifier, self.runnable, self.status_services)
-
-
-def task_from_recipe(task_path):
-    """
-    Creates a task (which contains a runnable) from a task recipe file
-    """
-    with open(task_path) as recipe_file:
-        recipe = json.load(recipe_file)
-    identifier = recipe.get('id')
-    runnable_recipe = recipe.get('runnable')
-    runnable = Runnable(runnable_recipe.get('kind'),
-                        runnable_recipe.get('uri'),
-                        *runnable_recipe.get('args', ()))
-    status_uris = recipe.get('status_uris')
-    return Task(identifier, runnable, status_uris)
+    def run(self):
+        runner = runner_from_runnable(self.runnable, self.capables)
+        for status in runner.run():
+            status.update({"id": self.identifier})
+            for status_service in self.status_services:
+                status_service.post(status)
+            yield status
 
 
 class StatusServer:
@@ -611,7 +621,7 @@ def task_run(task, echo):
 
 
 def subcommand_task_run(args, echo=print):
-    runnable = runnable_from_args(args)
+    runnable = Runnable.from_args(args)
     task = Task(args.get('identifier'), runnable,
                 args.get('status_uri', []))
     task_run(task, echo)
@@ -624,7 +634,7 @@ CMD_TASK_RUN_RECIPE_ARGS = (
 
 
 def subcommand_task_run_recipe(args, echo=print):
-    task = task_from_recipe(args.get('recipe'))
+    task = Task.from_recipe(args.get('recipe'))
     task_run(task, echo)
 
 
