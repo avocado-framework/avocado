@@ -55,7 +55,7 @@ class Runnable(unittest.TestCase):
     def test_recipe_noop(self):
         open_mocked = unittest.mock.mock_open(read_data='{"kind": "noop"}')
         with unittest.mock.patch("builtins.open", open_mocked):
-            runnable = nrunner.runnable_from_recipe("fake_path")
+            runnable = nrunner.Runnable.from_recipe("fake_path")
         self.assertEqual(runnable.kind, "noop")
 
     def test_recipe_exec(self):
@@ -64,7 +64,7 @@ class Runnable(unittest.TestCase):
                        '"args": ["/etc/profile"], '
                        '"kwargs": {"TERM": "vt3270"}}'))
         with unittest.mock.patch("builtins.open", open_mocked):
-            runnable = nrunner.runnable_from_recipe("fake_path")
+            runnable = nrunner.Runnable.from_recipe("fake_path")
         self.assertEqual(runnable.kind, "exec")
         self.assertEqual(runnable.uri, "/bin/sh")
         self.assertEqual(runnable.args, ("/etc/profile",))
@@ -148,7 +148,7 @@ class RunnableToRecipe(unittest.TestCase):
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        loaded_runnable = nrunner.Runnable.from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'noop')
 
     def test_runnable_to_recipe_uri(self):
@@ -156,7 +156,7 @@ class RunnableToRecipe(unittest.TestCase):
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        loaded_runnable = nrunner.Runnable.from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'exec')
         self.assertEqual(loaded_runnable.uri, '/bin/true')
 
@@ -165,7 +165,7 @@ class RunnableToRecipe(unittest.TestCase):
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
-        loaded_runnable = nrunner.runnable_from_recipe(recipe_path)
+        loaded_runnable = nrunner.Runnable.from_recipe(recipe_path)
         self.assertEqual(loaded_runnable.kind, 'exec')
         self.assertEqual(loaded_runnable.uri, '/bin/sleep')
         self.assertEqual(loaded_runnable.args, ('0.01', ))
