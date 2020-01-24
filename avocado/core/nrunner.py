@@ -481,6 +481,26 @@ class Task:
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
         return fmt.format(self.identifier, self.runnable, self.status_services)
 
+    @classmethod
+    def from_recipe(cls, task_path):
+        """
+        Creates a task (which contains a runnable) from a task recipe file
+
+        :param task_path: Path to a recipe file
+
+        :rtype: instance of :class:`Task`
+        """
+        with open(task_path) as recipe_file:
+            recipe = json.load(recipe_file)
+
+        identifier = recipe.get('id')
+        runnable_recipe = recipe.get('runnable')
+        runnable = Runnable(runnable_recipe.get('kind'),
+                            runnable_recipe.get('uri'),
+                            *runnable_recipe.get('args', ()))
+        status_uris = recipe.get('status_uris')
+        return cls(identifier, runnable, status_uris)
+
     def get_command_args(self):
         """
         Returns the command arguments that adhere to the runner interface
@@ -507,21 +527,6 @@ class Task:
             for status_service in self.status_services:
                 status_service.post(status)
             yield status
-
-
-def task_from_recipe(task_path):
-    """
-    Creates a task (which contains a runnable) from a task recipe file
-    """
-    with open(task_path) as recipe_file:
-        recipe = json.load(recipe_file)
-    identifier = recipe.get('id')
-    runnable_recipe = recipe.get('runnable')
-    runnable = Runnable(runnable_recipe.get('kind'),
-                        runnable_recipe.get('uri'),
-                        *runnable_recipe.get('args', ()))
-    status_uris = recipe.get('status_uris')
-    return Task(identifier, runnable, status_uris)
 
 
 class StatusServer:
@@ -629,7 +634,7 @@ CMD_TASK_RUN_RECIPE_ARGS = (
 
 
 def subcommand_task_run_recipe(args, echo=print):
-    task = task_from_recipe(args.get('recipe'))
+    task = Task.from_recipe(args.get('recipe'))
     task_run(task, echo)
 
 
