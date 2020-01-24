@@ -83,6 +83,7 @@ def find_command(cmd, default=None):
                     in the standard directories.
     :raise: :class:`avocado.utils.path.CmdNotFoundError` in case the
             command was not found and no default was given.
+    :rtype: Boolean. The default was set with path or to False
     """
     common_bin_paths = ["/usr/libexec", "/usr/local/sbin", "/usr/local/bin",
                         "/usr/sbin", "/usr/bin", "/sbin", "/bin"]
