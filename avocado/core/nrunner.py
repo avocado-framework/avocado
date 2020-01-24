@@ -37,14 +37,6 @@ class Runnable:
         return fmt.format(self.kind, self.uri,
                           self.args, self.kwargs, self.tags)
 
-    def get_serializable_tags(self):
-        tags = {}
-        # sets are not serializable in json
-        for key, val in self.tags.items():
-            if isinstance(val, set):
-                val = list(val)
-            tags[key] = val
-        return tags
 
     def get_command_args(self):
         """
@@ -103,6 +95,15 @@ class Runnable:
         :rtype: str
         """
         return json.dumps(self.get_dict())
+
+    def get_serializable_tags(self):
+        tags = {}
+        # sets are not serializable in json
+        for key, val in self.tags.items():
+            if isinstance(val, set):
+                val = list(val)
+            tags[key] = val
+        return tags
 
     def write_json(self, recipe_path):
         """
@@ -472,13 +473,10 @@ class Task:
                 self.status_services.append(TaskStatusService(status_uri))
         self.capables = RUNNABLE_KIND_CAPABLE
 
-    def run(self):
-        runner = runner_from_runnable(self.runnable, self.capables)
-        for status in runner.run():
-            status.update({"id": self.identifier})
-            for status_service in self.status_services:
-                status_service.post(status)
-            yield status
+    def __repr__(self):
+        fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
+        return fmt.format(self.identifier, self.runnable, self.status_services)
+
 
     def get_command_args(self):
         """
@@ -499,11 +497,6 @@ class Task:
 
         return args
 
-    def __repr__(self):
-        fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
-        return fmt.format(self.identifier, self.runnable, self.status_services)
-
-
 def task_from_recipe(task_path):
     """
     Creates a task (which contains a runnable) from a task recipe file
@@ -517,6 +510,13 @@ def task_from_recipe(task_path):
                         *runnable_recipe.get('args', ()))
     status_uris = recipe.get('status_uris')
     return Task(identifier, runnable, status_uris)
+    def run(self):
+        runner = runner_from_runnable(self.runnable, self.capables)
+        for status in runner.run():
+            status.update({"id": self.identifier})
+            for status_service in self.status_services:
+                status_service.post(status)
+            yield status
 
 
 class StatusServer:
