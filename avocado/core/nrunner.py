@@ -37,6 +37,14 @@ class Runnable:
         return fmt.format(self.kind, self.uri,
                           self.args, self.kwargs, self.tags)
 
+    @classmethod
+    def from_args(cls, args):
+        """Returns a runnable from arguments"""
+        decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
+        return cls(args.get('kind'),
+                   args.get('uri'),
+                   *decoded_args,
+                   **_key_val_args_to_kwargs(args.get('kwargs', [])))
 
     def get_command_args(self):
         """
@@ -371,16 +379,8 @@ def _key_val_args_to_kwargs(kwargs):
     return result
 
 
-def runnable_from_args(args):
-    decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
-    return Runnable(args.get('kind'),
-                    args.get('uri'),
-                    *decoded_args,
-                    **_key_val_args_to_kwargs(args.get('kwargs', [])))
-
-
 def subcommand_runnable_run(args, echo=print):
-    runnable = runnable_from_args(args)
+    runnable = Runnable.from_args(args)
     runner = runner_from_runnable(runnable)
 
     for status in runner.run():
@@ -611,7 +611,7 @@ def task_run(task, echo):
 
 
 def subcommand_task_run(args, echo=print):
-    runnable = runnable_from_args(args)
+    runnable = Runnable.from_args(args)
     task = Task(args.get('identifier'), runnable,
                 args.get('status_uri', []))
     task_run(task, echo)
