@@ -163,9 +163,9 @@ class ReportModel:
                     sysinfo_dict['contents'] = sysinfo_file.read()
             except (OSError, UnicodeDecodeError) as details:
                 path = os.path.relpath(sysinfo_path, self.html_output_dir)
-                sysinfo_dict['err'] = ("Error reading sysinfo file, check out"
-                                       "the file <a href=%s>%s</a>: %s"
-                                       % (path, path, details))
+                sysinfo_dict['err'] = "Error reading sysinfo file"
+                sysinfo_dict['err_file'] = path
+                sysinfo_dict['err_details'] = details
             sysinfo_list.append(sysinfo_dict)
             s_id += 1
         return sysinfo_list
