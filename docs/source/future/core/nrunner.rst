@@ -53,54 +53,166 @@ Runnable
 ~~~~~~~~
 
 A runnable is a description of an entity that can be executed and
-produce some kind of result.  The description is abstract on purpose.
-A simple and obvious candidate for filling the description is a
-standalone executable, such as the ones available on your ``/bin``
-directory.
+produce some kind of result.  It's a passive entity that can not
+execute itself and can not produce results itself.
 
-A runnable must declare its kind.  Using the previous example of
-standalone executables, those may be given the unique kind identifier
-such as ``exec``.
+This description of a runnable is abstract on purpose.  While the most
+common use case for a Runnable is to describe how to execute a
+test, there seems to be no reason to bind that concept to a
+test. Other Avocado subsystems, such as ``sysinfo``, could very well
+leverage the same concept to describe say, commands to be executed.
 
-Each runnable kind may require a different amount of information to be
-provided so that it can be instantiated.  Using standalone executables
-as an example, the information required should be limtied to the
-location of the the standalone executable file.  The following
-pseudo-code may help to put these ideas together::
+A Runnable's ``kind``
++++++++++++++++++++++
 
-  runnable_instance = create_runnable('exec', uri='/bin/true')
+The most important information about a runnable is the declaration of
+its kind.  A kind should be a globally unique name across the entire
+Avocado community and users.
+
+When choosing a Runnable ``kind`` name, it's advisable that it should
+be:
+
+ * Informative
+ * Succinct
+ * Unique
+
+If a kind is thought to be generally useful to more than one user
+(where a user may mean a project using Avocado), it's a good idea
+to also have a generic name.  For instance, if a Runnable is going
+to describe how to run native tests for the Go programming language,
+its ``kind`` should probably be ``go``.
+
+On the other hand, if a Runnable is going to be used to describe tests
+that behave in a very peculiar way for a specific project, it's
+probably a good idea to map its ``kind`` name to the project name.
+For instance, if one is describing how to run an ``iotest`` that is
+part of the ``QEMU`` project, it may be a good idea to name this kind
+``qemu-iotest``.
+
+A Runnable's ``uri``
+++++++++++++++++++++
+
+Besides a ``kind``, each runnable kind may require a different amount
+of information to be provided so that it can be instantiated.
+
+Based on the accumulated experience so far, it's expected that a
+Runnable's ``uri`` is always going to be required.  Think of the URI
+as the one piece of information that can uniquely distinguish the
+entity (of a given ``kind``) that will be executed.
+
+If, for instance, a given runnable describes the execution of a
+executable file already present in the system, it may use its path,
+say ``/bin/true``, as its ``uri`` value.  If a runnable describes a
+web service endpoint, its ``uri`` value may just as well be its
+network URI, such as ``https://example.org:8080``.
+
+Runnable examples
++++++++++++++++++
+
+Possibly the simplest example for the use of a Runnable is to describe
+how to run a standalone executable, such as the ones available on your
+``/bin`` directory.
+
+As stated earlier, a runnable must declare its kind.  For standalone
+executables, a name such as ``exec`` fulfills the naming suggestions
+given earlier.
+
+A Runnable can be created in a number of ways.  The first one is
+through :class:`avocado.core.nrunner.Runnable`, a very low level (and
+internal) API.  Still, it serves as an example::
+
+  >>> from avocado.core import nrunner
+  >>> runnable = nrunner.Runnable('exec', '/bin/true')
+  >>> runnable
+  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
+
+The second way is through a JSON based file, which, for the lack of a
+better term, we're calling a (Runnable) "recipe".  The recipe file
+itself will look like::
+
+  {"kind": "exec", "uri": "/bin/true"}
+
+And example the code to create it::
+
+  >>> from avocado.core import nrunner
+  >>> runnable = nrunner.Runnable.from_recipe("/path/to/recipe.json")
+  >>> runnable
+  >>> <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
+
+The third way to create a Runnable, is even more internal.  Its usage
+is **discouraged**, unless you are creating a tool that needs to
+create Runnables based on the user's input from the command line::
+
+  >>> from avocado.core import nrunner
+  >>> runnable = nrunner.Runnable.from_args({kind: 'exec', uri: '/bin/true'})
+  >>> runnable
+  >>> <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
 
 Runner
 ~~~~~~
 
-A runner is an active entity that acts on the information of a
-runnable.  A runner will usually be tied to an specific kind of
-runnable, and will to able to act upon the specific information that
-runnable kind provides.
+A Runner, within the context of the N(ext)Runner architecture, is an
+active entity that acts on the information that a runnable contains,
+and quite simply, should be able to run what the Runnable describes.
 
-The following pseudo-code may help to illustrate that::
+A Runner will usually be tied to a specific ``kind`` of Runnable.
+That type of relationship (Runner is capable of running kind "foo"
+and Runnable is of the same kind "foo") is the expected mechanism that
+will be employed when selecting a Runner.
 
-  runnable_instance = create_runnable('exec', uri='/bin/sleep')
-  if runnable_instance.kind == 'exec':
-     runner = create_runner_exec(runnable_instance)
+A Runner can take different forms, depending on which layer one is
+interacting with.  At the lowest layer, a Runner may be a Python class
+that inherits from :class:`avocado.core.nrunner.BaseRunner`, and
+implements at least a matching constructor method, and a ``run()``
+method that should yield dictionary(ies) as result(s).
 
-A runner should produce status information on the progress of the
-execution of a runnable.  If the runnable produces interesting
-information, it should forward that along.  For instance, using the
-``exec`` runner example, it's helpful to start producing status
-that the process has been created and it's running as soon as
-possible.  These can be as simple as a sequence of::
+At a different level, a runner can take the form of an executable that
+follows the ``avocado-runner-$KIND`` naming pattern and conforms to a
+given interface/behavior, including accepting standardized command
+line arguments and producing standardized output.
+
+.. tip:: for a very basic example of the interface expected, refer to
+         ``selftests/functional/test_nrunner_interface.py`` on the
+         Avocado source code tree.
+
+Runner output
++++++++++++++
+
+A Runner should, if possible, produce status information on the
+progress of the execution of a Runnable.  While the Runner is
+executing what a Runnable describes, should it produce interesting
+information, the Runner should attempt to forward that along its
+generated status.
+
+For instance, using the ``exec`` Runner example, it's helpful to start
+producing status that the process has been created and it's running as
+soon as possible, even if no other output has been produced by the
+executable itself.  These can be as simple as a sequence of::
 
   {"status": "running"}
   {"status": "running"}
 
-When the process is finished, it can return::
+When the process is finished, the Runner may return::
 
   {"status": "finished", "returncode": 0, 'stdout': b'', 'stderr': b''}
 
-Note that, besides the status of ``finished``, and a return code which
-can be used to determine a success or failure status, it's not the
-runner's responsibility to determine test results.
+.. tip:: Besides the status of ``finished``, and a return code which
+         can be used to determine a success or failure status, a
+         Runner may not be obliged to determine the overall PASS/FAIL
+         outcome.  Whoever called the runner may be responsible to
+         determine its overall result, including a PASS/FAIL
+         judgement.
+
+Even though this level of information is expected to be generated by
+the Runner, whoever is calling a Runner, should be prepared to receive
+as little information as possible, and act accordingly.  That includes
+receiving no information at all.
+
+For instance, if a Runner fails to produce any information within a
+given amount of time, it may be considered faulty and be completely
+discarded.  This would probably end up being represented as a
+``TIMED_OUT`` kind of status on a higher layer (say at the "Job"
+layer).
 
 Task
 ~~~~
