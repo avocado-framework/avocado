@@ -147,8 +147,7 @@ def get_parent_pid(pid):
     """
     Returns the parent PID for the given process
 
-    TODO: this is currently Linux specific, and needs to implement
-    similar features for other platforms.
+    :note: This is currently Linux specific.
 
     :param pid: The PID of child process
     :returns: The parent PID
@@ -169,8 +168,7 @@ def get_children_pids(parent_pid, recursive=False):
     """
     Returns the children PIDs for the given process
 
-    TODO: this is currently Linux specific, and needs to implement
-    similar features for other platforms.
+    :note: This is currently Linux specific.
 
     :param parent_pid: The PID of parent child process
     :returns: The PIDs for the children processes
@@ -1299,8 +1297,9 @@ def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
 def get_owner_id(pid):
     """
     Get the owner's user id of a process
-    param pid: process id
-    return: user id of the process owner
+
+    :param pid: the process id
+    :return: user id of the process owner
     """
     try:
         return os.stat('/proc/%d/' % pid).st_uid
