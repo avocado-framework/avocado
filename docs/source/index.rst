@@ -39,6 +39,7 @@ Contents:
    :titlesonly:
 
    blueprints/BP001
+   blueprints/BP002
 
 .. toctree::
    :caption: Learn More
