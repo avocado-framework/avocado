@@ -16,5 +16,4 @@ Useful pointers on how to participate of the Avocado community and contribute.
    chapters/rfc
    chapters/releasing
    chapters/tips
-   chapters/rfc
    chapters/contact
