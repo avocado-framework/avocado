@@ -19,6 +19,7 @@ Configure network when interface name and interface IP is available.
 
 import shutil
 import os
+import time
 
 import logging
 from . import distro
@@ -135,6 +136,7 @@ def set_mtu_host(interface, mtu):
         cmd = "ip add show %s" % interface
         mtuvalue = process.system_output(cmd, shell=True).decode("utf-8") \
                                                          .split()[4]
+        time.sleep(10)
         if mtuvalue == mtu:
             return True
     except Exception as ex:  # pylint: disable=W0703
@@ -167,6 +169,7 @@ class PeerInfo:
             self.session.cmd(cmd)
             cmd = "ip add show %s" % peer_interface
             mtuvalue = self.session.cmd(cmd).stdout.decode("utf-8").split()[4]
+            time.sleep(10)
             if mtuvalue == mtu:
                 return True
         except Exception as ex:  # pylint: disable=W0703
