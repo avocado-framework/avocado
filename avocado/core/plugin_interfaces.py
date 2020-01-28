@@ -282,7 +282,7 @@ class Resolver(Plugin):
         :type reference: str
         :returns: the result of the resolution process, containing the
                   success, failure or error, along with zero or more
-                  :class:`avocado.core.nrunner.Runnable`s
+                  :class:`avocado.core.nrunner.Runnable` objects
         :rtype: :class:`avocado.core.resolver.ReferenceResolution`
         """
 

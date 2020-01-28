@@ -57,7 +57,7 @@ class ReferenceResolution:
                        failure or error
         :type result: :class:`ReferenceResolutionResult`
         :param resolutions: the runnable definitions resulting from the
-        resolution
+                            resolution
         :type resolutions: list of :class:`avocado.core.nrunner.Runnable`
         :param info: free form information the resolver may add
         :type info: str
