@@ -168,6 +168,10 @@ class Command(Collectible):
                                  ignore_status=True,
                                  allow_output_check='combined',
                                  env=env)
+        except FileNotFoundError as exc_fnf:
+            log.debug("Not logging '%s' (command '%s' was not found)", self.cmd,
+                      exc_fnf.filename)
+            return
         except Exception as exc:  # pylint: disable=W0703
             log.warning('Could not execute "%s": %s', self.cmd, exc)
             return
