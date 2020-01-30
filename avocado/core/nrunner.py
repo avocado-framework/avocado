@@ -79,6 +79,8 @@ class Runnable:
 
         for arg in self.args:
             args.append('-a')
+            if arg.startswith('-'):
+                arg = 'base64:%s' % base64.b64encode(arg.encode()).decode('ascii')
             args.append(arg)
 
         if self.tags is not None:
