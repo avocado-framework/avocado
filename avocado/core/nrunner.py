@@ -311,7 +311,28 @@ class PythonUnittestRunner(BaseRunner):
 
 
 class TAPRunner(BaseRunner):
-    """Runner for standalone executables treated as TAP."""
+    """Runner for standalone executables treated as TAP
+
+    When creating the Runnable, use the following attributes:
+
+     * kind: should be 'tap';
+
+     * uri: path to a binary to be executed as another process. This must
+       provides a TAP output.
+
+     * args: any runnable argument will be given on the command line to the
+       binary given by path
+
+     * kwargs: you can specify multiple key=val as kwargs. This will be used as
+       environment variables to the process.
+
+    Example:
+
+       runnable = Runnable(kind='tap',
+                           uri='tests/foo.sh',
+                           'bar', # arg 1
+                           DEBUG='false') # kwarg 1 (environment)
+    """
     def run(self):
         env = self.runnable.kwargs or None
         process = subprocess.Popen(
