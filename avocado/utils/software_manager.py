@@ -23,9 +23,7 @@ Software package management library.
 
 This is an abstraction layer on top of the existing distributions high level
 package managers. It supports package operations useful for testing purposes,
-and multiple high level package managers (here called backends). If you want
-to make this lib to support your particular package manager/distro, please
-implement the given backend class.
+and multiple high level package managers (here called backends).
 
 :author: Higor Vieira Alves <halves@br.ibm.com>
 :author: Lucas Meneghel Rodrigues <lmr@redhat.com>
@@ -56,8 +54,9 @@ from . import path as utils_path
 
 log = logging.getLogger('avocado.test')
 
-
-SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper', 'dnf']
+# If you want to make this lib to support your particular package
+# manager/distro, please implement the given backend class and
+# update the global SUPPORTED_PACKAGE_MANAGERS variable accordingly.
 
 
 class SystemInspector:
@@ -141,10 +140,7 @@ class SoftwareManager:
         if not self.initialized:
             inspector = SystemInspector()
             backend_type = inspector.get_package_management()
-            backend_mapping = {'apt-get': AptBackend,
-                               'yum': YumBackend,
-                               'dnf': DnfBackend,
-                               'zypper': ZypperBackend}
+            backend_mapping = SUPPORTED_PACKAGE_MANAGERS
 
             if backend_type not in backend_mapping.keys():
                 raise NotImplementedError('Unimplemented package management '
@@ -1155,6 +1151,15 @@ class AptBackend(DpkgBackend):
         except process.CmdError as details:
             log.error("Apt package build-dep failed %s", details)
             return False
+
+
+#: Mapping of package manager name to implementation class.
+SUPPORTED_PACKAGE_MANAGERS = {
+        'apt-get': AptBackend,
+        'yum': YumBackend,
+        'dnf': DnfBackend,
+        'zypper': ZypperBackend,
+        }
 
 
 def install_distro_packages(distro_pkg_map, interactive=False):
