@@ -57,9 +57,6 @@ from . import path as utils_path
 log = logging.getLogger('avocado.test')
 
 
-SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper', 'dnf']
-
-
 class SystemInspector:
 
     """
@@ -82,7 +79,7 @@ class SystemInspector:
         to find the best supported system.
         """
         list_supported = []
-        for high_level_pm in SUPPORTED_PACKAGE_MANAGERS:
+        for high_level_pm in [*SoftwareManager._get_backends()]:
             try:
                 utils_path.find_command(high_level_pm)
                 list_supported.append(high_level_pm)
@@ -141,10 +138,7 @@ class SoftwareManager:
         if not self.initialized:
             inspector = SystemInspector()
             backend_type = inspector.get_package_management()
-            backend_mapping = {'apt-get': AptBackend,
-                               'yum': YumBackend,
-                               'dnf': DnfBackend,
-                               'zypper': ZypperBackend}
+            backend_mapping = self._get_backends()
 
             if backend_type not in backend_mapping.keys():
                 raise NotImplementedError('Unimplemented package management '
@@ -157,6 +151,11 @@ class SoftwareManager:
     def __getattr__(self, name):
         self._init_on_demand()
         return self.backend.__getattribute__(name)
+
+    @classmethod
+    def _get_backends(cls):
+        return {'apt-get': AptBackend, 'yum': YumBackend, 'dnf': DnfBackend,
+                'zypper': ZypperBackend}
 
 
 class BaseBackend:
