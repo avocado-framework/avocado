@@ -1,0 +1,10 @@
+- name: Check for Cirrus-CI build status
+  uri:
+    url: https://api.cirrus-ci.com/github/avocado-framework/avocado.json
+    method: GET
+    return_content: yes
+    status_code: 200
+  register: this
+  failed_when: "'passing' not in this.content"
+  tags:
+    - cirrus

@@ -5,6 +5,7 @@
     - vars.yml
   roles:
     - common
+    - cirrus
     - virtualenv
     - avocado
     - tests
