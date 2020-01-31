@@ -47,15 +47,15 @@ outputs.
 
 Currently we support, out of box, the following output formats:
 
-  * **xUnit**: an XML format that contains test results in a structured form,
-    and are used by other test automation projects, such as jenkins.
+* **xUnit**: an XML format that contains test results in a structured form,
+  and are used by other test automation projects, such as jenkins.
 
-  * **JSON**: a widely used data exchange format. The JSON Avocado plugin
-    outputs job information, similarly to the xunit output plugin.
+* **JSON**: a widely used data exchange format. The JSON Avocado plugin
+  outputs job information, similarly to the xunit output plugin.
 
-  * **TAP**: Provides the basic TAP (Test Anything Protocol) results,
-    currently in v12. Unlike most existing Avocado machine readable outputs
-    this one is streamlined (per test results).
+* **TAP**: Provides the basic TAP (Test Anything Protocol) results,
+  currently in v12. Unlike most existing Avocado machine readable outputs
+  this one is streamlined (per test results).
 
 .. note:: You can see the results of the lastest job inside the folder
   ``$HOME/avocado/job-results/latest/``. You can also specify at the command line
@@ -169,13 +169,13 @@ operations.
 
 Bellow a small subset of our utility modules:
 
-  * **utils.vmimage**: This utility provides a API to download/cache VM images
-    (QCOW) from the official distributions repositories.
-  * **utils.memory**: Provides information about memory usage.
-  * **utils.cpu**: Get information from the current's machine CPU.
-  * **utils.software_manager**: Software package management library.
-  * **utils.download**: Methods to download URLs and regular files.
-  * **utils.archive**: Module to help extract and create compressed archives.
+* **utils.vmimage**: This utility provides a API to download/cache VM images
+  (QCOW) from the official distributions repositories.
+* **utils.memory**: Provides information about memory usage.
+* **utils.cpu**: Get information from the current's machine CPU.
+* **utils.software_manager**: Software package management library.
+* **utils.download**: Methods to download URLs and regular files.
+* **utils.archive**: Module to help extract and create compressed archives.
 
 How to install
 ==============
@@ -219,29 +219,29 @@ to the license of the project.
 Build and Quality Status
 ========================
 
-  .. image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/status_image/last_build.png
-     :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
-     :alt: Copr build
+.. image:: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/status_image/last_build.png
+   :target: https://copr.fedorainfracloud.org/coprs/g/avocado/avocado-latest/package/python-avocado/
+   :alt: Copr build
 
-  .. image:: https://api.cirrus-ci.com/github/avocado-framework/avocado.svg
-     :target: https://cirrus-ci.com/github/avocado-framework/avocado
-     :alt: Basic checks on Cirrus CI
+.. image:: https://api.cirrus-ci.com/github/avocado-framework/avocado.svg
+   :target: https://cirrus-ci.com/github/avocado-framework/avocado
+   :alt: Basic checks on Cirrus CI
 
-  .. image:: https://img.shields.io/lgtm/alerts/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
-     :target: https://lgtm.com/projects/g/avocado-framework/avocado/alerts/
-     :alt: lgtm total alerts
+.. image:: https://img.shields.io/lgtm/alerts/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+   :target: https://lgtm.com/projects/g/avocado-framework/avocado/alerts/
+   :alt: lgtm total alerts
 
-  .. image:: https://img.shields.io/lgtm/grade/python/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
-     :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:python
-     :alt: lgtm language grade for Python
+.. image:: https://img.shields.io/lgtm/grade/python/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+   :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:python
+   :alt: lgtm language grade for Python
 
-  .. image:: https://img.shields.io/lgtm/grade/javascript/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
-     :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:javascript
-     :alt: lgtm language grade for JavaScript
+.. image:: https://img.shields.io/lgtm/grade/javascript/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
+   :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:javascript
+   :alt: lgtm language grade for JavaScript
 
-  .. image:: https://codecov.io/gh/avocado-framework/avocado/branch/master/graph/badge.svg
-     :target: https://codecov.io/gh/avocado-framework/avocado
+.. image:: https://codecov.io/gh/avocado-framework/avocado/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/avocado-framework/avocado
 
-  .. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
-     :target: https://avocado-framework.readthedocs.io/en/latest/
-     :alt: Documentation Status
+.. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
+   :target: https://avocado-framework.readthedocs.io/en/latest/
+   :alt: Documentation Status
