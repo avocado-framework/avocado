@@ -9,6 +9,7 @@
 #
 # See LICENSE for more details.
 #
+# Copyright: IBM 2008-2009
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 # Author: Higor Vieira Alves <halves@br.ibm.com>
@@ -26,13 +27,6 @@ package managers. It supports package operations useful for testing purposes,
 and multiple high level package managers (here called backends). If you want
 to make this lib to support your particular package manager/distro, please
 implement the given backend class.
-
-:author: Higor Vieira Alves <halves@br.ibm.com>
-:author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-:author: Ramon de Carvalho Valle <rcvalle@br.ibm.com>
-
-:copyright: IBM 2008-2009
-:copyright: Red Hat 2009-2014
 """
 import os
 import re
