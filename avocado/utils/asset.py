@@ -41,7 +41,7 @@ LOG = logging.getLogger('avocado.test')
 DEFAULT_HASH_ALGORITHM = 'sha1'
 
 
-class UnsupportedProtocolError(EnvironmentError):
+class UnsupportedProtocolError(OSError):
     """
     Signals that the protocol of the asset URL is not supported
     """
@@ -250,13 +250,13 @@ class Asset:
 
         :returns: the first writable cache dir
         :rtype: str
-        :raises: EnvironmentError
+        :raises: OSError
         """
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             if utils_path.usable_rw_dir(cache_dir):
                 return cache_dir
-        raise EnvironmentError("Can't find a writable cache directory.")
+        raise OSError("Can't find a writable cache directory.")
 
     @staticmethod
     def _is_expired(path, expire):
@@ -294,7 +294,7 @@ class Asset:
         cache_dirs list. Then tries to download the asset from the locations
         list provided.
 
-        :raise EnvironmentError: When it fails to fetch the asset
+        :raise OSError: When it fails to fetch the asset
         :returns: The path for the file on the cache directory.
         :rtype: str
         """
@@ -348,7 +348,7 @@ class Asset:
                 exc_type, exc_value = sys.exc_info()[:2]
                 LOG.error('%s: %s', exc_type.__name__, exc_value)
 
-        raise EnvironmentError("Failed to fetch %s." % basename)
+        raise OSError("Failed to fetch %s." % basename)
 
     def get_metadata(self):
         """
