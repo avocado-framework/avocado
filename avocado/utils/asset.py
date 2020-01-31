@@ -125,7 +125,7 @@ class Asset:
             with FileLock(asset_path, 1):
                 shutil.copy(temp, asset_path)
                 self._create_hash_file(asset_path)
-                return self._verify(asset_path)
+                return self._verify_hash(asset_path)
         finally:
             os.remove(temp)
 
@@ -149,7 +149,7 @@ class Asset:
                     not self._is_expired(asset_file, self.expire)):
                 try:
                     with FileLock(asset_file, 30):
-                        if self._verify(asset_file):
+                        if self._verify_hash(asset_file):
                             return asset_file
                 except Exception:  # pylint: disable=W0703
                     exc_type, exc_value = sys.exc_info()[:2]
@@ -208,13 +208,13 @@ class Asset:
             try:
                 os.symlink(path, asset_path)
                 self._create_hash_file(asset_path)
-                return self._verify(asset_path)
+                return self._verify_hash(asset_path)
             except OSError as detail:
                 if detail.errno == errno.EEXIST:
                     os.remove(asset_path)
                     os.symlink(path, asset_path)
                     self._create_hash_file(asset_path)
-                    return self._verify(asset_path)
+                    return self._verify_hash(asset_path)
 
     def _get_relative_dir(self, parsed_url):
         """
@@ -276,7 +276,7 @@ class Asset:
             return True
         return False
 
-    def _verify(self, asset_path):
+    def _verify_hash(self, asset_path):
         """
         Verify if the `asset_path` hash matches the hash in the hash file.
 
@@ -285,12 +285,10 @@ class Asset:
         value as the hash of the asset_file, otherwise return False.
         :rtype: bool
         """
-        if not self.asset_hash:
+        if self.asset_hash is None or (
+                self._get_hash_from_file(asset_path) == self.asset_hash):
             return True
-        if self._get_hash_from_file(asset_path) == self.asset_hash:
-            return True
-        else:
-            return False
+        return False
 
     def fetch(self):
         """
