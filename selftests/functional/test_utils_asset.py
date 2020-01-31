@@ -92,7 +92,7 @@ class TestAsset(unittest.TestCase):
         a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
                         locations=None, cache_dirs=[self.cache_dir],
                         expire=None)
-        self.assertRaises(EnvironmentError, a.fetch)
+        self.assertRaises(OSError, a.fetch)
 
     def test_fetch_lockerror(self):
         dirname = os.path.join(self.cache_dir, 'by_name')
@@ -104,7 +104,7 @@ class TestAsset(unittest.TestCase):
                             locations=None,
                             cache_dirs=[self.cache_dir],
                             expire=None)
-            self.assertRaises(EnvironmentError, a.fetch)
+            self.assertRaises(OSError, a.fetch)
 
     def test_unknown_scheme(self):
         invalid = asset.Asset("weird-protocol://location/?params=foo",
