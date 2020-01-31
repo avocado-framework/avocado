@@ -293,7 +293,7 @@ def get_job_results_dir(job_ref, logs_dir=None):
 
     :param job_ref: job reference, which can be:
                     * an valid path to the job results directory. In this case
-                      it is checked if 'id' file exists
+                    it is checked if 'id' file exists
                     * the path to 'id' file
                     * the job id, which can be 'latest'
                     * an partial job id
