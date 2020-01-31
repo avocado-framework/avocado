@@ -101,10 +101,9 @@ class Asset:
         """
         if self.metadata:
             basename = os.path.splitext(asset_file)[0]
-            metadata_file = "%s_metadata.json" % basename
-            metadata = json.dumps(self.metadata)
-            with open(metadata_file, "w") as f:
-                f.write(metadata)
+            metadata_path = "%s_metadata.json" % basename
+            with open(metadata_path, "w") as metadata_file:
+                json.dump(self.metadata, metadata_file)
 
     def _download(self, url_obj, asset_path):
         """
@@ -368,6 +367,6 @@ class Asset:
             metadata_file = "%s_metadata.json" % basename
             if os.path.isfile(metadata_file):
                 with open(metadata_file, "r") as f:
-                    metadata = json.loads(f.read())
+                    metadata = json.load(f)
                     return metadata
         return None
