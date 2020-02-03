@@ -5,6 +5,17 @@ Development environment
 
 .. warning:: TODO: Needs improvment here. i.e: virtualenvs, GPG, etc.
 
+Installing dependencies
+-----------------------
+
+You need to install few dependencies before start coding::
+
+ $ sudo dnf install gcc libvirt-devel
+
+
+Installing in develop mode
+--------------------------
+
 Since version 0.31.0, our plugin system requires Setuptools entry points to be
 registered. If you're hacking on Avocado and want to use the same, possibly
 modified, source for running your tests and experiments, you may do so with one
