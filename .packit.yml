@@ -1,15 +1,16 @@
 specfile_path: python-avocado.spec
-synced_files:
-  - python-avocado.spec
-  - .packit.yml
 upstream_project_name: avocado-framework
 downstream_package_name: python-avocado
+actions:
+  create-archive:
+  - "python3 setup.py sdist --dist-dir ."
+  - "bash -c 'mv avocado-framework-$(python3 setup.py --version).tar.gz avocado-$(python3 setup.py --version).tar.gz'"
+  - "sh -c 'echo avocado-$(python3 setup.py --version).tar.gz'"
+  get-current-version:
+  - "python3 setup.py --version"
 jobs:
   - job: copr_build
     trigger: pull_request
     metadata:
       targets:
-      - fedora-29-x86_64
-      - fedora-30-x86_64
-      - fedora-31-x86_64
-      - fedora-rawhide-x86_64
+      - fedora-all
