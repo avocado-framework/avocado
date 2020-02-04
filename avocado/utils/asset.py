@@ -41,7 +41,7 @@ LOG = logging.getLogger('avocado.test')
 DEFAULT_HASH_ALGORITHM = 'sha1'
 
 
-class UnsupportedProtocolError(EnvironmentError):
+class UnsupportedProtocolError(OSError):
     """
     Signals that the protocol of the asset URL is not supported
     """
@@ -67,10 +67,10 @@ class Asset:
         """
         self.name = name
         self.asset_hash = asset_hash
-        if algorithm:
-            self.algorithm = algorithm
-        else:
+        if algorithm is None:
             self.algorithm = DEFAULT_HASH_ALGORITHM
+        else:
+            self.algorithm = algorithm
 
         if isinstance(locations, str):
             self.locations = [locations]
@@ -99,12 +99,11 @@ class Asset:
         :param asset_file: The asset whose metadata will be saved
         :type asset_file: str
         """
-        if self.metadata:
+        if self.metadata is not None:
             basename = os.path.splitext(asset_file)[0]
-            metadata_file = "%s_metadata.json" % basename
-            metadata = json.dumps(self.metadata)
-            with open(metadata_file, "w") as f:
-                f.write(metadata)
+            metadata_path = "%s_metadata.json" % basename
+            with open(metadata_path, "w") as metadata_file:
+                json.dump(self.metadata, metadata_file)
 
     def _download(self, url_obj, asset_path):
         """
@@ -125,7 +124,7 @@ class Asset:
             with FileLock(asset_path, 1):
                 shutil.copy(temp, asset_path)
                 self._create_hash_file(asset_path)
-                return self._verify(asset_path)
+                return self._verify_hash(asset_path)
         finally:
             os.remove(temp)
 
@@ -149,7 +148,7 @@ class Asset:
                     not self._is_expired(asset_file, self.expire)):
                 try:
                     with FileLock(asset_file, 30):
-                        if self._verify(asset_file):
+                        if self._verify_hash(asset_file):
                             return asset_file
                 except Exception:  # pylint: disable=W0703
                     exc_type, exc_value = sys.exc_info()[:2]
@@ -208,13 +207,13 @@ class Asset:
             try:
                 os.symlink(path, asset_path)
                 self._create_hash_file(asset_path)
-                return self._verify(asset_path)
+                return self._verify_hash(asset_path)
             except OSError as detail:
                 if detail.errno == errno.EEXIST:
                     os.remove(asset_path)
                     os.symlink(path, asset_path)
                     self._create_hash_file(asset_path)
-                    return self._verify(asset_path)
+                    return self._verify_hash(asset_path)
 
     def _get_relative_dir(self, parsed_url):
         """
@@ -251,13 +250,13 @@ class Asset:
 
         :returns: the first writable cache dir
         :rtype: str
-        :raises: EnvironmentError
+        :raises: OSError
         """
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             if utils_path.usable_rw_dir(cache_dir):
                 return cache_dir
-        raise EnvironmentError("Can't find a writable cache directory.")
+        raise OSError("Can't find a writable cache directory.")
 
     @staticmethod
     def _is_expired(path, expire):
@@ -268,7 +267,7 @@ class Asset:
         :returns: the expired status of an asset.
         :rtype: bool
         """
-        if not expire:
+        if expire is None:
             return False
         creation_time = os.lstat(path)[stat.ST_CTIME]
         expire_time = creation_time + expire
@@ -276,7 +275,7 @@ class Asset:
             return True
         return False
 
-    def _verify(self, asset_path):
+    def _verify_hash(self, asset_path):
         """
         Verify if the `asset_path` hash matches the hash in the hash file.
 
@@ -285,12 +284,10 @@ class Asset:
         value as the hash of the asset_file, otherwise return False.
         :rtype: bool
         """
-        if not self.asset_hash:
+        if self.asset_hash is None or (
+                self._get_hash_from_file(asset_path) == self.asset_hash):
             return True
-        if self._get_hash_from_file(asset_path) == self.asset_hash:
-            return True
-        else:
-            return False
+        return False
 
     def fetch(self):
         """
@@ -298,7 +295,7 @@ class Asset:
         cache_dirs list. Then tries to download the asset from the locations
         list provided.
 
-        :raise EnvironmentError: When it fails to fetch the asset
+        :raise OSError: When it fails to fetch the asset
         :returns: The path for the file on the cache directory.
         :rtype: str
         """
@@ -314,8 +311,8 @@ class Asset:
         # First let's search for the file in each one of the cache locations
         asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
                                                         basename))
-        if asset_file:
-            if self.metadata:
+        if asset_file is not None:
+            if self.metadata is not None:
                 self._create_metadata_file(asset_file)
             return asset_file
 
@@ -325,7 +322,7 @@ class Asset:
         cache_dir = self._get_writable_cache_dir()
         # Now we have a writable cache_dir. Let's get the asset.
         # Adding the user defined locations to the urls list:
-        if self.locations:
+        if self.locations is not None:
             for item in self.locations:
                 urls.append(item)
 
@@ -345,14 +342,14 @@ class Asset:
                 os.makedirs(dirname)
             try:
                 if fetch(urlobj, asset_file):
-                    if self.metadata:
+                    if self.metadata is not None:
                         self._create_metadata_file(asset_file)
                     return asset_file
             except Exception:  # pylint: disable=W0703
                 exc_type, exc_value = sys.exc_info()[:2]
                 LOG.error('%s: %s', exc_type.__name__, exc_value)
 
-        raise EnvironmentError("Failed to fetch %s." % basename)
+        raise OSError("Failed to fetch %s." % basename)
 
     def get_metadata(self):
         """
@@ -366,11 +363,11 @@ class Asset:
         cache_relative_dir = self._get_relative_dir(parsed_url)
         asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
                                                         basename))
-        if asset_file:
+        if asset_file is not None:
             basename = os.path.splitext(asset_file)[0]
             metadata_file = "%s_metadata.json" % basename
             if os.path.isfile(metadata_file):
                 with open(metadata_file, "r") as f:
-                    metadata = json.loads(f.read())
+                    metadata = json.load(f)
                     return metadata
         return None
