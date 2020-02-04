@@ -12,6 +12,9 @@ funcsigs>=0.4
 aexpect==1.5.1
 psutil==5.4.7
 
+# To test optional_plugins/varianter_yaml_to_mux
+pyaml==19.12.0
+
 # pycdlib is an optional requirement in production
 # but is necessary for selftests
 pycdlib==1.6.0
