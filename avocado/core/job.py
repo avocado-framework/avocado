@@ -143,7 +143,7 @@ class Job:
             unique_id = self.config.get('unique_job_id', None)
             if unique_id is None:
                 self.config['unique_job_id'] = '0' * 40
-            self.config['sysinfo'] = False
+            self.config['sysinfo.collect.enabled'] = 'off'
 
         unique_id = self.config.get('unique_job_id', None)
         if unique_id is None:
