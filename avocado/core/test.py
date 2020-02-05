@@ -375,9 +375,13 @@ class Test(unittest.TestCase, TestData):
         self._logging_handlers = {}
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
-        self.__sysinfo_enabled = (self.job is not None and
-                                  self.job.config is not None and
-                                  self.job.config.get('sysinfo', None) == 'on')
+        try:
+            future = job.config.get('_future')
+            self.__sysinfo_enabled = future.get('sysinfo.collect.enabled')
+        except Exception:  # pylint: disable=W0703
+            # TODO: This is temporary, need to be fixed
+            self.__sysinfo_enabled = False
+
         if self.__sysinfo_enabled:
             self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
             self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)

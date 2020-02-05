@@ -15,6 +15,7 @@
 System information plugin
 """
 
+from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.plugin_interfaces import JobPre
 from avocado.core.plugin_interfaces import JobPost
@@ -36,13 +37,15 @@ class SysInfoJob(JobPre, JobPost):
             self.sysinfo = sysinfo.SysInfo(basedir=basedir)
 
     def pre(self, job):
-        if job.config.get('sysinfo', None) != 'on':
+        future = job.config.get('_future')
+        if future.get('sysinfo.collect.enabled') != 'on':
             return
         self._init_sysinfo(job.logdir)
         self.sysinfo.start_job_hook()
 
     def post(self, job):
-        if job.config.get('sysinfo', None) != 'on':
+        future = job.config.get('_future')
+        if future.get('sysinfo.collect.enabled') != 'on':
             return
         self._init_sysinfo(job.logdir)
         self.sysinfo.end_job_hook()
@@ -65,9 +68,17 @@ class SysInfo(CLICmd):
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
         parser = super(SysInfo, self).configure(parser)
-        parser.add_argument('sysinfodir', type=str,
-                            help='Dir where to dump sysinfo',
-                            nargs='?', default='')
+
+        help_msg = 'Directory where Avocado will dump sysinfo data.'
+        settings.register_option(section='sysinfo.collect',
+                                 key='sysinfodir',
+                                 default='./',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 positional_arg=True,
+                                 nargs='?')
 
     def run(self, config):
-        sysinfo.collect_sysinfo(config.get('sysinfodir'))
+        future = config.get('_future')
+        sysinfodir = future.get('sysinfo.collect.sysinfodir')
+        sysinfo.collect_sysinfo(sysinfodir)
