@@ -375,9 +375,14 @@ class Test(unittest.TestCase, TestData):
         self._logging_handlers = {}
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
-        self.__sysinfo_enabled = (self.job is not None and
-                                  self.job.config is not None and
-                                  self.job.config.get('sysinfo', None) == 'on')
+
+        # For some reason, sometimes, job.config if None here.
+        # This is the only place that we create a "default" in code.
+        try:
+            self.__sysinfo_enabled = job.config.get('sysinfo.collect.enabled')
+        except AttributeError:
+            self.__sysinfo_enabled = False
+
         if self.__sysinfo_enabled:
             self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
             self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)

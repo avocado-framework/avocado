@@ -27,8 +27,8 @@ from avocado.core import output
 from avocado.core import parser_common_args
 from avocado.core.dispatcher import ResultDispatcher
 from avocado.core.dispatcher import JobPrePostDispatcher
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
-from avocado.core.settings import settings
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils.data_structures import time_to_seconds
 from avocado.utils import process
@@ -123,16 +123,17 @@ class Run(CLICmd):
                             "the test references are not resolved to tests."
                             "'on' and 'off' will be deprecated soon.")
 
-        sysinfo_default = settings.get_value('sysinfo.collect',
-                                             'enabled',
-                                             key_type='bool',
-                                             default=True)
-        sysinfo_default = 'on' if sysinfo_default is True else 'off'
-        parser.add_argument('--sysinfo', choices=('on', 'off'),
-                            default=sysinfo_default, help="Enable or disable "
-                            "system information (hardware details, profilers, "
-                            "etc.). 'on' and 'off' will be deprecated soon. "
-                            "Current:  %(default)s")
+        help_msg = ('Enable or disable sysinfo information. Like hardware '
+                    'details, profiles, etc.')
+        settings.register_option(section='sysinfo.collect',
+                                 key='enabled',
+                                 default='on',
+                                 key_type=str,
+                                 help_msg=help_msg,
+                                 choices=('on', 'off'),
+                                 parser=parser,
+                                 short_arg='-S',
+                                 long_arg='--sysinfo')
 
         parser.add_argument("--execution-order",
                             choices=("tests-per-variant",
