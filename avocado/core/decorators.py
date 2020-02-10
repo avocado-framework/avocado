@@ -73,14 +73,27 @@ def skip(message=None):
     """
     Decorator to skip a test.
     """
-    def decorator(function):
-        if not isinstance(function, type):
-            @wraps(function)
-            def wrapper(*args, **kwargs):  # pylint: disable=W0613
-                raise core_exceptions.TestSkipError(message)
-            function = wrapper
-        function.__skip_test_decorator__ = True
-        return function
+    def decorator(obj):
+        def method_decorator(function):
+            if not isinstance(function, type):
+                @wraps(function)
+                def wrapper(*args, **kwargs):  # pylint: disable=W0613
+                    raise core_exceptions.TestSkipError(message)
+                function = wrapper
+            function.__skip_test_decorator__ = True
+            return function
+
+        def class_decorator(cls):
+            for key in cls.__dict__:
+                if callable(getattr(cls, key)):
+                    wrapped = method_decorator(getattr(cls, key))
+                    setattr(cls, key, wrapped)
+            return cls
+
+        if isinstance(obj, type):
+            return class_decorator(obj)
+        else:
+            return method_decorator(obj)
     return decorator
 
 
