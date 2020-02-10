@@ -37,6 +37,116 @@ class AvocadoSkipTests(avocado.Test):
         self.log.info('teardown executed')
 """
 
+AVOCADO_TEST_SKIP_CLASS_DECORATORS = """
+import avocado
+from lib_skip_decorators import check_condition
+@avocado.skip('Test skipped')
+class AvocadoSkipTests(avocado.Test):
+
+    def setUp(self):
+        self.log.info('setup executed')
+
+    def test1(self):
+        self.log.info('test executed')
+
+    def test2(self):
+        self.log.info('test executed')
+
+    def test3(self):
+        self.log.info('test executed')
+
+    def tearDown(self):
+        self.log.info('teardown executed')
+
+"""
+
+
+AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS = """
+import avocado
+from lib_skip_decorators import check_condition
+@avocado.skipIf(check_condition(True),
+                    'Skipped due to the True condition')
+class AvocadoSkipTests(avocado.Test):
+
+    def setUp(self):
+        self.log.info('setup executed')
+
+    def test1(self):
+        self.log.info('test executed')
+
+    def test2(self):
+        self.log.info('test executed')
+
+    def test3(self):
+        self.log.info('test executed')
+
+    def tearDown(self):
+        self.log.info('teardown executed')
+
+@avocado.skipIf(check_condition(False),
+                    'Skipped due to the True condition')
+class AvocadoNoSkipTests(avocado.Test):
+
+    def setUp(self):
+        self.log.info('setup executed')
+
+    def test1(self):
+        self.log.info('test executed')
+
+    def test2(self):
+        self.log.info('test executed')
+
+    def test3(self):
+        self.log.info('test executed')
+
+    def tearDown(self):
+        self.log.info('teardown executed')
+"""
+
+
+AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS = """
+import avocado
+from lib_skip_decorators import check_condition
+
+@avocado.skipUnless(check_condition(False),
+                    'Skipped due to the True condition')
+class AvocadoSkipTests(avocado.Test):
+
+    def setUp(self):
+        self.log.info('setup executed')
+
+    def test1(self):
+        self.log.info('test executed')
+
+    def test2(self):
+        self.log.info('test executed')
+
+    def test3(self):
+        self.log.info('test executed')
+
+    def tearDown(self):
+        self.log.info('teardown executed')
+
+@avocado.skipUnless(check_condition(True),
+                    'Skipped due to the True condition')
+class AvocadoNoSkipTests(avocado.Test):
+
+    def setUp(self):
+        self.log.info('setup executed')
+
+    def test1(self):
+        self.log.info('test executed')
+
+    def test2(self):
+        self.log.info('test executed')
+
+    def test3(self):
+        self.log.info('test executed')
+
+    def tearDown(self):
+        self.log.info('teardown executed')
+"""
+
 
 AVOCADO_TEST_SKIP_LIB = """
 def check_condition(condition):
@@ -86,6 +196,24 @@ class TestSkipDecorators(unittest.TestCase):
                                          AVOCADO_TEST_SKIP_DECORATORS)
         self.test_module.save()
 
+        class_path = os.path.join(self.tmpdir.name,
+                                  'test_skip_class_decorators.py')
+        self.class_module = script.Script(class_path,
+                                          AVOCADO_TEST_SKIP_CLASS_DECORATORS)
+        self.class_module.save()
+
+        class_if_path = os.path.join(self.tmpdir.name,
+                                     'test_skip_if_class_decorators.py')
+        self.class_if_module = script.Script(class_if_path,
+                                             AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS)
+        self.class_if_module.save()
+
+        class_unless_path = os.path.join(self.tmpdir.name,
+                                         'test_skip_unless_class_decorators.py')
+        self.class_unless_module = script.Script(class_unless_path,
+                                                 AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS)
+        self.class_unless_module.save()
+
         lib_path = os.path.join(self.tmpdir.name, 'lib_skip_decorators.py')
         self.test_lib = script.Script(lib_path, AVOCADO_TEST_SKIP_LIB)
         self.test_lib.save()
@@ -121,6 +249,58 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertFalse('setup executed' in debuglog_contents)
         self.assertFalse('test executed' in debuglog_contents)
         self.assertFalse('teardown executed' in debuglog_contents)
+
+    def test_skip_class_decorators(self):
+        os.chdir(BASEDIR)
+        cmd_line = [AVOCADO,
+                    'run',
+                    '--sysinfo=off',
+                    '--job-results-dir',
+                    '%s' % self.tmpdir.name,
+                    '%s' % self.class_module,
+                    '--json -']
+        result = process.run(' '.join(cmd_line), ignore_status=True)
+        json_results = json.loads(result.stdout_text)
+        debuglog = json_results['debuglog']
+
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertEqual(json_results['skip'], 3)
+        debuglog_contents = genio.read_file(debuglog)
+        self.assertFalse('setup executed' in debuglog_contents)
+        self.assertFalse('test executed' in debuglog_contents)
+        self.assertFalse('teardown executed' in debuglog_contents)
+
+    def test_skipIf_class_decorators(self):
+        os.chdir(BASEDIR)
+        cmd_line = [AVOCADO,
+                    'run',
+                    '--sysinfo=off',
+                    '--job-results-dir',
+                    '%s' % self.tmpdir.name,
+                    '%s' % self.class_if_module,
+                    '--json -']
+        result = process.run(' '.join(cmd_line), ignore_status=True)
+        json_results = json.loads(result.stdout_text)
+
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertEqual(json_results['skip'], 3)
+        self.assertEqual(json_results['pass'], 3)
+
+    def test_skipUnless_class_decorators(self):
+        os.chdir(BASEDIR)
+        cmd_line = [AVOCADO,
+                    'run',
+                    '--sysinfo=off',
+                    '--job-results-dir',
+                    '%s' % self.tmpdir.name,
+                    '%s' % self.class_unless_module,
+                    '--json -']
+        result = process.run(' '.join(cmd_line), ignore_status=True)
+        json_results = json.loads(result.stdout_text)
+
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertEqual(json_results['skip'], 3)
+        self.assertEqual(json_results['pass'], 3)
 
     def test_skip_setup(self):
         os.chdir(BASEDIR)

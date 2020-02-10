@@ -11,9 +11,9 @@
 #
 # Copyright: Red Hat Inc. 2017
 # Author: Amador Pahim <apahim@redhat.com>
-
 from functools import wraps
 import types
+import inspect
 
 from . import exceptions as core_exceptions
 
@@ -73,14 +73,28 @@ def skip(message=None):
     """
     Decorator to skip a test.
     """
-    def decorator(function):
-        if not isinstance(function, type):
-            @wraps(function)
-            def wrapper(*args, **kwargs):  # pylint: disable=W0613
-                raise core_exceptions.TestSkipError(message)
-            function = wrapper
-        function.__skip_test_decorator__ = True
-        return function
+    def decorator(obj):
+        def method_decorator(function):
+            if not isinstance(function, type):
+                @wraps(function)
+                def wrapper(*args, **kwargs):  # pylint: disable=W0613
+                    raise core_exceptions.TestSkipError(message)
+                function = wrapper
+            function.__skip_test_decorator__ = True
+            return function
+
+        def class_decorator(cls):
+            for key in cls.__dict__:
+                value = getattr(cls, key)
+                if callable(getattr(cls, key)):
+                    wrapped = method_decorator(value)
+                    setattr(cls, key, wrapped)
+            return cls
+
+        if inspect.isclass(obj):
+            return class_decorator(obj)
+        else:
+            return method_decorator(obj)
     return decorator
 
 
