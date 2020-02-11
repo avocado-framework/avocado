@@ -18,6 +18,7 @@ import os
 import sys
 
 from avocado.core import exit_codes
+from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.output import LOG_UI
 from avocado.utils import distro as utils_distro
@@ -302,57 +303,94 @@ class Distro(CLICmd):
 
     def configure(self, parser):
         parser = super(Distro, self).configure(parser)
-        parser.add_argument('--distro-def-create',
-                            action='store_true', default=False,
-                            help=('Creates a distro definition file '
-                                  'based on the path given'))
-        parser.add_argument('--distro-def-name',
-                            help='Distribution short name')
-        parser.add_argument('--distro-def-version',
-                            help='Distribution major version number')
-        parser.add_argument('---distro-def-release', default='',
-                            help='Distribution release version number')
-        parser.add_argument('--distro-def-arch',
-                            help=('Primary architecture that the distro '
-                                  'targets'))
-        parser.add_argument('--distro-def-path',
-                            help=('Top level directory of the distro '
-                                  'installation files'))
+
+        help_msg = 'Cretes a distro definition file based on the path given.'
+        settings.register_option(section='distro',
+                                 key='distro_def_create',
+                                 default=False,
+                                 help_msg=help_msg,
+                                 key_type=bool,
+                                 parser=parser,
+                                 long_arg='--distro-def-create')
+
+        help_msg = 'Distribution short name'
+        settings.register_option(section='distro',
+                                 key='distro_def_name',
+                                 default='',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--distro-def-name')
+
+        help_msg = 'Distribution major version name'
+        settings.register_option(section='distro',
+                                 key='distro_def_version',
+                                 default='',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--distro-def-version')
+
+        help_msg = 'Distribution release version number'
+        settings.register_option(section='distro',
+                                 key='distro_def_release',
+                                 default='',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--distro-def-release')
+
+        help_msg = 'Primary architecture that the distro targets'
+        settings.register_option(section='distro',
+                                 key='distro_def_arch',
+                                 default='',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--distro-def-arch')
+
+        help_msg = 'Top level directory of the distro installation files'
+        settings.register_option(section='distro',
+                                 key='distro_def_path',
+                                 default='',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--distro-def-path')
+
         type_choices = DISTRO_PKG_INFO_LOADERS.keys()
         type_choices_hlp = ', '.join(type_choices)
-        type_help_msg = 'Distro type (one of: %s)' % type_choices_hlp
-        parser.add_argument('--distro-def-type', choices=type_choices,
-                            help=type_help_msg)
+        help_msg = 'Distro type (one of: %s)' % type_choices_hlp
+        settings.register_option(section='distro',
+                                 key='distro_def_type',
+                                 default='',
+                                 help_msg=help_msg,
+                                 choices=type_choices,
+                                 parser=parser,
+                                 long_arg='--distro-def-type')
 
-    def get_output_file_name(self, args):
+    def _get_output_file_name(self, name, version, arch, release=None):
         """
         Adapt the output file name based on given args
 
         It's not uncommon for some distros to not have a release number, so
         adapt the output file name to that
         """
-        if args.get('distro_def_release'):
-            return '%s-%s.%s-%s.distro' % (args.get('distro_def_name'),
-                                           args.get('distro_def_version'),
-                                           args.get('distro_def_release'),
-                                           args.get('distro_def_arch'))
+        if release:
+            return '%s-%s.%s-%s.distro' % (name, version, release, arch)
         else:
-            return '%s-%s-%s.distro' % (args.get('distro_def_name'),
-                                        args.get('distro_def_version'),
-                                        args.get('distro_def_arch'))
+            return '%s-%s-%s.distro' % (name, version, arch)
 
     def run(self, config):
-        if config.get('distro_def_create'):
-            if not (config.get('distro_def_name') and
-                    config.get('distro_def_version') and
-                    config.get('distro_def_arch') and
-                    config.get('distro_def_type') and
-                    config.get('distro_def_path')):
+        name = config.get('distro.distro_def_name')
+        version = config.get('distro.distro_def_version')
+        release = config.get('distro.distro_def_release')
+        arch = config.get('distro.distro_def_arch')
+        distro_type = config.get('distro.distro_def_type')
+        path = config.get('distro.distro_def_path')
+        if config.get('distro.distro_def_create'):
+            if not (name and version and arch and distro_type and path):
                 LOG_UI.error('Required arguments: name, version, arch, type '
                              'and path')
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-            output_file_name = self.get_output_file_name(config)
+            output_file_name = self._get_output_file_name(name, version,
+                                                          arch, release)
             if os.path.exists(output_file_name):
                 error_msg = ('Output file "%s" already exists, will not '
                              'overwrite it', output_file_name)
@@ -360,12 +398,8 @@ class Distro(CLICmd):
             else:
                 LOG_UI.debug("Loading distro information from tree... "
                              "Please wait...")
-                distro = load_from_tree(config.get('distro_def_name'),
-                                        config.get('distro_def_version'),
-                                        config.get('distro_def_release'),
-                                        config.get('distro_def_arch'),
-                                        config.get('distro_def_type'),
-                                        config.get('distro_def_path'))
+                distro = load_from_tree(name, version, release, arch,
+                                        distro_type, path)
                 save_distro(distro, output_file_name)
                 LOG_UI.debug('Distro information saved to "%s"',
                              output_file_name)
