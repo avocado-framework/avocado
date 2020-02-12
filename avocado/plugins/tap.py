@@ -17,6 +17,7 @@ TAP output module.
 
 import os
 
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, ResultEvents
@@ -52,10 +53,11 @@ class TAPResult(ResultEvents):
     name = 'tap'
     description = "TAP - Test Anything Protocol results"
 
-    def __init__(self, config):
+    def __init__(self, config):  # pylint: disable=W0613
         self.__logs = []
         self.__open_files = []
-        output = config.get('tap', None)
+        self.config = config
+        output = self.config.get('run.tap.output')
         if output == '-':
             log = LOG_UI.debug
             self.__logs.append(log)
@@ -63,7 +65,7 @@ class TAPResult(ResultEvents):
             log = open(output, "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
-        self.__include_logs = config.get('tap_include_logs', False)
+        self.__include_logs = self.config.get('run.tap.include_logs')
         self.is_header_printed = False
 
     def __write(self, msg, *writeargs):
@@ -86,7 +88,7 @@ class TAPResult(ResultEvents):
         Log the test plan
         """
         # Should we add default results.tap?
-        if job.config.get('tap_job_result', 'off') == 'on':
+        if self.config.get('run.tap.job_result') == 'on':
             log = open(os.path.join(job.logdir, 'results.tap'), "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
@@ -159,23 +161,35 @@ class TAP(CLI):
         cmd_parser = parser.subcommands.choices.get('run', None)
         if cmd_parser is None:
             return
+        help_msg = ('Enable TAP result output and write it to FILE. Use '
+                    '"-" to redirect to standard output.')
+        settings.register_option(section='run.tap',
+                                 key='output',
+                                 metavar='FILE',
+                                 action=FileOrStdoutAction,
+                                 help_msg=help_msg,
+                                 default=None,
+                                 parser=cmd_parser,
+                                 long_arg='--tap')
 
-        cmd_parser.output.add_argument('--tap', type=str, metavar='FILE',
-                                       action=FileOrStdoutAction,
-                                       help="Enable TAP result output and "
-                                       "write it to FILE. Use '-' to redirect "
-                                       "to the standard output.")
+        help_msg = ('Enables default TAP result in the job results directory. '
+                    'File will be named "results.tap"')
+        settings.register_option(section='run.tap',
+                                 key='job_result',
+                                 help_msg=help_msg,
+                                 default='on',
+                                 choices=('on', 'off'),
+                                 parser=cmd_parser,
+                                 long_arg='--tap-job-result')
 
-        cmd_parser.output.add_argument('--tap-job-result', default="on",
-                                       choices=("on", "off"), help="Enables "
-                                       "default TAP result in the job results"
-                                       " directory. File will be named "
-                                       "\"results.tap\".")
-
-        cmd_parser.output.add_argument('--tap-include-logs',
-                                       action='store_true', help='Include '
-                                       'test logs as comments in TAP output.'
-                                       ' Defaults to %(default)s')
+        help_msg = 'Include test logs as comments in TAP output.'
+        settings.register_option(section='run.tap',
+                                 key='include_logs',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=cmd_parser,
+                                 long_arg='--tap-include-logs')
 
     def run(self, config):
         pass
