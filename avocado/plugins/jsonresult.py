@@ -20,6 +20,7 @@ JSON output module.
 import json
 import os
 
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, Result
@@ -67,20 +68,22 @@ class JSONResult(Result):
                           separators=(',', ': '))
 
     def render(self, result, job):
-        if not (job.config.get('json_job_result') or
-                job.config.get('json_output')):
+        future = job.config.get('_future')
+        json_output = future.get('run.json.output')
+        json_job_result = future.get('run.json.job_result')
+        if not (json_job_result or json_output):
             return
 
         if not result.tests_total:
             return
 
         content = self._render(result)
-        if job.config.get('json_job_result', 'off') == 'on':
+        if json_job_result == 'on':
             json_path = os.path.join(job.logdir, 'results.json')
             with open(json_path, 'w') as json_file:
                 json_file.write(content)
 
-        json_path = job.config.get('json_output', 'None')
+        json_path = json_output
         if json_path is not None:
             if json_path == '-':
                 LOG_UI.debug(content)
@@ -103,17 +106,26 @@ class JSONCLI(CLI):
         if run_subcommand_parser is None:
             return
 
-        run_subcommand_parser.output.add_argument(
-            '--json', type=str, action=FileOrStdoutAction,
-            dest='json_output', metavar='FILE',
-            help='Enable JSON result format and write it to FILE. '
-                 "Use '-' to redirect to the standard output.")
+        help_msg = ('Enable JSON result format and write it to FILE. '
+                    'Use "-" to redirect to the standard output.')
+        settings.register_option(section='run.json',
+                                 key='output',
+                                 default=None,
+                                 action=FileOrStdoutAction,
+                                 help_msg=help_msg,
+                                 metavar='FILE',
+                                 parser=run_subcommand_parser,
+                                 long_arg='--json')
 
-        run_subcommand_parser.output.add_argument(
-            '--json-job-result', dest='json_job_result',
-            choices=('on', 'off'), default='on',
-            help=('Enables default JSON result in the job results directory. '
-                  'File will be named "results.json".'))
+        help_msg = ('Enables default JSON result in the job results '
+                    'directory. File will be named "results.json".')
+        settings.register_option(section='run.json',
+                                 key='job_result',
+                                 default='on',
+                                 choices=('on', 'off'),
+                                 help_msg=help_msg,
+                                 parser=run_subcommand_parser,
+                                 long_arg='--json-job-result')
 
     def run(self, config):
         pass
