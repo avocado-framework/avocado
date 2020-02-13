@@ -14,6 +14,7 @@
 
 import os
 
+from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core import resolver
 from avocado.core import output
@@ -35,25 +36,46 @@ class List(CLICmd):
 
     def configure(self, parser):
         parser = super(List, self).configure(parser)
-        parser.add_argument('references', type=str, default=[], nargs='*',
-                            help="Test references")
-        parser.add_argument('-V', '--verbose',
-                            action='store_true', default=False,
-                            help=("Show extra information on resolution, besides "
-                                  "sucessful resolutions"))
-        parser.add_argument('--write-recipes-to-directory',
-                            metavar='DIRECTORY', default=None,
-                            help=('Writes runnable recipe files to a directory'))
+        settings.register_option(section='nlist',
+                                 key='references',
+                                 default=[],
+                                 nargs='*',
+                                 key_type=list,
+                                 help_msg='Test references',
+                                 parser=parser,
+                                 positional_arg=True)
+
+        help_msg = ('Show extra information on resolution, besides '
+                    'sucessful resolutions')
+        settings.register_option(section='nlist',
+                                 key='verbose',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--verbose',
+                                 short_arg='-V')
+
+        help_msg = 'Writes runnable recipe files to a directory'
+        settings.register_option(section='nlist.recipes',
+                                 key='write_to_directory',
+                                 default=None,
+                                 metavar='DIRECTORY',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--write-recipes-to-directory')
 
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
-        references = config.get('references', [])
+        references = config.get('nlist.references')
+        verbose = config.get('nlist.verbose')
         resolutions = resolver.resolve(references)
         matrix, stats, tag_stats, resolution_matrix = self._get_resolution_matrix(config,
-                                                                                  resolutions)
-        self._display(matrix, stats, tag_stats, resolution_matrix, config.get('verbose'))
-        recipes_directory = config.get('write_recipes_to_directory')
+                                                                                  resolutions,
+                                                                                  verbose)
+        self._display(matrix, stats, tag_stats, resolution_matrix, verbose)
+        recipes_directory = config.get('nlist.recipes.write_to_directory')
         if recipes_directory is not None:
             fmt = '%%0%uu.json' % len(str(len(matrix)))
             index = 1
@@ -64,7 +86,7 @@ class List(CLICmd):
                         index += 1
 
     @staticmethod
-    def _get_resolution_matrix(config, resolutions):
+    def _get_resolution_matrix(config, resolutions, verbose):
         test_matrix = []
         resolution_matrix = []
         decorator_mapping = {
@@ -99,7 +121,7 @@ class List(CLICmd):
                     stats[type_label.lower()] += 1
                     type_label = decorator(type_label)
 
-                    if config.get('verbose'):
+                    if verbose:
                         tags_repr = []
                         if runnable.tags is not None:
                             for tag, vals in runnable.tags.items():
