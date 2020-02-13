@@ -102,8 +102,10 @@ def resolutions_to_tasks(resolutions, config):
             if runnable.uri:
                 name = runnable.uri
             identifier = str(test.TestID(index + 1, name, None, no_digits))
+            future = config.get('_future')
+            status_server = future.get('nrun.status_server.listen')
             tasks.append(nrunner.Task(identifier, runnable,
-                                      [config.get('status_server')]))
+                                      [status_server]))
             index += 1
     return tasks
 

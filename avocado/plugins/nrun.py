@@ -9,6 +9,7 @@ from avocado.core import job
 from avocado.core import nrunner
 from avocado.core import parser_common_args
 from avocado.core import resolver
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import path as utils_path
@@ -90,14 +91,35 @@ class NRun(CLICmd):
 
     def configure(self, parser):
         parser = super(NRun, self).configure(parser)
-        parser.add_argument("references", type=str, default=[], nargs='*',
-                            metavar="TEST_REFERENCE",
-                            help='List of test references (aliases or paths)')
-        parser.add_argument("--disable-task-randomization",
-                            action="store_true", default=False)
-        parser.add_argument("--status-server", default="127.0.0.1:8888",
-                            metavar="HOST:PORT",
-                            help="Host and port for status server, default is: %(default)s")
+        help_msg = 'List of test references (aliases or paths)'
+        settings.register_option(section='nrun',
+                                 key='references',
+                                 default=[],
+                                 key_type=list,
+                                 help_msg=help_msg,
+                                 nargs='*',
+                                 parser=parser,
+                                 metavar="TEST_REFERENCE",
+                                 positional_arg=True)
+
+        help_msg = 'Disable task shuffle'
+        settings.register_option(section='nrun',
+                                 key='disable_task_randomization',
+                                 default=False,
+                                 help_msg=help_msg,
+                                 key_type=bool,
+                                 parser=parser,
+                                 long_arg='--disable-task-randomization')
+
+        help_msg = 'Host and port for the status server'
+        settings.register_option(section='nrun.status_server',
+                                 key='listen',
+                                 default='127.0.0.1:8888',
+                                 metavar="HOST:PORT",
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--status-server')
+
         parser_common_args.add_tag_filter_args(parser)
 
     @asyncio.coroutine
@@ -139,7 +161,8 @@ class NRun(CLICmd):
             stderr=asyncio.subprocess.PIPE)
 
     def run(self, config):
-        resolutions = resolver.resolve(config.get('references'))
+        future = config.get('_future')
+        resolutions = resolver.resolve(future.get('nrun.references'))
         tasks = job.resolutions_to_tasks(resolutions, config)
         self.pending_tasks = check_tasks_requirements(   # pylint: disable=W0201
             tasks,
@@ -149,14 +172,15 @@ class NRun(CLICmd):
             LOG_UI.error('No test to be executed, exiting...')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
-        if not config.get('disable_task_randomization'):
+        if not future.get('nrun.disable_task_randomization'):
             random.shuffle(self.pending_tasks)
 
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
             loop = asyncio.get_event_loop()
-            self.status_server = nrunner.StatusServer(config.get('status_server'),  # pylint: disable=W0201
+            listen = future.get('nrun.status_server.listen')
+            self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
                                                       [t.identifier for t in
                                                        self.pending_tasks])
             self.status_server.start()
