@@ -16,6 +16,7 @@ import os
 import sys
 
 from avocado.core import exit_codes
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.utils import process
@@ -37,18 +38,25 @@ class Wrapper(CLI):
 
         wrap_group = run_subcommand_parser.add_argument_group(
             'wrapper support')
-        wrap_group.add_argument('--wrapper', action='append', default=[],
-                                metavar='SCRIPT[:EXECUTABLE]',
-                                help='Use a script to wrap executables run by '
-                                'a test. The wrapper is either a path to a '
-                                'script (AKA a global wrapper) or '
-                                'a path to a script followed by colon symbol (:), '
-                                'plus a shell like glob to the target EXECUTABLE. '
-                                'Multiple wrapper options are allowed, but '
-                                'only one global wrapper can be defined.')
+        help_msg = ('Use a script to wrap executables run by a test. The '
+                    'wrapper is either a path to a script (AKA a global '
+                    'wrapper) or a path to a script followed by colon symbol '
+                    '(:), plus a shell like glob to the target EXECUTABLE. '
+                    'Multiple wrapper options are allowed, but only one '
+                    'global wrapper can be defined.')
+        settings.register_option(section='run.wrapper',
+                                 key='wrappers',
+                                 default=[],
+                                 key_type=list,
+                                 help_msg=help_msg,
+                                 action='append',
+                                 metavar='SCRIPT[:EXECUTABLE]',
+                                 parser=wrap_group,
+                                 long_arg='--wrapper')
 
     def run(self, config):
-        wraps = config.get("wrapper", None)
+        future = config.get('_future')
+        wraps = future.get('run.wrapper.wrappers')
         if wraps:
             for wrap in wraps:
                 if ':' not in wrap:
