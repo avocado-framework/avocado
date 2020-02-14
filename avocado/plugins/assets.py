@@ -22,6 +22,7 @@ import os
 from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import safeloader
+from avocado.core.future.settings import settings
 from avocado.core.nrunner import Task
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
@@ -273,10 +274,16 @@ class Assets(CLICmd):
             'fetch',
             help='Fetch assets from test source or config file if it\'s not'
             ' already in the cache')
-        fetch_subcommand_parser.add_argument('references', nargs='+',
-                                             metavar='AVOCADO_INSTRUMENTED',
-                                             help='Path to avocado'
-                                             ' instrumented test')
+        help_msg = "Path to avocado instrumented test"
+        settings.register_option(section='assets.fetch',
+                                 key='references',
+                                 help_msg=help_msg,
+                                 default=[],
+                                 metavar='AVOCADO_INSTRUMENTED',
+                                 key_type=list,
+                                 nargs='+',
+                                 parser=fetch_subcommand_parser,
+                                 positional_arg=True)
 
     def run(self, config):
         subcommand = config.get('assets_subcommand')
@@ -285,7 +292,7 @@ class Assets(CLICmd):
 
         if subcommand == 'fetch':
             # fetch assets from instrumented tests
-            for test_file in config['references']:
+            for test_file in config.get('assets.fetch.references'):
                 if os.path.isfile(test_file) and test_file.endswith('.py'):
                     LOG_UI.debug('Fetching assets from %s.', test_file)
                     success, fail = fetch_assets(test_file)
