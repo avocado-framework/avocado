@@ -71,7 +71,9 @@ def device_exists(mpath):
     """
     Checks if a given mpath exists.
 
+    :param mpath: The multipath path
     :return: True if path exists, False if does not exist.
+    :rtype: bool
     """
     cmd = "multipath -ll"
     out = process.run(cmd, ignore_status=True, sudo=True,
@@ -86,7 +88,6 @@ def get_mpath_name(wwid):
     Get multipath name for a given wwid.
 
     :param wwid: wwid of multipath device.
-
     :return: Name of multipath device.
     :rtype: str
     """
@@ -167,8 +168,11 @@ def get_paths(wwid):
 
 def get_multipath_details():
     """
-    Get multipath details as a dictionary, as given by the command:
-    multipathd show maps json
+    Get multipath details as a dictionary.
+
+    This is the output of the following command:
+
+      $ multipathd show maps json
 
     :return: Dictionary of multipath output in json format
     :rtype: dict
@@ -186,7 +190,6 @@ def is_path_a_multipath(disk_path):
     Check if given disk path is part of a multipath.
 
     :param disk_path: disk path. Example: sda, sdb.
-
     :return: True if part of multipath, else False.
     """
     if not process.system("multipath -c /dev/%s" % disk_path, sudo=True,
@@ -200,7 +203,6 @@ def get_path_status(disk_path):
     Return the status of a path in multipath.
 
     :param disk_path: disk path. Example: sda, sdb.
-
     :return: Tuple in the format of (dm status, dev status, checker status)
     """
     mpath_op = get_multipath_details()
@@ -215,9 +217,11 @@ def get_path_status(disk_path):
 
 def fail_path(path):
     """
-    failing the individual paths
-    :param disk_path: disk path. Example: sda, sdb.
-    :return: True or False
+    Fail the individual paths.
+
+    :param str path: disk path. Example: sda, sdb.
+    :return: True if succeeded, False otherwise
+    :rtype: bool
     """
     def is_failed():
         path_stat = get_path_status(path)
@@ -233,9 +237,10 @@ def fail_path(path):
 
 def reinstate_path(path):
     """
-    reinstating the individual paths
-    :param disk_path: disk path. Example: sda, sdb.
-    :return: True or False
+    Reinstate the individual paths.
+
+    :param str path: disk path. Example: sda, sdb.
+    :return: True if succeeded, False otherwise
     """
     def is_reinstated():
         path_stat = get_path_status(path)
@@ -292,8 +297,9 @@ def flush_path(path_name):
 
 def get_mpath_status(mpath):
     """
-    get the status of mpathX of multipaths
-    :param mpath_name: mpath names. Example: mpatha, mpathb.
+    Get the status of mpathX of multipaths.
+
+    :param mpath: mpath names. Example: mpatha, mpathb.
     :return: state of mpathX eg: Active, Suspend, None
     """
     cmd = 'multipathd -k"show maps status" | grep -i %s' % mpath
@@ -303,8 +309,9 @@ def get_mpath_status(mpath):
 
 def suspend_mpath(mpath):
     """
-    suspending the given mpathX of multipaths
-    :param mpath_name: mpath names. Example: mpatha, mpathb.
+    Suspend the given mpathX of multipaths.
+
+    :param mpath: mpath names. Example: mpatha, mpathb.
     :return: True or False
     """
     def is_mpath_suspended():
@@ -320,7 +327,8 @@ def suspend_mpath(mpath):
 
 def resume_mpath(mpath):
     """
-    resuming the suspended mpathX of multipaths
+    Resume the suspended mpathX of multipaths.
+
     :param mpath_name: mpath names. Example: mpatha, mpathb.
     :return: True or False
     """
@@ -337,7 +345,8 @@ def resume_mpath(mpath):
 
 def remove_mpath(mpath):
     """
-    removing the mpathX of multipaths
+    Remove the mpathX of multipaths.
+
     :param mpath_name: mpath names. Example: mpatha, mpathb.
     :return: True or False
     """
@@ -354,7 +363,8 @@ def remove_mpath(mpath):
 
 def add_mpath(mpath):
     """
-    Adding Back the removed mpathX of multipath
+    Add back the removed mpathX of multipath.
+
     :param mpath_name: mpath names. Example: mpatha, mpathb.
     :return: True or False
     """
@@ -371,7 +381,8 @@ def add_mpath(mpath):
 
 def remove_path(path):
     """
-    removing the individual paths
+    Remove the individual paths.
+
     :param disk_path: disk path. Example: sda, sdb.
     :return: True or False
     """
@@ -388,8 +399,9 @@ def remove_path(path):
 
 def add_path(path):
     """
-    Add Back the removed the individual paths
-    :param disk_path: disk path. Example: sda, sdb.
+    Add back the removed individual paths.
+
+    :param str path: disk path. Example: sda, sdb.
     :return: True or False
     """
     def is_path_added():
