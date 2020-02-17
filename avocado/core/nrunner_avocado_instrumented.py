@@ -39,11 +39,12 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         test_factory = [klass,
                         {'name': TestID(1, klass_method),
                          'methodName': method,
-                         'base_logdir': tempfile.mkdtemp(),
                          'job': job.Job(),
                          'modulePath': module_path,
                          'params': (TreeNode(), []),
-                         'tags': runnable.tags}]
+                         'tags': runnable.tags,
+                         'run.results_dir': tempfile.mkdtemp(),
+                         }]
 
         instance = loader.loader.load_test(test_factory)
         instance.run_avocado()

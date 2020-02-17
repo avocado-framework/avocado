@@ -3,7 +3,7 @@
 import sys
 from avocado.core.job import Job
 
-config = {'references': ['examples/tests/failtest.py:FailTest.test']}
+config = {'run.references': ['examples/tests/failtest.py:FailTest.test']}
 
 with Job(config) as j:
     sys.exit(j.run())

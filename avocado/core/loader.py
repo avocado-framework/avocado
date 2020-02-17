@@ -294,6 +294,10 @@ class TestLoaderProxy:
                         break
         if test_class is test.DryRunTest:
             test_parameters['modulePath'] = test_path
+        if 'run.results_dir' in test_parameters:
+            test_parameters['base_logdir'] = test_parameters.pop('run.results_dir')
+        elif 'nrun.results_dir' in test_parameters:
+            test_parameters['base_logdir'] = test_parameters.pop('nrun.results_dir')
         test_instance = test_class(**test_parameters)
 
         return test_instance

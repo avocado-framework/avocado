@@ -54,10 +54,11 @@ class VMTestRunnerSetup(unittest.TestCase):
                     'reference': ['/tests/sleeptest.py',
                                   '/tests/other/test',
                                   'passtest.py'],
-                    'dry_run': True,
                     'env_keep': None,
-                    'keep_tmp': 'on',
-                    'base_logdir': self.tmpdir.name}
+                    'base_logdir': self.tmpdir.name,
+                    'run.keep_tmp': 'on',
+                    'run.store_logging_stream': [],
+                    'run.dry_run.enabled': True}
         with Job(job_args) as job:
             with unittest.mock.patch('avocado_runner_vm.vm_connect',
                                      return_value=mock_vm):
