@@ -30,8 +30,8 @@ class JSONResultTest(unittest.TestCase):
         self.tmpfile = tempfile.mkstemp()
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        config = {'base_logdir': self.tmpdir.name,
-                  '_future': {'run.json.output': self.tmpfile[1]}}
+        config = {'_future': {'run.json.output': self.tmpfile[1],
+                              'run.results_dir': self.tmpdir.name}}
         self.job = job.Job(config)
         self.test_result = Result(UNIQUE_ID, LOGFILE)
         self.test_result.filename = self.tmpfile[1]

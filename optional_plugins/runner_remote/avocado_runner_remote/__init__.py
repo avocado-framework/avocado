@@ -442,13 +442,19 @@ class RemoteTestRunner(Runner):
 
         extra_params = []
         # bool or nargs
-        for arg in ["--mux-yaml", "--dry-run",
-                    "--filter-by-tags-include-empty"]:
+        for arg in ["--mux-yaml", "--filter-by-tags-include-empty"]:
             value = job.config.get(arg_to_dest(arg), None)
             if value is True:
                 extra_params.append(arg)
             elif value:
                 extra_params.append("%s %s" % (arg, " ".join(value)))
+
+        # Small fix for dry-run, this will be removed soon
+        future = job.config.get('_future')
+        value = future.get('run.dry_run.enabled')
+        if value is True:
+            extra_params.append('--dry-run')
+
         # append
         for arg in ["--filter-by-tags"]:
             value = job.config.get(arg_to_dest(arg), None)
@@ -537,7 +543,8 @@ class RemoteTestRunner(Runner):
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise exceptions.JobError(details)
-            results = self.run_test(job, job.config.get('references', []), timeout)
+            future = job.config.get('_future')
+            results = self.run_test(job, future.get('run.references'), timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
             result.tests_total = results['total']
             local_log_dir = job.logdir

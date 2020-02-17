@@ -123,5 +123,6 @@ class FilesMerge(JobPost):
     description = 'Merge of equal expected files'
 
     def post(self, job):
-        if job.config.get('output_check_record', None):
-            merge_expected_files(job.config['references'])
+        future = job.config.get('_future')
+        if future.get('run.output_check_record'):
+            merge_expected_files(future.get('run.references'))

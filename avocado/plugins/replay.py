@@ -197,7 +197,7 @@ class Replay(CLI):
         if test_status and 'variants' in replay_ignore:
             err = ("Option `--replay-test-status` is incompatible with "
                    "`--replay-ignore variants`.")
-        elif test_status and config.get('references'):
+        elif test_status and future.get('run.references'):
             err = ("Option --replay-test-status is incompatible with "
                    "test references given on the command line.")
         elif config.get("remote_hostname", False):
@@ -207,7 +207,7 @@ class Replay(CLI):
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         resultsdir = data_dir.get_job_results_dir(job_id,
-                                                  config.get('base_logdir', None))
+                                                  future.get('run.results_dir'))
         if resultsdir is None:
             LOG_UI.error("Can't find job results directory for '%s'", job_id)
             sys.exit(exit_codes.AVOCADO_FAIL)
@@ -230,6 +230,11 @@ class Replay(CLI):
         else:
             for option in whitelist:
                 optvalue = config.get(option, None)
+                # Temporary, this will be removed soon
+                if option in ['failfast',
+                              'ignore_missing_references',
+                              'execution_order']:
+                    optvalue = future.get('run.{}'.format(option))
                 if optvalue is not None:
                     LOG_UI.warn("Overriding the replay %s with the --%s value "
                                 "given on the command line.",
@@ -238,7 +243,7 @@ class Replay(CLI):
                 elif option in replay_config:
                     config[option] = replay_config[option]
 
-        if config.get('references', None):
+        if future.get('run.references'):
             LOG_UI.warn('Overriding the replay test references with test '
                         'references given in the command line.')
         else:
@@ -248,7 +253,7 @@ class Replay(CLI):
                              'Aborting.')
                 sys.exit(exit_codes.AVOCADO_FAIL)
             else:
-                config['references'] = references
+                config['_future']['run.references'] = references
 
         if 'config' in replay_ignore:
             LOG_UI.warn("Ignoring configuration from source job with "
