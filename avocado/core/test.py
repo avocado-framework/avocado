@@ -897,9 +897,8 @@ class Test(unittest.TestCase, TestData):
 
         if self.job is not None:
             job_standalone = self.job.config.get('standalone', False)
-            output_check_record = self.job.config.get('output_check_record',
-                                                      'none')
-            output_check = self.job.config.get('output_check', 'on')
+            output_check_record = self.job.config.get('run.output_check_record')
+            output_check = self.job.config.get('run.output_check')
 
             # record the output if the modes are valid
             if output_check_record == 'combined':

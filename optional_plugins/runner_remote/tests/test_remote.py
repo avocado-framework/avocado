@@ -62,13 +62,15 @@ class RemoteTestRunnerTest(unittest.TestCase):
                                  '~/avocado/tests/bar/baz.yaml'],
                     'filter_by_tags': ["-foo", "-bar"],
                     'filter_by_tags_include_empty': False,
-                    'dry_run': True,
                     'env_keep': None,
-                    'references': ['/tests/sleeptest.py',
-                                   '/tests/other/test',
-                                   'passtest.py'],
-                    'keep_tmp': 'on',
-                    'base_logdir': self.tmpdir.name}
+                    'base_logdir': self.tmpdir.name,
+                    'run.keep_tmp': 'on',
+                    'run.store_logging_stream': [],
+                    'run.dry_run.enabled': True,
+                    'run.references': ['/tests/sleeptest.py',
+                                       '/tests/other/test',
+                                       'passtest.py'],
+                    }
 
         with Job(job_args) as job:
             runner = avocado_runner_remote.RemoteTestRunner()
