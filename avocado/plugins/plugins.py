@@ -14,6 +14,7 @@
 """
 Plugins information plugin
 """
+import warnings
 
 from avocado.core import dispatcher
 from avocado.core.resolver import Resolver
@@ -35,10 +36,14 @@ class Plugins(CLICmd):
         parser = super(Plugins, self).configure(parser)
         parser.add_argument('--paginator',
                             choices=('on', 'off'), default='on',
-                            help='Turn the paginator on/off. '
-                            'Current: %(default)s')
+                            help='Turn the paginator on/off. Will be '
+                            'deprecated soon. Current: %(default)s')
 
     def run(self, config):
+        warnings.warn("avocado plugins --paginator will be deprecated soon: "
+                      "avocado --paginator plugins will be used instead.",
+                      FutureWarning)
+
         plugin_types = [
             (dispatcher.CLICmdDispatcher(),
              'Plugins that add new commands (cli.cmd):'),

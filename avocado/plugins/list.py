@@ -13,6 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import sys
+import warnings
 
 from avocado.core import exit_codes, output
 from avocado.core import loader
@@ -168,15 +169,20 @@ class List(CLICmd):
                             "plugins)")
         parser.add_argument('-V', '--verbose',
                             action='store_true', default=False,
-                            help='Whether to show extra information '
-                            '(headers and summary). Current: %(default)s')
+                            help='Whether to show extra information (headers '
+                                 'and summary). Will be deprecated soon. '
+                                 'Current: %(default)s')
         parser.add_argument('--paginator',
                             choices=('on', 'off'), default='on',
-                            help='Turn the paginator on/off. '
-                            'Current: %(default)s')
+                            help='Turn the paginator on/off. Will be '
+                            'deprecated soon. Defaultt: %(default)s')
         loader.add_loader_options(parser)
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
+        warnings.warn("--paginator and --verbose will be deprecated soon: "
+                      "They are going to be global, instead.",
+                      FutureWarning)
+
         test_lister = TestLister(config)
         return test_lister.list()
