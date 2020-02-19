@@ -19,6 +19,7 @@ Configure network when interface name and interface IP is available.
 
 import shutil
 import os
+import json
 
 import logging
 from . import distro
@@ -200,3 +201,21 @@ def is_interface_link_up(interface):
         log.info("Interface %s link is up", interface)
         return True
     return False
+
+
+def get_ip_address(interface, version='4'):
+    """
+    Get the IP address from a network interface
+    :param interface: name of the interface
+    :param version: IP version, default '4'
+    :return: IP address or False
+    """
+    cmd = "ip -%s -j address show %s" % (version, interface)
+    output = json.loads(process.system_output(cmd))
+    if not output:
+        log.error("Unable to get ip address on interface: %s", interface)
+        return False
+    try:
+        return output[0]['addr_info'][0]['local']
+    except (IndexError, KeyError):
+        return False
