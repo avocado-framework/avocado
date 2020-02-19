@@ -26,7 +26,8 @@ with a single command::
 
 This will fetch the Avocado package (and possibly some of its dependecies) from
 the PyPI repository, and will attempt to install it in the user's home
-directory (usually under ``~/.local``).
+directory (usually under ``~/.local``), which you might want to add to your
+``PATH`` variable if not done already.
 
 .. tip:: If you want to perform a system-wide installation, drop the ``--user``
   switch.
