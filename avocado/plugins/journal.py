@@ -54,6 +54,7 @@ class JournalResult(ResultEvents):
         self.journal_path = ''
         self.journal = None
         self.journal_cursor = None
+        self.config = config
 
     def _init_journal(self, logdir):
         self.journal_path = os.path.join(logdir, JOURNAL_FILENAME)
@@ -103,6 +104,8 @@ class JournalResult(ResultEvents):
         pass
 
     def start_test(self, result, state):
+        if not self.config.get('journal', False):
+            return
         self.lazy_init_journal(state)
         self._record_status(state, "STARTED")
 
@@ -110,10 +113,14 @@ class JournalResult(ResultEvents):
         pass
 
     def end_test(self, result, state):
+        if not self.config.get('journal', False):
+            return
         self.lazy_init_journal(state)
         self._record_status(state, "ENDED")
 
     def post_tests(self, job):
+        if not self.config.get('journal', False):
+            return
         self._shutdown_journal()
 
 
