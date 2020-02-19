@@ -23,6 +23,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import warnings
 
 from difflib import unified_diff, HtmlDiff
 
@@ -91,8 +92,8 @@ class Diff(CLICmd):
 
         parser.add_argument('--paginator',
                             choices=('on', 'off'), default='on',
-                            help='Turn the paginator on/off. '
-                            'Current: %(default)s')
+                            help='Turn the paginator on/off. Will be '
+                                 'deprecated soon. Current: %(default)s')
 
         parser.add_argument('--create-reports', action='store_true',
                             help='Create temporary files with job reports '
@@ -107,6 +108,10 @@ class Diff(CLICmd):
 
         def _get_name_no_id(test):
             return str(test['id']).split('-', 1)[1]
+
+        warnings.warn("avocado diff --paginator will be deprecated soon: "
+                      "avocado --paginator diff will be used instead.",
+                      FutureWarning)
 
         job1_dir, job1_id = self._setup_job(config.get('jobids')[0])
         job2_dir, job2_id = self._setup_job(config.get('jobids')[1])

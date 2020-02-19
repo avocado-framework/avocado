@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import warnings
+
 from avocado.core import data_dir
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
@@ -33,12 +35,17 @@ class Config(CLICmd):
                             help='Shows the data directories currently being used by avocado')
         parser.add_argument('--paginator',
                             choices=('on', 'off'), default='on',
-                            help='Turn the paginator on/off. '
-                            'Current: %(default)s')
+                            help='Turn the paginator on/off. Will be '
+                                 'deprecated soon. Current: %(default)s')
 
     def run(self, config):
         LOG_UI.info("Config files read (in order, '*' means the file exists "
                     "and had been read):")
+
+        warnings.warn("avocado config --paginator will be deprecated soon: "
+                      "avocado --paginator config will be used instead.",
+                      FutureWarning)
+
         for cfg_path in settings.all_config_paths:
             if cfg_path in settings.config_paths:
                 LOG_UI.debug('    * %s', cfg_path)
