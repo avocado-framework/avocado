@@ -146,7 +146,7 @@ class Session:
             self._connection = master
         return self._check()
 
-    def cmd(self, command):
+    def cmd(self, command, background=False):
         """
         Runs a command over the SSH session
 
@@ -154,12 +154,18 @@ class Session:
         the caller.
 
         :param command: the command to execute over the SSH session
-        :param command: str
+        :type command: str
+        :param background: when True run subprocess in the background
+        :type background: bool
         :returns: The command result object.
         :rtype: A :class:`CmdResult` instance.
         """
         cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ('-q', ), command)
-        return process.run(cmd, ignore_status=True)
+        if background:
+            sub_process = process.SubProcess(cmd)
+            return sub_process.start()
+        else:
+            return process.run(cmd, ignore_status=True)
 
     def quit(self):
         """
