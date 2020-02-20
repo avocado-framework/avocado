@@ -30,10 +30,10 @@ You probably noticed that we used ``/bin/true`` as a test, and in accordance
 with our expectations, it passed! These are known as `simple tests`, but there
 is also another type of test, which we call `instrumented tests`.
 
-.. tip:: See more at the "Test types" sections to understand Avocado's test types.
+.. tip:: See more at the "Test types" section on the Avocado User's Guide.
 
-Why should I use?
-=================
+Why should I use it?
+====================
 
 Multiple result formats
 -----------------------
@@ -87,8 +87,7 @@ Check out the files stored at ``$HOME/avocado/job-results/latest/sysinfo/``::
   'gcc --version'        meminfo
 
 
-For more information about sysinfo collector, please visit the Section
-"Collecting system information" on Avocado' User Guide.
+For more information about sysinfo collector, please consult the Avocado User's Guide.
 
 Job Replay and Job Diff
 -----------------------
@@ -156,7 +155,7 @@ list available plugins. The usage is pretty simple::
  ...
 
 For more information about plugins, please visit the Plugin System section on
-the Avocado's User Guide.
+the Avocado User's Guide.
 
 Utility libraries
 -----------------
@@ -184,14 +183,20 @@ It is super easy, just run the follow command::
 
     $ pip3 install --user avocado-framework
 
-.. note:: For more methods, please visit the Install Guide section on our
-          oficial documentation.
+This will install the avocado command in your home directory.
+
+.. note:: For more details and alternative methods, please visit the
+          Installing section on Avocado User's Guide.
 
 Documentation
 =============
 
-Please see Contents for full documentation, including installation methods,
-tutorials and API.
+Please use the following links for full documentation, including installation
+methods, tutorials and API or browse this site for more content.
+
+* `latest release <https://avocado-framework.readthedocs.io/>`_
+
+* `development version <https://avocado-framework.readthedocs.io/en/latest/>`_
 
 Bugs/Requests
 =============
@@ -201,7 +206,7 @@ Please use the GitHub issue tracker to submit bugs or request features.
 Changelog
 =========
 
-Consult the Changelog file for fixes and enhancements of each version.
+Please consult the Avocado Releases on our official documentation for fixes and enhancements of each version.
 
 License
 =======
