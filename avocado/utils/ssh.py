@@ -170,7 +170,7 @@ class Session:
         the caller.
 
         :param command: the command to execute over the SSH session
-        :param command: str
+        :type command: str
         :returns: The command result object.
         :rtype: A :class:`CmdResult` instance.
         """
