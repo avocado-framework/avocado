@@ -18,7 +18,9 @@ import os
 import sqlite3
 import datetime
 
+from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLI, ResultEvents
+
 
 JOURNAL_FILENAME = ".journal.sqlite"
 
@@ -55,6 +57,7 @@ class JournalResult(ResultEvents):
         self.journal = None
         self.journal_cursor = None
         self.config = config
+        self.enabled = config.get('run.journal.enabled')
 
     def _init_journal(self, logdir):
         self.journal_path = os.path.join(logdir, JOURNAL_FILENAME)
@@ -104,7 +107,7 @@ class JournalResult(ResultEvents):
         pass
 
     def start_test(self, result, state):
-        if not self.config.get('journal', False):
+        if not self.enabled:
             return
         self.lazy_init_journal(state)
         self._record_status(state, "STARTED")
@@ -113,13 +116,13 @@ class JournalResult(ResultEvents):
         pass
 
     def end_test(self, result, state):
-        if not self.config.get('journal', False):
+        if not self.enabled:
             return
         self.lazy_init_journal(state)
         self._record_status(state, "ENDED")
 
     def post_tests(self, job):
-        if not self.config.get('journal', False):
+        if not self.enabled:
             return
         self._shutdown_journal()
 
@@ -140,9 +143,13 @@ class Journal(CLI):
 
         help_msg = ('Records test status changes (for use with '
                     'avocado-journal-replay and avocado-server)')
-        run_subcommand_parser.output.add_argument('--journal',
-                                                  action='store_true',
-                                                  help=help_msg)
+        settings.register_option(section='run.journal',
+                                 key='enabled',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=run_subcommand_parser,
+                                 long_arg='--journal')
 
     def run(self, config):
         pass
