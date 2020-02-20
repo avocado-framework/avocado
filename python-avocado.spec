@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 75.1
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -329,7 +329,7 @@ popd
 # unittests needs to be a Python specific one on Fedora >= 28.  Let's
 # use the one that was setup in the source tree by the "setup.py
 # develop --user" step and is guaranteed to be version specific.
-LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado %{__python3} selftests/run
+LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado PYTHONWARNINGS=ignore %{__python3} selftests/run
 %endif
 
 %files -n python3-%{srcname}
@@ -602,6 +602,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Feb 20 2020 Cleber Rosa <cleber@redhat.com> - 75.1-1
+- Ignore Avocado warnings that use Python's warning module when
+  running tests
+
 * Mon Jan 20 2020 Cleber Rosa <cleber@redhat.com> - 75.1-0
 - New release
 
