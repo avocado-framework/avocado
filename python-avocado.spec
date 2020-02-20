@@ -59,7 +59,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 75.1
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -342,6 +342,7 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %{_bindir}/avocado-runner-exec-test
 %{_bindir}/avocado-runner-python-unittest
 %{_bindir}/avocado-runner-avocado-instrumented
+%{_bindir}/avocado-runner-tap
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_runner_remote*
@@ -602,6 +603,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Feb 20 2020 Cleber Rosa <cleber@redhat.com> - 75.1-2
+- Added new avocado-runner-tap script
+
 * Thu Feb 20 2020 Cleber Rosa <cleber@redhat.com> - 75.1-1
 - Ignore Avocado warnings that use Python's warning module when
   running tests
