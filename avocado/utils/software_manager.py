@@ -9,7 +9,8 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2014
+# Copyright: IBM 2008-2009
+# Copyright: Red Hat Inc. 2009-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 # Author: Higor Vieira Alves <halves@br.ibm.com>
 # Author: Ramon de Carvalho Valle <rcvalle@br.ibm.com>
@@ -23,16 +24,7 @@ Software package management library.
 
 This is an abstraction layer on top of the existing distributions high level
 package managers. It supports package operations useful for testing purposes,
-and multiple high level package managers (here called backends). If you want
-to make this lib to support your particular package manager/distro, please
-implement the given backend class.
-
-:author: Higor Vieira Alves <halves@br.ibm.com>
-:author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-:author: Ramon de Carvalho Valle <rcvalle@br.ibm.com>
-
-:copyright: IBM 2008-2009
-:copyright: Red Hat 2009-2014
+and multiple high level package managers (here called backends).
 """
 import os
 import re
@@ -56,8 +48,9 @@ from . import path as utils_path
 
 log = logging.getLogger('avocado.test')
 
-
-SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper', 'dnf']
+# If you want to make this lib to support your particular package
+# manager/distro, please implement the given backend class and
+# update the global SUPPORTED_PACKAGE_MANAGERS variable accordingly.
 
 
 class SystemInspector:
@@ -141,10 +134,7 @@ class SoftwareManager:
         if not self.initialized:
             inspector = SystemInspector()
             backend_type = inspector.get_package_management()
-            backend_mapping = {'apt-get': AptBackend,
-                               'yum': YumBackend,
-                               'dnf': DnfBackend,
-                               'zypper': ZypperBackend}
+            backend_mapping = SUPPORTED_PACKAGE_MANAGERS
 
             if backend_type not in backend_mapping.keys():
                 raise NotImplementedError('Unimplemented package management '
@@ -1157,6 +1147,15 @@ class AptBackend(DpkgBackend):
             return False
 
 
+#: Mapping of package manager name to implementation class.
+SUPPORTED_PACKAGE_MANAGERS = {
+        'apt-get': AptBackend,
+        'yum': YumBackend,
+        'dnf': DnfBackend,
+        'zypper': ZypperBackend,
+        }
+
+
 def install_distro_packages(distro_pkg_map, interactive=False):
     """
     Installs packages for the currently running distribution
@@ -1233,8 +1232,8 @@ def install_distro_packages(distro_pkg_map, interactive=False):
 
 def main():
     parser = argparse.ArgumentParser(
-        "usage: %prog [install|remove|check-installed|list-all|list-files|add-repo|"
-        "remove-repo| upgrade|what-provides|install-what-provides] arguments")
+        "install|remove|check-installed|list-all|list-files|add-repo|"
+        "remove-repo|upgrade|what-provides|install-what-provides arguments")
     parser.add_argument('--verbose', dest="debug", action='store_true',
                         help='include debug messages in console output')
 
@@ -1299,7 +1298,3 @@ def main():
 
     elif action == 'show-help':
         parser.print_help()
-
-
-if __name__ == '__main__':
-    main()
