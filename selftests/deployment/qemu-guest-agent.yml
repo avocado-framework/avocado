@@ -1,0 +1,13 @@
+---
+- name: Installation of QEMU Guest Agent
+  hosts: all
+  tasks:
+    - name: Installation of QEMU Guest Agent
+      package:
+        name: qemu-guest-agent
+        state: latest
+    - name: Activation of QEMU Guest Agent service
+      service:
+        name: qemu-guest-agent
+        state: started
+        enabled: yes
