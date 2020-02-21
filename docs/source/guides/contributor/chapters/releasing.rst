@@ -20,7 +20,7 @@ How to release?
 All the necessary steps are in JSON "testplans" to be executed with the
 following commands::
 
-  $ scripts/avocado-run-testplan -t examples/testplans/release/pre
-  $ scripts/avocado-run-testplan -t examples/testplans/release/release
+  $ scripts/avocado-run-testplan -t examples/testplans/release/pre.json
+  $ scripts/avocado-run-testplan -t examples/testplans/release/release.json
 
 Just follow the steps and have a nice release!
