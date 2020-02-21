@@ -172,16 +172,12 @@ class List(CLICmd):
                             help='Whether to show extra information (headers '
                                  'and summary). Will be deprecated soon. '
                                  'Current: %(default)s')
-        parser.add_argument('--paginator',
-                            choices=('on', 'off'), default='on',
-                            help='Turn the paginator on/off. Will be '
-                            'deprecated soon. Default: %(default)s')
         loader.add_loader_options(parser)
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
-        warnings.warn("--paginator and --verbose will be deprecated soon: "
-                      "They are going to be global, instead.",
+        warnings.warn("--verbose will be deprecated soon: "
+                      "This will be global, instead.",
                       FutureWarning)
 
         test_lister = TestLister(config)

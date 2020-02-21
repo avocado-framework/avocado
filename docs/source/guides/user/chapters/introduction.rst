@@ -437,9 +437,10 @@ the program::
 
 That's basically the only rule, and a sane one, that you need to follow.
 
-.. note:: Some subcommands (list, plugins, ...) support "paginator", which, on
-  compatible terminals, basically pipes the colored output to `less` to simplify
-  browsing of the produced output. One can disable it by `--paginator {on|off}`.
+.. note:: Avocado support "paginator" option, which, on compatible
+  terminals, basically pipes the colored output to `less` to simplify
+  browsing of the produced output. One can disable it by `--paginator
+  {on|off}`.
 
 Running simple tests with arguments
 -----------------------------------
