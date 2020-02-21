@@ -1047,6 +1047,8 @@ class Test(unittest.TestCase, TestData):
         :warning message: This parameter will changed name to "msg" in the next
                           LTS release because of lint W0221
         """
+        if self.__sysinfo_enabled:
+            self.__sysinfo_logger.end_test_hook(status="FAIL")
         raise exceptions.TestFail(message)
 
     def error(self, message=None):  # pylint: disable=W0221
