@@ -54,12 +54,8 @@ class NetworkInterface:
         """
         if distro.detect().name == 'rhel':
             conf_file = "/etc/sysconfig/network-scripts/ifcfg-%s" % self._interface
-            if os.path.exists(conf_file):
-                shutil.move(conf_file, conf_file + ".backup")
-            else:
-                raise NWException("%s interface not available" %
-                                  self._interface)
-            with open(conf_file, "w") as network_conf:
+            self._move_interfaceconfile(conf_file, "%s.backup" % conf_file)
+            with open(self._confile, "w") as network_conf:
                 if interface_type is None:
                     interface_type = 'Ethernet'
                 network_conf.write("TYPE=%s \n" % interface_type)
@@ -73,51 +69,30 @@ class NetworkInterface:
                 network_conf.write("IPV6_AUTOCONF=yes \n")
                 network_conf.write("IPV6_DEFROUTE=yes")
 
-            cmd = "ifup %s" % self._interface
-            try:
-                process.system(cmd, ignore_status=False, sudo=True)
-                return True
-            except process.CmdError as ex:
-                raise NWException("ifup fails: %s" % ex)
-
         if distro.detect().name == 'SuSE':
             conf_file = "/etc/sysconfig/network/ifcfg-%s" % self._interface
-            if os.path.exists(conf_file):
-                shutil.move(conf_file, conf_file + ".backup")
-            else:
-                raise NWException("%s interface not available" %
-                                  self._interface)
-            with open(conf_file, "w") as network_conf:
+            self._move_interfaceconfile(conf_file, "%s.backup" % conf_file)
+            with open(self._confile, "w") as network_conf:
                 network_conf.write("IPADDR=%s \n" % ipaddr)
                 network_conf.write("NETMASK='%s' \n" % netmask)
                 network_conf.write("IPV6INIT=yes \n")
                 network_conf.write("IPV6_AUTOCONF=yes \n")
                 network_conf.write("IPV6_DEFROUTE=yes")
-
-            cmd = "ifup %s" % self._interface
-            try:
-                process.system(cmd, ignore_status=False, sudo=True)
-                return True
-            except process.CmdError as ex:
-                raise NWException("ifup fails: %s" % ex)
+        self.interface_up()
 
     def unset_ip(self):
         """
         Unassign IP to Defined Interface
         """
+        conf_file = ''
         if distro.detect().name == 'rhel':
             conf_file = "/etc/sysconfig/network-scripts/ifcfg-%s" % self._interface
 
         if distro.detect().name == 'SuSE':
             conf_file = "/etc/sysconfig/network/ifcfg-%s" % self._interface
 
-        cmd = "ifdown %s" % self._interface
-        try:
-            process.system(cmd, sudo=True)
-            shutil.move(conf_file + ".backup", conf_file)
-            return True
-        except Exception as ex:
-            raise NWException("ifdown fails: %s" % ex)
+        self.interface_down()
+        self._move_interfaceconfile("%s.backup" % conf_file, conf_file)
 
     def ping_check(self, peer_ip, count, option=None, flood=False):
         """
@@ -127,11 +102,12 @@ class NetworkInterface:
         :param count   :  ping count
         :param option  :  Default is None
         :param flood   :  Default is False
+        :return        :  True / False if ping success
         """
         cmd = "ping -I %s %s -c %s" % (self._interface, peer_ip, count)
-        if flood is True:
+        if flood:
             cmd = "%s -f" % cmd
-        elif option is not None:
+        elif option:
             cmd = "%s %s" % (cmd, option)
         if process.system(cmd, shell=True, verbose=True,
                           ignore_status=True) != 0:
@@ -142,6 +118,7 @@ class NetworkInterface:
         """
         Utility Set Mtu Size to a interface and return status
         :param mtu :  mtu size that meed to be set
+        :return : return True / False in case of mtu able to set
         """
         cmd = "ip link set %s mtu %s" % (self._interface, mtu)
         try:
@@ -155,18 +132,39 @@ class NetworkInterface:
             if mtuvalue == mtu:
                 return True
         except Exception as ex:  # pylint: disable=W0703
-            log.error("setting MTU value in host failed: %s", ex)
+            raise NWException("setting MTU value in host failed: %s", ex)
         return False
 
     def is_link_up(self):
         """
         Checks if the interface link is up
-        :return: True if the interface's link comes up, False otherwise.
+        :return: True if the interface's link up, False otherwise.
         """
         if 'up' in genio.read_file("/sys/class/net/%s/operstate" % self._interface):
             log.info("Interface %s link is up", self._interface)
             return True
         return False
+
+    def interface_up(self):
+        cmd = "ifup %s" % self._interface
+        try:
+            process.system(cmd, ignore_status=False, sudo=True)
+            return True
+        except process.CmdError as ex:
+            raise NWException("ifup fails: %s" % ex)
+
+    def interface_down(self):
+        cmd = "ifdown %s" % self._interface
+        try:
+            process.system(cmd, sudo=True)
+        except Exception as ex:
+            raise NWException("ifdown fails: %s" % ex)
+
+    def _move_interfaceconfile(self, src_conf, dest_conf):
+        if os.path.exists(src_conf):
+            shutil.move(src_conf, dest_conf)
+        else:
+            raise NWException("%s interface not available" % self._interface)
 
 
 class PeerInfo:
@@ -183,12 +181,14 @@ class PeerInfo:
             self.session = Session(host, port=port, user=peer_user,
                                    key=key, password=peer_password)
         except Exception as ex:  # pylint: disable=W0703
-            log.error("connection not established to peer machine: %s", ex)
+            raise NWException(
+                "connection not established to peer machine: %s", ex)
 
     def set_mtu_peer(self, peer_interface, mtu):
         """
         Set MTU size in peer interface
         :param peer_interface :  Interface of peer system
+        :return : status True when set otherwise False
         """
         cmd = "ip link set %s mtu %s" % (peer_interface, mtu)
         try:
@@ -198,14 +198,13 @@ class PeerInfo:
             if mtuvalue == mtu:
                 return True
         except Exception as ex:  # pylint: disable=W0703
-            log.error("setting MTU value in peer failed: %s", ex)
-        return False
+            return False
 
     def get_peer_interface(self, peer_ip):
         """
         :param peer_ip : IP address of Peer system
         :return        : Interface name of given IP in Peer system
-                         get peer interface from peer ip
+                         get peer interface from peer ip if
         """
         cmd = "ip addr show"
         try:
@@ -215,6 +214,6 @@ class PeerInfo:
                     peer_interface = line.split()[-1]
         except Exception as ex:  # pylint: disable=W0703
             if peer_interface == "":
-                log.error("unable to get peer interface: %s", ex)
+                return peer_interface
         else:
             return peer_interface
