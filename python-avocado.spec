@@ -58,8 +58,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 75.1
-Release: 3%{?gitrel}%{?dist}
+Version: 76.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -604,6 +604,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Feb 21 2020 Cleber Rosa <cleber@redhat.com> - 76.0-0
+- New release
+
 * Thu Feb 20 2020 Cleber Rosa <cleber@redhat.com> - 75.1-3
 - Added new avocado-software-manager script
 

@@ -1,0 +1,96 @@
+=================
+76.0 Hotel Mumbai
+=================
+
+The Avocado team is proud to present another release: Avocado 76.0,
+AKA "Hotel Mumbai", is now available!
+
+Release documentation: `Avocado 76.0
+<http://avocado-framework.readthedocs.io/en/76.0/>`_
+
+Users/Test Writers
+==================
+
+* The decorators :func:`avocado.skip`, :func:`avocado.skipIf` and
+  :func:`avocado.skipUnless` can now be used to decorate entire classes,
+  resulting in all its tests getting skipped if/when the condition given
+  is satisfied.
+
+* A TAP capable test runner for the N(ext) Runner has been introduced
+  and is available as ``avocado-runner-tap``.  Paired with the
+  resolver implementation introduced in the previous release, this
+  allows the ``avocado nrun`` command to find and execute tests that
+  produce ``TAP`` compatible output.
+
+* Avocado's :mod:`avocado.utils.software_manager` functionality is now
+  also made available as the ``avocado-software-manager`` command line
+  tool.
+
+* The ``sysinfo`` collection now logs a much clearer message when a
+  command is not found and thus can not have its output collected.
+
+* Documentation improvements and fixes in guide sections and utility
+  libraries.
+
+* A second blueprint, :doc:`/blueprints/BP002`, was approved (and
+  committed) to Avocado.  It's about a proposal about a "Requirements
+  resolver", that should give tests automatic resolution of various
+  types of requirements they may need to run.
+
+Bug Fixes
+=========
+
+* The N(ext) Runner will now properly escape Runnable arguments
+  that start with a dash when generating a command to execute a
+  runner, avoiding the runner itself to try to parse it as an
+  option to itself.
+
+* The Journal plugin will now only perform its test status journaling
+  tasks if the ``--journal`` option is given, as it was originally
+  intended.
+
+* The HTML plugin has been pinned to the jinja2 package version
+  compatible with Python 3.5 and later.
+
+Utility APIs
+============
+
+* The :meth:`avocado.utils.kernel.KernelBuild.build` now allows the
+  definition of the number of jobs, using semantics very similar to
+  the one used by GNU make itself.  That means one should be careful when
+  using ``None``, as it means no limit to the number of parallel jobs.
+
+Internal Changes
+================
+
+* Workarounds on Travis CI for caching failures on s390x and aarch64.
+
+* Many refactors on the :mod:`avocado.utils.asset` module
+
+* Multiple refactors on the N(ext) Runner code
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/75.0...76.0>`_.
+
+Changes expected for the next release (77.0)
+============================================
+
+We are working hard to use a good name convention related to
+configuration options (either via command-line or via configuration
+file). Because of that, to keep consistency, some options are going to
+be changed.
+
+Beginning with this release (76.0), users will notice a few warnings
+(i.e ``FutureWarning``) messages on the STDERR. Those are early
+warnings of changes that will be introduced soon, because of the work
+mentioned before.  On the next release (77.0), it's expected that
+compatibility will be affected.
+
+In the end, we will have an improved configuration module, that will
+handle both command line and configuration options. This intends to
+deliver a better way to register and to retrieve configuration options.
+Also, soon we will provide better documentation and a complete template
+config file, covering all options supported.
+
+For more information, please visit the :doc:`/blueprints/BP001`.
