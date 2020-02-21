@@ -32,6 +32,7 @@ on them being loaded (`avocado --help`)::
     -v, --version         show program's version number and exit
     --config [CONFIG_FILE]
                           Use custom configuration from a file
+    --paginator {on,off}  Turn the paginator on/off.
     --show [STREAM[:LVL]]
                           List of comma separated builtin logs, or logging
                           streams optionally followed by LEVEL (DEBUG,INFO,...).
@@ -306,8 +307,6 @@ Options for subcommand `config` (`avocado config --help`)::
       -h, --help            show this help message and exit
       --datadir             Shows the data directories currently being used by
                             avocado
-      --paginator {on,off}  Turn the paginator on/off. Current: on
-
 
 Options for subcommand `diff` (`avocado diff --help`)::
 
@@ -326,7 +325,6 @@ Options for subcommand `diff` (`avocado diff --help`)::
                             Comma separated filter of diff sections:
                             (no)cmdline,(no)time,(no)variants,(no)results,
                             (no)config,(no)sysinfo (defaults to all enabled).
-      --paginator {on,off}  Turn the paginator on/off. Current: on
       --create-reports      Create temporary files with job reports (to be used by
                             other diff tools)
 
@@ -368,7 +366,6 @@ Options for subcommand `list` (`avocado list --help`)::
       -h, --help            show this help message and exit
       -V, --verbose         Whether to show extra information (headers and
                             summary). Current: False
-      --paginator {on,off}  Turn the paginator on/off. Current: on
 
     loader options:
       --loaders [LOADERS [LOADERS ...]]
@@ -453,7 +450,6 @@ Options for subcommand `plugins` (`avocado plugins --help`)::
 
     optional arguments:
       -h, --help            show this help message and exit
-      --paginator {on,off}  Turn the paginator on/off. Current: on
 
 Options for subcommand `sysinfo` (`avocado sysinfo --help`)::
 
