@@ -163,9 +163,9 @@ class KernelBuild:
         :type binary_pacakge: bool
         :param njobs: number of jobs. It is mapped to make's -j option. If
                       the njobs is None then do not limit the number of jobs
-                      (ie. uses -j without value). The -j is omitted if a value
-                      equal or less than zero is passed. Default value is set
-                      to `multiprocessing.cpu_count()`.
+                      (e.g. uses -j without value). The -j is omitted if a
+                      value equal or less than zero is passed. Default value
+                      is set to `multiprocessing.cpu_count()`.
         :type njobs: int or None
         """
         make_args = []

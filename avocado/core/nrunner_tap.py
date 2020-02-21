@@ -30,7 +30,7 @@ class TAPRunner(nrunner.BaseRunner):
        runnable = Runnable(kind='tap',
                            uri='tests/foo.sh',
                            'bar', # arg 1
-                           DEBUG='false') # kwarg 1 (environment)
+                           DEBUG='false') # kwargs 1 (environment)
     """
     def run(self):
         env = self.runnable.kwargs or None
