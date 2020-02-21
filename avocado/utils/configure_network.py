@@ -78,7 +78,7 @@ class NetworkInterface:
                 network_conf.write("IPV6INIT=yes \n")
                 network_conf.write("IPV6_AUTOCONF=yes \n")
                 network_conf.write("IPV6_DEFROUTE=yes")
-        self.interface_up()
+        self.bring_up()
 
     def unset_ip(self):
         """
@@ -91,7 +91,7 @@ class NetworkInterface:
         if distro.detect().name == 'SuSE':
             conf_file = "/etc/sysconfig/network/ifcfg-%s" % self._interface
 
-        self.interface_down()
+        self.bring_down()
         self._move_interfaceconfile("%s.backup" % conf_file, conf_file)
 
     def ping_check(self, peer_ip, count, option=None, flood=False):
@@ -145,7 +145,11 @@ class NetworkInterface:
             return True
         return False
 
-    def interface_up(self):
+    def bring_up(self):
+        """
+         Utility  Used to Bring up interface
+        :return :  True In based on success otherwise Raise NWException
+        """
         cmd = "ifup %s" % self._interface
         try:
             process.system(cmd, ignore_status=False, sudo=True)
@@ -153,10 +157,15 @@ class NetworkInterface:
         except process.CmdError as ex:
             raise NWException("ifup fails: %s" % ex)
 
-    def interface_down(self):
+    def bring_down(self):
+        """
+        Utility  Used to Bring down interface
+        :return :  True In based on success otherwise Raise NWException
+        """
         cmd = "ifdown %s" % self._interface
         try:
             process.system(cmd, sudo=True)
+            return True
         except Exception as ex:
             raise NWException("ifdown fails: %s" % ex)
 
@@ -165,6 +174,58 @@ class NetworkInterface:
             shutil.move(src_conf, dest_conf)
         else:
             raise NWException("%s interface not available" % self._interface)
+
+    def get_hwaddr(self):
+        try:
+            interface_file = open(
+                '/sys/class/net/%s/address' % self._interface)
+            hwaddr = interface_file.read().strip()
+            interface_file.close()
+            return hwaddr
+        except OSError as ex:
+            raise NWException("interface not found : %s" % ex)
+
+    def set_hwaddr(self, hwaddr):
+        """
+        Utility which set Hw address to Interface
+
+        :param hwaddr: Pass Hardwae address for defined interface
+        """
+        try:
+            process.system('ifconfig %s hw ether %s' %
+                           (self._interface, hwaddr))
+        except Exception as ex:
+            raise NWException("ifdown fails: %s" % ex)
+
+    def add_hardware_address(self, maddr):
+        """
+        Utility which add mac address to a interface return Status
+        :param maddr: Mac address
+        :return: True /False Based on success
+        """
+        try:
+            process.system('ip maddr add %s dev %s' % (maddr, self._interface))
+            return True
+        except Exception as ex:
+            raise NWException("ifdown fails: %s" % ex)
+        return False
+
+    def remove_hardware_address(self, maddr):
+        """
+        Utility remove mac address from interface and return Status
+
+        :param maddr: Mac address
+        :return:True/False Based on success
+        """
+        try:
+            process.system('ip maddr del %s dev %s' % (maddr, self._interface))
+            return True
+        except Exception as ex:
+            raise NWException("ifdown fails: %s" % ex)
+        return False
+
+    def get_name(self):
+        return self._interface
 
 
 class PeerInfo:
