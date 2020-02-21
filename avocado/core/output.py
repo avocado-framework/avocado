@@ -399,7 +399,7 @@ def reconfigure(args):
     # TODO: Avocado relies on stdout/stderr on some places, re-log them here
     # for now. This should be removed once we replace them with logging.
     if enabled:
-        if args.get("paginator", False) == "on" and TERM_SUPPORT.enabled:
+        if args.get('core.paginator') == "on" and TERM_SUPPORT.enabled:
             STD_OUTPUT.enable_paginator()
         STD_OUTPUT.enable_outputs()
     else:
