@@ -14,7 +14,7 @@
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
 
 	{"name": "Avocado deployment",
-	 "description": "Execute the ansible playbook located at selftests/deployments/rpm-copr.yml on one or many fresh virtual machines."},
+	 "description": "Execute the ansible playbook located at selftests/deployments/deployment.yml with '-e method=copr' on one or many fresh virtual machines."},
 
         {"name": "Install qemu-guest-agent",
         "description": "After deploying Avocado, install and activate qemu-guest-agent with:\n- dnf -y install qemu-guest-agent\n- systemctl start qemu-guest-agent\n- systemctl enable qemu-guest-agent"},
