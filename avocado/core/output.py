@@ -383,6 +383,7 @@ def reconfigure(args):
     """
     Adjust logging handlers accordingly to app args and re-log messages.
     """
+    future = args.get('_future')
     # Reconfigure stream loggers
     enabled = args.get("show", None)
     if not isinstance(enabled, list):
@@ -399,8 +400,9 @@ def reconfigure(args):
     # TODO: Avocado relies on stdout/stderr on some places, re-log them here
     # for now. This should be removed once we replace them with logging.
     if enabled:
-        if args.get("paginator", False) == "on" and TERM_SUPPORT.enabled:
-            STD_OUTPUT.enable_paginator()
+        if future:
+            if future.get('core.paginator') == "on" and TERM_SUPPORT.enabled:
+                STD_OUTPUT.enable_paginator()
         STD_OUTPUT.enable_outputs()
     else:
         STD_OUTPUT.enable_stderr()

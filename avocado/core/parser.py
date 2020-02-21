@@ -21,6 +21,7 @@ import argparse
 from . import exit_codes
 from . import varianter
 from . import settings
+from .future.settings import settings as future_settings
 from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS, LOG_UI
 from .version import VERSION
 
@@ -83,6 +84,17 @@ class Parser:
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       nargs='?',
                                       help='Use custom configuration from a file')
+
+        help_msg = ('Turn the paginator on/off. Useful when outputs are too'
+                    'long. This will be a boolean soon.')
+        future_settings.register_option(section='core',
+                                        key='paginator',
+                                        help_msg=help_msg,
+                                        default='off',
+                                        choices=('on', 'off'),
+                                        parser=self.application,
+                                        long_arg='--paginator')
+
         streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.items()] +
                    ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.items()])
         streams = "; ".join(streams)

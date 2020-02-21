@@ -32,6 +32,10 @@ Users
 Output Plugins
 ~~~~~~~~~~~~~~
 
+* Starting from this release, `--paginator` will be a global option. You
+  should add this option before any sub-command. i.e.: `avocado
+  --paginator off plugins`.
+
 Test Loader Plugins
 ~~~~~~~~~~~~~~~~~~~
 
