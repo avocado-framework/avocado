@@ -45,9 +45,12 @@ class NetworkInterface:
 
     def set_ip(self, ipaddr, netmask, interface_type=None):
         """
+        Utility Assign a IP  address (given to this utility ) to  Interface
 
-        Gets IP, subnet mask and creates interface
-        file based on distro.
+        :param ipaddr : ip address which need to configure for interface
+        :param netmask: Netmask which is associated  to provided IP
+        :param interface_type: Interface type IPV4 or IPV6 , default is
+                               IPV4 style
         """
         if distro.detect().name == 'rhel':
             conf_file = "/etc/sysconfig/network-scripts/ifcfg-%s" % self._interface
@@ -100,7 +103,7 @@ class NetworkInterface:
 
     def unset_ip(self):
         """
-        Gets interface name unassigns the IP to the interface
+        Unassign IP to Defined Interface
         """
         if distro.detect().name == 'rhel':
             conf_file = "/etc/sysconfig/network-scripts/ifcfg-%s" % self._interface
@@ -118,7 +121,12 @@ class NetworkInterface:
 
     def ping_check(self, peer_ip, count, option=None, flood=False):
         """
-        Checks if the ping to peer works.
+        Utility perform Ping operation on Peer IP address and return status
+
+        :param peer_ip :  Peer IP address
+        :param count   :  ping count
+        :param option  :  Default is None
+        :param flood   :  Default is False
         """
         cmd = "ping -I %s %s -c %s" % (self._interface, peer_ip, count)
         if flood is True:
@@ -132,7 +140,8 @@ class NetworkInterface:
 
     def set_mtu_host(self, mtu):
         """
-        Set MTU size in host interface
+        Utility Set Mtu Size to a interface and return status
+        :param mtu :  mtu size that meed to be set
         """
         cmd = "ip link set %s mtu %s" % (self._interface, mtu)
         try:
@@ -149,7 +158,7 @@ class NetworkInterface:
             log.error("setting MTU value in host failed: %s", ex)
         return False
 
-    def is_interface_link_up(self):
+    def is_link_up(self):
         """
         Checks if the interface link is up
         :return: True if the interface's link comes up, False otherwise.
@@ -179,6 +188,7 @@ class PeerInfo:
     def set_mtu_peer(self, peer_interface, mtu):
         """
         Set MTU size in peer interface
+        :param peer_interface :  Interface of peer system
         """
         cmd = "ip link set %s mtu %s" % (peer_interface, mtu)
         try:
@@ -193,7 +203,9 @@ class PeerInfo:
 
     def get_peer_interface(self, peer_ip):
         """
-        get peer interface from peer ip
+        :param peer_ip : IP address of Peer system
+        :return        : Interface name of given IP in Peer system
+                         get peer interface from peer ip
         """
         cmd = "ip addr show"
         try:
