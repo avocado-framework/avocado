@@ -25,6 +25,7 @@ from . import distro
 from . import process
 from . import genio
 from .ssh import Session
+from . import wait
 
 log = logging.getLogger('avocado.test')
 
@@ -132,10 +133,8 @@ def set_mtu_host(interface, mtu):
     except process.CmdError as ex:
         raise NWException("MTU size can not be set: %s" % ex)
     try:
-        cmd = "ip add show %s" % interface
-        mtuvalue = process.system_output(cmd, shell=True).decode("utf-8") \
-                                                         .split()[4]
-        if mtuvalue == mtu:
+        output = process.system_output("cat /sys/class/net/%s/mtu" % interface).decode("utf-8")
+        if mtu in output and wait.wait_for(is_interface_link_up, timeout=120, args=[interface]):
             return True
     except Exception as ex:  # pylint: disable=W0703
         log.error("setting MTU value in host failed: %s", ex)
@@ -165,9 +164,9 @@ class PeerInfo:
         cmd = "ip link set %s mtu %s" % (peer_interface, mtu)
         try:
             self.session.cmd(cmd)
-            cmd = "ip add show %s" % peer_interface
-            mtuvalue = self.session.cmd(cmd).stdout.decode("utf-8").split()[4]
-            if mtuvalue == mtu:
+            output = self.session.cmd("cat /sys/class/net/%s/mtu" % peer_interface)
+            if mtu in output.stdout.decode('utf-8') and wait.wait_for(self.is_link_up_peer, timeout=120,
+                                                                      args=[peer_interface]):
                 return True
         except Exception as ex:  # pylint: disable=W0703
             log.error("setting MTU value in peer failed: %s", ex)
@@ -188,6 +187,18 @@ class PeerInfo:
                 log.error("unable to get peer interface: %s", ex)
         else:
             return peer_interface
+
+    def is_link_up_peer(self, peer_interface):
+        """
+        check if peer interface link is up
+        :param peer_interface: name of the peer interface
+        :retrun: True if the interface link is up, False otherwise.
+        """
+        output = self.session.cmd("cat /sys/class/net/%s/operstate" % peer_interface)
+        if 'up' in output.stdout.decode('utf-8'):
+            log.info("Interface %s link is up", peer_interface)
+            return True
+        return False
 
 
 def is_interface_link_up(interface):
