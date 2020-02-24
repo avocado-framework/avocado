@@ -128,17 +128,21 @@ class Asset:
         finally:
             os.remove(temp)
 
-    def _find_asset_file(self, relative_path):
+    def find_asset_file(self):
         """
         Search for the asset file in each one of the cache locations
 
-        :param relative_path: Path where file should be
         :return: asset file if exists or None
         :rtype: str or None
         """
+        parsed_url = urllib.parse.urlparse(self.name)
+        basename = os.path.basename(parsed_url.path)
+        cache_relative_dir = self._get_relative_dir(parsed_url)
+        relative_dir = os.path.join(cache_relative_dir, basename)
+
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
-            asset_file = os.path.join(cache_dir, relative_path)
+            asset_file = os.path.join(cache_dir, relative_dir)
 
             # To use a cached file, it must:
             # - Exists.
@@ -301,16 +305,14 @@ class Asset:
         """
         urls = []
         parsed_url = urllib.parse.urlparse(self.name)
-        basename = os.path.basename(parsed_url.path)
-        cache_relative_dir = self._get_relative_dir(parsed_url)
 
         # If name is actually an url, it has to be included in urls list
         if parsed_url.scheme:
             urls.append(parsed_url.geturl())
 
         # First let's search for the file in each one of the cache locations
-        asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
-                                                        basename))
+        asset_file = self.find_asset_file()
+
         if asset_file is not None:
             if self.metadata is not None:
                 self._create_metadata_file(asset_file)
@@ -327,6 +329,7 @@ class Asset:
                 urls.append(item)
 
         cache_relative_dir = self._get_relative_dir(parsed_url)
+        basename = os.path.basename(parsed_url.path)
         for url in urls:
             urlobj = urllib.parse.urlparse(url)
             if urlobj.scheme in ['http', 'https', 'ftp']:
@@ -358,11 +361,8 @@ class Asset:
         :return: metadata
         :rtype: dict or None
         """
-        parsed_url = urllib.parse.urlparse(self.name)
-        basename = os.path.basename(parsed_url.path)
-        cache_relative_dir = self._get_relative_dir(parsed_url)
-        asset_file = self._find_asset_file(os.path.join(cache_relative_dir,
-                                                        basename))
+        asset_file = self.find_asset_file()
+
         if asset_file is not None:
             basename = os.path.splitext(asset_file)[0]
             metadata_file = "%s_metadata.json" % basename
