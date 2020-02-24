@@ -1421,11 +1421,27 @@ class DryRunTest(MockingTest):
     Fake test which logs itself and reports as CANCEL
     """
 
+    def __init__(self, *args, **kwargs):
+        if 'modulePath' in kwargs:
+            self._filename = kwargs.pop('modulePath')
+        super(DryRunTest, self).__init__(**kwargs)
+
     def setUp(self):
         self.log.info("Test params:")
         for path, key, value in self.params.iteritems():
             self.log.info("%s:%s ==> %s", path, key, value)
         self.cancel('Test cancelled due to --dry-run')
+
+    @property
+    def filename(self):
+        try:
+            source = os.path.abspath(self._filename)
+            if os.path.exists(source):
+                return source
+            else:
+                return None
+        except AttributeError:
+            return None
 
 
 class ReplaySkipTest(MockingTest):

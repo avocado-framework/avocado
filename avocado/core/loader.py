@@ -34,6 +34,7 @@ from .references import reference_split
 from ..utils import stacktrace
 from .settings import settings
 from .output import LOG_UI
+from .test import DryRunTest
 
 
 class DiscoverMode(Enum):
@@ -292,6 +293,8 @@ class TestLoaderProxy:
                     if issubclass(obj, test.Test):
                         test_class = obj
                         break
+        if test_class is DryRunTest:
+            test_parameters['modulePath'] = test_path
         test_instance = test_class(**test_parameters)
 
         return test_instance
