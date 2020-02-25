@@ -484,11 +484,11 @@ class YumBackend(RpmBackend):
         Initializes the base command and the yum package repository.
         """
         super(YumBackend, self).__init__()
-        self.base_command = '%s -y' % utils_path.find_command(cmd)
+        self.base_command = '%s -y ' % utils_path.find_command(cmd)
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
         self.cfgparser = configparser.ConfigParser()
         self.cfgparser.read(self.repo_file_path)
-        y_cmd = executable + ' --version | head -1'
+        y_cmd = executable + '--version | head -1'
         cmd_result = process.run(y_cmd, ignore_status=True,
                                  verbose=False, shell=True)
         out = cmd_result.stdout_text.strip()
@@ -517,7 +517,7 @@ class YumBackend(RpmBackend):
         """
         Installs package [name]. Handles local installs.
         """
-        i_cmd = self.base_command + ' ' + 'install' + ' ' + name
+        i_cmd = self.base_command + 'install' + ' ' + name
 
         try:
             process.system(i_cmd, sudo=True)
@@ -531,7 +531,7 @@ class YumBackend(RpmBackend):
 
         :param name: Package name (eg. 'ipython').
         """
-        r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
+        r_cmd = self.base_command + 'erase' + ' ' + name
         try:
             process.system(r_cmd, sudo=True)
             return True
@@ -608,9 +608,9 @@ class YumBackend(RpmBackend):
         :type name: str
         """
         if not name:
-            r_cmd = self.base_command + ' ' + 'update'
+            r_cmd = self.base_command + 'update'
         else:
-            r_cmd = self.base_command + ' ' + 'update' + ' ' + name
+            r_cmd = self.base_command + 'update' + ' ' + name
 
         try:
             process.system(r_cmd, sudo=True)
