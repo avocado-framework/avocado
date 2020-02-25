@@ -73,8 +73,8 @@ class PMem:
         :rtype: list of json objects
         """
         try:
-            json_op = json.loads(process.system_output(
-                '%s list %s' % (self.ndctl, option), shell=True))
+            cmd = '%s list %s' % (self.ndctl, option)
+            json_op = json.loads(process.system_output(cmd))
         except ValueError:
             json_op = []
         return json_op
@@ -102,8 +102,8 @@ class PMem:
         :return: By default returns entire list of json objects
         :rtype: list of json objects
         """
-        return json.loads(process.system_output(
-            '%s list %s' % (self.daxctl, options), shell=True))
+        cmd = '%s list %s' % (self.daxctl, options)
+        return json.loads(process.system_output(cmd))
 
     def get_slot_count(self, region):
         """
