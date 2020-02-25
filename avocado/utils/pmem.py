@@ -298,6 +298,3 @@ class PMem:
                           shell=True, ignore_status=True):
             raise PMemException('Namespace destroy command failed')
         return True
-
-
-pmem = PMem()
