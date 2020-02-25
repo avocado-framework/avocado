@@ -488,14 +488,14 @@ class YumBackend(RpmBackend):
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
         self.cfgparser = configparser.ConfigParser()
         self.cfgparser.read(self.repo_file_path)
-        y_cmd = executable + '--version | head -1'
-        cmd_result = process.run(y_cmd, ignore_status=True,
-                                 verbose=False, shell=True)
-        out = cmd_result.stdout_text.strip()
+        version_result = process.run(self.base_command + '--version',
+                                     verbose=False,
+                                     ignore_status=True)
+        version_first_line = version_result.stdout_text.splitlines()[0].strip()
         try:
-            ver = re.findall(r'\d*.\d*.\d*', out)[0]
+            ver = re.findall(r'\d*.\d*.\d*', version_first_line)[0]
         except IndexError:
-            ver = out
+            ver = version_first_line
         self.pm_version = ver
         log.debug('%s version: %s', cmd, self.pm_version)
 
