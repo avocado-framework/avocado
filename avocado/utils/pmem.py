@@ -30,7 +30,7 @@ class PMemException(Exception):
     """
     Error raised for all PMem failures
     """
-    def __init__(self, additional_text=None):
+    def __init__(self, additional_text=None):  # pylint: disable=W0231
         self.additional_text = additional_text
 
     def __str__(self):
@@ -53,7 +53,7 @@ class PMem:
         """
         for lib_bin in [ndctl, daxctl]:
             if process.system('which %s' % lib_bin, shell=True, ignore_status=True):
-                raise PMemException("Cannot use library without "\
+                raise PMemException("Cannot use library without "
                                     "proper binary %s" % lib_bin)
         self.ndctl = ndctl
         self.daxctl = daxctl
