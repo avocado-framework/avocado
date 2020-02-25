@@ -488,17 +488,7 @@ class YumBackend(RpmBackend):
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
         self.cfgparser = configparser.ConfigParser()
         self.cfgparser.read(self.repo_file_path)
-        version_result = process.run(self.base_command + '--version',
-                                     verbose=False,
-                                     ignore_status=True)
-        version_first_line = version_result.stdout_text.splitlines()[0].strip()
-        try:
-            ver = re.findall(r'\d*.\d*.\d*', version_first_line)[0]
-        except IndexError:
-            ver = version_first_line
-        self.pm_version = ver
-        log.debug('%s version: %s', cmd, self.pm_version)
-
+        self._set_version(cmd)
         if HAS_YUM_MODULE:
             self.yum_base = yum.YumBase()
         else:
@@ -512,6 +502,18 @@ class YumBackend(RpmBackend):
         Clean up the yum cache so new package information can be downloaded.
         """
         process.system("yum clean all", sudo=True)
+
+    def _set_version(self, cmd):
+        result = process.run(self.base_command + '--version',
+                             verbose=False,
+                             ignore_status=True)
+        first_line = result.stdout_text.splitlines()[0].strip()
+        try:
+            ver = re.findall(r'\d*.\d*.\d*', first_line)[0]
+        except IndexError:
+            ver = first_line
+        self.pm_version = ver
+        log.debug('%s version: %s', cmd, self.pm_version)
 
     def install(self, name):
         """
