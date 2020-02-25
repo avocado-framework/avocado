@@ -371,3 +371,12 @@ class Asset:
                     metadata = json.load(f)
                     return metadata
         return None
+
+
+def find_file(name, cache_dirs, asset_hash=None, algorithm=None,
+              locations=None, expire=None):
+    """
+    Wrapper function to find a file downloaded by the Asset class in the cache.
+    """
+    return Asset(name, asset_hash, algorithm, locations, cache_dirs,
+                 expire).find_asset_file()
