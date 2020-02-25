@@ -20,6 +20,7 @@ import json
 import glob
 import logging
 
+from . import path
 from . import process
 from . import genio
 
@@ -51,11 +52,16 @@ class PMem:
         :param ndctl: path to ndctl binary, defaults to ndctl
         :param daxctl: path to daxctl binary, defaults to ndctl
         """
-        for lib_bin in [ndctl, daxctl]:
-            if process.system('which %s' % lib_bin, shell=True, ignore_status=True):
-                raise PMemException("Cannot use library without "
-                                    "proper binary %s" % lib_bin)
-        self.ndctl = ndctl
+        abs_ndctl = path.find_command(ndctl, False)
+        if not abs_ndctl:
+            raise PMemException("Cannot use library without "
+                                "proper ndctl binary")
+        self.ncdctl = abs_ndctl
+
+        abs_daxctl = path.find_command(daxctl, False)
+        if not abs_daxctl:
+            raise PMemException("Cannot use library without "
+                                "proper daxctl binary")
         self.daxctl = daxctl
 
     def run_ndctl_list(self, option=''):
