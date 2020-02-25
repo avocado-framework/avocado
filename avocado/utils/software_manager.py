@@ -484,9 +484,7 @@ class YumBackend(RpmBackend):
         Initializes the base command and the yum package repository.
         """
         super(YumBackend, self).__init__()
-        executable = utils_path.find_command(cmd)
-        base_arguments = '-y'
-        self.base_command = executable + ' ' + base_arguments
+        self.base_command = '%s -y' % utils_path.find_command(cmd)
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
         self.cfgparser = configparser.ConfigParser()
         self.cfgparser.read(self.repo_file_path)
