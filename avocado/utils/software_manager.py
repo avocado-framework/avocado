@@ -46,7 +46,7 @@ from . import data_factory
 from . import distro
 from . import path as utils_path
 
-log = logging.getLogger('avocado.test')
+log = logging.getLogger('avocado.utils.software_manager')
 
 # If you want to make this lib to support your particular package
 # manager/distro, please implement the given backend class and
@@ -1237,7 +1237,13 @@ def main():
     parser.add_argument('--verbose', dest="debug", action='store_true',
                         help='include debug messages in console output')
 
-    _, args = parser.parse_known_args()
+    namespace, args = parser.parse_known_args()
+
+    if namespace.debug:
+        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
     software_manager = SoftwareManager()
     if args:
         action = args[0]
