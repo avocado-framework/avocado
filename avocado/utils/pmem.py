@@ -20,6 +20,7 @@ import json
 import glob
 import logging
 
+from . import path
 from . import process
 from . import genio
 
@@ -52,7 +53,7 @@ class PMem:
         :param daxctl: path to daxctl binary, defaults to ndctl
         """
         for lib_bin in [ndctl, daxctl]:
-            if process.system('which %s' % lib_bin, shell=True, ignore_status=True):
+            if not path.find_command(lib_bin):
                 raise PMemException("Cannot use library without "
                                     "proper binary %s" % lib_bin)
         self.ndctl = ndctl
