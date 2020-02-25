@@ -292,6 +292,8 @@ class TestLoaderProxy:
                     if issubclass(obj, test.Test):
                         test_class = obj
                         break
+        if test_class is test.DryRunTest:
+            test_parameters['modulePath'] = test_path
         test_instance = test_class(**test_parameters)
 
         return test_instance
