@@ -57,7 +57,7 @@ class YamlLoaderTests(unittest.TestCase):
     def test_yaml_loader_list(self):
         # Verifies that yaml_loader list won't crash and is able to detect
         # various test types
-        result = process.run("%s list -V --loaders yaml_testsuite -- "
+        result = process.run("%s -V list --loaders yaml_testsuite -- "
                              "examples/yaml_to_mux_loader/loaders.yaml"
                              % AVOCADO)
         # This has to be defined like this as pep8 complains about tailing
@@ -68,7 +68,7 @@ class YamlLoaderTests(unittest.TestCase):
                                              r"EXTERNAL *external_echo *\n"
                                              r"EXTERNAL *external_false *\n")
         # Also check whether list without loaders won't crash
-        result = process.run("%s list -V -- "
+        result = process.run("%s -V list -- "
                              "examples/yaml_to_mux_loader/loaders.yaml"
                              % AVOCADO)
 

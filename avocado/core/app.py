@@ -50,13 +50,13 @@ class AvocadoApp:
         signal.signal(signal.SIGTERM, sigterm_handler)
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
         self.parser = Parser()
+        self.parser.start()
         output.early_start()
 
         show = getattr(self.parser.args, 'show', None)
         reconfigure_settings = {'core.paginator': 'off',
                                 'show': show}
         try:
-            self.parser.start()
             self.cli_dispatcher = CLIDispatcher()
             self.cli_cmd_dispatcher = CLICmdDispatcher()
             output.log_plugin_failures(self.cli_dispatcher.load_failures +
