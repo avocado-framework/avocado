@@ -95,6 +95,17 @@ class Parser:
                                         parser=self.application,
                                         long_arg='--paginator')
 
+        help_msg = ('Some commands can produce more information. This option '
+                    'will enable the verbosity when applicable.')
+        future_settings.register_option(section='core',
+                                        key='verbose',
+                                        help_msg=help_msg,
+                                        default=False,
+                                        key_type=bool,
+                                        parser=self.application,
+                                        long_arg='--verbose',
+                                        short_arg='-V')
+
         streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.items()] +
                    ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.items()])
         streams = "; ".join(streams)

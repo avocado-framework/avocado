@@ -13,7 +13,6 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import sys
-import warnings
 
 from avocado.core import exit_codes, output
 from avocado.core import loader
@@ -39,12 +38,13 @@ class TestLister:
             sys.stderr.write('\n')
             sys.exit(exit_codes.AVOCADO_FAIL)
         self.args = args
+        self._future = self.args.get('_future')
 
     def _extra_listing(self):
         loader.loader.get_extra_listing()
 
     def _get_test_suite(self, paths):
-        if self.args.get('verbose'):
+        if self._future.get('core.verbose'):
             which_tests = loader.DiscoverMode.ALL
         else:
             which_tests = loader.DiscoverMode.AVAILABLE
@@ -74,7 +74,7 @@ class TestLister:
             stats[type_label.lower()] += 1
             type_label = decorator(type_label)
 
-            if self.args.get('verbose'):
+            if self._future.get('core.verbose'):
                 if 'tags' in params:
                     tgs = params['tags']
                 else:
@@ -98,7 +98,7 @@ class TestLister:
 
     def _display(self, test_matrix, stats, tag_stats):
         header = None
-        if self.args.get('verbose'):
+        if self._future.get('core.verbose'):
             header = (output.TERM_SUPPORT.header_str('Type'),
                       output.TERM_SUPPORT.header_str('Test'),
                       output.TERM_SUPPORT.header_str('Tag(s)'))
@@ -107,7 +107,7 @@ class TestLister:
                                                 strip=True):
             LOG_UI.debug(line)
 
-        if self.args.get('verbose'):
+        if self._future.get('core.verbose'):
             LOG_UI.info("")
             LOG_UI.info("TEST TYPES SUMMARY")
             LOG_UI.info("==================")
@@ -167,18 +167,9 @@ class List(CLICmd):
                             "active, tests from those plugins might "
                             "also show up (behavior may vary among "
                             "plugins)")
-        parser.add_argument('-V', '--verbose',
-                            action='store_true', default=False,
-                            help='Whether to show extra information (headers '
-                                 'and summary). Will be deprecated soon. '
-                                 'Current: %(default)s')
         loader.add_loader_options(parser)
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
-        warnings.warn("--verbose will be deprecated soon: "
-                      "This will be global, instead.",
-                      FutureWarning)
-
         test_lister = TestLister(config)
         return test_lister.list()
