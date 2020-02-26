@@ -20,6 +20,7 @@ import json
 import glob
 import logging
 
+from . import path
 from . import process
 from . import genio
 
@@ -51,11 +52,16 @@ class PMem:
         :param ndctl: path to ndctl binary, defaults to ndctl
         :param daxctl: path to daxctl binary, defaults to ndctl
         """
-        for lib_bin in [ndctl, daxctl]:
-            if process.system('which %s' % lib_bin, shell=True, ignore_status=True):
-                raise PMemException("Cannot use library without "
-                                    "proper binary %s" % lib_bin)
-        self.ndctl = ndctl
+        abs_ndctl = path.find_command(ndctl, False)
+        if not abs_ndctl:
+            raise PMemException("Cannot use library without "
+                                "proper ndctl binary")
+        self.ncdctl = abs_ndctl
+
+        abs_daxctl = path.find_command(daxctl, False)
+        if not abs_daxctl:
+            raise PMemException("Cannot use library without "
+                                "proper daxctl binary")
         self.daxctl = daxctl
 
     def run_ndctl_list(self, option=''):
@@ -67,8 +73,8 @@ class PMem:
         :rtype: list of json objects
         """
         try:
-            json_op = json.loads(process.system_output(
-                '%s list %s' % (self.ndctl, option), shell=True))
+            cmd = '%s list %s' % (self.ndctl, option)
+            json_op = json.loads(process.system_output(cmd))
         except ValueError:
             json_op = []
         return json_op
@@ -96,8 +102,8 @@ class PMem:
         :return: By default returns entire list of json objects
         :rtype: list of json objects
         """
-        return json.loads(process.system_output(
-            '%s list %s' % (self.daxctl, options), shell=True))
+        cmd = '%s list %s' % (self.daxctl, options)
+        return json.loads(process.system_output(cmd))
 
     def get_slot_count(self, region):
         """
@@ -298,6 +304,3 @@ class PMem:
                           shell=True, ignore_status=True):
             raise PMemException('Namespace destroy command failed')
         return True
-
-
-pmem = PMem()
