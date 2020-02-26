@@ -13,6 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 from avocado.core import data_dir
+from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
@@ -29,8 +30,15 @@ class Config(CLICmd):
 
     def configure(self, parser):
         parser = super(Config, self).configure(parser)
-        parser.add_argument('--datadir', action='store_true', default=False,
-                            help='Shows the data directories currently being used by avocado')
+        help_msg = ('Shows the data directories currently being used by '
+                    'Avocado')
+        future_settings.register_option(section='config',
+                                        key='datadir',
+                                        key_type=bool,
+                                        default=False,
+                                        help_msg=help_msg,
+                                        parser=parser,
+                                        long_arg='--datadir')
 
     def run(self, config):
         LOG_UI.info("Config files read (in order, '*' means the file exists "
@@ -42,7 +50,7 @@ class Config(CLICmd):
             else:
                 LOG_UI.debug('      %s', cfg_path)
         LOG_UI.debug("")
-        if not config.get("datadir"):
+        if not config.get('config.datadir'):
             blength = 0
             for section in settings.config.sections():
                 for value in settings.config.items(section):
