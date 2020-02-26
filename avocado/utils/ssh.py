@@ -146,6 +146,22 @@ class Session:
             self._connection = master
         return self._check()
 
+    def get_raw_ssh_command(self, command):
+        """
+        Returns the raw command that will be executed locally
+
+        This should only be used if you need to interact with the ssh
+        subprocess, and most users will *NOT* need to.  Try to use the
+        :meth:`cmd` method instead.
+
+        :param command: the command to execute over the SSH session
+        :type command: str
+        :returns: The raw SSH command, that can be executed locally for
+                  the execution of a remote command.
+        :rtype: str
+        """
+        return self._ssh_cmd(self.DEFAULT_OPTIONS, ('-q', ), command)
+
     def cmd(self, command):
         """
         Runs a command over the SSH session
@@ -154,12 +170,12 @@ class Session:
         the caller.
 
         :param command: the command to execute over the SSH session
-        :param command: str
+        :type command: str
         :returns: The command result object.
         :rtype: A :class:`CmdResult` instance.
         """
-        cmd = self._ssh_cmd(self.DEFAULT_OPTIONS, ('-q', ), command)
-        return process.run(cmd, ignore_status=True)
+        return process.run(self.get_raw_ssh_command(command),
+                           ignore_status=True)
 
     def quit(self):
         """
