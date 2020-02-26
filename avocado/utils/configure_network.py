@@ -40,7 +40,7 @@ class NetworkInterface:
     class For network interface
     """
 
-    def __init__(self, interface):
+    def __init__(self, interface):  # pylint: disable=W0231
         self._interface = interface
 
     def set_ip(self, ipaddr, netmask, interface_type=None):
@@ -131,8 +131,8 @@ class NetworkInterface:
                 .split()[4]
             if mtuvalue == mtu:
                 return True
-        except Exception as ex:  # pylint: disable=W0703
-            raise NWException("setting MTU value in host failed: %s", ex)
+        except Exception as ex:
+            raise NWException("setting MTU value in host failed: %s", % ex)
         return False
 
     def is_link_up(self):
@@ -182,7 +182,7 @@ class NetworkInterface:
             hwaddr = interface_file.read().strip()
             interface_file.close()
             return hwaddr
-        except OSError as ex:
+        except OSError as ex:  # pylint: disable=W0703
             raise NWException("interface not found : %s" % ex)
 
     def set_hwaddr(self, hwaddr):
@@ -243,7 +243,7 @@ class PeerInfo:
                                    key=key, password=peer_password)
         except Exception as ex:  # pylint: disable=W0703
             raise NWException(
-                "connection not established to peer machine: %s", ex)
+                "connection not established to peer machine: %s", % ex)
 
     def set_mtu_peer(self, peer_interface, mtu):
         """
@@ -258,7 +258,7 @@ class PeerInfo:
             mtuvalue = self.session.cmd(cmd).stdout.decode("utf-8").split()[4]
             if mtuvalue == mtu:
                 return True
-        except Exception as ex:  # pylint: disable=W0703
+        except Exception:  # pylint: disable=W0703
             return False
 
     def get_peer_interface(self, peer_ip):
@@ -273,7 +273,7 @@ class PeerInfo:
                                                     .splitlines():
                 if peer_ip in line:
                     peer_interface = line.split()[-1]
-        except Exception as ex:  # pylint: disable=W0703
+        except Exception:  # pylint: disable=W0703
             if peer_interface == "":
                 return peer_interface
         else:
