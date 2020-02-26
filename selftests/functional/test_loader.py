@@ -154,7 +154,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                              'avocado_loader_test',
                                              mode=mode)
         test_script.save()
-        cmd_line = ('%s list -V %s' % (AVOCADO, test_script.path))
+        cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
         result = process.run(cmd_line)
         self.assertIn('%s: %s' % (exp_str, count), result.stdout_text)
         test_script.remove()
@@ -199,7 +199,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                              'avocado_loader_test',
                                              mode=self.MODE_0664)
         test_script.save()
-        cmd_line = ('%s list -V %s' % (AVOCADO, test_script.path))
+        cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         test_script.remove()
@@ -240,7 +240,7 @@ class LoaderTestFunctional(unittest.TestCase):
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES)
         os.chdir(BASEDIR)
         mytest.save()
-        cmd_line = "%s list -V %s" % (AVOCADO, mytest)
+        cmd_line = "%s -V list %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
         self.assertIn(b'SIMPLE: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
