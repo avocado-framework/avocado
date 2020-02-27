@@ -50,11 +50,6 @@ class Wrapper(CLI):
     def run(self, config):
         wraps = config.get("wrapper", None)
         if wraps:
-            if config.get('gdb_run_bin', None):
-                LOG_UI.error('Command line option --wrapper is incompatible'
-                             ' with option --gdb-run-bin.\n%s', wraps)
-                sys.exit(exit_codes.AVOCADO_FAIL)
-
             for wrap in wraps:
                 if ':' not in wrap:
                     if process.WRAP_PROCESS is None:
