@@ -30,7 +30,7 @@ from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import jobdata
 from avocado.core import output
-
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 
@@ -57,44 +57,73 @@ class Diff(CLICmd):
         """
         parser = super(Diff, self).configure(parser)
 
-        parser.add_argument("jobids",
-                            default=[], nargs=2,
-                            metavar="<JOB>",
-                            help='A job reference, identified by a (partial) '
-                            'unique ID (SHA1) or test results directory.')
-
-        parser.add_argument('--html', type=str,
-                            metavar='FILE',
-                            help='Enable HTML output to the FILE where the '
-                            'result should be written.')
-
-        parser.add_argument('--open-browser',
-                            action='store_true',
-                            default=False,
-                            help='Generate and open a HTML report in your '
-                            'preferred browser. If no --html file is '
-                            'provided, create a temporary file.')
-
-        parser.add_argument('--diff-filter',
-                            dest='diff_filter',
-                            type=self._validate_filters,
-                            default=['cmdline', 'time', 'variants',
-                                     'results', 'config', 'sysinfo'],
-                            help='Comma separated filter of diff sections: '
-                            '(no)cmdline,(no)time,(no)variants,(no)results,\n'
-                            '(no)config,(no)sysinfo (defaults to all '
-                            'enabled).')
-
-        parser.add_argument('--diff-strip-id', action='store_true',
-                            help="Strip the 'id' from 'id-name;variant' when "
-                            "comparing test results.")
-
-        parser.add_argument('--create-reports', action='store_true',
-                            help='Create temporary files with job reports '
-                            '(to be used by other diff tools)')
-
         parser.epilog = 'By default, a textual diff report is generated '\
                         'in the standard output.'
+
+        help_msg = ('A job reference, identified by a (partial) unique ID '
+                    '(SHA1) or test results directory.')
+        settings.register_option(section='diff',
+                                 key='jobids',
+                                 default=[],
+                                 key_type=list,
+                                 nargs=2,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 metavar="JOB",
+                                 positional_arg='jobids')
+
+        help_msg = ('Enable HTML output to the FILE where the result should '
+                    'be written.')
+        settings.register_option(section='diff',
+                                 key='html',
+                                 default=None,
+                                 metavar='FILE',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--html')
+
+        help_msg = ('Generate and open a HTML report in your preferred '
+                    'browser. If no --html file is provided, create a '
+                    'temporary file.')
+        settings.register_option(section='diff',
+                                 key='open_browser',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--open-browser')
+
+        help_msg = ('Comma separated filter of diff sections: '
+                    '(no)cmdline,(no)time,(no)variants,(no)results, '
+                    '(no)config,(no)sysinfo (defaults to all enabled).')
+        settings.register_option(section='diff',
+                                 key='filter',
+                                 key_type=self._validate_filters,
+                                 help_msg=help_msg,
+                                 default=['cmdline', 'time', 'variants',
+                                          'results', 'config', 'sysinfo'],
+                                 parser=parser,
+                                 long_arg='--diff-filter')
+
+        help_msg = ('Strip the "id" from "id-name;variant" when comparing '
+                    'test results.')
+        settings.register_option(section='diff',
+                                 key='strip_id',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--diff-strip-id')
+
+        help_msg = ('Create temporary files with job reports to be used by '
+                    'other diff tools')
+        settings.register_option(section='diff',
+                                 key='create_reports',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--create-reports')
 
     def run(self, config):
         def _get_name(test):
@@ -103,8 +132,9 @@ class Diff(CLICmd):
         def _get_name_no_id(test):
             return str(test['id']).split('-', 1)[1]
 
-        job1_dir, job1_id = self._setup_job(config.get('jobids')[0])
-        job2_dir, job2_id = self._setup_job(config.get('jobids')[1])
+        future = config.get('_future')
+        job1_dir, job1_id = self._setup_job(future.get('diff.jobids')[0])
+        job2_dir, job2_id = self._setup_job(future.get('diff.jobids')[1])
 
         job1_data = self._get_job_data(job1_dir)
         job2_data = self._get_job_data(job2_dir)
@@ -113,7 +143,8 @@ class Diff(CLICmd):
         job1_results = [report_header]
         job2_results = [report_header]
 
-        if 'cmdline' in config.get('diff_filter'):
+        diff_filter = future.get('diff.filter')
+        if 'cmdline' in diff_filter:
             cmdline1 = self._get_command_line(job1_dir)
             cmdline2 = self._get_command_line(job2_dir)
 
@@ -125,7 +156,7 @@ class Diff(CLICmd):
                 job2_results.extend(command_line_header)
                 job2_results.append(cmdline2)
 
-        if 'time' in config.get('diff_filter'):
+        if 'time' in diff_filter:
             time1 = '%.2f s\n' % job1_data['time']
             time2 = '%.2f s\n' % job2_data['time']
 
@@ -137,7 +168,7 @@ class Diff(CLICmd):
                 job2_results.extend(total_time_header)
                 job2_results.append(time2)
 
-        if 'variants' in config.get('diff_filter'):
+        if 'variants' in diff_filter:
             variants1 = self._get_variants(job1_dir)
             variants2 = self._get_variants(job2_dir)
 
@@ -149,9 +180,9 @@ class Diff(CLICmd):
                 job2_results.extend(variants_header)
                 job2_results.extend(variants2)
 
-        if 'results' in config.get('diff_filter'):
+        if 'results' in diff_filter:
             results1 = []
-            if config.get('diff_strip_id'):
+            if future.get('diff.strip_id'):
                 get_name = _get_name_no_id
             else:
                 get_name = _get_name
@@ -173,7 +204,7 @@ class Diff(CLICmd):
                 job2_results.extend(test_results_header)
                 job2_results.extend(results2)
 
-        if 'config' in config.get('diff_filter'):
+        if 'config' in diff_filter:
             config1 = self._get_config(job1_dir)
             config2 = self._get_config(job2_dir)
 
@@ -185,7 +216,7 @@ class Diff(CLICmd):
                 job2_results.extend(config_header)
                 job2_results.extend(config2)
 
-        if 'sysinfo' in config.get('diff_filter'):
+        if 'sysinfo' in diff_filter:
             sysinfo_pre1 = self._get_sysinfo(job1_dir, 'pre')
             sysinfo_pre2 = self._get_sysinfo(job2_dir, 'pre')
 
@@ -208,7 +239,7 @@ class Diff(CLICmd):
                 job2_results.extend(sysinfo_header_post)
                 job2_results.extend(sysinfo_post2)
 
-        if config.get('create_reports', False):
+        if future.get('diff.create_reports'):
             self.std_diff_output = False
             prefix = 'avocado_diff_%s_' % job1_id[:7]
             tmp_file1 = tempfile.NamedTemporaryFile(mode='w',
@@ -228,18 +259,18 @@ class Diff(CLICmd):
 
             LOG_UI.info('%s %s', tmp_file1.name, tmp_file2.name)
 
-        if (config.get('open_browser', False) and
-                config.get('html', None) is None):
-
+        html_file = future.get('diff.html')
+        open_browser = future.get('diff.open_browser')
+        if open_browser and html_file is None:
             prefix = 'avocado_diff_%s_%s_' % (job1_id[:7], job2_id[:7])
             tmp_file = tempfile.NamedTemporaryFile(mode='w',
                                                    prefix=prefix,
                                                    suffix='.html',
                                                    delete=False)
 
-            config['html'] = tmp_file.name
+            html_file = tmp_file.name
 
-        if config.get('html', None) is not None:
+        if html_file is not None:
             self.std_diff_output = False
             try:
                 html_diff = HtmlDiff()
@@ -267,21 +298,20 @@ class Diff(CLICmd):
                                                     fromdesc=job1_id,
                                                     todesc=job2_id)
 
-                with open(config.get('html'), 'w') as html_file:
-                    html_file.writelines(job_diff_html.encode("utf-8"))
-
-                LOG_UI.info(config.get('html'))
+                with open(html_file, 'w') as fp:
+                    fp.writelines(job_diff_html.encode("utf-8"))
+                LOG_UI.info(html_file)
 
             except IOError as exception:
                 LOG_UI.error(exception)
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-        if config.get('open_browser', False):
+        if open_browser:
             setsid = getattr(os, 'setsid', None)
             if not setsid:
                 setsid = getattr(os, 'setpgrp', None)
             with open(os.devnull, "r+") as inout:
-                cmd = ['xdg-open', config.get('html')]
+                cmd = ['xdg-open', html_file]
                 subprocess.Popen(cmd, close_fds=True, stdin=inout,  # pylint: disable=W1509
                                  stdout=inout, stderr=inout,
                                  preexec_fn=setsid)
