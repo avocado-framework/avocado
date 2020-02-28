@@ -56,7 +56,7 @@ class PMem:
         if not abs_ndctl:
             raise PMemException("Cannot use library without "
                                 "proper ndctl binary")
-        self.ncdctl = abs_ndctl
+        self.ndctl = abs_ndctl
 
         abs_daxctl = path.find_command(daxctl, False)
         if not abs_daxctl:
