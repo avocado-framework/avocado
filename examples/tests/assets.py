@@ -20,7 +20,8 @@ class Hello(Test):
         hello_sig_locations = ["%s%s" % (loc, hello_sig) for loc in mirrors]
         self.hello = self.fetch_asset(
             name=hello,
-            locations=hello_locations)
+            locations=hello_locations,
+            asset_hash='cb0470b0e8f4f7768338f5c5cfe1688c90fbbc74')
         self.hello_sig = self.fetch_asset(
             name=hello_sig,
             asset_hash='f3b9fae20c35740004ae7b8de1301836dab4ac30',
