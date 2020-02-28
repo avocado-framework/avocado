@@ -62,7 +62,7 @@ class PMem:
         if not abs_daxctl:
             raise PMemException("Cannot use library without "
                                 "proper daxctl binary")
-        self.daxctl = daxctl
+        self.daxctl = abs_daxctl
 
     def run_ndctl_list(self, option=''):
         """
