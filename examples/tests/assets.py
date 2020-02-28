@@ -15,9 +15,9 @@ class Hello(Test):
                    'http://gnu.c3sl.ufpr.br/ftp/',
                    'ftp://ftp.funet.fi/pub/gnu/prep/hello/']
         hello = 'hello-2.9.tar.gz'
-        hello_locations = ["%s/%s" % (loc, hello) for loc in mirrors]
+        hello_locations = ["%s%s" % (loc, hello) for loc in mirrors]
         hello_sig = 'hello-2.9.tar.gz.sig'
-        hello_sig_locations = ["%s/%s" % (loc, hello_sig) for loc in mirrors]
+        hello_sig_locations = ["%s%s" % (loc, hello_sig) for loc in mirrors]
         self.hello = self.fetch_asset(
             name=hello,
             locations=hello_locations)
