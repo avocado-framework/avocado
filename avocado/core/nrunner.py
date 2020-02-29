@@ -316,13 +316,11 @@ RUNNABLE_KIND_CAPABLE = {'noop': NoOpRunner,
                          'python-unittest': PythonUnittestRunner}
 
 
-def runner_from_runnable(runnable, capables=None):
+def runner_from_runnable(runnable, known_runners):
     """
     Gets a Runner instance from a Runnable
     """
-    if capables is None:
-        capables = RUNNABLE_KIND_CAPABLE
-    runner = capables.get(runnable.kind, None)
+    runner = known_runners.get(runnable.kind, None)
     if runner is not None:
         return runner(runnable)
     raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
@@ -393,7 +391,7 @@ def _key_val_args_to_kwargs(kwargs):
 
 def subcommand_runnable_run(args, echo=print):
     runnable = Runnable.from_args(args)
-    runner = runner_from_runnable(runnable)
+    runner = runner_from_runnable(runnable, RUNNABLE_KIND_CAPABLE)
 
     for status in runner.run():
         echo(status)
@@ -407,7 +405,7 @@ CMD_RUNNABLE_RUN_RECIPE_ARGS = (
 
 def subcommand_runnable_run_recipe(args, echo=print):
     runnable = Runnable.from_recipe(args.get('recipe'))
-    runner = runner_from_runnable(runnable)
+    runner = runner_from_runnable(runnable, RUNNABLE_KIND_CAPABLE)
 
     for status in runner.run():
         echo(status)
@@ -476,21 +474,23 @@ class Task:
     :param identifier:
     :param runnable:
     """
-    def __init__(self, identifier, runnable, status_uris=None):
+    def __init__(self, identifier, runnable, status_uris=None, known_runners=None):
         self.identifier = identifier
         self.runnable = runnable
         self.status_services = []
         if status_uris is not None:
             for status_uri in status_uris:
                 self.status_services.append(TaskStatusService(status_uri))
-        self.capables = RUNNABLE_KIND_CAPABLE
+        if known_runners is None:
+            known_runners = {}
+        self.known_runners = known_runners
 
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
         return fmt.format(self.identifier, self.runnable, self.status_services)
 
     @classmethod
-    def from_recipe(cls, task_path):
+    def from_recipe(cls, task_path, known_runners):
         """
         Creates a task (which contains a runnable) from a task recipe file
 
@@ -507,7 +507,7 @@ class Task:
                             runnable_recipe.get('uri'),
                             *runnable_recipe.get('args', ()))
         status_uris = recipe.get('status_uris')
-        return cls(identifier, runnable, status_uris)
+        return cls(identifier, runnable, status_uris, known_runners)
 
     def get_command_args(self):
         """
@@ -529,7 +529,7 @@ class Task:
         return args
 
     def run(self):
-        runner = runner_from_runnable(self.runnable, self.capables)
+        runner = runner_from_runnable(self.runnable, self.known_runners)
         for status in runner.run():
             status.update({"id": self.identifier})
             for status_service in self.status_services:
@@ -631,7 +631,8 @@ def task_run(task, echo):
 def subcommand_task_run(args, echo=print):
     runnable = Runnable.from_args(args)
     task = Task(args.get('identifier'), runnable,
-                args.get('status_uri', []))
+                args.get('status_uri', []),
+                known_runners=RUNNABLE_KIND_CAPABLE)
     task_run(task, echo)
 
 
@@ -642,7 +643,8 @@ CMD_TASK_RUN_RECIPE_ARGS = (
 
 
 def subcommand_task_run_recipe(args, echo=print):
-    task = Task.from_recipe(args.get('recipe'))
+    task = Task.from_recipe(args.get('recipe'),
+                            RUNNABLE_KIND_CAPABLE)
     task_run(task, echo)
 
 
