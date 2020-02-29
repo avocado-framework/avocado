@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import base64
 import collections
+import inspect
 import io
 import json
 import multiprocessing
@@ -309,13 +310,6 @@ class PythonUnittestRunner(BaseRunner):
         yield queue.get()
 
 
-#: The runnables this specific application is capable of handling
-RUNNABLE_KIND_CAPABLE = {'noop': NoOpRunner,
-                         'exec': ExecRunner,
-                         'exec-test': ExecTestRunner,
-                         'python-unittest': PythonUnittestRunner}
-
-
 def runner_from_runnable(runnable, known_runners):
     """
     Gets a Runner instance from a Runnable
@@ -333,22 +327,6 @@ def _parse_key_val(argument):
                'be a "KEY=VALUE" like expression' % argument)
         raise argparse.ArgumentTypeError(msg)
     return tuple(key_value)
-
-
-CMD_RUNNABLE_RUN_ARGS = (
-    (("-k", "--kind"),
-     {'type': str, 'required': True, 'help': 'Kind of runnable'}),
-
-    (("-u", "--uri"),
-     {'type': str, 'default': None, 'help': 'URI of runnable'}),
-
-    (("-a", "--arg"),
-     {'action': "append", 'default': [], 'help': 'Simple arguments to runnable'}),
-
-    (('kwargs',),
-     {'default': [], 'type': _parse_key_val, 'nargs': '*',
-      'metavar': 'KEY_VAL', 'help': 'Keyword (key=val) arguments to runnable'}),
-    )
 
 
 def _arg_decode_base64(arg):
@@ -387,28 +365,6 @@ def _key_val_args_to_kwargs(kwargs):
     for key, val in kwargs:
         result[key] = _kwarg_decode_json(val)
     return result
-
-
-def subcommand_runnable_run(args, echo=print):
-    runnable = Runnable.from_args(args)
-    runner = runner_from_runnable(runnable, RUNNABLE_KIND_CAPABLE)
-
-    for status in runner.run():
-        echo(status)
-
-
-CMD_RUNNABLE_RUN_RECIPE_ARGS = (
-    (("recipe", ),
-     {'type': str, 'help': 'Path to the runnable recipe file'}),
-    )
-
-
-def subcommand_runnable_run_recipe(args, echo=print):
-    runnable = Runnable.from_recipe(args.get('recipe'))
-    runner = runner_from_runnable(runnable, RUNNABLE_KIND_CAPABLE)
-
-    for status in runner.run():
-        echo(status)
 
 
 class StatusEncoder(json.JSONEncoder):
@@ -614,99 +570,194 @@ class StatusServer:
             yield from asyncio.sleep(0.1)
 
 
-CMD_TASK_RUN_ARGS = (
-    (("-i", "--identifier"),
-     {'type': str, 'required': True, 'help': 'Task unique identifier'}),
-    (("-s", "--status-uri"),
-     {'action': "append", 'default': None,
-      'help': 'URIs of status services to report to'}),
-    )
-CMD_TASK_RUN_ARGS += CMD_RUNNABLE_RUN_ARGS
+class BaseRunnerApp:
+    '''
+    Helper base class for common runner application behavior
+    '''
 
+    #: The name of the command line application given to the command line
+    #: parser
+    PROG_NAME = ''
 
-def task_run(task, echo):
-    for status in task.run():
-        echo(status)
+    #: The description of the command line application given to the
+    #: command line parser
+    PROG_DESCRIPTION = ''
 
+    #: The types of runnables that this runner can handle.  Dictionary key
+    #: is a name, and value is a class that inhertis from :class:`BaseRunner`
+    RUNNABLE_KINDS_CAPABLE = {}
 
-def subcommand_task_run(args, echo=print):
-    runnable = Runnable.from_args(args)
-    task = Task(args.get('identifier'), runnable,
-                args.get('status_uri', []),
-                known_runners=RUNNABLE_KIND_CAPABLE)
-    task_run(task, echo)
+    #: The command line arguments to the "runnable-run" command
+    CMD_RUNNABLE_RUN_ARGS = (
+        (("-k", "--kind"),
+         {'type': str, 'required': True, 'help': 'Kind of runnable'}),
 
+        (("-u", "--uri"),
+         {'type': str, 'default': None, 'help': 'URI of runnable'}),
 
-CMD_TASK_RUN_RECIPE_ARGS = (
-    (("recipe", ),
-     {'type': str, 'help': 'Path to the task recipe file'}),
-    )
+        (("-a", "--arg"),
+         {'action': "append", 'default': [],
+          'help': 'Simple arguments to runnable'}),
 
-
-def subcommand_task_run_recipe(args, echo=print):
-    task = Task.from_recipe(args.get('recipe'),
-                            RUNNABLE_KIND_CAPABLE)
-    task_run(task, echo)
-
-
-CMD_STATUS_SERVER_ARGS = (
-    (("uri", ),
-     {'type': str, 'help': 'URI to bind a status server to'}),
+        (('kwargs',),
+         {'default': [], 'type': _parse_key_val, 'nargs': '*',
+          'metavar': 'KEY_VAL',
+          'help': 'Keyword (key=val) arguments to runnable'}),
     )
 
+    CMD_RUNNABLE_RUN_RECIPE_ARGS = (
+        (("recipe", ),
+         {'type': str, 'help': 'Path to the runnable recipe file'}),
+    )
 
-def subcommand_status_server(args):
-    server = StatusServer(args.get('uri'))
-    server.start()
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(server.wait())
+    CMD_TASK_RUN_ARGS = (
+        (("-i", "--identifier"),
+         {'type': str, 'required': True, 'help': 'Task unique identifier'}),
+        (("-s", "--status-uri"),
+         {'action': "append", 'default': None,
+          'help': 'URIs of status services to report to'}),
+    )
+    CMD_TASK_RUN_ARGS += CMD_RUNNABLE_RUN_ARGS
+
+    CMD_TASK_RUN_RECIPE_ARGS = (
+        (("recipe", ),
+         {'type': str, 'help': 'Path to the task recipe file'}),
+    )
+
+    CMD_STATUS_SERVER_ARGS = (
+        (("uri", ),
+         {'type': str, 'help': 'URI to bind a status server to'}),
+    )
+
+    def __init__(self, echo=print, prog=None, description=None):
+        self.echo = echo
+        self.parser = None
+        if prog is None:
+            prog = self.PROG_NAME
+        if description is None:
+            description = self.PROG_DESCRIPTION
+        self._setup_parser(prog, description)
+
+    def _setup_parser(self, prog, description):
+        self.parser = argparse.ArgumentParser(prog=prog,
+                                              description=description)
+        subcommands = self.parser.add_subparsers(dest='subcommand')
+        subcommands.required = True
+        for cmd_meth in self._get_commands_method_without_prefix():
+            attr = "CMD_%s_ARGS" % cmd_meth.upper()
+            cmd = cmd_meth.replace('_', '-')
+            cmd_parser = subcommands.add_parser(cmd)
+            if hasattr(self, attr):
+                for arg in getattr(self, attr):
+                    cmd_parser.add_argument(*arg[0], **arg[1])
+
+    def _get_commands_method_without_prefix(self):
+        prefix = 'command_'
+        return [c[0][len(prefix):]
+                for c in inspect.getmembers(self, inspect.ismethod)
+                if c[0].startswith(prefix)]
+
+    def run(self):
+        """
+        Runs the application by finding a suitable command method to call
+        """
+        args = vars(self.parser.parse_args())
+        subcommand = args.get('subcommand')
+        if subcommand in self.get_commands():
+            meth_name = 'command_' + subcommand.replace('-', '_')
+            if hasattr(self, meth_name):
+                kallable = getattr(self, meth_name)
+                return kallable(args)
+
+    def get_commands(self):
+        """
+        Return the command names, as seen on the command line application
+
+        For every method whose name starts with "command_", a the name of
+        the command follows, with underscores replaced by dashes.  So, a
+        method named "command_foo_bar", will be a command available on the
+        command line as "foo-bar".
+
+        :rtype: list
+        """
+        return [c.replace('_', '-') for c in
+                self._get_commands_method_without_prefix()]
+
+    def get_capabilities(self):
+        """
+        Returns the runner capabilities, including runnables and commands
+
+        This can be used by higher level tools, such as the entity spawning
+        runners, to know which runner can be used to handle each runnable
+        type.
+
+        :rtype: dict
+        """
+        return {"runnables": [k for k in self.RUNNABLE_KINDS_CAPABLE.keys()],
+                "commands": self.get_commands()}
+
+    def get_runner_from_runnable(self, runnable):
+        """
+        Returns a runner that is suitable to run the given runnable
+
+        :rtype: instance of class inheriting from :class:`BaseRunner`
+        :raises: ValueError if runnable is now supported
+        """
+        runner = self.RUNNABLE_KINDS_CAPABLE.get(runnable.kind, None)
+        if runner is not None:
+            return runner(runnable)
+        raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
+
+    def command_capabilities(self, _):
+        self.echo(json.dumps(self.get_capabilities()))
+
+    def command_runnable_run(self, args):
+        runnable = Runnable.from_args(args)
+        runner = self.get_runner_from_runnable(runnable)
+        for status in runner.run():
+            self.echo(status)
+
+    def command_runnable_run_recipe(self, args):
+        runnable = Runnable.from_recipe(args.get('recipe'))
+        runner = self.get_runner_from_runnable(runnable)
+        for status in runner.run():
+            self.echo(status)
+
+    def command_task_run(self, args):
+        runnable = Runnable.from_args(args)
+        task = Task(args.get('identifier'), runnable,
+                    args.get('status_uri', []),
+                    known_runners=self.RUNNABLE_KINDS_CAPABLE)
+        for status in task.run():
+            self.echo(status)
+
+    def command_task_run_recipe(self, args):
+        task = Task.from_recipe(args.get('recipe'),
+                                self.RUNNABLE_KINDS_CAPABLE)
+        for status in task.run():
+            self.echo(status)
+
+    def command_status_server(self, args):
+        server = StatusServer(args.get('uri'))
+        server.start()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(server.wait())
 
 
-def subcommand_capabilities(_, echo=print):
-    data = {"runnables": [k for k in RUNNABLE_KIND_CAPABLE.keys()],
-            "commands": [k for k in COMMANDS_CAPABLE.keys()]}
-    echo(json.dumps(data))
+class RunnerApp(BaseRunnerApp):
+    PROG_NAME = 'avocado-runner'
+    PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner'
+    RUNNABLE_KINDS_CAPABLE = {
+        'noop': NoOpRunner,
+        'exec': ExecRunner,
+        'exec-test': ExecTestRunner,
+        'python-unittest': PythonUnittestRunner
+    }
 
 
-COMMANDS_CAPABLE = {'capabilities': subcommand_capabilities,
-                    'runnable-run': subcommand_runnable_run,
-                    'runnable-run-recipe': subcommand_runnable_run_recipe,
-                    'task-run': subcommand_task_run,
-                    'task-run-recipe': subcommand_task_run_recipe,
-                    'status-server': subcommand_status_server}
-
-
-def parse():
-    parser = argparse.ArgumentParser(prog='avocado-runner',
-                                     description='*EXPERIMENTAL* N(ext) Runner')
-    subcommands = parser.add_subparsers(dest='subcommand')
-    subcommands.required = True
-    subcommands.add_parser('capabilities')
-    runnable_run_parser = subcommands.add_parser('runnable-run')
-    for arg in CMD_RUNNABLE_RUN_ARGS:
-        runnable_run_parser.add_argument(*arg[0], **arg[1])
-    runnable_run_recipe_parser = subcommands.add_parser('runnable-run-recipe')
-    for arg in CMD_RUNNABLE_RUN_RECIPE_ARGS:
-        runnable_run_recipe_parser.add_argument(*arg[0], **arg[1])
-    runnable_task_parser = subcommands.add_parser('task-run')
-    for arg in CMD_TASK_RUN_ARGS:
-        runnable_task_parser.add_argument(*arg[0], **arg[1])
-    runnable_task_recipe_parser = subcommands.add_parser('task-run-recipe')
-    for arg in CMD_TASK_RUN_RECIPE_ARGS:
-        runnable_task_recipe_parser.add_argument(*arg[0], **arg[1])
-    status_server_parser = subcommands.add_parser('status-server')
-    for arg in CMD_STATUS_SERVER_ARGS:
-        status_server_parser.add_argument(*arg[0], **arg[1])
-
-    return parser.parse_args()
-
-
-def main():
-    args = vars(parse())
-    subcommand = args.get('subcommand')
-    kallable = COMMANDS_CAPABLE.get(subcommand)
-    if kallable is not None:
-        kallable(args)
+def main(app_class=RunnerApp):
+    app = app_class(print)
+    app.run()
 
 
 if __name__ == '__main__':

@@ -311,3 +311,19 @@ You can run an "exec" runner with::
 You can run a "python-unittest" runner with::
 
   avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/python_unittest.json
+
+Writing new runner scripts
+--------------------------
+
+Even though you can write runner scripts in any language, if you're
+writing a new runner script in Python, you can benefit from the
+:class:`avocado.core.nrunner.BaseRunnerApp` class and from the
+:class:`avocado.core.nrunner.BaseRunner` class.
+
+The following is a complete example of a script that could be named
+``avocado-runner-foo`` that could act as a nrunner compatible runner
+for runnables with kind ``foo``.
+
+.. literalinclude:: ../../../../examples/nrunner/runners/avocado-runner-foo
+   :language: python
+   :linenos:
