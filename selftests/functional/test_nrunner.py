@@ -51,8 +51,8 @@ class RunnableRun(unittest.TestCase):
                          ('Executable "/bin/echo" used in recipe is not '
                           'available in the system'))
     def test_recipe(self):
-        recipe = os.path.join(BASEDIR, "examples", "recipes", "runnables",
-                              "exec_sh_echo_env_var.json")
+        recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
+                              "runnables", "exec_sh_echo_env_var.json")
         cmd = "%s runnable-run-recipe %s" % (RUNNER, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -103,8 +103,8 @@ class TaskRun(unittest.TestCase):
                          ('Executable "/bin/uname" used in recipe is not '
                           'available in the system'))
     def test_recipe_exec_1(self):
-        recipe = os.path.join(BASEDIR, "examples", "recipes", "tasks", "exec",
-                              "1-uname.json")
+        recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
+                              "tasks", "exec", "1-uname.json")
         cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -123,8 +123,8 @@ class TaskRun(unittest.TestCase):
                          ('Executable "/bin/echo" used in recipe is not '
                           'available in the system'))
     def test_recipe_exec_2(self):
-        recipe = os.path.join(BASEDIR, "examples", "recipes", "tasks", "exec",
-                              "2-echo.json")
+        recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
+                              "tasks", "exec", "2-echo.json")
         cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -144,8 +144,8 @@ class TaskRun(unittest.TestCase):
                          ('Executable "/bin/sleep" used in recipe is not '
                           'available in the system'))
     def test_recipe_exec_3(self):
-        recipe = os.path.join(BASEDIR, "examples", "recipes", "tasks", "exec",
-                              "3-sleep.json")
+        recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
+                              "tasks", "exec", "3-sleep.json")
         cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
