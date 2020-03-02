@@ -1,3 +1,16 @@
+""" Provides utilities to carry out an SSH session.
+
+Example of use:
+
+.. code-block:: python
+
+    from avocado.utils import ssh
+
+    with ssh.Session(host, user='root', key='/path/to/file') as session:
+        ret = session.cmd('ls')
+        if ret.exit_status == 0:
+            print(ret.stdout_text)
+"""
 import os
 import shlex
 import stat
