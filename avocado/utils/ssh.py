@@ -20,6 +20,10 @@ class Session:
     """
     Represents an SSH session to a remote system, for the purpose of
     executing commands remotely.
+
+    :class:`Session` is also a context manager. On entering the context
+    it tries to establish the connection, therefore on exiting that
+    connection is closed.
     """
 
     DEFAULT_OPTIONS = (('StrictHostKeyChecking', 'no'),
