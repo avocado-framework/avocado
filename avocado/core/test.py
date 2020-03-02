@@ -1081,7 +1081,8 @@ class Test(unittest.TestCase, TestData):
         raise exceptions.TestCancel(message)
 
     def fetch_asset(self, name, asset_hash=None, algorithm=None,
-                    locations=None, expire=None):
+                    locations=None, expire=None, find_only=False,
+                    cancel_on_missing=False):
         """
         Method o call the utils.asset in order to fetch and asset file
         supporting hash check, caching and multiple locations.
@@ -1093,13 +1094,51 @@ class Test(unittest.TestCase, TestData):
         :param locations: list of URLs from where the asset can be
                           fetched (optional)
         :param expire: time for the asset to expire
-        :raise OSError: When it fails to fetch the asset
-        :returns: asset file local path
+        :param find_only: When `True`, `fetch_asset` only looks for the asset
+                          in the cache, avoiding the download/move action.
+                          Defaults to `False`.
+        :param cancel_on_missing: whether the test should be canceled if the
+                                  asset was not found in the cache or if
+                                  `fetch` could not add the asset to the cache.
+                                  Defaults to `False`.
+        :raises OSError: when it fails to fetch the asset or file is not in
+                         the cache and `cancel_on_missing` is `False`.
+        :returns: asset file local path.
         """
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
-        return asset.Asset(name, asset_hash, algorithm, locations,
-                           self.cache_dirs, expire).fetch()
+
+        asset_obj = asset.Asset(name, asset_hash, algorithm, locations,
+                                self.cache_dirs, expire)
+
+        missing_asset_message = 'Missing asset %s' % name
+
+        # when we need to find only
+        if find_only:
+            try:
+                # return the path to the asset when it was found
+                asset_path = asset_obj.find_asset_file()
+                return asset_path
+            except OSError as e:
+                # if asset is not in the cache
+                if cancel_on_missing:
+                    # cancel when requested
+                    self.cancel(missing_asset_message)
+                # otherwise re-throw OSError
+                raise e
+
+        # when we need to fetch the asset
+        try:
+            # return the path to the asset when fetch succeeded
+            asset_path = asset_obj.fetch()
+            return asset_path
+        except OSError as e:
+            # if there was a problem fetching the asset
+            if cancel_on_missing:
+                # cancel when requested
+                self.cancel(missing_asset_message)
+            # otherwise re-throw OSError
+            raise e
 
     def tearDown(self):
         if self.__base_logdir_tmp is not None:
