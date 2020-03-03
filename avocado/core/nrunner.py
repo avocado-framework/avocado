@@ -646,7 +646,9 @@ class BaseRunnerApp:
         for cmd_meth in self._get_commands_method_without_prefix():
             attr = "CMD_%s_ARGS" % cmd_meth.upper()
             cmd = cmd_meth.replace('_', '-')
-            cmd_parser = subcommands.add_parser(cmd)
+            cmd_parser = subcommands.add_parser(
+                cmd,
+                help=self._get_command_method_help_message(cmd_meth))
             if hasattr(self, attr):
                 for arg in getattr(self, attr):
                     cmd_parser.add_argument(*arg[0], **arg[1])
@@ -656,6 +658,15 @@ class BaseRunnerApp:
         return [c[0][len(prefix):]
                 for c in inspect.getmembers(self, inspect.ismethod)
                 if c[0].startswith(prefix)]
+
+    def _get_command_method_help_message(self, command_method):
+        help_message = ''
+        docstring = getattr(self, 'command_%s' % command_method).__doc__
+        if docstring:
+            docstring_lines = docstring.strip().splitlines()
+            if docstring_lines:
+                help_message = docstring_lines[0]
+        return help_message
 
     def run(self):
         """
