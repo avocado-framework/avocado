@@ -189,7 +189,7 @@ class Session:
         :param command: the command to execute over the SSH session
         :type command: str
         :returns: The command result object.
-        :rtype: A :class:`CmdResult` instance.
+        :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
         return process.run(self.get_raw_ssh_command(command),
                            ignore_status=True)
