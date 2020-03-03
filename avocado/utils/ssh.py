@@ -1,3 +1,16 @@
+""" Provides utilities to carry out an SSH session.
+
+Example of use:
+
+.. code-block:: python
+
+    from avocado.utils import ssh
+
+    with ssh.Session(host, user='root', key='/path/to/file') as session:
+        ret = session.cmd('ls')
+        if ret.exit_status == 0:
+            print(ret.stdout_text)
+"""
 import os
 import shlex
 import stat
@@ -20,6 +33,10 @@ class Session:
     """
     Represents an SSH session to a remote system, for the purpose of
     executing commands remotely.
+
+    :class:`Session` is also a context manager. On entering the context
+    it tries to establish the connection, therefore on exiting that
+    connection is closed.
     """
 
     DEFAULT_OPTIONS = (('StrictHostKeyChecking', 'no'),
@@ -172,7 +189,7 @@ class Session:
         :param command: the command to execute over the SSH session
         :type command: str
         :returns: The command result object.
-        :rtype: A :class:`CmdResult` instance.
+        :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
         return process.run(self.get_raw_ssh_command(command),
                            ignore_status=True)
