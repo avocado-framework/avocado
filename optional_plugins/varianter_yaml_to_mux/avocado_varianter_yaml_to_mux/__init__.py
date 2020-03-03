@@ -421,7 +421,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
     description = 'Multiplexer plugin to parse yaml files to params'
 
     def initialize(self, args):
-        debug = args.get("varianter_debug", False)
+        debug = args.get('variants.debug')
 
         if debug:
             data = mux.MuxTreeNodeDebug()

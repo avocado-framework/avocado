@@ -153,7 +153,7 @@ class Parser:
         self.subcommands.required = True
 
         # Allow overriding default params by plugins
-        variants = varianter.Varianter(getattr(self.args, "varianter_debug", False))
+        variants = varianter.Varianter(getattr(self.args, "variants.debug", False))
         self.args.avocado_variants = variants
 
     def finish(self):
