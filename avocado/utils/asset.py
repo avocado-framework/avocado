@@ -367,17 +367,15 @@ class Asset:
         :return: metadata
         :rtype: dict or None
         """
-        asset_file = None
         try:
             asset_file = self.find_asset_file()
         except OSError:
             LOG.info("Metadata not available.")
+            return None
 
-        if asset_file is not None:
-            basename = os.path.splitext(asset_file)[0]
-            metadata_file = "%s_metadata.json" % basename
-            if os.path.isfile(metadata_file):
-                with open(metadata_file, "r") as f:
-                    metadata = json.load(f)
-                    return metadata
-        return None
+        basename = os.path.splitext(asset_file)[0]
+        metadata_file = "%s_metadata.json" % basename
+        if os.path.isfile(metadata_file):
+            with open(metadata_file, "r") as f:
+                metadata = json.load(f)
+                return metadata
