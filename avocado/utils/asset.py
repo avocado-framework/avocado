@@ -280,7 +280,11 @@ class Asset:
             urls.append(parsed_url.geturl())
 
         # First let's search for the file in each one of the cache locations
-        asset_file = self.find_asset_file()
+        asset_file = None
+        try:
+            asset_file = self.find_asset_file()
+        except OSError:
+            LOG.info("Asset not in cache, fetching it.")
 
         if asset_file is not None:
             if self.metadata is not None:
@@ -327,8 +331,9 @@ class Asset:
         """
         Search for the asset file in each one of the cache locations
 
-        :return: asset file if exists or None
-        :rtype: str or None
+        :return: asset path, if it exists in the cache
+        :rtype: str
+        :raises: OSError
         """
         parsed_url = urllib.parse.urlparse(self.name)
         basename = os.path.basename(parsed_url.path)
@@ -352,7 +357,8 @@ class Asset:
                 except Exception:  # pylint: disable=W0703
                     exc_type, exc_value = sys.exc_info()[:2]
                     LOG.error('%s: %s', exc_type.__name__, exc_value)
-        return None
+
+        raise OSError("File %s not found in the cache." % basename)
 
     def get_metadata(self):
         """
@@ -361,7 +367,11 @@ class Asset:
         :return: metadata
         :rtype: dict or None
         """
-        asset_file = self.find_asset_file()
+        asset_file = None
+        try:
+            asset_file = self.find_asset_file()
+        except OSError:
+            LOG.info("Metadata not available.")
 
         if asset_file is not None:
             basename = os.path.splitext(asset_file)[0]
