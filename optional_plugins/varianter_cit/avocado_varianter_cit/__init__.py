@@ -55,7 +55,8 @@ class VarianterCitCLI(CLI):
                                    "%(default)s, maximum number is 6"))
 
     def run(self, config):
-        if config.get("varianter_debug", False):
+        future = config.get('_future')
+        if future.get('variants.debug'):
             LOG.setLevel(logging.DEBUG)
 
 
