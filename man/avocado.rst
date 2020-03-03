@@ -419,7 +419,6 @@ Options for subcommand `multiplex` (`avocado multiplex --help`)::
       --variants VARIANTS   Verbosity of the list of variants. (positive integer -
                             0, 1, ... - or none, brief, normal, verbose, full,
                             max)
-      --system-wide         Combine the files with the default tree.
       -c, --contents        [obsoleted by --variants] Shows the node content
                             (variables)
 

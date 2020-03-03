@@ -70,11 +70,6 @@ class Variants(CLICmd):
                                         parser=parser,
                                         long_arg='--variants')
 
-        parser.add_argument('--system-wide', action='store_false',
-                            default=True, dest="variants-skip-defaults",
-                            help="Combine the files with the default "
-                            "tree.")
-
         help_msg = ('[obsoleted by --variants] Shows the node content '
                     '(variables)')
         future_settings.register_option(section='variants',
