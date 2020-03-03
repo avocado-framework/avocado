@@ -639,6 +639,17 @@ class RemoteCLI(CLI):
                                          " to the remote machine. Defaults"
                                          " to %(default)s seconds."))
 
+        msg = 'keep environment variables'
+        env_keep_parser = run_subcommand_parser.add_argument_group(msg)
+        env_keep_parser.add_argument('--env-keep', dest='env_keep',
+                                     default=None,
+                                     type=self._parse_env_keep,
+                                     help='Keep environment variables in '
+                                          'remote executions')
+
+    def _parse_env_keep(self, string):
+        return string.split(',')
+
     @staticmethod
     def _check_required_config(config, enable_config, required_config):
         """

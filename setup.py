@@ -70,7 +70,6 @@ if __name__ == '__main__':
                   'avocado-software-manager = avocado.utils.software_manager:main',
                   ],
               'avocado.plugins.cli': [
-                  'envkeep = avocado.plugins.envkeep:EnvKeep',
                   'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnitCLI',
                   'json = avocado.plugins.jsonresult:JSONCLI',
