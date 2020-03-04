@@ -128,8 +128,13 @@ def iso(output_path, instance_id, username=None, password=None,
 
 
 class PhoneHomeServerHandler(BaseHTTPRequestHandler):
+    """Handles HTTP requests to the phone home server."""
 
     def do_POST(self):
+        """Handles an HTTP POST request.
+
+        Respond with status 200 if the instance phoned back.
+        """
         path = self.path[1:]
         if path[-1] == '/':
             path = path[:-1]
@@ -138,12 +143,28 @@ class PhoneHomeServerHandler(BaseHTTPRequestHandler):
         self.send_response(200)
 
     def log_message(self, format_, *args):  # pylint: disable=W0221
-        pass
+        """Logs an arbitrary message.
+
+        :note: It currently disables any message logging.
+        """
 
 
 class PhoneHomeServer(HTTPServer):
+    """Implements the phone home HTTP server.
+
+    Wait the phone home from a given instance.
+    """
 
     def __init__(self, address, instance_id):
+        """Initialize the server.
+
+        :param address: a hostname or IP address and port, in the same format
+                        given to socket and other servers
+        :type address: tuple
+        :param instance_id: the identification for the instance that should be
+                            calling back, and the condition for the wait to end
+        :type instance_id: str
+        """
         HTTPServer.__init__(self, address, PhoneHomeServerHandler)
         self.instance_id = instance_id
         self.instance_phoned_back = False
