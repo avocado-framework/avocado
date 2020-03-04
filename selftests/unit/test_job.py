@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 import unittest.mock
@@ -204,7 +205,10 @@ class JobTest(unittest.TestCase):
                   'show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
+        # temporarily disable logging on console
+        logging.disable(logging.ERROR)
         self.job.run()
+        logging.disable(logging.NOTSET)
         self.assertNotEqual(self.job.time_start, -1)
         self.assertNotEqual(self.job.time_end, -1)
         self.assertNotEqual(self.job.time_elapsed, -1)
@@ -215,7 +219,10 @@ class JobTest(unittest.TestCase):
         self.job = job.Job(config)
         self.job.setup()
         self.job.time_start = 10.0
+        # temporarily disable logging on console
+        logging.disable(logging.ERROR)
         self.job.run()
+        logging.disable(logging.NOTSET)
         self.job.time_end = 20.0
         # forcing a different value to check if it's not being
         # calculated when time_start or time_end are manually set
