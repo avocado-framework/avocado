@@ -675,21 +675,25 @@ def service_manager(run=process.run):
     Detect which init program is being used, init or systemd and return a
     class has methods to start/stop services.
 
-    # Get the system service manager
-    >> service_manager = ServiceManager()
+    Example of use:
 
-    # Stating service/unit "sshd"
-    >> service_manager.start("sshd")
+    .. code-block::
 
-    # Getting a list of available units
-    >> units = service_manager.list()
+      # Get the system service manager
+      service_manager = ServiceManager()
 
-    # Disabling and stopping a list of services
-    >> services_to_disable = ['ntpd', 'httpd']
+      # Stating service/unit "sshd"
+      service_manager.start("sshd")
 
-    >> for s in services_to_disable:
-    >>    service_manager.disable(s)
-    >>    service_manager.stop(s)
+      # Getting a list of available units
+      units = service_manager.list()
+
+      # Disabling and stopping a list of services
+      services_to_disable = ['ntpd', 'httpd']
+
+      for s in services_to_disable:
+          service_manager.disable(s)
+          service_manager.stop(s)
 
     :return: SysVInitServiceManager or SystemdServiceManager
     :rtype: _GenericServiceManager
@@ -746,17 +750,21 @@ def _auto_create_specific_service_command_generator(run=process.run):
 
 def specific_service_manager(service_name, run=process.run):
     """
-    # Get the specific service manager for sshd
-    >>> sshd = SpecificServiceManager("sshd")
-    >>> sshd.start()
-    >>> sshd.stop()
-    >>> sshd.reload()
-    >>> sshd.restart()
-    >>> sshd.condrestart()
-    >>> sshd.status()
-    >>> sshd.enable()
-    >>> sshd.disable()
-    >>> sshd.is_enabled()
+    Example of use:
+
+    .. code-block::
+
+      # Get the specific service manager for sshd
+      sshd = SpecificServiceManager("sshd")
+      sshd.start()
+      sshd.stop()
+      sshd.reload()
+      sshd.restart()
+      sshd.condrestart()
+      sshd.status()
+      sshd.enable()
+      sshd.disable()
+      sshd.is_enabled()
 
     :param service_name: systemd unit or init.d service to manager
     :type service_name: str
