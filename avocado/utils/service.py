@@ -749,7 +749,8 @@ def _auto_create_specific_service_command_generator(run=process.run):
 
 
 def specific_service_manager(service_name, run=process.run):
-    """
+    """Get the service manager for a specific service.
+
     Example of use:
 
     .. code-block::
