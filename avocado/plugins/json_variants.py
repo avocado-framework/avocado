@@ -17,6 +17,7 @@ import sys
 
 from avocado.core import exit_codes
 from avocado.core import varianter
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.plugin_interfaces import Varianter
@@ -37,15 +38,19 @@ class JsonVariantsCLI(CLI):
 
     def configure(self, parser):
 
+        help_msg = 'Load the Variants from a JSON serialized file'
         for name in ("run", "variants"):  # intentionally omitting "multiplex"
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
                 continue
             sparser = subparser.add_argument_group('JSON serialized based '
                                                    'varianter options')
-            sparser.add_argument('--json-variants-load', default=None,
-                                 help=('Load the Variants from a JSON '
-                                       'serialized file'))
+            settings.register_option(section=name,
+                                     key='json_variants_load',
+                                     default=None,
+                                     help_msg=help_msg,
+                                     parser=sparser,
+                                     long_arg='--json-variants-load')
 
     def run(self, config):
         pass
@@ -62,7 +67,9 @@ class JsonVariants(Varianter):
     variants = None
 
     def initialize(self, config):
-        load_variants = config.get("json_variants_load", None)
+        # Looks like this could be either 'run' or 'variants'
+        subcommand = config.get('subcommand')
+        load_variants = config.get('{}.json_variants_load'.format(subcommand))
 
         if load_variants is None:
             self.variants = _NO_VARIANTS
