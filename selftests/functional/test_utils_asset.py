@@ -184,7 +184,8 @@ class TestAsset(unittest.TestCase):
                         cache_dirs=[self.cache_dir],
                         expire=None,
                         metadata=expected_metadata)
-        self.assertIsNone(a.get_metadata())
+        with self.assertRaises(OSError):
+            a.get_metadata()
 
     def tearDown(self):
         self.tmpdir.cleanup()
