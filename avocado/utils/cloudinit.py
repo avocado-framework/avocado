@@ -17,6 +17,8 @@ cloudinit configuration support
 
 This module can be easily used with :mod:`avocado.utils.vmimage`,
 to configure operating system images via the cloudinit tooling.
+
+:see: http://cloudinit.readthedocs.io.
 """
 
 from http.server import HTTPServer
