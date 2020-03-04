@@ -27,6 +27,7 @@ from . import iso9660
 
 
 #: The meta-data file template
+#:
 #: Positional template variables are: instance-id, hostname
 METADATA_TEMPLATE = """instance-id: {0}
 hostname: {1}
@@ -36,6 +37,7 @@ hostname: {1}
 USERDATA_HEADER = "#cloud-config"
 
 #: A username configuration as per cloudinit/config/cc_set_passwords.py
+#:
 #: Positional template variables : username
 USERNAME_TEMPLATE = """
 ssh_pwauth: True
@@ -46,7 +48,8 @@ system_info:
 """
 
 #: A username configuration as per cloudinit/config/cc_set_passwords.py
-#: Positional template variables : password
+#:
+#: Positional template variables are: password
 PASSWORD_TEMPLATE = """
 password: {0}
 chpasswd:
@@ -54,12 +57,15 @@ chpasswd:
 """
 
 #: An authorized key configuration for the default user
+#:
+#: Positional template variables are: ssh_authorized_keys
 AUTHORIZED_KEY_TEMPLATE = """
 ssh_authorized_keys:
   - {0}
 """
 
 #: A phone home configuration that will post just the instance id
+#:
 #: Positional template variables are: address, port
 PHONE_HOME_TEMPLATE = """
 phone_home:
