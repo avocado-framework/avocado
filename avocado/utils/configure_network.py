@@ -12,6 +12,7 @@
 #
 # Copyright: 2019 IBM
 # Authors : Vaishnavi Bhat <vaishnavi@linux.vnet.ibm.com>
+#         : Praveen K Pandey <praveen@linux.vnet.ibm.com>
 
 """
 Configure network when interface name and interface IP is available.
@@ -25,6 +26,7 @@ from . import distro
 from . import process
 from . import genio
 from .ssh import Session
+from . import wait
 
 log = logging.getLogger('avocado.test')
 
@@ -42,8 +44,9 @@ class NetworkInterface:
     operation on a  Network Interface
     """
 
-    def __init__(self, if_name):  # pylint: disable=W0231
+    def __init__(self, if_name, remote_session=None):  # pylint: disable=W0231
         self.name = if_name
+        self.remote_session = remote_session
 
     def set_ip(self, ipaddr, netmask, interface_type=None):
         """
@@ -60,7 +63,7 @@ class NetworkInterface:
             conf_file = "/etc/sysconfig/network-scripts/ifcfg-%s" % self.name
             self._move_config_file(conf_file, "%s.backup" % conf_file)
             with open(conf_file, "w") as network_conf:
-                if interface_type is None:
+                if interface_type:
                     interface_type = 'Ethernet'
                 network_conf.write("TYPE=%s \n" % interface_type)
                 network_conf.write("BOOTPROTO=none \n")
@@ -87,7 +90,6 @@ class NetworkInterface:
         self.bring_up()
 
     def unset_ip(self):
-
         """Utility to unassign IP to Defined Interface"""
 
         if distro.detect().name == 'rhel':
@@ -119,40 +121,52 @@ class NetworkInterface:
             return False
         return True
 
-    def set_mtu_host(self, mtu):
+    def set_mtu(self, mtu):
         """
         Utility set mtu size to a interface and return status
 
         :param mtu :  mtu size that meed to be set
+        :ptype : String
         :return : return True / False in case of mtu able to set
         """
         cmd = "ip link set %s mtu %s" % (self.name, mtu)
+
+        cmd_mtu = "ip add show %s" % self.name
+        mtu_value = ''
         try:
-            process.system(cmd, shell=True)
-        except process.CmdError as ex:
-            raise NWException("MTU size can not be set: %s" % ex)
-        try:
-            cmd = "ip add show %s" % self.name
-            mtuvalue = process.system_output(cmd, shell=True).decode("utf-8") \
-                .split()[4]
-            if mtuvalue == mtu:
+            if self.remote_session:
+                self.remote_session.cmd(cmd)
+                mtu_value = self.remote_session.cmd(
+                    cmd_mtu).stdout.decode("utf-8")
+            else:
+                process.system(cmd, shell=True)
+                mtu_value = process.system_output(
+                    cmd_mtu, shell=True).decode("utf-8")
+            if mtu in mtu_value and wait.wait_for(self.is_link_up, timeout=120, args=[self.name]):
                 return True
-        except Exception as ex:  # pylint: disable=W0703
-            raise NWException("setting MTU value in host failed: %s" % ex)
+        except Exception:  # pylint: disable=W0703
+            return False
         return False
+
+    def get_link_status(self):
+        """Utility used to get status of Network Interface"""
+
+        if self.remote_session:
+            return self.session.cmd("cat /sys/class/net/%s/operstate" % self.name).stdout
+        else:
+            return genio.read_file("/sys/class/net/%s/operstate" % self.name)
 
     def is_link_up(self):
         """
         Checks if the interface link is up
         :return: True if the interface's link up, False otherwise.
         """
-        if 'up' in genio.read_file("/sys/class/net/%s/operstate" % self.name):
-            log.info("Interface %s link is up", self.name)
+        if self.get_link_state() in ['up', 'UP']:
             return True
-        return False
+        else:
+            return False
 
     def bring_up(self):
-
         """Utility used to Bring up interface"""
 
         cmd = "ifup %s" % self.name
@@ -163,7 +177,6 @@ class NetworkInterface:
             raise NWException("ifup fails: %s" % ex)
 
     def bring_down(self):
-
         """Utility used to Bring down interface """
 
         cmd = "ifdown %s" % self.name
@@ -222,52 +235,53 @@ class NetworkInterface:
             raise NWException("ifdown fails: %s" % ex)
 
 
-class PeerInfo:
+class Host:
     """
     class for peer function
     """
 
-    def __init__(self, host, port=None, peer_user=None,
-                 key=None, peer_password=None):
+    def __init__(self, host, port=22, username=None,
+                 key=None, password=None):
         """
         create a object for accesses remote machine
         """
-        try:
-            self.session = Session(host, port=port, user=peer_user,
-                                   key=key, password=peer_password)
-        except Exception as ex:  # pylint: disable=W0703
-            raise NWException(
-                "connection not established to peer machine: %s" % ex)
+        self.host = host
+        self.port = port
+        self.username = username
+        self.key = key
+        self.password = password
+        self.session = None
+        self.interfaces = []
+        self._connect()
+        self._populate_interfaces()
 
-    def set_mtu_peer(self, peer_interface, mtu):
-        """
-        set MTU size in peer interface
-        :param peer_interface :  Interface of peer system
-        :return : status True when set otherwise False
-        """
-        cmd = "ip link set %s mtu %s" % (peer_interface, mtu)
-        try:
-            self.session.cmd(cmd)
-            cmd = "ip add show %s" % peer_interface
-            mtuvalue = self.session.cmd(cmd).stdout.decode("utf-8").split()[4]
-            if mtuvalue == mtu:
-                return True
-        except Exception:  # pylint: disable=W0703
+    def _connect(self):
+        if self.host and self.port and self.username:
+            try:
+                self.session = Session(self.host, port=self.port, user=self.username,
+                                       key=self.key, password=self.password)
+            except Exception as ex:  # pylint: disable=W0703
+                raise NWException(
+                    "Could not connect to host: {}".format(ex))
+
+    def is_remote(self):
+        if self.session:
+            return True
+        else:
             return False
 
-    def get_peer_interface(self, peer_ip):
-        """
-        get peer interface from peer ip
-        :param peer_ip : IP address of Peer system
-        :return        : Interface name of given IP in Peer system
-                         get peer interface from peer ip
-        """
-        cmd = "ip addr show"
-        try:
-            for line in self.session.cmd(cmd).stdout.decode("utf-8") \
-                                                    .splitlines():
-                if peer_ip in line:
-                    peer_interface = line.split()[-1]
-        except Exception as ex:  # pylint: disable=W0703
-            pass
-        return peer_interface
+    def _populate_interfaces(self):
+        names = []
+        if self.is_remote():
+            cmd = 'ls /sys/class/net'
+            try:
+                names = self.session.cmd(cmd).stdout.decode(
+                    "utf-8").strip().split('\n')
+            except Exception:  # pylint: disable=W0703
+                pass
+        else:
+            names = os.listdir('/sys/class/net')
+
+        for name in names:
+            self.interfaces.append(NetworkInterface(
+                name, remote_session=self.session))
