@@ -172,6 +172,51 @@ class NetworkInterface:
         else:
             raise NWException("%s interface not available" % self.name)
 
+    def get_hwaddr(self):
+        try:
+            interface_file = open(
+                '/sys/class/net/%s/address' % self.name)
+            hwaddr = interface_file.read().strip()
+            interface_file.close()
+            return hwaddr
+        except OSError as ex:
+            raise NWException("interface not found : %s" % ex)
+
+    def set_hwaddr(self, hwaddr):
+        """
+        Utility which set Hw address to Interface
+        :param hwaddr: Pass Hardwae address for defined interface
+        """
+        try:
+            process.system('ifconfig %s hw ether %s' %
+                           (self.name, hwaddr))
+        except Exception as ex:
+            raise NWException("ifdown fails: %s" % ex)
+
+    def add_hwaddr_address(self, maddr):
+        """
+        Utility which add mac address to a interface return Status
+        :param maddr: Mac address
+        :return: True  Based on success if fail raise NWException
+        """
+        try:
+            process.system('ip maddr add %s dev %s' % (maddr, self.name))
+            return True
+        except Exception as ex:
+            raise NWException("ifdown fails: %s" % ex)
+
+    def remove_hwaddr_address(self, maddr):
+        """
+        Utility remove mac address from interface and return Status
+        :param maddr: Mac address
+        :return:True on success if fail raise NWException
+        """
+        try:
+            process.system('ip maddr del %s dev %s' % (maddr, self.name))
+            return True
+        except Exception as ex:
+            raise NWException("ifdown fails: %s" % ex)
+
 
 class PeerInfo:
     """
