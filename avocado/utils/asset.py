@@ -370,8 +370,7 @@ class Asset:
         try:
             asset_file = self.find_asset_file()
         except OSError:
-            LOG.info("Metadata not available.")
-            return None
+            raise OSError("Metadata not available.")
 
         basename = os.path.splitext(asset_file)[0]
         metadata_file = "%s_metadata.json" % basename
