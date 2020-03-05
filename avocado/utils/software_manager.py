@@ -46,7 +46,7 @@ from . import data_factory
 from . import distro
 from . import path as utils_path
 
-log = logging.getLogger('avocado.test')
+log = logging.getLogger('avocado.utils.software_manager')
 
 # If you want to make this lib to support your particular package
 # manager/distro, please implement the given backend class and
@@ -484,23 +484,11 @@ class YumBackend(RpmBackend):
         Initializes the base command and the yum package repository.
         """
         super(YumBackend, self).__init__()
-        executable = utils_path.find_command(cmd)
-        base_arguments = '-y'
-        self.base_command = executable + ' ' + base_arguments
+        self.base_command = '%s -y ' % utils_path.find_command(cmd)
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
         self.cfgparser = configparser.ConfigParser()
         self.cfgparser.read(self.repo_file_path)
-        y_cmd = executable + ' --version | head -1'
-        cmd_result = process.run(y_cmd, ignore_status=True,
-                                 verbose=False, shell=True)
-        out = cmd_result.stdout_text.strip()
-        try:
-            ver = re.findall(r'\d*.\d*.\d*', out)[0]
-        except IndexError:
-            ver = out
-        self.pm_version = ver
-        log.debug('%s version: %s', cmd, self.pm_version)
-
+        self._set_version(cmd)
         if HAS_YUM_MODULE:
             self.yum_base = yum.YumBase()
         else:
@@ -515,11 +503,23 @@ class YumBackend(RpmBackend):
         """
         process.system("yum clean all", sudo=True)
 
+    def _set_version(self, cmd):
+        result = process.run(self.base_command + '--version',
+                             verbose=False,
+                             ignore_status=True)
+        first_line = result.stdout_text.splitlines()[0].strip()
+        try:
+            ver = re.findall(r'\d*.\d*.\d*', first_line)[0]
+        except IndexError:
+            ver = first_line
+        self.pm_version = ver
+        log.debug('%s version: %s', cmd, self.pm_version)
+
     def install(self, name):
         """
         Installs package [name]. Handles local installs.
         """
-        i_cmd = self.base_command + ' ' + 'install' + ' ' + name
+        i_cmd = self.base_command + 'install' + ' ' + name
 
         try:
             process.system(i_cmd, sudo=True)
@@ -533,7 +533,7 @@ class YumBackend(RpmBackend):
 
         :param name: Package name (eg. 'ipython').
         """
-        r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
+        r_cmd = self.base_command + 'erase' + ' ' + name
         try:
             process.system(r_cmd, sudo=True)
             return True
@@ -610,9 +610,9 @@ class YumBackend(RpmBackend):
         :type name: str
         """
         if not name:
-            r_cmd = self.base_command + ' ' + 'update'
+            r_cmd = self.base_command + 'update'
         else:
-            r_cmd = self.base_command + ' ' + 'update' + ' ' + name
+            r_cmd = self.base_command + 'update' + ' ' + name
 
         try:
             process.system(r_cmd, sudo=True)
@@ -1237,7 +1237,13 @@ def main():
     parser.add_argument('--verbose', dest="debug", action='store_true',
                         help='include debug messages in console output')
 
-    _, args = parser.parse_known_args()
+    namespace, args = parser.parse_known_args()
+
+    if namespace.debug:
+        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
     software_manager = SoftwareManager()
     if args:
         action = args[0]
