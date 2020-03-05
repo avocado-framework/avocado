@@ -71,7 +71,7 @@ class Session:
         return self
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
-        return self.quit()
+        self.quit()
 
     def _dash_o_opts_to_str(self, opts):
         """
