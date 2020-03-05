@@ -20,6 +20,7 @@ Configure network when interface name and interface IP is available.
 
 import shutil
 import os
+import json
 
 import logging
 from . import distro
@@ -233,6 +234,50 @@ class NetworkInterface:
             return True
         except Exception as ex:
             raise NWException("ifdown fails: %s" % ex)
+
+    def _get_interfce_details(self, version):
+        out_value = ''
+        cmd = "ip -%s -j address show %s" % (version, self.name)
+        if self.remote_session:
+            out_value = self.remote_session.cmd(cmd).stdout
+        else:
+            out_value = process.system_output(cmd)
+        output = json.loads(out_value)
+        if not output:
+            log.error("Unable to get ip address on interface: %s", self.name)
+            return False
+
+    def get_ip_address(self, version):
+        """
+        Get the IP address from a network interface
+        :param version: IP version
+        :return: IP address or False
+        """
+        try:
+            if version == 4:
+                return self._get_interfce_details(version='4')['addr_info'][0]['local']
+            elif version == 4:
+                return self._get_interfce_details(version='6')['addr_info'][0]['local']
+            else:
+                raise NWException("Version not supported")
+        except (IndexError, KeyError):
+            return False
+
+    def get_inet_detail(self, version):
+        """
+        Get the inet Detail from a network interface
+        :param version: IP version
+        :return: IP address or False
+        """
+        try:
+            if version == 4:
+                return self._get_interfce_details(version='4')['addr_info'][0]['family']
+            elif version == 4:
+                return self._get_interfce_details(version='6')['addr_info'][0]['family']
+            else:
+                raise NWException("Version not supported")
+        except (IndexError, KeyError):
+            return False
 
 
 class Host:
