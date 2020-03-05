@@ -20,6 +20,7 @@ Configure network when interface name and interface IP is available.
 
 import shutil
 import os
+import json
 
 import logging
 from . import distro
@@ -234,6 +235,47 @@ class NetworkInterface:
         except Exception as ex:
             raise NWException("ifdown fails: %s" % ex)
 
+    def _get_interfce_details(self, version):
+        out_value = ''
+        cmd = "ip -%s -j address show %s" % (version, self.name)
+        if self.remote_session:
+            out_value = self.remote_session.cmd(cmd).stdout
+        else:
+            out_value = process.system_output(cmd)
+        output = json.loads(out_value)
+        if not output:
+            log.error("Unable to get ip address on interface: %s", self.name)
+            return False
+        return output
+
+    def get_ip_address(self, version):
+        """
+        Get the IP address from a network interface
+        :param version: IP version
+        :return: IP address or False
+        """
+        try:
+            if version in ["4", "6"]:
+                return self._get_interfce_details(version)['addr_info'][0]['local']
+            else:
+                raise NWException("Version not supported")
+        except (IndexError, KeyError):
+            return False
+
+    def get_inet_detail(self, version):
+        """
+        Get the inet Detail from a network interface
+        :param version: IP version
+        :return: IP address or False
+        """
+        try:
+            if version in ["4", "6"]:
+                return self._get_interfce_details(version)['addr_info'][0]['local']
+            else:
+                raise NWException("Version not supported")
+        except (IndexError, KeyError):
+            return False
+
 
 class Host:
     """
@@ -285,3 +327,28 @@ class Host:
         for name in names:
             self.interfaces.append(NetworkInterface(
                 name, remote_session=self.session))
+
+    def get_interface(self, if_ip):
+        """
+        Get peer interface name on assigned ip
+        :param if_ip :  IP address
+        :return: interface or False
+        """
+        if_interface = ""
+        cmd = "ip addr show"
+        try:
+            if self.is_remote():
+                interface_details = self.session.cmd(
+                    cmd).stdout.decode("utf-8")
+            else:
+                interface_details = process.system_output(cmd).decode("utf-8")
+
+            for line in interface_details.splitlines():
+                if if_ip in line:
+                    if_interface = line.split()[-1]
+        except Exception:  # pylint: disable=W0703
+            return False
+        if if_interface == "":
+            return False
+        else:
+            return if_interface
