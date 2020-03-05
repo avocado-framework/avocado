@@ -278,57 +278,52 @@ It's possible to interact with the runner features by using the
 command line.  This interface is not stable at all, and may be changed
 or removed in the future.
 
-You can run a "noop" runner with::
-
-  python3 -m avocado.core.nrunner runnable-run -k noop
-
-You can run an "exec" runner with::
-
-  python3 -m avocado.core.nrunner runnable-run -k exec -u /bin/uname --args='-a'
-
-You can run an "exec-test" runner with::
-
-  python3 -m avocado.core.nrunner runnable-run -k exec-test -u /bin/true
-
-You can run a "python-unittest" runner with::
-
-  python3 -m avocado.core.nrunner runnable-run -k python-unittest -u unittest.TestCase
-
-Trying it out - Avocado Plugins
--------------------------------
-
-Simple Avocado plugins for the runner features are also available.
-
 Runnables from parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can run a "noop" runner with::
 
-  avocado runnable-run -k noop
+  avocado-runner runnable-run -k noop
 
 You can run an "exec" runner with::
 
-  avocado runnable-run -k exec -u /bin/sleep -a 3
+  avocado-runner runnable-run -k exec -u /bin/uname --args='-a'
 
 You can run an "exec-test" runner with::
 
-  avocado runnable-run -k exec-test -u /bin/true
+  avocado-runner runnable-run -k exec-test -u /bin/true
 
 You can run a "python-unittest" runner with::
 
-  avocado runnable-run python-unittest unittest.TestCase
+  avocado-runner runnable-run -k python-unittest -u unittest.TestCase
 
 Runnables from recipes
 ~~~~~~~~~~~~~~~~~~~~~~
 
 You can run a "noop" recipe with::
 
-  avocado runnable-run-recipe examples/recipes/runnables/noop.json
+  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/noop.json
 
 You can run an "exec" runner with::
 
-  avocado runnable-run-recipe examples/recipes/runnables/exec_sleep_3.json
+  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/exec_sleep_3.json
 
 You can run a "python-unittest" runner with::
 
-  avocado runnable-run-recipe examples/recipes/runnables/python_unittest.json
+  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/python_unittest.json
+
+Writing new runner scripts
+--------------------------
+
+Even though you can write runner scripts in any language, if you're
+writing a new runner script in Python, you can benefit from the
+:class:`avocado.core.nrunner.BaseRunnerApp` class and from the
+:class:`avocado.core.nrunner.BaseRunner` class.
+
+The following is a complete example of a script that could be named
+``avocado-runner-foo`` that could act as a nrunner compatible runner
+for runnables with kind ``foo``.
+
+.. literalinclude:: ../../../../examples/nrunner/runners/avocado-runner-foo
+   :language: python
+   :linenos:

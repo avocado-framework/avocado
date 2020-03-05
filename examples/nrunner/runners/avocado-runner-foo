@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+from avocado.core import nrunner
+
+
+class FooRunner(nrunner.BaseRunner):
+    def run(self):
+        yield {'status': 'pass',
+               # some extra info that a custom runner may return
+               'foo_level': len(self.runnable.uri)}
+
+
+class RunnerApp(nrunner.BaseRunnerApp):
+    PROG_NAME = 'avocado-runner-foo'
+    PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner for tests foo'
+    RUNNABLE_KINDS_CAPABLE = {'foo': FooRunner}
+
+
+def main():
+    nrunner.main(RunnerApp)
+
+
+if __name__ == '__main__':
+    main()

@@ -183,7 +183,9 @@ class Runner(unittest.TestCase):
 
     def test_runner_noop(self):
         runnable = nrunner.Runnable('noop', None)
-        runner = nrunner.runner_from_runnable(runnable)
+        runner = nrunner.runner_from_runnable(
+            runnable,
+            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -192,7 +194,9 @@ class Runner(unittest.TestCase):
     def test_runner_exec(self):
         runnable = nrunner.Runnable('exec', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')
-        runner = nrunner.runner_from_runnable(runnable)
+        runner = nrunner.runner_from_runnable(
+            runnable,
+            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -204,7 +208,9 @@ class Runner(unittest.TestCase):
     def test_runner_exec_test(self):
         runnable = nrunner.Runnable('exec-test', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')
-        runner = nrunner.runner_from_runnable(runnable)
+        runner = nrunner.runner_from_runnable(
+            runnable,
+            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'pass')
@@ -215,7 +221,9 @@ class Runner(unittest.TestCase):
 
     def test_runner_python_unittest(self):
         runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase')
-        runner = nrunner.runner_from_runnable(runnable)
+        runner = nrunner.runner_from_runnable(
+            runnable,
+            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
         results = [status for status in runner.run()]
         output1 = ('----------------------------------------------------------'
                    '------------\nRan 0 tests in ')
