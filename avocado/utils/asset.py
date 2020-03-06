@@ -68,10 +68,11 @@ class Asset:
         self.name = name
         self.asset_hash = asset_hash
 
-        self.parsed_url = urllib.parse.urlparse(self.name)
-        self.basename = os.path.basename(self.parsed_url.path)
+        self.parsed_name = urllib.parse.urlparse(self.name)
+        self.asset_name = os.path.basename(self.parsed_name.path)
         self.cache_relative_dir = self._get_relative_dir()
-        self.relative_dir = os.path.join(self.cache_relative_dir, self.basename)
+        self.relative_dir = os.path.join(self.cache_relative_dir,
+                                         self.asset_name)
 
         if algorithm is None:
             self.algorithm = DEFAULT_HASH_ALGORITHM
@@ -209,9 +210,9 @@ class Asset:
         :returns: target location of asset the file.
         :rtype: str
         """
-        if self.asset_hash and not self.parsed_url.scheme:
+        if self.asset_hash and not self.parsed_name.scheme:
             return 'by_name'
-        base_url = os.path.dirname(self.parsed_url.geturl())
+        base_url = os.path.dirname(self.parsed_name.geturl())
         base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
                                     base_url.encode(astring.ENCODING))
         return os.path.join('by_location', base_url_hash.hexdigest())
@@ -277,8 +278,8 @@ class Asset:
         """
         urls = []
         # If name is actually an url, it has to be included in urls list
-        if self.parsed_url.scheme:
-            urls.append(self.parsed_url.geturl())
+        if self.parsed_name.scheme:
+            urls.append(self.parsed_name.geturl())
 
         # First let's search for the file in each one of the cache locations
         asset_file = None
@@ -313,7 +314,7 @@ class Asset:
                                                ": %s" % urlobj.scheme)
             asset_file = os.path.join(cache_dir,
                                       self.cache_relative_dir,
-                                      self.basename)
+                                      self.asset_name)
             dirname = os.path.dirname(asset_file)
             if not os.path.isdir(dirname):
                 os.makedirs(dirname)
@@ -326,7 +327,7 @@ class Asset:
                 exc_type, exc_value = sys.exc_info()[:2]
                 LOG.error('%s: %s', exc_type.__name__, exc_value)
 
-        raise OSError("Failed to fetch %s." % self.basename)
+        raise OSError("Failed to fetch %s." % self.asset_name)
 
     def find_asset_file(self):
         """
@@ -355,7 +356,7 @@ class Asset:
                     exc_type, exc_value = sys.exc_info()[:2]
                     LOG.error('%s: %s', exc_type.__name__, exc_value)
 
-        raise OSError("File %s not found in the cache." % self.basename)
+        raise OSError("File %s not found in the cache." % self.asset_name)
 
     def get_metadata(self):
         """
