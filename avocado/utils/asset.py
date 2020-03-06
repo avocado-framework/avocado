@@ -211,9 +211,7 @@ class Asset:
         """
         if self.asset_hash and not self.parsed_url.scheme:
             return 'by_name'
-        base_url = "%s://%s/%s" % (self.parsed_url.scheme,
-                                   self.parsed_url.netloc,
-                                   os.path.dirname(self.parsed_url.path))
+        base_url = os.path.dirname(self.parsed_url.geturl())
         base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
                                     base_url.encode(astring.ENCODING))
         return os.path.join('by_location', base_url_hash.hexdigest())
