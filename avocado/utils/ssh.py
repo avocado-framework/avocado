@@ -179,7 +179,7 @@ class Session:
         """
         return self._ssh_cmd(self.DEFAULT_OPTIONS, ('-q', ), command)
 
-    def cmd(self, command):
+    def cmd(self, command, sudo=False):
         """
         Runs a command over the SSH session
 
@@ -188,9 +188,17 @@ class Session:
 
         :param command: the command to execute over the SSH session
         :type command: str
+        :param sudo: Whether the command requires admin privileges to run, so
+                     that sudo will be prepended to the command.  The
+                     assumption here is that the user running the command has a
+                     sudo configuration such that a password won't be prompted.
+                     If that's not the case, the command will straight out
+                     fail. Default is False.
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
+        if sudo:
+            command = "sudo {}".format(command)
         return process.run(self.get_raw_ssh_command(command),
                            ignore_status=True)
 
