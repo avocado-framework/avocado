@@ -114,20 +114,20 @@ class NetworkInterface:
     def bring_down(self):
         """Utility used to Bring down interface """
 
-        cmd = "ifdown {}".format(self.name)
+        cmd = "ip link set {} down".format(self.name)
         try:
             _run_command(cmd, self.remote_session, sudo=True)
         except Exception as ex:
-            raise NWException("ifdown fails: %s" % ex)
+            raise NWException("Failed to bring down: %s" % ex)
 
     def bring_up(self):
         """Utility used to Bring up interface"""
 
-        cmd = "ifup {}".format(self.name)
+        cmd = "ip link set {} up".format(self.name)
         try:
             _run_command(cmd, self.remote_session, sudo=True)
         except Exception as ex:
-            raise NWException("ifup fails: %s" % ex)
+            raise NWException("Failed to bring up: %s" % ex)
 
     def is_link_up(self):
         """
