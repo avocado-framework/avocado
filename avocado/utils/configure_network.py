@@ -28,11 +28,10 @@ import time
 
 from ipaddress import ip_interface
 
-from .ssh import Session
-
 from .distro import detect as distro_detect
 from .process import CmdError
 from .process import system_output
+from .ssh import Session
 from .wait import wait_for
 
 
@@ -141,11 +140,11 @@ class NetworkInterface:
         You must have sudo permissions to run this method on a host.
         """
 
-        cmd = "ifdown {}".format(self.name)
+        cmd = "ip link set {} down".format(self.name)
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException("ifdown fails: %s" % ex)
+            raise NWException("Failed to bring down: %s" % ex)
 
     def bring_up(self):
         """"Wake-up the interface.
@@ -154,11 +153,11 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
         """
-        cmd = "ifup {}".format(self.name)
+        cmd = "ip link set {} up".format(self.name)
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException("ifup fails: %s" % ex)
+            raise NWException("Failed to bring up: %s" % ex)
 
     def is_link_up(self):
         """Check if the interface is up or not.
