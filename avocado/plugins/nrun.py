@@ -1,4 +1,6 @@
 import asyncio
+import enum
+import json
 import multiprocessing
 import os
 import random
@@ -12,6 +14,105 @@ from avocado.core import resolver
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import path as utils_path
+
+
+#: All the known runners
+KNOWN_EXTERNAL_RUNNERS = {}
+
+
+class TaskSpawnStatus(enum.Enum):
+    #: The spawning of a task was perceived to be correct
+    SUCCESS = object()
+    #: The status has progressed further and the task has
+    #: produced and notified of some execution update, or
+    #: the spawning system could check the execution model
+    #: is up and running
+    RUNNING = object()
+    #: The spawning of the task has failed early and it's
+    #: not expected that it will produce any status
+    FAILURE = object()
+
+
+class BaseTaskIsolationModel:
+
+    def pre(self):
+        pass
+
+    def spawn(self, task, args=None):
+        pass
+
+    def is_running(self, task):
+        pass
+
+    def cleanup(self):
+        pass
+
+
+class ProcessTaskIsolationModel(BaseTaskIsolationModel):
+
+    def _pick_runner_or_default(self, task):
+        runner = pick_runner(task, KNOWN_EXTERNAL_RUNNERS)
+        if runner is None:
+            runner = [sys.executable, '-m', 'avocado.core.nrunner']
+        return runner
+
+    @asyncio.coroutine
+    def spawn(self, task, args=None):
+        runner = self._pick_runner_or_default(task)
+        args = runner[1:] + ['task-run'] + task.get_command_args()
+        runner = runner[0]
+
+        #pylint: disable=E1133
+        yield from asyncio.create_subprocess_exec(
+            runner,
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+
+class PodmanTaskIsolationModel(BaseTaskIsolationModel):
+
+    PODMAN_IMAGE = 'fedora:31'
+
+    @asyncio.coroutine
+    def spawn(self, task, args=None):
+        entry_point_cmd = '/tmp/avocado-runner'
+        entry_point_args = task.get_command_args()
+        entry_point_args.insert(0, "task-run")
+        entry_point_args.insert(0, entry_point_cmd)
+        entry_point = json.dumps(entry_point_args)
+        entry_point_arg = "--entrypoint=" + entry_point
+
+        proc = yield from asyncio.create_subprocess_exec(
+            "/usr/bin/podman", "create",
+            "--net=host",
+            entry_point_arg,
+            self.PODMAN_IMAGE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+        res = yield from proc.wait()
+        stdout = yield from proc.stdout.read()
+        container_id = stdout.decode().strip()
+
+        # Currently limited to avocado-runner, we'll expand on that
+        # when the runner requirements system is in place
+        this_path = os.path.abspath(__file__)
+        common_path = os.path.dirname(os.path.dirname(this_path))
+        avocado_runner_path = os.path.join(common_path, 'core', 'nrunner.py')
+        proc = yield from asyncio.create_subprocess_exec(
+            "/usr/bin/podman",
+            "cp",
+            avocado_runner_path,
+            f"{container_id}:{entry_point_cmd}")
+        yield from proc.wait()
+
+        proc = yield from asyncio.create_subprocess_exec("/usr/bin/podman",
+                                                         "start",
+                                                         container_id,
+                                                         stdout=asyncio.subprocess.PIPE,
+                                                         stderr=asyncio.subprocess.PIPE)
+        yield from proc.wait()
 
 
 def pick_runner(task, runners_registry):
@@ -86,7 +187,6 @@ class NRun(CLICmd):
     name = 'nrun'
     description = "*EXPERIMENTAL* runner: runs one or more tests"
 
-    KNOWN_EXTERNAL_RUNNERS = {}
 
     def configure(self, parser):
         parser = super(NRun, self).configure(parser)
@@ -98,6 +198,7 @@ class NRun(CLICmd):
         parser.add_argument("--status-server", default="127.0.0.1:8888",
                             metavar="HOST:PORT",
                             help="Host and port for status server, default is: %(default)s")
+        parser.add_argument("--podman", action="store_true", default=False)
         parser_common_args.add_tag_filter_args(parser)
 
     @asyncio.coroutine
@@ -113,37 +214,21 @@ class NRun(CLICmd):
                 print("Finished spawning tasks")
                 break
 
-            yield from self.spawn_task(task)
+            self.isolation_model.pre()
+            yield from self.isolation_model.spawn(task)
+            self.isolation_model.cleanup()
+
             identifier = task.identifier
             self.pending_tasks.remove(task)
             self.spawned_tasks.append(identifier)
             print("%s spawned" % identifier)
-
-    def pick_runner_or_default(self, task):
-        runner = pick_runner(task, self.KNOWN_EXTERNAL_RUNNERS)
-        if runner is None:
-            runner = [sys.executable, '-m', 'avocado.core.nrunner']
-        return runner
-
-    @asyncio.coroutine
-    def spawn_task(self, task):
-        runner = self.pick_runner_or_default(task)
-        args = runner[1:] + ['task-run'] + task.get_command_args()
-        runner = runner[0]
-
-        #pylint: disable=E1133
-        yield from asyncio.create_subprocess_exec(
-            runner,
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
 
     def run(self, config):
         resolutions = resolver.resolve(config.get('references'))
         tasks = job.resolutions_to_tasks(resolutions, config)
         self.pending_tasks = check_tasks_requirements(   # pylint: disable=W0201
             tasks,
-            self.KNOWN_EXTERNAL_RUNNERS)
+            KNOWN_EXTERNAL_RUNNERS)
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
@@ -155,6 +240,11 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
+            if config.get('podman'):
+                self.isolation_model = PodmanTaskIsolationModel()  # pylint: disable=W0201
+            else:
+                self.isolation_model = ProcessTaskIsolationModel() # pylint: disable=W0201
+
             loop = asyncio.get_event_loop()
             self.status_server = nrunner.StatusServer(config.get('status_server'),  # pylint: disable=W0201
                                                       [t.identifier for t in
