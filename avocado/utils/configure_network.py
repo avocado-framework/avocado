@@ -28,10 +28,11 @@ import time
 
 from ipaddress import ip_interface
 
-from . import distro
-from . import process
-from . import wait
-from .ssh import Session
+from ..distro import detect as distro_detect
+from ..process import CmdError
+from ..process import system_output
+from ..ssh import Session
+from ..wait import wait_for
 
 
 log = logging.getLogger('avocado.test')
@@ -43,7 +44,7 @@ def _run_command(command, remote_session=None, sudo=False):
         if sudo:
             command = "sudo {}".format(command)
         return remote_session.cmd(command).stdout.decode('utf-8')
-    return process.system_output(command, sudo=sudo).decode('utf-8')
+    return system_output(command, sudo=sudo).decode('utf-8')
 
 
 class NWException(Exception):
@@ -139,11 +140,11 @@ class NetworkInterface:
         You must have sudo permissions to run this method on a host.
         """
 
-        cmd = "ifdown {}".format(self.name)
+        cmd = "ip link set {} down".format(self.name)
         try:
             _run_command(cmd, self.remote_session, sudo=True)
         except Exception as ex:
-            raise NWException("ifdown fails: %s" % ex)
+            raise NWException("Failed to bring down: %s" % ex)
 
     def bring_up(self):
         """"Wake-up the interface.
@@ -152,11 +153,11 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
         """
-        cmd = "ifup {}".format(self.name)
+        cmd = "ip link set {} up".format(self.name)
         try:
             _run_command(cmd, self.remote_session, sudo=True)
         except Exception as ex:
-            raise NWException("ifup fails: %s" % ex)
+            raise NWException("Failed to bring up: %s" % ex)
 
     def is_link_up(self):
         """Check if the interface is up or not.
@@ -174,7 +175,7 @@ class NetworkInterface:
         :return: True or False. If yes, it will return True, otherwise will
                  return False.
         """
-        if self.remote_session:
+        if isinstance(self.remote_session, Session):
             return True
         return False
 
@@ -223,7 +224,7 @@ class NetworkInterface:
         cmd = "cat /sys/class/net/{}/operstate".format(self.name)
         try:
             return _run_command(cmd, self.remote_session)
-        except process.CmdError as e:
+        except CmdError as e:
             msg = ('Failed to get link state. Maybe the interface is '
                    'missing. {}'.format(e))
             raise NWException(msg)
@@ -277,7 +278,7 @@ class NetworkInterface:
                    'inconsistency, please add the ipaddr first.')
             raise NWException(msg)
 
-        current_distro = distro.detect()
+        current_distro = distro_detect()
 
         filename = "ifcfg-{}".format(self.name)
         if current_distro.name in ['rhel', 'fedora']:
@@ -316,7 +317,7 @@ class NetworkInterface:
         """
         cmd = "ip link set %s mtu %s" % (self.name, mtu)
         _run_command(cmd, self.remote_session, sudo=True)
-        wait.wait_for(self.is_link_up, timeout=timeout)
+        wait_for(self.is_link_up, timeout=timeout)
         if int(mtu) != self.get_mtu():
             raise NWException("Failed to set MTU.")
 
