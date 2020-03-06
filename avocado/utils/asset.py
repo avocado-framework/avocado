@@ -70,7 +70,7 @@ class Asset:
 
         self.parsed_url = urllib.parse.urlparse(self.name)
         self.basename = os.path.basename(self.parsed_url.path)
-        self.cache_relative_dir = self._get_relative_dir(self.parsed_url)
+        self.cache_relative_dir = self._get_relative_dir()
         self.relative_dir = os.path.join(self.cache_relative_dir, self.basename)
 
         if algorithm is None:
@@ -194,7 +194,7 @@ class Asset:
                     self._create_hash_file(asset_path)
                     return self._verify_hash(asset_path)
 
-    def _get_relative_dir(self, parsed_url):
+    def _get_relative_dir(self):
         """
         When an asset name is not an URL, and it also has a hash,
         there's a clear intention for it to be unique *by name*,
@@ -206,15 +206,14 @@ class Asset:
         assets with the same file name, but completely unrelated to
         each other, will still coexist.
 
-        :param url: parsed url object.
         :returns: target location of asset the file.
         :rtype: str
         """
-        if self.asset_hash and not parsed_url.scheme:
+        if self.asset_hash and not self.parsed_url.scheme:
             return 'by_name'
-        base_url = "%s://%s/%s" % (parsed_url.scheme,
-                                   parsed_url.netloc,
-                                   os.path.dirname(parsed_url.path))
+        base_url = "%s://%s/%s" % (self.parsed_url.scheme,
+                                   self.parsed_url.netloc,
+                                   os.path.dirname(self.parsed_url.path))
         base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
                                     base_url.encode(astring.ENCODING))
         return os.path.join('by_location', base_url_hash.hexdigest())
