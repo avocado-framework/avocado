@@ -70,8 +70,7 @@ class Asset:
 
         self.parsed_name = urllib.parse.urlparse(self.name)
         self.asset_name = os.path.basename(self.parsed_name.path)
-        self.cache_relative_dir = self._get_relative_dir()
-        self.relative_dir = os.path.join(self.cache_relative_dir,
+        self.relative_dir = os.path.join(self._get_relative_dir(),
                                          self.asset_name)
 
         if algorithm is None:
@@ -313,8 +312,7 @@ class Asset:
                 raise UnsupportedProtocolError("Unsupported protocol"
                                                ": %s" % urlobj.scheme)
             asset_file = os.path.join(cache_dir,
-                                      self.cache_relative_dir,
-                                      self.asset_name)
+                                      self.relative_dir)
             dirname = os.path.dirname(asset_file)
             if not os.path.isdir(dirname):
                 os.makedirs(dirname)
