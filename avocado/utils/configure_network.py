@@ -189,7 +189,10 @@ class NetworkInterface:
             raise NWException(msg)
 
     def get_mtu(self):
-        pass
+        try:
+            return self._get_interface_details()[0].get('mtu')
+        except (KeyError, IndexError):
+            raise NWException("Could not get MUT value.")
 
     def ping_check(self, peer_ip, options=None):
         """This method will try to ping a peer address (IPv4 or IPv6).
@@ -258,7 +261,7 @@ class NetworkInterface:
         except Exception as ex:
             raise NWException("Setting Mac address failed: %s" % ex)
 
-    def set_mtu(self, mtu):
+    def set_mtu(self, mtu, timeout=30):
         """
         Utility set mtu size to a interface and return status
 
