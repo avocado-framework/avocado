@@ -26,7 +26,7 @@ import socket
 import subprocess
 import tempfile
 
-from . import network
+from .network import ports
 from .external import gdbmi_parser
 
 #: Contains a list of binary names that should be run via the GNU debugger
@@ -633,7 +633,7 @@ class GDBServer:
         args += self.REQUIRED_ARGS
 
         if port is None:
-            self.port = network.find_free_port(*self.PORT_RANGE)
+            self.port = ports.find_free_port(*self.PORT_RANGE)
         else:
             self.port = port
         args.append(":%s" % self.port)

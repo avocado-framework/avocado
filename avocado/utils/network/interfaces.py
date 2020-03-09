@@ -16,10 +16,6 @@
 #         : Praveen K Pandey <praveen@linux.vnet.ibm.com>
 #         : Vaishnavi Bhat <vaishnavi@linux.vnet.ibm.com>
 
-"""
-This module provides useful network interfaces methods.
-"""
-
 import json
 import logging
 import os
@@ -28,29 +24,15 @@ import time
 
 from ipaddress import ip_interface
 
-from .distro import detect as distro_detect
-from .process import CmdError
-from .process import system_output
-from .ssh import Session
-from .wait import wait_for
+from .common import run_command
+from .exceptions import NWException
+
+from ..distro import detect as distro_detect
+from ..process import CmdError
+from ..wait import wait_for
 
 
 log = logging.getLogger('avocado.test')
-
-
-# Probably this will be replaced by aexpect
-def run_command(command, host, sudo=False):
-    if host.__class__.__name__ == 'LocalHost':
-        return system_output(command, sudo=sudo).decode('utf-8')
-    if sudo:
-        command = "sudo {}".format(command)
-    return host.remote_session.cmd(command).stdout.decode('utf-8')
-
-
-class NWException(Exception):
-    """
-    Base Exception Class for all exceptions
-    """
 
 
 class NetworkInterface:
@@ -328,94 +310,3 @@ class NetworkInterface:
         except Exception as ex:
             msg = 'Failed to remove ipaddr. {}'.format(ex)
             raise NWException(msg)
-
-
-class Host:
-    """This class represents a base Host and shouldn't be instantiated.
-
-    Use one of the child classes (LocalHost or RemoteHost).
-
-    During the initialization of a child, all interfaces will be detected and
-    available via `interfaces` attribute. This could be accessed on LocalHost
-    and RemoteHost instances.
-
-    So, for instance, you could have a local and a remote host::
-
-        remote = RemoteHost(host='foo', port=22,
-                            username='foo', password='bar')
-        local = LocalHost()
-
-    You can iterate over the network interfaces of any host::
-
-        for i in remote.interfaces:
-            print(i.name, i.is_link_up())
-    """
-    def __init__(self, host):
-        self.host = host
-
-    @property
-    def interfaces(self):
-        cmd = 'ls /sys/class/net'
-        try:
-            names = run_command(cmd, self).split()
-        except Exception as ex:
-            raise NWException("Failed to get interfaces: {}".format(ex))
-
-        return [NetworkInterface(if_name=name, host=self) for name in names]
-
-    def get_interface_by_ipaddr(self, ipaddr):
-        """Return an interface that has a specific ipaddr."""
-        for interface in self.interfaces:
-            if ipaddr in interface.get_ipaddrs():
-                return interface
-
-
-class LocalHost(Host):
-    """
-    This class represents a local host and inherit from `Host`.
-
-    You should use this class when trying to get information about your
-    localhost.
-
-    Example:
-
-        local = LocalHost()
-    """
-    def __init__(self, host='localhost'):
-        super().__init__(host)
-
-
-class RemoteHost(Host):
-    """
-    This class represents a remote host and inherit from `Host`.
-
-    You must provide at least an username to stablish a connection.
-
-    Example with password:
-
-        remote = RemoteHost(host='192.168.0.1',
-                            port=22,
-                            username='foo',
-                            password='bar')
-
-    You can also provide a key instead of a password.
-    """
-    def __init__(self, host, username, port=22, key=None, password=None):
-        super().__init__(host)
-        self.port = port
-        self.username = username
-        self.key = key
-        self.password = password
-        self.remote_session = self._connect()
-
-    def _connect(self):
-        session = Session(host=self.host,
-                          port=self.port,
-                          user=self.username,
-                          key=self.key,
-                          password=self.password)
-        if session.connect():
-            return session
-        msg = "Failed connecting {}:{}".format(self.host,
-                                               self.port)
-        raise NWException(msg)

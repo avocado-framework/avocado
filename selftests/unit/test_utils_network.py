@@ -7,29 +7,29 @@ try:
 except ImportError:
     HAS_NETIFACES = False
 
-from avocado.utils import network
+import avocado.utils.network.ports as ports
 
 
 class PortTrackerTest(unittest.TestCase):
 
     def test_register_port(self):
-        tracker = network.PortTracker()
-        network.is_port_free = unittest.mock.MagicMock(return_value=True)
+        tracker = ports.PortTracker()
+        ports.is_port_free = unittest.mock.MagicMock(return_value=True)
         self.assertNotIn(22, tracker.retained_ports)
         tracker.register_port(22)
-        network.is_port_free.assert_called_once_with(22, tracker.address)
+        ports.is_port_free.assert_called_once_with(22, tracker.address)
         self.assertIn(22, tracker.retained_ports)
 
     def test_release_port_does_not_poke_system(self):
-        tracker = network.PortTracker()
+        tracker = ports.PortTracker()
         tracker.release_port = unittest.mock.MagicMock()
-        network.is_port_free = unittest.mock.MagicMock()
+        ports.is_port_free = unittest.mock.MagicMock()
         tracker.release_port(22)
         tracker.release_port.assert_called_once_with(22)
-        network.is_port_free.assert_not_called()
+        ports.is_port_free.assert_not_called()
 
     def test_release_port(self):
-        tracker = network.PortTracker()
+        tracker = ports.PortTracker()
         tracker.retained_ports = [22]
         tracker.release_port(22)
         self.assertNotIn(22, tracker.retained_ports)
@@ -55,8 +55,8 @@ class FreePort(unittest.TestCase):
     @unittest.skipUnless(HAS_NETIFACES,
                          "netifaces library not available")
     def test_is_port_free(self):
-        port = network.find_free_port(sequent=False)
-        self.assertTrue(network.is_port_free(port, "localhost"))
+        port = ports.find_free_port(sequent=False)
+        self.assertTrue(ports.is_port_free(port, "localhost"))
         local_addrs = get_all_local_addrs()
         ipv4_addrs = ["localhost", ""] + list(local_addrs[0])
         ipv6_addrs = ["localhost", ""] + list(local_addrs[1])
@@ -64,17 +64,17 @@ class FreePort(unittest.TestCase):
         bad = []
         skip = []
         sock = None
-        for family in network.FAMILIES:
+        for family in ports.FAMILIES:
             if family == socket.AF_INET:
                 addrs = ipv4_addrs
             else:
                 addrs = ipv6_addrs
             for addr in addrs:
-                for protocol in network.PROTOCOLS:
+                for protocol in ports.PROTOCOLS:
                     try:
                         sock = socket.socket(family, protocol)
                         sock.bind((addr, port))
-                        if network.is_port_free(port, "localhost"):
+                        if ports.is_port_free(port, "localhost"):
                             bad.append("%s, %s, %s: reports free"
                                        % (family, protocol, addr))
                         else:
