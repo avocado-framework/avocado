@@ -19,7 +19,7 @@ Module with network related utility functions
 import socket
 import random
 
-from .data_structures import Borg
+from ..data_structures import Borg
 
 #: Families taken into account in this class
 FAMILIES = (socket.AF_INET, socket.AF_INET6)

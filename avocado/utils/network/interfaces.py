@@ -16,10 +16,6 @@
 #         : Praveen K Pandey <praveen@linux.vnet.ibm.com>
 #         : Vaishnavi Bhat <vaishnavi@linux.vnet.ibm.com>
 
-"""
-This module provides useful network interfaces methods.
-"""
-
 import json
 import logging
 import os
@@ -28,29 +24,16 @@ import time
 
 from ipaddress import ip_interface
 
+from .common import _run_command
+from .exceptions import NWException
+
 from ..distro import detect as distro_detect
 from ..process import CmdError
-from ..process import system_output
-from ..ssh import Session
 from ..wait import wait_for
+from ..ssh import Session
 
 
 log = logging.getLogger('avocado.test')
-
-
-# Probably this will be replaced by aexpect
-def _run_command(command, remote_session=None, sudo=False):
-    if remote_session:
-        if sudo:
-            command = "sudo {}".format(command)
-        return remote_session.cmd(command).stdout.decode('utf-8')
-    return system_output(command, sudo=sudo).decode('utf-8')
-
-
-class NWException(Exception):
-    """
-    Base Exception Class for all exceptions
-    """
 
 
 class NetworkInterface:
@@ -338,65 +321,3 @@ class NetworkInterface:
         except Exception as ex:
             msg = 'Failed to remove ipaddr. {}'.format(ex)
             raise NWException(msg)
-
-
-class Host:
-    """
-    This class represents a Host.
-
-    A host can be local or remote. If you pass port, username, key or password,
-    a connection will attempt to be created.
-
-    During the initialization, all interfaces will be detected and available
-    via `interfaces` attribute.
-
-    So, for instance you could have a local and a remote host::
-
-        local = Host(host='foo', port=22, username='foo', password='bar')
-        remote = Host(host='bar')
-
-    You can iterate over the network interfaces of any host::
-
-        for i in remote.interfaces:
-            print(i.name, i.is_link_up())
-    """
-
-    def __init__(self, host, port=22, username=None,
-                 key=None, password=None):
-        self.host = host
-        self.port = port
-        self.username = username
-        self.key = key
-        self.password = password
-        self.remote_session = None
-
-        self._connect()
-
-    def _connect(self):
-        if self.host and self.port and self.username:
-            try:
-                self.remote_session = Session(host=self.host,
-                                              port=self.port,
-                                              user=self.username,
-                                              key=self.key,
-                                              password=self.password)
-            except Exception as ex:
-                raise NWException("Could not connect to host: {}".format(ex))
-
-    @property
-    def interfaces(self):
-        cmd = 'ls /sys/class/net'
-        try:
-            names = _run_command(cmd, self.remote_session).split()
-        except Exception as ex:
-            raise NWException("Failed to get interfaces: {}".format(ex))
-
-        session = self.remote_session
-        return [NetworkInterface(if_name=name,
-                                 remote_session=session) for name in names]
-
-    def get_interface_by_ipaddr(self, ipaddr):
-        """Return an interface that has a specific ipaddr."""
-        for interface in self.interfaces:
-            if ipaddr in interface.get_ipaddrs():
-                return interface
