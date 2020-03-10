@@ -67,6 +67,12 @@ class Asset:
         """
         self.name = name
         self.asset_hash = asset_hash
+
+        self.parsed_name = urllib.parse.urlparse(self.name)
+        self.asset_name = os.path.basename(self.parsed_name.path)
+        self.relative_dir = os.path.join(self._get_relative_dir(),
+                                         self.asset_name)
+
         if algorithm is None:
             self.algorithm = DEFAULT_HASH_ALGORITHM
         else:
@@ -188,7 +194,7 @@ class Asset:
                     self._create_hash_file(asset_path)
                     return self._verify_hash(asset_path)
 
-    def _get_relative_dir(self, parsed_url):
+    def _get_relative_dir(self):
         """
         When an asset name is not an URL, and it also has a hash,
         there's a clear intention for it to be unique *by name*,
@@ -200,15 +206,12 @@ class Asset:
         assets with the same file name, but completely unrelated to
         each other, will still coexist.
 
-        :param url: parsed url object.
         :returns: target location of asset the file.
         :rtype: str
         """
-        if self.asset_hash and not parsed_url.scheme:
+        if self.asset_hash and not self.parsed_name.scheme:
             return 'by_name'
-        base_url = "%s://%s/%s" % (parsed_url.scheme,
-                                   parsed_url.netloc,
-                                   os.path.dirname(parsed_url.path))
+        base_url = os.path.dirname(self.parsed_name.geturl())
         base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
                                     base_url.encode(astring.ENCODING))
         return os.path.join('by_location', base_url_hash.hexdigest())
@@ -273,11 +276,9 @@ class Asset:
         :rtype: str
         """
         urls = []
-        parsed_url = urllib.parse.urlparse(self.name)
-
         # If name is actually an url, it has to be included in urls list
-        if parsed_url.scheme:
-            urls.append(parsed_url.geturl())
+        if self.parsed_name.scheme:
+            urls.append(self.parsed_name.geturl())
 
         # First let's search for the file in each one of the cache locations
         asset_file = None
@@ -301,8 +302,6 @@ class Asset:
             for item in self.locations:
                 urls.append(item)
 
-        cache_relative_dir = self._get_relative_dir(parsed_url)
-        basename = os.path.basename(parsed_url.path)
         for url in urls:
             urlobj = urllib.parse.urlparse(url)
             if urlobj.scheme in ['http', 'https', 'ftp']:
@@ -312,7 +311,8 @@ class Asset:
             else:
                 raise UnsupportedProtocolError("Unsupported protocol"
                                                ": %s" % urlobj.scheme)
-            asset_file = os.path.join(cache_dir, cache_relative_dir, basename)
+            asset_file = os.path.join(cache_dir,
+                                      self.relative_dir)
             dirname = os.path.dirname(asset_file)
             if not os.path.isdir(dirname):
                 os.makedirs(dirname)
@@ -325,7 +325,7 @@ class Asset:
                 exc_type, exc_value = sys.exc_info()[:2]
                 LOG.error('%s: %s', exc_type.__name__, exc_value)
 
-        raise OSError("Failed to fetch %s." % basename)
+        raise OSError("Failed to fetch %s." % self.asset_name)
 
     def find_asset_file(self):
         """
@@ -335,14 +335,10 @@ class Asset:
         :rtype: str
         :raises: OSError
         """
-        parsed_url = urllib.parse.urlparse(self.name)
-        basename = os.path.basename(parsed_url.path)
-        cache_relative_dir = self._get_relative_dir(parsed_url)
-        relative_dir = os.path.join(cache_relative_dir, basename)
 
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
-            asset_file = os.path.join(cache_dir, relative_dir)
+            asset_file = os.path.join(cache_dir, self.relative_dir)
 
             # To use a cached file, it must:
             # - Exists.
@@ -358,7 +354,7 @@ class Asset:
                     exc_type, exc_value = sys.exc_info()[:2]
                     LOG.error('%s: %s', exc_type.__name__, exc_value)
 
-        raise OSError("File %s not found in the cache." % basename)
+        raise OSError("File %s not found in the cache." % self.asset_name)
 
     def get_metadata(self):
         """
