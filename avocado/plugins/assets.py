@@ -215,7 +215,7 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
                             test_file, klass, method)
             asset_obj.fetch()
             success.append(call['name'])
-        except EnvironmentError as failed:
+        except OSError as failed:
             fail.append(failed)
     return success, fail
 
