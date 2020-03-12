@@ -180,7 +180,7 @@ class ConfigOption:
         if isinstance(value, list):
             return value
 
-        raise ValueError(f'"{value}" could not be converted into a list')
+        raise ValueError("{} could not be converted into a list".format(value))
 
     def set_value(self, value, convert=False):
         dst_type = self.key_type
