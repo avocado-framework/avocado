@@ -102,8 +102,9 @@ def resolutions_to_tasks(resolutions, config):
             if runnable.uri:
                 name = runnable.uri
             identifier = str(test.TestID(index + 1, name, None, no_digits))
+            status_server = config.get('nrun.status_server.listen')
             tasks.append(nrunner.Task(identifier, runnable,
-                                      [config.get('status_server')]))
+                                      [status_server]))
             index += 1
     return tasks
 
@@ -139,13 +140,13 @@ class Job:
                                          logging.DEBUG)
         self.__logging_handlers = {}
         self.standalone = self.config.get('standalone', False)
-        if self.config.get('dry_run', False):  # Modify args for dry-run
-            unique_id = self.config.get('unique_job_id', None)
+        if self.config.get('run.dry_run.enabled'):  # Modify args for dry-run
+            unique_id = self.config.get('run.unique_job_id')
             if unique_id is None:
-                self.config['unique_job_id'] = '0' * 40
-            self.config['sysinfo'] = False
+                self.config['run.unique_job_id'] = '0' * 40
+            self.config['sysinfo.collect.enabled'] = 'off'
 
-        unique_id = self.config.get('unique_job_id', None)
+        unique_id = self.config.get('run.unique_job_id')
         if unique_id is None:
             unique_id = job_id.create_unique_job_id()
         self.unique_id = unique_id
@@ -160,7 +161,13 @@ class Job:
         self.result = None
         self.interrupted_reason = None
         self.sysinfo = None
-        self.timeout = self.config.get('job_timeout', 0)
+        timeout = self.config.get('run.job_timeout')
+        try:
+            self.timeout = data_structures.time_to_seconds(timeout)
+        except ValueError as detail:
+            LOG_UI.error(detail.args[0])
+            sys.exit(exit_codes.AVOCADO_FAIL)
+
         #: The time at which the job has started or `-1` if it has not been
         #: started by means of the `run()` method.
         self.time_start = -1
@@ -188,10 +195,10 @@ class Job:
         #: only once, since they are read only and will be shared across all
         #: tests of a job.
         self.test_parameters = None
-        if "test_parameters" in self.config:
+        if "run.test_parameters" in self.config:
             self.test_parameters = {}
-            for parameter_name, parameter_value in self.config.get('test_parameters'):
-                self.test_parameters[parameter_name] = parameter_value
+            for name, value in self.config.get('run.test_parameters'):
+                self.test_parameters[name] = value
 
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
@@ -214,15 +221,16 @@ class Job:
         Setup the temporary job handlers (dirs, global setting, ...)
         """
         assert self.tmpdir is None, "Job.setup() already called"
-        if self.config.get("dry_run", False):  # Create the dry-run dirs
-            if self.config.get("base_logdir", None) is None:
-                self.config['base_logdir'] = tempfile.mkdtemp(prefix="avocado-dry-run-")
+        if self.config.get('run.dry_run.enabled'):  # Create the dry-run dirs
+            if self.config.get('run.results_dir') is None:
+                tmp_dir = tempfile.mkdtemp(prefix="avocado-dry-run-")
+                self.config['run.results_dir'] = tmp_dir
         self._setup_job_results()
         self.result = result.Result(self.unique_id, self.logfile)
         self.__start_job_logging()
         self._setup_job_category()
         # Use "logdir" in case "keep_tmp" is enabled
-        if self.config.get("keep_tmp", None) == "on":
+        if self.config.get('run.keep_tmp') == 'on':
             base_tmpdir = self.logdir
         else:
             base_tmpdir = data_dir.get_tmp_dir()
@@ -234,7 +242,7 @@ class Job:
         """
         Prepares a job result directory, also known as logdir, for this job
         """
-        base_logdir = self.config.get('base_logdir', None)
+        base_logdir = self.config.get('run.results_dir')
         if self.standalone:
             if base_logdir is not None:
                 base_logdir = os.path.abspath(base_logdir)
@@ -249,7 +257,7 @@ class Job:
                 base_logdir = os.path.abspath(base_logdir)
                 self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
                                                            unique_id=self.unique_id)
-        if not (self.standalone or self.config.get("dry_run", False)):
+        if not (self.standalone or self.config.get('run.dry_run.enabled')):
             self._update_latest_link()
         self.logfile = os.path.join(self.logdir, "job.log")
         idfile = os.path.join(self.logdir, "id")
@@ -269,7 +277,7 @@ class Job:
         This should allow a user to look at a single directory for all
         jobs of a given category.
         """
-        category = self.config.get('job_category', None)
+        category = self.config.get('run.job_category')
         if category is None:
             return
 
@@ -316,7 +324,15 @@ class Job:
         # Add --store-logging-streams
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
-        for name in self.config.get("store_logging_stream", []):
+
+        # TODO: Fix this, this is the only case using the new settings where
+        # get has a 'default' value
+        try:
+            store_logging_stream = self.config.get('run.store_logging_stream', [])
+        except AttributeError:
+            store_logging_stream = []
+
+        for name in store_logging_stream:
             name = re.split(r'(?<!\\):', name, maxsplit=1)
             if len(name) == 1:
                 name = name[0]
@@ -336,6 +352,7 @@ class Job:
                                "%s:%s: %s.", name, level, details)
             else:
                 self.__logging_handlers[handler] = [name]
+
         # Enable console loggers
         enabled_logs = self.config.get("show", [])
         if ('test' in enabled_logs and
@@ -402,7 +419,7 @@ class Job:
         """
         loader.loader.load_plugins(self.config)
         try:
-            force = self.config.get('ignore_missing_references', 'off')
+            force = self.config.get('run.ignore_missing_references')
             suite = loader.loader.discover(references, force=force)
             if self.config.get('filter_by_tags', False):
                 suite = tags.filter_test_tags(
@@ -415,7 +432,7 @@ class Job:
         except KeyboardInterrupt:
             raise exceptions.JobError('Command interrupted by user...')
 
-        if not self.config.get("dry_run", False):
+        if not self.config.get('run.dry_run.enabled'):
             return suite
         for i in range(len(suite)):
             suite[i] = [test.DryRunTest, suite[i][1]]
@@ -528,7 +545,9 @@ class Job:
 
         This is a public Job API as part of the documented Job phases
         """
-        refs = self.config.get('references', [])
+        refs = self.config.get('run.references')
+        if not refs:
+            refs = self.config.get('nrun.references')
         runner_name = self.config.get('test_runner', 'runner')
         try:
             if runner_name == 'nrunner':
@@ -564,6 +583,9 @@ class Job:
         The actual test execution phase
         """
         variant = self.config.get("avocado_variants", None)
+        refs = self.config.get('run.references')
+        if not refs:
+            refs = self.config.get('nrun.references')
         if variant is None:
             variant = varianter.Varianter()
         if not variant.is_parsed():   # Varianter not yet parsed, apply args
@@ -582,9 +604,9 @@ class Job:
 
         self._log_job_debug_info(variant)
         jobdata.record(self.config, self.logdir, variant,
-                       self.config.get('references'), sys.argv)
+                       refs, sys.argv)
         replay_map = self.config.get('replay_map', None)
-        execution_order = self.config.get('execution_order', None)
+        execution_order = self.config.get('run.execution_order')
         summary = self.test_runner.run_suite(self,
                                              self.result,
                                              self.test_suite,
@@ -673,12 +695,12 @@ class Job:
         if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
         cleanup_conditionals = (
-            self.config.get("dry_run", False),
-            not self.config.get("dry_run_no_cleanup", False)
+            self.config.get('run.dry_run.enabled'),
+            not self.config.get('run.dry_run.no_cleanup')
         )
         if all(cleanup_conditionals):
             # Also clean up temp base directory created because of the dry-run
-            base_logdir = self.config.get("base_logdir", None)
+            base_logdir = self.config.get('run.results_dir')
             if base_logdir is not None:
                 try:
                     FileNotFoundError
@@ -711,7 +733,8 @@ class TestProgram:
         output.add_log_handler("", output.ProgressStreamHandler,
                                fmt="%(message)s")
         self.parse_args(sys.argv[1:])
-        self.config['references'] = [sys.argv[0]]
+        self.config['run.references'] = [sys.argv[0]]
+        self.config['nrun.references'] = [sys.argv[0]]
         self.run_tests()
 
     def parse_args(self, argv):

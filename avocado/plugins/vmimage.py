@@ -2,6 +2,7 @@ import json
 import os
 import re
 
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core import data_dir, output
@@ -98,15 +99,39 @@ class VMimage(CLICmd):
         subcommands = parser.add_subparsers(dest='vmimage_subcommand')
         subcommands.required = True
         subcommands.add_parser('list', help='List of all downloaded images')
-        download_subcommand_parser = subcommands.add_parser(
-            'get', help="Downloads chosen VMimage if it's not already in the cache")
-        download_subcommand_parser.add_argument('--distro',
-                                                help='Name of image distribution',
-                                                required=True)
-        download_subcommand_parser.add_argument('--distro-version',
-                                                help='Required version of image')
-        download_subcommand_parser.add_argument('--arch',
-                                                help='Required architecture image')
+
+        get_parser = subcommands.add_parser('get',
+                                            help="Downloads chosen VMimage if "
+                                                 "it's not already in the "
+                                                 "cache")
+
+        help_msg = 'Name of image distribution'
+        settings.register_option(section='vmimage.get',
+                                 key='distro',
+                                 default=None,
+                                 help_msg=help_msg,
+                                 key_type=str,
+                                 parser=get_parser,
+                                 long_arg='--distro',
+                                 required=True)
+
+        help_msg = 'Image version'
+        settings.register_option(section='vmimage.get',
+                                 key='version',
+                                 default=None,
+                                 help_msg=help_msg,
+                                 key_type=str,
+                                 parser=get_parser,
+                                 long_arg='--distro-version')
+
+        help_msg = 'Image architecture'
+        settings.register_option(section='vmimage.get',
+                                 key='arch',
+                                 default=None,
+                                 help_msg=help_msg,
+                                 key_type=str,
+                                 parser=get_parser,
+                                 long_arg='--arch')
 
     def run(self, config):
         subcommand = config.get("vmimage_subcommand")
@@ -114,13 +139,15 @@ class VMimage(CLICmd):
             images = list_downloaded_images()
             display_images_list(images)
         elif subcommand == 'get':
-            image = {'name': config['distro'],
-                     'version': config.get('distro_version', None),
-                     'arch': config.get('arch', None), 'file': None}
+            name = config.get('vmimage.get.distro')
+            version = config.get('vmimage.get.version')
+            arch = config.get('vmimage.get.arch')
+            image = {'name': name,
+                     'version': version,
+                     'arch': arch,
+                     'file': None}
             try:
-                image = download_image(config['distro'],
-                                       config.get('distro_version', None),
-                                       config.get('arch', None))
+                image = download_image(name, version, arch)
                 LOG_UI.debug("The image was downloaded:")
             except AttributeError:
                 LOG_UI.debug("The image couldn't be downloaded:")

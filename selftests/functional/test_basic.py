@@ -1086,7 +1086,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertIn(b"Unable to resolve reference", result.stderr)
 
     def test_list_no_file_loader(self):
-        cmd_line = ("%s list --loaders external --verbose -- "
+        cmd_line = ("%s --verbose list --loaders external -- "
                     "this-wont-be-matched" % AVOCADO)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
@@ -1107,8 +1107,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         """
         test = script.make_script(os.path.join(self.base_outputdir.name, 'test.py'),
                                   VALID_PYTHON_TEST_WITH_TAGS)
-        cmd_line = ("%s list --loaders file --verbose %s" % (AVOCADO,
-                                                             test))
+        cmd_line = ("%s --verbose list --loaders file -- %s" % (AVOCADO,
+                                                                test))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
                          "Avocado did not return rc %d:\n%s"
@@ -1133,7 +1133,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertNotIn(b'Disabled', result.stdout)
 
     def test_config_plugin(self):
-        cmd_line = '%s config --paginator off' % AVOCADO
+        cmd_line = '%s --paginator off config ' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -1142,7 +1142,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertNotIn(b'Disabled', result.stdout)
 
     def test_config_plugin_datadir(self):
-        cmd_line = '%s config --datadir --paginator off' % AVOCADO
+        cmd_line = '%s --paginator off config --datadir ' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

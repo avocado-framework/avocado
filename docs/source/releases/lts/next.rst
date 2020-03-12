@@ -32,6 +32,14 @@ Users
 Output Plugins
 ~~~~~~~~~~~~~~
 
+* Starting from this release, `--paginator` will be a global option. You
+  should add this option before any sub-command. i.e.: `avocado
+  --paginator off plugins`.
+
+* Starting from this release, `--verbose` will be a global option. You
+  should add this option before any sub-command. i.e.: `avocado
+  --verbose list`.
+
 Test Loader Plugins
 ~~~~~~~~~~~~~~~~~~~
 

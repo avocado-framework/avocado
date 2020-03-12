@@ -13,7 +13,6 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import sys
-import warnings
 
 from avocado.core import exit_codes, output
 from avocado.core import loader
@@ -21,6 +20,7 @@ from avocado.core import test
 from avocado.core import tags
 from avocado.core import parser_common_args
 from avocado.core.output import LOG_UI
+from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import astring
 
@@ -44,7 +44,7 @@ class TestLister:
         loader.loader.get_extra_listing()
 
     def _get_test_suite(self, paths):
-        if self.args.get('verbose'):
+        if self.args.get('core.verbose'):
             which_tests = loader.DiscoverMode.ALL
         else:
             which_tests = loader.DiscoverMode.AVAILABLE
@@ -74,7 +74,7 @@ class TestLister:
             stats[type_label.lower()] += 1
             type_label = decorator(type_label)
 
-            if self.args.get('verbose'):
+            if self.args.get('core.verbose'):
                 if 'tags' in params:
                     tgs = params['tags']
                 else:
@@ -98,7 +98,7 @@ class TestLister:
 
     def _display(self, test_matrix, stats, tag_stats):
         header = None
-        if self.args.get('verbose'):
+        if self.args.get('core.verbose'):
             header = (output.TERM_SUPPORT.header_str('Type'),
                       output.TERM_SUPPORT.header_str('Test'),
                       output.TERM_SUPPORT.header_str('Tag(s)'))
@@ -107,7 +107,7 @@ class TestLister:
                                                 strip=True):
             LOG_UI.debug(line)
 
-        if self.args.get('verbose'):
+        if self.args.get('core.verbose'):
             LOG_UI.info("")
             LOG_UI.info("TEST TYPES SUMMARY")
             LOG_UI.info("==================")
@@ -123,7 +123,7 @@ class TestLister:
 
     def _list(self):
         self._extra_listing()
-        test_suite = self._get_test_suite(self.args.get('references', []))
+        test_suite = self._get_test_suite(self.args.get('list.references'))
         if self.args.get('filter_by_tags', False):
             test_suite = tags.filter_test_tags(
                 test_suite,
@@ -158,31 +158,23 @@ class List(CLICmd):
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
         parser = super(List, self).configure(parser)
-        parser.add_argument('references', type=str, default=[], nargs='*',
-                            help="List of test references (aliases or paths). "
-                            "If empty, avocado will list tests on "
-                            "the configured test source, "
-                            "(see 'avocado config --datadir') Also, "
-                            "if there are other test loader plugins "
-                            "active, tests from those plugins might "
-                            "also show up (behavior may vary among "
-                            "plugins)")
-        parser.add_argument('-V', '--verbose',
-                            action='store_true', default=False,
-                            help='Whether to show extra information (headers '
-                                 'and summary). Will be deprecated soon. '
-                                 'Current: %(default)s')
-        parser.add_argument('--paginator',
-                            choices=('on', 'off'), default='on',
-                            help='Turn the paginator on/off. Will be '
-                            'deprecated soon. Default: %(default)s')
+        help_msg = ('List of test references (aliases or paths). If empty, '
+                    'Avocado will list tests on the configured test source, '
+                    '(see "avocado config --datadir") Also, if there are '
+                    'other test loader plugins active, tests from those '
+                    'plugins might also show up (behavior may vary among '
+                    'plugins)')
+        settings.register_option(section='list',
+                                 key='references',
+                                 default=[],
+                                 nargs='*',
+                                 key_type=list,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 positional_arg=True)
         loader.add_loader_options(parser)
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
-        warnings.warn("--paginator and --verbose will be deprecated soon: "
-                      "They are going to be global, instead.",
-                      FutureWarning)
-
         test_lister = TestLister(config)
         return test_lister.list()

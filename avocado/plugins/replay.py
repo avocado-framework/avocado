@@ -23,6 +23,7 @@ from avocado.core import exit_codes
 from avocado.core import jobdata
 from avocado.core import status
 
+from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.settings import settings
@@ -45,28 +46,46 @@ class Replay(CLI):
 
         msg = 'job replay'
         replay_parser = run_subcommand_parser.add_argument_group(msg)
-        replay_parser.add_argument('--replay', dest='replay_jobid',
-                                   default=None,
-                                   help='Replay a job identified by its '
-                                   '(partial) hash id. Use "--replay latest" '
-                                   'to replay the latest job.')
-        replay_parser.add_argument('--replay-test-status',
-                                   dest='replay_teststatus',
-                                   type=self._valid_status,
-                                   default=None,
-                                   help='Filter tests to replay by '
-                                   'test status')
-        replay_parser.add_argument('--replay-ignore',
-                                   dest='replay_ignore',
-                                   type=self._valid_ignore,
-                                   default=[],
-                                   help='Ignore variants (variants) and/or '
-                                   'configuration (config) from the '
-                                   'source job')
-        replay_parser.add_argument("--replay-resume", action="store_true",
-                                   help="Resume an interrupted job")
+
+        help_msg = ('Replay a job identified by its (partial) hash id. '
+                    'Use "--replay" latest to replay the latest job.')
+        future_settings.register_option(section='run.replay',
+                                        key='job_id',
+                                        default=None,
+                                        help_msg=help_msg,
+                                        parser=replay_parser,
+                                        long_arg='--replay')
+
+        help_msg = 'Filter tests to replay by test status.'
+        future_settings.register_option(section='run.replay',
+                                        key='test_status',
+                                        default=[],
+                                        help_msg=help_msg,
+                                        key_type=self._valid_status,
+                                        parser=replay_parser,
+                                        long_arg='--replay-test-status')
+
+        help_msg = 'Ignore variants and/or configuration from the source job.'
+        future_settings.register_option(section='run.replay',
+                                        key='ignore',
+                                        default=[],
+                                        help_msg=help_msg,
+                                        key_type=self._valid_ignore,
+                                        parser=replay_parser,
+                                        long_arg='--replay-ignore')
+
+        help_msg = 'Resume an interrupted job'
+        future_settings.register_option(section='run.replay',
+                                        key='resume',
+                                        default=False,
+                                        help_msg=help_msg,
+                                        key_type=bool,
+                                        parser=replay_parser,
+                                        long_arg='--replay-resume')
 
     def _valid_status(self, string):
+        if not string:
+            return []
         status_list = string.split(',')
         for item in status_list:
             if item not in status.user_facing_status:
@@ -78,6 +97,8 @@ class Replay(CLI):
         return status_list
 
     def _valid_ignore(self, string):
+        if not string:
+            return []
         options = ['variants', 'config']
         ignore_list = string.split(',')
         for item in ignore_list:
@@ -164,14 +185,18 @@ class Replay(CLI):
         return replay_map
 
     def run(self, config):
-        if config.get('replay_jobid', None) is None:
+        job_id = config.get('run.replay.job_id')
+        if job_id is None:
             return
 
         err = None
-        if config.get('replay_teststatus') and 'variants' in config.get('replay_ignore'):
+        replay_ignore = config.get('run.replay.ignore')
+        test_status = config.get('run.replay.test_status')
+
+        if test_status and 'variants' in replay_ignore:
             err = ("Option `--replay-test-status` is incompatible with "
                    "`--replay-ignore variants`.")
-        elif config.get('replay_teststatus') and config.get('references'):
+        elif test_status and config.get('run.references'):
             err = ("Option --replay-test-status is incompatible with "
                    "test references given on the command line.")
         elif config.get("remote_hostname", False):
@@ -180,11 +205,10 @@ class Replay(CLI):
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        resultsdir = data_dir.get_job_results_dir(config.get('replay_jobid'),
-                                                  config.get('base_logdir', None))
+        resultsdir = data_dir.get_job_results_dir(job_id,
+                                                  config.get('run.results_dir'))
         if resultsdir is None:
-            LOG_UI.error("Can't find job results directory for '%s'",
-                         config.get('replay_jobid'))
+            LOG_UI.error("Can't find job results directory for '%s'", job_id)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         with open(os.path.join(resultsdir, 'id'), 'r') as id_file:
@@ -205,6 +229,11 @@ class Replay(CLI):
         else:
             for option in whitelist:
                 optvalue = config.get(option, None)
+                # Temporary, this will be removed soon
+                if option in ['failfast',
+                              'ignore_missing_references',
+                              'execution_order']:
+                    optvalue = config.get('run.{}'.format(option))
                 if optvalue is not None:
                     LOG_UI.warn("Overriding the replay %s with the --%s value "
                                 "given on the command line.",
@@ -213,7 +242,7 @@ class Replay(CLI):
                 elif option in replay_config:
                     config[option] = replay_config[option]
 
-        if config.get('references', None):
+        if config.get('run.references'):
             LOG_UI.warn('Overriding the replay test references with test '
                         'references given in the command line.')
         else:
@@ -223,15 +252,15 @@ class Replay(CLI):
                              'Aborting.')
                 sys.exit(exit_codes.AVOCADO_FAIL)
             else:
-                config['references'] = references
+                config['run.references'] = references
 
-        if 'config' in config.get('replay_ignore'):
+        if 'config' in replay_ignore:
             LOG_UI.warn("Ignoring configuration from source job with "
                         "--replay-ignore.")
         else:
             self.load_config(resultsdir)
 
-        if 'variants' in config.get('replay_ignore'):
+        if 'variants' in replay_ignore:
             LOG_UI.warn("Ignoring variants from source job with "
                         "--replay-ignore.")
         else:
@@ -247,14 +276,14 @@ class Replay(CLI):
 
         # Extend "replay_test_status" of "INTERRUPTED" when --replay-resume
         # supplied.
-        if config.get('replay_resume'):
-            if not config.get('replay_teststatus'):
+        if config.get('run.replay.resume'):
+            if not test_status:
                 config['replay_teststatus'] = ["INTERRUPTED"]
-            elif "INTERRUPTED" not in config.get('replay_teststatus'):
+            elif "INTERRUPTED" not in test_status:
                 config['replay_teststatus'].append("INTERRUPTED")
-        if config.get('replay_teststatus'):
+        if test_status:
             replay_map = self._create_replay_map(resultsdir,
-                                                 config.get('replay_teststatus'))
+                                                 test_status)
             config['replay_map'] = replay_map
 
         # Use the original directory to resolve test references properly
