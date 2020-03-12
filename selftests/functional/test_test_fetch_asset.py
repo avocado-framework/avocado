@@ -1,5 +1,5 @@
 """
-Funtional tests for fetch_asset core test method
+Functional tests for fetch_asset core test method
 """
 
 

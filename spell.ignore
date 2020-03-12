@@ -660,3 +660,16 @@ Bonzini
 Paolo
 pbonzini
 njobs
+PMem
+ndctl
+daxctl
+dimm
+blk
+fsdax
+memmap
+uuid
+reconfig
+autolabel
+pmem
+namespace
+namespaces

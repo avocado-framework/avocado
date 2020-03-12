@@ -584,7 +584,7 @@ class BaseRunnerApp:
     PROG_DESCRIPTION = ''
 
     #: The types of runnables that this runner can handle.  Dictionary key
-    #: is a name, and value is a class that inhertis from :class:`BaseRunner`
+    #: is a name, and value is a class that inherits from :class:`BaseRunner`
     RUNNABLE_KINDS_CAPABLE = {}
 
     #: The command line arguments to the "runnable-run" command
