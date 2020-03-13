@@ -87,7 +87,7 @@ class PMem:
         :param json_op: Input Json object
         :param field: Field to find the value from json_op object
 
-        :rtype: Found value type, None ig not found
+        :rtype: Found value type, None if not found
         """
         for key, value in json_op.items():
             if key == field:
@@ -107,7 +107,7 @@ class PMem:
 
     def get_slot_count(self, region):
         """
-        Get max slot count in the index area for a  dimm backing a region
+        Get max slot count in the index area for a dimm backing a region
         We use region0 - > nmem0
 
         :param region: Region for which slot count is found
@@ -143,7 +143,7 @@ class PMem:
     @staticmethod
     def check_buses():
         """
-        Get buses from sys subsystem to verify persisment devices exist
+        Get buses from sys subsystem to verify persistent devices exist
 
         :return: List of buses available
         :rtype: list
@@ -179,7 +179,7 @@ class PMem:
     def disable_namespace(self, namespace='all', region='', bus='',
                           verbose=False):
         """
-        Disable namepsaces
+        Disable namespaces
 
         :param namespace: name of the namespace to be disabled
         :param region: Filter namespace by region
@@ -205,7 +205,7 @@ class PMem:
     def enable_namespace(self, namespace='all', region='', bus='',
                          verbose=False):
         """
-        Enable namepsaces
+        Enable namespaces
 
         :param namespace: name of the namespace to be enabled
         :param region: Filter namespace by region
@@ -279,12 +279,12 @@ class PMem:
     def destroy_namespace(self, namespace='all', region='', bus='',
                           force=False):
         """
-        Destroy namepsaces, skipped in case of legacy namespace
+        Destroy namespaces, skipped in case of legacy namespace
 
         :param namespace: name of the namespace to be destroyed
         :param region: Filter namespace by region
         :param bus: Filter namespace by bus
-        :param force: Force a namesapce to be destroyed
+        :param force: Force a namespace to be destroyed
 
         :return: True on Success
         :raise: :class:`PMemException`, if command fails.
