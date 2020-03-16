@@ -27,7 +27,7 @@ from . import process
 from . import genio
 from .ssh import Session
 
-warnings.warn(("This module will be deprecated soon. Please use ",
+warnings.warn(("This module will be deprecated soon. Please use "
                "avocado.utils.network package."),
               DeprecationWarning,
               stacklevel=2)
