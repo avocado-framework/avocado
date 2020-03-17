@@ -1,0 +1,81 @@
+=================
+77.0 The Hangover
+=================
+
+The Avocado team is proud to present another release: Avocado 77.0,
+AKA "The Hangover", is now available!
+
+Release documentation: `Avocado 77.0
+<http://avocado-framework.readthedocs.io/en/77.0/>`_
+
+Users/Test Writers
+==================
+
+* The :meth:`avocado.Test.fetch_asset
+  <avocado.core.test.Test.fetch_asset>` method now has two new
+  parameters: ``find_only`` and ``cancel_on_missing``.  These can be
+  combined to cancel tests if the asset is missing after a download
+  attempt (``find_only=False``) or only if it's present in the local
+  system without a download having been attempted during the test
+  (``find_only=True``).  This can bring better determinism for tests
+  that would download sizable assets, and/or allow test jobs to be
+  executable in offline environments.
+
+* The ``avocado-software-manager`` script, a frontend to the
+  :mod:`avocado.utils.software_manager` module, now produces output as
+  expected from a script.
+
+* The ``multiplex`` command, an alias to ``variants``, has been
+  deprecated for a long time, and has now finally been removed.
+
+Bug Fixes
+=========
+
+* When a dry-run is executed, by passing the ``--dry-run`` command
+  line option, the proper file name of the test will be shown, instead
+  of the file implementing the "fake" :class:`avocado.core.test.DryRun`
+  class.
+
+* Users of :mod:`avocado.utils.ssh.Session` as a context manager, would
+  have all the exceptions captured and suppressed because of a buggy
+  ``__exit__`` implementation.
+
+Utility APIs
+============
+
+* The new :mod:`avocado.utils.pmem` module provides an interface for
+  manage persistent memory.  It allows for creating, deleting,
+  enabling, disabling and re-configuring both namespaces and regions
+  depending on supported hardware. It wraps the features present on
+  the ``ndctl`` and ``daxctl`` binaries.
+
+* The new :meth:`avocado.utils.ssh.Session.get_raw_ssh_commands` allows
+  access to the generated (local) commands, which could be used for advanced
+  use cases, such as running multiple (remote) commands in a test.
+  See the ``examples/apis/utils/ssh.py`` for an example.
+
+* The :mod:`avocado.utils.network` module received a complete
+  overhaul, and provides features for getting, checking and setting
+  network information from local and even remote hosts.
+
+* Better documentation for the :mod:`avocado.utils.ssh`,
+  :mod:`avocado.utils.cloudinit`, :mod:`avocado.utils.service` and
+  other modules.
+
+Internal Changes
+================
+
+* The foundation of the :doc:`/blueprints/BP001` has been implemented,
+  in the form of the :mod:`avocado.core.future.settings` and by
+  adjusting pretty much all of Avocado's code to make use of it.  In
+  the near future, this is going to replace :mod:`avocado.core.settings`.
+
+* It's now easier to write a runner script that extends the types
+  of runnables supported by the N(ext) Runner.  For an example, please
+  refer to ``examples/nrunner/runners/avocado-runner-foo``.
+
+* Many more refactors on the :mod:`avocado.utils.asset` module.
+  
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/76.0...77.0>`_.

@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     b77ba36a9aaecd71d71c25150d8ffcaf0730f144
+        %global commit     010f5d90737dc8f868a64fea1b38ee7bb6aea964
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20200120
+        %global commit_date 20200317
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -58,8 +58,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 76.0
-Release: 1%{?gitrel}%{?dist}
+Version: 77.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -604,6 +604,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Mar 17 2020 Cleber Rosa <cleber@redhat.com> - 77.0-0
+- New release
+
 * Mon Mar 16 2020 Cleber Rosa <cleber@redhat.com> - 76.0-1
 - Removed PYTHONWARNINGS environment variable when running tests
 
