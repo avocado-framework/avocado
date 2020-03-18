@@ -72,12 +72,12 @@ def _get_cpu_status(cpu):
 
 def cpu_has_flags(flags):
     """
-    Check if a list of flags are available on current CPU info
+    Check if a list of flags are available on current CPU info.
 
-    :param flags: A `list` of cpu flags that must exists on the current CPU.
-    :type flags: `list`
-    :returns: `bool` True if all the flags were found or False if not
-    :rtype: `list`
+    :param flags: A list of cpu flags that must exists on the current CPU.
+    :type flags: list
+    :return: True if all the flags were found or False if not.
+    :rtype: bool
     """
     cpu_info = _get_cpu_info()
 
@@ -92,11 +92,12 @@ def cpu_has_flags(flags):
 
 def get_cpu_vendor_name():
     """
-    Get the current cpu vendor name
+    Get the current cpu vendor name.
 
-    :returns: string 'intel' or 'amd' or 'power7' depending on the
-         current CPU architecture.
-    :rtype: `string`
+    :return: 'intel' or 'amd' or 'power[7|8|9]' depending on the
+         current CPU architecture. Return None if it was unable to determine
+         the vendor name.
+    :rtype: str or None
     """
     vendors_map = {
         'intel': (b"GenuineIntel", ),
@@ -116,7 +117,10 @@ def get_cpu_vendor_name():
 
 def get_cpu_arch():
     """
-    Work out which CPU architecture we're running on
+    Work out which CPU architecture we're running on.
+
+    :return: the cpu architecture.
+    :rtype: str
     """
     cpu_table = [(b'^cpu.*(RS64|POWER3|Broadband Engine)', 'power'),
                  (b'^cpu.*POWER4', 'power4'),
@@ -154,7 +158,10 @@ def get_cpu_arch():
 
 def cpu_online_list():
     """
-    Reports a list of indexes of the online cpus
+    Get the list of online cpus.
+
+    :return: the list of indexes of the online cpus.
+    :rtype: list
     """
     cpus = []
     search_str = b'processor'
@@ -171,21 +178,34 @@ def cpu_online_list():
 
 def total_cpus_count():
     """
-    Return Number of Total cpus in the system including offline cpus
+    Get the number of cpus in the system.
+
+    Consider both online and offline cpus.
+
+    :return: the number of cpus.
+    :rtype: int
     """
     return os.sysconf('SC_NPROCESSORS_CONF')
 
 
 def online_cpus_count():
     """
-    Return Number of Online cpus in the system
+    Get the number of Online cpus in the system.
+
+    :return: the number of online cpus.
+    :rtype: int
     """
     return os.sysconf('SC_NPROCESSORS_ONLN')
 
 
 def online(cpu):
     """
-    Online given CPU
+    Online given CPU.
+
+    :param cpu: the cpu number.
+    :type cpu: int or str
+    :return: 0 if the operation succeeded, otherwise 1.
+    :rtype: int
     """
     with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
         fd.write(b'1')
@@ -196,7 +216,12 @@ def online(cpu):
 
 def offline(cpu):
     """
-    Offline given CPU
+    Offline given CPU.
+
+    :param cpu: the cpu number.
+    :type cpu: int or str
+    :return: 0 if the operation succeeded, otherwise 1.
+    :rtype: int
     """
     with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
         fd.write(b'0')
@@ -207,9 +232,9 @@ def offline(cpu):
 
 def get_cpuidle_state():
     """
-    Get current cpu idle values
+    Get current cpu idle values.
 
-    :return: Dict of cpuidle states values for all cpus
+    :return: Dict of cpuidle states values for all cpus.
     :rtype: Dict of dicts
     """
     cpus_list = cpu_online_list()
@@ -242,9 +267,9 @@ def _bool_to_binary(value):
 
 def set_cpuidle_state(state_number="all", disable=True, setstate=None):
     """
-    Set/Reset cpu idle states for all cpus
+    Set/Reset cpu idle states for all cpus.
 
-    :param state_number: cpuidle state number, default: `all` all states
+    :param state_number: cpuidle state number, default: `all` all states.
     :param disable: whether to disable/enable given cpu idle state,
                     default is to disable (True). Must be a boolean value.
     :type disable: bool
@@ -280,7 +305,7 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
 
 def set_cpufreq_governor(governor="random"):
     """
-    To change the given cpu frequency governor
+    Change the cpu0 frequency governor.
 
     :param governor: frequency governor profile name whereas `random` is default
                      option to choose random profile among available ones.
@@ -320,7 +345,11 @@ def set_cpufreq_governor(governor="random"):
 
 def get_cpufreq_governor():
     """
-    Get current cpu frequency governor
+    Get cpu0 frequency governor.
+
+    :return: the cpu0 frequency governor profile name or empty string if it was
+             unable to determine the value.
+    :rtype: str
     """
     cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
     try:
@@ -333,11 +362,11 @@ def get_cpufreq_governor():
 
 def get_pid_cpus(pid):
     """
-    Get all the cpus being used by the process according to pid informed
+    Get all the cpus being used by the process according to pid informed.
 
-    :param pid: process id
-    :type pid: string
-    :return: A list include all cpus the process is using
+    :param pid: process id.
+    :type pid: str
+    :return: A list include all cpus the process is using.
     :rtype: list
     """
     # processor id index is defined according proc documentation
