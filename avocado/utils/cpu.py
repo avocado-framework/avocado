@@ -27,6 +27,15 @@ import glob
 import logging
 import random
 
+#: Map vendor's name with expected string in /proc/cpuinfo.
+VENDORS_MAP = {
+    'intel': (b"GenuineIntel", ),
+    'amd': (b"AMD", ),
+    'power7': (b"POWER7", ),
+    'power8': (b"POWER8", ),
+    'power9': (b"POWER9", )
+}
+
 
 def _list_matches(content_list, pattern):
     """
@@ -94,21 +103,13 @@ def get_cpu_vendor_name():
     """
     Get the current cpu vendor name.
 
-    :return: 'intel' or 'amd' or 'power[7|8|9]' depending on the
+    :return: a key of :data:`VENDORS_MAP` (e.g. 'intel') depending on the
          current CPU architecture. Return None if it was unable to determine
          the vendor name.
     :rtype: str or None
     """
-    vendors_map = {
-        'intel': (b"GenuineIntel", ),
-        'amd': (b"AMD", ),
-        'power7': (b"POWER7", ),
-        'power8': (b"POWER8", ),
-        'power9': (b"POWER9", )
-    }
-
     cpu_info = _get_cpu_info()
-    for vendor, identifiers in vendors_map.items():
+    for vendor, identifiers in VENDORS_MAP.items():
         for identifier in identifiers:
             if _list_matches(cpu_info, identifier):
                 return vendor
