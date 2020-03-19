@@ -1,4 +1,5 @@
 import io
+import os
 import subprocess
 import time
 
@@ -31,6 +32,8 @@ class TAPRunner(nrunner.BaseRunner):
     """
     def run(self):
         env = self.runnable.kwargs or None
+        if env and 'PATH' not in env:
+            env['PATH'] = os.environ.get('PATH')
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,

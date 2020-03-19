@@ -371,6 +371,8 @@ class ExecRunner(BaseRunner):
             current.update(self.runnable.kwargs)
             env = current
 
+        if env and 'PATH' not in env:
+            env['PATH'] = os.environ.get('PATH')
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,
