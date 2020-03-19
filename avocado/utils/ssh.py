@@ -179,20 +179,32 @@ class Session:
         """
         return self._ssh_cmd(self.DEFAULT_OPTIONS, ('-q', ), command)
 
-    def cmd(self, command):
+    def cmd(self, command, ignore_status=True):
         """
         Runs a command over the SSH session
 
-        Errors, such as an exit status different than 0, should be checked by
-        the caller.
-
         :param command: the command to execute over the SSH session
         :type command: str
+        :param ignore_status: Whether to check the operation failed or not. If
+                              set to False then it raises an
+                              :class:`avocado.utils.process.CmdError` exception
+                              in case of either the command or ssh connection
+                              returned with exit status other than zero.
+        :type ignore_status: bool
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
-        return process.run(self.get_raw_ssh_command(command),
-                           ignore_status=True)
+        try:
+            return process.run(self.get_raw_ssh_command(command),
+                               ignore_status=ignore_status)
+        except process.CmdError as exc:
+            if exc.result.exit_status == 255:
+                exc.additional_text = 'SSH connection failed'
+            else:
+                exc.additional_text = "Command '%s' failed" % command
+                exc.stderr = exc.result.stderr
+                exc.stdout = exc.result.stdout
+            raise exc
 
     def quit(self):
         """
