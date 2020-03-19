@@ -742,8 +742,10 @@ class BaseRunnerApp:
         """
         runnable = Runnable.from_args(args)
         runner = self.get_runner_from_runnable(runnable)
+        status = {}
         for status in runner.run():
             self.echo(status)
+        return status.get('returncode', 0)
 
     def command_runnable_run_recipe(self, args):
         """
@@ -809,7 +811,7 @@ class RunnerApp(BaseRunnerApp):
 
 def main(app_class=RunnerApp):
     app = app_class(print)
-    app.run()
+    return app.run()
 
 
 if __name__ == '__main__':

@@ -77,7 +77,7 @@ class RunnerApp(nrunner.BaseRunnerApp):
 
 
 def main():
-    nrunner.main(RunnerApp)
+    return nrunner.main(RunnerApp)
 
 
 if __name__ == '__main__':
