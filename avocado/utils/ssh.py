@@ -42,6 +42,32 @@ class SessionError(Exception):
         self.session = session
 
 
+class FileError(Exception):
+    """
+    Represents an error to access a remote file.
+    """
+    def __init__(self, filename, session, cmd_error):
+        """
+        :param filename: the file path which access failed.
+        :type filename: str
+        :param session: the session object in which occurred the error.
+        :type session: :class:`Session`
+        :param cmd_error: the read command error.
+        :type cmd_error: :class:`avocado.utils.process.CmdError`
+        """
+        msg = 'Failed to access'
+        if cmd_error.stderr.find(b'Permission denied') > 0:
+            msg = 'Permission denied'
+        elif cmd_error.stderr.find(b'No such file or directory') > 0:
+            msg = 'File not found'
+        elif cmd_error.stderr.find(b'Is a directory'):
+            msg = 'Is a directory'
+        super(FileError, self).__init__('%s: %s.' % (filename, msg))
+        self.session = session
+        self.filename = filename
+        self.cmd_error = cmd_error
+
+
 class Session:
     """
     Represents an SSH session to a remote system, for the purpose of
@@ -219,6 +245,24 @@ class Session:
                 exc.stderr = exc.result.stderr
                 exc.stdout = exc.result.stdout
             raise exc
+
+    def read_file(self, filename):
+        """
+        Reads a file over the SSH session.
+
+        :param filename: path to the file.
+        :type filename: str
+        :return: the file content.
+        :rtype: str
+        :raise: :class:`FileError` if failed to read the file (e.g file not
+                found or permission denied) or :class:`SessionError` for an
+                error in the ssh session.
+        """
+        try:
+            return self.cmd('cat %s' % filename,
+                            ignore_status=False).stdout_text
+        except process.CmdError as exc:
+            raise FileError(filename, self, exc)
 
     def quit(self):
         """
