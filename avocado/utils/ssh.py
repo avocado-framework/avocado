@@ -29,6 +29,19 @@ except path_utils.CmdNotFoundError:
     SSH_CLIENT_BINARY = None
 
 
+class SessionError(Exception):
+    """
+    Represents an error with the SSH session.
+    """
+    def __init__(self, session):
+        """
+        :param session: the session object which occurred the error.
+        :type session: :class:`Session`
+        """
+        super(SessionError, self).__init__('SSH session error')
+        self.session = session
+
+
 class Session:
     """
     Represents an SSH session to a remote system, for the purpose of
@@ -188,8 +201,9 @@ class Session:
         :param ignore_status: Whether to check the operation failed or not. If
                               set to False then it raises an
                               :class:`avocado.utils.process.CmdError` exception
-                              in case of either the command or ssh connection
-                              returned with exit status other than zero.
+                              in case of the command returned with exit status
+                              other than zero or :class:`SessionError` for an
+                              error in the ssh session.
         :type ignore_status: bool
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
@@ -199,7 +213,7 @@ class Session:
                                ignore_status=ignore_status)
         except process.CmdError as exc:
             if exc.result.exit_status == 255:
-                exc.additional_text = 'SSH connection failed'
+                raise SessionError(self)
             else:
                 exc.additional_text = "Command '%s' failed" % command
                 exc.stderr = exc.result.stderr
