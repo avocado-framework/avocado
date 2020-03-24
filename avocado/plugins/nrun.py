@@ -11,6 +11,7 @@ from avocado.core import parser_common_args
 from avocado.core import resolver
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
+from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import path as utils_path
 
@@ -161,7 +162,12 @@ class NRun(CLICmd):
             stderr=asyncio.subprocess.PIPE)
 
     def run(self, config):
-        resolutions = resolver.resolve(config.get('nrun.references'))
+        hint_filepath = '.avocado.hint'
+        if os.path.exists(hint_filepath):
+            hint = HintParser(hint_filepath)
+            resolutions = hint.get_resolutions()
+        else:
+            resolutions = resolver.resolve(config.get('nrun.references'))
         tasks = job.resolutions_to_tasks(resolutions, config)
         self.pending_tasks = check_tasks_requirements(   # pylint: disable=W0201
             tasks,
