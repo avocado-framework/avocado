@@ -18,11 +18,17 @@ Avocado application command line parsing.
 
 import argparse
 
+from configparser import ConfigParser
+from glob import glob
+
 from . import exit_codes
 from . import varianter
 from . import settings
 from .future.settings import settings as future_settings
+from .nrunner import Runnable
 from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS, LOG_UI
+from .resolver import ReferenceResolution
+from .resolver import ReferenceResolutionResult
 from .version import VERSION
 
 PROG = 'avocado'
@@ -172,3 +178,86 @@ class Parser:
             self.application.error(msg)
         # from this point on, config is a dictionary based on a argparse.Namespace
         self.config = vars(args)
+
+
+class HintParser:
+    def __init__(self, filename):
+        self.filename = filename
+        self.config = None
+        self.hints = []
+        self._parse()
+
+    def _get_args_from_section(self, section):
+        args = self.config.get(section, 'args')
+        if args == '$testpath':
+            return [args]
+        return args.split(',')
+
+    def _get_kwargs_from_section(self, section):
+        result = {}
+        kwargs = self.config.get(section, 'kwargs', fallback='')
+        for kwarg in kwargs.split(','):
+            if kwarg == '':
+                continue
+            key, value = kwarg.split('=')
+            result[key] = value
+        return result
+
+    def _get_resolutions_by_kind(self, kind, paths):
+        self.validate_kind_section(kind)
+
+        resolutions = []
+        uri = self._get_uri_from_section(kind)
+        args = self._get_args_from_section(kind)
+        kwargs = self._get_kwargs_from_section(kind)
+        success = ReferenceResolutionResult.SUCCESS
+
+        for path in paths:
+            if uri == '$testpath':
+                uri = path
+            if '$testpath' in args:
+                args = [item.replace('$testpath', path) for item in args]
+            if '$testpath' in kwargs.values():
+                kwargs = {k: v.replace('$testpath', path)
+                          for k, v in kwargs.items()}
+            runnable = Runnable(kind, uri, *args, **kwargs)
+            resolutions.append(ReferenceResolution(reference=path,
+                                                   result=success,
+                                                   resolutions=[runnable],
+                                                   origin=path))
+        return resolutions
+
+    def _get_uri_from_section(self, section):
+        return self.config.get(section, 'uri')
+
+    def _parse(self):
+        self.config = ConfigParser()
+        config_paths = self.config.read(self.filename)
+        if not config_paths:
+            raise settings.ConfigFileNotFound(self.filename)
+
+    def get_resolutions(self):
+        """Return a list of resolutions based on the file definitions."""
+        resolutions = []
+        for kind in self.config['kinds']:
+            files = self.config.get('kinds', kind)
+            resolutions.extend(self._get_resolutions_by_kind(kind,
+                                                             glob(files)))
+        return resolutions
+
+    def validate_kind_section(self, kind):
+        """Validates a specific "kind section".
+
+        This method will raise a `settings.SettingsError` if any problem is
+        found on the file.
+
+        :param kind: a string with the specific section.
+        """
+        if kind not in self.config:
+            msg = 'Section {} is not defined. Please check your hint file.'
+            raise settings.SettingsError(msg.format(kind))
+
+        uri = self._get_uri_from_section(kind)
+        if uri is None:
+            msg = "uri needs to be defined inside {}".format(kind)
+            raise settings.SettingsError(msg)
