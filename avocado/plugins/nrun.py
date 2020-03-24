@@ -111,6 +111,16 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg='--disable-task-randomization')
 
+        help_msg = ('Number of parallel tasks to run the tests. You can '
+                    'disable parallel execution by passing 1.')
+        settings.register_option(section='nrun',
+                                 key='parallel_tasks',
+                                 default=2 * multiprocessing.cpu_count() - 1,
+                                 key_type=int,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--parallel-tasks')
+
         help_msg = 'Host and port for the status server'
         settings.register_option(section='nrun.status_server',
                                  key='listen',
@@ -123,10 +133,9 @@ class NRun(CLICmd):
         parser_common_args.add_tag_filter_args(parser)
 
     @asyncio.coroutine
-    def spawn_tasks(self):
-        number_of_runnables = 2 * multiprocessing.cpu_count() - 1
+    def spawn_tasks(self, parallel_tasks):
         while True:
-            while len(set(self.status_server.tasks_pending).intersection(self.spawned_tasks)) >= number_of_runnables:
+            while len(set(self.status_server.tasks_pending).intersection(self.spawned_tasks)) >= parallel_tasks:
                 yield from asyncio.sleep(0.1)
 
             try:
@@ -183,7 +192,8 @@ class NRun(CLICmd):
                                                       [t.identifier for t in
                                                        self.pending_tasks])
             self.status_server.start()
-            loop.run_until_complete(self.spawn_tasks())
+            parallel_tasks = config.get('nrun.parallel_tasks')
+            loop.run_until_complete(self.spawn_tasks(parallel_tasks))
             loop.run_until_complete(self.status_server.wait())
             print(self.status_server.status)
             exit_code = exit_codes.AVOCADO_ALL_OK
