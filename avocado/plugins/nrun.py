@@ -111,6 +111,15 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg='--disable-task-randomization')
 
+        help_msg = 'Run tasks in serial instead of parallel.'
+        settings.register_option(section='nrun',
+                                 key='serial',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--serial')
+
         help_msg = 'Host and port for the status server'
         settings.register_option(section='nrun.status_server',
                                  key='listen',
@@ -123,8 +132,12 @@ class NRun(CLICmd):
         parser_common_args.add_tag_filter_args(parser)
 
     @asyncio.coroutine
-    def spawn_tasks(self):
-        number_of_runnables = 2 * multiprocessing.cpu_count() - 1
+    def spawn_tasks(self, serial=False):
+        if serial:
+            number_of_runnables = 1
+        else:
+            number_of_runnables = 2 * multiprocessing.cpu_count() - 1
+
         while True:
             while len(set(self.status_server.tasks_pending).intersection(self.spawned_tasks)) >= number_of_runnables:
                 yield from asyncio.sleep(0.1)
@@ -183,7 +196,8 @@ class NRun(CLICmd):
                                                       [t.identifier for t in
                                                        self.pending_tasks])
             self.status_server.start()
-            loop.run_until_complete(self.spawn_tasks())
+            serial = config.get('nrun.serial')
+            loop.run_until_complete(self.spawn_tasks(serial))
             loop.run_until_complete(self.status_server.wait())
             print(self.status_server.status)
             exit_code = exit_codes.AVOCADO_ALL_OK
