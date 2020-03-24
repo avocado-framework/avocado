@@ -20,6 +20,7 @@ from avocado.core import resolver
 from avocado.core import output
 from avocado.core import parser_common_args
 from avocado.core.output import LOG_UI
+from avocado.core.parser import HintParser
 from avocado.core.tags import filter_test_tags_runnable
 from avocado.utils import astring
 
@@ -70,7 +71,12 @@ class List(CLICmd):
     def run(self, config):
         references = config.get('nlist.references')
         verbose = config.get('nlist.verbose')
-        resolutions = resolver.resolve(references)
+        hint_filepath = '.avocado.hint'
+        if os.path.exists(hint_filepath):
+            hint = HintParser(hint_filepath)
+            resolutions = resolver.resolve(references, hint)
+        else:
+            resolutions = resolver.resolve(references)
         matrix, stats, tag_stats, resolution_matrix = self._get_resolution_matrix(config,
                                                                                   resolutions,
                                                                                   verbose)
