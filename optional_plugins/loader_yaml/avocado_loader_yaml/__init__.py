@@ -134,10 +134,9 @@ class LoaderYAML(CLI):
     description = "YAML test loader options for the 'run' subcommand"
 
     def configure(self, parser):
-        for name in ("list", "run"):
-            subparser = parser.subcommands.choices.get(name, None)
-            if subparser is None:
-                continue
+        subparser = parser.subcommands.choices.get('run', None)
+        if subparser is None:
+            return
 
         mux_options = subparser.add_argument_group("yaml to mux testsuite options")
         mux_options.add_argument("--mux-suite-only", nargs="+",
