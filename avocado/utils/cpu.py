@@ -26,6 +26,7 @@ import platform
 import glob
 import logging
 import random
+import warnings
 
 
 def _list_matches(content_list, pattern):
@@ -420,3 +421,32 @@ def get_pid_cpus(pid):
         except IOError:
             continue
     return list(cpus)
+
+
+def _deprecated(newfunc, oldfuncname):
+    """
+    Print a warning to user and return the new function
+
+    :param newfunc: new function to be assigned
+    :param oldfunctionname: Old function name string
+    :rtype: `function`
+    """
+    def wrap(*args, **kwargs):
+        fmt_str = "avocado.utils.cpu.{}() it is getting deprecat".format(oldfuncname)
+        fmt_str += "ed, Use avocado.utils.cpu.{}() instead".format(newfunc.__name__)
+        warnings.warn((fmt_str), DeprecationWarning, stacklevel=2)
+        return newfunc(*args, **kwargs)
+    return wrap
+
+
+total_cpus_count = _deprecated(total_count, "total_cpus_count")
+_get_cpu_info = _deprecated(_get_info, "_get_cpu_info")
+_get_cpu_status = _deprecated(_get_status, "_get_cpu_status")
+get_cpu_vendor_name = _deprecated(get_vendor, "get_cpu_vendor_name")
+get_cpu_arch = _deprecated(get_arch, "get_cpu_arch")
+cpu_online_list = _deprecated(online_list, "cpu_online_list")
+online_cpus_count = _deprecated(online_count, "online_cpus_count")
+get_cpuidle_state = _deprecated(get_idle_state, "get_cpuidle_state")
+set_cpuidle_state = _deprecated(set_idle_state, "set_cpuidle_state")
+set_cpufreq_governor = _deprecated(set_freq_governor, "set_cpufreq_governor")
+get_cpufreq_governor = _deprecated(get_freq_governor, "get_cpufreq_governor")
