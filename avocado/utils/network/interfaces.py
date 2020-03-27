@@ -56,8 +56,12 @@ class NetworkInterface:
         cmd = "ip -{} -j address show {}".format(version, self.name)
         output = run_command(cmd, self.host)
         try:
-            return json.loads(output)
-        except json.JSONDecodeError:
+            result = json.loads(output)
+            for item in result:
+                if item.get('ifname') == self.name:
+                    return item
+            raise NWException("Interface not found")
+        except (NWException, json.JSONDecodeError):
             msg = "Unable to get IP address on interface {}".format(self.name)
             log.error(msg)
             raise NWException(msg)
@@ -166,7 +170,7 @@ class NetworkInterface:
 
         try:
             details = self._get_interface_details(version)
-            addr_info = details[0].get('addr_info')
+            addr_info = details.get('addr_info')
             if addr_info:
                 return [x.get('local') for x in addr_info]
         except (NWException, IndexError):
@@ -207,7 +211,7 @@ class NetworkInterface:
         raise a NWException.
         """
         try:
-            return self._get_interface_details()[0].get('mtu')
+            return self._get_interface_details().get('mtu')
         except (NWException, IndexError):
             raise NWException("Could not get MUT value.")
 
