@@ -18,6 +18,7 @@ import copy
 from avocado.core import loader
 from avocado.core import parameters
 from avocado.core import output
+from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLI
 from avocado_varianter_yaml_to_mux import create_from_yaml
 from avocado_varianter_yaml_to_mux import mux
@@ -96,8 +97,8 @@ class YamlTestsuiteLoader(loader.TestLoader):
             return tests
         try:
             root = mux.apply_filters(create_from_yaml([reference], False),
-                                     self.args.get("mux_suite_only", []),
-                                     self.args.get("mux_suite_out", []))
+                                     self.args.get("run.mux_suite_only", []),
+                                     self.args.get("run.mux_suite_out", []))
         except IOError:
             return []
         mux_tree = mux.MuxTree(root)
@@ -139,10 +140,24 @@ class LoaderYAML(CLI):
             return
 
         mux_options = subparser.add_argument_group("yaml to mux testsuite options")
-        mux_options.add_argument("--mux-suite-only", nargs="+",
-                                 help="Filter only part of the YAML suite file")
-        mux_options.add_argument("--mux-suite-out", nargs="+",
-                                 help="Filter out part of the YAML suite file")
+        help_msg = "Filter only part of the YAML suite file"
+        settings.register_option(section='run',
+                                 key='mux_suite_only',
+                                 nargs='+',
+                                 help_msg=help_msg,
+                                 parser=mux_options,
+                                 long_arg='--mux-suite-only',
+                                 key_type=list,
+                                 default=[])
+        help_msg = "Filter out part of the YAML suite file"
+        settings.register_option(section='run',
+                                 key='mux_suite_out',
+                                 nargs='+',
+                                 help_msg=help_msg,
+                                 parser=mux_options,
+                                 long_arg='--mux-suite-out',
+                                 key_type=list,
+                                 default=[])
 
     def run(self, config):
         loader.loader.register_plugin(YamlTestsuiteLoader)
