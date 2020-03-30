@@ -193,6 +193,16 @@ class Run(CLICmd):
                                  short_arg='-S',
                                  long_arg='--sysinfo')
 
+        help_msg = ('Enable or disable pipinstall of custom packages'
+                    ' needed for a test job')
+        settings.register_option(section='job.pipinst',
+                                 key='enabled',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--pipinstall')
+
         help_msg = ('Defines the order of iterating through test suite '
                     'and test variants')
         settings.register_option(section='run',

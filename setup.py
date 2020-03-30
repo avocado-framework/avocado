@@ -100,6 +100,7 @@ if __name__ == '__main__':
                   'human = avocado.plugins.human:HumanJob',
                   'merge_files = avocado.plugins.expected_files_merge:FilesMerge',
                   'sysinfo = avocado.plugins.sysinfo:SysInfoJob',
+                  'pipinst = avocado.plugins.pipinst:PipInst',
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
