@@ -111,16 +111,15 @@ class ImageProviderBase:
     def get_best_version(self, versions):
         return max(versions)
 
-    def get_version(self):
+    def get_versions(self):
         """
-        Probes the higher version available for the current parameters.
+        Return all available versions for the current parameters
         """
         parser = VMImageHtmlParser(self.version_pattern)
-
         self._feed_html_parser(self.url_versions, parser)
 
+        resulting_versions = []
         if parser.items:
-            resulting_versions = []
             for version in parser.items:
                 # Trying to convert version to int or float so max()
                 # can compare numerical values.
@@ -134,6 +133,15 @@ class ImageProviderBase:
                     except ValueError:
                         # So it's just a string
                         resulting_versions.append(version)
+
+        return resulting_versions
+
+    def get_version(self):
+        """
+        Probes the higher version available for the current parameters.
+        """
+        resulting_versions = self.get_versions()
+        if resulting_versions:
             self._best_version = self.get_best_version(resulting_versions)
             return self._best_version
         else:
