@@ -1,0 +1,105 @@
+distro: !mux
+  centos:
+    name: centos
+    !filter-out : /run/architectures/arm
+    !filter-out : /run/architectures/i386
+    !filter-out : /run/architectures/ppc
+    !filter-out : /run/architectures/ppc64
+    !filter-out : /run/architectures/s390x
+    version: !mux
+      8:
+        version: 8
+      7:
+        !filter-out : /run/architectures/aarch64
+        !filter-out : /run/architectures/ppc64le
+        !filter-out : /run/architectures/s390x
+        version: 7
+  cirros:
+    name: cirros
+    !filter-out : /run/architectures/s390x
+    ppc:
+      arch: powerpc
+    version: !mux
+      0.5.1:
+        version: 0.5.1
+      0.5.0:
+        version: 0.5.0
+      0.4.0:
+        version: 0.4.0
+  debian:
+    name: debian
+    !filter-out : /run/architectures/arm
+    !filter-out : /run/architectures/i386
+    !filter-out : /run/architectures/ppc
+    !filter-out : /run/architectures/ppc64
+    !filter-out : /run/architectures/ppc64le
+    !filter-out : /run/architectures/s390x
+    aarch64:
+      arch: arm64
+    x86_64:
+      arch: amd64
+    version: !mux
+      9.12.1-20200328:
+        version: 9.12.1-20200328
+      10.3.1:
+        version: 10.3.1-20200328
+  fedora:
+    name: fedora
+    !filter-out : /run/architectures/arm
+    !filter-out : /run/architectures/i386
+    !filter-out : /run/architectures/ppc
+    !filter-out : /run/architectures/ppc64
+    version: !mux
+      31:
+        version: 31
+      30:
+        !filter-out : /run/architectures/ppc64le
+        !filter-out : /run/architectures/s390x
+        version: 30
+  ubuntu:
+    name: ubuntu
+    !filter-out : /run/architectures/arm
+    !filter-out : /run/architectures/ppc
+    !filter-out : /run/architectures/ppc64
+    ppc64le:
+      arch: ppc64el
+    version: !mux
+      18.04:
+        version: '18.04'
+      19.10:
+        version: '19.10'
+  opensuse:
+    name: opensuse
+    !filter-out : /run/architectures/arm
+    !filter-out : /run/architectures/i386
+    !filter-out : /run/architectures/ppc
+    !filter-out : /run/architectures/ppc64
+    !filter-out : /run/architectures/ppc64le
+    !filter-out : /run/architectures/s390x
+    version: !mux
+      15.2:
+        !filter-out : /run/architectures/aarch64
+        version: 15.2
+      15.1:
+        version: 15.1
+      42.3:
+        !filter-out : /run/architectures/aarch64
+        version: 42.3
+
+architectures: !mux
+  arm:
+    arch: arm
+  aarch64:
+    arch: aarch64
+  i386:
+    arch: i386
+  ppc64:
+    arch: ppc64
+  ppc64le:
+    arch: ppc64le
+  ppc:
+    arch: ppc
+  s390x:
+    arch: s390x
+  x86_64:
+    arch: x86_64
