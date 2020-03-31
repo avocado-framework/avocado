@@ -246,6 +246,13 @@ class CentOSImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + '{version}/images/'
         self.image_pattern = 'CentOS-(?P<version>{version})-(?P<arch>{arch})-GenericCloud-(?P<build>{build}).qcow2.xz$'
 
+    def get_image_url(self):
+        if int(self.version) >= 8:
+            self.build = r'[\d\.\-]+'
+            self.url_images = self.url_versions + '{version}/{arch}/images/'
+            self.image_pattern = 'CentOS-(?P<version>{version})-GenericCloud-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
+        return super(CentOSImageProvider, self).get_image_url()
+
 
 class UbuntuImageProvider(ImageProviderBase):
     """
