@@ -231,6 +231,15 @@ class FedoraImageProvider(unittest.TestCase):
         self.assertIsNone(parameters, "get_image_parameters() finds parameters "
                                       "where there should be none")
 
+    @unittest.mock.patch('avocado.utils.vmimage.urlopen')
+    def test_get_versions(self, urlopen_mock):
+        urlread_mocked = unittest.mock.Mock(return_value=self.VERSION_LISTING)
+        urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
+        provider = vmimage.FedoraImageProvider()
+        self.assertEqual(provider.get_versions(),
+                         [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+                          23, 24, 25, 26, 27, 28, 29, 30, 7, 8, 9])
+
 
 if __name__ == '__main__':
     unittest.main()
