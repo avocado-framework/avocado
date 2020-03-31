@@ -338,10 +338,25 @@ class OpenSUSEImageProvider(ImageProviderBase):
     def version_pattern(self):
         return '^Leap_%s' % self._version
 
+    @staticmethod
+    def _convert_version_numbers(versions):
+        """
+        Return the pure version numbers
+
+        The version pattern return Leap_15.0, Leap_42.0, Leap_XY.Z,
+        but the actual version will numeric versions only
+        """
+        pattern = r'(^Leap_)?([0-9{2}.[0-9]{1})'
+        replace = r'\2'
+        return [float(re.sub(pattern, replace, str(v))) for v in versions]
+
+    def get_versions(self):
+        versions = super(OpenSUSEImageProvider, self).get_versions()
+        return self._convert_version_numbers(versions)
+
     def get_best_version(self, versions):
-        # versions pattern equals Leap_15.0, Leap_42.0, Leap_XY.Z
-        version_numbers = [float(v.split('_')[1]) for v in versions]
-        if self._version.startswith('4'):
+        version_numbers = self._convert_version_numbers(versions)
+        if str(self._version).startswith('4'):
             version_numbers = [v for v in version_numbers if v >= 40.0]
         else:
             version_numbers = [v for v in version_numbers if v < 40.0]
