@@ -5,7 +5,7 @@ import re
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.core import data_dir, output
+from avocado.core import data_dir, exit_codes, output
 from avocado.utils import vmimage, astring
 
 
@@ -150,5 +150,7 @@ class VMimage(CLICmd):
                 image = download_image(name, version, arch)
                 LOG_UI.debug("The image was downloaded:")
             except AttributeError:
-                LOG_UI.debug("The image couldn't be downloaded:")
+                LOG_UI.debug("The requested image could not be downloaded")
+                return exit_codes.AVOCADO_FAIL
             display_images_list([image])
+        return exit_codes.AVOCADO_ALL_OK
