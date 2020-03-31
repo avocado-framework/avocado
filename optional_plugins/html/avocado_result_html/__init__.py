@@ -16,9 +16,7 @@ HTML output module.
 """
 
 import codecs
-import logging
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -27,6 +25,7 @@ import base64
 import jinja2 as jinja
 
 from avocado.core import exit_codes
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Result
 from avocado.utils import astring
@@ -230,12 +229,12 @@ class HTMLResult(Result):
     def render(self, result, job):
         if job.status == "RUNNING":
             return  # Don't create results on unfinished jobs
-        if not (job.config.get('html_job_result') or
-                job.config.get('html_output')):
+        if not (job.config.get('run.html_job_result') or
+                job.config.get('run.html_output')):
             return
 
-        open_browser = job.config.get('open_browser', False)
-        if job.config.get('html_job_result', 'off') == 'on':
+        open_browser = job.config.get('run.open_browser', False)
+        if job.config.get('run.html_job_result', 'off') == 'on':
             html_path = os.path.join(job.logdir, 'results.html')
             self._render(result, html_path)
             if job.config.get('stdout_claimed_by', None) is None:
@@ -244,7 +243,7 @@ class HTMLResult(Result):
                 self._open_browser(html_path)
                 open_browser = False
 
-        html_path = job.config.get('html_output', None)
+        html_path = job.config.get('run.html_output', None)
         if html_path is not None:
             self._render(result, html_path)
             if open_browser:
@@ -265,32 +264,44 @@ class HTML(CLI):
         if run_subcommand_parser is None:
             return
 
-        run_subcommand_parser.output.add_argument(
-            '--html', type=str,
-            dest='html_output', metavar='FILE',
-            help=('Enable HTML output to the FILE where the result should be '
-                  'written. The value - (output to stdout) is not supported '
-                  'since not all HTML resources can be embedded into a '
-                  'single file (page resources will be copied to the '
-                  'output file dir)'))
-        run_subcommand_parser.output.add_argument(
-            '--open-browser',
-            dest='open_browser',
-            action='store_true',
-            default=False,
-            help='Open the generated report on your preferred browser. '
-                 'This works even if --html was not explicitly passed, '
-                 'since an HTML report is always generated on the job '
-                 'results dir. Current: %s' % False)
+        help_msg = ('Enable HTML output to the FILE where the result should '
+                    'be written. The value - (output to stdout) is not '
+                    'supported since not all HTML resources can be embedded '
+                    'into a single file (page resources will be copied to '
+                    'the output file dir)')
+        settings.register_option(section='run',
+                                 key='html_output',
+                                 default=None,
+                                 help_msg=help_msg,
+                                 parser=run_subcommand_parser,
+                                 metavar='FILE',
+                                 long_arg='--html')
 
-        run_subcommand_parser.output.add_argument(
-            '--html-job-result', dest='html_job_result',
-            choices=('on', 'off'), default='on',
-            help=('Enables default HTML result in the job results directory. '
-                  'File will be located at "html/results.html".'))
+        help_msg = ('Open the generated report on your preferred browser. '
+                    'This works even if --html was not explicitly passed, '
+                    'since an HTML report is always generated on the job '
+                    'results dir.')
+        settings.register_option(section='run',
+                                 key='open_browser',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg,
+                                 parser=run_subcommand_parser,
+                                 long_arg='--open-browser')
+
+        help_msg = ('Enables default HTML result in the job results '
+                    'directory. File will be located at '
+                    '"html/results.html".')
+        settings.register_option(section='run',
+                                 key='html_job_result',
+                                 default='on',
+                                 choices=('on', 'off'),
+                                 parser=run_subcommand_parser,
+                                 help_msg=help_msg,
+                                 long_arg='--html-job-result')
 
     def run(self, config):
-        if 'html_output' in config and config.get('html_output') == '-':
+        if config.get('run.html_output') == '-':
             LOG_UI.error('HTML to stdout not supported (not all HTML resources'
                          ' can be embedded on a single file)')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
