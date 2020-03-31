@@ -142,15 +142,11 @@ class VMimage(CLICmd):
             name = config.get('vmimage.get.distro')
             version = config.get('vmimage.get.version')
             arch = config.get('vmimage.get.arch')
-            image = {'name': name,
-                     'version': version,
-                     'arch': arch,
-                     'file': None}
             try:
                 image = download_image(name, version, arch)
-                LOG_UI.debug("The image was downloaded:")
             except AttributeError:
                 LOG_UI.debug("The requested image could not be downloaded")
                 return exit_codes.AVOCADO_FAIL
+            LOG_UI.debug("The image was downloaded:")
             display_images_list([image])
         return exit_codes.AVOCADO_ALL_OK
