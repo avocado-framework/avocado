@@ -276,7 +276,7 @@ class DebianImageProvider(ImageProviderBase):
 
     name = 'Debian'
 
-    def __init__(self, version='[0-9]+.[0-9]+.[0-9]+-.*', build=None,
+    def __init__(self, version='[0-9]+.[0-9]+.[0-9]+.*', build=None,
                  arch=os.uname()[4]):
         # Debian uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':

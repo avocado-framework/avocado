@@ -113,6 +113,105 @@ class ImageProviderBase(unittest.TestCase):
         self.assertIn('attributes are required to get image url', exc.exception.args[0])
 
 
+class DebianImageProvider(unittest.TestCase):
+
+    #: Extract from https://cdimage.debian.org/cdimage/openstack/
+    VERSION_LISTING = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /cdimage/openstack</title>
+  <link rel="stylesheet" href="/layout/autoindex.css" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1"> </head>
+ <body>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Debian Official Cloud Images for OpenStack -- Getting Debian  - www.debian.org</title>
+<link rel="author" href="mailto:webmaster@debian.org">
+<link href="https://www.debian.org/debian.css" rel="stylesheet" type="text/css">
+<link href="https://www.debian.org/debian-en.css" rel="stylesheet" type="text/css" media="all">
+
+<div id="header">
+    <div id="upperheader">
+        <div id="logo">
+            <a href="https://www.debian.org/" title="Debian Home"><img src="https://www.debian.org/Pics/openlogo-50.png" alt="Debian" width="50" height="61"></a>
+        </div> <!-- end logo -->
+        <div id="navbar">
+            <p class="hidecss"><a href="#content">Skip Quicknav</a></p>
+            <ul>
+                <li><a href="https://www.debian.org/intro/about">About Debian</a></li>
+                <li><a href="https://www.debian.org/distrib/">Getting Debian</a></li>
+                <li><a href="https://www.debian.org/support">Support</a></li>
+                <li><a href="https://www.debian.org/devel/">Developers' Corner</a></li>
+            </ul>
+        </div> <!-- end navbar -->
+    </div> <!-- end upperheader -->
+
+    <h1>Debian Official Cloud Images for OpenStack</h1>
+
+
+    <p>
+    These are files containing cloud images of the Debian GNU/Linux
+    operating system designed for OpenStack.  The files in this
+    directory are specifically for the <code>amd64</code>
+    and <code>arm64</code> architectures.
+    </p>
+
+    <h2>Will the image work on a cloud platform other than OpenStack?</h2>
+
+    <p>
+    If your platform supports the EC2 style metadata server (which is
+    contacted by cloud-init), and also supports an HDD image (using either
+    raw or qcow2 format), then most likely it will work. Note that it will
+    <strong>not</strong> work on Amazon EC2 if you are not using the
+    HVM mode.
+    </p>
+
+    <h2>Where are the Jessie (Debian 8) images?</h2>
+
+    <p>
+    Debian Jessie is no longer supported by the Debian Cloud Team, as
+    official security support for it ended in June 2018. We strongly
+    recommend that users should move on to use Stretch (Debian 9)
+    or Buster (Debian 10) instead, our current supported versions.
+    </p>
+
+    <p>
+    If you understand the lack of support and still have a strong need
+    for a Jessie image, they are still available for download - see
+    the "archive" directory.
+    </p>
+
+    <h2>Other questions?</h2>
+
+    <p>
+    Other questions can be forwarded to the OpenStack packaging
+    team: <b>debian-openstack at lists.debian.org</b>.
+    </p>
+
+</div>
+  <table id="indexlist">
+   <tr class="indexhead"><th class="indexcolicon"><img src="/icons2/blank.png" alt="[ICO]"></th><th class="indexcolname"><a href="?C=N;O=D">Name</a></th><th class="indexcollastmod"><a href="?C=M;O=A">Last modified</a></th><th class="indexcolsize"><a href="?C=S;O=A">Size</a></th></tr>
+   <tr class="indexbreakrow"><th colspan="4"><hr></th></tr>
+   <tr class="even"><td class="indexcolicon"><a href="/cdimage/"><img src="/icons2/go-previous.png" alt="[PARENTDIR]"></a></td><td class="indexcolname"><a href="/cdimage/">Parent Directory</a></td><td class="indexcollastmod">&nbsp;</td><td class="indexcolsize">  - </td></tr>
+   <tr class="odd"><td class="indexcolicon"><a href="9.12.0/"><img src="/icons2/folder.png" alt="[DIR]"></a></td><td class="indexcolname"><a href="9.12.0/">9.12.0/</a></td><td class="indexcollastmod">2020-02-09 16:03  </td><td class="indexcolsize">  - </td></tr>
+   <tr class="even"><td class="indexcolicon"><a href="10.3.0/"><img src="/icons2/folder.png" alt="[DIR]"></a></td><td class="indexcolname"><a href="10.3.0/">10.3.0/</a></td><td class="indexcollastmod">2020-02-09 03:02  </td><td class="indexcolsize">  - </td></tr>
+   <tr class="odd"><td class="indexcolicon"><a href="archive/"><img src="/icons2/folder.png" alt="[DIR]"></a></td><td class="indexcolname"><a href="archive/">archive/</a></td><td class="indexcollastmod">2020-02-09 16:10  </td><td class="indexcolsize">  - </td></tr>
+   <tr class="even"><td class="indexcolicon"><a href="current-9/"><img src="/icons2/folder.png" alt="[DIR]"></a></td><td class="indexcolname"><a href="current-9/">current-9/</a></td><td class="indexcollastmod">2020-02-09 16:03  </td><td class="indexcolsize">  - </td></tr>
+   <tr class="odd"><td class="indexcolicon"><a href="current-10/"><img src="/icons2/folder.png" alt="[DIR]"></a></td><td class="indexcolname"><a href="current-10/">current-10/</a></td><td class="indexcollastmod">2020-02-09 03:02  </td><td class="indexcolsize">  - </td></tr>
+   <tr class="even"><td class="indexcolicon"><a href="current/"><img src="/icons2/folder.png" alt="[DIR]"></a></td><td class="indexcolname"><a href="current/">current/</a></td><td class="indexcollastmod">2020-02-09 03:02  </td><td class="indexcolsize">  - </td></tr>
+   <tr class="odd"><td class="indexcolicon"><a href="testing/"><img src="/icons2/folder.png" alt="[DIR]"></a></td><td class="indexcolname"><a href="testing/">testing/</a></td><td class="indexcollastmod">2019-07-08 13:30  </td><td class="indexcolsize">  - </td></tr>
+   <tr class="indexbreakrow"><th colspan="4"><hr></th></tr>
+</table>
+<address>Apache/2.4.41 (Unix) Server at cdimage.debian.org Port 443</address>
+</body></html>"""
+
+    @unittest.mock.patch('avocado.utils.vmimage.urlopen')
+    def test_get_versions(self, urlopen_mock):
+        urlread_mocked = unittest.mock.Mock(return_value=self.VERSION_LISTING)
+        urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
+        provider = vmimage.DebianImageProvider()
+        self.assertEqual(provider.get_versions(), ['9.12.0', '10.3.0'])
+
+
 class OpenSUSEImageProvider(unittest.TestCase):
     def setUp(self):
         self.suse_available_versions = ['Leap_15.0', 'Leap_42.1', 'Leap_42.2', 'Leap_42.3']
