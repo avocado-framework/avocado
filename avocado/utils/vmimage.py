@@ -272,6 +272,14 @@ class UbuntuImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + 'releases/{version}/release/'
         self.image_pattern = 'ubuntu-(?P<version>{version})-server-cloudimg-(?P<arch>{arch}).img'
 
+    def get_versions(self):
+        """
+        Return all available versions for the current parameters
+        """
+        parser = VMImageHtmlParser(self.version_pattern)
+        self._feed_html_parser(self.url_versions, parser)
+        return parser.items
+
 
 class DebianImageProvider(ImageProviderBase):
     """
