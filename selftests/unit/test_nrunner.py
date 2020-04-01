@@ -251,7 +251,7 @@ echo 'not ok 2 - description 2'"""
         runner = nrunner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
-        self.assertEqual(last_result['status'], 'fail')
+        self.assertEqual(last_result['result'], 'fail')
         self.assertEqual(last_result['returncode'], 0)
 
     @unittest.skipUnless(os.path.exists('/bin/sh'),
@@ -272,7 +272,7 @@ echo 'ok 2 - description 2'"""
         runner = nrunner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
-        self.assertEqual(last_result['status'], 'pass')
+        self.assertEqual(last_result['result'], 'pass')
         self.assertEqual(last_result['returncode'], 0)
 
     @unittest.skipUnless(os.path.exists('/bin/sh'),
@@ -293,7 +293,28 @@ echo 'ok 2 - description 2'"""
         runner = nrunner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
-        self.assertEqual(last_result['status'], 'skip')
+        self.assertEqual(last_result['result'], 'skip')
+        self.assertEqual(last_result['returncode'], 0)
+
+    @unittest.skipUnless(os.path.exists('/bin/sh'),
+                         ('Executable "/bin/sh" used in this test is not '
+                          'available in the system'))
+    def test_runner_tap_error(self):
+        tap_script = """#!/bin/sh
+echo '1..2'
+echo '# Defining an basic test'
+echo 'Bail out! - description 1'
+echo 'ok 2 - description 2'"""
+        tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
+
+        with open(tap_path, 'w') as fp:
+            fp.write(tap_script)
+
+        runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
+        runner = nrunner_tap.TAPRunner(runnable)
+        results = [status for status in runner.run()]
+        last_result = results[-1]
+        self.assertEqual(last_result['result'], 'error')
         self.assertEqual(last_result['returncode'], 0)
 
     def tearDown(self):

@@ -30,6 +30,7 @@ class TAPRunner(nrunner.BaseRunner):
                            'bar', # arg 1
                            DEBUG='false') # kwargs 1 (environment)
     """
+
     def run(self):
         env = self.runnable.kwargs or None
         process = subprocess.Popen(
@@ -46,25 +47,26 @@ class TAPRunner(nrunner.BaseRunner):
 
         stdout = io.TextIOWrapper(process.stdout)
         parser = TapParser(stdout)
-        status = 'error'
+        result = 'error'
         for event in parser.parse():
             if isinstance(event, TapParser.Bailout):
-                status = 'error'
+                result = 'error'
                 break
             elif isinstance(event, TapParser.Error):
-                status = 'error'
+                result = 'error'
                 break
             elif isinstance(event, TapParser.Test):
                 if event.result in (TestResult.XPASS, TestResult.FAIL):
-                    status = 'fail'
+                    result = 'fail'
                     break
                 elif event.result == TestResult.SKIP:
-                    status = 'skip'
+                    result = 'skip'
                     break
                 else:
-                    status = 'pass'
+                    result = 'pass'
 
-        yield {'status': status,
+        yield {'status': 'finished',
+               'result': result,
                'returncode': process.returncode,
                'timestamp': time.time()}
 
