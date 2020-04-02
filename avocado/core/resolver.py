@@ -160,8 +160,17 @@ def _extend_directory(path):
     return paths
 
 
-def resolve(references):
+def resolve(references, hint=None):
     resolutions = []
+    hint_resolutions = []
+    hint_references = {}
+
+    if hint:
+        hint_resolutions = hint.get_resolutions()
+        hint_references = {r.reference: r for r in hint_resolutions}
+
+    if not references and hint_references:
+        references = hint_references.keys()
 
     if references:
         # should be initialized with args, to define the behavior
@@ -173,8 +182,9 @@ def resolve(references):
             # here it walks directories if one is given, and extends
             # the original reference into final file paths
             extended_references.extend(_extend_directory(reference))
-
         for reference in extended_references:
-            resolutions.extend(resolver.resolve(reference))
-
+            if reference in hint_references:
+                resolutions.append(hint_references[reference])
+            else:
+                resolutions.extend(resolver.resolve(reference))
     return resolutions

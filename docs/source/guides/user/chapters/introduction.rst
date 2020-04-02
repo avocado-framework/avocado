@@ -90,6 +90,39 @@ first failed test::
 One can also use ``--failfast off`` in order to force-disable failfast mode
 when replaying a job executed with ``--failfast on``.
 
+The hint files
+--------------
+
+Avocado team has added support to the "hint files". This feature is present
+since Avocado #78 and is a configuration file that you can add to your project
+root folder to help Avocado on the "test resolution" phase.
+
+The idea is that, you know more about your tests than anybody else. And you can
+specify where your tests are, and what type (kind) they are. You just have to
+add a `.avocado.hint` in your root folder with the section`[kinds]` and one
+section for each kind that you are using.
+
+On the specific test type section, you can specify 3 options: `uri`, `args` and
+`kwargs`.
+
+.. note:: Some test types will convert kwargs into variable environments.
+ Please check the documentation of the test type that you are using.
+
+You can also use the keyworkd `$testpath` in any of the options inside the test
+type section. Avocado will replace `$testpath` with your test path, after the
+expansion.
+
+For instance, bellow you will find a hint file example where we have only one
+test type: `tap`:
+
+.. literalinclude:: ../../../../../examples/hint-files/.avocado.hint.example
+
+Let's suppose that you have 2 tests that matches `./tests/unit/*.sh`:
+
+* ./tests/unit/foo.sh
+* ./tests/unit/bar.sh
+
+Avocado will run each one as a `TAP` test, as you desired.
 
 Ignoring missing test references
 --------------------------------

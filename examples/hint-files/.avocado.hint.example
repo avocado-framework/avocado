@@ -1,0 +1,7 @@
+[kinds]
+tap = ./tests/unit/*.sh
+
+[tap]
+uri = $testpath
+args = --tap
+kwargs = DEBUG=1
