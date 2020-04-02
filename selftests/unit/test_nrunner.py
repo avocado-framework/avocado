@@ -177,10 +177,6 @@ class RunnableToRecipe(unittest.TestCase):
 
 class Runner(unittest.TestCase):
 
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-
     def test_runner_noop(self):
         runnable = nrunner.Runnable('noop', None)
         runner = nrunner.runner_from_runnable(
@@ -232,6 +228,13 @@ class Runner(unittest.TestCase):
         self.assertEqual(result['status'], 'pass')
         self.assertTrue(result['output'].startswith(output1))
         self.assertTrue(result['output'].endswith(output2))
+
+
+class RunnerTmp(unittest.TestCase):
+
+    def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @unittest.skipUnless(os.path.exists('/bin/sh'),
                          ('Executable "/bin/sh" used in this test is not '
