@@ -213,7 +213,8 @@ class Runner(unittest.TestCase):
             nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
         results = [status for status in runner.run()]
         last_result = results[-1]
-        self.assertEqual(last_result['status'], 'pass')
+        self.assertEqual(last_result['status'], 'finished')
+        self.assertEqual(last_result['result'], 'pass')
         self.assertEqual(last_result['returncode'], 0)
         self.assertEqual(last_result['stdout'], b'')
         self.assertEqual(last_result['stderr'], b'')
@@ -229,7 +230,8 @@ class Runner(unittest.TestCase):
                    '------------\nRan 0 tests in ')
         output2 = 's\n\nOK\n'
         result = results[-1]
-        self.assertEqual(result['status'], 'pass')
+        self.assertEqual(result['status'], 'finished')
+        self.assertEqual(result['result'], 'pass')
         self.assertTrue(result['output'].startswith(output1))
         self.assertTrue(result['output'].endswith(output2))
 
