@@ -111,16 +111,13 @@ class ImageProviderBase:
     def get_best_version(self, versions):
         return max(versions)
 
-    def get_version(self):
-        """
-        Probes the higher version available for the current parameters.
-        """
+    def get_versions(self):
+        """Return all available versions for the current parameters."""
         parser = VMImageHtmlParser(self.version_pattern)
-
         self._feed_html_parser(self.url_versions, parser)
 
+        resulting_versions = []
         if parser.items:
-            resulting_versions = []
             for version in parser.items:
                 # Trying to convert version to int or float so max()
                 # can compare numerical values.
@@ -134,6 +131,13 @@ class ImageProviderBase:
                     except ValueError:
                         # So it's just a string
                         resulting_versions.append(version)
+
+        return resulting_versions
+
+    def get_version(self):
+        """Probes the higher version available for the current parameters."""
+        resulting_versions = self.get_versions()
+        if resulting_versions:
             self._best_version = self.get_best_version(resulting_versions)
             return self._best_version
         else:
@@ -242,6 +246,13 @@ class CentOSImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + '{version}/images/'
         self.image_pattern = 'CentOS-(?P<version>{version})-(?P<arch>{arch})-GenericCloud-(?P<build>{build}).qcow2.xz$'
 
+    def get_image_url(self):
+        if int(self.version) >= 8:
+            self.build = r'[\d\.\-]+'
+            self.url_images = self.url_versions + '{version}/{arch}/images/'
+            self.image_pattern = 'CentOS-(?P<version>{version})-GenericCloud-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
+        return super(CentOSImageProvider, self).get_image_url()
+
 
 class UbuntuImageProvider(ImageProviderBase):
     """
@@ -264,6 +275,12 @@ class UbuntuImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + 'releases/{version}/release/'
         self.image_pattern = 'ubuntu-(?P<version>{version})-server-cloudimg-(?P<arch>{arch}).img'
 
+    def get_versions(self):
+        """Return all available versions for the current parameters."""
+        parser = VMImageHtmlParser(self.version_pattern)
+        self._feed_html_parser(self.url_versions, parser)
+        return parser.items
+
 
 class DebianImageProvider(ImageProviderBase):
     """
@@ -272,7 +289,7 @@ class DebianImageProvider(ImageProviderBase):
 
     name = 'Debian'
 
-    def __init__(self, version='[0-9]+.[0-9]+.[0-9]+-.*', build=None,
+    def __init__(self, version='[0-9]+.[0-9]+.[0-9]+.*', build=None,
                  arch=os.uname()[4]):
         # Debian uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
@@ -330,10 +347,25 @@ class OpenSUSEImageProvider(ImageProviderBase):
     def version_pattern(self):
         return '^Leap_%s' % self._version
 
+    @staticmethod
+    def _convert_version_numbers(versions):
+        """
+        Return the pure version numbers
+
+        The version pattern return Leap_15.0, Leap_42.0, Leap_XY.Z,
+        but the actual version will numeric versions only
+        """
+        pattern = r'(^Leap_)?([0-9{2}.[0-9]{1})'
+        replace = r'\2'
+        return [float(re.sub(pattern, replace, str(v))) for v in versions]
+
+    def get_versions(self):
+        versions = super(OpenSUSEImageProvider, self).get_versions()
+        return self._convert_version_numbers(versions)
+
     def get_best_version(self, versions):
-        # versions pattern equals Leap_15.0, Leap_42.0, Leap_XY.Z
-        version_numbers = [float(v.split('_')[1]) for v in versions]
-        if self._version.startswith('4'):
+        version_numbers = self._convert_version_numbers(versions)
+        if str(self._version).startswith('4'):
             version_numbers = [v for v in version_numbers if v >= 40.0]
         else:
             version_numbers = [v for v in version_numbers if v < 40.0]
