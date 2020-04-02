@@ -139,6 +139,34 @@ def pick_runner_command(task, runners_registry=None):
     runners_registry[kind] = False
 
 
+def check_tasks_requirements(tasks, runners_registry=None):
+    """
+    Checks if tasks have runner requirements fulfilled
+
+    :param tasks: the tasks whose runner requirements will be checked
+    :type tasks: list of :class:`avocado.core.nrunner.Task`
+    :param runners_registry: a registry with previously found (and not
+                             found) runners keyed by task kind
+    :param runners_registry: dict
+    :return: two list of tasks in a tupple, with the first being the tasks
+             that pass the requirements check and the second the tasks that
+             fail the requirements check
+    :rtype: tupple of (list, list)
+    """
+    if runners_registry is None:
+        runners_registry = KNOWN_RUNNERS
+
+    ok = []
+    missing = []
+    for task in tasks:
+        runner = pick_runner_command(task, runners_registry)
+        if runner:
+            ok.append(task)
+        else:
+            missing.append(task)
+    return (ok, missing)
+
+
 class Runnable:
     """
     Describes an entity that be executed in the context of a task

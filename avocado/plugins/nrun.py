@@ -15,26 +15,6 @@ from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
 
 
-def check_tasks_requirements(tasks, runners_registry=None):
-    """
-    Checks if tasks have runner requirements fulfilled
-
-    :param tasks: the tasks whose runner requirements will be checked
-    :type tasks: list of :class:`avocado.core.nrunner.Task`
-    :param runners_registry: a registry with previously found (and not
-                             found) runners keyed by task kind
-    :param runners_registry: dict
-    """
-    result = []
-    for task in tasks:
-        runner = nrunner.pick_runner_command(task, runners_registry)
-        if runner:
-            result.append(task)
-        else:
-            LOG_UI.warning('Task will not be run due to missing requirements: %s', task)
-    return result
-
-
 class NRun(CLICmd):
 
     name = 'nrun'
@@ -127,7 +107,12 @@ class NRun(CLICmd):
             hint = HintParser(hint_filepath)
         resolutions = resolver.resolve(config.get('nrun.references'), hint)
         tasks = job.resolutions_to_tasks(resolutions, config)
-        self.pending_tasks = check_tasks_requirements(tasks)   # pylint: disable=W0201
+        # pylint: disable=W0201
+        self.pending_tasks, missing_requirements = nrunner.check_tasks_requirements(tasks)
+        if missing_requirements:
+            missing_tasks_msg = "\n".join([str(t) for t in missing_requirements])
+            LOG_UI.warning('Tasks will not be run due to missing requirements: %s',
+                           missing_tasks_msg)
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
