@@ -103,15 +103,15 @@ class NRun(CLICmd):
             self.spawned_tasks.append(identifier)
             print("%s spawned" % identifier)
 
-    def pick_runner_or_default(self, task):
-        runner = nrunner.pick_runner_command(task, self.KNOWN_EXTERNAL_RUNNERS)
-        if runner is None:
-            runner = [sys.executable, '-m', 'avocado.core.nrunner']
-        return runner
-
     @asyncio.coroutine
     def spawn_task(self, task):
-        runner = self.pick_runner_or_default(task)
+        runner = nrunner.pick_runner_command(task, self.KNOWN_EXTERNAL_RUNNERS)
+        if runner is False:
+            LOG_UI.error('Task "%s" has no matching runner. ', task)
+            LOG_UI.error('This is an error condition and should have been caught '
+                         'when checking task requirements.')
+            sys.exit(exit_codes.AVOCADO_FAIL)
+
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
 
