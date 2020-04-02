@@ -61,6 +61,14 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg='--status-server')
 
+        settings.register_option(section="nrun.podman",
+                                 key="enabled",
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg="Spawn tests in podman containers",
+                                 parser=parser,
+                                 long_arg="--podman")
+
         parser_common_args.add_tag_filter_args(parser)
 
     @asyncio.coroutine
@@ -124,7 +132,10 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
-            self.spawner = nrunner.ProcessSpawner()  # pylint: disable=W0201
+            if config.get('nrun.podman.enabled'):
+                self.spawner = nrunner.PodmanSpawner()  # pylint: disable=W0201
+            else:
+                self.spawner = nrunner.ProcessSpawner()  # pylint: disable=W0201
             loop = asyncio.get_event_loop()
             listen = config.get('nrun.status_server.listen')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
