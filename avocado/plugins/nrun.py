@@ -95,7 +95,7 @@ class NRun(CLICmd):
                 print("Finished spawning tasks")
                 break
 
-            yield from self.spawn_task(task)
+            yield from self.spawner.spawn(task)
             identifier = task.identifier
             self.pending_tasks.remove(task)
             self.spawned_tasks.append(identifier)
@@ -139,6 +139,7 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
+            self.spawner = nrunner.ProcessSpawner()  # pylint: disable=W0201
             loop = asyncio.get_event_loop()
             listen = config.get('nrun.status_server.listen')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
