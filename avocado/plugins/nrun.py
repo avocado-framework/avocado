@@ -15,7 +15,7 @@ from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
 
 
-def check_tasks_requirements(tasks, runners_registry):
+def check_tasks_requirements(tasks, runners_registry=None):
     """
     Checks if tasks have runner requirements fulfilled
 
@@ -39,8 +39,6 @@ class NRun(CLICmd):
 
     name = 'nrun'
     description = "*EXPERIMENTAL* runner: runs one or more tests"
-
-    KNOWN_EXTERNAL_RUNNERS = {}
 
     def configure(self, parser):
         parser = super(NRun, self).configure(parser)
@@ -105,7 +103,7 @@ class NRun(CLICmd):
 
     @asyncio.coroutine
     def spawn_task(self, task):
-        runner = nrunner.pick_runner_command(task, self.KNOWN_EXTERNAL_RUNNERS)
+        runner = nrunner.pick_runner_command(task)
         if runner is False:
             LOG_UI.error('Task "%s" has no matching runner. ', task)
             LOG_UI.error('This is an error condition and should have been caught '
@@ -129,9 +127,7 @@ class NRun(CLICmd):
             hint = HintParser(hint_filepath)
         resolutions = resolver.resolve(config.get('nrun.references'), hint)
         tasks = job.resolutions_to_tasks(resolutions, config)
-        self.pending_tasks = check_tasks_requirements(   # pylint: disable=W0201
-            tasks,
-            self.KNOWN_EXTERNAL_RUNNERS)
+        self.pending_tasks = check_tasks_requirements(tasks)   # pylint: disable=W0201
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')

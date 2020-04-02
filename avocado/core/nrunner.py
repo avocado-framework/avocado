@@ -21,6 +21,9 @@ RUNNER_RUN_CHECK_INTERVAL = 0.01
 #: runner that performs its work asynchronously
 RUNNER_RUN_STATUS_INTERVAL = 0.5
 
+#: All known runners
+KNOWN_RUNNERS = {}
+
 
 class SpawnMethod(enum.Enum):
     """The method employed to spawn a runnable or task."""
@@ -56,7 +59,7 @@ def check_runner_command_candidate(task_kind, runner_command):
     return task_kind in capabilities.get('runnables', [])
 
 
-def pick_runner_command(task, runners_registry):
+def pick_runner_command(task, runners_registry=None):
     """
     Selects a runner based on the task and keeps found runners in registry
 
@@ -75,6 +78,9 @@ def pick_runner_command(task, runners_registry):
     :returns: command line arguments to execute the runner
     :rtype: list of str or None
     """
+    if runners_registry is None:
+        runners_registry = KNOWN_RUNNERS
+
     kind = task.runnable.kind
     runner = runners_registry.get(kind)
     if runner is False:
