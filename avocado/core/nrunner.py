@@ -7,8 +7,10 @@ import inspect
 import io
 import json
 import multiprocessing
+import os
 import socket
 import subprocess
+import sys
 import time
 import unittest
 
@@ -32,6 +34,76 @@ class SpawnMethod(enum.Enum):
     #: Spawns with any method available, that is, it doesn't declare or
     #: require a specific spawn method
     ANY = object()
+
+
+def check_runner_command_candidate(task_kind, runner_command):
+    """Checks if a runner that looks like a good fit declares support."""
+    cmd = runner_command + ['capabilities']
+    try:
+        process = subprocess.Popen(cmd,
+                                   stdin=subprocess.DEVNULL,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.DEVNULL)
+    except FileNotFoundError:
+        return False
+    out, _ = process.communicate()
+
+    try:
+        capabilities = json.loads(out.decode())
+    except json.decoder.JSONDecodeError:
+        return False
+
+    return task_kind in capabilities.get('runnables', [])
+
+
+def pick_runner_command(task, runners_registry):
+    """
+    Selects a runner based on the task and keeps found runners in registry
+
+    This utility function will look at the given task and try to find
+    a matching runner.  The matching runner probe results are kept in
+    a registry (that is modified by this function) so that further
+    executions take advantage of previous probes.
+
+    This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
+
+    :param task: the task that needs a runner to be selected
+    :type task: :class:`avocado.core.nrunner.Task`
+    :param runners_registry: a registry with previously found (and not
+                             found) runners keyed by task kind
+    :param runners_registry: dict
+    :returns: command line arguments to execute the runner
+    :rtype: list of str or None
+    """
+    kind = task.runnable.kind
+    runner = runners_registry.get(kind)
+    if runner is False:
+        return None
+    if runner is not None:
+        return runner
+
+    standalone_executable_cmd = ['avocado-runner-%s' % kind]
+    if check_runner_command_candidate(kind, standalone_executable_cmd):
+        runners_registry[kind] = standalone_executable_cmd
+        return standalone_executable_cmd
+
+    # attempt to find Python module files that are named after the
+    # runner convention within the avocado.core namespace dir.
+    # Looking for the file only avoids an attempt to load the module
+    # and should be a lot faster
+    core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    module_name = kind.replace('-', '_')
+    module_filename = 'nrunner_%s.py' % module_name
+    if os.path.exists(os.path.join(core_dir, module_filename)):
+        full_module_name = 'avocado.core.%s' % module_name
+        candidate = [sys.executable, '-m', full_module_name]
+        if check_runner_command_candidate(kind, candidate):
+            runners_registry[kind] = candidate
+            return candidate
+
+    # exhausted probes, let's save the negative on the cache and avoid
+    # future similar probles
+    runners_registry[kind] = False
 
 
 class Runnable:

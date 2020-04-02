@@ -303,5 +303,43 @@ echo 'ok 2 - description 2'"""
         self.tmpdir.cleanup()
 
 
+@unittest.skipUnless(os.path.exists('/bin/sh'),
+                     ('Executable "/bin/sh" used in this test is not '
+                      'available in the system'))
+class RunnerCommandSelection(unittest.TestCase):
+
+    def test_check_runner_command_candidate(self):
+        cmd = ['sh', '-c',
+               'test $0 = capabilities && '
+               'echo -n {\\"runnables\\": [\\"mykind\\"]}']
+        self.assertTrue(nrunner.check_runner_command_candidate('mykind', cmd))
+
+    def test_check_runner_command_candidate_other_kind(self):
+        cmd = ['sh', '-c',
+               'test $0 = capabilities && '
+               'echo -n {\\"runnables\\": [\\"otherkind\\"]}']
+        self.assertFalse(nrunner.check_runner_command_candidate('mykind', cmd))
+
+    def test_check_runner_command_candidate_no_output(self):
+        cmd = ['sh', '-c', 'echo -n ""']
+        self.assertFalse(nrunner.check_runner_command_candidate('', cmd))
+
+
+class PickRunner(unittest.TestCase):
+
+    def setUp(self):
+        runnable = nrunner.Runnable('lets-image-a-kind',
+                                    'test_pick_runner_command')
+        self.task = nrunner.Task('1-test_pick_runner_command', runnable)
+
+    def test_pick_runner_command(self):
+        runner = ['avocado-runner-lets-image-a-kind']
+        known = {'lets-image-a-kind': runner}
+        self.assertEqual(nrunner.pick_runner_command(self.task, known), runner)
+
+    def test_pick_runner_command_empty(self):
+        self.assertFalse(nrunner.pick_runner_command(self.task, {}))
+
+
 if __name__ == '__main__':
     unittest.main()
