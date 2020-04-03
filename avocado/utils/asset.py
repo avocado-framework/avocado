@@ -132,7 +132,11 @@ class Asset:
                 self._create_hash_file(asset_path)
                 return self._verify_hash(asset_path)
         finally:
-            os.remove(temp)
+            try:
+                os.remove(temp)
+            except FileNotFoundError:
+                LOG.info("Temporary asset file unavailable due to failed"
+                         " download attempt.")
 
     @staticmethod
     def _get_hash_file(asset_path):
