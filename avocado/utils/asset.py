@@ -69,6 +69,16 @@ class Asset:
         self.asset_hash = asset_hash
 
         self.parsed_name = urllib.parse.urlparse(self.name)
+
+        # we currently support the following options for name and locations:
+        # 1. name is a full URI and locations is empty;
+        # 2. name is a single file name and locations is one or more entries.
+        # raise an exception if we have an unsupported use of those arguments
+        if ((self.parsed_name.scheme and locations is not None) or
+                (not self.parsed_name.scheme and locations is None)):
+            raise ValueError("Incorrect use of parameter name with parameter"
+                             " locations.")
+
         self.asset_name = os.path.basename(self.parsed_name.path)
         self.relative_dir = os.path.join(self._get_relative_dir(),
                                          self.asset_name)

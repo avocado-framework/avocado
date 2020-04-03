@@ -18,6 +18,7 @@ Assets subcommand
 
 import ast
 import os
+import urllib.parse
 
 from avocado.core import data_dir
 from avocado.core import exit_codes
@@ -197,11 +198,32 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
     :returns: list of names that were successfully fetched and list of
     fails.
     """
+    def validate_parameters(call):
+        """
+        Validate the parameters to make sure we have a supported case.
+
+        :param call: List of parameter to the Asset object.
+        :type call: dict
+        :returns: True or False
+        """
+        name = call.get('name', None)
+        locations = call.get('locations', None)
+        # probably, parameter name was defined as a class attribute
+        if ((name is None) or
+                # probably, parameter locations was defined as a class attribute
+                (not urllib.parse.urlparse(name).scheme and
+                 locations is None)):
+            return False
+        return True
+
     cache_dirs = data_dir.get_cache_dirs()
     success = []
     fail = []
     handler = FetchAssetHandler(test_file, klass, method)
     for call in handler.calls:
+        # validate the parameters
+        if not validate_parameters(call):
+            continue
         expire = call.pop('expire', None)
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
@@ -217,7 +239,7 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
                             test_file, klass, method)
             asset_obj.fetch()
             success.append(call['name'])
-        except OSError as failed:
+        except (OSError, ValueError) as failed:
             fail.append(failed)
     return success, fail
 
