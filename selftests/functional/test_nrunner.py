@@ -176,7 +176,7 @@ class ResolveSerializeRun(unittest.TestCase):
         cmd = "%s runnable-run-recipe %s"
         cmd %= (RUNNER, os.path.join(self.tmpdir.name, '1.json'))
         res = process.run(cmd)
-        self.assertIn(b"'status': 'pass'", res.stdout)
+        self.assertIn(b"'status': 'finished'", res.stdout)
 
     def tearDown(self):
         self.tmpdir.cleanup()

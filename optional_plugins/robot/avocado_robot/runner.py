@@ -43,23 +43,25 @@ class RobotRunner(nrunner.BaseRunner):
                                   stderr=stderr)
         time_end = time.time()
         if native_robot_result:
-            status = 'fail'
+            result = 'fail'
         else:
-            status = 'pass'
+            result = 'pass'
 
         stdout.seek(0)
         stderr.seek(0)
-        result = {'status': status,
+        output = {'status': 'finished',
+                  'result': result,
                   'stdout': stdout.read(),
                   'stderr': stderr.read(),
                   'time_end': time_end}
         stdout.close()
         stderr.close()
-        queue.put(result)
+        queue.put(output)
 
     def run(self):
         if not self.runnable.uri:
-            yield {'status': 'error',
+            yield {'status': 'finished',
+                   'result': 'error',
                    'output': 'uri is required but was not given'}
             return
 

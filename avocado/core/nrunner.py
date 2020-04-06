@@ -315,6 +315,7 @@ class NoOpRunner(BaseRunner):
     def run(self):
         time_start = time.time()
         yield {'status': 'finished',
+               'result': 'pass',
                'time_start': time_start,
                'time_end': time.time()}
 
@@ -386,9 +387,9 @@ class ExecTestRunner(ExecRunner):
         for most_current_execution_state in super(ExecTestRunner, self).run():
             if 'returncode' in most_current_execution_state:
                 if most_current_execution_state['returncode'] == 0:
-                    most_current_execution_state['status'] = 'pass'
+                    most_current_execution_state['result'] = 'pass'
                 else:
-                    most_current_execution_state['status'] = 'fail'
+                    most_current_execution_state['result'] = 'fail'
             yield most_current_execution_state
 
 
@@ -421,24 +422,26 @@ class PythonUnittestRunner(BaseRunner):
         time_end = time.time()
 
         if len(unittest_result.errors) > 0:
-            status = 'error'
+            result = 'error'
         elif len(unittest_result.failures) > 0:
-            status = 'fail'
+            result = 'fail'
         elif len(unittest_result.skipped) > 0:
-            status = 'skip'
+            result = 'skip'
         else:
-            status = 'pass'
+            result = 'pass'
 
         stream.seek(0)
-        result = {'status': status,
+        output = {'status': 'finished',
+                  'result': result,
                   'output': stream.read(),
                   'time_end': time_end}
         stream.close()
-        queue.put(result)
+        queue.put(output)
 
     def run(self):
         if not self.runnable.uri:
-            yield {'status': 'error',
+            yield {'status': 'finished',
+                   'result': 'error',
                    'output': 'uri is required but was not given'}
             return
 
@@ -738,7 +741,7 @@ class StatusServer:
     def __init__(self, uri, tasks_pending=None):
         self.uri = uri
         self.server_task = None
-        self.status = {}
+        self.result = {}
         if tasks_pending is None:
             tasks_pending = []
         self.tasks_pending = tasks_pending
@@ -769,18 +772,18 @@ class StatusServer:
             if data['status'] not in ["init", "running"]:
                 try:
                     self.tasks_pending.remove(data['id'])
-                    print('Task complete (%s): %s' % (data['status'],
+                    print('Task complete (%s): %s' % (data['result'],
                                                       data['id']))
                 except IndexError:
                     pass
                 except ValueError:
                     pass
-                if data['status'] in self.status:
-                    self.status[data['status']] += 1
+                if data['result'] in self.result:
+                    self.result[data['result']] += 1
                 else:
-                    self.status[data['status']] = 1
+                    self.result[data['result']] = 1
 
-                if data['status'] not in ('pass', 'skip'):
+                if data['result'] not in ('pass', 'skip'):
                     stdout = data.get('stdout', b'')
                     if stdout:
                         print('Task %s stdout:\n%s\n' % (data['id'], stdout))
