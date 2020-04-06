@@ -287,6 +287,15 @@ class Assets(CLICmd):
                                  parser=fetch_subcommand_parser,
                                  positional_arg=True)
 
+        help_msg = "always return success for the fetch command."
+        settings.register_option(section='assets.fetch',
+                                 key='ignore_errors',
+                                 help_msg=help_msg,
+                                 default=False,
+                                 key_type=bool,
+                                 parser=fetch_subcommand_parser,
+                                 long_arg='--ignore-errors')
+
     def run(self, config):
         subcommand = config.get('assets_subcommand')
         # we want to let the command caller knows about fails
@@ -311,5 +320,9 @@ class Assets(CLICmd):
                     LOG_UI.warning('No such file or file not supported: %s',
                                    test_file)
                     exitcode |= exit_codes.AVOCADO_FAIL
+
+            # check if we should ignore the errors
+            if config.get('assets.fetch.ignore_errors'):
+                exitcode = exit_codes.AVOCADO_ALL_OK
 
         return exitcode
