@@ -201,7 +201,7 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time_end', last_result)
 
-    def test_runner_exec_test(self):
+    def test_runner_exec_test_ok(self):
         runnable = nrunner.Runnable('exec-test', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')
         runner = nrunner.runner_from_runnable(
@@ -216,7 +216,21 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time_end', last_result)
 
-    def test_runner_python_unittest(self):
+    def test_runner_exec_test_fail(self):
+        runnable = nrunner.Runnable('exec-test', '/bin/false')
+        runner = nrunner.runner_from_runnable(
+            runnable,
+            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        results = [status for status in runner.run()]
+        last_result = results[-1]
+        self.assertEqual(last_result['status'], 'finished')
+        self.assertEqual(last_result['result'], 'fail')
+        self.assertEqual(last_result['returncode'], 1)
+        self.assertEqual(last_result['stdout'], b'')
+        self.assertEqual(last_result['stderr'], b'')
+        self.assertIn('time_end', last_result)
+
+    def test_runner_python_unittest_ok(self):
         runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase')
         runner = nrunner.runner_from_runnable(
             runnable,
@@ -230,6 +244,34 @@ class Runner(unittest.TestCase):
         self.assertEqual(result['result'], 'pass')
         self.assertTrue(result['output'].startswith(output1))
         self.assertTrue(result['output'].endswith(output2))
+
+    def test_runner_python_unittest_fail(self):
+        runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase.fail')
+        runner = nrunner.runner_from_runnable(
+            runnable,
+            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        results = [status for status in runner.run()]
+        output1 = ('============================================================='
+                   '=========\nFAIL: fail (unittest.case.TestCase)'
+                   '\nFail immediately, with the given message.')
+        output2 = '\n\nFAILED (failures=1)\n'
+        result = results[-1]
+        self.assertEqual(result['status'], 'finished')
+        self.assertEqual(result['result'], 'fail')
+        self.assertTrue(result['output'].startswith(output1))
+        self.assertTrue(result['output'].endswith(output2))
+
+    def test_runner_python_unittest_error(self):
+        runnable = nrunner.Runnable('python-unittest', '')
+        runner = nrunner.runner_from_runnable(
+            runnable,
+            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        results = [status for status in runner.run()]
+        output = 'uri is required but was not given'
+        result = results[-1]
+        self.assertEqual(result['status'], 'finished')
+        self.assertEqual(result['result'], 'error')
+        self.assertTrue(result['output'].startswith(output))
 
 
 class RunnerTmp(unittest.TestCase):
