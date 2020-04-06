@@ -165,6 +165,7 @@ class NoOpRunner(BaseRunner):
     def run(self):
         time_start = time.time()
         yield {'status': 'finished',
+               'result': 'pass',
                'time_start': time_start,
                'time_end': time.time()}
 
@@ -229,13 +230,13 @@ class ExecTestRunner(ExecRunner):
     Runnable attributes usage is identical to :class:`ExecRunner`
     """
     def run(self):
-        for status in super(ExecTestRunner, self).run():
-            if 'returncode' in status:
-                if status['returncode'] == 0:
-                    status['status'] = 'pass'
+        for output in super(ExecTestRunner, self).run():
+            if 'returncode' in output:
+                if output['returncode'] == 0:
+                    output['result'] = 'pass'
                 else:
-                    status['status'] = 'fail'
-            yield status
+                    output['result'] = 'fail'
+            yield output
 
 
 class PythonUnittestRunner(BaseRunner):
@@ -267,24 +268,26 @@ class PythonUnittestRunner(BaseRunner):
         time_end = time.time()
 
         if len(unittest_result.errors) > 0:
-            status = 'error'
+            result = 'error'
         elif len(unittest_result.failures) > 0:
-            status = 'fail'
+            result = 'fail'
         elif len(unittest_result.skipped) > 0:
-            status = 'skip'
+            result = 'skip'
         else:
-            status = 'pass'
+            result = 'pass'
 
         stream.seek(0)
-        result = {'status': status,
+        output = {'status': 'finished',
+                  'result': result,
                   'output': stream.read(),
                   'time_end': time_end}
         stream.close()
-        queue.put(result)
+        queue.put(output)
 
     def run(self):
         if not self.runnable.uri:
-            yield {'status': 'error',
+            yield {'status': 'finished',
+                   'result': 'error',
                    'output': 'uri is required but was not given'}
             return
 

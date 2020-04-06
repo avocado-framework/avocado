@@ -35,31 +35,33 @@ class RobotRunner(nrunner.BaseRunner):
         output_dir = tempfile.mkdtemp()
         file_name, suit_test = uri.split(':', 1)
         suite_name, test_name = suit_test.split('.', 1)
-        result = run(file_name,
+        output = run(file_name,
                      suite=suite_name,
                      test=test_name,
                      outputdir=output_dir,
                      stdout=stdout,
                      stderr=stderr)
         time_end = time.time()
-        if result:
-            status = 'fail'
+        if output:
+            result = 'fail'
         else:
-            status = 'pass'
+            result = 'pass'
 
         stdout.seek(0)
         stderr.seek(0)
-        result = {'status': status,
+        output = {'status': 'finished',
+                  'result': result,
                   'stdout': stdout.read(),
                   'stderr': stderr.read(),
                   'time_end': time_end}
         stdout.close()
         stderr.close()
-        queue.put(result)
+        queue.put(output)
 
     def run(self):
         if not self.runnable.uri:
-            yield {'status': 'error',
+            yield {'status': 'finished',
+                   'result': 'error',
                    'output': 'uri is required but was not given'}
             return
 
