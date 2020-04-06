@@ -195,6 +195,32 @@ class PeerInfo:
         else:
             return peer_interface
 
+    def ping6_check(self, host_interface, peer_interface, count, option=None,
+                    flood=False):
+        """
+        IPV6 ping check to peer machine
+        ping -I host_interface peer_ipv6 count
+        """
+        cmd = "ip addr show %s" % peer_interface
+        try:
+            for line in self.session.cmd(cmd).stdout.decode("utf-8") \
+                                                    .splitlines():
+                if "inet6" in line:
+                    ipv6 = line.split()[1].split('/')[0]
+        except Exception as ex:
+            if ipv6 == "":
+                log.error("unable to get IPV6 of peer")
+                return False
+        cmd = "ping -I %s %s -c %s" % (host_interface, ipv6, count)
+        if flood is True:
+            cmd = "%s -f" % cmd
+        elif option is not None:
+            cmd = "%s %s" % (cmd, option)
+        if process.system(cmd, shell=True, verbose=True,
+                          ignore_status=True) != 0:
+            return False
+        return True
+
 
 def is_interface_link_up(interface):
     """
