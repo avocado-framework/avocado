@@ -26,6 +26,9 @@ class TestClassTestUnit(unittest.TestCase):
         def test(self):
             pass
 
+        def skip(self):
+            self.skipTest('dummy skip test')
+
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
