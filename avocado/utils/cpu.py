@@ -26,11 +26,16 @@ import platform
 import glob
 import logging
 import random
+import warnings
 
 
 def _list_matches(content_list, pattern):
     """
     Checks if any item in list matches the specified pattern
+
+    :param content_list: list of item to match
+    :param pattern: pattern string to match from list
+    :rtype: `bool`
     """
     for content in content_list:
         match = re.search(pattern, content)
@@ -39,7 +44,7 @@ def _list_matches(content_list, pattern):
     return False
 
 
-def _get_cpu_info():
+def _get_info():
     """
     Returns info on the 1st CPU entry from /proc/cpuinfo as a list of lines
 
@@ -55,7 +60,7 @@ def _get_cpu_info():
     return cpuinfo
 
 
-def _get_cpu_status(cpu):
+def _get_status(cpu):
     """
     Check if a CPU is online or offline
 
@@ -79,7 +84,7 @@ def cpu_has_flags(flags):
     :returns: `bool` True if all the flags were found or False if not
     :rtype: `list`
     """
-    cpu_info = _get_cpu_info()
+    cpu_info = _get_info()
 
     if not isinstance(flags, list):
         flags = [flags]
@@ -90,23 +95,48 @@ def cpu_has_flags(flags):
     return True
 
 
-def get_cpu_vendor_name():
+def get_version():
+    """
+    Get cpu version
+
+    :returns: string cpu version of given machine
+    E:g:- 'i5-5300U' for intel and 'POWER9' for ibm machines
+    incase for unknown/unhandled machines return empty string
+    """
+    version_pattern = {'x86_64': rb'\s([\S,\d]+)\sCPU',
+                       'i386': rb'\s([\S,\d]+)\sCPU',
+                       'powerpc': rb'revision\s+:\s+(\S+)',
+                       's390': rb'.*machine\s=\s(\d+)'
+                       }
+    cpu_info = _get_info()
+    arch = get_arch()
+    try:
+        version_pattern[arch]
+    except KeyError as Err:
+        logging.warning("No pattern string for arch: %s\n Error: %s", arch, Err)
+        return None
+    for line in cpu_info:
+        version_out = re.findall(version_pattern[arch], line)
+        if version_out:
+            break
+    return version_out[0].decode('utf-8') if version_out[0] else ""
+
+
+def get_vendor():
     """
     Get the current cpu vendor name
 
-    :returns: string 'intel' or 'amd' or 'power7' depending on the
+    :returns: string 'intel' or 'amd' or 'ibm' depending on the
          current CPU architecture.
     :rtype: `string`
     """
     vendors_map = {
         'intel': (b"GenuineIntel", ),
         'amd': (b"AMD", ),
-        'power7': (b"POWER7", ),
-        'power8': (b"POWER8", ),
-        'power9': (b"POWER9", )
+        'ibm': (rb"POWER\d", rb"IBM/S390", ),
     }
 
-    cpu_info = _get_cpu_info()
+    cpu_info = _get_info()
     for vendor, identifiers in vendors_map.items():
         for identifier in identifiers:
             if _list_matches(cpu_info, identifier):
@@ -114,18 +144,13 @@ def get_cpu_vendor_name():
     return None
 
 
-def get_cpu_arch():
+def get_arch():
     """
     Work out which CPU architecture we're running on
     """
-    cpu_table = [(b'^cpu.*(RS64|POWER3|Broadband Engine)', 'power'),
-                 (b'^cpu.*POWER4', 'power4'),
-                 (b'^cpu.*POWER5', 'power5'),
-                 (b'^cpu.*POWER6', 'power6'),
-                 (b'^cpu.*POWER7', 'power7'),
-                 (b'^cpu.*POWER8', 'power8'),
-                 (b'^cpu.*POWER9', 'power9'),
-                 (b'^cpu.*PPC970', 'power970'),
+    cpu_table = [(b'^cpu.*(RS64|Broadband Engine)', 'powerpc'),
+                 (rb'^cpu.*POWER\d+', 'powerpc'),
+                 (b'^cpu.*PPC970', 'powerpc'),
                  (b'(ARM|^CPU implementer|^CPU part|^CPU variant'
                   b'|^Features|^BogoMIPS|^CPU revision)', 'arm'),
                  (b'(^cpu MHz dynamic|^cpu MHz static|^features'
@@ -134,7 +159,7 @@ def get_cpu_arch():
                  (b'^flags.*:.* lm .*', 'x86_64'),
                  (b'^flags', 'i386'),
                  (b'^hart\\s*: 1$', 'riscv')]
-    cpuinfo = _get_cpu_info()
+    cpuinfo = _get_info()
     for (pattern, arch) in cpu_table:
         if _list_matches(cpuinfo, pattern):
             if arch == 'arm':
@@ -152,7 +177,47 @@ def get_cpu_arch():
     return platform.machine()
 
 
-def cpu_online_list():
+def get_family():
+    """
+    to get family name of the cpu like broadwell, Haswell, power8, power9
+    """
+    family = None
+    arch = get_arch()
+    if arch == 'x86_64' or arch == 'i386':
+        if get_vendor() == 'amd':
+            raise NotImplementedError
+        try:
+            # refer below links for microarchitectures names
+            # https://en.wikipedia.org/wiki/List_of_Intel_CPU_microarchitectures
+            # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/events/intel/core.c#n4613
+            with open('/sys/devices/cpu/caps/pmu_name', 'rb') as mico_arch:
+                family = mico_arch.read().decode('utf-8').strip('\n').lower()
+        except FileNotFoundError as err:
+            logging.warning("Could not find micro-architecture/family, Error: %s", err)
+    elif arch == 'powerpc':
+        res = []
+        try:
+            for line in _get_info():
+                res = re.findall(rb'cpu\s+:\s+(POWER\d+)', line)
+                if res:
+                    break
+            family = res[0].decode('utf-8').lower()
+        except IndexError as err:
+            logging.warning("Unable to parse cpu family %s", err)
+    elif arch == 's390':
+        zfamily_map = {'3906': 'z14',
+                       '8561': 'z15'
+                       }
+        try:
+            family = zfamily_map[get_version()].lower()
+        except KeyError as err:
+            logging.warning("Could not find family for %s\nError: %s", get_version(), err)
+    elif arch == 'arm':
+        raise NotImplementedError
+    return family
+
+
+def online_list():
     """
     Reports a list of indexes of the online cpus
     """
@@ -169,14 +234,14 @@ def cpu_online_list():
     return cpus
 
 
-def total_cpus_count():
+def total_count():
     """
     Return Number of Total cpus in the system including offline cpus
     """
     return os.sysconf('SC_NPROCESSORS_CONF')
 
 
-def online_cpus_count():
+def online_count():
     """
     Return Number of Online cpus in the system
     """
@@ -189,7 +254,7 @@ def online(cpu):
     """
     with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
         fd.write(b'1')
-    if _get_cpu_status(cpu):
+    if _get_status(cpu):
         return 0
     return 1
 
@@ -200,19 +265,19 @@ def offline(cpu):
     """
     with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
         fd.write(b'0')
-    if _get_cpu_status(cpu):
+    if _get_status(cpu):
         return 1
     return 0
 
 
-def get_cpuidle_state():
+def get_idle_state():
     """
     Get current cpu idle values
 
     :return: Dict of cpuidle states values for all cpus
     :rtype: Dict of dicts
     """
-    cpus_list = cpu_online_list()
+    cpus_list = online_list()
     states = range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
     cpu_idlestate = {}
     for cpu in cpus_list:
@@ -240,7 +305,7 @@ def _bool_to_binary(value):
     raise TypeError("Value is not a boolean: %s" % value)
 
 
-def set_cpuidle_state(state_number="all", disable=True, setstate=None):
+def set_idle_state(state_number="all", disable=True, setstate=None):
     """
     Set/Reset cpu idle states for all cpus
 
@@ -248,9 +313,9 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
     :param disable: whether to disable/enable given cpu idle state,
                     default is to disable (True). Must be a boolean value.
     :type disable: bool
-    :param setstate: cpuidle state value, output of `get_cpuidle_state()`
+    :param setstate: cpuidle state value, output of `get_idle_state()`
     """
-    cpus_list = cpu_online_list()
+    cpus_list = online_list()
     if not setstate:
         states = []
         if state_number == 'all':
@@ -278,7 +343,7 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
                                     "for state %s:\n%s", cpu, state_no, err)
 
 
-def set_cpufreq_governor(governor="random"):
+def set_freq_governor(governor="random"):
     """
     To change the given cpu frequency governor
 
@@ -287,14 +352,14 @@ def set_cpufreq_governor(governor="random"):
     """
     avl_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"
     cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
-    cur_gov = get_cpufreq_governor()
+    cur_gov = get_freq_governor()
     if not cur_gov:
         return False
     if not (os.access(avl_gov_file, os.R_OK) and os.access(cur_gov_file, os.W_OK)):
         logging.error("Could not locate frequency governor sysfs entries or\n"
                       " No proper permissions to read/write sysfs entries")
         return False
-    cpus_list = range(total_cpus_count())
+    cpus_list = range(total_count())
     with open(avl_gov_file, 'r') as fl:
         avl_govs = fl.read().strip().split(' ')
     if governor == "random":
@@ -318,7 +383,7 @@ def set_cpufreq_governor(governor="random"):
     return True
 
 
-def get_cpufreq_governor():
+def get_freq_governor():
     """
     Get current cpu frequency governor
     """
@@ -356,3 +421,32 @@ def get_pid_cpus(pid):
         except IOError:
             continue
     return list(cpus)
+
+
+def _deprecated(newfunc, oldfuncname):
+    """
+    Print a warning to user and return the new function
+
+    :param newfunc: new function to be assigned
+    :param oldfunctionname: Old function name string
+    :rtype: `function`
+    """
+    def wrap(*args, **kwargs):
+        fmt_str = "avocado.utils.cpu.{}() it is getting deprecat".format(oldfuncname)
+        fmt_str += "ed, Use avocado.utils.cpu.{}() instead".format(newfunc.__name__)
+        warnings.warn((fmt_str), DeprecationWarning, stacklevel=2)
+        return newfunc(*args, **kwargs)
+    return wrap
+
+
+total_cpus_count = _deprecated(total_count, "total_cpus_count")
+_get_cpu_info = _deprecated(_get_info, "_get_cpu_info")
+_get_cpu_status = _deprecated(_get_status, "_get_cpu_status")
+get_cpu_vendor_name = _deprecated(get_vendor, "get_cpu_vendor_name")
+get_cpu_arch = _deprecated(get_arch, "get_cpu_arch")
+cpu_online_list = _deprecated(online_list, "cpu_online_list")
+online_cpus_count = _deprecated(online_count, "online_cpus_count")
+get_cpuidle_state = _deprecated(get_idle_state, "get_cpuidle_state")
+set_cpuidle_state = _deprecated(set_idle_state, "set_cpuidle_state")
+set_cpufreq_governor = _deprecated(set_freq_governor, "set_cpufreq_governor")
+get_cpufreq_governor = _deprecated(get_freq_governor, "get_cpufreq_governor")
