@@ -1,15 +1,20 @@
+#!/usr/bin/env python3
+
 import argparse
 import asyncio
 import base64
 import collections
+import enum
 import inspect
 import io
 import json
 import multiprocessing
+import os
+import socket
 import subprocess
+import sys
 import time
 import unittest
-import socket
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -17,6 +22,151 @@ RUNNER_RUN_CHECK_INTERVAL = 0.01
 #: The amount of time (in seconds) between a status report from a
 #: runner that performs its work asynchronously
 RUNNER_RUN_STATUS_INTERVAL = 0.5
+
+#: All known runners
+KNOWN_RUNNERS = {}
+
+
+class SpawnMethod(enum.Enum):
+    """The method employed to spawn a runnable or task."""
+    #: Spawns by running executing Python code, that is, having access to
+    #: a runnable or task instance, it calls its run() method.
+    PYTHON_CLASS = object()
+    #: Spawns by running a command, that is having either a path to an
+    #: executable or a list of arguments, it calls a function that will
+    #: execute that command (such as with os.system())
+    STANDALONE_EXECUTABLE = object()
+    #: Spawns with any method available, that is, it doesn't declare or
+    #: require a specific spawn method
+    ANY = object()
+
+
+def check_tasks_requirements(tasks, runners_registry=None):
+    """
+    Checks if tasks have runner requirements fulfilled
+
+    :param tasks: the tasks whose runner requirements will be checked
+    :type tasks: list of :class:`Task`
+    :param runners_registry: a registry with previously found (and not
+                             found) runners keyed by task kind
+    :type runners_registry: dict
+    :return: two list of tasks in a tupple, with the first being the tasks
+             that pass the requirements check and the second the tasks that
+             fail the requirements check
+    :rtype: tupple of (list, list)
+    """
+    if runners_registry is None:
+        runners_registry = KNOWN_RUNNERS
+    ok = []
+    missing = []
+    for task in tasks:
+        runner = task.pick_runner_command(runners_registry)
+        if runner:
+            ok.append(task)
+        else:
+            missing.append(task)
+    return (ok, missing)
+
+
+class BaseSpawner:
+    """Defines an interface to be followed by all implementations."""
+
+    METHODS = []
+
+    @staticmethod
+    def is_task_alive(task):
+        pass
+
+    def spawn_task(self, task):
+        pass
+
+
+class ProcessSpawner(BaseSpawner):
+
+    METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+
+    @staticmethod
+    def is_task_alive(task):
+        return task.spawn_handle.returncode is None
+
+    @asyncio.coroutine
+    def spawn_task(self, task):
+        runner = task.pick_runner_command()
+        args = runner[1:] + ['task-run'] + task.get_command_args()
+        runner = runner[0]
+
+        #pylint: disable=E1133
+        task.spawn_handle = yield from asyncio.create_subprocess_exec(
+            runner,
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+
+class PodmanSpawner(BaseSpawner):
+
+    METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+    IMAGE = 'fedora:31'
+    PODMAN_BIN = "/usr/bin/podman"
+
+    @staticmethod
+    def is_task_alive(task):
+        if task.spawn_handle is None:
+            return False
+
+        cmd = [PodmanSpawner.PODMAN_BIN, "ps", "--all", "--format={{.State}}",
+               "--filter=id=%s" % task.spawn_handle]
+        process = subprocess.Popen(cmd,
+                                   stdin=subprocess.DEVNULL,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.DEVNULL)
+        out, _ = process.communicate()
+        # we have to be lenient and allow for the configured state to
+        # be considered "alive" because it happens before the
+        # container transitions into "running"
+        return out in [b'configured\n', b'running\n']
+
+    @asyncio.coroutine
+    def spawn_task(self, task):
+        entry_point_cmd = '/tmp/avocado-runner'
+        entry_point_args = task.get_command_args()
+        entry_point_args.insert(0, "task-run")
+        entry_point_args.insert(0, entry_point_cmd)
+        entry_point = json.dumps(entry_point_args)
+        entry_point_arg = "--entrypoint=" + entry_point
+        # pylint: disable=E1133
+        proc = yield from asyncio.create_subprocess_exec(
+            self.PODMAN_BIN, "create",
+            "--net=host",
+            entry_point_arg,
+            self.IMAGE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+        _ = yield from proc.wait()
+        stdout = yield from proc.stdout.read()
+        container_id = stdout.decode().strip()
+
+        task.spawn_handle = container_id
+
+        # Currently limited to avocado-runner, we'll expand on that
+        # when the runner requirements system is in place
+        this_path = os.path.abspath(__file__)
+        common_path = os.path.dirname(os.path.dirname(this_path))
+        avocado_runner_path = os.path.join(common_path, 'core', 'nrunner.py')
+        proc = yield from asyncio.create_subprocess_exec(
+            self.PODMAN_BIN,
+            "cp",
+            avocado_runner_path,
+            "%s:%s" % (container_id, entry_point_cmd))
+        yield from proc.wait()
+
+        proc = yield from asyncio.create_subprocess_exec(self.PODMAN_BIN,
+                                                         "start",
+                                                         container_id,
+                                                         stdout=asyncio.subprocess.PIPE,
+                                                         stderr=asyncio.subprocess.PIPE)
+        yield from proc.wait()
 
 
 class Runnable:
@@ -440,10 +590,22 @@ class Task:
         if known_runners is None:
             known_runners = {}
         self.known_runners = known_runners
+        self.spawn_handle = None
 
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
         return fmt.format(self.identifier, self.runnable, self.status_services)
+
+    def are_requirements_available(self, runners_registry=None):
+        """Verifies if requirements needed to run this task are available.
+
+        This currently checks the runner command only, but can be expanded once
+        the handling of other types of requirements are implemented.  See
+        :doc:`/blueprints/BP002`.
+        """
+        if runners_registry is None:
+            runners_registry = KNOWN_RUNNERS
+        return self.pick_runner_command(runners_registry)
 
     @classmethod
     def from_recipe(cls, task_path, known_runners):
@@ -484,6 +646,75 @@ class Task:
             args.append(status_service.uri)
 
         return args
+
+    def is_kind_supported_by_runner_command(self, runner_command):
+        """Checks if a runner command that seems a good fit declares support."""
+        cmd = runner_command + ['capabilities']
+        try:
+            process = subprocess.Popen(cmd,
+                                       stdin=subprocess.DEVNULL,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
+            return False
+        out, _ = process.communicate()
+
+        try:
+            capabilities = json.loads(out.decode())
+        except json.decoder.JSONDecodeError:
+            return False
+
+        return self.runnable.kind in capabilities.get('runnables', [])
+
+    def pick_runner_command(self, runners_registry=None):
+        """Selects a runner command based on the task.
+
+        And when finding a suitable runner, keeps found runners in registry.
+
+        This utility function will look at the given task and try to find
+        a matching runner.  The matching runner probe results are kept in
+        a registry (that is modified by this function) so that further
+        executions take advantage of previous probes.
+
+        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
+
+        :param runners_registry: a registry with previously found (and not
+                                 found) runners keyed by task kind
+        :param runners_registry: dict
+        :returns: command line arguments to execute the runner
+        :rtype: list of str or None
+        """
+        if runners_registry is None:
+            runners_registry = KNOWN_RUNNERS
+        kind = self.runnable.kind
+        runner_cmd = runners_registry.get(kind)
+        if runner_cmd is False:
+            return None
+        if runner_cmd is not None:
+            return runner_cmd
+
+        standalone_executable_cmd = ['avocado-runner-%s' % kind]
+        if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
+            runners_registry[kind] = standalone_executable_cmd
+            return standalone_executable_cmd
+
+        # attempt to find Python module files that are named after the
+        # runner convention within the avocado.core namespace dir.
+        # Looking for the file only avoids an attempt to load the module
+        # and should be a lot faster
+        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        module_name = kind.replace('-', '_')
+        module_filename = 'nrunner_%s.py' % module_name
+        if os.path.exists(os.path.join(core_dir, module_filename)):
+            full_module_name = 'avocado.core.%s' % module_name
+            candidate_cmd = [sys.executable, '-m', full_module_name]
+            if self.is_kind_supported_by_runner_command(candidate_cmd):
+                runners_registry[kind] = candidate_cmd
+                return candidate_cmd
+
+        # exhausted probes, let's save the negative on the cache and avoid
+        # future similar probles
+        runners_registry[kind] = False
 
     def run(self):
         runner = runner_from_runnable(self.runnable, self.known_runners)

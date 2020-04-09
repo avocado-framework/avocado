@@ -19,7 +19,7 @@ NRunner based implementation of job compliant runner
 from avocado.core import test
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
 
-from .nrun import check_tasks_requirements
+from avocado.core.nrunner import check_tasks_requirements
 
 
 class Runner(RunnerInterface):
@@ -33,7 +33,7 @@ class Runner(RunnerInterface):
     def run_suite(self, job, result, test_suite, variants, timeout=0,
                   replay_map=None, execution_order=None):
         summary = set()
-        test_suite = check_tasks_requirements(
+        test_suite, _ = check_tasks_requirements(
             test_suite,
             self.KNOWN_EXTERNAL_RUNNERS)  # pylint: disable=W0201
         result.tests_total = len(test_suite)  # no support for variants yet

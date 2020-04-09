@@ -13,82 +13,12 @@ from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.utils import path as utils_path
-
-
-def pick_runner(task, runners_registry):
-    """
-    Selects a runner based on the task and keeps found runners in registry
-
-    This utility function will look at the given task and try to find
-    a matching runner.  The matching runner probe results are kept in
-    a registry (that is modified by this function) so that further
-    executions take advantage of previous probes.
-
-    :param task: the task that needs a runner to be selected
-    :type task: :class:`avocado.core.nrunner.Task`
-    :param runners_registry: a registry with previously found (and not
-                             found) runners keyed by task kind
-    :param runners_registry: dict
-    :returns: command line arguments to execute the runner
-    :rtype: list of str
-    """
-    kind = task.runnable.kind
-    runner = runners_registry.get(kind)
-    if runner is False:
-        return None
-    if runner is not None:
-        return runner
-
-    # first attempt to find Python module files that are named
-    # after the runner convention within the avocado.core
-    # namespace dir.  Looking for the file only avoids an attempt
-    # to load the module and should be a lot faster
-    core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    module_name = kind.replace('-', '_')
-    module_filename = 'nrunner_%s.py' % module_name
-    if os.path.exists(os.path.join(core_dir, module_filename)):
-        full_module_name = 'avocado.core.%s' % module_name
-        runner = [sys.executable, '-m', full_module_name]
-        runners_registry[kind] = runner
-        return runner
-
-    # try to find executable in the path
-    runner_by_name = 'avocado-runner-%s' % kind
-    try:
-        runner = utils_path.find_command(runner_by_name)
-        runners_registry[kind] = [runner]
-        return [runner]
-    except utils_path.CmdNotFoundError:
-        runners_registry[kind] = False
-
-
-def check_tasks_requirements(tasks, runners_registry):
-    """
-    Checks if tasks have runner requirements fulfilled
-
-    :param tasks: the tasks whose runner requirements will be checked
-    :type tasks: list of :class:`avocado.core.nrunner.Task`
-    :param runners_registry: a registry with previously found (and not
-                             found) runners keyed by task kind
-    :param runners_registry: dict
-    """
-    result = []
-    for task in tasks:
-        runner = pick_runner(task, runners_registry)
-        if runner:
-            result.append(task)
-        else:
-            LOG_UI.warning('Task will not be run due to missing requirements: %s', task)
-    return result
 
 
 class NRun(CLICmd):
 
     name = 'nrun'
     description = "*EXPERIMENTAL* runner: runs one or more tests"
-
-    KNOWN_EXTERNAL_RUNNERS = {}
 
     def configure(self, parser):
         parser = super(NRun, self).configure(parser)
@@ -131,6 +61,14 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg='--status-server')
 
+        settings.register_option(section="nrun.spawners.podman",
+                                 key="enabled",
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg="Spawn tests in podman containers",
+                                 parser=parser,
+                                 long_arg="--podman-spawner")
+
         parser_common_args.add_tag_filter_args(parser)
 
     @asyncio.coroutine
@@ -145,21 +83,25 @@ class NRun(CLICmd):
                 print("Finished spawning tasks")
                 break
 
-            yield from self.spawn_task(task)
+            yield from self.spawner.spawn_task(task)
             identifier = task.identifier
             self.pending_tasks.remove(task)
             self.spawned_tasks.append(identifier)
-            print("%s spawned" % identifier)
-
-    def pick_runner_or_default(self, task):
-        runner = pick_runner(task, self.KNOWN_EXTERNAL_RUNNERS)
-        if runner is None:
-            runner = [sys.executable, '-m', 'avocado.core.nrunner']
-        return runner
+            alive = self.spawner.is_task_alive(task)
+            if not alive:
+                LOG_UI.warning("%s is not alive shortly after being spawned", identifier)
+            else:
+                LOG_UI.info("%s spawned and alive", identifier)
 
     @asyncio.coroutine
     def spawn_task(self, task):
-        runner = self.pick_runner_or_default(task)
+        runner = task.pick_runner_command()
+        if runner is False:
+            LOG_UI.error('Task "%s" has no matching runner. ', task)
+            LOG_UI.error('This is an error condition and should have been caught '
+                         'when checking task requirements.')
+            sys.exit(exit_codes.AVOCADO_FAIL)
+
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
 
@@ -177,9 +119,12 @@ class NRun(CLICmd):
             hint = HintParser(hint_filepath)
         resolutions = resolver.resolve(config.get('nrun.references'), hint)
         tasks = job.resolutions_to_tasks(resolutions, config)
-        self.pending_tasks = check_tasks_requirements(   # pylint: disable=W0201
-            tasks,
-            self.KNOWN_EXTERNAL_RUNNERS)
+        # pylint: disable=W0201
+        self.pending_tasks, missing_requirements = nrunner.check_tasks_requirements(tasks)
+        if missing_requirements:
+            missing_tasks_msg = "\n".join([str(t) for t in missing_requirements])
+            LOG_UI.warning('Tasks will not be run due to missing requirements: %s',
+                           missing_tasks_msg)
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
@@ -191,6 +136,17 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
+            if config.get('nrun.spawners.podman.enabled'):
+                if not os.path.exists(nrunner.PodmanSpawner.PODMAN_BIN):
+                    msg = ('Podman Spawner selected, but podman binary "%s" '
+                           'is not available on the system.  Please install '
+                           'podman before attempting to use this feature.')
+                    msg %= nrunner.PodmanSpawner.PODMAN_BIN
+                    LOG_UI.error(msg)
+                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                self.spawner = nrunner.PodmanSpawner()  # pylint: disable=W0201
+            else:
+                self.spawner = nrunner.ProcessSpawner()  # pylint: disable=W0201
             loop = asyncio.get_event_loop()
             listen = config.get('nrun.status_server.listen')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
