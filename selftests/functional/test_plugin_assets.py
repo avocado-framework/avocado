@@ -234,6 +234,34 @@ class AssetsPlugin(unittest.TestCase):
         self.assertEqual(expected_rc, result.exit_status)
         self.assertIn(expected_stderr, result.stderr_text)
 
+    def test_asset_fetch_ignore_errors(self):
+        """
+        Test ends with warning but success error code
+        Problems while fetching asset from test source
+        """
+        fetch_content = r"""
+        self.hello = self.fetch_asset(
+            'hello-2.9.tar.gz',
+            locations='http://localhost/hello-2.9.tar.gz')
+        """
+        test_content = TEST_TEMPLATE.format(content=fetch_content)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False)
+        test_file.write(test_content.encode())
+        test_file.close()
+
+        expected_stderr = "Failed to fetch hello-2.9.tar.gz.\n"
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+
+        cmd_line = "%s --config %s assets fetch --ignore-errors %s " % (
+            AVOCADO,
+            self.config_file.name,
+            test_file.name)
+        result = process.run(cmd_line, ignore_status=True)
+        os.remove(test_file.name)
+
+        self.assertEqual(expected_rc, result.exit_status)
+        self.assertIn(expected_stderr, result.stderr_text)
+
     def tearDown(self):
         os.remove(self.config_file.name)
         self.base_dir.cleanup()
