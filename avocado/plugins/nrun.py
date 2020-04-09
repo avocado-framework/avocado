@@ -87,7 +87,11 @@ class NRun(CLICmd):
             identifier = task.identifier
             self.pending_tasks.remove(task)
             self.spawned_tasks.append(identifier)
-            print("%s spawned" % identifier)
+            alive = self.spawner.is_task_alive(task)
+            if not alive:
+                LOG_UI.warning("%s is not alive shortly after being spawned", identifier)
+            else:
+                LOG_UI.info("%s spawned and alive", identifier)
 
     @asyncio.coroutine
     def spawn_task(self, task):

@@ -73,6 +73,10 @@ class BaseSpawner:
 
     METHODS = []
 
+    @staticmethod
+    def is_task_alive(task):
+        pass
+
     def spawn_task(self, task):
         pass
 
@@ -81,6 +85,10 @@ class ProcessSpawner(BaseSpawner):
 
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
+    @staticmethod
+    def is_task_alive(task):
+        return task.spawn_handle.returncode is None
+
     @asyncio.coroutine
     def spawn_task(self, task):
         runner = task.pick_runner_command()
@@ -88,7 +96,7 @@ class ProcessSpawner(BaseSpawner):
         runner = runner[0]
 
         #pylint: disable=E1133
-        yield from asyncio.create_subprocess_exec(
+        task.spawn_handle = yield from asyncio.create_subprocess_exec(
             runner,
             *args,
             stdout=asyncio.subprocess.PIPE,
@@ -100,6 +108,23 @@ class PodmanSpawner(BaseSpawner):
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
     IMAGE = 'fedora:31'
     PODMAN_BIN = "/usr/bin/podman"
+
+    @staticmethod
+    def is_task_alive(task):
+        if task.spawn_handle is None:
+            return False
+
+        cmd = [PodmanSpawner.PODMAN_BIN, "ps", "--all", "--format={{.State}}",
+               "--filter=id=%s" % task.spawn_handle]
+        process = subprocess.Popen(cmd,
+                                   stdin=subprocess.DEVNULL,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.DEVNULL)
+        out, _ = process.communicate()
+        # we have to be lenient and allow for the configured state to
+        # be considered "alive" because it happens before the
+        # container transitions into "running"
+        return out in [b'configured\n', b'running\n']
 
     @asyncio.coroutine
     def spawn_task(self, task):
@@ -121,6 +146,8 @@ class PodmanSpawner(BaseSpawner):
         _ = yield from proc.wait()
         stdout = yield from proc.stdout.read()
         container_id = stdout.decode().strip()
+
+        task.spawn_handle = container_id
 
         # Currently limited to avocado-runner, we'll expand on that
         # when the runner requirements system is in place
@@ -563,6 +590,7 @@ class Task:
         if known_runners is None:
             known_runners = {}
         self.known_runners = known_runners
+        self.spawn_handle = None
 
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
