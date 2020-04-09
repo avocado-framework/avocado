@@ -36,11 +36,22 @@ class TestAsset(unittest.TestCase):
         self.assertTrue(foo_tarball.startswith(expected_location))
         self.assertTrue(foo_tarball.endswith(self.assetname))
 
-    def test_fetch_name_cache_by_name(self):
+    def test_fetch_name_hash_cache_by_name(self):
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=[self.url],
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        expected_location = os.path.join(self.cache_dir, 'by_name',
+                                         self.assetname)
+        self.assertEqual(foo_tarball, expected_location)
+
+    def test_fetch_name_locations_cache_by_name(self):
+        foo_tarball = asset.Asset(self.assetname,
+                                  asset_hash=None,
+                                  algorithm='sha1',
+                                  locations=[self.url, 'file://fake_dir'],
                                   cache_dirs=[self.cache_dir],
                                   expire=None).fetch()
         expected_location = os.path.join(self.cache_dir, 'by_name',
