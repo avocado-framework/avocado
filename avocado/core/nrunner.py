@@ -39,6 +39,33 @@ class SpawnMethod(enum.Enum):
     ANY = object()
 
 
+class BaseSpawner:
+    """Defines an interface to be followed by all implementations."""
+
+    METHODS = []
+
+    def spawn_task(self, task):
+        pass
+
+
+class ProcessSpawner(BaseSpawner):
+
+    METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+
+    @asyncio.coroutine
+    def spawn_task(self, task):
+        runner = task.pick_runner_command()
+        args = runner[1:] + ['task-run'] + task.get_command_args()
+        runner = runner[0]
+
+        #pylint: disable=E1133
+        yield from asyncio.create_subprocess_exec(
+            runner,
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+
 class Runnable:
     """
     Describes an entity that be executed in the context of a task
