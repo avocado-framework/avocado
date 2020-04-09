@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import base64
 import collections
+import enum
 import inspect
 import io
 import json
@@ -17,6 +18,20 @@ RUNNER_RUN_CHECK_INTERVAL = 0.01
 #: The amount of time (in seconds) between a status report from a
 #: runner that performs its work asynchronously
 RUNNER_RUN_STATUS_INTERVAL = 0.5
+
+
+class SpawnMethod(enum.Enum):
+    """The method employed to spawn a runnable or task."""
+    #: Spawns by running executing Python code, that is, having access to
+    #: a runnable or task instance, it calls its run() method.
+    PYTHON_CLASS = object()
+    #: Spawns by running a command, that is having either a path to an
+    #: executable or a list of arguments, it calls a function that will
+    #: execute that command (such as with os.system())
+    STANDALONE_EXECUTABLE = object()
+    #: Spawns with any method available, that is, it doesn't declare or
+    #: require a specific spawn method
+    ANY = object()
 
 
 class Runnable:
