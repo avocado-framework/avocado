@@ -344,12 +344,16 @@ class ExecRunner(BaseRunner):
             stderr=subprocess.PIPE,
             env=env)
 
-        last_status = None
+        most_current_execution_state_time = None
         while process.poll() is None:
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
             now = time.time()
-            if last_status is None or now > last_status + RUNNER_RUN_STATUS_INTERVAL:
-                last_status = now
+            if most_current_execution_state_time is not None:
+                next_execution_state_mark = (most_current_execution_state_time +
+                                             RUNNER_RUN_STATUS_INTERVAL)
+            if (most_current_execution_state_time is None or
+                    now > next_execution_state_mark):
+                most_current_execution_state_time = now
                 if not time_start_sent:
                     time_start_sent = True
                     yield {'status': 'running',
@@ -379,13 +383,13 @@ class ExecTestRunner(ExecRunner):
     Runnable attributes usage is identical to :class:`ExecRunner`
     """
     def run(self):
-        for status in super(ExecTestRunner, self).run():
-            if 'returncode' in status:
-                if status['returncode'] == 0:
-                    status['status'] = 'pass'
+        for most_current_execution_state in super(ExecTestRunner, self).run():
+            if 'returncode' in most_current_execution_state:
+                if most_current_execution_state['returncode'] == 0:
+                    most_current_execution_state['status'] = 'pass'
                 else:
-                    status['status'] = 'fail'
-            yield status
+                    most_current_execution_state['status'] = 'fail'
+            yield most_current_execution_state
 
 
 class PythonUnittestRunner(BaseRunner):
@@ -445,12 +449,16 @@ class PythonUnittestRunner(BaseRunner):
         time_start_sent = False
         process.start()
 
-        last_status = None
+        most_current_execution_state_time = None
         while queue.empty():
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
             now = time.time()
-            if last_status is None or now > last_status + RUNNER_RUN_STATUS_INTERVAL:
-                last_status = now
+            if most_current_execution_state_time is not None:
+                next_execution_state_mark = (most_current_execution_state_time +
+                                             RUNNER_RUN_STATUS_INTERVAL)
+            if (most_current_execution_state_time is None or
+                    now > next_execution_state_mark):
+                most_current_execution_state_time = now
                 if not time_start_sent:
                     time_start_sent = True
                     yield {'status': 'running',
