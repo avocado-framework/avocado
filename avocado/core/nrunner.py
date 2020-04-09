@@ -39,6 +39,33 @@ class SpawnMethod(enum.Enum):
     ANY = object()
 
 
+def check_tasks_requirements(tasks, runners_registry=None):
+    """
+    Checks if tasks have runner requirements fulfilled
+
+    :param tasks: the tasks whose runner requirements will be checked
+    :type tasks: list of :class:`Task`
+    :param runners_registry: a registry with previously found (and not
+                             found) runners keyed by task kind
+    :type runners_registry: dict
+    :return: two list of tasks in a tupple, with the first being the tasks
+             that pass the requirements check and the second the tasks that
+             fail the requirements check
+    :rtype: tupple of (list, list)
+    """
+    if runners_registry is None:
+        runners_registry = KNOWN_RUNNERS
+    ok = []
+    missing = []
+    for task in tasks:
+        runner = task.pick_runner_command(runners_registry)
+        if runner:
+            ok.append(task)
+        else:
+            missing.append(task)
+    return (ok, missing)
+
+
 class BaseSpawner:
     """Defines an interface to be followed by all implementations."""
 
@@ -491,6 +518,17 @@ class Task:
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
         return fmt.format(self.identifier, self.runnable, self.status_services)
+
+    def are_requirements_available(self, runners_registry=None):
+        """Verifies if requirements needed to run this task are available.
+
+        This currently checks the runner command only, but can be expanded once
+        the handling of other types of requirements are implemented.  See
+        :doc:`/blueprints/BP002`.
+        """
+        if runners_registry is None:
+            runners_registry = KNOWN_RUNNERS
+        return self.pick_runner_command(runners_registry)
 
     @classmethod
     def from_recipe(cls, task_path, known_runners):
