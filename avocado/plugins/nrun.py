@@ -13,54 +13,6 @@ from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.utils import path as utils_path
-
-
-def pick_runner(task, runners_registry):
-    """
-    Selects a runner based on the task and keeps found runners in registry
-
-    This utility function will look at the given task and try to find
-    a matching runner.  The matching runner probe results are kept in
-    a registry (that is modified by this function) so that further
-    executions take advantage of previous probes.
-
-    :param task: the task that needs a runner to be selected
-    :type task: :class:`avocado.core.nrunner.Task`
-    :param runners_registry: a registry with previously found (and not
-                             found) runners keyed by task kind
-    :param runners_registry: dict
-    :returns: command line arguments to execute the runner
-    :rtype: list of str
-    """
-    kind = task.runnable.kind
-    runner = runners_registry.get(kind)
-    if runner is False:
-        return None
-    if runner is not None:
-        return runner
-
-    # first attempt to find Python module files that are named
-    # after the runner convention within the avocado.core
-    # namespace dir.  Looking for the file only avoids an attempt
-    # to load the module and should be a lot faster
-    core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    module_name = kind.replace('-', '_')
-    module_filename = 'nrunner_%s.py' % module_name
-    if os.path.exists(os.path.join(core_dir, module_filename)):
-        full_module_name = 'avocado.core.%s' % module_name
-        runner = [sys.executable, '-m', full_module_name]
-        runners_registry[kind] = runner
-        return runner
-
-    # try to find executable in the path
-    runner_by_name = 'avocado-runner-%s' % kind
-    try:
-        runner = utils_path.find_command(runner_by_name)
-        runners_registry[kind] = [runner]
-        return [runner]
-    except utils_path.CmdNotFoundError:
-        runners_registry[kind] = False
 
 
 def check_tasks_requirements(tasks, runners_registry):
@@ -75,7 +27,7 @@ def check_tasks_requirements(tasks, runners_registry):
     """
     result = []
     for task in tasks:
-        runner = pick_runner(task, runners_registry)
+        runner = task.pick_runner_command(runners_registry)
         if runner:
             result.append(task)
         else:
@@ -152,7 +104,7 @@ class NRun(CLICmd):
             print("%s spawned" % identifier)
 
     def pick_runner_or_default(self, task):
-        runner = pick_runner(task, self.KNOWN_EXTERNAL_RUNNERS)
+        runner = task.pick_runner_command(self.KNOWN_EXTERNAL_RUNNERS)
         if runner is None:
             runner = [sys.executable, '-m', 'avocado.core.nrunner']
         return runner
