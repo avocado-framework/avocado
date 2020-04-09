@@ -61,6 +61,14 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg='--status-server')
 
+        settings.register_option(section="nrun.spawners.podman",
+                                 key="enabled",
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg="Spawn tests in podman containers",
+                                 parser=parser,
+                                 long_arg="--podman-spawner")
+
         parser_common_args.add_tag_filter_args(parser)
 
     @asyncio.coroutine
@@ -124,7 +132,17 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
-            self.spawner = nrunner.ProcessSpawner()  # pylint: disable=W0201
+            if config.get('nrun.spawners.podman.enabled'):
+                if not os.path.exists(nrunner.PodmanSpawner.PODMAN_BIN):
+                    msg = ('Podman Spawner selected, but podman binary "%s" '
+                           'is not available on the system.  Please install '
+                           'podman before attempting to use this feature.')
+                    msg %= nrunner.PodmanSpawner.PODMAN_BIN
+                    LOG_UI.error(msg)
+                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                self.spawner = nrunner.PodmanSpawner()  # pylint: disable=W0201
+            else:
+                self.spawner = nrunner.ProcessSpawner()  # pylint: disable=W0201
             loop = asyncio.get_event_loop()
             listen = config.get('nrun.status_server.listen')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201

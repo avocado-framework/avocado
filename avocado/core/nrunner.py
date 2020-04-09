@@ -95,6 +95,53 @@ class ProcessSpawner(BaseSpawner):
             stderr=asyncio.subprocess.PIPE)
 
 
+class PodmanSpawner(BaseSpawner):
+
+    METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+    IMAGE = 'fedora:31'
+    PODMAN_BIN = "/usr/bin/podman"
+
+    @asyncio.coroutine
+    def spawn_task(self, task):
+        entry_point_cmd = '/tmp/avocado-runner'
+        entry_point_args = task.get_command_args()
+        entry_point_args.insert(0, "task-run")
+        entry_point_args.insert(0, entry_point_cmd)
+        entry_point = json.dumps(entry_point_args)
+        entry_point_arg = "--entrypoint=" + entry_point
+        # pylint: disable=E1133
+        proc = yield from asyncio.create_subprocess_exec(
+            self.PODMAN_BIN, "create",
+            "--net=host",
+            entry_point_arg,
+            self.IMAGE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+        _ = yield from proc.wait()
+        stdout = yield from proc.stdout.read()
+        container_id = stdout.decode().strip()
+
+        # Currently limited to avocado-runner, we'll expand on that
+        # when the runner requirements system is in place
+        this_path = os.path.abspath(__file__)
+        common_path = os.path.dirname(os.path.dirname(this_path))
+        avocado_runner_path = os.path.join(common_path, 'core', 'nrunner.py')
+        proc = yield from asyncio.create_subprocess_exec(
+            self.PODMAN_BIN,
+            "cp",
+            avocado_runner_path,
+            "%s:%s" % (container_id, entry_point_cmd))
+        yield from proc.wait()
+
+        proc = yield from asyncio.create_subprocess_exec(self.PODMAN_BIN,
+                                                         "start",
+                                                         container_id,
+                                                         stdout=asyncio.subprocess.PIPE,
+                                                         stderr=asyncio.subprocess.PIPE)
+        yield from proc.wait()
+
+
 class Runnable:
     """
     Describes an entity that be executed in the context of a task
