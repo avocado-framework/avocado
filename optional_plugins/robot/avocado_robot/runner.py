@@ -35,31 +35,33 @@ class RobotRunner(nrunner.BaseRunner):
         output_dir = tempfile.mkdtemp()
         file_name, suit_test = uri.split(':', 1)
         suite_name, test_name = suit_test.split('.', 1)
-        result = run(file_name,
-                     suite=suite_name,
-                     test=test_name,
-                     outputdir=output_dir,
-                     stdout=stdout,
-                     stderr=stderr)
+        native_robot_result = run(file_name,
+                                  suite=suite_name,
+                                  test=test_name,
+                                  outputdir=output_dir,
+                                  stdout=stdout,
+                                  stderr=stderr)
         time_end = time.time()
-        if result:
-            status = 'fail'
+        if native_robot_result:
+            result = 'fail'
         else:
-            status = 'pass'
+            result = 'pass'
 
         stdout.seek(0)
         stderr.seek(0)
-        result = {'status': status,
+        output = {'status': 'finished',
+                  'result': result,
                   'stdout': stdout.read(),
                   'stderr': stderr.read(),
                   'time_end': time_end}
         stdout.close()
         stderr.close()
-        queue.put(result)
+        queue.put(output)
 
     def run(self):
         if not self.runnable.uri:
-            yield {'status': 'error',
+            yield {'status': 'finished',
+                   'result': 'error',
                    'output': 'uri is required but was not given'}
             return
 
@@ -70,12 +72,16 @@ class RobotRunner(nrunner.BaseRunner):
         time_start_sent = False
         process.start()
 
-        last_status = None
+        most_current_execution_state_time = None
         while queue.empty():
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
             now = time.time()
-            if last_status is None or now > last_status + nrunner.RUNNER_RUN_STATUS_INTERVAL:
-                last_status = now
+            if most_current_execution_state_time is not None:
+                next_execution_state_mark = (most_current_execution_state_time +
+                                             nrunner.RUNNER_RUN_STATUS_INTERVAL)
+            if (most_current_execution_state_time is None or
+                    now > next_execution_state_mark):
+                most_current_execution_state_time = now
                 if not time_start_sent:
                     time_start_sent = True
                     yield {'status': 'running',

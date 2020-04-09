@@ -156,11 +156,11 @@ class NRun(CLICmd):
             parallel_tasks = config.get('nrun.parallel_tasks')
             loop.run_until_complete(self.spawn_tasks(parallel_tasks))
             loop.run_until_complete(self.status_server.wait())
-            print(self.status_server.status)
+            print(self.status_server.result)
             exit_code = exit_codes.AVOCADO_ALL_OK
-            if self.status_server.status.get('fail') is not None:
+            if self.status_server.result.get('fail') is not None:
                 exit_code |= exit_codes.AVOCADO_TESTS_FAIL
-            elif self.status_server.status.get('error') is not None:
+            elif self.status_server.result.get('error') is not None:
                 exit_code |= exit_codes.AVOCADO_TESTS_FAIL
             return exit_code
         except Exception as e:  # pylint: disable=W0703

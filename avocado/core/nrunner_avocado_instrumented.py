@@ -68,12 +68,16 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         time_start_sent = False
         process.start()
 
-        last_status = None
+        most_current_execution_state_time = None
         while queue.empty():
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
             now = time.time()
-            if last_status is None or now > last_status + nrunner.RUNNER_RUN_STATUS_INTERVAL:
-                last_status = now
+            if most_current_execution_state_time is not None:
+                next_execution_state_mark = (most_current_execution_state_time +
+                                             nrunner.RUNNER_RUN_STATUS_INTERVAL)
+            if (most_current_execution_state_time is None or
+                    now > next_execution_state_mark):
+                most_current_execution_state_time = now
                 if not time_start_sent:
                     time_start_sent = True
                     yield {'status': 'running',
