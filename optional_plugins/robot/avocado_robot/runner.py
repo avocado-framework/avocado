@@ -35,14 +35,14 @@ class RobotRunner(nrunner.BaseRunner):
         output_dir = tempfile.mkdtemp()
         file_name, suit_test = uri.split(':', 1)
         suite_name, test_name = suit_test.split('.', 1)
-        result = run(file_name,
-                     suite=suite_name,
-                     test=test_name,
-                     outputdir=output_dir,
-                     stdout=stdout,
-                     stderr=stderr)
+        native_robot_result = run(file_name,
+                                  suite=suite_name,
+                                  test=test_name,
+                                  outputdir=output_dir,
+                                  stdout=stdout,
+                                  stderr=stderr)
         time_end = time.time()
-        if result:
+        if native_robot_result:
             status = 'fail'
         else:
             status = 'pass'
