@@ -6,10 +6,10 @@ import inspect
 import io
 import json
 import multiprocessing
+import socket
 import subprocess
 import time
 import unittest
-import socket
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
