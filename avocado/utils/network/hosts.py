@@ -85,7 +85,7 @@ class RemoteHost(Host):
     """
     This class represents a remote host and inherit from `Host`.
 
-    You must provide at least an username to stablish a connection.
+    You must provide at least an username to establish a connection.
 
     Example with password:
 

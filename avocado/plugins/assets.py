@@ -135,7 +135,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
             if self.klass and node.name != self.klass:
                 return
 
-            # reset the curret method pointer
+            # reset the current method pointer
             self.current_method = None
             self.current_klass = node.name
             self.asgmts[self.current_klass] = {}
