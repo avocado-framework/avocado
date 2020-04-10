@@ -335,7 +335,7 @@ class Settings:
         for tag, value in arg_parse_config.items():
             # This check is important! For argparse when an option is
             # not passed will return None. We need to update only the
-            # options that the user has especified.
+            # options that the user has specified.
             if value is not None:
                 try:
                     option = self._namespaces[tag]
@@ -389,7 +389,7 @@ class Settings:
            bar = a different message replacing 'hello'
 
         If you would like to provide also the flexibility to the user change
-        the values via command-line, you sould pass the other arguments.
+        the values via command-line, you should pass the other arguments.
 
         Arguments
         ---------
@@ -427,7 +427,7 @@ class Settings:
         long_arg: : str
             A long option for the command-line. i.e: `--debug` for debug.
 
-        choices : typle
+        choices : tuple
             If you would like to limit the option to a few choices. i.e:
             ('foo', 'bar')
 
@@ -480,7 +480,7 @@ class Settings:
         """Convenient method to change the option's value.
 
         This will update the value on Avocado internals and if necessary the
-        type convertion will be realized.
+        type conversion will be realized.
 
         For instance, if an option was registered as bool and you call:
 
@@ -496,7 +496,7 @@ class Settings:
         Arguments
         ---------
         namespace : str
-            Your section plus your key, separeted by dots. The last
+            Your section plus your key, separated by dots. The last
             part of the namespace is your key. i.e: run.outputs.json.enabled
             (section is `run.outputs.json` and key is `enabled`)
 

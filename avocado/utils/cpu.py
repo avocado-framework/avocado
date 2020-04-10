@@ -100,8 +100,8 @@ def get_version():
     Get cpu version
 
     :returns: string cpu version of given machine
-    E:g:- 'i5-5300U' for intel and 'POWER9' for ibm machines
-    incase for unknown/unhandled machines return empty string
+    Eg.:- 'i5-5300U' for Intel and 'POWER9' for IBM machines
+    in case of unknown/unsupported machines, return an empty string
     """
     version_pattern = {'x86_64': rb'\s([\S,\d]+)\sCPU',
                        'i386': rb'\s([\S,\d]+)\sCPU',
@@ -179,7 +179,7 @@ def get_arch():
 
 def get_family():
     """
-    to get family name of the cpu like broadwell, Haswell, power8, power9
+    to get family name of the cpu like Broadwell, Haswell, power8, power9
     """
     family = None
     arch = get_arch()

@@ -50,10 +50,10 @@ def check_tasks_requirements(tasks, runners_registry=None):
     :param runners_registry: a registry with previously found (and not
                              found) runners keyed by task kind
     :type runners_registry: dict
-    :return: two list of tasks in a tupple, with the first being the tasks
+    :return: two list of tasks in a tuple, with the first being the tasks
              that pass the requirements check and the second the tasks that
              fail the requirements check
-    :rtype: tupple of (list, list)
+    :rtype: tuple of (list, list)
     """
     if runners_registry is None:
         runners_registry = KNOWN_RUNNERS
@@ -724,7 +724,7 @@ class Task:
                 return candidate_cmd
 
         # exhausted probes, let's save the negative on the cache and avoid
-        # future similar probles
+        # future similar problems
         runners_registry[kind] = False
 
     def run(self):
