@@ -1,0 +1,106 @@
+=============
+78.0 Outbreak
+=============
+
+The Avocado team is proud to present another release: Avocado 78.0,
+AKA "Outbreak", is now available!
+
+Release documentation: `Avocado 78.0
+<http://avocado-framework.readthedocs.io/en/78.0/>`_
+
+Users/Test Writers
+==================
+
+* The HTML plugin now produces reports with resizeable columns and
+  standardized tooltips (besides some internal cleanups).
+
+* The ``avocado assets fetch`` command now accepts a
+  ``--ignore-errors`` option that returns exit code 0 even when some
+  of the assets could not be fetched.  This is useful in some
+  unattended executions such as CI environments, in which the
+  ``avocado assets fetch`` is used in conjuntion with the canceling of
+  tests that depend on assets not found.  Without this option, an
+  entire CI job can be stopped at the initial failure.
+
+* Avocado now supports "hint files" that can tweak how the Avocado
+  resolver will recognize tests.  This is useful for projects making
+  use of Avocado as a test runner, and it can allow complete integration
+  with a simple configuration file in a project repository.  For more
+  information check out the documentation about :ref:`the_hint_files`.
+
+* The experimental N(ext) Runner now allows users to set the number
+  of parallel tasks with the ``--parallel-tasks`` command line option
+  (or by setting the ``parallel_tasks`` configuration under the ``nrun``
+  section).  The default value is still the same (twice the number of
+  CPUs, minus one).
+
+* The experimental N(ext) Runner now checks the status of tasks right
+  after spawning them.  This can serve as an indication if a task
+  crashes too soon.  Users will now see a "<task> spawned and alive"
+  on most cases.
+
+* The experimental N(ext) Runner now provides a container based
+  execution of tasks with command line option ``--podman-spawner``.
+  While this is not yet intended for general use, it serves as an
+  early technology preview of the multiple test isolation strategies
+  that will be fully supported by the N(ext) Runner.
+
+* The ``avocado vmimage get`` command now returns a proper error exit
+  code when it fails to retrieve the requested image.
+
+Bug Fixes
+=========
+
+* The :mod:`avocado.utils.asset` used to produce an empty string when
+  the asset name parameter was not a full URL, resulting in a broken
+  hash value.
+
+* The :mod:`avocado.utils.asset` could fail trying to remove a
+  temporary file that may not ever have been created.
+
+Utility APIs
+============
+
+* The CentOS provider of the :mod:`avocado.utils.vmimage` module now
+  supports the location and image file names for version 8.
+
+* The OpenSUSE provider of the :mod:`avocado.utils.vmimage` module now
+  returns the pure version numbers, instead of the ones containing the
+  ``Leap_`` prefixes.
+
+* The Debian provider of the the :mod:`avocado.utils.vmimage` module now
+  properly matches the version numbers.
+
+* The Ubuntu provider of the the :mod:`avocado.utils.vmimage` module
+  now doesn't attempt to convert versions into numbers, which could
+  result in lost digits (10.40 would become 10.4).
+
+* The :mod:`avocado.utils.network.interfaces` module now supports
+  different types output produced by ``iproute``.
+
+* The :meth:`avocado.utils.ssh.Session.cmd` method now allows users to
+  ignore the exit status of the command with the ``ignore_status``
+  parameter.
+
+* The :mod:`avocado.utils.cpu` changed how it identifies CPU vendors,
+  architectures and families, making those more consistent across the
+  board.
+
+Internal Changes
+================
+
+* The experimental N(ext) Runner now produces less ambiguious state
+  messages, with a dedicated ``result`` field on the final state
+  message, instead of reusing the ``status`` field.
+
+* A "release job" was introduced to be run in addition to the other
+  selftests before a release is cut.  It currently includes a complete
+  coverage of all the `:mod:`avocado.utils.vmimage` providers,
+  amounting to almost 200 test variations.
+
+* The ``loader_yaml`` and ``html`` plugins were migrated to the new
+  (future) settings API.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/77.0...78.0>`_.

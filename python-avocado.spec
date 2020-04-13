@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     010f5d90737dc8f868a64fea1b38ee7bb6aea964
+        %global commit     b325e95fbffd0aa06a470c6a03a2664cd0b64481
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20200317
+        %global commit_date 20200413
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -58,7 +58,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 77.0
+Version: 78.0
 Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -604,6 +604,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Apr 13 2020 Cleber Rosa <cleber@redhat.com> - 78.0-0
+- New release
+
 * Tue Mar 17 2020 Cleber Rosa <cleber@redhat.com> - 77.0-0
 - New release
 

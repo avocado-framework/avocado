@@ -90,6 +90,8 @@ first failed test::
 One can also use ``--failfast off`` in order to force-disable failfast mode
 when replaying a job executed with ``--failfast on``.
 
+.. _the_hint_files:
+
 The hint files
 --------------
 
