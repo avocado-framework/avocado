@@ -86,7 +86,7 @@ class AssetsFetchSuccess(unittest.TestCase):
         self.base_dir, self.mapping, self.config_file = (
             get_temporary_config(self))
         asset_dir = os.path.join(self.mapping['cache_dir'], 'by_location',
-                                 'da39a3ee5e6b4b0d3255bfef95601890afd80709')
+                                 'a784600d3e01b346e8813bbd065d00048be8a482')
         os.makedirs(asset_dir)
         open(os.path.join(asset_dir, 'hello-2.9.tar.gz'), "w").close()
 

@@ -69,9 +69,15 @@ class Asset:
         self.asset_hash = asset_hash
 
         self.parsed_name = urllib.parse.urlparse(self.name)
-        self.asset_name = os.path.basename(self.parsed_name.path)
-        self.relative_dir = os.path.join(self._get_relative_dir(),
-                                         self.asset_name)
+
+        # we currently support the following options for name and locations:
+        # 1. name is a full URI and locations is empty;
+        # 2. name is a single file name and locations is one or more entries.
+        # raise an exception if we have an unsupported use of those arguments
+        if ((self.parsed_name.scheme and locations is not None) or
+                (not self.parsed_name.scheme and locations is None)):
+            raise ValueError("Incorrect use of parameter name with parameter"
+                             " locations.")
 
         if algorithm is None:
             self.algorithm = DEFAULT_HASH_ALGORITHM
@@ -85,6 +91,12 @@ class Asset:
         self.cache_dirs = cache_dirs
         self.expire = expire
         self.metadata = metadata
+
+        # set asset_name according to parsed_name
+        self.asset_name = os.path.basename(self.parsed_name.path)
+        # set relative_dir for the asset
+        self.relative_dir = os.path.join(self._get_relative_dir(),
+                                         self.asset_name)
 
     def _create_hash_file(self, asset_path):
         """
@@ -200,24 +212,42 @@ class Asset:
 
     def _get_relative_dir(self):
         """
-        When an asset name is not an URL, and it also has a hash,
-        there's a clear intention for it to be unique *by name*,
-        overwriting it if the file is corrupted or expired.  These
-        will be stored in the cache directory indexed by name.
+        When an asset name is not an URI, and:
+          1. it also has a hash;
+          2. or it has multiple locations;
+        there's a clear intention for it to be unique *by name*, overwriting
+        it if the file is corrupted or expired. These will be stored in the
+        cache directory indexed by name.
 
-        When an asset name is an URL, whether it has a hash or not, it
-        will be saved according to their locations, so that multiple
-        assets with the same file name, but completely unrelated to
-        each other, will still coexist.
+        When an asset name is an URI, whether it has a hash or not, it will be
+        saved according to their locations, so that multiple assets with the
+        same file name, but completely unrelated to each other, will still
+        coexist.
 
         :returns: target location of asset the file.
         :rtype: str
         """
-        if self.asset_hash and not self.parsed_name.scheme:
+        if (not self.parsed_name.scheme and
+                (self.asset_hash or len(self.locations) > 1)):
             return 'by_name'
-        base_url = os.path.dirname(self.parsed_name.geturl())
+
+        # check if the URI is located on self.locations or self.parsed_name
+        if self.locations is not None:
+            # if it is on self.locations, we need to check if it has the
+            # asset name on it or a trailing '/'
+            if ((self.asset_name in self.locations[0]) or
+                    (self.locations[0][-1] == '/')):
+                base_url = os.path.dirname(self.locations[0])
+            else:
+                # here, self.locations is a pure conformant URI
+                base_url = self.locations[0]
+        else:
+            # the URI is on self.parsed_name
+            base_url = os.path.dirname(self.parsed_name.geturl())
+
         base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
                                     base_url.encode(astring.ENCODING))
+
         return os.path.join('by_location', base_url_hash.hexdigest())
 
     def _get_writable_cache_dir(self):

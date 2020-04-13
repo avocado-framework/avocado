@@ -36,11 +36,22 @@ class TestAsset(unittest.TestCase):
         self.assertTrue(foo_tarball.startswith(expected_location))
         self.assertTrue(foo_tarball.endswith(self.assetname))
 
-    def test_fetch_name_cache_by_name(self):
+    def test_fetch_name_hash_cache_by_name(self):
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=[self.url],
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        expected_location = os.path.join(self.cache_dir, 'by_name',
+                                         self.assetname)
+        self.assertEqual(foo_tarball, expected_location)
+
+    def test_fetch_name_locations_cache_by_name(self):
+        foo_tarball = asset.Asset(self.assetname,
+                                  asset_hash=None,
+                                  algorithm='sha1',
+                                  locations=[self.url, 'file://fake_dir'],
                                   cache_dirs=[self.cache_dir],
                                   expire=None).fetch()
         expected_location = os.path.join(self.cache_dir, 'by_name',
@@ -88,11 +99,19 @@ class TestAsset(unittest.TestCase):
             content2 = f.read()
         self.assertNotEqual(content1, content2)
 
-    def test_exception(self):
-        a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
+    def test_incorrect_name_locations_parameter_case1(self):
+        # 1. name is a full URI and locations is empty
+        with self.assertRaises(ValueError):
+            asset.Asset(name='file://bar.tgz', asset_hash=None, algorithm=None,
+                        locations='file://foo', cache_dirs=[self.cache_dir],
+                        expire=None)
+
+    def test_incorrect_name_locations_parameter_case2(self):
+        # 2. name is a single file name and locations is one or more entries.
+        with self.assertRaises(ValueError):
+            asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
                         locations=None, cache_dirs=[self.cache_dir],
                         expire=None)
-        self.assertRaises(OSError, a.fetch)
 
     def test_fetch_lockerror(self):
         dirname = os.path.join(self.cache_dir, 'by_name')
@@ -101,7 +120,7 @@ class TestAsset(unittest.TestCase):
             a = asset.Asset(self.assetname,
                             asset_hash=self.assethash,
                             algorithm='sha1',
-                            locations=None,
+                            locations=['file://foo1', 'file://foo2'],
                             cache_dirs=[self.cache_dir],
                             expire=None)
             self.assertRaises(OSError, a.fetch)
