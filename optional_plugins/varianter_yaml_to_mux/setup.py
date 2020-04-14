@@ -16,15 +16,17 @@
 from setuptools import setup, find_packages
 
 
+VERSION = open("VERSION", "r").read().strip()
+
 setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
       description='Avocado Varianter plugin to parse YAML file into variants',
-      version=open("VERSION", "r").read().strip(),
+      version=VERSION,
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
       packages=find_packages(exclude=('tests*',)),
       include_package_data=True,
-      install_requires=('avocado-framework', 'PyYAML>=4.2b2'),
+      install_requires=['avocado-framework==%s' % VERSION, 'PyYAML>=4.2b2'],
       test_suite='tests',
       entry_points={
           "avocado.plugins.cli": [

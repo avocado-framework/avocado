@@ -16,15 +16,17 @@
 from setuptools import setup, find_packages
 
 
+VERSION = open("VERSION", "r").read().strip()
+
 setup(name='avocado-framework-plugin-varianter-pict',
       description='Varianter with combinatorial capabilities by PICT',
-      version=open("VERSION", "r").read().strip(),
+      version=VERSION,
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['avocado-framework', ],
+      install_requires=['avocado-framework==%s' % VERSION],
       entry_points={
           'avocado.plugins.cli': [
               'varianter_pict = avocado_varianter_pict:VarianterPictCLI',

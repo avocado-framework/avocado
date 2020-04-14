@@ -15,16 +15,18 @@
 
 from setuptools import setup, find_packages
 
+VERSION = open("VERSION", "r").read().strip()
 
 setup(name='avocado-framework-plugin-loader-yaml',
       description='Avocado Plugin that loads tests from YAML files',
-      version=open("VERSION", "r").read().strip(),
+      version=VERSION,
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['avocado-framework-plugin-varianter-yaml-to-mux'],
+      install_requires=[('avocado-framework-plugin-varianter'
+                         '-yaml-to-mux==%s' % VERSION)],
       entry_points={
           "avocado.plugins.cli": [
               "loader_yaml = avocado_loader_yaml:LoaderYAML"]})
