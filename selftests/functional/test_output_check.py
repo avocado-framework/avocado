@@ -169,8 +169,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
-        stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
+        stdout_file = "%s.data/stdout.expected" % self.output_script
+        stderr_file = "%s.data/stderr.expected" % self.output_script
         with open(stdout_file, 'rb') as fd_stdout:
             self.assertEqual(fd_stdout.read(), STDOUT)
         with open(stderr_file, 'rb') as fd_stderr:
@@ -186,7 +186,7 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        output_file = os.path.join("%s.data/output.expected" % self.output_script)
+        output_file = "%s.data/output.expected" % self.output_script
         with open(output_file, 'rb') as fd_output:
             self.assertEqual(fd_output.read(), STDOUT + STDERR)
 
@@ -200,8 +200,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
-        stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
+        stdout_file = "%s.data/stdout.expected" % self.output_script
+        stderr_file = "%s.data/stderr.expected" % self.output_script
         self.assertFalse(os.path.isfile(stdout_file))
         self.assertFalse(os.path.isfile(stderr_file))
 
@@ -215,8 +215,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
-        stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
+        stdout_file = "%s.data/stdout.expected" % self.output_script
+        stderr_file = "%s.data/stderr.expected" % self.output_script
         with open(stdout_file, 'rb') as fd_stdout:
             self.assertEqual(fd_stdout.read(), STDOUT)
         self.assertFalse(os.path.isfile(stderr_file))
@@ -244,7 +244,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def test_output_tamper_stdout(self):
         self._check_output_record_all()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
-        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
+        stdout_file = "%s.data/stdout.expected" % self.output_script.path
         with open(stdout_file, 'wb') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --xunit -'
@@ -259,7 +259,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def test_output_tamper_combined(self):
         self._check_output_record_combined()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
-        output_file = os.path.join("%s.data/output.expected" % self.output_script.path)
+        output_file = "%s.data/output.expected" % self.output_script.path
         with open(output_file, 'wb') as output_file_obj:
             output_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --xunit -'
@@ -323,7 +323,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def test_disable_output_check(self):
         self._check_output_record_all()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
-        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
+        stdout_file = "%s.data/stdout.expected" % self.output_script.path
         with open(stdout_file, 'wb') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
@@ -348,10 +348,8 @@ class RunnerSimpleTest(unittest.TestCase):
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/stdout.expected" %
-                                                    simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/stderr.expected" %
-                                                    simple_test)))
+        self.assertTrue(os.path.isfile("%s.data/stdout.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/stderr.expected" % simple_test))
 
     def test_merge_records_different_output(self):
         os.chdir(BASEDIR)
@@ -365,22 +363,12 @@ class RunnerSimpleTest(unittest.TestCase):
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/stdout.expected" %
-                                                     simple_test)))
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/stderr.expected" %
-                                                     simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
-                                                    "stdout.expected" %
-                                                    simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
-                                                    "stderr.expected" %
-                                                    simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
-                                                    "stdout.expected" %
-                                                    simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
-                                                    "stderr.expected" %
-                                                    simple_test)))
+        self.assertFalse(os.path.isfile("%s.data/stdout.expected" % simple_test))
+        self.assertFalse(os.path.isfile("%s.data/stderr.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/PassTest.test_1/stdout.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/PassTest.test_1/stderr.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/PassTest.test_2/stdout.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/PassTest.test_2/stderr.expected" % simple_test))
 
     def test_merge_records_different_output_variants(self):
         os.chdir(BASEDIR)
@@ -394,28 +382,14 @@ class RunnerSimpleTest(unittest.TestCase):
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/stdout.expected" %
-                                                     simple_test)))
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/stderr.expected" %
-                                                     simple_test)))
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
-                                                     "stdout.expected" %
-                                                     simple_test)))
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
-                                                     "stderr.expected" %
-                                                     simple_test)))
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
-                                                     "stdout.expected" %
-                                                     simple_test)))
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
-                                                     "stderr.expected" %
-                                                     simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
-                                                    "bar/stderr.expected" %
-                                                    simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
-                                                    "foo/stderr.expected" %
-                                                    simple_test)))
+        self.assertFalse(os.path.isfile("%s.data/stdout.expected" % simple_test))
+        self.assertFalse(os.path.isfile("%s.data/stderr.expected" % simple_test))
+        self.assertFalse(os.path.isfile("%s.data/PassTest.test_1/stdout.expected" % simple_test))
+        self.assertFalse(os.path.isfile("%s.data/PassTest.test_1/stderr.expected" % simple_test))
+        self.assertFalse(os.path.isfile("%s.data/PassTest.test_2/stdout.expected" % simple_test))
+        self.assertFalse(os.path.isfile("%s.data/PassTest.test_2/stderr.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/PassTest.test_2/bar/stderr.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/PassTest.test_2/foo/stderr.expected" % simple_test))
 
     def test_merge_records_different_and_same_output(self):
         os.chdir(BASEDIR)
@@ -429,22 +403,12 @@ class RunnerSimpleTest(unittest.TestCase):
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/stdout.expected" %
-                                                    simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/stderr.expected" %
-                                                    simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
-                                                    "stdout.expected" %
-                                                    simple_test)))
-        self.assertTrue(os.path.isfile(os.path.join("%s.data/PassTest.test_1/"
-                                                    "stderr.expected" %
-                                                    simple_test)))
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
-                                                     "stdout.expected" %
-                                                     simple_test)))
-        self.assertFalse(os.path.isfile(os.path.join("%s.data/PassTest.test_2/"
-                                                     "stderr.expected" %
-                                                     simple_test)))
+        self.assertTrue(os.path.isfile("%s.data/stdout.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/stderr.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/PassTest.test_1/stdout.expected" % simple_test))
+        self.assertTrue(os.path.isfile("%s.data/PassTest.test_1/stderr.expected" % simple_test))
+        self.assertFalse(os.path.isfile("%s.data/PassTest.test_2/stdout.expected" % simple_test))
+        self.assertFalse(os.path.isfile("%s.data/PassTest.test_2/stderr.expected" % simple_test))
 
     def tearDown(self):
         self.output_script.remove()
