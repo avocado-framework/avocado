@@ -20,6 +20,7 @@ Safe (AST based) test loader module utilities
 import ast
 import collections
 import imp
+import json
 import os
 import re
 import sys
@@ -219,7 +220,8 @@ def modules_imported_as(module):
 
 #: Gets the docstring directive value from a string. Used to tweak
 #: test behavior in various ways
-DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)\s*$'
+DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(r[a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\{\}\"\-\. ]*))\s*$'
+# the RE will match `:avocado: tags=category` or `:avocado requirements={}`
 DOCSTRING_DIRECTIVE_RE = re.compile(DOCSTRING_DIRECTIVE_RE_RAW)
 
 
@@ -277,6 +279,25 @@ def get_docstring_directives_tags(docstring):
                 else:
                     result[tag] = None
     return result
+
+
+def get_docstring_directives_requirements(docstring):
+    """
+    Returns the test requirements from docstring patterns like
+    `:avocado: requirement={}`.
+
+    :rtype: list
+    """
+    requirements = []
+    for item in get_docstring_directives(docstring):
+        if item.startswith('requirement='):
+            _, requirement_str = item.split('requirement=', 1)
+            try:
+                requirements.append(json.loads(requirement_str))
+            except json.decoder.JSONDecodeError:
+                # ignore requirement in case of malformed dictionary
+                continue
+    return requirements
 
 
 def find_class_and_methods(path, method_pattern=None, base_class=None):
