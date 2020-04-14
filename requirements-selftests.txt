@@ -40,3 +40,7 @@ libvirt-python==4.6.0
 
 # For avocado.utils.network selftests
 netifaces
+
+# Inspektor requires cliff, which in turn requires PyYAML
+# but only PyYAML <= 5.2 supports Python 3.4
+PyYAML==5.2
