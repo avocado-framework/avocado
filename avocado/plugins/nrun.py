@@ -93,25 +93,6 @@ class NRun(CLICmd):
             else:
                 LOG_UI.info("%s spawned and alive", identifier)
 
-    @asyncio.coroutine
-    def spawn_task(self, task):
-        runner = task.pick_runner_command()
-        if runner is False:
-            LOG_UI.error('Task "%s" has no matching runner. ', task)
-            LOG_UI.error('This is an error condition and should have been caught '
-                         'when checking task requirements.')
-            sys.exit(exit_codes.AVOCADO_FAIL)
-
-        args = runner[1:] + ['task-run'] + task.get_command_args()
-        runner = runner[0]
-
-        #pylint: disable=E1133
-        yield from asyncio.create_subprocess_exec(
-            runner,
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
-
     def run(self, config):
         hint_filepath = '.avocado.hint'
         hint = None
