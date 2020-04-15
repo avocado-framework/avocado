@@ -279,6 +279,26 @@ class BaseRunner:
     def __init__(self, runnable):
         self.runnable = runnable
 
+    def prepare_status(self, status_type, additional_info=None):
+        """Prepare a status dict with some basic information.
+
+        This will add the keywork 'status' and 'time' to all status.
+
+        :param: status_type: The type of event ('started', 'running',
+                             'finished')
+        :param: addional_info: Any addional information that you
+        would like to
+                               add to the dict. This must be a dict.
+
+        :rtype: dict
+        """
+        status = {'status': status_type,
+                  'time': time.time()}
+
+        if isinstance(additional_info, dict):
+            status.update(additional_info)
+        return status
+
     def run(self):
         yield {}
 
@@ -294,11 +314,8 @@ class NoOpRunner(BaseRunner):
      * args: not used
     """
     def run(self):
-        time_start = time.time()
-        yield {'status': 'finished',
-               'result': 'pass',
-               'time_start': time_start,
-               'time_end': time.time()}
+        yield self.prepare_status('started')
+        yield self.prepare_status('finished', {'result': 'pass'})
 
 
 RUNNERS_REGISTRY_PYTHON_CLASS['noop'] = NoOpRunner
@@ -320,8 +337,6 @@ class ExecRunner(BaseRunner):
     """
     def run(self):
         env = self.runnable.kwargs or None
-        time_start = time.time()
-        time_start_sent = False
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,
@@ -329,6 +344,7 @@ class ExecRunner(BaseRunner):
             stderr=subprocess.PIPE,
             env=env)
 
+        yield self.prepare_status('started')
         most_current_execution_state_time = None
         while process.poll() is None:
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
@@ -339,23 +355,17 @@ class ExecRunner(BaseRunner):
             if (most_current_execution_state_time is None or
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
-                if not time_start_sent:
-                    time_start_sent = True
-                    yield {'status': 'running',
-                           'time_start': time_start}
-                yield {'status': 'running'}
+                yield self.prepare_status('running')
 
         stdout = process.stdout.read()
         process.stdout.close()
         stderr = process.stderr.read()
         process.stderr.close()
 
-        yield {'status': 'finished',
-               'returncode': process.returncode,
-               'stdout': stdout,
-               'stderr': stderr,
-               'time_end': time.time()}
-
+        return_code = process.returncode
+        yield self.prepare_status('finished', {'returncode': return_code,
+                                                'stdout': stdout,
+                                                'stderr': stderr})
 
 RUNNERS_REGISTRY_PYTHON_CLASS['exec'] = ExecRunner
 
@@ -424,23 +434,22 @@ class PythonUnittestRunner(BaseRunner):
         output = {'status': 'finished',
                   'result': result,
                   'output': stream.read(),
-                  'time_end': time_end}
+                  'time': time_end}
         stream.close()
         queue.put(output)
 
     def run(self):
         if not self.runnable.uri:
-            yield {'status': 'finished',
-                   'result': 'error',
-                   'output': 'uri is required but was not given'}
+            error_msg = 'uri is required but was not given'
+            yield self.prepare_status('finished', {'result': 'error',
+                                                   'output': error_msg})
             return
 
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_unittest,
                                           args=(self.runnable.uri, queue))
-        time_start = time.time()
-        time_start_sent = False
         process.start()
+        yield self.prepare_status('started')
 
         most_current_execution_state_time = None
         while queue.empty():
@@ -452,11 +461,7 @@ class PythonUnittestRunner(BaseRunner):
             if (most_current_execution_state_time is None or
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
-                if not time_start_sent:
-                    time_start_sent = True
-                    yield {'status': 'running',
-                           'time_start': time_start}
-                yield {'status': 'running'}
+                yield self.prepare_status('running')
 
         yield queue.get()
 

@@ -191,7 +191,7 @@ class Runner(unittest.TestCase):
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
-        self.assertIn('time_end', last_result)
+        self.assertIn('time', last_result)
 
     def test_runner_exec(self):
         runnable = nrunner.Runnable('exec', sys.executable,
@@ -204,7 +204,7 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['returncode'], 0)
         self.assertEqual(last_result['stdout'], b'')
         self.assertEqual(last_result['stderr'], b'')
-        self.assertIn('time_end', last_result)
+        self.assertIn('time', last_result)
 
     def test_runner_exec_test_ok(self):
         runnable = nrunner.Runnable('exec-test', sys.executable,
@@ -218,7 +218,7 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['returncode'], 0)
         self.assertEqual(last_result['stdout'], b'')
         self.assertEqual(last_result['stderr'], b'')
-        self.assertIn('time_end', last_result)
+        self.assertIn('time', last_result)
 
     def test_runner_exec_test_fail(self):
         runnable = nrunner.Runnable('exec-test', '/bin/false')
@@ -231,7 +231,7 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['returncode'], 1)
         self.assertEqual(last_result['stdout'], b'')
         self.assertEqual(last_result['stderr'], b'')
-        self.assertIn('time_end', last_result)
+        self.assertIn('time', last_result)
 
     def test_runner_python_unittest_ok(self):
         runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase')
