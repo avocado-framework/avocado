@@ -431,7 +431,7 @@ class OutputPluginTest(unittest.TestCase):
         # with an optional 7th line when the HTML report generation is enabled
         self.assertGreaterEqual(len(output_lines), 6,
                                 ('Basic human interface did not produce the '
-                                 'expect output. Output produced: "%s"' % output))
+                                 'expected output. Output produced: "%s"' % output))
         second_line = output_lines[1]
         debug_log = second_line.split()[-1]
         self.check_output_files(debug_log)
