@@ -1092,8 +1092,9 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
                          "Avocado did not return rc %d:\n%s"
                          % (exit_codes.AVOCADO_ALL_OK, result))
-        exp = (b"Type    Test                 Tag(s)\n"
-               b"MISSING this-wont-be-matched\n\n"
+        exp = (b"Type    | Test                 | Tag(s)\n"
+               b"=======================================\n"
+               b"MISSING | this-wont-be-matched |\n\n"
                b"TEST TYPES SUMMARY\n"
                b"==================\n"
                b"EXTERNAL: 0\n"
@@ -1102,8 +1103,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          % (exp, result))
 
     def test_list_verbose_tags(self):
-        """
-        Runs list verbosely and check for tag related output
+        """        Runs list verbosely and check for tag related output
         """
         test = script.make_script(os.path.join(self.base_outputdir.name, 'test.py'),
                                   VALID_PYTHON_TEST_WITH_TAGS)
@@ -1116,8 +1116,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         stdout_lines = result.stdout_text.splitlines()
         self.assertIn("Tag(s)", stdout_lines[0])
         full_test_name = "%s:MyTest.test" % test
-        self.assertEqual("INSTRUMENTED %s BIG_TAG_NAME" % full_test_name,
-                         stdout_lines[1])
+        self.assertEqual("INSTRUMENTED | %s | BIG_TAG_NAME" % full_test_name,
+                         stdout_lines[2])
         self.assertIn("TEST TYPES SUMMARY", stdout_lines)
         self.assertIn("INSTRUMENTED: 1", stdout_lines)
         self.assertIn("TEST TAGS SUMMARY", stdout_lines)
@@ -1127,9 +1127,11 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         cmd_line = '%s plugins' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
+        stdout_lines = result.stdout_text.splitlines()
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
+        self.assertRegex('Package* | Provides* | Description', stdout_lines[1])
         self.assertNotIn(b'Disabled', result.stdout)
 
     def test_config_plugin(self):

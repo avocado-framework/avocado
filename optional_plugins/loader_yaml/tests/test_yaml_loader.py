@@ -62,7 +62,8 @@ class YamlLoaderTests(unittest.TestCase):
                              % AVOCADO)
         # This has to be defined like this as pep8 complains about tailing
         # empty spaces when using """
-        self.assertRegex(result.stdout_text, r"Type *Test *Tag\(s\)\n"
+        self.assertRegex(result.stdout_text, r"Type    | *Test                                     | *Tag\(s\)\n"
+                                             r"===========================================================\n"
                                              r"INSTRUMENTED *passtest.py:PassTest.test * fast\n"
                                              r"SIMPLE.*passtest.sh *\n"
                                              r"EXTERNAL *external_echo *\n"

@@ -55,9 +55,12 @@ class Plugins(CLICmd):
             LOG_UI.info(msg)
             plugin_matrix = []
             header = (output.TERM_SUPPORT.header_str('Package'),
+                      output.TERM_SUPPORT.header_str('Provides'),
                       output.TERM_SUPPORT.header_str('Description'))
             for plugin in sorted(plugins_active, key=lambda x: x.name):
-                plugin_matrix.append((plugin.name, plugin.obj.description))
+                plugin_matrix.append((plugin.name,
+                                      plugins_active.namespace.replace(plugins_active.NAMESPACE_PREFIX, ''),
+                                      plugin.obj.description))
 
             if not plugin_matrix:
                 LOG_UI.debug("(No active plugin)")

@@ -172,7 +172,7 @@ class ResolveSerializeRun(unittest.TestCase):
         cmd = "%s nlist --write-recipes-to-directory=%s -- /bin/true"
         cmd %= (AVOCADO, self.tmpdir.name)
         res = process.run(cmd)
-        self.assertEqual(b'exec-test /bin/true\n', res.stdout)
+        self.assertEqual(b'exec-test | /bin/true\n', res.stdout)
         cmd = "%s runnable-run-recipe %s"
         cmd %= (RUNNER, os.path.join(self.tmpdir.name, '1.json'))
         res = process.run(cmd)

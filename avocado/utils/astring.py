@@ -201,8 +201,9 @@ def iter_tabular_output(matrix, header=None, strip=False):
     else:
         def str_out(x): return " ".join(x)
 
-    for row, row_lens in zip(str_matrix, len_matrix):
+    for count, zp in enumerate(zip(str_matrix, len_matrix)):
         out = []
+        row, row_lens = zp
         padding = [" " * (lengths[i] - row_lens[i])
                    for i in range(len(row_lens))]
         out = ["%s%s" % line for line in zip(row, padding)]
@@ -211,11 +212,11 @@ def iter_tabular_output(matrix, header=None, strip=False):
             out.append(row[-1])
         except IndexError:
             continue    # Skip empty rows
-        if header != tuple(row):
-            yield str_out(out)
-        else:
+        if header and count == 0:
             separator = '=' * (sum(lengths) + len(row_lens)*(1 + len(' |')))
             yield str_out(out) + '\n' + separator
+        else:
+            yield str_out(out)
 
 
 def tabular_output(matrix, header=None, strip=False):
