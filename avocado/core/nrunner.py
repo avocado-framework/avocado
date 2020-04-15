@@ -27,6 +27,12 @@ RUNNER_RUN_STATUS_INTERVAL = 0.5
 #: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
 RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 
+#: All known runner Python classes.  This is a dictionary keyed by a
+#: runnable kind, and value is a class that inherits from
+#: :class:`BaseRunner`.  Suitable for spawners compatible with
+#: SpawnMethod.PYTHON_CLASS
+RUNNERS_REGISTRY_PYTHON_CLASS = {}
+
 
 class SpawnMethod(enum.Enum):
     """The method employed to spawn a runnable or task."""
@@ -359,6 +365,25 @@ class Runnable:
         # future similar problems
         runners_registry[self.kind] = False
 
+    def pick_runner_class(self, runners_registry=None):
+        """Selects a runner class from the registry based on kind.
+
+        This is related to the :data:`SpawnMethod.PYTHON_CLASS`
+
+        :param runners_registry: a registry with previously registered
+                                 runner classes, keyed by runnable kind
+        :param runners_registry: dict
+        :returns: a class that inherits from :class:`BaseRunner`
+        :raises: ValueError if kind there's no runner from kind of runnable
+        """
+        if runners_registry is None:
+            runners_registry = RUNNERS_REGISTRY_PYTHON_CLASS
+
+        runner = runners_registry.get(self.kind, None)
+        if runner is not None:
+            return runner
+        raise ValueError('Unsupported kind of runnable: %s' % self.kind)
+
 
 class BaseRunner:
     """
@@ -388,6 +413,9 @@ class NoOpRunner(BaseRunner):
                'result': 'pass',
                'time_start': time_start,
                'time_end': time.time()}
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['noop'] = NoOpRunner
 
 
 class ExecRunner(BaseRunner):
@@ -443,6 +471,9 @@ class ExecRunner(BaseRunner):
                'time_end': time.time()}
 
 
+RUNNERS_REGISTRY_PYTHON_CLASS['exec'] = ExecRunner
+
+
 class ExecTestRunner(ExecRunner):
     """
     Runner for standalone executables treated as tests
@@ -461,6 +492,9 @@ class ExecTestRunner(ExecRunner):
                 else:
                     most_current_execution_state['result'] = 'fail'
             yield most_current_execution_state
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner
 
 
 class PythonUnittestRunner(BaseRunner):
@@ -541,14 +575,7 @@ class PythonUnittestRunner(BaseRunner):
         yield queue.get()
 
 
-def runner_from_runnable(runnable, known_runners):
-    """
-    Gets a Runner instance from a Runnable
-    """
-    runner = known_runners.get(runnable.kind, None)
-    if runner is not None:
-        return runner(runnable)
-    raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
+RUNNERS_REGISTRY_PYTHON_CLASS['python-unittest'] = PythonUnittestRunner
 
 
 def _parse_key_val(argument):
@@ -729,7 +756,8 @@ class Task:
         return args
 
     def run(self):
-        runner = runner_from_runnable(self.runnable, self.known_runners)
+        runner_klass = self.runnable.pick_runner_class(self.known_runners)
+        runner = runner_klass(self.runnable)
         for status in runner.run():
             status.update({"id": self.identifier})
             for status_service in self.status_services:
@@ -1042,12 +1070,7 @@ class BaseRunnerApp:
 class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner'
     PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner'
-    RUNNABLE_KINDS_CAPABLE = {
-        'noop': NoOpRunner,
-        'exec': ExecRunner,
-        'exec-test': ExecTestRunner,
-        'python-unittest': PythonUnittestRunner
-    }
+    RUNNABLE_KINDS_CAPABLE = RUNNERS_REGISTRY_PYTHON_CLASS
 
 
 def main(app_class=RunnerApp):
