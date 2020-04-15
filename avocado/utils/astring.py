@@ -207,10 +207,15 @@ def iter_tabular_output(matrix, header=None, strip=False):
                    for i in range(len(row_lens))]
         out = ["%s%s" % line for line in zip(row, padding)]
         try:
+            out = [str(i) + ' |' for i in out]
             out.append(row[-1])
         except IndexError:
             continue    # Skip empty rows
-        yield str_out(out)
+        if header != tuple(row):
+            yield str_out(out)
+        else:
+            separator = '=' * (sum(lengths) + len(row_lens)*(1 + len(' |')))
+            yield str_out(out) + '\n' + separator
 
 
 def tabular_output(matrix, header=None, strip=False):

@@ -72,6 +72,7 @@ def download_image(distro, version=None, arch=None):
 def display_images_list(images):
     """
     Displays table with information about images
+
     :param images: list with image's parameters
     :type images: list of dicts
     """

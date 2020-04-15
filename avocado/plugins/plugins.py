@@ -15,7 +15,7 @@
 Plugins information plugin
 """
 
-from avocado.core import dispatcher
+from avocado.core import dispatcher, output
 from avocado.core.resolver import Resolver
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
@@ -54,12 +54,14 @@ class Plugins(CLICmd):
         for plugins_active, msg in plugin_types:
             LOG_UI.info(msg)
             plugin_matrix = []
+            header = (output.TERM_SUPPORT.header_str('Package'),
+                      output.TERM_SUPPORT.header_str('Description'))
             for plugin in sorted(plugins_active, key=lambda x: x.name):
                 plugin_matrix.append((plugin.name, plugin.obj.description))
 
             if not plugin_matrix:
                 LOG_UI.debug("(No active plugin)")
             else:
-                for line in astring.iter_tabular_output(plugin_matrix):
+                for line in astring.iter_tabular_output(plugin_matrix, header=header):
                     LOG_UI.debug(line)
                 LOG_UI.debug("")
