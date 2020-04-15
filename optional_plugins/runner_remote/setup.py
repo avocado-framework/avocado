@@ -26,15 +26,18 @@ if detected_distro.name == 'fedora' and int(detected_distro.version) >= 29:
 else:
     fabric = 'Fabric3'
 
+
+VERSION = open("VERSION", "r").read().strip()
+
 setup(name='avocado-framework-plugin-runner-remote',
       description='Avocado Runner for Remote Execution',
-      version=open("VERSION", "r").read().strip(),
+      version=VERSION,
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
       packages=find_packages(exclude=('tests*',)),
       include_package_data=True,
-      install_requires=['avocado-framework', fabric],
+      install_requires=['avocado-framework==%s' % VERSION, fabric],
       test_suite='tests',
       entry_points={
           'avocado.plugins.cli': [
