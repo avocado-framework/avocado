@@ -10,13 +10,14 @@ class AstringTest(unittest.TestCase):
         matrix = [('foo', 'bar'), ('/bin/bar/sbrubles',
                                    '/home/myuser/sbrubles')]
         self.assertEqual(astring.tabular_output(matrix),
-                         ('foo               bar\n'
-                          '/bin/bar/sbrubles /home/myuser/sbrubles'))
+                         ('foo               | bar\n'
+                          '/bin/bar/sbrubles | /home/myuser/sbrubles'))
         header = ['id', 'path']
         self.assertEqual(astring.tabular_output(matrix, header),
-                         ('id                path\n'
-                          'foo               bar\n'
-                          '/bin/bar/sbrubles /home/myuser/sbrubles'))
+                         ('id                | path\n'
+                          '=========================================\n'
+                          'foo               | bar\n'
+                          '/bin/bar/sbrubles | /home/myuser/sbrubles'))
 
     def test_tabular_with_console_codes(self):
         matrix = [("a", "an", "dog", "word", "last"),
@@ -28,18 +29,19 @@ class AstringTest(unittest.TestCase):
                    "last")]
         header = ['0', '1', '2', '3', '4']
         self.assertEqual(astring.tabular_output(matrix, header),
-                         "0 1  2   3    4\n"
-                         "a an dog word last\n"
-                         "[94ma [0man cc[91mc "
-                         "[91md[92md[94md[90md[0m last")
+                         "0 | 1  | 2   | 3    | 4\n"
+                         "==========================\n"
+                         "a | an | dog | word | last\n"
+                         "[94ma | [0man | cc[91mc | "
+                         "[91md[92md[94md[90md[0m | last")
 
     def test_tabular_output_different_no_cols(self):
         matrix = [[], [1], [2, 2], [333, 333, 333], [4, 4, 4, 4444]]
         self.assertEqual(astring.tabular_output(matrix),
                          "1\n"
-                         "2   2\n"
-                         "333 333 333\n"
-                         "4   4   4   4444")
+                         "2   | 2\n"
+                         "333 | 333 | 333\n"
+                         "4   | 4   | 4   | 4444")
 
     # This could be a skip based on the Python version, but this is more
     # specific to the exact reason why it does/doesn't make sense to run it
