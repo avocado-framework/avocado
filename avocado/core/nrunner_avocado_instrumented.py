@@ -68,8 +68,6 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_avocado,
                                           args=(self.runnable, queue))
-        time_start = time.time()
-        time_start_sent = False
         process.start()
 
         most_current_execution_state_time = None
@@ -82,11 +80,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             if (most_current_execution_state_time is None or
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
-                if not time_start_sent:
-                    time_start_sent = True
-                    yield {'status': 'running',
-                           'time_start': time_start}
-                yield {'status': 'running'}
+                yield self.prepare_status('running')
 
         yield queue.get()
 
