@@ -44,3 +44,7 @@ netifaces
 # Inspektor requires cliff, which in turn requires PyYAML
 # but only PyYAML <= 5.2 supports Python 3.4
 PyYAML==5.2
+
+# some systems seem to ignore the version of robotframework
+# on install requires, and may pull an incompatible version
+robotframework==3.1.2
