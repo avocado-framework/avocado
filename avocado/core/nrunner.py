@@ -60,7 +60,7 @@ def check_tasks_requirements(tasks, runners_registry=None):
     ok = []
     missing = []
     for task in tasks:
-        runner = task.pick_runner_command(runners_registry)
+        runner = task.runnable.pick_runner_command(runners_registry)
         if runner:
             ok.append(task)
         else:
@@ -91,7 +91,7 @@ class ProcessSpawner(BaseSpawner):
 
     @asyncio.coroutine
     def spawn_task(self, task):
-        runner = task.pick_runner_command()
+        runner = task.runnable.pick_runner_command()
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
 
@@ -288,6 +288,74 @@ class Runnable:
         """
         with open(recipe_path, 'w') as recipe_file:
             recipe_file.write(self.get_json())
+
+    def is_kind_supported_by_runner_command(self, runner_command):
+        """Checks if a runner command that seems a good fit declares support."""
+        cmd = runner_command + ['capabilities']
+        try:
+            process = subprocess.Popen(cmd,
+                                       stdin=subprocess.DEVNULL,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
+            return False
+        out, _ = process.communicate()
+
+        try:
+            capabilities = json.loads(out.decode())
+        except json.decoder.JSONDecodeError:
+            return False
+
+        return self.kind in capabilities.get('runnables', [])
+
+    def pick_runner_command(self, runners_registry=None):
+        """Selects a runner command based on the runner.
+
+        And when finding a suitable runner, keeps found runners in registry.
+
+        This utility function will look at the given task and try to find
+        a matching runner.  The matching runner probe results are kept in
+        a registry (that is modified by this function) so that further
+        executions take advantage of previous probes.
+
+        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
+
+        :param runners_registry: a registry with previously found (and not
+                                 found) runners keyed by runnable kind
+        :param runners_registry: dict
+        :returns: command line arguments to execute the runner
+        :rtype: list of str or None
+        """
+        if runners_registry is None:
+            runners_registry = KNOWN_RUNNERS
+        runner_cmd = runners_registry.get(self.kind)
+        if runner_cmd is False:
+            return None
+        if runner_cmd is not None:
+            return runner_cmd
+
+        standalone_executable_cmd = ['avocado-runner-%s' % self.kind]
+        if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
+            runners_registry[self.kind] = standalone_executable_cmd
+            return standalone_executable_cmd
+
+        # attempt to find Python module files that are named after the
+        # runner convention within the avocado.core namespace dir.
+        # Looking for the file only avoids an attempt to load the module
+        # and should be a lot faster
+        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        module_name = self.kind.replace('-', '_')
+        module_filename = 'nrunner_%s.py' % module_name
+        if os.path.exists(os.path.join(core_dir, module_filename)):
+            full_module_name = 'avocado.core.%s' % module_name
+            candidate_cmd = [sys.executable, '-m', full_module_name]
+            if self.is_kind_supported_by_runner_command(candidate_cmd):
+                runners_registry[self.kind] = candidate_cmd
+                return candidate_cmd
+
+        # exhausted probes, let's save the negative on the cache and avoid
+        # future similar problems
+        runners_registry[self.kind] = False
 
 
 class BaseRunner:
@@ -616,7 +684,7 @@ class Task:
         """
         if runners_registry is None:
             runners_registry = KNOWN_RUNNERS
-        return self.pick_runner_command(runners_registry)
+        return self.runnable.pick_runner_command(runners_registry)
 
     @classmethod
     def from_recipe(cls, task_path, known_runners):
@@ -657,75 +725,6 @@ class Task:
             args.append(status_service.uri)
 
         return args
-
-    def is_kind_supported_by_runner_command(self, runner_command):
-        """Checks if a runner command that seems a good fit declares support."""
-        cmd = runner_command + ['capabilities']
-        try:
-            process = subprocess.Popen(cmd,
-                                       stdin=subprocess.DEVNULL,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.DEVNULL)
-        except FileNotFoundError:
-            return False
-        out, _ = process.communicate()
-
-        try:
-            capabilities = json.loads(out.decode())
-        except json.decoder.JSONDecodeError:
-            return False
-
-        return self.runnable.kind in capabilities.get('runnables', [])
-
-    def pick_runner_command(self, runners_registry=None):
-        """Selects a runner command based on the task.
-
-        And when finding a suitable runner, keeps found runners in registry.
-
-        This utility function will look at the given task and try to find
-        a matching runner.  The matching runner probe results are kept in
-        a registry (that is modified by this function) so that further
-        executions take advantage of previous probes.
-
-        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
-
-        :param runners_registry: a registry with previously found (and not
-                                 found) runners keyed by task kind
-        :param runners_registry: dict
-        :returns: command line arguments to execute the runner
-        :rtype: list of str or None
-        """
-        if runners_registry is None:
-            runners_registry = KNOWN_RUNNERS
-        kind = self.runnable.kind
-        runner_cmd = runners_registry.get(kind)
-        if runner_cmd is False:
-            return None
-        if runner_cmd is not None:
-            return runner_cmd
-
-        standalone_executable_cmd = ['avocado-runner-%s' % kind]
-        if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
-            runners_registry[kind] = standalone_executable_cmd
-            return standalone_executable_cmd
-
-        # attempt to find Python module files that are named after the
-        # runner convention within the avocado.core namespace dir.
-        # Looking for the file only avoids an attempt to load the module
-        # and should be a lot faster
-        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        module_name = kind.replace('-', '_')
-        module_filename = 'nrunner_%s.py' % module_name
-        if os.path.exists(os.path.join(core_dir, module_filename)):
-            full_module_name = 'avocado.core.%s' % module_name
-            candidate_cmd = [sys.executable, '-m', full_module_name]
-            if self.is_kind_supported_by_runner_command(candidate_cmd):
-                runners_registry[kind] = candidate_cmd
-                return candidate_cmd
-
-        # exhausted probes, let's save the negative on the cache and avoid
-        # future similar problems
-        runners_registry[kind] = False
 
     def run(self):
         runner = runner_from_runnable(self.runnable, self.known_runners)
