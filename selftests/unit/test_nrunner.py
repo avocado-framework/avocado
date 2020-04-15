@@ -91,9 +91,7 @@ class Runnable(unittest.TestCase):
     def test_runner_from_runnable_error(self):
         runnable = nrunner.Runnable('unsupported_kind', '')
         try:
-            nrunner.runner_from_runnable(
-                runnable,
-                nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+            runnable.pick_runner_class()
         except ValueError as e:
             self.assertEqual(str(e), 'Unsupported kind of runnable: unsupported_kind')
 
@@ -188,9 +186,8 @@ class Runner(unittest.TestCase):
 
     def test_runner_noop(self):
         runnable = nrunner.Runnable('noop', None)
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -199,9 +196,8 @@ class Runner(unittest.TestCase):
     def test_runner_exec(self):
         runnable = nrunner.Runnable('exec', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -213,9 +209,8 @@ class Runner(unittest.TestCase):
     def test_runner_exec_test_ok(self):
         runnable = nrunner.Runnable('exec-test', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -227,9 +222,8 @@ class Runner(unittest.TestCase):
 
     def test_runner_exec_test_fail(self):
         runnable = nrunner.Runnable('exec-test', '/bin/false')
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -241,9 +235,8 @@ class Runner(unittest.TestCase):
 
     def test_runner_python_unittest_ok(self):
         runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase')
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         output1 = ('----------------------------------------------------------'
                    '------------\nRan 0 tests in ')
@@ -256,9 +249,8 @@ class Runner(unittest.TestCase):
 
     def test_runner_python_unittest_fail(self):
         runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase.fail')
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         output1 = ('============================================================='
                    '=========\nFAIL: fail (unittest.case.TestCase)'
@@ -274,9 +266,8 @@ class Runner(unittest.TestCase):
         runnable = nrunner.Runnable(
             'python-unittest',
             'selftests.unit.test_test.TestClassTestUnit.DummyTest.skip')
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         output1 = ('----------------------------------------------------------'
                    '------------\nRan 1 test in ')
@@ -289,9 +280,8 @@ class Runner(unittest.TestCase):
 
     def test_runner_python_unittest_error(self):
         runnable = nrunner.Runnable('python-unittest', 'error')
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         output1 = ('============================================================='
                    '=========\nERROR: error')
@@ -304,9 +294,8 @@ class Runner(unittest.TestCase):
 
     def test_runner_python_unittest_empty_uri_error(self):
         runnable = nrunner.Runnable('python-unittest', '')
-        runner = nrunner.runner_from_runnable(
-            runnable,
-            nrunner.RunnerApp.RUNNABLE_KINDS_CAPABLE)
+        runner_klass = runnable.pick_runner_class()
+        runner = runner_klass(runnable)
         results = [status for status in runner.run()]
         output = 'uri is required but was not given'
         result = results[-1]
