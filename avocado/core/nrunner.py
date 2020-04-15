@@ -23,8 +23,9 @@ RUNNER_RUN_CHECK_INTERVAL = 0.01
 #: runner that performs its work asynchronously
 RUNNER_RUN_STATUS_INTERVAL = 0.5
 
-#: All known runners
-KNOWN_RUNNERS = {}
+#: All known runner commands, capable of being used by a
+#: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
+RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 
 
 class SpawnMethod(enum.Enum):
@@ -47,8 +48,9 @@ def check_tasks_requirements(tasks, runners_registry=None):
 
     :param tasks: the tasks whose runner requirements will be checked
     :type tasks: list of :class:`Task`
-    :param runners_registry: a registry with previously found (and not
-                             found) runners keyed by task kind
+    :param runners_registry: a registry with previously found (and not found)
+                             runners keyed by a task's runnable kind.  Defauts
+                             to :attr:`RUNNERS_REGISTRY_STANDALONE_EXECUTABLE`
     :type runners_registry: dict
     :return: two list of tasks in a tuple, with the first being the tasks
              that pass the requirements check and the second the tasks that
@@ -56,7 +58,7 @@ def check_tasks_requirements(tasks, runners_registry=None):
     :rtype: tuple of (list, list)
     """
     if runners_registry is None:
-        runners_registry = KNOWN_RUNNERS
+        runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
     ok = []
     missing = []
     for task in tasks:
@@ -327,7 +329,7 @@ class Runnable:
         :rtype: list of str or None
         """
         if runners_registry is None:
-            runners_registry = KNOWN_RUNNERS
+            runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
         runner_cmd = runners_registry.get(self.kind)
         if runner_cmd is False:
             return None
@@ -683,7 +685,7 @@ class Task:
         :doc:`/blueprints/BP002`.
         """
         if runners_registry is None:
-            runners_registry = KNOWN_RUNNERS
+            runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
         return self.runnable.pick_runner_command(runners_registry)
 
     @classmethod
