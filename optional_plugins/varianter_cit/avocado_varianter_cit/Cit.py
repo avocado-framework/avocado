@@ -70,16 +70,19 @@ class Cit:
                 delete_row = matrix.pop(random.randint(0, len(matrix) - 1))
                 self.combination_matrix.uncover_solution_row(delete_row)
                 deleted_rows.append(delete_row)
-            LOG.debug("I'm trying solution with size " + str(len(matrix)) + " and " + str(iterations) + " iterations")
+            LOG.debug("I'm trying solution with size %s and %s iterations",
+                      len(matrix), iterations)
             matrix, is_better_solution = self.find_better_solution(iterations, matrix)
             if is_better_solution:
                 self.final_matrix = matrix[:]
                 deleted_rows = []
                 step_size *= 2
-                LOG.debug("-----solution with size " + str(len(matrix)) + " was found-----\n")
+                LOG.debug("-----solution with size %s was found-----\n",
+                          len(matrix))
                 iterations = ITERATIONS_SIZE
             else:
-                LOG.debug("-----solution with size " + str(len(matrix)) + " was not found-----\n")
+                LOG.debug("-----solution with size %s was not found-----\n",
+                          len(matrix))
                 for i in range(step_size):
                     self.combination_matrix.cover_solution_row(deleted_rows[i])
                     matrix.append(deleted_rows[i])
