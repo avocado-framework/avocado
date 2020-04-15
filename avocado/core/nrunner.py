@@ -15,6 +15,8 @@ import sys
 import time
 import unittest
 
+from uuid import uuid4
+
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
 
@@ -572,7 +574,8 @@ class Task:
     :param identifier:
     :param runnable:
     """
-    def __init__(self, identifier, runnable, status_uris=None, known_runners=None):
+    def __init__(self, identifier, runnable, status_uris=None,
+                 known_runners=None):
         self.identifier = identifier
         self.runnable = runnable
         self.status_services = []
@@ -583,6 +586,7 @@ class Task:
             known_runners = {}
         self.known_runners = known_runners
         self.spawn_handle = None
+        self._output_dir = "/tmp/avocado-tasks/{}/output".format(uuid4())
 
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
@@ -598,6 +602,11 @@ class Task:
         if runners_registry is None:
             runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
         return self.runnable.pick_runner_command(runners_registry)
+
+    def setup_output_dir(self):
+        os.makedirs(self._output_dir, exist_ok=True)
+        env_var = {'AVOCADO_TEST_OUTPUT_DIR': self._output_dir}
+        self.runnable.kwargs.update(env_var)
 
     @classmethod
     def from_recipe(cls, task_path, known_runners):
@@ -640,9 +649,12 @@ class Task:
         return args
 
     def run(self):
+        self.setup_output_dir()
         runner_klass = self.runnable.pick_runner_class(self.known_runners)
         runner = runner_klass(self.runnable)
         for status in runner.run():
+            if status['status'] == 'started':
+                status.update({'output_dir': self._output_dir})
             status.update({"id": self.identifier})
             for status_service in self.status_services:
                 status_service.post(status)

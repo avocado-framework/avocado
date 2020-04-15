@@ -18,6 +18,9 @@ def check_tmp_dirs():
     for dir_to_check in dirs_to_check:
         dir_list = os.listdir(dir_to_check)
         avocado_tmp_dirs = [d for d in dir_list if d.startswith('avocado')]
+        # This is the only exception since that nrun will keep files when
+        # running locally (ProcessSpawner)
+        avocado_tmp_dirs.remove('avocado-tasks')
         try:
             assert len(avocado_tmp_dirs) == 0
             print('No temporary avocado dirs lying around in %s' %

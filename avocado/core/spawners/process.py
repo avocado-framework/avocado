@@ -18,7 +18,7 @@ class ProcessSpawner(BaseSpawner):
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
 
-        #pylint: disable=E1133
+        # pylint: disable=E1133
         task.spawn_handle = yield from asyncio.create_subprocess_exec(
             runner,
             *args,

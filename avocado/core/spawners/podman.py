@@ -71,3 +71,9 @@ class PodmanSpawner(BaseSpawner):
                                                          stdout=asyncio.subprocess.PIPE,
                                                          stderr=asyncio.subprocess.PIPE)
         yield from proc.wait()
+
+    def create_output_dir_for_task(self, task):
+        """In this case is a remote folder."""
+        local_dir = '/tmp/avocado/tasks/{}/output'.format(task.identifier)
+        os.mkdirs(local_dir, exist_ok=True)
+        task.set_output_dir(local_dir)
