@@ -5,7 +5,7 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix, python_module_available
+from .. import AVOCADO, BASEDIR, temp_dir_prefix
 
 
 class GetData(unittest.TestCase):
@@ -22,13 +22,12 @@ class GetData(unittest.TestCase):
         result = process.run(cmd_line)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
 
-    @unittest.skipUnless(python_module_available("avocado_varianter_yaml_to_mux"),
-                         "avocado_varianter_yaml_to_mux not available")
     def test_varianter(self):
         test_path = os.path.join(BASEDIR, "selftests", ".data", "get_data.py")
         test_variants_path = os.path.join(BASEDIR, "selftests", ".data",
-                                          "get_data.py.data", "get_data.yaml")
-        cmd_line = "%s run --sysinfo=off --job-results-dir '%s' -m %s -- %s"
+                                          "get_data.py.data", "get_data.json")
+        cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' "
+                    "--json-variants-load %s -- %s")
         cmd_line %= (AVOCADO, self.tmpdir.name, test_variants_path, test_path)
         result = process.run(cmd_line)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)

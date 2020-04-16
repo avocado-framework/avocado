@@ -1,0 +1,1 @@
+[{"paths": ["/run/*"], "variant_id": "short-475e", "variant": [["/run/short", [["/run/short", "in_variant", true]]]]}, {"paths": ["/run/*"], "variant_id": "medium-1a7a", "variant": [["/run/medium", [["/run/medium", "in_variant", true]]]]}, {"paths": ["/run/*"], "variant_id": "long-cbbd", "variant": [["/run/long", [["/run/long", "in_variant", true]]]]}]
