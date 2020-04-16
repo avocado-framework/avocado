@@ -52,7 +52,7 @@ class TestSubProcess(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
     @unittest.mock.patch('avocado.utils.process.get_children_pids')
     @unittest.mock.patch('avocado.utils.process.run')
-    def test_send_signal_sudo_enabled(self, run, get_children, get_pid, sudo, init):  # pylint: disable=W0613
+    def test_send_signal_sudo_enabled(self, run, get_children, get_pid, sudo, _):
         signal = 1
         pid = 122
         child_pid = 123
@@ -73,8 +73,8 @@ class TestSubProcess(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
     @unittest.mock.patch('avocado.utils.process.get_children_pids')
     @unittest.mock.patch('avocado.utils.process.run')
-    def test_send_signal_sudo_enabled_with_exception(
-            self, run, get_children, get_pid, sudo, init):  # pylint: disable=W0613
+    def test_send_signal_sudo_enabled_with_exception(self, run, get_children,
+                                                     get_pid, sudo, _):
         signal = 1
         pid = 122
         child_pid = 123
@@ -94,7 +94,7 @@ class TestSubProcess(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
     @unittest.mock.patch('avocado.utils.process.get_owner_id')
-    def test_get_user_id(self, get_owner, get_pid, init):  # pylint: disable=W0613
+    def test_get_user_id(self, get_owner, get_pid, _):
         user_id = 1
         process_id = 123
         get_pid.return_value = process_id
@@ -108,7 +108,7 @@ class TestSubProcess(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
     @unittest.mock.patch('avocado.utils.process.get_owner_id')
-    def test_is_sudo_enabled_false(self, get_owner, get_pid, init):  # pylint: disable=W0613
+    def test_is_sudo_enabled_false(self, get_owner, get_pid, _):
         user_id = 1
         process_id = 123
         get_pid.return_value = process_id
@@ -122,7 +122,7 @@ class TestSubProcess(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
     @unittest.mock.patch('avocado.utils.process.get_owner_id')
-    def test_is_sudo_enabled_true(self, get_owner, get_pid, init):  # pylint: disable=W0613
+    def test_is_sudo_enabled_true(self, get_owner, get_pid, _):
         user_id = 0
         process_id = 123
         get_pid.return_value = process_id
