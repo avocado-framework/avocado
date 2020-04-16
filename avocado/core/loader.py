@@ -676,8 +676,8 @@ class FileLoader(SimpleFileLoader):
                 test_path = test_path[:-3]
             test_module_name = os.path.relpath(test_path)
             test_module_name = test_module_name.replace(os.path.sep, ".")
-            candidates = [("%s.%s.%s" % (test_module_name, klass, method), tags)
-                          for (method, tags) in methods]
+            candidates = [("%s.%s.%s" % (test_module_name, klass, method),
+                           tags, reqs) for (method, tags, reqs) in methods]
             if subtests_filter:
                 result += [_ for _ in candidates if subtests_filter.search(_)]
             else:
@@ -711,7 +711,7 @@ class FileLoader(SimpleFileLoader):
                 test_factories = []
                 for test_class, info in avocado_tests.items():
                     if isinstance(test_class, str):
-                        for test_method, tgs in info:
+                        for test_method, tags, reqs in info:
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)
                             if (subtests_filter and
@@ -720,7 +720,8 @@ class FileLoader(SimpleFileLoader):
                             tst = (test_class, {'name': name,
                                                 'modulePath': test_path,
                                                 'methodName': test_method,
-                                                'tags': tgs})
+                                                'tags': tags,
+                                                'requirements': reqs})
                             test_factories.append(tst)
                 return test_factories
             # Python unittests
@@ -737,8 +738,9 @@ class FileLoader(SimpleFileLoader):
             if python_unittests:
                 return [(test.PythonUnittest, {"name": name,
                                                "test_dir": py_test_dir,
-                                               "tags": tags})
-                        for (name, tags) in python_unittests]
+                                               "tags": tags,
+                                               "requirements": reqs})
+                        for (name, tags, reqs) in python_unittests]
             else:
                 # Module does not have an avocado test or pyunittest class inside,
                 # but maybe it's a Python executable.

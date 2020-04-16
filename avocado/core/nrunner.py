@@ -181,6 +181,7 @@ class Runnable:
         self.uri = uri
         self.args = args
         self.tags = kwargs.pop('tags', None)
+        self.requirements = kwargs.pop('requirements', None)
         self.kwargs = kwargs
 
     def __repr__(self):

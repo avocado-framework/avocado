@@ -354,6 +354,7 @@ class LoaderTest(unittest.TestCase):
         exp = [(test.PythonUnittest,
                 {"name": "python_unittest.SampleTest.test",
                  "tags": {"flattag": None, "foo": {"bar"}},
+                 "requirements": [],
                  "test_dir": os.path.dirname(python_unittest.path)})]
         self.assertEqual(tests, exp)
 

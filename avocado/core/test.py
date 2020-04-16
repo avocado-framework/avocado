@@ -321,7 +321,8 @@ class Test(unittest.TestCase, TestData):
     timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, job=None, runner_queue=None, tags=None):
+                 base_logdir=None, job=None, runner_queue=None, tags=None,
+                 requirements=None):
         """
         Initializes the test.
 
@@ -352,6 +353,7 @@ class Test(unittest.TestCase, TestData):
 
         self.__job = job
         self.__tags = tags
+        self.__requirements = requirements
 
         self.__base_logdir_tmp = None
         if base_logdir is None:
@@ -463,6 +465,13 @@ class Test(unittest.TestCase, TestData):
         The tags associated with this test
         """
         return self.__tags
+
+    @property
+    def requirements(self):
+        """
+        The requirements associated with this test
+        """
+        return self.__requirements
 
     @property
     def log(self):
@@ -1320,7 +1329,7 @@ class PythonUnittest(ExternalRunnerTest):
     """
     def __init__(self, name, params=None, base_logdir=None, job=None,
                  test_dir=None, python_unittest_module=None,
-                 tags=None):    # pylint: disable=W0613
+                 tags=None, requirements=None):    # pylint: disable=W0613
         runner = "%s -m unittest -q -c" % sys.executable
         external_runner = ExternalRunnerSpec(runner, "test", test_dir)
         super(PythonUnittest, self).__init__(name, params, base_logdir, job,
