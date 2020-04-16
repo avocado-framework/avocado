@@ -1261,7 +1261,7 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
         super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
-                      e_nnotfound, e_nfailures, e_nskip):  # pylint: disable=W0613
+                      e_nfailures, e_nskip):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
                     ' --xunit - %s' % (AVOCADO, self.tmpdir.name, testname))
         result = process.run(cmd_line, ignore_status=True)
@@ -1309,19 +1309,19 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
 
     def test_xunit_plugin_passtest(self):
         self.run_and_check('passtest.py', exit_codes.AVOCADO_ALL_OK,
-                           1, 0, 0, 0, 0)
+                           1, 0, 0, 0)
 
     def test_xunit_plugin_failtest(self):
         self.run_and_check('failtest.py', exit_codes.AVOCADO_TESTS_FAIL,
-                           1, 0, 0, 1, 0)
+                           1, 0, 1, 0)
 
     def test_xunit_plugin_skiponsetuptest(self):
         self.run_and_check('cancelonsetup.py', exit_codes.AVOCADO_ALL_OK,
-                           1, 0, 0, 0, 1)
+                           1, 0, 0, 1)
 
     def test_xunit_plugin_errortest(self):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
-                           1, 1, 0, 0, 0)
+                           1, 1, 0, 0)
 
     def tearDown(self):
         self.tmpdir.cleanup()
