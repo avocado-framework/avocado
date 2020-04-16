@@ -694,30 +694,10 @@ class StatusServer:
 
             data = json_loads(message.strip())
 
-            if data['status'] not in ["init", "running"]:
-                try:
-                    self.tasks_pending.remove(data['id'])
-                    print('Task complete (%s): %s' % (data['result'],
-                                                      data['id']))
-                except IndexError:
-                    pass
-                except ValueError:
-                    pass
-                if data['result'] in self.result:
-                    self.result[data['result']] += 1
-                else:
-                    self.result[data['result']] = 1
-
-                if data['result'] not in ('pass', 'skip'):
-                    stdout = data.get('stdout', b'')
-                    if stdout:
-                        print('Task %s stdout:\n%s\n' % (data['id'], stdout))
-                    stderr = data.get('stderr', b'')
-                    if stderr:
-                        print('Task %s stderr:\n%s\n' % (data['id'], stderr))
-                    output = data.get('output', b'')
-                    if output:
-                        print('Task %s output:\n%s\n' % (data['id'], output))
+            if data['status'] in ['started']:
+                self.handle_task_started(data)
+            elif data['status'] in ['finished']:
+                self.handle_task_finished(data)
 
     @asyncio.coroutine
     def create_server_task(self):
@@ -726,6 +706,34 @@ class StatusServer:
         server = yield from asyncio.start_server(self.cb, host=host, port=port)
         print("Results server started at:", self.uri)
         yield from server.wait_closed()
+
+    def handle_task_started(self, data):
+        pass
+
+    def handle_task_finished(self, data):
+        try:
+            self.tasks_pending.remove(data['id'])
+            print('Task complete (%s): %s' % (data['result'],
+                                              data['id']))
+        except IndexError:
+            pass
+        except ValueError:
+            pass
+        if data['result'] in self.result:
+            self.result[data['result']] += 1
+        else:
+            self.result[data['result']] = 1
+
+        if data['result'] not in ('pass', 'skip'):
+            stdout = data.get('stdout', b'')
+            if stdout:
+                print('Task %s stdout:\n%s\n' % (data['id'], stdout))
+            stderr = data.get('stderr', b'')
+            if stderr:
+                print('Task %s stderr:\n%s\n' % (data['id'], stderr))
+            output = data.get('output', b'')
+            if output:
+                print('Task %s output:\n%s\n' % (data['id'], output))
 
     def start(self):
         loop = asyncio.get_event_loop()
