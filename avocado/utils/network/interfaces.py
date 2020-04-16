@@ -38,12 +38,10 @@ log = logging.getLogger('avocado.test')
 class NetworkInterface:
     """
     This class represents a network card interface (NIC).
-
     An "NetworkInterface" is attached to some host. This could be an instance
     of LocalHost or RemoteHost.  If a RemoteHost then all commands will be
     executed on a remote_session (host.remote_session). Otherwise will be
     executed locally.
-
     Here you will find a few methods to perform basic operations on a NIC.
     """
 
@@ -83,12 +81,9 @@ class NetworkInterface:
 
     def set_hwaddr(self, hwaddr):
         """Sets a Hardware Address (MAC Address) to the interface.
-
         This method will try to set a new hwaddr to this interface, if
         fails it will raise a NWException.
-
         You must have sudo permissions to run this method on a host.
-
         :param hwaddr: Hardware Address (Mac Address)
         """
         cmd = "ip link set dev {} address {}".format(self.name, hwaddr)
@@ -99,12 +94,9 @@ class NetworkInterface:
 
     def add_ipaddr(self, ipaddr, netmask):
         """Add an IP Address (with netmask) to the interface.
-
         This method will try to add a new ipaddr/netmask this interface, if
         fails it will raise a NWException.
-
         You must have sudo permissions to run this method on a host.
-
         :param ipaddr: IP Address
         :param netmask: Network mask
         """
@@ -119,10 +111,8 @@ class NetworkInterface:
 
     def bring_down(self):
         """Shutdown the interface.
-
         This will shutdown the interface link. Be careful, you might lost
         connection to the host.
-
         You must have sudo permissions to run this method on a host.
         """
 
@@ -134,9 +124,7 @@ class NetworkInterface:
 
     def bring_up(self):
         """"Wake-up the interface.
-
         This will wake-up the interface link.
-
         You must have sudo permissions to run this method on a host.
         """
         cmd = "ip link set {} up".format(self.name)
@@ -147,7 +135,6 @@ class NetworkInterface:
 
     def is_link_up(self):
         """Check if the interface is up or not.
-
         :return: True or False. True if the current state is UP, otherwise will
         return False.
         """
@@ -157,10 +144,8 @@ class NetworkInterface:
 
     def get_ipaddrs(self, version=4):
         """Get the IP addresses from a network interface.
-
         Interfaces can hold multiple IP addresses. This method will return a
         list with all addresses on this interface.
-
         :param version: Address Family Version (4 or 6). This must be a integer
                         and default is 4.
         :return: IP address as string.
@@ -180,7 +165,6 @@ class NetworkInterface:
 
     def get_hwaddr(self):
         """Get the Hardware Address (MAC) of this interface.
-
         This method will try to get the address and if fails it will raise a
         NWException.
         """
@@ -192,7 +176,6 @@ class NetworkInterface:
 
     def get_link_state(self):
         """Method used to get the current link state of this interface.
-
         This method will return 'up', 'down' or 'unknown', based on the
         network interface state. Or it will raise a NWException if is
         unable to get the interface state.
@@ -217,11 +200,9 @@ class NetworkInterface:
 
     def ping_check(self, peer_ip, count=2, options=None):
         """This method will try to ping a peer address (IPv4 or IPv6).
-
         You should provide a IPv4 or IPV6 that would like to ping. This
         method will try to ping the peer and if fails it will raise a
         NWException.
-
         :param peer_ip: Peer IP address (IPv4 or IPv6)
         :param count: How many packets to send. Default is 2
         :param options: ping command options. Default is None
@@ -236,16 +217,13 @@ class NetworkInterface:
 
     def save(self, ipaddr, netmask):
         """Save current interface IP Address to the system configuration file.
-
         If the ipaddr is valid (currently being used by the interface)
         this will try to save the current settings into /etc/. This
         check is necessary to avoid inconsistency. Before save, you
         should add_ipaddr, first.
-
         Currently, only RHEL, Fedora and SuSE are supported. And this
         will create a backup file of your current configuration if
         found.
-
         :param ipaddr : IP Address which need to configure for interface
         :param netmask: Network mask which is associated to the provided IP
         """
@@ -267,7 +245,7 @@ class NetworkInterface:
 
         self._write_to_file("{}/{}".format(path, filename),
                             {'TYPE': self.if_type,
-                             'BOOTPROTO': 'none',
+                             'BOOTPROTO': 'static',
                              'NAME': self.name,
                              'DEVICE': self.name,
                              'ONBOOT': 'yes',
@@ -279,14 +257,11 @@ class NetworkInterface:
 
     def set_mtu(self, mtu, timeout=30):
         """Sets a new MTU value to this interface.
-
         This method will try to set a new MTU value to this interface,
         if fails it will raise a NWException. Also it will wait until
         the Interface is up before returning or until timeout be
         reached.
-
         You must have sudo permissions to run this method on a host.
-
         :param mtu:  mtu size that need to be set. This must be an int.
         :param timeout: how many seconds to wait until the interface is
                         up again. Default is 30.
@@ -299,11 +274,9 @@ class NetworkInterface:
 
     def remove_ipaddr(self, ipaddr, netmask):
         """Removes an IP address from this interface.
-
         This method will try to remove the address from this interface
         and if fails it will raise a NWException. Be careful, you can
         lost connection.
-
         You must have sudo permissions to run this method on a host.
         """
         ip = ip_interface("{}/{}".format(ipaddr, netmask))
