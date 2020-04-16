@@ -1103,7 +1103,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          % (exp, result))
 
     def test_list_verbose_tags(self):
-        """        Runs list verbosely and check for tag related output
+        """
+        Runs list verbosely and check for tag related output
         """
         test = script.make_script(os.path.join(self.base_outputdir.name, 'test.py'),
                                   VALID_PYTHON_TEST_WITH_TAGS)
