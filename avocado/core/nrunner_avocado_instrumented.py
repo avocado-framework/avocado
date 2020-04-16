@@ -51,7 +51,11 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         state = instance.get_state()
         # This should probably be done in a translator
         if 'status' in state:
-            state['status'] = state['status'].lower()
+            status = state['status'].lower()
+            if status in ['pass', 'fail', 'skip', 'error']:
+                state['result'] = status
+                state['status'] = 'finished'
+
         # This is a hack because the name is a TestID instance that can not
         # at this point be converted to JSON
         if 'name' in state:
@@ -88,7 +92,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
-    PROG_NAME = 'avocado-runner-avocado-instrumented',
+    PROG_NAME = 'avocado-runner-avocado-instrumented'
     PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner for avocado-instrumented tests'
     RUNNABLE_KINDS_CAPABLE = {
         'avocado-instrumented': AvocadoInstrumentedTestRunner

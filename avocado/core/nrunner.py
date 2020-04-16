@@ -23,8 +23,15 @@ RUNNER_RUN_CHECK_INTERVAL = 0.01
 #: runner that performs its work asynchronously
 RUNNER_RUN_STATUS_INTERVAL = 0.5
 
-#: All known runners
-KNOWN_RUNNERS = {}
+#: All known runner commands, capable of being used by a
+#: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
+RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
+
+#: All known runner Python classes.  This is a dictionary keyed by a
+#: runnable kind, and value is a class that inherits from
+#: :class:`BaseRunner`.  Suitable for spawners compatible with
+#: SpawnMethod.PYTHON_CLASS
+RUNNERS_REGISTRY_PYTHON_CLASS = {}
 
 
 class SpawnMethod(enum.Enum):
@@ -47,8 +54,9 @@ def check_tasks_requirements(tasks, runners_registry=None):
 
     :param tasks: the tasks whose runner requirements will be checked
     :type tasks: list of :class:`Task`
-    :param runners_registry: a registry with previously found (and not
-                             found) runners keyed by task kind
+    :param runners_registry: a registry with previously found (and not found)
+                             runners keyed by a task's runnable kind.  Defauts
+                             to :attr:`RUNNERS_REGISTRY_STANDALONE_EXECUTABLE`
     :type runners_registry: dict
     :return: two list of tasks in a tuple, with the first being the tasks
              that pass the requirements check and the second the tasks that
@@ -56,11 +64,11 @@ def check_tasks_requirements(tasks, runners_registry=None):
     :rtype: tuple of (list, list)
     """
     if runners_registry is None:
-        runners_registry = KNOWN_RUNNERS
+        runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
     ok = []
     missing = []
     for task in tasks:
-        runner = task.pick_runner_command(runners_registry)
+        runner = task.runnable.pick_runner_command(runners_registry)
         if runner:
             ok.append(task)
         else:
@@ -91,7 +99,7 @@ class ProcessSpawner(BaseSpawner):
 
     @asyncio.coroutine
     def spawn_task(self, task):
-        runner = task.pick_runner_command()
+        runner = task.runnable.pick_runner_command()
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
 
@@ -289,6 +297,93 @@ class Runnable:
         with open(recipe_path, 'w') as recipe_file:
             recipe_file.write(self.get_json())
 
+    def is_kind_supported_by_runner_command(self, runner_command):
+        """Checks if a runner command that seems a good fit declares support."""
+        cmd = runner_command + ['capabilities']
+        try:
+            process = subprocess.Popen(cmd,
+                                       stdin=subprocess.DEVNULL,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
+            return False
+        out, _ = process.communicate()
+
+        try:
+            capabilities = json.loads(out.decode())
+        except json.decoder.JSONDecodeError:
+            return False
+
+        return self.kind in capabilities.get('runnables', [])
+
+    def pick_runner_command(self, runners_registry=None):
+        """Selects a runner command based on the runner.
+
+        And when finding a suitable runner, keeps found runners in registry.
+
+        This utility function will look at the given task and try to find
+        a matching runner.  The matching runner probe results are kept in
+        a registry (that is modified by this function) so that further
+        executions take advantage of previous probes.
+
+        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
+
+        :param runners_registry: a registry with previously found (and not
+                                 found) runners keyed by runnable kind
+        :param runners_registry: dict
+        :returns: command line arguments to execute the runner
+        :rtype: list of str or None
+        """
+        if runners_registry is None:
+            runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
+        runner_cmd = runners_registry.get(self.kind)
+        if runner_cmd is False:
+            return None
+        if runner_cmd is not None:
+            return runner_cmd
+
+        standalone_executable_cmd = ['avocado-runner-%s' % self.kind]
+        if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
+            runners_registry[self.kind] = standalone_executable_cmd
+            return standalone_executable_cmd
+
+        # attempt to find Python module files that are named after the
+        # runner convention within the avocado.core namespace dir.
+        # Looking for the file only avoids an attempt to load the module
+        # and should be a lot faster
+        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        module_name = self.kind.replace('-', '_')
+        module_filename = 'nrunner_%s.py' % module_name
+        if os.path.exists(os.path.join(core_dir, module_filename)):
+            full_module_name = 'avocado.core.%s' % module_name
+            candidate_cmd = [sys.executable, '-m', full_module_name]
+            if self.is_kind_supported_by_runner_command(candidate_cmd):
+                runners_registry[self.kind] = candidate_cmd
+                return candidate_cmd
+
+        # exhausted probes, let's save the negative on the cache and avoid
+        # future similar problems
+        runners_registry[self.kind] = False
+
+    def pick_runner_class(self, runners_registry=None):
+        """Selects a runner class from the registry based on kind.
+
+        This is related to the :data:`SpawnMethod.PYTHON_CLASS`
+
+        :param runners_registry: a registry with previously registered
+                                 runner classes, keyed by runnable kind
+        :param runners_registry: dict
+        :returns: a class that inherits from :class:`BaseRunner`
+        :raises: ValueError if kind there's no runner from kind of runnable
+        """
+        if runners_registry is None:
+            runners_registry = RUNNERS_REGISTRY_PYTHON_CLASS
+
+        runner = runners_registry.get(self.kind, None)
+        if runner is not None:
+            return runner
+        raise ValueError('Unsupported kind of runnable: %s' % self.kind)
+
 
 class BaseRunner:
     """
@@ -318,6 +413,9 @@ class NoOpRunner(BaseRunner):
                'result': 'pass',
                'time_start': time_start,
                'time_end': time.time()}
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['noop'] = NoOpRunner
 
 
 class ExecRunner(BaseRunner):
@@ -373,6 +471,9 @@ class ExecRunner(BaseRunner):
                'time_end': time.time()}
 
 
+RUNNERS_REGISTRY_PYTHON_CLASS['exec'] = ExecRunner
+
+
 class ExecTestRunner(ExecRunner):
     """
     Runner for standalone executables treated as tests
@@ -391,6 +492,9 @@ class ExecTestRunner(ExecRunner):
                 else:
                     most_current_execution_state['result'] = 'fail'
             yield most_current_execution_state
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner
 
 
 class PythonUnittestRunner(BaseRunner):
@@ -471,14 +575,7 @@ class PythonUnittestRunner(BaseRunner):
         yield queue.get()
 
 
-def runner_from_runnable(runnable, known_runners):
-    """
-    Gets a Runner instance from a Runnable
-    """
-    runner = known_runners.get(runnable.kind, None)
-    if runner is not None:
-        return runner(runnable)
-    raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
+RUNNERS_REGISTRY_PYTHON_CLASS['python-unittest'] = PythonUnittestRunner
 
 
 def _parse_key_val(argument):
@@ -615,8 +712,8 @@ class Task:
         :doc:`/blueprints/BP002`.
         """
         if runners_registry is None:
-            runners_registry = KNOWN_RUNNERS
-        return self.pick_runner_command(runners_registry)
+            runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
+        return self.runnable.pick_runner_command(runners_registry)
 
     @classmethod
     def from_recipe(cls, task_path, known_runners):
@@ -658,77 +755,9 @@ class Task:
 
         return args
 
-    def is_kind_supported_by_runner_command(self, runner_command):
-        """Checks if a runner command that seems a good fit declares support."""
-        cmd = runner_command + ['capabilities']
-        try:
-            process = subprocess.Popen(cmd,
-                                       stdin=subprocess.DEVNULL,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.DEVNULL)
-        except FileNotFoundError:
-            return False
-        out, _ = process.communicate()
-
-        try:
-            capabilities = json.loads(out.decode())
-        except json.decoder.JSONDecodeError:
-            return False
-
-        return self.runnable.kind in capabilities.get('runnables', [])
-
-    def pick_runner_command(self, runners_registry=None):
-        """Selects a runner command based on the task.
-
-        And when finding a suitable runner, keeps found runners in registry.
-
-        This utility function will look at the given task and try to find
-        a matching runner.  The matching runner probe results are kept in
-        a registry (that is modified by this function) so that further
-        executions take advantage of previous probes.
-
-        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
-
-        :param runners_registry: a registry with previously found (and not
-                                 found) runners keyed by task kind
-        :param runners_registry: dict
-        :returns: command line arguments to execute the runner
-        :rtype: list of str or None
-        """
-        if runners_registry is None:
-            runners_registry = KNOWN_RUNNERS
-        kind = self.runnable.kind
-        runner_cmd = runners_registry.get(kind)
-        if runner_cmd is False:
-            return None
-        if runner_cmd is not None:
-            return runner_cmd
-
-        standalone_executable_cmd = ['avocado-runner-%s' % kind]
-        if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
-            runners_registry[kind] = standalone_executable_cmd
-            return standalone_executable_cmd
-
-        # attempt to find Python module files that are named after the
-        # runner convention within the avocado.core namespace dir.
-        # Looking for the file only avoids an attempt to load the module
-        # and should be a lot faster
-        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        module_name = kind.replace('-', '_')
-        module_filename = 'nrunner_%s.py' % module_name
-        if os.path.exists(os.path.join(core_dir, module_filename)):
-            full_module_name = 'avocado.core.%s' % module_name
-            candidate_cmd = [sys.executable, '-m', full_module_name]
-            if self.is_kind_supported_by_runner_command(candidate_cmd):
-                runners_registry[kind] = candidate_cmd
-                return candidate_cmd
-
-        # exhausted probes, let's save the negative on the cache and avoid
-        # future similar problems
-        runners_registry[kind] = False
-
     def run(self):
-        runner = runner_from_runnable(self.runnable, self.known_runners)
+        runner_klass = self.runnable.pick_runner_class(self.known_runners)
+        runner = runner_klass(self.runnable)
         for status in runner.run():
             status.update({"id": self.identifier})
             for status_service in self.status_services:
@@ -1041,12 +1070,7 @@ class BaseRunnerApp:
 class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner'
     PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner'
-    RUNNABLE_KINDS_CAPABLE = {
-        'noop': NoOpRunner,
-        'exec': ExecRunner,
-        'exec-test': ExecTestRunner,
-        'python-unittest': PythonUnittestRunner
-    }
+    RUNNABLE_KINDS_CAPABLE = RUNNERS_REGISTRY_PYTHON_CLASS
 
 
 def main(app_class=RunnerApp):
