@@ -1,0 +1,10 @@
+processor       : 88
+cpu             : POWER8E (raw), altivec supported
+clock           : 3325.000000MHz
+revision        : 2.1 (pvr 004b 0201)
+
+timebase        : 512000000
+platform        : PowerNV
+model           : 8247-21L
+machine         : PowerNV 8247-21L
+firmware        : OPAL v3
