@@ -1,0 +1,4 @@
+hart    : 1
+isa    : rv64imafdc
+mmu    : sv39
+uarch    : sifive,rocket0
