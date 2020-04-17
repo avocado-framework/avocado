@@ -460,10 +460,10 @@ class FindClassAndMethods(UnlimitedDiff):
 
         sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
         tests = safeloader.find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
-        expected = {'ThirdChild': [('test_third_child', {}),
-                                   ('test_second_child', {}),
-                                   ('test_first_child', {}),
-                                   ('test_basic', {})]}
+        expected = {'ThirdChild': [('test_third_child', {}, []),
+                                   ('test_second_child', {}, []),
+                                   ('test_first_child', {}, []),
+                                   ('test_basic', {}, [])]}
         self.assertEqual(expected, tests)
 
     def test_recursive_discovery_python_unittest(self):
@@ -473,11 +473,14 @@ class FindClassAndMethods(UnlimitedDiff):
         temp_test.save()
         tests = safeloader.find_python_unittests(temp_test.path)
         expected = {'BaseClass': [('test_basic', {'base-tag': None,
-                                                  'base.tag': None})],
+                                                  'base.tag': None},
+                                   [])],
                     'Child': [('test_child', {'child-tag': None,
-                                              'child.tag': None}),
+                                              'child.tag': None},
+                               []),
                               ('test_basic', {'base-tag': None,
-                                              'base.tag': None})]}
+                                              'base.tag': None},
+                               [])]}
         self.assertEqual(expected, tests)
 
 
