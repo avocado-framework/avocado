@@ -364,8 +364,9 @@ class ExecRunner(BaseRunner):
 
         return_code = process.returncode
         yield self.prepare_status('finished', {'returncode': return_code,
-                                                'stdout': stdout,
-                                                'stderr': stderr})
+                                               'stdout': stdout,
+                                               'stderr': stderr})
+
 
 RUNNERS_REGISTRY_PYTHON_CLASS['exec'] = ExecRunner
 
