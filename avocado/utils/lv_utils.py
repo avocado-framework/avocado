@@ -36,22 +36,26 @@ class LVException(Exception):
     """
 
 
-def get_diskspace(disk):
+def get_diskspace(disks):
     """
-    Get the entire disk space of a given disk.
+    Get the entire disk space of a given disk(s).
 
-    :param str disk: name of the disk to find the free space of
+    :param str disk: name of the disk(s) to find the free space of
     :returns: size in bytes
-    :rtype: str
-    :raises: :py:class:`LVException` on failure to find disk space
+    :rtype: int
+    :raises: :py:class:`LVException` on failure to find disk space 
     """
-    result = process.run('fdisk -l %s' % disk,
-                         env={"LANG": "C"}, sudo=True).stdout_text
-    results = result.splitlines()
-    for line in results:
-        if line.startswith('Disk ' + disk):
-            return re.findall(r", (.*?) bytes", line)[0]
-    raise LVException('Error in finding disk space')
+    size = 0
+    for disk in disks.split(" "):
+        result = process.run('fdisk -l %s' % disk,
+                             env={"LANG": "C"}, sudo=True).stdout_text
+        results = result.splitlines()
+        for line in results:
+            if line.startswith('Disk ' + disk):
+                size = size + int(re.findall(r", (.*?) bytes", line)[0])
+    if not size:
+        raise LVException('Error in finding disk space')
+    return size
 
 
 def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
