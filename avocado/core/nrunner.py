@@ -336,7 +336,12 @@ class ExecRunner(BaseRunner):
        process
     """
     def run(self):
-        env = self.runnable.kwargs or None
+        env = None
+        if self.runnable.kwargs:
+            current = dict(os.environ)
+            current.update(self.runnable.kwargs)
+            env = current
+
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,

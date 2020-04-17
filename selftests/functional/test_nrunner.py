@@ -86,7 +86,7 @@ class RunnableRun(unittest.TestCase):
         res = process.run("%s runnable-run -k exec -u /bin/env X=Y" % RUNNER,
                           ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
-        self.assertIn(b"'stdout': b'X=Y\\n'", res.stdout)
+        self.assertIn(b"X=Y\\n", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
 
