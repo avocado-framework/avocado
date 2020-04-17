@@ -189,14 +189,12 @@ class Runnable:
         self.uri = uri
         self.args = args
         self.tags = kwargs.pop('tags', None)
-        self.requirements = kwargs.pop('requirements', None)
         self.kwargs = kwargs
 
     def __repr__(self):
-        fmt = ('<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}" '
-               'requirements="{}">')
-        return fmt.format(self.kind, self.uri, self.args, self.kwargs,
-                          self.tags, self.requirements)
+        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}">'
+        return fmt.format(self.kind, self.uri,
+                          self.args, self.kwargs, self.tags)
 
     @classmethod
     def from_args(cls, args):
