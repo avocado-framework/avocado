@@ -67,9 +67,9 @@ class NetworkInterface:
             raise NWException(msg)
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
-        destination = "{}.backup-{}".format(filename, time.time())
+        self.destination = "{}.backup-{}".format(filename, time.time())
         if os.path.exists(filename):
-            shutil.move(filename, destination)
+            shutil.move(filename, self.destination)
         else:
             if not ignore_missing:
                 raise NWException("%s interface not available" % self.name)
@@ -306,11 +306,17 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
         """
+        if distro_detect().name in ['rhel', 'fedora']:
+            conf_file = "/etc/sysconfig/network-scripts/ifcfg-%s" % self.name
+        elif distro_detect().name == 'SuSE':
+            conf_file = "/etc/sysconfig/network/ifcfg-%s" % self.name
+
         ip = ip_interface("{}/{}".format(ipaddr, netmask))
         cmd = 'ip addr del {} dev {}'.format(ip.compressed,
                                              self.name)
         try:
             run_command(cmd, self.host, sudo=True)
+            shutil.move(self.destination, conf_file)
         except Exception as ex:
             msg = 'Failed to remove ipaddr. {}'.format(ex)
             raise NWException(msg)
