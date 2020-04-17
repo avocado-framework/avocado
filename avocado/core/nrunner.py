@@ -668,13 +668,14 @@ class Task:
 
 class StatusServer:
 
-    def __init__(self, uri, tasks_pending=None):
+    def __init__(self, uri, tasks_pending=None, verbose=False):
         self.uri = uri
         self.server_task = None
         self.result = {}
         if tasks_pending is None:
             tasks_pending = []
         self.tasks_pending = tasks_pending
+        self.verbose = verbose
         self.wait_on_tasks_pending = len(self.tasks_pending) > 0
 
     @asyncio.coroutine
@@ -713,7 +714,9 @@ class StatusServer:
         yield from server.wait_closed()
 
     def handle_task_started(self, data):
-        pass
+        if self.verbose:
+            print("Task started: {}. Outputdir: {}".format(data['id'],
+                                                           data['output_dir']))
 
     def handle_task_finished(self, data):
         try:
