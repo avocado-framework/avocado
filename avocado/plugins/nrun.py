@@ -132,9 +132,11 @@ class NRun(CLICmd):
                 self.spawner = ProcessSpawner()  # pylint: disable=W0201
             loop = asyncio.get_event_loop()
             listen = config.get('nrun.status_server.listen')
+            verbose = config.get('core.verbose')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
                                                       [t.identifier for t in
-                                                       self.pending_tasks])
+                                                       self.pending_tasks],
+                                                      verbose)
             self.status_server.start()
             parallel_tasks = config.get('nrun.parallel_tasks')
             loop.run_until_complete(self.spawn_tasks(parallel_tasks))
