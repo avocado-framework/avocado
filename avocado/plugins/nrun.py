@@ -85,10 +85,14 @@ class NRun(CLICmd):
                 print("Finished spawning tasks")
                 break
 
-            yield from self.spawner.spawn_task(task)
+            spawn_result = yield from self.spawner.spawn_task(task)
             identifier = task.identifier
             self.pending_tasks.remove(task)
             self.spawned_tasks.append(identifier)
+            if not spawn_result:
+                LOG_UI.error("ERROR: failed to spawn task: %s", identifier)
+                continue
+
             alive = self.spawner.is_task_alive(task)
             if not alive:
                 LOG_UI.warning("%s is not alive shortly after being spawned", identifier)
