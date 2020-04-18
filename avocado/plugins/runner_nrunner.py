@@ -61,7 +61,10 @@ class Runner(RunnerInterface):
                     break
 
             # test execution time is currently missing
-            test_state = {'status': statuses[-1]['status'].upper()}
+            # since 358e800e81 all runners all produce the result in a key called
+            # 'result', instead of 'status'.  But the Avocado result plugins rely
+            # on the current runner approach
+            test_state = {'status': statuses[-1]['result'].upper()}
             test_state.update(early_state)
 
             time_start = statuses[0]['time_start']
