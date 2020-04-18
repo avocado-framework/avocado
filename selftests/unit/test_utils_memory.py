@@ -15,11 +15,10 @@ class Test(unittest.TestCase):
                     self.assertEqual(memory.numa_nodes_with_memory(), exp)
 
 
-BUDDY_INFO_RESPONSE = '\n'.join([
-    'Node 0, zone      DMA      1      1      0      0      1      1',
-    'Node 0, zone    DMA32    987    679   1004   3068   2795   1432',
-    'Node 1, zone   Normal   5430   9759   9044   9751  16482   8924',
-])
+BUDDY_INFO_RESPONSE = (
+    """Node 0, zone      DMA      1      1      0      0      1      1
+Node 0, zone    DMA32    987    679   1004   3068   2795   1432
+Node 1, zone   Normal   5430   9759   9044   9751  16482   8924""")
 
 
 @unittest.mock.patch('avocado.utils.memory._get_buddy_info_content',
