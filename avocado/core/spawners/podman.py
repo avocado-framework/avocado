@@ -38,16 +38,22 @@ class PodmanSpawner(BaseSpawner):
         entry_point_args.insert(0, entry_point_cmd)
         entry_point = json.dumps(entry_point_args)
         entry_point_arg = "--entrypoint=" + entry_point
-        # pylint: disable=E1133
-        proc = yield from asyncio.create_subprocess_exec(
-            self.PODMAN_BIN, "create",
-            "--net=host",
-            entry_point_arg,
-            self.IMAGE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
+        try:
+            # pylint: disable=E1133
+            proc = yield from asyncio.create_subprocess_exec(
+                self.PODMAN_BIN, "create",
+                "--net=host",
+                entry_point_arg,
+                self.IMAGE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE)
+        except (FileNotFoundError, PermissionError):
+            return False
 
-        _ = yield from proc.wait()
+        yield from proc.wait()
+        if proc.returncode != 0:
+            return False
+
         stdout = yield from proc.stdout.read()
         container_id = stdout.decode().strip()
 
@@ -58,16 +64,30 @@ class PodmanSpawner(BaseSpawner):
         this_path = os.path.abspath(__file__)
         common_path = os.path.dirname(os.path.dirname(this_path))
         avocado_runner_path = os.path.join(common_path, 'nrunner.py')
-        proc = yield from asyncio.create_subprocess_exec(
-            self.PODMAN_BIN,
-            "cp",
-            avocado_runner_path,
-            "%s:%s" % (container_id, entry_point_cmd))
-        yield from proc.wait()
+        try:
+            # pylint: disable=E1133
+            proc = yield from asyncio.create_subprocess_exec(
+                self.PODMAN_BIN,
+                "cp",
+                avocado_runner_path,
+                "%s:%s" % (container_id, entry_point_cmd))
+        except (FileNotFoundError, PermissionError):
+            return False
 
-        proc = yield from asyncio.create_subprocess_exec(self.PODMAN_BIN,
-                                                         "start",
-                                                         container_id,
-                                                         stdout=asyncio.subprocess.PIPE,
-                                                         stderr=asyncio.subprocess.PIPE)
         yield from proc.wait()
+        if proc.returncode != 0:
+            return False
+
+        try:
+            # pylint: disable=E1133
+            proc = yield from asyncio.create_subprocess_exec(
+                self.PODMAN_BIN,
+                "start",
+                container_id,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE)
+        except (FileNotFoundError, PermissionError):
+            return False
+
+        yield from proc.wait()
+        return proc.returncode == 0
