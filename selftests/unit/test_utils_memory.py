@@ -3,7 +3,7 @@ import unittest.mock
 from avocado.utils import memory
 
 
-class UtilsMemoryTest(unittest.TestCase):
+class Test(unittest.TestCase):
 
     def test_numa_nodes_with_memory(self):
         file_values = [u"0\n", u"1-3", u"0-1,12-14\n"]
@@ -24,22 +24,22 @@ BUDDY_INFO_RESPONSE = '\n'.join([
 
 @unittest.mock.patch('avocado.utils.memory._get_buddy_info_content',
                      return_value=BUDDY_INFO_RESPONSE)
-class UtilsMemoryTestGetBuddyInfo(unittest.TestCase):
+class GetBuddyInfo(unittest.TestCase):
 
-    def test_get_buddy_info_simple_chunk_size(self, buddy_info_content_mocked):
+    def test_simple_chunk_size(self, buddy_info_content_mocked):
         chunk_size = '0'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result[chunk_size], 6418)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_less_than_chunk_size(self, buddy_info_content_mocked):
+    def test_less_than_chunk_size(self, buddy_info_content_mocked):
         chunk_size = '<2'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result['0'], 6418)
         self.assertEqual(result['1'], 10439)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_less_than_equal_chunk_size(self, buddy_info_content_mocked):
+    def test_less_than_equal_chunk_size(self, buddy_info_content_mocked):
         chunk_size = '<=2'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result['0'], 6418)
@@ -47,14 +47,14 @@ class UtilsMemoryTestGetBuddyInfo(unittest.TestCase):
         self.assertEqual(result['2'], 10048)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_greater_than_chunk_size(self, buddy_info_content_mocked):
+    def test_greater_than_chunk_size(self, buddy_info_content_mocked):
         chunk_size = '>3'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result['4'], 19278)
         self.assertEqual(result['5'], 10357)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_greater_than_equal_chunk_size(self, buddy_info_content_mocked):
+    def test_greater_than_equal_chunk_size(self, buddy_info_content_mocked):
         chunk_size = '>=3'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result['3'], 12819)
@@ -62,20 +62,20 @@ class UtilsMemoryTestGetBuddyInfo(unittest.TestCase):
         self.assertEqual(result['5'], 10357)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_multiple_chunk_size(self, buddy_info_content_mocked):
+    def test_multiple_chunk_size(self, buddy_info_content_mocked):
         chunk_size = '2 4'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result['2'], 10048)
         self.assertEqual(result['4'], 19278)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_multiple_chunk_size_filtering_simple(self, buddy_info_content_mocked):
+    def test_multiple_chunk_size_filtering_simple(self, buddy_info_content_mocked):
         chunk_size = '>2 <4'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result['3'], 12819)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_multiple_chunk_size_filtering(self, buddy_info_content_mocked):
+    def test_multiple_chunk_size_filtering(self, buddy_info_content_mocked):
         chunk_size = '>=2 <=4'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result['2'], 10048)
@@ -83,19 +83,19 @@ class UtilsMemoryTestGetBuddyInfo(unittest.TestCase):
         self.assertEqual(result['4'], 19278)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_multiple_chunk_size_filtering_invalid(self, buddy_info_content_mocked):
+    def test_multiple_chunk_size_filtering_invalid(self, buddy_info_content_mocked):
         chunk_size = '>2 <2'
         result = memory.get_buddy_info(chunk_size)
         self.assertEqual(result, {})
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_filtering_node(self, buddy_info_content_mocked):
+    def test_filtering_node(self, buddy_info_content_mocked):
         chunk_size = '0'
         result = memory.get_buddy_info(chunk_size, nodes='1')
         self.assertEqual(result[chunk_size], 5430)
         self.assertTrue(buddy_info_content_mocked.called)
 
-    def test_get_buddy_info_filtering_zone(self, buddy_info_content_mocked):
+    def test_filtering_zone(self, buddy_info_content_mocked):
         chunk_size = '0'
         result = memory.get_buddy_info(chunk_size, zones='DMA32')
         self.assertEqual(result[chunk_size], 987)
