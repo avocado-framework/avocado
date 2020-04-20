@@ -19,7 +19,7 @@ NRunner based implementation of job compliant runner
 from avocado.core import test
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
 
-from avocado.core.nrunner import check_tasks_requirements
+from avocado.core import nrunner
 
 
 class Runner(RunnerInterface):
@@ -27,15 +27,12 @@ class Runner(RunnerInterface):
     name = 'nrunner'
     description = '*EXPERIMENTAL* nrunner based implementation of job compliant runner'
 
-    #: registry of known test runners
-    KNOWN_EXTERNAL_RUNNERS = {}
-
     def run_suite(self, job, result, test_suite, variants, timeout=0,
                   replay_map=None, execution_order=None):
         summary = set()
-        test_suite, _ = check_tasks_requirements(
-            test_suite,
-            self.KNOWN_EXTERNAL_RUNNERS)  # pylint: disable=W0201
+        test_suite, _ = nrunner.check_tasks_requirements(test_suite)
+        for task in test_suite:
+            task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
         result.tests_total = len(test_suite)  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
 
@@ -61,7 +58,10 @@ class Runner(RunnerInterface):
                     break
 
             # test execution time is currently missing
-            test_state = {'status': statuses[-1]['status'].upper()}
+            # since 358e800e81 all runners all produce the result in a key called
+            # 'result', instead of 'status'.  But the Avocado result plugins rely
+            # on the current runner approach
+            test_state = {'status': statuses[-1]['result'].upper()}
             test_state.update(early_state)
 
             time_start = statuses[0]['time_start']
