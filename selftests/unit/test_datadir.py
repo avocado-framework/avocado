@@ -194,15 +194,15 @@ class AltDataDirTest(Base):
                 self.assertEqual(data_dir_func(), self.mapping[key])
 
         (self.alt_base_dir,  # pylint: disable=W0201
-         self.alt_mapping,  # pylint: disable=W0201
+         alt_mapping,
          self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()  # pylint: disable=W0201
 
         # Alternate setttings with different data_dir location
         alt_stg = settings.Settings(self.alt_config_file_path)
         with unittest.mock.patch('avocado.core.data_dir.settings.settings', alt_stg):
-            for key in self.alt_mapping.keys():
+            for key in alt_mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
-                self.assertEqual(data_dir_func(), self.alt_mapping[key])
+                self.assertEqual(data_dir_func(), alt_mapping[key])
 
     def tearDown(self):
         super(AltDataDirTest, self).tearDown()
