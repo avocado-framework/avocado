@@ -54,7 +54,7 @@ class Runner(RunnerInterface):
             for status in task.run():
                 result_dispatcher.map_method('test_progress', False)
                 statuses.append(status)
-                if status['status'] not in ["init", "running"]:
+                if status['status'] not in ["started", "running"]:
                     break
 
             # test execution time is currently missing
@@ -64,8 +64,8 @@ class Runner(RunnerInterface):
             test_state = {'status': statuses[-1]['result'].upper()}
             test_state.update(early_state)
 
-            time_start = statuses[0]['time_start']
-            time_end = statuses[-1]['time_end']
+            time_start = statuses[0]['time']
+            time_end = statuses[-1]['time']
             time_elapsed = time_end - time_start
             test_state['time_start'] = time_start
             test_state['time_end'] = time_end

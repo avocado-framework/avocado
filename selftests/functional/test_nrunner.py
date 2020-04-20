@@ -16,9 +16,9 @@ class RunnableRun(unittest.TestCase):
     def test_noop(self):
         res = process.run("%s runnable-run -k noop" % RUNNER,
                           ignore_status=True)
+        self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
-        self.assertIn(b"'time_start': ", res.stdout)
-        self.assertIn(b"'time_end': ", res.stdout)
+        self.assertIn(b"'time': ", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
     def test_exec(self):
@@ -61,11 +61,11 @@ class RunnableRun(unittest.TestCase):
         else:
             first_status = lines[0]
             final_status = lines[-1]
-            self.assertIn("'status': 'running'", first_status)
-            self.assertIn("'time_start': ", first_status)
+            self.assertIn("'status': 'started'", first_status)
+            self.assertIn("'time': ", first_status)
         self.assertIn("'status': 'finished'", final_status)
         self.assertIn("'stdout': b'Hello world!\\n'", final_status)
-        self.assertIn("'time_end': ", final_status)
+        self.assertIn("'time': ", final_status)
         self.assertEqual(res.exit_status, 0)
 
     def test_noop_valid_kwargs(self):
@@ -86,7 +86,7 @@ class RunnableRun(unittest.TestCase):
         res = process.run("%s runnable-run -k exec -u /bin/env X=Y" % RUNNER,
                           ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
-        self.assertIn(b"'stdout': b'X=Y\\n'", res.stdout)
+        self.assertIn(b"X=Y\\n", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
 
@@ -113,7 +113,7 @@ class TaskRun(unittest.TestCase):
         else:
             first_status = lines[0]
             final_status = lines[-1]
-            self.assertIn("'status': 'running'", first_status)
+            self.assertIn("'status': 'started'", first_status)
             self.assertIn("'id': 1", first_status)
         self.assertIn("'id': 1", first_status)
         self.assertIn("'status': 'finished'", final_status)
@@ -133,7 +133,7 @@ class TaskRun(unittest.TestCase):
         else:
             first_status = lines[0]
             final_status = lines[-1]
-            self.assertIn("'status': 'running'", first_status)
+            self.assertIn("'status': 'started'", first_status)
             self.assertIn("'id': 2", first_status)
         self.assertIn("'id': 2", first_status)
         self.assertIn("'status': 'finished'", final_status)
@@ -153,7 +153,7 @@ class TaskRun(unittest.TestCase):
         # this runnable should produce multiple status lines
         self.assertGreater(len(lines), 1)
         first_status = lines[0]
-        self.assertIn("'status': 'running'", first_status)
+        self.assertIn("'status': 'started'", first_status)
         self.assertIn("'id': 3", first_status)
         final_status = lines[-1]
         self.assertIn("'id': 3", first_status)

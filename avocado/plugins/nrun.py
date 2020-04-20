@@ -9,6 +9,8 @@ from avocado.core import job
 from avocado.core import nrunner
 from avocado.core import parser_common_args
 from avocado.core import resolver
+from avocado.core.spawners.process import ProcessSpawner
+from avocado.core.spawners.podman import PodmanSpawner
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
@@ -118,21 +120,23 @@ class NRun(CLICmd):
 
         try:
             if config.get('nrun.spawners.podman.enabled'):
-                if not os.path.exists(nrunner.PodmanSpawner.PODMAN_BIN):
+                if not os.path.exists(PodmanSpawner.PODMAN_BIN):
                     msg = ('Podman Spawner selected, but podman binary "%s" '
                            'is not available on the system.  Please install '
                            'podman before attempting to use this feature.')
-                    msg %= nrunner.PodmanSpawner.PODMAN_BIN
+                    msg %= PodmanSpawner.PODMAN_BIN
                     LOG_UI.error(msg)
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-                self.spawner = nrunner.PodmanSpawner()  # pylint: disable=W0201
+                self.spawner = PodmanSpawner()  # pylint: disable=W0201
             else:
-                self.spawner = nrunner.ProcessSpawner()  # pylint: disable=W0201
+                self.spawner = ProcessSpawner()  # pylint: disable=W0201
             loop = asyncio.get_event_loop()
             listen = config.get('nrun.status_server.listen')
+            verbose = config.get('core.verbose')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
                                                       [t.identifier for t in
-                                                       self.pending_tasks])
+                                                       self.pending_tasks],
+                                                      verbose)
             self.status_server.start()
             parallel_tasks = config.get('nrun.parallel_tasks')
             loop.run_until_complete(self.spawn_tasks(parallel_tasks))
