@@ -88,16 +88,24 @@ class DataDirTest(unittest.TestCase):
         No data_dir module reload should be necessary to get the new locations
         from data_dir APIs.
         """
+        # Initial settings with initial data_dir locations
+        stg = settings.Settings(self.config_file_path)
+        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
+            from avocado.core import data_dir
+            for key in self.mapping.keys():
+                data_dir_func = getattr(data_dir, 'get_%s' % key)
+                self.assertEqual(data_dir_func(), self.mapping[key])
+
         (self.alt_base_dir,  # pylint: disable=W0201
          self.alt_mapping,  # pylint: disable=W0201
          self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()  # pylint: disable=W0201
-        stg = settings.Settings(self.alt_config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
-            from avocado.core import data_dir
+
+        # Alternate setttings with different data_dir location
+        alt_stg = settings.Settings(self.alt_config_file_path)
+        with unittest.mock.patch('avocado.core.data_dir.settings.settings', alt_stg):
             for key in self.alt_mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
                 self.assertEqual(data_dir_func(), self.alt_mapping[key])
-            del data_dir
 
     def test_get_job_results_dir(self):
         from avocado.core import data_dir
