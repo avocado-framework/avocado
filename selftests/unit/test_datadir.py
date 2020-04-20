@@ -7,7 +7,7 @@ from avocado.core import settings
 from .. import temp_dir_prefix
 
 
-class DataDirTest(unittest.TestCase):
+class Base(unittest.TestCase):
 
     def _get_temporary_dirs_mapping_and_config(self):
         """
@@ -38,6 +38,13 @@ class DataDirTest(unittest.TestCase):
         (self.base_dir,
          self.mapping,
          self.config_file_path) = self._get_temporary_dirs_mapping_and_config()
+
+    def tearDown(self):
+        os.unlink(self.config_file_path)
+        self.base_dir.cleanup()
+
+
+class DataDirTest(Base):
 
     def test_datadir_from_config(self):
         """
@@ -76,28 +83,6 @@ class DataDirTest(unittest.TestCase):
             path = data_dir.create_job_logs_dir(logdir, uid)
             self.assertEqual(path, path_prefix + uid + ".1")
             self.assertTrue(os.path.exists(path))
-
-    def test_settings_dir_alternate_dynamic(self):
-        """
-        Tests that changes to the data_dir settings are applied dynamically
-
-        To guarantee that, first the data_dir module is loaded. Then a new,
-        alternate set of data directories are created and set in the
-        "canonical" settings location, that is, avocado.core.settings.settings.
-
-        No data_dir module reload should be necessary to get the new locations
-        from data_dir APIs.
-        """
-        (self.alt_base_dir,  # pylint: disable=W0201
-         self.alt_mapping,  # pylint: disable=W0201
-         self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()  # pylint: disable=W0201
-        stg = settings.Settings(self.alt_config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
-            from avocado.core import data_dir
-            for key in self.alt_mapping.keys():
-                data_dir_func = getattr(data_dir, 'get_%s' % key)
-                self.assertEqual(data_dir_func(), self.alt_mapping[key])
-            del data_dir
 
     def test_get_job_results_dir(self):
         from avocado.core import data_dir
@@ -186,14 +171,43 @@ class DataDirTest(unittest.TestCase):
                              data_dir.get_job_results_dir(unique_id),
                              "It should use the default base logs directory")
 
+
+class AltDataDirTest(Base):
+
+    def test_settings_dir_alternate_dynamic(self):
+        """
+        Tests that changes to the data_dir settings are applied dynamically
+
+        To guarantee that, first the data_dir module is loaded. Then a new,
+        alternate set of data directories are created and set in the
+        "canonical" settings location, that is, avocado.core.settings.settings.
+
+        No data_dir module reload should be necessary to get the new locations
+        from data_dir APIs.
+        """
+        # Initial settings with initial data_dir locations
+        stg = settings.Settings(self.config_file_path)
+        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
+            from avocado.core import data_dir
+            for key in self.mapping.keys():
+                data_dir_func = getattr(data_dir, 'get_%s' % key)
+                self.assertEqual(data_dir_func(), self.mapping[key])
+
+        (self.alt_base_dir,  # pylint: disable=W0201
+         alt_mapping,
+         self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()  # pylint: disable=W0201
+
+        # Alternate setttings with different data_dir location
+        alt_stg = settings.Settings(self.alt_config_file_path)
+        with unittest.mock.patch('avocado.core.data_dir.settings.settings', alt_stg):
+            for key in alt_mapping.keys():
+                data_dir_func = getattr(data_dir, 'get_%s' % key)
+                self.assertEqual(data_dir_func(), alt_mapping[key])
+
     def tearDown(self):
-        os.unlink(self.config_file_path)
-        self.base_dir.cleanup()
-        # clean up alternate configuration file if set by the test
-        if hasattr(self, 'alt_config_file_path'):
-            os.unlink(self.alt_config_file_path)
-        if hasattr(self, 'alt_base_dir'):
-            self.alt_base_dir.cleanup()
+        super(AltDataDirTest, self).tearDown()
+        os.unlink(self.alt_config_file_path)
+        self.alt_base_dir.cleanup()
 
 
 if __name__ == '__main__':
