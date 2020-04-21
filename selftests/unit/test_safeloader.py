@@ -169,6 +169,12 @@ class DocstringDirectives(unittest.TestCase):
                ":avocado: tags=SLOW,disk, invalid",
                ":avocado: tags=SLOW,disk , invalid"]
 
+    NO_REQS = [":AVOCADO: REQUIREMENT=['FOO':'BAR']",
+               ":avocado: requirement={'foo':'bar'}",
+               ":avocado: requirement={foo",
+               ":avocado: requirements=",
+               ":avocado: requirement="]
+
     def test_longline(self):
         docstring = ("This is a very long docstring in a single line. "
                      "Since we have nothing useful to put in here let's just "
@@ -260,6 +266,20 @@ class DocstringDirectives(unittest.TestCase):
         exp = {"fast": None, "arch": set(["x86_64", "ppc64"])}
         self.assertEqual(safeloader.get_docstring_directives_tags(raw), exp)
 
+    def test_get_requirement_empty(self):
+        for req in self.NO_REQS:
+            self.assertEqual([], safeloader.get_docstring_directives_requirements(req))
+
+    def test_requirement_single(self):
+        raw = ":avocado: requirement={\"foo\":\"bar\"}"
+        exp = [{"foo": "bar"}]
+        self.assertEqual(safeloader.get_docstring_directives_requirements(raw), exp)
+
+    def test_requirement_double(self):
+        raw = ":avocado: requirement={\"foo\":\"bar\"}\n:avocado: requirement={\"newfoo\":\"newbar\"}"
+        exp = [{"foo": "bar"}, {"newfoo": "newbar"}]
+        self.assertEqual(safeloader.get_docstring_directives_requirements(raw), exp)
+
     def test_directives_regex(self):
         """
         Tests the regular expressions that deal with docstring directives
@@ -315,6 +335,9 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_tag_keyval_single',
                                     'test_tag_keyval_double',
                                     'test_tag_keyval_duplicate',
+                                    'test_get_requirement_empty',
+                                    'test_requirement_single',
+                                    'test_requirement_double',
                                     'test_directives_regex'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
@@ -359,6 +382,9 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_tag_keyval_single',
                                     'test_tag_keyval_double',
                                     'test_tag_keyval_duplicate',
+                                    'test_get_requirement_empty',
+                                    'test_requirement_single',
+                                    'test_requirement_double',
                                     'test_directives_regex'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
@@ -434,10 +460,10 @@ class FindClassAndMethods(UnlimitedDiff):
 
         sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
         tests = safeloader.find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
-        expected = {'ThirdChild': [('test_third_child', {}),
-                                   ('test_second_child', {}),
-                                   ('test_first_child', {}),
-                                   ('test_basic', {})]}
+        expected = {'ThirdChild': [('test_third_child', {}, []),
+                                   ('test_second_child', {}, []),
+                                   ('test_first_child', {}, []),
+                                   ('test_basic', {}, [])]}
         self.assertEqual(expected, tests)
 
     def test_recursive_discovery_python_unittest(self):
@@ -447,11 +473,14 @@ class FindClassAndMethods(UnlimitedDiff):
         temp_test.save()
         tests = safeloader.find_python_unittests(temp_test.path)
         expected = {'BaseClass': [('test_basic', {'base-tag': None,
-                                                  'base.tag': None})],
+                                                  'base.tag': None},
+                                   [])],
                     'Child': [('test_child', {'child-tag': None,
-                                              'child.tag': None}),
+                                              'child.tag': None},
+                               []),
                               ('test_basic', {'base-tag': None,
-                                              'base.tag': None})]}
+                                              'base.tag': None},
+                               [])]}
         self.assertEqual(expected, tests)
 
 

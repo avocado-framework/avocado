@@ -69,11 +69,12 @@ class PythonUnittestResolver(Resolver):
                 mod = mod[:-3]
             mod = mod.replace(os.path.sep, ".")
             for klass, meths in class_methods.items():
-                for (meth, tags) in meths:
+                for (meth, tags, reqs) in meths:
                     uri = '%s.%s.%s' % (mod, klass, meth)
                     runnables.append(Runnable('python-unittest',
                                               uri=uri,
-                                              tags=tags))
+                                              tags=tags,
+                                              requirements=reqs))
             if runnables:
                 return ReferenceResolution(reference,
                                            ReferenceResolutionResult.SUCCESS,
@@ -101,8 +102,8 @@ class AvocadoInstrumentedResolver(Resolver):
         # disabled tests not needed here
         class_methods_info, _ = find_avocado_tests(module_path)
         runnables = []
-        for klass, methods_tags in class_methods_info.items():
-            for (method, tags) in methods_tags:
+        for klass, methods_tags_reqs in class_methods_info.items():
+            for (method, tags, reqs) in methods_tags_reqs:
                 klass_method = "%s.%s" % (klass, method)
                 if tests_filter is not None:
                     if not tests_filter.search(klass_method):
@@ -110,7 +111,8 @@ class AvocadoInstrumentedResolver(Resolver):
                 uri = "%s:%s" % (module_path, klass_method)
                 runnables.append(Runnable('avocado-instrumented',
                                           uri=uri,
-                                          tags=tags))
+                                          tags=tags,
+                                          requirements=reqs))
         if runnables:
             return ReferenceResolution(reference,
                                        ReferenceResolutionResult.SUCCESS,

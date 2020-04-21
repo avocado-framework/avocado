@@ -20,6 +20,7 @@ Safe (AST based) test loader module utilities
 import ast
 import collections
 import imp
+import json
 import os
 import re
 import sys
@@ -219,7 +220,8 @@ def modules_imported_as(module):
 
 #: Gets the docstring directive value from a string. Used to tweak
 #: test behavior in various ways
-DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)\s*$'
+DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(r[a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\{\}\"\-\. ]*))\s*$'
+# the RE will match `:avocado: tags=category` or `:avocado: requirements={}`
 DOCSTRING_DIRECTIVE_RE = re.compile(DOCSTRING_DIRECTIVE_RE_RAW)
 
 
@@ -279,6 +281,25 @@ def get_docstring_directives_tags(docstring):
     return result
 
 
+def get_docstring_directives_requirements(docstring):
+    """
+    Returns the test requirements from docstring patterns like
+    `:avocado: requirement={}`.
+
+    :rtype: list
+    """
+    requirements = []
+    for item in get_docstring_directives(docstring):
+        if item.startswith('requirement='):
+            _, requirement_str = item.split('requirement=', 1)
+            try:
+                requirements.append(json.loads(requirement_str))
+            except json.decoder.JSONDecodeError:
+                # ignore requirement in case of malformed dictionary
+                continue
+    return requirements
+
+
 def find_class_and_methods(path, method_pattern=None, base_class=None):
     """
     Attempts to find methods names from a given Python source file
@@ -321,7 +342,7 @@ def find_class_and_methods(path, method_pattern=None, base_class=None):
     return result
 
 
-def get_methods_info(statement_body, class_tags):
+def get_methods_info(statement_body, class_tags, class_requirements):
     """
     Returns information on an Avocado instrumented test method
     """
@@ -330,12 +351,16 @@ def get_methods_info(statement_body, class_tags):
         if (isinstance(st, ast.FunctionDef) and
                 st.name.startswith('test')):
             docstring = ast.get_docstring(st)
+
             mt_tags = get_docstring_directives_tags(docstring)
             mt_tags.update(class_tags)
 
-            methods = [method for method, _ in methods_info]
+            mt_requirements = get_docstring_directives_requirements(docstring)
+            mt_requirements.extend(class_requirements)
+
+            methods = [method for method, _, _ in methods_info]
             if st.name not in methods:
-                methods_info.append((st.name, mt_tags))
+                methods_info.append((st.name, mt_tags, mt_requirements))
 
     return methods_info
 
@@ -394,7 +419,9 @@ def _examine_class(path, class_name, match, target_module, target_class,
             match = determine_match(module, klass, docstring)
 
         info = get_methods_info(klass.body,
-                                get_docstring_directives_tags(docstring))
+                                get_docstring_directives_tags(docstring),
+                                get_docstring_directives_requirements(
+                                    docstring))
 
         # Getting the list of parents of the current class
         parents = klass.bases
@@ -501,7 +528,9 @@ def find_avocado_tests(path):
 
         if check_docstring_directive(docstring, 'enable'):
             info = get_methods_info(klass.body,
-                                    get_docstring_directives_tags(docstring))
+                                    get_docstring_directives_tags(docstring),
+                                    get_docstring_directives_requirements(
+                                        docstring))
             result[klass.name] = info
             continue
 
@@ -515,7 +544,9 @@ def find_avocado_tests(path):
         else:
             is_avocado = module.is_matching_klass(klass)
         info = get_methods_info(klass.body,
-                                get_docstring_directives_tags(docstring))
+                                get_docstring_directives_tags(docstring),
+                                get_docstring_directives_requirements(
+                                    docstring))
         _disabled = set()
 
         # Getting the list of parents of the current class
@@ -629,7 +660,9 @@ def find_python_unittests(path):
         is_unittest = module.is_matching_klass(klass)
 
         info = get_methods_info(klass.body,
-                                get_docstring_directives_tags(docstring))
+                                get_docstring_directives_tags(docstring),
+                                get_docstring_directives_requirements(
+                                    docstring))
 
         # Searching the parents in the same module
         for parent in parents[:]:
