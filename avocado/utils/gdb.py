@@ -211,65 +211,6 @@ def string_to_hex(text):
     return "".join(map(format_as_hex, text))
 
 
-def remote_checksum(input_message):
-    """
-    Calculates a remote message checksum
-
-    :param input_message: the message input payload, without the start and end
-                          markers
-    :type input_message: bytes
-    :returns: two byte checksum
-    :rtype: bytes
-    """
-    total = 0
-    for i in input_message:
-        total += i
-    result = total % 256
-
-    return b'%2x' % result
-
-
-def remote_encode(data):
-    """
-    Encodes a command
-
-    That is, add prefix, suffix and checksum
-
-    :param command_data: the command data payload
-    :type command_data: bytes
-    :returns: the encoded command, ready to be sent to a remote GDB
-    :rtype: bytes
-    """
-    return b'$%b#%b' % (data, remote_checksum(data))
-
-
-def remote_decode(data):
-    """
-    Decodes a packet and returns its payload
-
-    :param command_data: the command data payload
-    :type command_data: bytes
-    :returns: the encoded command, ready to be sent to a remote GDB
-    :rtype: bytes
-    """
-    if data[0:1] != REMOTE_PREFIX:
-        raise InvalidPacketError
-
-    if data[-3:-2] != REMOTE_DELIMITER:
-        raise InvalidPacketError
-
-    payload = data[1:-3]
-    checksum = data[-2:]
-
-    if payload == b'':
-        expected_checksum = b'00'
-    else:
-        expected_checksum = remote_checksum(payload)
-
-    if checksum != expected_checksum:
-        raise InvalidPacketError
-
-    return payload
 
 
 class CommandResult:
@@ -745,6 +686,73 @@ class GDBRemote:
         self.extended_mode = False
 
         self._socket = None
+
+    @staticmethod
+    def checksum(input_message):
+        """Calculates a remote message checksum.
+
+        More details are available at:
+        https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html
+
+        :param input_message: the message input payload, without the
+                              start and end markers
+        :type input_message: bytes
+        :returns: two byte checksum
+        :rtype: bytes
+        """
+        total = 0
+        for i in input_message:
+            total += i
+        result = total % 256
+
+        return b'%2x' % result
+
+    @staticmethod
+    def encode(data):
+        """Encodes a command.
+
+        That is, add prefix, suffix and checksum.
+
+        More details are available at:
+        https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html
+
+        :param command_data: the command data payload
+        :type command_data: bytes
+        :returns: the encoded command, ready to be sent to a remote GDB
+        :rtype: bytes
+        """
+        return b'$%b#%b' % (data, GDBRemote.checksum(data))
+
+    @staticmethod
+    def decode(data):
+        """Decodes a packet and returns its payload.
+
+        More details are available at:
+        https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html
+
+        :param command_data: the command data payload
+        :type command_data: bytes
+        :returns: the encoded command, ready to be sent to a remote GDB
+        :rtype: bytes
+        """
+        if data[0:1] != REMOTE_PREFIX:
+            raise InvalidPacketError
+
+        if data[-3:-2] != REMOTE_DELIMITER:
+            raise InvalidPacketError
+
+        payload = data[1:-3]
+        checksum = data[-2:]
+
+        if payload == b'':
+            expected_checksum = b'00'
+        else:
+            expected_checksum = GDBRemote.checksum(payload)
+
+        if checksum != expected_checksum:
+            raise InvalidPacketError
+
+        return payload
 
     def cmd(self, command_data, expected_response=None):
         """
