@@ -63,12 +63,11 @@ class Runner(RunnerInterface):
                   replay_map=None, execution_order=None):
         summary = set()
         test_suite, _ = nrunner.check_tasks_requirements(test_suite)
-        for task in test_suite:
-            task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
         result.tests_total = len(test_suite)  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
 
         for index, task in enumerate(test_suite):
+            task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
             index += 1
             # this is all rubbish data
             early_state = {
