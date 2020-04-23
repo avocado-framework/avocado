@@ -17,15 +17,12 @@ Avocado Plugin to propagate Job results to Resultsdb
 """
 
 import os
-import sys
 import time
 
 import resultsdb_api
 
 from avocado.core.plugin_interfaces import CLI, ResultEvents, Result
 from avocado.core.settings import settings
-from avocado.core import exceptions
-from avocado.utils import stacktrace
 from avocado.core.output import LOG_UI
 
 
