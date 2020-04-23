@@ -236,11 +236,11 @@ def remote_encode(data):
     That is, add prefix, suffix and checksum
 
     :param command_data: the command data payload
-    :type command_data: str
+    :type command_data: bytes
     :returns: the encoded command, ready to be sent to a remote GDB
-    :rtype: str
+    :rtype: bytes
     """
-    return "$%s#%s" % (data, remote_checksum(data))
+    return b'$%b#%b' % (data, remote_checksum(data))
 
 
 def remote_decode(data):
