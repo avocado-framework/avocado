@@ -217,17 +217,16 @@ def remote_checksum(input_message):
 
     :param input_message: the message input payload, without the start and end
                           markers
-    :type input_message: str
-    :returns: two digit checksum
-    :rtype: str
+    :type input_message: bytes
+    :returns: two byte checksum
+    :rtype: bytes
     """
     total = 0
     for i in input_message:
-        total += ord(i)
+        total += i
     result = total % 256
 
-    hexa = "%2x" % result
-    return hexa.lower()
+    return b'%2x' % result
 
 
 def remote_encode(data):
