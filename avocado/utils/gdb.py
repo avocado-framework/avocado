@@ -59,11 +59,11 @@ REMOTE_TRANSMISSION_SUCCESS = '+'
 REMOTE_TRANSMISSION_FAILURE = '-'
 
 #: How the remote protocol flags the start of a packet
-REMOTE_PREFIX = '$'
+REMOTE_PREFIX = b'$'
 
 #: How the remote protocol flags the end of the packet payload, and that the
 #: two digits checksum follow
-REMOTE_DELIMITER = '#'
+REMOTE_DELIMITER = b'#'
 
 #: Rather conservative default maximum packet size for clients using the
 #: remote protocol. Individual connections can ask (and do so by default)
@@ -248,21 +248,21 @@ def remote_decode(data):
     Decodes a packet and returns its payload
 
     :param command_data: the command data payload
-    :type command_data: str
+    :type command_data: bytes
     :returns: the encoded command, ready to be sent to a remote GDB
-    :rtype: str
+    :rtype: bytes
     """
-    if data[0] != REMOTE_PREFIX:
+    if data[0:1] != REMOTE_PREFIX:
         raise InvalidPacketError
 
-    if data[-3] != REMOTE_DELIMITER:
+    if data[-3:-2] != REMOTE_DELIMITER:
         raise InvalidPacketError
 
     payload = data[1:-3]
     checksum = data[-2:]
 
-    if payload == '':
-        expected_checksum = '00'
+    if payload == b'':
+        expected_checksum = b'00'
     else:
         expected_checksum = remote_checksum(payload)
 
