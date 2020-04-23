@@ -11,9 +11,9 @@ class GDBRemoteTest(unittest.TestCase):
         self.assertEqual(gdb.remote_checksum(b'foo'), b'44')
 
     def test_encode_command(self):
-        self.assertEqual(gdb.remote_encode('!'), '$!#21')
-        self.assertEqual(gdb.remote_encode('OK'), '$OK#9a')
-        self.assertEqual(gdb.remote_encode('foo'), '$foo#44')
+        self.assertEqual(gdb.remote_encode(b'!'), b'$!#21')
+        self.assertEqual(gdb.remote_encode(b'OK'), b'$OK#9a')
+        self.assertEqual(gdb.remote_encode(b'foo'), b'$foo#44')
 
     def test_decode_response(self):
         self.assertEqual(gdb.remote_decode('$!#21'), '!')
