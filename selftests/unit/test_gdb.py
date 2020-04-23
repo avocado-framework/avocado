@@ -6,38 +6,29 @@ from avocado.utils import gdb
 class GDBRemoteTest(unittest.TestCase):
 
     def test_checksum(self):
-        in_out = (('!', '21'),
-                  ('OK', '9a'),
-                  ('foo', '44'))
-        for io in in_out:
-            i, o = io
-            self.assertEqual(gdb.remote_checksum(i), o)
+        self.assertEqual(gdb.remote_checksum('!'), '21')
+        self.assertEqual(gdb.remote_checksum('OK'), '9a')
+        self.assertEqual(gdb.remote_checksum('foo'), '44')
 
     def test_encode_command(self):
-        in_out = (('!', '$!#21'),
-                  ('OK', '$OK#9a'),
-                  ('foo', '$foo#44'))
-        for io in in_out:
-            i, o = io
-            self.assertEqual(gdb.remote_encode(i), o)
+        self.assertEqual(gdb.remote_encode('!'), '$!#21')
+        self.assertEqual(gdb.remote_encode('OK'), '$OK#9a')
+        self.assertEqual(gdb.remote_encode('foo'), '$foo#44')
 
     def test_decode_response(self):
-        in_out = (('$!#21', '!'),
-                  ('$OK#9a', 'OK'),
-                  ('$foo#44', 'foo'))
-        for io in in_out:
-            i, o = io
-            self.assertEqual(gdb.remote_decode(i), o)
+        self.assertEqual(gdb.remote_decode('$!#21'), '!')
+        self.assertEqual(gdb.remote_decode('$OK#9a'), 'OK')
+        self.assertEqual(gdb.remote_decode('$foo#44'), 'foo')
 
     def test_decode_invalid(self):
-        invalid_packets = ['$!#22',
-                           '$foo$bar#21',
-                           '!!#21',
-                           '+$!#21']
-        for p in invalid_packets:
-            self.assertRaises(gdb.InvalidPacketError,
-                              gdb.remote_decode, p)
-
+        with self.assertRaises(gdb.InvalidPacketError):
+            gdb.remote_decode('$!#22')
+        with self.assertRaises(gdb.InvalidPacketError):
+            gdb.remote_decode('$foo$bar#21')
+        with self.assertRaises(gdb.InvalidPacketError):
+            gdb.remote_decode('!!#21')
+        with self.assertRaises(gdb.InvalidPacketError):
+            gdb.remote_decode('+$!#21')
 
 if __name__ == '__main__':
     unittest.main()
