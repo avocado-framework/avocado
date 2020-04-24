@@ -431,7 +431,6 @@ def reconfigure(args):
                             STD_OUTPUT.stdout, logging.DEBUG)
         else:
             disable_log_handler("")
-            disable_log_handler(LOG_JOB)
     if "remote" in enabled:
         add_log_handler("avocado.fabric", stream=STD_OUTPUT.stdout,
                         level=logging.DEBUG)
