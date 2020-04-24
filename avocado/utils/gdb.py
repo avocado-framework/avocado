@@ -59,11 +59,11 @@ REMOTE_TRANSMISSION_SUCCESS = '+'
 REMOTE_TRANSMISSION_FAILURE = '-'
 
 #: How the remote protocol flags the start of a packet
-REMOTE_PREFIX = '$'
+REMOTE_PREFIX = b'$'
 
 #: How the remote protocol flags the end of the packet payload, and that the
 #: two digits checksum follow
-REMOTE_DELIMITER = '#'
+REMOTE_DELIMITER = b'#'
 
 #: Rather conservative default maximum packet size for clients using the
 #: remote protocol. Individual connections can ask (and do so by default)
@@ -209,68 +209,6 @@ def string_to_hex(text):
     :rtype: str
     """
     return "".join(map(format_as_hex, text))
-
-
-def remote_checksum(input_message):
-    """
-    Calculates a remote message checksum
-
-    :param input_message: the message input payload, without the start and end
-                          markers
-    :type input_message: str
-    :returns: two digit checksum
-    :rtype: str
-    """
-    total = 0
-    for i in input_message:
-        total += ord(i)
-    result = total % 256
-
-    hexa = "%2x" % result
-    return hexa.lower()
-
-
-def remote_encode(data):
-    """
-    Encodes a command
-
-    That is, add prefix, suffix and checksum
-
-    :param command_data: the command data payload
-    :type command_data: str
-    :returns: the encoded command, ready to be sent to a remote GDB
-    :rtype: str
-    """
-    return "$%s#%s" % (data, remote_checksum(data))
-
-
-def remote_decode(data):
-    """
-    Decodes a packet and returns its payload
-
-    :param command_data: the command data payload
-    :type command_data: str
-    :returns: the encoded command, ready to be sent to a remote GDB
-    :rtype: str
-    """
-    if data[0] != REMOTE_PREFIX:
-        raise InvalidPacketError
-
-    if data[-3] != REMOTE_DELIMITER:
-        raise InvalidPacketError
-
-    payload = data[1:-3]
-    checksum = data[-2:]
-
-    if payload == '':
-        expected_checksum = '00'
-    else:
-        expected_checksum = remote_checksum(payload)
-
-    if checksum != expected_checksum:
-        raise InvalidPacketError
-
-    return payload
 
 
 class CommandResult:
@@ -747,6 +685,73 @@ class GDBRemote:
 
         self._socket = None
 
+    @staticmethod
+    def checksum(input_message):
+        """Calculates a remote message checksum.
+
+        More details are available at:
+        https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html
+
+        :param input_message: the message input payload, without the
+                              start and end markers
+        :type input_message: bytes
+        :returns: two byte checksum
+        :rtype: bytes
+        """
+        total = 0
+        for i in input_message:
+            total += i
+        result = total % 256
+
+        return b'%2x' % result
+
+    @staticmethod
+    def encode(data):
+        """Encodes a command.
+
+        That is, add prefix, suffix and checksum.
+
+        More details are available at:
+        https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html
+
+        :param command_data: the command data payload
+        :type command_data: bytes
+        :returns: the encoded command, ready to be sent to a remote GDB
+        :rtype: bytes
+        """
+        return b'$%b#%b' % (data, GDBRemote.checksum(data))
+
+    @staticmethod
+    def decode(data):
+        """Decodes a packet and returns its payload.
+
+        More details are available at:
+        https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html
+
+        :param command_data: the command data payload
+        :type command_data: bytes
+        :returns: the encoded command, ready to be sent to a remote GDB
+        :rtype: bytes
+        """
+        if data[0:1] != REMOTE_PREFIX:
+            raise InvalidPacketError
+
+        if data[-3:-2] != REMOTE_DELIMITER:
+            raise InvalidPacketError
+
+        payload = data[1:-3]
+        checksum = data[-2:]
+
+        if payload == b'':
+            expected_checksum = b'00'
+        else:
+            expected_checksum = GDBRemote.checksum(payload)
+
+        if checksum != expected_checksum:
+            raise InvalidPacketError
+
+        return payload
+
     def cmd(self, command_data, expected_response=None):
         """
         Sends a command data to a remote gdb server
@@ -765,7 +770,7 @@ class GDBRemote:
         if self._socket is None:
             raise NotConnectedError
 
-        data = remote_encode(command_data)
+        data = self.encode(command_data)
         self._socket.send(data)
 
         if not self.no_ack_mode:
@@ -774,7 +779,7 @@ class GDBRemote:
                 raise RetransmissionRequestedError
 
         result = self._socket.recv(REMOTE_MAX_PACKET_SIZE)
-        response_payload = remote_decode(result)
+        response_payload = self.decode(result)
 
         if expected_response is not None:
             if expected_response != response_payload:

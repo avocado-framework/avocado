@@ -1,42 +1,35 @@
 import unittest
 
-from avocado.utils import gdb
+from avocado.utils.gdb import GDBRemote
+from avocado.utils.gdb import InvalidPacketError
 
 
 class GDBRemoteTest(unittest.TestCase):
 
     def test_checksum(self):
-        in_out = (('!', '21'),
-                  ('OK', '9A'),
-                  ('foo', '44'))
-        for io in in_out:
-            i, o = io
-            self.assertTrue(gdb.remote_checksum(i), o)
+        self.assertEqual(GDBRemote.checksum(b'!'), b'21')
+        self.assertEqual(GDBRemote.checksum(b'OK'), b'9a')
+        self.assertEqual(GDBRemote.checksum(b'foo'), b'44')
 
     def test_encode_command(self):
-        in_out = (('!', '$!#21'),
-                  ('OK', '$OK#9a'),
-                  ('foo', '$foo#44'))
-        for io in in_out:
-            i, o = io
-            self.assertTrue(gdb.remote_encode(i), o)
+        self.assertEqual(GDBRemote.encode(b'!'), b'$!#21')
+        self.assertEqual(GDBRemote.encode(b'OK'), b'$OK#9a')
+        self.assertEqual(GDBRemote.encode(b'foo'), b'$foo#44')
 
     def test_decode_response(self):
-        in_out = (('$!#21', '!'),
-                  ('$OK#9a', 'OK'),
-                  ('$foo#44', 'foo'))
-        for io in in_out:
-            i, o = io
-            self.assertTrue(gdb.remote_decode(i), o)
+        self.assertEqual(GDBRemote.decode(b'$!#21'), b'!')
+        self.assertEqual(GDBRemote.decode(b'$OK#9a'), b'OK')
+        self.assertEqual(GDBRemote.decode(b'$foo#44'), b'foo')
 
     def test_decode_invalid(self):
-        invalid_packets = ['$!#22',
-                           '$foo$bar#21',
-                           '!!#21',
-                           '+$!#21']
-        for p in invalid_packets:
-            self.assertRaises(gdb.InvalidPacketError,
-                              gdb.remote_decode, p)
+        with self.assertRaises(InvalidPacketError):
+            GDBRemote.decode(b'$!#22')
+        with self.assertRaises(InvalidPacketError):
+            GDBRemote.decode(b'$foo$bar#21')
+        with self.assertRaises(InvalidPacketError):
+            GDBRemote.decode(b'!!#21')
+        with self.assertRaises(InvalidPacketError):
+            GDBRemote.decode(b'+$!#21')
 
 
 if __name__ == '__main__':
