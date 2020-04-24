@@ -252,10 +252,11 @@ def online(cpu):
     """
     Online given CPU
     """
-    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
-        fd.write(b'1')
-    if _get_status(cpu):
-        return 0
+    if _get_status(cpu) is False:
+        with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
+            fd.write(b'1')
+        if _get_status(cpu):
+            return 0
     return 1
 
 
@@ -263,10 +264,11 @@ def offline(cpu):
     """
     Offline given CPU
     """
-    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
-        fd.write(b'0')
     if _get_status(cpu):
-        return 1
+        with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
+            fd.write(b'0')
+        if _get_status(cpu):
+            return 1
     return 0
 
 
