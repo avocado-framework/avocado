@@ -9,7 +9,7 @@ from .. import temp_dir_prefix
 
 class Base(unittest.TestCase):
 
-    def _get_temporary_dirs_mapping_and_config(self):
+    def _get_temp_dirs_mapping_and_config(self):
         """
         Creates a temporary bogus base data dir
 
@@ -37,7 +37,7 @@ class Base(unittest.TestCase):
     def setUp(self):
         (self.base_dir,
          self.mapping,
-         self.config_file_path) = self._get_temporary_dirs_mapping_and_config()
+         self.config_file_path) = self._get_temp_dirs_mapping_and_config()
 
     def tearDown(self):
         os.unlink(self.config_file_path)
@@ -195,7 +195,8 @@ class AltDataDirTest(Base):
 
         (self.alt_base_dir,  # pylint: disable=W0201
          alt_mapping,
-         self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()  # pylint: disable=W0201
+         # pylint: disable=W0201
+         self.alt_config_file_path) = self._get_temp_dirs_mapping_and_config()
 
         # Alternate setttings with different data_dir location
         alt_stg = settings.Settings(self.alt_config_file_path)
