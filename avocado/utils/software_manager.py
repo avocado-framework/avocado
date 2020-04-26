@@ -311,8 +311,8 @@ class RpmBackend(BaseBackend):
         result = process.run(cmd, ignore_status=True)
 
         # unstable approach but currently works
-        #installed_pattern = r"\s" + package_name + r" is installed\s+"
-        #match = re.search(installed_pattern, result)
+        # installed_pattern = r"\s" + package_name + r" is installed\s+"
+        # match = re.search(installed_pattern, result)
         match = (result.exit_status == 0)
         if match:
             logging.info("Verification successful.")
@@ -631,8 +631,8 @@ class YumBackend(RpmBackend):
                       "yum module is required for this operation")
             return None
         try:
-            #Python API need to be passed globs along with name for searching
-            #all possible occurrences of pattern 'name'
+            # Python API need to be passed globs along with name for searching
+            # all possible occurrences of pattern 'name'
             d_provides = self.yum_base.searchPackageProvides(args=['*/' + name])
         except Exception as exc:  # pylint: disable=W0703
             log.error("Error searching for package that "

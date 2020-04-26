@@ -235,17 +235,17 @@ def __private():
             elif len(node) == 4:
                 # list ::= [ value value_list ]
                 node.value = [node[1].value] + node[2].value
-                #list ::= [ result ]
-                #list ::= [ result result_list ]
-                #list ::= { value }
-                #list ::= { value value_list }
+                # list ::= [ result ]
+                # list ::= [ result result_list ]
+                # list ::= { value }
+                # list ::= { value value_list }
 
         def n_value_list(self, node):
             if len(node) == 2:
-                #value_list ::= , value
+                # value_list ::= , value
                 node.value = [node[1].value]
             elif len(node) == 3:
-                #value_list ::= , value value_list
+                # value_list ::= , value value_list
                 node.value = [node[1].value] + node[2].value
 
         def n_result_list(self, node):
