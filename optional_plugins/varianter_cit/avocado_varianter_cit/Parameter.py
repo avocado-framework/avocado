@@ -20,34 +20,38 @@ class Pair:
 class Parameter:
 
     def __init__(self, name, parameter_id, values):
-        self.is_full = False
         self.name = name
         self.id = parameter_id
         self.values = values
-        self.constrained_values = set()
-        self.constraints = {}
-        for i in range(len(values)):
-            self.constraints[i] = []
+        self._constrained_values_number = 0
+        self.constraints = [None]*len(values)
 
-    def add_constraint(self, constraint):
-        array = []
-        value = None
-        for pair in constraint:
-            if pair.name == self.name:
-                self.constrained_values.add(pair.value)
-                value = pair.value
-            else:
-                array.append(pair)
-        if len(self.constrained_values) == len(self.values):
-            self.is_full = True
+    def add_constraint(self, constraint, value, index):
+        """
+        Append new constraint to the parameter.
+
+        The constraint is placed under the parameter value which is affected by
+        this constraint. And this value is also deleted from the constraint,
+        because is defined by the index in the 'self.constraints' list.
+
+        :param constraint: will be appended to the parameter constraints
+        :type constraint: list
+        :param value: parameter value which is is affected by new constraint
+        :type value: int
+        :param index: index of that value inside the constraint
+        :type index: int
+        """
+        if self.constraints[value] is None:
+            self._constrained_values_number += 1
+            self.constraints[value] = []
+        array = list(constraint)
+        array.pop(index)
         if len(array) != 0:
             self.constraints[value].append(array)
 
-    def get_constraints(self):
-        array = []
-        for key in self.constraints:
-            array.append(self.constraints[key])
-        return array
+    @property
+    def is_full(self):
+        return self._constrained_values_number == len(self.values)
 
     def get_value_index(self, value):
         return self.values.index(value)

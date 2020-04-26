@@ -31,22 +31,25 @@ class Solver:
         for i, values_size in enumerate(self.data):
             self.parameters.append(Parameter(i, i, range(values_size)))
         for constraint in self.constraints:
-            for pair in constraint:
-                self.parameters[pair.name].add_constraint(constraint)
+            for index, pair in enumerate(constraint):
+                self.parameters[pair.name].add_constraint(constraint,
+                                                          pair.value,
+                                                          index)
 
     def compute_constraints(self):
         for p in self.parameters:
             if p.is_full:
-                array = p.get_constraints()
+                array = [c for c in p.constraints if len(c) != 0]
                 con = list(itertools.product(*array))
-                if len(con) == 0:
+                if len(con[0]) == 0:
                     raise ValueError("Constraints are not satisfiable")
                 for constraint in con:
                     constraint_array = set()
                     for c in range(len(constraint)):
                         for pair in range(len(constraint[c])):
                             constraint_array.add(constraint[c][pair])
-                    constraint_array = sorted(constraint_array, key=lambda x: int(x.name))
+                    constraint_array = sorted(constraint_array,
+                                              key=lambda x: int(x.name))
 
                     has_subset = False
                     remove = set()
@@ -107,18 +110,36 @@ class Solver:
                     for key in itertools.product(*value_array):
                         combination_matrix.del_cell(c, key)
 
-    def clean_data_matrix(self, data_matrix, parameter=None):
-        if parameter is None:
-            for constraint in self.constraints:
-                if len(constraint) == 1:
-                    constraint = constraint[0]
-                    data_matrix[constraint.name].remove(constraint.value)
-        else:
-            parameter_constraint = self.parameters[parameter["name"]].constraints[parameter["value"]]
-            for constraint in parameter_constraint:
-                constraint = constraint[0]
-                try:
-                    data_matrix[constraint.name].remove(constraint.value)
-                except ValueError:
-                    # this value was already deleted
-                    pass
+    def get_possible_values(self, row, parameter):
+        """
+        Compute all possible values for the given parameter.
+
+        These values are based on constraints and already picked values
+        of other parameters.
+
+        :param row: row with picked values. -1 means an unpicked value.
+        :type row: list
+        :param parameter: index of the parameter
+         whose we want to know the values
+        :type parameter: int
+        :return: all possible values for the given parameter
+        :rtype: list
+        """
+        def is_permitted_value(one_value_constraints):
+            if one_value_constraints is None:
+                return True
+            if len(one_value_constraints) == 0:
+                return False
+
+            for constraints in one_value_constraints:
+                is_ok = False
+                for constraint in constraints:
+                    if row[constraint.name] != constraint.value:
+                        is_ok = True
+                        break
+                if not is_ok:
+                    return False
+            return True
+
+        return [i for i, c in enumerate(self.parameters[parameter].constraints)
+                if is_permitted_value(c)]
