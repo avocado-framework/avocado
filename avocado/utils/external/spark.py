@@ -84,8 +84,7 @@ class GenericScanner:
             groups = m.groups()
             self.pos = m.end()
             for i in range(len(groups)):
-                if groups[i] is not None and \
-                   self.index2func.has_key(i):
+                if groups[i] is not None and i in self.index2func:
                     self.index2func[i](groups[i])
 
     def t_default(self, s):  # pylint: disable=W0613
@@ -162,7 +161,7 @@ class GenericParser:
             for k, v in self.edges.items():
                 if v is None:
                     state, sym = k
-                    if self.states.has_key(state):
+                    if state in self.states:
                         self.goto(state, sym)
                         changes = 1
         rv = self.__dict__.copy()
