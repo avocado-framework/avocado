@@ -220,7 +220,7 @@ def modules_imported_as(module):
 
 #: Gets the docstring directive value from a string. Used to tweak
 #: test behavior in various ways
-DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(r[a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\{\}\"\-\. ]*))\s*$'
+DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(r[a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\{\}\"\-\.\/ ]*))\s*$'
 # the RE will match `:avocado: tags=category` or `:avocado: requirements={}`
 DOCSTRING_DIRECTIVE_RE = re.compile(DOCSTRING_DIRECTIVE_RE_RAW)
 
