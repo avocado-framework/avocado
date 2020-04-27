@@ -1,5 +1,3 @@
-from .Parameter import Pair
-
 import re
 
 
@@ -75,7 +73,7 @@ class Parser:
                             .index(constraint_data[value_index])
                     except ValueError:
                         raise ValueError('Value in constraint not match with values in parameters')
-                    array.append(Pair(constraint_name, constraint_value))
-                array.sort(key=lambda x: int(x.name))
+                    array.append((constraint_name, constraint_value))
+                array.sort(key=lambda x: int(x[0]))
                 constraints.add(tuple(array))
         return parameters, constraints

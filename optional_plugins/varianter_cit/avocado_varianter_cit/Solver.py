@@ -64,10 +64,9 @@ class Parameter:
 
 
 class Solver:
-    OR = "||"
-    EQUALS = "="
-    PARAMETER = 0
-    VALUE = 2
+
+    CON_NAME = 0
+    CON_VAL = 1
 
     def __init__(self, data, constraints):
         self.data = data
@@ -92,9 +91,8 @@ class Solver:
             self.parameters.append(Parameter(i, range(values_size)))
         for constraint in self.constraints:
             for index, pair in enumerate(constraint):
-                self.parameters[pair.name].add_constraint(constraint,
-                                                          pair.value,
-                                                          index)
+                self.parameters[pair[self.CON_NAME]].add_constraint(
+                    constraint, pair[self.CON_VAL], index)
 
     def compute_constraints(self):
         for p in self.parameters:
@@ -109,7 +107,7 @@ class Solver:
                         for pair in range(len(constraint[c])):
                             constraint_array.add(constraint[c][pair])
                     constraint_array = sorted(constraint_array,
-                                              key=lambda x: int(x.name))
+                                              key=lambda x: int(x[self.CON_NAME]))
 
                     has_subset = False
                     remove = set()
@@ -133,7 +131,7 @@ class Solver:
             is_brake = False
             for j in range(len(copy[i])):
                 for k in range(j + 1, len(copy[i])):
-                    if copy[i][j].name == copy[i][k].name:
+                    if copy[i][j][self.CON_NAME] == copy[i][k][self.CON_NAME]:
                         items_to_remove.add(copy[i])
                         is_brake = True
                         break
@@ -155,14 +153,14 @@ class Solver:
                 continue
             parameters_in_constraint = []
             for pair in constraint:
-                parameters_in_constraint.append(pair.name)
+                parameters_in_constraint.append(pair[self.CON_NAME])
             for c in itertools.combinations(range(len(self.data)), t_value):
                 if set(parameters_in_constraint).issubset(c):
                     value_array = []
                     counter = 0
                     for value in c:
-                        if value == constraint[counter].name:
-                            value_array.append([constraint[counter].value])
+                        if value == constraint[counter][self.CON_NAME]:
+                            value_array.append([constraint[counter][self.CON_VAL]])
                             if (counter + 1) != len(constraint):
                                 counter += 1
                         else:
@@ -194,7 +192,7 @@ class Solver:
             for constraints in one_value_constraints:
                 is_ok = False
                 for constraint in constraints:
-                    if row[constraint.name] != constraint.value:
+                    if row[constraint[self.CON_NAME]] != constraint[self.CON_VAL]:
                         is_ok = True
                         break
                 if not is_ok:
