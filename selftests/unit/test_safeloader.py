@@ -276,8 +276,8 @@ class DocstringDirectives(unittest.TestCase):
         self.assertEqual(safeloader.get_docstring_directives_requirements(raw), exp)
 
     def test_requirement_double(self):
-        raw = ":avocado: requirement={\"foo\":\"bar\"}\n:avocado: requirement={\"newfoo\":\"newbar\"}"
-        exp = [{"foo": "bar"}, {"newfoo": "newbar"}]
+        raw = ":avocado: requirement={\"foo\":\"bar\"}\n:avocado: requirement={\"uri\":\"http://foo.bar\"}"
+        exp = [{"foo": "bar"}, {"uri": "http://foo.bar"}]
         self.assertEqual(safeloader.get_docstring_directives_requirements(raw), exp)
 
     def test_directives_regex(self):
