@@ -344,7 +344,7 @@ class GenericParser:
             sets.append([])
             self.makeSet(None, sets, len(tokens))
 
-        #_dump(tokens, sets, self.states)
+        # _dump(tokens, sets, self.states)
 
         finalitem = (self.finalState(tokens), 0)
         if finalitem not in sets[-2]:
@@ -544,30 +544,30 @@ class GenericParser:
             if ttype is not None:
                 k = self.edges.get((state, ttype), None)
                 if k is not None:
-                    #self.add(next, (k, parent), i+1, ptr)
-                    #INLINED --v
+                    # self.add(next, (k, parent), i+1, ptr)
+                    # INLINED --v
                     new = (k, parent)
                     key = (new, i + 1)
                     if new not in next_item:
                         self.links[key] = []
                         next_item.append(new)
                     self.links[key].append((ptr, None))
-                    #INLINED --^
-                    #nk = self.goto(k, None)
+                    # INLINED --^
+                    # nk = self.goto(k, None)
                     nk = self.edges.get((k, None), None)
                     if nk is not None:
-                        #self.add(next, (nk, i+1))
-                        #INLINED --v
+                        # self.add(next, (nk, i+1))
+                        # INLINED --v
                         new = (nk, i + 1)
                         if new not in next_item:
                             next_item.append(new)
-                        #INLINED --^
+                        # INLINED --^
             else:
                 add = self.gotoST(state, token)
                 for k in add:
                     if k is not None:
                         self.add(next_item, (k, parent), i + 1, ptr)
-                        #nk = self.goto(k, None)
+                        # nk = self.goto(k, None)
                         nk = self.edges.get((k, None), None)
                         if nk is not None:
                             self.add(next_item, (nk, i + 1))
@@ -579,30 +579,30 @@ class GenericParser:
                 lhs, _ = rule
                 for pitem in sets[parent]:
                     pstate, pparent = pitem
-                    #k = self.goto(pstate, lhs)
+                    # k = self.goto(pstate, lhs)
                     k = self.edges.get((pstate, lhs), None)
                     if k is not None:
                         why = (item, i, rule)
                         pptr = (pitem, parent)
-                        #self.add(cur, (k, pparent),
-                        #        i, pptr, why)
-                        #INLINED --v
+                        # self.add(cur, (k, pparent),
+                        #          i, pptr, why)
+                        # INLINED --v
                         new = (k, pparent)
                         key = (new, i)
                         if new not in cur:
                             self.links[key] = []
                             cur.append(new)
                         self.links[key].append((pptr, why))
-                        #INLINED --^
-                        #nk = self.goto(k, None)
+                        # INLINED --^
+                        # nk = self.goto(k, None)
                         nk = self.edges.get((k, None), None)
                         if nk is not None:
-                            #self.add(cur, (nk, i))
-                            #INLINED --v
+                            # self.add(cur, (nk, i))
+                            # INLINED --v
                             new = (nk, i)
                             if new not in cur:
                                 cur.append(new)
-                            #INLINED --^
+                            # INLINED --^
 
     def predecessor(self, key, causal):
         for p, c in self.links[key]:
@@ -627,7 +627,7 @@ class GenericParser:
             rule = self.ambiguity(self.newrules[nt])
         else:
             rule = self.newrules[nt][0]
-        #print rule
+        # print rule
 
         rhs = rule[1]
         attr = [None] * len(rhs)
@@ -646,7 +646,7 @@ class GenericParser:
         rule = choices[0]
         if len(choices) > 1:
             rule = self.ambiguity(choices)
-        #print rule
+        # print rule
 
         rhs = rule[1]
         attr = [None] * len(rhs)
@@ -658,7 +658,7 @@ class GenericParser:
                     attr[i] = tokens[k - 1]
                     key = (item, k)
                     item, k = self.predecessor(key, None)
-            #elif self.isnullable(sym):
+            # elif self.isnullable(sym):
             elif self._NULLABLE == sym[0:len(self._NULLABLE)]:
                 attr[i] = self.deriveEpsilon(sym)
             else:
