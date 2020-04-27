@@ -1,6 +1,66 @@
 import itertools
 
-from .Parameter import Parameter
+
+class Parameter:
+    """
+    Storage for constraints of one parameter.
+
+    This class stores the constraints which constrain the values of
+    one parameter.
+
+    :param name: identification of parameter
+    :type name: int
+    :param size: number of values
+    :type size: int
+    :param constraints: list for storing constraints
+    :type constraints: list
+    """
+
+    def __init__(self, name, values):
+        """
+        Parameter initialization.
+
+        :param name:  identification of parameter
+        :type name: int
+        :param values: values of parameter
+        :type: list
+        """
+        self.name = name
+        self.size = len(values)
+        self._constrained_values_number = 0
+        self.constraints = [None]*self.size
+
+    def add_constraint(self, constraint, value, index):
+        """
+        Append new constraint to the parameter.
+
+        The constraint is placed under the parameter value which is affected by
+        this constraint. And this value is also deleted from the constraint,
+        because is defined by the index in the 'self.constraints' list.
+
+        :param constraint: will be appended to the parameter constraints
+        :type constraint: list
+        :param value: parameter value which is is affected by new constraint
+        :type value: int
+        :param index: index of that value inside the constraint
+        :type index: int
+        """
+        if self.constraints[value] is None:
+            self._constrained_values_number += 1
+            self.constraints[value] = []
+        array = list(constraint)
+        array.pop(index)
+        if len(array) != 0:
+            self.constraints[value].append(array)
+
+    @property
+    def is_full(self):
+        """
+        Compute if constraints constrain every parameter value.
+
+        :rtype: bool
+        """
+        return self._constrained_values_number == self.size
 
 
 class Solver:
@@ -29,7 +89,7 @@ class Solver:
     def read_constraints(self):
         # creates new parameters with their names
         for i, values_size in enumerate(self.data):
-            self.parameters.append(Parameter(i, i, range(values_size)))
+            self.parameters.append(Parameter(i, range(values_size)))
         for constraint in self.constraints:
             for index, pair in enumerate(constraint):
                 self.parameters[pair.name].add_constraint(constraint,

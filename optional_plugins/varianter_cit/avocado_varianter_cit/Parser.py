@@ -1,4 +1,3 @@
-from .Parameter import Parameter
 from .Parameter import Pair
 
 import re
@@ -49,7 +48,7 @@ class Parser:
                 if len(parameter_values) != len(set(parameter_values)):
                     raise ValueError('Parameter values has duplicities')
 
-                parameters.append(Parameter(parameter_name, len(parameters), parameter_values))
+                parameters.append((parameter_name, parameter_values))
             else:
                 constraints_data = line.split("||")
                 array = []
@@ -59,17 +58,21 @@ class Parser:
                         raise ValueError("Invalid format of constraint")
                     constraint_data = [x.strip() for x in constraint.split("!=")]
                     # Searching for parameter name in constraint
-                    constraint_name = next((p.id for p in parameters if p.name == constraint_data[0]), None)
+                    constraint_name = next((i for i, p in enumerate(parameters)
+                                            if p[0] == constraint_data[0]), None)
                     if constraint_name is None:
                         # If first value inside constraint wasn't parameter name try second value
                         try:
-                            constraint_name = next((p.id for p in parameters if p.name == constraint_data[1]))
+                            constraint_name = next((i for i, p in
+                                                    enumerate(parameters)
+                                                    if p[0] == constraint_data[1]))
                             value_index = 0
                         except StopIteration:
                             raise ValueError('Name in constraint not match with names in parameters')
                     try:
                         # Checking if value in constraint is matching with parameter values
-                        constraint_value = parameters[constraint_name].get_value_index(constraint_data[value_index])
+                        constraint_value = parameters[constraint_name][1]\
+                            .index(constraint_data[value_index])
                     except ValueError:
                         raise ValueError('Value in constraint not match with values in parameters')
                     array.append(Pair(constraint_name, constraint_value))
