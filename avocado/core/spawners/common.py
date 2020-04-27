@@ -22,7 +22,7 @@ class BaseSpawner:
 
     @staticmethod
     def is_task_alive(task):
-        pass
+        raise SpawnerException("You need to implement this method.")
 
     def spawn_task(self, task):
-        pass
+        raise SpawnerException("You need to implement this method.")
