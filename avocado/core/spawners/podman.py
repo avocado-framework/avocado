@@ -57,7 +57,7 @@ class PodmanSpawner(BaseSpawner):
         # when the runner requirements system is in place
         this_path = os.path.abspath(__file__)
         common_path = os.path.dirname(os.path.dirname(this_path))
-        avocado_runner_path = os.path.join(common_path, 'core', 'nrunner.py')
+        avocado_runner_path = os.path.join(common_path, 'nrunner.py')
         proc = yield from asyncio.create_subprocess_exec(
             self.PODMAN_BIN,
             "cp",
