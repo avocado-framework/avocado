@@ -215,7 +215,7 @@ def __private():
                 node.value = node[1].value
                 for result in node[2].value:
                     for n, v in result.items():
-                        if node.value.has_key(n):
+                        if n in node.value:
                             old = node.value[n]
                             if not isinstance(old, list):
                                 node.value[n] = [node.value[n]]
