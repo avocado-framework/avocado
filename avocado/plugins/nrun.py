@@ -95,6 +95,16 @@ class NRun(CLICmd):
             else:
                 LOG_UI.info("%s spawned and alive", identifier)
 
+    def report_results(self):
+        """Reports a summary, with verbose listing of fail/error tasks."""
+        summary = {status: len(tasks)
+                   for (status, tasks) in self.status_server.result.items()}
+        LOG_UI.info("Tasks result summary: %s", summary)
+        for status, tasks in self.status_server.result.items():
+            if status in ('fail', 'error'):
+                LOG_UI.error("Tasks ended with '%s': %s",
+                             status, ", ".join(tasks))
+
     def run(self, config):
         hint_filepath = '.avocado.hint'
         hint = None
@@ -141,7 +151,7 @@ class NRun(CLICmd):
             parallel_tasks = config.get('nrun.parallel_tasks')
             loop.run_until_complete(self.spawn_tasks(parallel_tasks))
             loop.run_until_complete(self.status_server.wait())
-            print(self.status_server.result)
+            self.report_results()
             exit_code = exit_codes.AVOCADO_ALL_OK
             if self.status_server.result.get('fail') is not None:
                 exit_code |= exit_codes.AVOCADO_TESTS_FAIL
