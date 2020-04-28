@@ -736,10 +736,9 @@ class StatusServer:
         self.tasks_pending.remove(id_)
         print('Task complete (%s): %s' % (result, id_))
 
-        if result in self.result:
-            self.result[result] += 1
-        else:
-            self.result[result] = 1
+        if result not in self.result:
+            self.result[result] = []
+        self.result[result].append(id_)
 
         if result not in ('pass', 'skip'):
             stdout = data.get('stdout', b'')
