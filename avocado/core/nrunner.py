@@ -727,30 +727,30 @@ class StatusServer:
                                                            data['output_dir']))
 
     def handle_task_finished(self, data):
-        try:
-            self.tasks_pending.remove(data['id'])
-            print('Task complete (%s): %s' % (data['result'],
-                                              data['id']))
-        except IndexError:
-            pass
-        except ValueError:
-            pass
-        if 'result' in data:
-            if data['result'] in self.result:
-                self.result[data['result']] += 1
-            else:
-                self.result[data['result']] = 1
+        if 'result' not in data:
+            return
 
-        if data.get('result') not in ('pass', 'skip'):
+        result = data['result']
+        task_id = data['id']
+
+        self.tasks_pending.remove(task_id)
+        print('Task complete (%s): %s' % (result, task_id))
+
+        if result in self.result:
+            self.result[result] += 1
+        else:
+            self.result[result] = 1
+
+        if result not in ('pass', 'skip'):
             stdout = data.get('stdout', b'')
             if stdout:
-                print('Task %s stdout:\n%s\n' % (data['id'], stdout))
+                print('Task %s stdout:\n%s\n' % (task_id, stdout))
             stderr = data.get('stderr', b'')
             if stderr:
-                print('Task %s stderr:\n%s\n' % (data['id'], stderr))
+                print('Task %s stderr:\n%s\n' % (task_id, stderr))
             output = data.get('output', b'')
             if output:
-                print('Task %s output:\n%s\n' % (data['id'], output))
+                print('Task %s output:\n%s\n' % (task_id, output))
 
     def start(self):
         loop = asyncio.get_event_loop()
