@@ -708,9 +708,9 @@ class StatusServer:
 
             data = json_loads(message.strip())
 
-            if data['status'] in ['started']:
+            if data.get('status') in ['started']:
                 self.handle_task_started(data)
-            elif data['status'] in ['finished']:
+            elif data.get('status') in ['finished']:
                 self.handle_task_finished(data)
 
     @asyncio.coroutine
@@ -735,12 +735,13 @@ class StatusServer:
             pass
         except ValueError:
             pass
-        if data['result'] in self.result:
-            self.result[data['result']] += 1
-        else:
-            self.result[data['result']] = 1
+        if 'result' in data:
+            if data['result'] in self.result:
+                self.result[data['result']] += 1
+            else:
+                self.result[data['result']] = 1
 
-        if data['result'] not in ('pass', 'skip'):
+        if data.get('result') not in ('pass', 'skip'):
             stdout = data.get('stdout', b'')
             if stdout:
                 print('Task %s stdout:\n%s\n' % (data['id'], stdout))
