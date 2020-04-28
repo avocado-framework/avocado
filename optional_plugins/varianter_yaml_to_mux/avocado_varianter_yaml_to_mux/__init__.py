@@ -165,7 +165,7 @@ def _apply_using(name, cls_node, using, node):
     :param node: the node in which to handle control tags
     :type node: instance of :class:`avocado.core.tree.TreeNode` or similar
     """
-    if name is not '':
+    if name != '':
         for name in using.split('/')[::-1]:
             node = cls_node(name, children=[node])
     else:
