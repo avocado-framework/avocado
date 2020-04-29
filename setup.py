@@ -61,6 +61,7 @@ if __name__ == '__main__':
           scripts=['scripts/avocado'],
           entry_points={
               'console_scripts': [
+                  'avocado-requirements = avocado.core.requirements:main',
                   'avocado-runner = avocado.core.nrunner:main',
                   'avocado-runner-noop = avocado.core.nrunner:main',
                   'avocado-runner-exec = avocado.core.nrunner:main',
