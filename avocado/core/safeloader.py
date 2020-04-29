@@ -728,7 +728,7 @@ def find_python_unittests(path):
             if _is_unittest is not is_unittest:
                 is_unittest = _is_unittest
 
-        # Only update the results if this was detected as 'avocado.Test'
+        # Only update the results if this was detected as 'unittest.TestCase'
         if is_unittest:
             result[klass.name] = info
 
