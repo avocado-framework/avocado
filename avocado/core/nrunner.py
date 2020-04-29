@@ -193,7 +193,7 @@ class Runnable:
                                        stdin=subprocess.DEVNULL,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.DEVNULL)
-        except FileNotFoundError:
+        except (FileNotFoundError, PermissionError):
             return False
         out, _ = process.communicate()
 
