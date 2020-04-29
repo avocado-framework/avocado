@@ -83,6 +83,9 @@ class BaseClass(TestCase):
     :avocado: tags=base-tag
     :avocado: tags=base.tag
     '''
+    def test_maybe_replaced_by_child(self):
+        pass
+
     def test_basic(self):
         pass
 
@@ -91,6 +94,9 @@ class Child(BaseClass):
     :avocado: tags=child-tag
     :avocado: tags=child.tag
     '''
+    def test_maybe_replaced_by_child(self):
+        pass
+
     def test_child(self):
         pass
 """
@@ -472,10 +478,18 @@ class FindClassAndMethods(UnlimitedDiff):
             RECURSIVE_DISCOVERY_PYTHON_UNITTEST)
         temp_test.save()
         tests = safeloader.find_python_unittests(temp_test.path)
-        expected = {'BaseClass': [('test_basic', {'base-tag': None,
-                                                  'base.tag': None},
-                                   [])],
-                    'Child': [('test_child', {'child-tag': None,
+        expected = {'BaseClass': [('test_maybe_replaced_by_child',
+                                   {'base-tag': None,
+                                    'base.tag': None},
+                                   []),
+                                  ('test_basic',
+                                   {'base-tag': None,
+                                    'base.tag': None}, [])],
+                    'Child': [('test_maybe_replaced_by_child',
+                               {'child-tag': None,
+                                'child.tag': None},
+                               []),
+                              ('test_child', {'child-tag': None,
                                               'child.tag': None},
                                []),
                               ('test_basic', {'base-tag': None,

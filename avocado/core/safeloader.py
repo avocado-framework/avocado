@@ -380,6 +380,13 @@ def _determine_match_avocado(module, klass, docstring):
     return module.is_matching_klass(klass)
 
 
+def _extend_test_list(current, new):
+    for test in new:
+        test_method_name = test[0]
+        if test_method_name not in [_[0] for _ in current]:
+            current.append(test)
+
+
 def _examine_class(path, class_name, match, target_module, target_class,
                    determine_match):
     """
@@ -444,7 +451,7 @@ def _examine_class(path, class_name, match, target_module, target_class,
                                                       _determine_match_avocado)
             if _info:
                 parents.remove(parent)
-                info.extend(_info)
+                _extend_test_list(info, _info)
                 disabled.update(_disabled)
             if _match is not match:
                 match = _match
@@ -490,7 +497,7 @@ def _examine_class(path, class_name, match, target_module, target_class,
                                                       target_class,
                                                       _determine_match_avocado)
             if _info:
-                info.extend(_info)
+                _extend_test_list(info, _info)
                 disabled.update(_disabled)
             if _match is not match:
                 match = _match
@@ -566,7 +573,7 @@ def find_avocado_tests(path):
                                                    _determine_match_avocado)
             if _info:
                 parents.remove(parent)
-                info.extend(_info)
+                _extend_test_list(info, _info)
                 _disabled.update(_dis)
             if _avocado is not is_avocado:
                 is_avocado = _avocado
@@ -677,7 +684,7 @@ def find_python_unittests(path):
                                                        _determine_match_unittest)
             if _info:
                 parents.remove(parent)
-                info.extend(_info)
+                _extend_test_list(info, _info)
             if _is_unittest is not is_unittest:
                 is_unittest = _is_unittest
 
@@ -724,7 +731,7 @@ def find_python_unittests(path):
                                                        class_name,
                                                        _determine_match_unittest)
             if _info:
-                info.extend(_info)
+                _extend_test_list(info, _info)
             if _is_unittest is not is_unittest:
                 is_unittest = _is_unittest
 
