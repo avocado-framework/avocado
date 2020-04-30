@@ -2,16 +2,16 @@ import asyncio
 import unittest
 
 from avocado.core import nrunner
+from avocado.core.spawners.process import ProcessSpawner
 from avocado.core.spawners.mock import MockSpawner
 from avocado.core.spawners.mock import MockRandomAliveSpawner
 
 
-class Mock(unittest.TestCase):
-
+class Process(unittest.TestCase):
     def setUp(self):
         runnable = nrunner.Runnable('noop', 'uri')
         self.task = nrunner.Task('1', runnable)
-        self.spawner = MockSpawner()
+        self.spawner = ProcessSpawner()
 
     def test_spawned(self):
         loop = asyncio.get_event_loop()
@@ -21,6 +21,14 @@ class Mock(unittest.TestCase):
     def test_never_spawned(self):
         self.assertFalse(self.spawner.is_task_alive(self.task))
         self.assertFalse(self.spawner.is_task_alive(self.task))
+
+
+class Mock(Process):
+
+    def setUp(self):
+        runnable = nrunner.Runnable('noop', 'uri')
+        self.task = nrunner.Task('1', runnable)
+        self.spawner = MockSpawner()
 
     def test_spawned_is_alive(self):
         loop = asyncio.get_event_loop()

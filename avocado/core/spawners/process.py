@@ -10,6 +10,8 @@ class ProcessSpawner(BaseSpawner):
 
     @staticmethod
     def is_task_alive(task):
+        if getattr(task, 'spawn_handle', None) is None:
+            return False
         return task.spawn_handle.returncode is None
 
     async def spawn_task(self, task):
