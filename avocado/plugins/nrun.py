@@ -143,7 +143,6 @@ class NRun(CLICmd):
                 self.spawner = PodmanSpawner()  # pylint: disable=W0201
             else:
                 self.spawner = ProcessSpawner()  # pylint: disable=W0201
-            loop = asyncio.get_event_loop()
             listen = config.get('nrun.status_server.listen')
             verbose = config.get('core.verbose')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
@@ -152,6 +151,7 @@ class NRun(CLICmd):
                                                       verbose)
             self.status_server.start()
             parallel_tasks = config.get('nrun.parallel_tasks')
+            loop = asyncio.get_event_loop()
             loop.run_until_complete(self.spawn_tasks(parallel_tasks))
             loop.run_until_complete(self.status_server.wait())
             self.report_results()
