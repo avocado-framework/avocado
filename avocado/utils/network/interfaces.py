@@ -20,7 +20,6 @@ import json
 import logging
 import os
 import shutil
-import time
 
 from ipaddress import ip_interface
 
@@ -67,7 +66,7 @@ class NetworkInterface:
             raise NWException(msg)
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
-        destination = "{}.backup-{}".format(filename, time.time())
+        destination = "{}.backup".format(filename)
         if os.path.exists(filename):
             shutil.move(filename, destination)
         else:
