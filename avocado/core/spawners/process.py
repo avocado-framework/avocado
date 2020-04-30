@@ -19,8 +19,12 @@ class ProcessSpawner(BaseSpawner):
         runner = runner[0]
 
         # pylint: disable=E1133
-        task.spawn_handle = yield from asyncio.create_subprocess_exec(
-            runner,
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
+        try:
+            task.spawn_handle = yield from asyncio.create_subprocess_exec(
+                runner,
+                *args,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE)
+        except (FileNotFoundError, PermissionError):
+            return False
+        return True

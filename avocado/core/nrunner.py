@@ -193,7 +193,7 @@ class Runnable:
                                        stdin=subprocess.DEVNULL,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.DEVNULL)
-        except FileNotFoundError:
+        except (FileNotFoundError, PermissionError):
             return False
         out, _ = process.communicate()
 
@@ -708,9 +708,9 @@ class StatusServer:
 
             data = json_loads(message.strip())
 
-            if data['status'] in ['started']:
+            if data.get('status') in ['started']:
                 self.handle_task_started(data)
-            elif data['status'] in ['finished']:
+            elif data.get('status') in ['finished']:
                 self.handle_task_finished(data)
 
     @asyncio.coroutine
@@ -727,29 +727,29 @@ class StatusServer:
                                                            data['output_dir']))
 
     def handle_task_finished(self, data):
-        try:
-            self.tasks_pending.remove(data['id'])
-            print('Task complete (%s): %s' % (data['result'],
-                                              data['id']))
-        except IndexError:
-            pass
-        except ValueError:
-            pass
-        if data['result'] in self.result:
-            self.result[data['result']] += 1
-        else:
-            self.result[data['result']] = 1
+        if 'result' not in data:
+            return
 
-        if data['result'] not in ('pass', 'skip'):
+        result = data['result']
+        task_id = data['id']
+
+        self.tasks_pending.remove(task_id)
+        print('Task complete (%s): %s' % (result, task_id))
+
+        if result not in self.result:
+            self.result[result] = []
+        self.result[result].append(task_id)
+
+        if result not in ('pass', 'skip'):
             stdout = data.get('stdout', b'')
             if stdout:
-                print('Task %s stdout:\n%s\n' % (data['id'], stdout))
+                print('Task %s stdout:\n%s\n' % (task_id, stdout))
             stderr = data.get('stderr', b'')
             if stderr:
-                print('Task %s stderr:\n%s\n' % (data['id'], stderr))
+                print('Task %s stderr:\n%s\n' % (task_id, stderr))
             output = data.get('output', b'')
             if output:
-                print('Task %s output:\n%s\n' % (data['id'], output))
+                print('Task %s output:\n%s\n' % (task_id, output))
 
     def start(self):
         loop = asyncio.get_event_loop()
