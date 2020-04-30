@@ -725,6 +725,22 @@ class DnfBackend(YumBackend):
         """
         super(DnfBackend, self).__init__(cmd='dnf')
 
+    def build_dep(self, name):
+        """
+        Install build-dependencies for package [name]
+
+        :param name: name of the package
+
+        :return True: If build dependencies are installed properly
+        """
+        try:
+            process.system('%s builddep %s' % (self.base_command, name),
+                           sudo=True)
+            return True
+        except process.CmdError as details:
+            log.error(details)
+            return False
+
 
 class ZypperBackend(RpmBackend):
 
