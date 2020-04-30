@@ -8,6 +8,10 @@ class ProcessSpawner(BaseSpawner):
 
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
+    @asyncio.coroutine
+    def _collect_task(self, task_handle):
+        yield from task_handle.wait()
+
     @staticmethod
     def is_task_alive(task):
         if getattr(task, 'spawn_handle', None) is None:
@@ -29,4 +33,5 @@ class ProcessSpawner(BaseSpawner):
                 stderr=asyncio.subprocess.PIPE)
         except (FileNotFoundError, PermissionError):
             return False
+        asyncio.ensure_future(self._collect_task(task.spawn_handle))
         return True
