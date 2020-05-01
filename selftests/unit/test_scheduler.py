@@ -6,9 +6,16 @@ from avocado.core.spawners.mock import MockSpawner
 from avocado.core.scheduler import Scheduler, SchedulerNoPendingTasksException
 
 
+EVENT_LOOP_SKIP_MSG = ("Test interacts with the asyncio main loop, "
+                       "and it's already running")
+
+
 class Test(unittest.TestCase):
 
     def setUp(self):
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            self.skipTest(EVENT_LOOP_SKIP_MSG)
         runnable = nrunner.Runnable('noop', 'none')
         self.task1 = nrunner.Task('1', runnable)
         self.task2 = nrunner.Task('2', runnable)
@@ -74,6 +81,11 @@ class Test(unittest.TestCase):
 
 
 class TestException(unittest.TestCase):
+
+    def setUp(self):
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            self.skipTest(EVENT_LOOP_SKIP_MSG)
 
     def test(self):
         scheduler = Scheduler([], spawner=MockSpawner())

@@ -7,8 +7,16 @@ from avocado.core.spawners.mock import MockSpawner
 from avocado.core.spawners.mock import MockRandomAliveSpawner
 
 
+EVENT_LOOP_SKIP_MSG = ("Test interacts with the asyncio main loop, "
+                       "and it's already running")
+
+
 class Process(unittest.TestCase):
     def setUp(self):
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            self.skipTest(EVENT_LOOP_SKIP_MSG)
+
         runnable = nrunner.Runnable('noop', 'uri')
         self.task = nrunner.Task('1', runnable)
         self.spawner = ProcessSpawner()
@@ -26,6 +34,9 @@ class Process(unittest.TestCase):
 class Mock(Process):
 
     def setUp(self):
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            self.skipTest(EVENT_LOOP_SKIP_MSG)
         runnable = nrunner.Runnable('noop', 'uri')
         self.task = nrunner.Task('1', runnable)
         self.spawner = MockSpawner()
@@ -40,6 +51,10 @@ class Mock(Process):
 class RandomMock(Mock):
 
     def setUp(self):
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            self.skipTest(EVENT_LOOP_SKIP_MSG)
+
         runnable = nrunner.Runnable('noop', 'uri')
         self.task = nrunner.Task('1', runnable)
         self.spawner = MockRandomAliveSpawner()
