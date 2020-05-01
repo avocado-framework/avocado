@@ -9,6 +9,7 @@ from avocado.core import job
 from avocado.core import nrunner
 from avocado.core import parser_common_args
 from avocado.core import resolver
+from avocado.core.scheduler import Scheduler
 from avocado.core.spawners.process import ProcessSpawner
 from avocado.core.spawners.podman import PodmanSpawner
 from avocado.core.future.settings import settings
@@ -73,32 +74,6 @@ class NRun(CLICmd):
 
         parser_common_args.add_tag_filter_args(parser)
 
-    @asyncio.coroutine
-    def spawn_tasks(self, parallel_tasks):
-        while True:
-            while len(set(self.status_server.tasks_pending).intersection(self.spawned_tasks)) >= parallel_tasks:
-                yield from asyncio.sleep(0.1)
-
-            try:
-                task = self.pending_tasks[0]
-            except IndexError:
-                print("Finished spawning tasks")
-                break
-
-            spawn_result = yield from self.spawner.spawn_task(task)
-            identifier = task.identifier
-            self.pending_tasks.remove(task)
-            self.spawned_tasks.append(identifier)
-            if not spawn_result:
-                LOG_UI.error("ERROR: failed to spawn task: %s", identifier)
-                continue
-
-            alive = self.spawner.is_task_alive(task)
-            if not alive:
-                LOG_UI.warning("%s is not alive shortly after being spawned", identifier)
-            else:
-                LOG_UI.info("%s spawned and alive", identifier)
-
     def report_results(self):
         """Reports a summary, with verbose listing of fail/error tasks."""
         summary = {status: len(tasks)
@@ -116,21 +91,18 @@ class NRun(CLICmd):
             hint = HintParser(hint_filepath)
         resolutions = resolver.resolve(config.get('nrun.references'), hint)
         tasks = job.resolutions_to_tasks(resolutions, config)
-        # pylint: disable=W0201
-        self.pending_tasks, missing_requirements = nrunner.check_tasks_requirements(tasks)
+        pending_tasks, missing_requirements = nrunner.check_tasks_requirements(tasks)
         if missing_requirements:
             missing_tasks_msg = "\n".join([str(t) for t in missing_requirements])
             LOG_UI.warning('Tasks will not be run due to missing requirements: %s',
                            missing_tasks_msg)
 
-        if not self.pending_tasks:
+        if not pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if not config.get('nrun.disable_task_randomization'):
-            random.shuffle(self.pending_tasks)
-
-        self.spawned_tasks = []  # pylint: disable=W0201
+            random.shuffle(pending_tasks)
 
         try:
             if config.get('nrun.spawners.podman.enabled'):
@@ -141,19 +113,31 @@ class NRun(CLICmd):
                     msg %= PodmanSpawner.PODMAN_BIN
                     LOG_UI.error(msg)
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-                self.spawner = PodmanSpawner()  # pylint: disable=W0201
+                spawner = PodmanSpawner()  # pylint: disable=W0201
             else:
-                self.spawner = ProcessSpawner()  # pylint: disable=W0201
+                spawner = ProcessSpawner()  # pylint: disable=W0201
+
+            scheduler = Scheduler(pending_tasks,
+                                  config.get('nrun.parallel_tasks'),
+                                  spawner)
+
             listen = config.get('nrun.status_server.listen')
             verbose = config.get('core.verbose')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
                                                       [t.identifier for t in
-                                                       self.pending_tasks],
+                                                       pending_tasks],
                                                       verbose)
             self.status_server.start()
-            parallel_tasks = config.get('nrun.parallel_tasks')
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.spawn_tasks(parallel_tasks))
+
+            while True:
+                tick_result = loop.run_until_complete(scheduler.tick())
+                if not tick_result:
+                    loop.run_until_complete(scheduler.reconcile_task_status())
+                    if not scheduler.pending_tasks:
+                        print("Finished spawning tasks")
+                        break
+
             loop.run_until_complete(self.status_server.wait())
             self.report_results()
             exit_code = exit_codes.AVOCADO_ALL_OK

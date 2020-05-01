@@ -96,8 +96,12 @@ class Scheduler:
         spawned_result = yield from self.spawner.spawn_task(task)
         if spawned_result:
             self.started_tasks.append(task)
+            # REMOVEME
+            print("Started task: %s" % task.identifier)
         else:
             self.start_failed_tasks.append(task)
+            # REMOVEME
+            print("Failed to start task: %s" % task.identifier)
         return spawned_result
 
     @asyncio.coroutine
