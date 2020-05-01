@@ -90,7 +90,7 @@ def cpu_has_flags(flags):
         flags = [flags]
 
     for flag in flags:
-        if not _list_matches(cpu_info, '.*%s.*' % flag):
+        if not _list_matches(map(str, cpu_info), '.*%s.*' % flag):
             return False
     return True
 
