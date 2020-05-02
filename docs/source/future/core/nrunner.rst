@@ -3,17 +3,27 @@
 N(ext)Runner
 ============
 
-This section details the :mod:`avocado.core.nrunner` module, which
-contains a proposal for the next Avocado test runner implementation.
+This section details the new Avocado architecture.  At its essence,
+this new architecture is about making Avocado more capable and
+flexible, and even though it starts with a major internal paradigm
+change within the test runner, it will also affect users and test
+writers.
+
+The :mod:`avocado.core.nrunner` module was initially responsible for
+most of the N(ext)Runner code, but as development continues, it's
+spreading around in the other places in the Avocado source tree, and
+other components with different and seemingly unrelated names, say the
+"resolvers" or the "spawners" are pretty much about the N(ext)Runner
+and are not used in the current (default) architecture.
 
 Motivation
 ----------
 
-There are a number of reasons for introducing a different runner
-architecture and implementation.  Some of them are related to
-limitations found in the current implementation, that were found
-to be too hard to remove without major breakage.  Other reasons
-are closely related to missing features that are deemed important.
+There are a number of reasons for introducing a different architecture
+and implementation.  Some of them are related to limitations found in
+the current implementation, that were found to be too hard to remove
+without major breakage.  Also, missing features that are deemed
+important were fit better in a different architecture.
 
 For instance, these are the current limitations of the Avocado test
 runner:
@@ -45,6 +55,119 @@ implemented under a different architecture and implementation:
   device and collected by the runner
 * Simplified and automated deployment of the runner component into
   execution environments such as containers and virtual machines
+
+What is Avocado in the first place?
+-----------------------------------
+
+Avocado is described as "a set of tools and libraries to help with
+automated testing".  The most visible aspect of Avocado is its ability
+to run tests, and display the results.  We're talking about someone
+doing::
+
+  $ avocado run mytests.py othertests.sh
+
+There are a number of different components what are involved in that
+process, which are described next.
+
+Finding tests
+~~~~~~~~~~~~~
+
+The first thing Avocado needs to do, before actually running any
+tests, is translating the "names" given as arguments to ``avocado run``
+into actual tests.  Even though those names will usually be file names,
+this is not a requirement.  Avocado calls those "names" given as arguments
+to ``avocado run`` "test references", because they are references that
+hopefully "point to" tests.
+
+Here we need to make a distincion between the current architecture,
+and the architecture which the N(ext)Runner introduces.  In the
+current Avocado test runner, this process happens by means of the
+:mod:`avocado.core.loader` module.  The very same mechanism, is used
+when listing tests.  This produces an internal representation of
+the tests, which we simply call a "factory"::
+
+  +--------------------+    +---------------------+
+  | avocado list | run | -> | avocado.core.loader | ---+
+  +--------------------+    +---------------------+    |
+                                                       |
+    +--------------------------------------------------+
+    |
+    v
+  +--------------------------------------+
+  | Test Factory 1                       |
+  +--------------------------------------+
+  | Class: TestFoo                       |
+  | Parameters:                          |
+  |  - modulePath: /path/to/module.py    |
+  |  - methodName: test_foo              |
+  |  ...                                 |
+  +--------------------------------------+
+
+  +--------------------------------------+
+  | Test Factory 2                       |
+  +--------------------------------------+
+  | Class: TestBar                       |
+  | Parameters:                          |
+  |  - modulePath: /path/to/module.py    |
+  |  - methodName: test_bar              |
+  |  ...                                 |
+  +--------------------------------------+
+
+  ...
+
+Because the N(ext)Runner is living side by side with the current
+architecture, two **temporary** commands have been introduced,
+prefixed by an **n**, that is, ``avocado nlist`` and ``avocado nrun``.
+In the future, those commands will become ``list`` and ``run``
+reespectively.
+
+On the N(ext)Runner architecture, a different terminology and
+foundation is used.  Each one of the test references given to
+``nlist`` or ``nrun`` will be "resolved" into zero or more tests.
+Being more precise and verbose, esolver plugins will produce
+:class:`avocado.core.resolver.ReferenceResolution`, which contain
+contain zero or more :class:`avocado.core.nrunner.Runnable`, which
+are described in the following section.  Overall, the process
+looks like::
+
+  +----------------------+    +-----------------------+
+  | avocado nlist | nrun | -> | avocado.core.resolver | ---+
+  +----------------------+    +-----------------------+    |
+                                                           |
+    +------------------------------------------------------+
+    |
+    v
+  +--------------------------------------+
+  | ReferenceResolution #1               |
+  +--------------------------------------+
+  | Reference: /bin/true                 |
+  | Result: SUCCESS                      |
+  | +----------------------------------+ |
+  | | Resolution #1 (Runnable):        | |
+  | |  - kind: exec-test               | |
+  | |  - uri: /bin/true                | |
+  | +----------------------------------+ |
+  +--------------------------------------+
+
+  +--------------------------------------+
+  | ReferenceResolution #2               |
+  +--------------------------------------+
+  | Reference: test.py                   |
+  | Result: SUCCESS                      |
+  | +----------------------------------+ |
+  | | Resolution #1 (Runnable):        | |
+  | |  - kind: python-unittest         | |
+  | |  - uri: test.py:Test.test_1      | |
+  | +----------------------------------+ |
+  | +----------------------------------+ |
+  | | Resolution #2 (Runnable):        | |
+  | |  - kind: python-unittest         | |
+  | |  - uri: test.py:Test.test_2      | |
+  | +----------------------------------+ |
+  +--------------------------------------+
+
+  ...
+
 
 Concepts
 --------
