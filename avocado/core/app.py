@@ -48,7 +48,8 @@ class AvocadoApp:
             raise SystemExit('Terminated')
 
         signal.signal(signal.SIGTERM, sigterm_handler)
-        signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
+        if hasattr(signal, 'SIGTSTP'):
+            signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
         self.parser = Parser()
         self.parser.start()
         output.early_start()
