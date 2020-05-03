@@ -192,15 +192,15 @@ def get_children_pids(parent_pid, recursive=False):
     return children
 
 
-def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True,
-                      timeout=0):
+def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
     """
     Signal a process and all of its children.
 
     If the process does not exist -- return.
 
     :param pid: The pid of the process to signal.
-    :param sig: The signal to send to the processes.
+    :param sig: The signal to send to the processes, defaults to
+                :data:`signal.SIGKILL`
     :param send_sigcont: Send SIGCONT to allow killing stopped processes
     :param timeout: How long to wait for the pid(s) to die
                     (negative=infinity, 0=don't wait,
@@ -213,6 +213,9 @@ def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True,
             if pid_exists(pid):
                 return False
         return True
+
+    if sig is None:
+        sig = signal.SIGKILL
 
     if timeout > 0:
         start = time.time()
