@@ -12,19 +12,16 @@
 #          Bestoun S. Ahmed <bestoon82@gmail.com>
 #          Cleber Rosa <crosa@redhat.com>
 
+import logging
 import os
 import sys
-import logging
 
-from avocado.core import exit_codes
-from avocado.core import varianter
+from avocado.core import exit_codes, varianter
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLI
-from avocado.core.plugin_interfaces import Varianter
+from avocado.core.plugin_interfaces import CLI, Varianter
 from avocado.core.tree import TreeNode
-from avocado_varianter_cit.Cit import Cit, LOG
+from avocado_varianter_cit.Cit import LOG, Cit
 from avocado_varianter_cit.Parser import Parser
-
 
 #: The default order of combinations
 DEFAULT_ORDER_OF_COMBINATIONS = 2
