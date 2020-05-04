@@ -246,7 +246,8 @@ class TestLoaderProxy:
                 tests.extend([(MissingTest, {'name': reference})
                               for reference in unhandled_references])
             else:
-                if force == 'on':
+                # This is a workaround to avoid changing the method signature
+                if force is True or force == 'on':
                     LOG_UI.error(LoaderUnhandledReferenceError(unhandled_references,
                                                                self._initialized_plugins))
                 else:

@@ -175,8 +175,8 @@ class Run(CLICmd):
                     '"off" will be deprecated soon.')
         settings.register_option(section='run',
                                  key='ignore_missing_references',
-                                 default='off',
-                                 choices=('on', 'off'),
+                                 default=False,
+                                 key_type=bool,
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--ignore-missing-references')
