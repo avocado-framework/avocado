@@ -251,10 +251,6 @@ class Partition:
         Returns a list of processes using a given mountpoint
         """
         try:
-            FileNotFoundError
-        except NameError:
-            FileNotFoundError = IOError   # pylint: disable=W0622
-        try:
             cmd = "lsof " + mnt
             out = process.system_output(cmd, sudo=True)
             return [int(line.split()[1]) for line in out.splitlines()[1:]]
