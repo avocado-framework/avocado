@@ -265,7 +265,7 @@ class Settings:
             if method_or_type == bool:
                 return _string_to_bool(value_stripped)
 
-            if method_or_type == os.path.expanduser:
+            if method_or_type is os.path.expanduser:
                 value_stripped = _prepend_base_path(value_stripped)
 
             # Handle other cases
