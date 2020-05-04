@@ -282,8 +282,7 @@ class Run(CLICmd):
             process.OUTPUT_CHECK_RECORD_MODE = check_record
 
         warnings.warn("The following arguments will be changed to boolean soon: "
-                      "sysinfo, output-check, failfast, keep-tmp "
-                      "and ignore-missing-references.",
+                      "sysinfo, output-check, failfast and keep-tmp. ",
                       FutureWarning)
 
         unique_job_id = config.get('run.unique_job_id')
