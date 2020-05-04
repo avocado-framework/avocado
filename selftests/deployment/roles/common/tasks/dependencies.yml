@@ -1,10 +1,8 @@
 # Install dependencies
 - name: Install Basic Depedencies on Red Hat (like) systems specific to pip method
   package:
-    name: "{{ item }}"
+    name: python3-pip
     state: latest
-  with_items:
-    - python3-pip
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
     - avocado_vt|default(false)|bool == true
