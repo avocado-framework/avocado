@@ -73,11 +73,10 @@ class NRun(CLICmd):
 
         parser_common_args.add_tag_filter_args(parser)
 
-    @asyncio.coroutine
-    def spawn_tasks(self, parallel_tasks):
+    async def spawn_tasks(self, parallel_tasks):
         while True:
             while len(set(self.status_server.tasks_pending).intersection(self.spawned_tasks)) >= parallel_tasks:
-                yield from asyncio.sleep(0.1)
+                await asyncio.sleep(0.1)
 
             try:
                 task = self.pending_tasks[0]
@@ -85,7 +84,7 @@ class NRun(CLICmd):
                 print("Finished spawning tasks")
                 break
 
-            spawn_result = yield from self.spawner.spawn_task(task)
+            spawn_result = await self.spawner.spawn_task(task)
             identifier = task.identifier
             self.pending_tasks.remove(task)
             self.spawned_tasks.append(identifier)
