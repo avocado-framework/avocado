@@ -219,7 +219,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_ignore_missing_references_one_missing(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
-                    'passtest.py badtest.py --ignore-missing-references on'
+                    'passtest.py badtest.py --ignore-missing-references'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b"Unable to resolve reference(s) 'badtest.py'", result.stderr)
@@ -230,7 +230,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_ignore_missing_references_all_missing(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
-                    'badtest.py badtest2.py --ignore-missing-references on'
+                    'badtest.py badtest2.py --ignore-missing-references'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b"Unable to resolve reference(s) 'badtest.py', 'badtest2.py'",
