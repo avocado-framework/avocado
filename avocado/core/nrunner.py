@@ -686,21 +686,20 @@ class StatusServer:
         self.verbose = verbose
         self.wait_on_tasks_pending = len(self.tasks_pending) > 0
 
-    @asyncio.coroutine
-    def cb(self, reader, _):
+    async def cb(self, reader, _):
         while True:
             if self.wait_on_tasks_pending:
                 if not self.tasks_pending:
                     print('Status server: exiting due to all tasks finished')
                     self.server_task.cancel()
-                    yield from self.server_task
+                    await self.server_task
                     return True
 
-            message = yield from reader.readline()
+            message = await reader.readline()
             if message == b'bye\n':
                 print('Status server: exiting due to user request')
                 self.server_task.cancel()
-                yield from self.server_task
+                await self.server_task
                 return True
 
             if not message:
@@ -713,13 +712,12 @@ class StatusServer:
             elif data.get('status') in ['finished']:
                 self.handle_task_finished(data)
 
-    @asyncio.coroutine
-    def create_server_task(self):
+    async def create_server_task(self):
         host, port = self.uri.split(':')
         port = int(port)
-        server = yield from asyncio.start_server(self.cb, host=host, port=port)
+        server = await asyncio.start_server(self.cb, host=host, port=port)
         print("Results server started at:", self.uri)
-        yield from server.wait_closed()
+        await server.wait_closed()
 
     def handle_task_started(self, data):
         if self.verbose:
@@ -755,10 +753,9 @@ class StatusServer:
         loop = asyncio.get_event_loop()
         self.server_task = loop.create_task(self.create_server_task())
 
-    @asyncio.coroutine
-    def wait(self):
+    async def wait(self):
         while not self.server_task.done():
-            yield from asyncio.sleep(0.1)
+            await asyncio.sleep(0.1)
 
 
 class BaseRunnerApp:
