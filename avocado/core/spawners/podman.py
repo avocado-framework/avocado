@@ -30,8 +30,7 @@ class PodmanSpawner(BaseSpawner):
         # container transitions into "running"
         return out in [b'configured\n', b'running\n']
 
-    @asyncio.coroutine
-    def spawn_task(self, task):
+    async def spawn_task(self, task):
         entry_point_cmd = '/tmp/avocado-runner'
         entry_point_args = task.get_command_args()
         entry_point_args.insert(0, "task-run")
@@ -40,7 +39,7 @@ class PodmanSpawner(BaseSpawner):
         entry_point_arg = "--entrypoint=" + entry_point
         try:
             # pylint: disable=E1133
-            proc = yield from asyncio.create_subprocess_exec(
+            proc = await asyncio.create_subprocess_exec(
                 self.PODMAN_BIN, "create",
                 "--net=host",
                 entry_point_arg,
@@ -50,11 +49,11 @@ class PodmanSpawner(BaseSpawner):
         except (FileNotFoundError, PermissionError):
             return False
 
-        yield from proc.wait()
+        await proc.wait()
         if proc.returncode != 0:
             return False
 
-        stdout = yield from proc.stdout.read()
+        stdout = await proc.stdout.read()
         container_id = stdout.decode().strip()
 
         task.spawn_handle = container_id
@@ -66,7 +65,7 @@ class PodmanSpawner(BaseSpawner):
         avocado_runner_path = os.path.join(common_path, 'nrunner.py')
         try:
             # pylint: disable=E1133
-            proc = yield from asyncio.create_subprocess_exec(
+            proc = await asyncio.create_subprocess_exec(
                 self.PODMAN_BIN,
                 "cp",
                 avocado_runner_path,
@@ -74,13 +73,13 @@ class PodmanSpawner(BaseSpawner):
         except (FileNotFoundError, PermissionError):
             return False
 
-        yield from proc.wait()
+        await proc.wait()
         if proc.returncode != 0:
             return False
 
         try:
             # pylint: disable=E1133
-            proc = yield from asyncio.create_subprocess_exec(
+            proc = await asyncio.create_subprocess_exec(
                 self.PODMAN_BIN,
                 "start",
                 container_id,
@@ -89,5 +88,5 @@ class PodmanSpawner(BaseSpawner):
         except (FileNotFoundError, PermissionError):
             return False
 
-        yield from proc.wait()
+        await proc.wait()
         return proc.returncode == 0
