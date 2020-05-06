@@ -3,17 +3,27 @@
 N(ext)Runner
 ============
 
-This section details the :mod:`avocado.core.nrunner` module, which
-contains a proposal for the next Avocado test runner implementation.
+This section details the new Avocado architecture.  At its essence,
+this new architecture is about making Avocado more capable and
+flexible, and even though it starts with a major internal paradigm
+change within the test runner, it will also affect users and test
+writers.
+
+The :mod:`avocado.core.nrunner` module was initially responsible for
+most of the N(ext)Runner code, but as development continues, it's
+spreading around in the other places in the Avocado source tree, and
+other components with different and seemingly unrelated names, say the
+"resolvers" or the "spawners" are pretty much about the N(ext)Runner
+and are not used in the current (default) architecture.
 
 Motivation
 ----------
 
-There are a number of reasons for introducing a different runner
-architecture and implementation.  Some of them are related to
-limitations found in the current implementation, that were found
-to be too hard to remove without major breakage.  Other reasons
-are closely related to missing features that are deemed important.
+There are a number of reasons for introducing a different architecture
+and implementation.  Some of them are related to limitations found in
+the current implementation, that were found to be too hard to remove
+without major breakage.  Also, missing features that are deemed
+important were fit better in a different architecture.
 
 For instance, these are the current limitations of the Avocado test
 runner:
@@ -45,6 +55,234 @@ implemented under a different architecture and implementation:
   device and collected by the runner
 * Simplified and automated deployment of the runner component into
   execution environments such as containers and virtual machines
+
+Current and N(ext) Runner components of Avocado
+-----------------------------------------------
+
+Whenever we mention the **current** architecture or implementation,
+we are talking about:
+
+* ``avocado list`` command
+* ``avocado run`` command
+* :mod:`avocado.core.loader` module to find tests
+
+Whenever we talk about the N(ext)Runner, we are talking about:
+
+* ``avocado nlist`` command
+* ``avocado nrun`` command
+* :mod:`avocado.core.resolver` module to resolve tests
+* :mod:`avocado.core.spawners` modules to spawn tasks
+
+Basic Avocado usage and workflow
+--------------------------------
+
+Avocado is described as "a set of tools and libraries to help with
+automated testing".  The most visible aspect of Avocado is its ability
+to run tests, and display the results.  We're talking about someone
+doing::
+
+  $ avocado run mytests.py othertests.sh
+
+To be able to complete such a command, Avocado needs to find the tests, and
+then to execute them.  Those two major steps are described next.
+
+Finding tests
+~~~~~~~~~~~~~
+
+The first thing Avocado needs to do, before actually running any
+tests, is translating the "names" given as arguments to ``avocado run``
+into actual tests.  Even though those names will usually be file names,
+this is not a requirement.  Avocado calls those "names" given as arguments
+to ``avocado run`` "test references", because they are references that
+hopefully "point to" tests.
+
+Here we need to make a distincion between the current architecture,
+and the architecture which the N(ext)Runner introduces.  In the
+current Avocado test runner, this process happens by means of the
+:mod:`avocado.core.loader` module.  The very same mechanism, is used
+when listing tests.  This produces an internal representation of
+the tests, which we simply call a "factory"::
+
+  +--------------------+    +---------------------+
+  | avocado list | run | -> | avocado.core.loader | ---+
+  +--------------------+    +---------------------+    |
+                                                       |
+    +--------------------------------------------------+
+    |
+    v
+  +--------------------------------------+
+  | Test Factory 1                       |
+  +--------------------------------------+
+  | Class: TestFoo                       |
+  | Parameters:                          |
+  |  - modulePath: /path/to/module.py    |
+  |  - methodName: test_foo              |
+  |  ...                                 |
+  +--------------------------------------+
+
+  +--------------------------------------+
+  | Test Factory 2                       |
+  +--------------------------------------+
+  | Class: TestBar                       |
+  | Parameters:                          |
+  |  - modulePath: /path/to/module.py    |
+  |  - methodName: test_bar              |
+  |  ...                                 |
+  +--------------------------------------+
+
+  ...
+
+Because the N(ext)Runner is living side by side with the current
+architecture, two **temporary** commands have been introduced,
+prefixed by an **n**, that is, ``avocado nlist`` and ``avocado nrun``.
+In the future, those commands will become ``list`` and ``run``
+reespectively.
+
+On the N(ext)Runner architecture, a different terminology and
+foundation is used.  Each one of the test references given to
+``nlist`` or ``nrun`` will be "resolved" into zero or more tests.
+Being more precise and verbose, resolver plugins will produce
+:class:`avocado.core.resolver.ReferenceResolution`, which contain zero
+or more :class:`avocado.core.nrunner.Runnable`, which are described in
+the following section.  Overall, the process looks like::
+
+  +----------------------+    +-----------------------+
+  | avocado nlist | nrun | -> | avocado.core.resolver | ---+
+  +----------------------+    +-----------------------+    |
+                                                           |
+    +------------------------------------------------------+
+    |
+    v
+  +--------------------------------------+
+  | ReferenceResolution #1               |
+  +--------------------------------------+
+  | Reference: /bin/true                 |
+  | Result: SUCCESS                      |
+  | +----------------------------------+ |
+  | | Resolution #1 (Runnable):        | |
+  | |  - kind: exec-test               | |
+  | |  - uri: /bin/true                | |
+  | +----------------------------------+ |
+  +--------------------------------------+
+
+  +--------------------------------------+
+  | ReferenceResolution #2               |
+  +--------------------------------------+
+  | Reference: test.py                   |
+  | Result: SUCCESS                      |
+  | +----------------------------------+ |
+  | | Resolution #1 (Runnable):        | |
+  | |  - kind: python-unittest         | |
+  | |  - uri: test.py:Test.test_1      | |
+  | +----------------------------------+ |
+  | +----------------------------------+ |
+  | | Resolution #2 (Runnable):        | |
+  | |  - kind: python-unittest         | |
+  | |  - uri: test.py:Test.test_2      | |
+  | +----------------------------------+ |
+  +--------------------------------------+
+
+  ...
+
+Running Tests
+~~~~~~~~~~~~~
+
+The idea of **testing** has to do with checking the expected output of
+a given action.  This action, within the realm of software development
+with automated testing, has to do with the output or outcome of a
+"code payload" when executed under a given controlled environment.
+
+The current Avocado architecture uses the "Test Factories" described
+earlier to load and execute such a "code payload".  Each of those test
+factories contain the name of a Python class to be instantiated, and a
+number of arguments that will be given to that class initialization.
+
+So the primary "code payload" for every Avocado test in the current
+architecture will always be Python code that inherits from
+:class:`avocado.core.test.Test`.  Even when the user wants to run a
+standalone executable (a ``SIMPLE`` test in the current architecture
+terminology), that still means loading and instantiating (effectively
+executing) the Python class' :class:`avocado.core.test.SimpleTest`
+code.
+
+Once all the test factories are found by :mod:`avocado.core.loader`,
+as described in the previous section, the current architecture runs
+tests following roughly the following steps:
+
+1. Create one (and only one) queue to communicate with the test
+   **processes**
+2. For each test factory found by the loader:
+
+  a. Unpack the test factory into a test class and its parameters,
+     that is, ``test_class, parameters = test_factory``
+  b. Instantiate a new **process** for the test
+  c. Within the new process, instantiate the Python class, that is,
+     ``test = test_class(**parameters)``
+  d. Give the test access to queue, that is
+     ``test.set_runner_queue(queue)``
+  e. Monitor the queue and the test process until it finishes or needs
+     to be terminated.
+
+Having to describe the "Test factory" as Python class and its
+parameters, besides increasing the complexity for new types of tests,
+severely limits or prevents some of goals for the N(ext)Runner
+architecture listed earlier.  It should be clear that:
+
+1. one unique queue makes communicating with multiple tests at the
+   same time hard
+2. test factories contain a Python class (**code**) that will be
+   instantiated in the new process
+3. to instantiate Python classes in other systems would require
+   serializing them, which is error prone (AKA pickling nightmares)
+4. the execution of tests depends on the previous point, so running
+   tests in a local process is tightly coupled and hard coded into the
+   test execution code
+
+Now let's shift our attention to the N(ext)Runner architecture.  In
+the N(ext)Runner architecture, a
+:class:`avocado.core.nrunner.Runnable` describe a "code payload" that
+will be executed, but they are not executable code themselves.
+Because they are **data** and not **code**, they are easily serialized
+and transported to different environments.  Running the payload
+described by a ``Runnable`` is delegated to another component.
+
+Most often, this component is a standalone executable (see
+:data:`avocado.core.spawners.common.SpawnMethod.STANDALONE_EXECUTABLE`)
+compatible with a specific command line interface.  The most important
+interfaces such scripts must implement are the ``runnable-run`` and
+``task-run`` interfaces.
+
+Once all the ``Runnable(s)`` (within the ``ReferenceResolution(s)``)
+are created by :mod:`avocado.core.resolver`, the ``avocado nrun``
+implementation follows roughly the following steps:
+
+1. Creates a status server that binds to a TCP port and waits for
+   status messages from any number of clients
+2. Creates the chosen :class:`Spawner
+   <avocado.core.spawners.common.BaseSpawner>`, with
+   :class:`ProcessSpawner
+   <avocado.core.spawners.process.ProcessSpawner>` being the default
+3. For each :class:`avocado.core.nrunner.Runnable` found by the
+   resolver, turns it into a :class:`avocado.core.nrunner.Task`, which
+   means giving it the following extra information:
+
+  a. The status server(s) that it should report to
+  b. An unique identification, so that its messages to the status
+     server can be uniquely identified
+
+4. For each resulting :class:`avocado.core.nrunner.Task` in the previous
+   step:
+
+  a. Asks the spawner to spawn it
+  b. Asks the spawner to check if the task seems to be alive right
+     after spawning it, to give the user early indication of possible
+     crashes
+
+5. Waits until all tasks have provided a ``result`` to the status
+   server
+
+If any of the concepts mentioned here were not clear, please check
+their full descriptions in the next section.
 
 Concepts
 --------
