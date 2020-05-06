@@ -1,6 +1,6 @@
 ---
 - name: Installing Avocado using RPM
-  package:
+  dnf:
     name: python3-avocado
     state: latest
   when:
