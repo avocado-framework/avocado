@@ -303,15 +303,17 @@ class Cit:
         return distance
 
     def create_random_row_with_constraints(self):
-        row = []
-        data_matrix = []
-        for parameter in self.data:
-            data_matrix.append(list(range(0, parameter)))
+        """
+        Create a new test-case random row, and the row meets the constraints.
 
-        # delete the forbidden values ​by constraints
-        self.solver.clean_data_matrix(data_matrix)
-        for parameter, possible_values in enumerate(data_matrix):
+        :return: new random row
+        :rtype: list
+        """
+        data_size = len(self.data)
+        row = [-1]*data_size
+
+        for parameter in random.sample(range(data_size), data_size):
+            possible_values = self.solver.get_possible_values(row, parameter)
             value_choice = random.choice(possible_values)
-            self.solver.clean_data_matrix(data_matrix, {"name": parameter, "value": value_choice})
-            row.append(value_choice)
+            row[parameter] = value_choice
         return row

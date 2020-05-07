@@ -101,12 +101,12 @@ class VarianterCit(Varianter):
             LOG_UI.error("Cannot parse parameter file: %s", details)
             self.error_exit(config)
 
-        input_data = [parameter.get_size() for parameter in parameters]
+        input_data = [len(parameter[1]) for parameter in parameters]
 
         cit = Cit(input_data, order, constraints)
         final_list = cit.compute()
-        self.headers = [parameter.name for parameter in parameters]  # pylint: disable=W0201
-        results = [[parameters[j].values[final_list[i][j]] for j in range(len(final_list[i]))]
+        self.headers = [parameter[0] for parameter in parameters]  # pylint: disable=W0201
+        results = [[parameters[j][1][final_list[i][j]] for j in range(len(final_list[i]))]
                    for i in range(len(final_list))]
         self.variants = []  # pylint: disable=W0201
         for combination in results:

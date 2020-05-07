@@ -4,7 +4,6 @@ from copy import copy
 
 from avocado_varianter_cit.Cit import Cit
 from avocado_varianter_cit.CombinationMatrix import CombinationMatrix
-from avocado_varianter_cit.Parameter import Pair
 from avocado_varianter_cit.Solver import Solver
 
 
@@ -12,7 +11,7 @@ class CitInitialization(unittest.TestCase):
 
     def test_initialization(self):
         parameters = [3, 3, 3, 3]
-        constraints = {(Pair(0, 0), Pair(2, 0)), (Pair(0, 1), Pair(1, 1), Pair(2, 0)), (Pair(0, 2), Pair(3, 2))}
+        constraints = {((0, 0), (2, 0)), ((0, 1), (1, 1), (2, 0)), ((0, 2), (3, 2))}
         t_value = 2
         solver = Solver(parameters, constraints)
         combination_matrix = CombinationMatrix(parameters, t_value)
@@ -25,7 +24,7 @@ class CitTests(unittest.TestCase):
 
     def setUp(self):
         parameters = [3, 3, 3, 3]
-        constraints = {(Pair(0, 0), Pair(2, 0)), (Pair(0, 1), Pair(1, 1), Pair(2, 0)), (Pair(0, 2), Pair(3, 2))}
+        constraints = {((0, 0), (2, 0)), ((0, 1), (1, 1), (2, 0)), ((0, 2), (3, 2))}
         t_value = 2
         self.cit = Cit(parameters, t_value, constraints)
 
