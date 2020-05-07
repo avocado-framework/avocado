@@ -147,8 +147,8 @@ class NetworkInterface:
     def is_link_up(self):
         """Check if the interface is up or not.
 
-        :return: True or False. True if the current state is UP, otherwise will
-        return False.
+        :return: True or False. True if the current state is UP, otherwise
+                 will return False.
         """
         if self.get_link_state() == 'up':
             return True

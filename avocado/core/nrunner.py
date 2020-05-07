@@ -289,8 +289,8 @@ class BaseRunner:
         :param: status_type: The type of event ('started', 'running',
                              'finished')
         :param: addional_info: Any additional information that you
-        would like to
-                               add to the dict. This must be a dict.
+                               would like to add to the dict. This must be a
+                               dict.
 
         :rtype: dict
         """
@@ -872,7 +872,7 @@ class BaseRunnerApp:
         """
         Return the command names, as seen on the command line application
 
-        For every method whose name starts with "command_", a the name of
+        For every method whose name starts with "command", and the name of
         the command follows, with underscores replaced by dashes.  So, a
         method named "command_foo_bar", will be a command available on the
         command line as "foo-bar".
