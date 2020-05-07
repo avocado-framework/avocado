@@ -13,7 +13,6 @@
 # Authors: Cleber Rosa <crosa@redhat.com>
 
 import hashlib
-import itertools
 import os
 import sys
 
@@ -95,7 +94,7 @@ class VarianterPictCLI(CLI):
 
 def run_pict(binary, parameter_file, order):
     cmd = "%s %s /o:%s" % (binary, parameter_file, order)
-    return process.system_output(cmd, shell=True)
+    return process.run(cmd, shell=True).stdout_text
 
 
 def parse_pict_output(output):
@@ -170,9 +169,9 @@ class VarianterPict(Varianter):
         for variant in self.variants:
             base_id = "-".join([variant.get(key) for key in self.headers])
             variant_ids.append(base_id + '-' +
-                               hashlib.sha1(base_id).hexdigest()[:4])
+                               hashlib.sha1(base_id.encode()).hexdigest()[:4])
 
-        for vid, variant in itertools.izip(variant_ids, self.variants):
+        for vid, variant in zip(variant_ids, self.variants):
             variant_tree_nodes = []
             for key, val in variant.items():
                 variant_tree_nodes.append(TreeNode(key, {key: val}))
