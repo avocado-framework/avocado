@@ -6,7 +6,7 @@ from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipOnLevelsInferiorThan
 
 
 COMMANDS_TIMEOUT_CONF = """
@@ -137,15 +137,11 @@ class SysInfoTest(unittest.TestCase):
                                  "existing location '%s' contains:\n%s"
                                  % (sleep_log, path, os.listdir(path)))
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_sysinfo_interrupted(self):
         self.run_sysinfo_interrupted(10, 1, 15)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_sysinfo_not_interrupted(self):
         self.run_sysinfo_interrupted(5, -1, 10)
 

@@ -10,7 +10,7 @@ from avocado.utils import script
 from avocado.utils import process
 from avocado.utils import path
 
-from .. import setup_avocado_loggers
+from .. import setup_avocado_loggers, skipOnLevelsInferiorThan
 
 
 setup_avocado_loggers()
@@ -290,9 +290,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(result.stdout, encoded_text)
         self.assertEqual(result.stdout_text, text)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 1)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_run_with_timeout_ugly_cmd(self):
         with script.TemporaryScript("refuse_to_die", REFUSE_TO_DIE) as exe:
             cmd = "%s '%s'" % (sys.executable, exe.path)
@@ -305,9 +303,7 @@ class TestProcessRun(unittest.TestCase):
                                 "reporting failure but should be killed.\n%s"
                                 % res)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_run_with_negative_timeout_ugly_cmd(self):
         with script.TemporaryScript("refuse_to_die", REFUSE_TO_DIE) as exe:
             cmd = "%s '%s'" % (sys.executable, exe.path)

@@ -6,7 +6,7 @@ from urllib.error import URLError
 from avocado.core import settings, data_dir
 from avocado.plugins import vmimage as vmimage_plugin
 from avocado.utils import vmimage as vmimage_util
-from .. import temp_dir_prefix
+from .. import temp_dir_prefix, skipOnLevelsInferiorThan
 from ..functional.test_plugin_vmimage import missing_binary, create_metadata_file
 
 #: extracted from https://dl.fedoraproject.org/pub/fedora/linux/releases/
@@ -128,9 +128,7 @@ class VMImagePlugin(unittest.TestCase):
                         self.assertEqual(self.expected_images[index][key], image[key],
                                          "Found image is different from the expected one")
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     @unittest.skipIf(missing_binary('qemu-img'),
                      "QEMU disk image utility is required by the vmimage utility ")
     def test_download_image(self):

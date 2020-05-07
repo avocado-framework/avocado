@@ -32,6 +32,7 @@ from avocado.utils import script
 from avocado.utils import path as utils_path
 
 from .. import AVOCADO, BASEDIR, python_module_available, temp_dir_prefix
+from .. import skipOnLevelsInferiorThan
 
 
 UNSUPPORTED_STATUS_TEST_CONTENTS = '''
@@ -272,9 +273,7 @@ class RunnerOperationTest(unittest.TestCase):
             self.assertIn("Runner error occurred: Test reports unsupported",
                           results["tests"][0]["fail_reason"])
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(1)
     def test_hanged_test_with_status(self):
         """ Check that avocado handles hanged tests properly """
         with script.TemporaryScript("report_status_and_hang.py",
@@ -426,9 +425,7 @@ class RunnerOperationTest(unittest.TestCase):
         # Ensure no test aborted error messages show up
         self.assertNotIn(b"TestAbortError: Test aborted unexpectedly", output)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_runner_abort(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     '--xunit - abort.py' % (AVOCADO, self.tmpdir.name))
@@ -498,9 +495,7 @@ class RunnerOperationTest(unittest.TestCase):
         int(r['job_id'], 16)  # it's an hex number
         self.assertEqual(len(r['job_id']), 40)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_early_latest_result(self):
         """
         Tests that the `latest` link to the latest job results is created early
@@ -552,9 +547,7 @@ class RunnerOperationTest(unittest.TestCase):
                       result.stdout_text)
 
     @unittest.skipIf(not READ_BINARY, "read binary not available.")
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(1)
     def test_read(self):
         cmd = "%s run --sysinfo=off --job-results-dir %%s %%s" % AVOCADO
         cmd %= (self.tmpdir.name, READ_BINARY)
@@ -724,9 +717,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_runner_onehundred_fail_timing(self):
         """
         We can be pretty sure that a failtest should return immediately. Let's
@@ -746,9 +737,7 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_runner_sleep_fail_sleep_timing(self):
         """
         Sleeptest is supposed to take 1 second, let's make a sandwich of
@@ -845,9 +834,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
 
     @unittest.skipIf(not SLEEP_BINARY, 'sleep binary not available')
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     @unittest.skipUnless(AEXPECT_CAPABLE, 'aexpect package not available')
     def test_kill_stopped_sleep(self):
         proc = aexpect.Expect("%s run 60 --job-results-dir %s "
