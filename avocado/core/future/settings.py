@@ -218,8 +218,8 @@ class Settings:
         value = config.get('a.section.with.subsections.key')
 
     .. note:: Please, do not use a default value when using `get()` here. If
-    you are using an existing namespace, get will always return a value, either
-    the default value, or the value set by the user.
+              you are using an existing namespace, get will always return a
+              value, either the default value, or the value set by the user.
 
     Please, note that most of methods and attributes here are private. Only
     public methods and attributes should be used outside this module.
@@ -330,7 +330,7 @@ class Settings:
         an unified settings.
 
         :param arg_parse_config: argparse.config dictionary with all
-        command-line parsed arguments.
+                                 command-line parsed arguments.
         """
         for tag, value in arg_parse_config.items():
             # This check is important! For argparse when an option is
@@ -392,7 +392,7 @@ class Settings:
         the values via command-line, you should pass the other arguments.
 
         Arguments
-        ---------
+
         section : str
             The configuration file section that your option should be present.
             You can specify subsections with dots. i.e: run.output.json
@@ -494,7 +494,7 @@ class Settings:
         everything is stored as string and a conversion is needed.
 
         Arguments
-        ---------
+
         namespace : str
             Your section plus your key, separated by dots. The last
             part of the namespace is your key. i.e: run.outputs.json.enabled

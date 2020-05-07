@@ -100,8 +100,8 @@ def get_version():
     Get cpu version
 
     :returns: string cpu version of given machine
-    Eg.:- 'i5-5300U' for Intel and 'POWER9' for IBM machines
-    in case of unknown/unsupported machines, return an empty string
+              Eg.:- 'i5-5300U' for Intel and 'POWER9' for IBM machines in
+              case of unknown/unsupported machines, return an empty string.
     """
     version_pattern = {'x86_64': rb'\s([\S,\d]+)\sCPU',
                        'i386': rb'\s([\S,\d]+)\sCPU',
