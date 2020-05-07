@@ -106,6 +106,8 @@ class InterruptTest(unittest.TestCase):
     def test_badly_behaved_sigint(self):
         """
         Make sure avocado can cleanly get out of a loop of badly behaved tests.
+
+        :avocado: tags=parallel:1
         """
         bad_test_basename = ('wontquit-%s' %
                              data_factory.generate_random_string(5))
@@ -152,6 +154,8 @@ class InterruptTest(unittest.TestCase):
     def test_badly_behaved_sigterm(self):
         """
         Make sure avocado can cleanly get out of a loop of badly behaved tests.
+
+        :avocado: tags=parallel:1
         """
         bad_test_basename = ('wontquit-%s' %
                              data_factory.generate_random_string(5))
@@ -190,6 +194,8 @@ class InterruptTest(unittest.TestCase):
     def test_well_behaved_sigint(self):
         """
         Make sure avocado can cleanly get out of a loop of well behaved tests.
+
+        :avocado: tags=parallel:1
         """
         good_test_basename = ('goodtest-%s.py' %
                               data_factory.generate_random_string(5))
@@ -232,6 +238,8 @@ class InterruptTest(unittest.TestCase):
     def test_well_behaved_sigterm(self):
         """
         Make sure avocado can cleanly get out of a loop of well behaved tests.
+
+        :avocado: tags=parallel:1
         """
         good_test_basename = ('goodtest-%s.py' %
                               data_factory.generate_random_string(5))

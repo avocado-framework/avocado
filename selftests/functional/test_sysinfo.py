@@ -139,10 +139,16 @@ class SysInfoTest(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_sysinfo_interrupted(self):
+        """
+        :avocado: tags=parallel:1
+        """
         self.run_sysinfo_interrupted(10, 1, 15)
 
     @skipOnLevelsInferiorThan(2)
     def test_sysinfo_not_interrupted(self):
+        """
+        :avocado: tags=parallel:1
+        """
         self.run_sysinfo_interrupted(5, -1, 10)
 
 

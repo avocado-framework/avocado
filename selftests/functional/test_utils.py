@@ -141,6 +141,9 @@ class ProcessTest(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_process_start(self):
+        """
+        :avocado: tags=parallel:1
+        """
         proc = process.SubProcess('%s 1 0' % self.fake_vmstat)
         proc.start()
         time.sleep(3)
@@ -152,6 +155,9 @@ class ProcessTest(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_process_stop_interrupted(self):
+        """
+        :avocado: tags=parallel:1
+        """
         proc = process.SubProcess('%s 1 3' % self.fake_vmstat)
         proc.start()
         time.sleep(3)
@@ -161,6 +167,9 @@ class ProcessTest(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_process_stop_uninterrupted(self):
+        """
+        :avocado: tags=parallel:1
+        """
         proc = process.SubProcess('%s 1 3' % self.fake_vmstat)
         proc.start()
         time.sleep(3)
@@ -194,6 +203,9 @@ class FileLockTest(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(3)
     def test_filelock(self):
+        """
+        :avocado: tags=parallel:1
+        """
         # Calculate the timeout based on t_100_iter + 2e-5*players
         start = time.time()
         for _ in range(100):
