@@ -13,6 +13,9 @@
 	{"name": "Avocado time/resource sensitive tests",
 	 "description": "With a load as light as possible on your system, run `jobs/timesensitive.py`. Expected results: all tests PASSed"},
 
+	{"name": "Avocado vmimage tests",
+	 "description": "Run `jobs/vmimage.py`. Expected results: all tests PASSed"},
+
 	{"name": "Avocado source does not contain spelling errors",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
 
