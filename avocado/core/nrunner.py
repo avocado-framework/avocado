@@ -42,7 +42,7 @@ def check_tasks_requirements(tasks, runners_registry=None):
     :param tasks: the tasks whose runner requirements will be checked
     :type tasks: list of :class:`Task`
     :param runners_registry: a registry with previously found (and not found)
-                             runners keyed by a task's runnable kind.  Defauts
+                             runners keyed by a task's runnable kind. Defaults
                              to :attr:`RUNNERS_REGISTRY_STANDALONE_EXECUTABLE`
     :type runners_registry: dict
     :return: two list of tasks in a tuple, with the first being the tasks
@@ -284,11 +284,11 @@ class BaseRunner:
     def prepare_status(self, status_type, additional_info=None):
         """Prepare a status dict with some basic information.
 
-        This will add the keywork 'status' and 'time' to all status.
+        This will add the keyword 'status' and 'time' to all status.
 
         :param: status_type: The type of event ('started', 'running',
                              'finished')
-        :param: addional_info: Any addional information that you
+        :param: addional_info: Any additional information that you
         would like to
                                add to the dict. This must be a dict.
 

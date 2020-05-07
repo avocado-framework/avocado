@@ -198,7 +198,7 @@ class AltDataDirTest(Base):
          # pylint: disable=W0201
          self.alt_config_file_path) = self._get_temp_dirs_mapping_and_config()
 
-        # Alternate setttings with different data_dir location
+        # Alternate settings with different data_dir location
         alt_stg = settings.Settings(self.alt_config_file_path)
         with unittest.mock.patch('avocado.core.data_dir.settings.settings', alt_stg):
             for key in alt_mapping.keys():
