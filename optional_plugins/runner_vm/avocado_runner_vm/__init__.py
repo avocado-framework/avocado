@@ -17,6 +17,7 @@ import getpass
 import logging
 import sys
 import time
+import warnings
 from xml.dom import minidom
 
 import libvirt
@@ -366,7 +367,7 @@ class VMTestRunner(RemoteTestRunner):
     """
 
     name = 'vm'
-    description = 'Runs on a VM using SSH'
+    description = '*DEPRECATED* Runs on a VM using SSH'
 
     def __init__(self):
         super(VMTestRunner, self).__init__()
@@ -433,7 +434,7 @@ class VMCLI(CLI):
     """
 
     name = 'vm'
-    description = "Virtual Machine options for 'run' subcommand"
+    description = "*DEPRECATED* Virtual Machine options for 'run' subcommand"
 
     def configure(self, parser):
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
@@ -503,4 +504,6 @@ class VMCLI(CLI):
 
     def run(self, config):
         if self._check_required_config(config, 'vm_domain', ('vm_domain',)):
+            warnings.warn("The vm runner plugin is deprecated, and will "
+                          "be removed soon", FutureWarning)
             config['test_runner'] = 'vm'
