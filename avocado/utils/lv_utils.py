@@ -23,7 +23,7 @@ import os
 import re
 import shutil
 import time
-
+import warnings
 from . import process
 
 
@@ -45,6 +45,8 @@ def get_diskspace(disk):
     :rtype: str
     :raises: :py:class:`LVException` on failure to find disk space
     """
+    warnings.warn("deprecated, use get_device_total_space instead",
+                  DeprecationWarning)
     result = process.run('fdisk -l %s' % disk,
                          env={"LANG": "C"}, sudo=True).stdout_text
     results = result.splitlines()
@@ -52,6 +54,39 @@ def get_diskspace(disk):
         if line.startswith('Disk ' + disk):
             return re.findall(r", (.*?) bytes", line)[0]
     raise LVException('Error in finding disk space')
+
+
+def get_device_total_space(disk):
+    """Get the total device size.
+
+    :param str device: name of the device/disk to find the total size
+    :returns: size in bytes
+    :rtype: int
+    :raises: :py:class:`LVException` on failure to find disk space
+    """
+    result = process.run('fdisk -l %s' % disk,
+                         env={"LANG": "C"}, sudo=True).stdout_text
+    results = result.splitlines()
+    for line in results:
+        if line.startswith('Disk ' + disk):
+            return int(re.findall(r", (.*?) bytes", line)[0])
+    raise LVException('Error in finding disk space')
+
+
+def get_devices_total_space(devices):
+    """Get the total size of given device(s)/disk(s).
+
+    :param list devices: list with the names of devices separated with space.
+    :returns: sizes in bytes
+    :rtype: int
+    :raises: :py:class:`LVException` on failure to find disk space
+    """
+    size = 0
+    for device in devices:
+        size = size + get_device_total_space(device)
+    if not size:
+        raise LVException('failed to get disks size')
+    return size
 
 
 def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
