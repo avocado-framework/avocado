@@ -12,19 +12,17 @@
 #          Bestoun S. Ahmed <bestoon82@gmail.com>
 #          Cleber Rosa <crosa@redhat.com>
 
+import logging
 import os
 import sys
-import logging
 
-from avocado.core import exit_codes
-from avocado.core import varianter
+from avocado.core import exit_codes, varianter
+from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLI
-from avocado.core.plugin_interfaces import Varianter
+from avocado.core.plugin_interfaces import CLI, Varianter
 from avocado.core.tree import TreeNode
-from avocado_varianter_cit.Cit import Cit, LOG
+from avocado_varianter_cit.Cit import LOG, Cit
 from avocado_varianter_cit.Parser import Parser
-
 
 #: The default order of combinations
 DEFAULT_ORDER_OF_COMBINATIONS = 2
@@ -45,14 +43,24 @@ class VarianterCitCLI(CLI):
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
                 continue
-            cit = subparser.add_argument_group('CIT varianter options')
-            cit.add_argument('--cit-parameter-file', metavar='PATH',
-                             help="Paths to a parameter file")
-            cit.add_argument('--cit-order-of-combinations',
-                             metavar='ORDER', type=int,
-                             default=DEFAULT_ORDER_OF_COMBINATIONS,
-                             help=("Order of combinations. Defaults to "
-                                   "%(default)s, maximum number is 6"))
+            subparser.add_argument_group('CIT varianter options')
+            settings.register_option(section="{}.cit".format(name),
+                                     key='parameter_file',
+                                     metavar='PATH',
+                                     help_msg='Paths to a parameter file',
+                                     parser=subparser,
+                                     default=None,
+                                     long_arg='--cit-parameter-file')
+
+            help_msg = "Order of combinations. Maximum number is 6"
+            settings.register_option(section="{}.cit".format(name),
+                                     key='combination_order',
+                                     key_type=int,
+                                     parser=subparser,
+                                     help_msg=help_msg,
+                                     metavar='ORDER',
+                                     default=DEFAULT_ORDER_OF_COMBINATIONS,
+                                     long_arg='--cit-order-of-combinations')
 
     def run(self, config):
         if config.get('variants.debug'):
@@ -69,13 +77,15 @@ class VarianterCit(Varianter):
     description = "CIT Varianter"
 
     def initialize(self, config):
+        subcommand = config.get('subcommand')
         self.variants = None  # pylint: disable=W0201
-        order = config.get('cit_order_of_combinations', DEFAULT_ORDER_OF_COMBINATIONS)
-        if order > 6:
+        order = config.get("{}.cit.combination_order".format(subcommand))
+        if order and order > 6:
             LOG_UI.error("The order of combinations is bigger then 6")
             self.error_exit(config)
 
-        cit_parameter_file = config.get("cit_parameter_file", None)
+        section_key = "{}.cit.parameter_file".format(subcommand)
+        cit_parameter_file = config.get(section_key)
         if cit_parameter_file is None:
             return
         else:
@@ -91,12 +101,12 @@ class VarianterCit(Varianter):
             LOG_UI.error("Cannot parse parameter file: %s", details)
             self.error_exit(config)
 
-        input_data = [parameter.get_size() for parameter in parameters]
+        input_data = [len(parameter[1]) for parameter in parameters]
 
         cit = Cit(input_data, order, constraints)
         final_list = cit.compute()
-        self.headers = [parameter.name for parameter in parameters]  # pylint: disable=W0201
-        results = [[parameters[j].values[final_list[i][j]] for j in range(len(final_list[i]))]
+        self.headers = [parameter[0] for parameter in parameters]  # pylint: disable=W0201
+        results = [[parameters[j][1][final_list[i][j]] for j in range(len(final_list[i]))]
                    for i in range(len(final_list))]
         self.variants = []  # pylint: disable=W0201
         for combination in results:

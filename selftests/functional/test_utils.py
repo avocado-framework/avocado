@@ -11,7 +11,7 @@ from avocado.utils.filelock import FileLock
 from avocado.utils.stacktrace import prepare_exc_info
 from avocado.utils import process
 
-from .. import temp_dir_prefix
+from .. import temp_dir_prefix, skipOnLevelsInferiorThan
 
 
 # What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
@@ -139,9 +139,7 @@ class ProcessTest(unittest.TestCase):
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
         os.chmod(self.fake_uptime, DEFAULT_MODE)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitive")
+    @skipOnLevelsInferiorThan(2)
     def test_process_start(self):
         proc = process.SubProcess('%s 1 0' % self.fake_vmstat)
         proc.start()
@@ -152,9 +150,7 @@ class ProcessTest(unittest.TestCase):
         self.assertIn('memory', stdout, 'result: %s' % stdout)
         self.assertRegex(stdout, '[0-9]+')
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitive")
+    @skipOnLevelsInferiorThan(2)
     def test_process_stop_interrupted(self):
         proc = process.SubProcess('%s 1 3' % self.fake_vmstat)
         proc.start()
@@ -163,9 +159,7 @@ class ProcessTest(unittest.TestCase):
         result = proc.result
         self.assertIn('timeout after', result.interrupted, "Process wasn't interrupted")
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitive")
+    @skipOnLevelsInferiorThan(2)
     def test_process_stop_uninterrupted(self):
         proc = process.SubProcess('%s 1 3' % self.fake_vmstat)
         proc.start()
@@ -198,9 +192,7 @@ class FileLockTest(unittest.TestCase):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 3,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitive")
+    @skipOnLevelsInferiorThan(3)
     def test_filelock(self):
         # Calculate the timeout based on t_100_iter + 2e-5*players
         start = time.time()

@@ -13,7 +13,7 @@ from avocado.utils import wait
 from avocado.utils import script
 from avocado.utils import data_factory
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipOnLevelsInferiorThan
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
@@ -102,9 +102,7 @@ class InterruptTest(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.test_module = None
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_badly_behaved_sigint(self):
         """
         Make sure avocado can cleanly get out of a loop of badly behaved tests.
@@ -150,9 +148,7 @@ class InterruptTest(unittest.TestCase):
         # Make sure the Killing test subprocess message did appear
         self.assertIn(b'Killing test subprocess', output)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_badly_behaved_sigterm(self):
         """
         Make sure avocado can cleanly get out of a loop of badly behaved tests.
@@ -190,9 +186,7 @@ class InterruptTest(unittest.TestCase):
         # Make sure the Interrupted test sentence is there
         self.assertIn(b'Terminated\n', proc.stdout.read())
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_well_behaved_sigint(self):
         """
         Make sure avocado can cleanly get out of a loop of well behaved tests.
@@ -234,9 +228,7 @@ class InterruptTest(unittest.TestCase):
         # Make sure the Killing test subprocess message is not there
         self.assertNotIn(b'Killing test subprocess', output)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_well_behaved_sigterm(self):
         """
         Make sure avocado can cleanly get out of a loop of well behaved tests.

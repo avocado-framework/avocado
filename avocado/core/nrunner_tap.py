@@ -41,8 +41,7 @@ class TAPRunner(nrunner.BaseRunner):
 
         while process.poll() is None:
             time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
-            yield {'status': 'running',
-                   'timestamp': time.time()}
+            yield self.prepare_status('running')
 
         stdout = io.TextIOWrapper(process.stdout)
         parser = TapParser(stdout)
@@ -64,10 +63,9 @@ class TAPRunner(nrunner.BaseRunner):
                 else:
                     result = 'pass'
 
-        yield {'status': 'finished',
-               'result': result,
-               'returncode': process.returncode,
-               'timestamp': time.time()}
+        yield self.prepare_status('finished',
+                                  {'result': result,
+                                   'returncode': process.returncode})
 
 
 class RunnerApp(nrunner.BaseRunnerApp):

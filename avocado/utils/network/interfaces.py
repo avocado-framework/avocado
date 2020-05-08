@@ -20,7 +20,6 @@ import json
 import logging
 import os
 import shutil
-import time
 
 from ipaddress import ip_interface
 
@@ -65,7 +64,7 @@ class NetworkInterface:
             raise NWException(msg)
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
-        destination = "{}.backup-{}".format(filename, time.time())
+        destination = "{}.backup".format(filename)
         if os.path.exists(filename):
             shutil.move(filename, destination)
         else:
@@ -134,9 +133,11 @@ class NetworkInterface:
             raise NWException("Failed to bring up: %s" % ex)
 
     def is_link_up(self):
-        """Check if the interface is up or not.
+        """Check if the interface is up or not
         :return: True or False. True if the current state is UP, otherwise will
         return False.
+        :return: True or False. True if the current state is UP, otherwise
+                 will return False.
         """
         if self.get_link_state() == 'up':
             return True
@@ -287,3 +288,27 @@ class NetworkInterface:
         except Exception as ex:
             msg = 'Failed to remove ipaddr. {}'.format(ex)
             raise NWException(msg)
+
+    def restore_from_backup(self):
+        """Revert interface file from backup.
+
+        This method checks if a backup version  is available for given interface
+        then it copies backup file to interface file in /sysfs path
+        """
+
+        current_distro = distro_detect()
+        filename = "ifcfg-{}".format(self.name)
+        if current_distro.name in ['rhel', 'fedora']:
+            path = "/etc/sysconfig/network-scripts"
+        elif current_distro.name == 'SuSE':
+            path = "/etc/sysconfig/network"
+        else:
+            msg = 'Distro not supported by API. Could not restore the backup file.'
+            raise NWException(msg)
+        filename = "{}/{}".format(path, filename)
+        backup_file = "{}.backup".format(filename)
+        if os.path.exists(backup_file):
+            shutil.move(backup_file, filename)
+        else:
+            raise NWException(
+                "Backup file not available, could not restore file.")

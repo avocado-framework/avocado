@@ -236,6 +236,10 @@ Build and Quality Status
    :target: https://lgtm.com/projects/g/avocado-framework/avocado/alerts/
    :alt: lgtm total alerts
 
+.. image:: https://api.codeclimate.com/v1/badges/03f506164e1d19f95480/maintainability
+   :target: https://codeclimate.com/github/avocado-framework/avocado/maintainability
+   :alt: Code Climate Maintainability
+
 .. image:: https://img.shields.io/lgtm/grade/python/g/avocado-framework/avocado.svg?logo=lgtm&logoWidth=18
    :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:python
    :alt: lgtm language grade for Python

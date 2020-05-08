@@ -565,23 +565,24 @@ Fetching asset files
 
 To run third party test suites as mentioned above, or for any other purpose,
 we offer an asset fetcher as a method of Avocado Test class.
-The asset method looks for a list of directories in the ``cache_dirs`` key,
-inside the ``[datadir.paths]`` section from the configuration files. Read-only
-directories are also supported. When the asset file is not present in any of
-the provided directories, we will try to download the file from the provided
-locations, copying it to the first writable cache directory. Example::
+The asset fetch method looks for a list of directories in the ``cache_dirs``
+key, inside the ``[datadir.paths]`` section from the configuration files.
+Read-only directories are also supported. When the asset file is not present in
+any of the provided directories, Avocado will try to download the file from the
+provided locations, copying it to the first writable cache directory. Example::
 
-    cache_dirs = ['/usr/local/src/', '~/avocado/cache']
+    cache_dirs = ['/usr/local/src/', '~/avocado/data/cache']
 
 In the example above, ``/usr/local/src/`` is a read-only directory. In that
-case, when we need to fetch the asset from the locations, it will be copied to
-the ``~/avocado/cache`` directory.
+case, when Avocado needs to fetch the asset from the locations, the asset will
+be copied to the ``~/avocado/data/cache`` directory.
 
-If you don't provide a ``cache_dirs``, we will create a ``cache`` directory
-inside the Avocado ``data_dir`` location to put the fetched files in.
+If the tester does not provide a ``cache_dirs`` for the test execution, Avocado
+creates a ``cache`` directory inside the Avocado ``data_dir`` location to put
+the fetched files in.
 
 * Use case 1: no ``cache_dirs`` key in config files, only the asset name
-  provided in the full url format::
+  provided in the full URL format::
 
     ...
         def setUp(self):
@@ -590,9 +591,11 @@ inside the Avocado ``data_dir`` location to put the fetched files in.
             archive.extract(tarball, self.workdir)
     ...
 
-  In this case, ``fetch_asset()`` will download the file from the url provided,
-  copying it to the ``$data_dir/cache`` directory. ``tarball`` variable  will
-  contains, for example, ``/home/user/avocado/data/cache/stress-1.0.4.tar.gz``.
+  In this case, ``fetch_asset()`` will download the file from the URL provided,
+  copying it to the ``$data_dir/cache`` directory. The ``fetch_asset()`` method
+  returns the target location of the fetched asset. In this example, the
+  ``tarball`` variable  holds
+  ``/home/user/avocado/data/cache/stress-1.0.4.tar.gz``.
 
 * Use case 2: Read-only cache directory provided. ``cache_dirs = ['/mnt/files']``::
 
@@ -603,12 +606,14 @@ inside the Avocado ``data_dir`` location to put the fetched files in.
             archive.extract(tarball, self.workdir)
     ...
 
-  In this case, we try to find ``stress-1.0.4.tar.gz`` file in ``/mnt/files``
-  directory. If it's not there, since ``/mnt/files`` is read-only,  we will try
-  to download the asset file to the ``$data_dir/cache`` directory.
+  In this case, Avocado tries to find ``stress-1.0.4.tar.gz`` file in
+  ``/mnt/files`` directory. If it's not found, since ``/mnt/files`` cache is
+  read-only, Avocado tries to download the asset file to the ``$data_dir/cache``
+  directory.
 
 * Use case 3: Writable cache directory provided, along with a list of
-  locations. ``cache_dirs = ['~/avocado/cache']``::
+  locations. Use of the default cache directory,
+  ``cache_dirs = ['~/avocado/data/cache']``::
 
     ...
         def setUp(self):
@@ -621,41 +626,90 @@ inside the Avocado ``data_dir`` location to put the fetched files in.
             archive.extract(tarball, self.workdir)
     ...
 
-  In this case, we try to download ``stress-1.0.4.tar.gz`` from the provided
-  locations list (if it's not already in ``~/avocado/cache``). The hash was
-  also provided, so we will verify the hash. To do so, we first look for a
-  hashfile named ``stress-1.0.4.tar.gz.sha1`` in the same directory. If the
-  hashfile is not present we compute the hash and create the hashfile for
-  further usage.
+  In this case, Avocado tries to download ``stress-1.0.4.tar.gz`` from the
+  provided locations list (if it's not already in the default cache,
+  ``~/avocado/data/cache``). As the hash was also provided, Avocado verifies
+  the hash. To do so, Avocado first looks for a hash file named
+  ``stress-1.0.4.tar.gz.CHECKSUM`` in the same directory. If the hash file is
+  not available, Avocado computes the hash and creates the hash file for later
+  use.
 
   The resulting ``tarball`` variable content will be
   ``~/avocado/cache/stress-1.0.4.tar.gz``.
-  An exception will take place if we fail to download or to verify the file.
+  An exception is raised if Avocado fails to download or to verify the file.
+
+* Use case 4: Low bandwidth available for download of a large file which takes
+  a lot of time to download and causes a CI, like Travis, for example, to
+  timeout the test execution. Do not cancel the test if the file is not available::
+
+    ...
+        def setUp(self):
+            st_name = 'stress-1.0.4.tar.gz'
+            st_hash = 'e1533bc704928ba6e26a362452e6db8fd58b1f0b'
+            st_loc = ['http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz',
+                      'ftp://foo.bar/stress-1.0.4.tar.gz']
+            tarball = self.fetch_asset(st_name, asset_hash=st_hash,
+                                       locations=st_loc, find_only=True)
+            archive.extract(tarball, self.workdir)
+    ...
+
+  Setting the ``find_only`` parameter to ``True`` will make Avocado look for
+  the asset in the cache, but will not attempt to download it if the asset
+  is not available. The asset download can be done prior to the test execution
+  using the command-line ``avocado assets fetch INSTRUMENTED``.
+
+  In this example, if the asset is not available in the cache, the test will
+  continue to run and when the test tries to use the asset, it will fail. A
+  solution for that is presented in the next use case.
+
+* Use case 5: Low bandwidth available for download or a large file which takes
+  a lot of time to download and causes a CI, like Travis, for example, to
+  timeout the test execution. Cancel the test if the file is not available::
+
+    ...
+        def setUp(self):
+            st_name = 'stress-1.0.4.tar.gz'
+            st_hash = 'e1533bc704928ba6e26a362452e6db8fd58b1f0b'
+            st_loc = ['http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz',
+                      'ftp://foo.bar/stress-1.0.4.tar.gz']
+            tarball = self.fetch_asset(st_name, asset_hash=st_hash,
+                                       locations=st_loc, find_only=True,
+                                       cancel_on_missing=True)
+            archive.extract(tarball, self.workdir)
+    ...
+
+  With ``cancel_on_missing`` set to ``True`` and ``find_only`` set to
+  ``True``, if the file is not available in the cache, the test is canceled.
 
 
-Detailing the ``fetch_asset()`` attributes:
+Detailing the ``fetch_asset()`` parameters:
 
-* ``name:`` The name used to name the fetched file. It can also contains a full
-  URL, that will be used as the first location to try (after serching into the
+* ``name:`` The destination name used to the fetched file. It can also contains
+  a full URI. The URI will be used as the location (after searching into the
   cache directories).
-* ``asset_hash:`` (optional) The expected file hash. If missing, we skip the
-  check. If provided, before computing the hash, we look for a hashfile to
-  verify the asset. If the hashfile is nor present, we compute the hash and
-  create the hashfile in the same cache directory for further usage.
+* ``asset_hash:`` (optional) The expected hash for the file. If missing,
+  Avocado skips the hash check. If provided, before computing the hash,
+  Avocado looks for a hash file to verify the asset. If the hash file is not
+  available, Avocado computes the hash and creates the hash file in the same
+  cache directory for later use.
 * ``algorithm:`` (optional) Provided hash algorithm format. Defaults to sha1.
-* ``locations:`` (optional) List of locations that will be used to try to fetch
-  the file from. The supported schemes are ``http://``, ``https://``,
-  ``ftp://`` and ``file://``. You're required to inform the full url to the
-  file, including the file name. The first success will skip the next
-  locations. Notice that for ``file://`` we just create a symbolic link in the
-  cache directory, pointing to the file original location.
-* ``expire:`` (optional) time period that the cached file will be considered
-  valid. After that period, the file will be dowloaded again. The value can
-  be an integer or a string containing the time and the unit. Example: '10d'
-  (ten days). Valid units are ``s`` (second), ``m`` (minute), ``h`` (hour) and
-  ``d`` (day).
+* ``locations:`` (optional) List of locations used to try to fetch the file.
+  The supported schemes are ``http://``, ``https://``, ``ftp://`` and
+  ``file://``. The tester should inform the full url to the file, including the
+  file name. The first fetch success skips the next locations. Notice that for
+  ``file://`` Avocado creates a symbolic link in the cache directory, pointing
+  to the original location of the file.
+* ``expire:`` (optional) period while a cached file is considered valid. After
+  that period, the file will be dowloaded again. The value can be an integer or
+  a string containing the time and the unit. Example: '10d' (ten days). Valid
+  units are ``s`` (second), ``m`` (minute), ``h`` (hour) and  ``d`` (day).
+* ``find_only:`` (optional) tries to find the asset in the cache. If the asset
+  file is not available in the cache, Avocado will not attempt to download it.
+* ``cancel_on_missing`` (optional) if set to ``True``, cancel the current
+  running test if there is a problem while downloading the asset or if
+  ``find_only=True`` and the asset is not available in the cache.
 
-The expected ``return`` is the asset file path or an exception.
+The expected ``return`` of the method is the asset file path or an exception.
 
 .. _output_check_record:
 

@@ -4,7 +4,6 @@ import argparse
 import asyncio
 import base64
 import collections
-import enum
 import inspect
 import io
 import json
@@ -13,8 +12,10 @@ import os
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import unittest
+
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -23,22 +24,15 @@ RUNNER_RUN_CHECK_INTERVAL = 0.01
 #: runner that performs its work asynchronously
 RUNNER_RUN_STATUS_INTERVAL = 0.5
 
-#: All known runners
-KNOWN_RUNNERS = {}
+#: All known runner commands, capable of being used by a
+#: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
+RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 
-
-class SpawnMethod(enum.Enum):
-    """The method employed to spawn a runnable or task."""
-    #: Spawns by running executing Python code, that is, having access to
-    #: a runnable or task instance, it calls its run() method.
-    PYTHON_CLASS = object()
-    #: Spawns by running a command, that is having either a path to an
-    #: executable or a list of arguments, it calls a function that will
-    #: execute that command (such as with os.system())
-    STANDALONE_EXECUTABLE = object()
-    #: Spawns with any method available, that is, it doesn't declare or
-    #: require a specific spawn method
-    ANY = object()
+#: All known runner Python classes.  This is a dictionary keyed by a
+#: runnable kind, and value is a class that inherits from
+#: :class:`BaseRunner`.  Suitable for spawners compatible with
+#: SpawnMethod.PYTHON_CLASS
+RUNNERS_REGISTRY_PYTHON_CLASS = {}
 
 
 def check_tasks_requirements(tasks, runners_registry=None):
@@ -47,8 +41,9 @@ def check_tasks_requirements(tasks, runners_registry=None):
 
     :param tasks: the tasks whose runner requirements will be checked
     :type tasks: list of :class:`Task`
-    :param runners_registry: a registry with previously found (and not
-                             found) runners keyed by task kind
+    :param runners_registry: a registry with previously found (and not found)
+                             runners keyed by a task's runnable kind. Defaults
+                             to :attr:`RUNNERS_REGISTRY_STANDALONE_EXECUTABLE`
     :type runners_registry: dict
     :return: two list of tasks in a tuple, with the first being the tasks
              that pass the requirements check and the second the tasks that
@@ -56,117 +51,16 @@ def check_tasks_requirements(tasks, runners_registry=None):
     :rtype: tuple of (list, list)
     """
     if runners_registry is None:
-        runners_registry = KNOWN_RUNNERS
+        runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
     ok = []
     missing = []
     for task in tasks:
-        runner = task.pick_runner_command(runners_registry)
+        runner = task.runnable.pick_runner_command(runners_registry)
         if runner:
             ok.append(task)
         else:
             missing.append(task)
     return (ok, missing)
-
-
-class BaseSpawner:
-    """Defines an interface to be followed by all implementations."""
-
-    METHODS = []
-
-    @staticmethod
-    def is_task_alive(task):
-        pass
-
-    def spawn_task(self, task):
-        pass
-
-
-class ProcessSpawner(BaseSpawner):
-
-    METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
-
-    @staticmethod
-    def is_task_alive(task):
-        return task.spawn_handle.returncode is None
-
-    @asyncio.coroutine
-    def spawn_task(self, task):
-        runner = task.pick_runner_command()
-        args = runner[1:] + ['task-run'] + task.get_command_args()
-        runner = runner[0]
-
-        #pylint: disable=E1133
-        task.spawn_handle = yield from asyncio.create_subprocess_exec(
-            runner,
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
-
-
-class PodmanSpawner(BaseSpawner):
-
-    METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
-    IMAGE = 'fedora:31'
-    PODMAN_BIN = "/usr/bin/podman"
-
-    @staticmethod
-    def is_task_alive(task):
-        if task.spawn_handle is None:
-            return False
-
-        cmd = [PodmanSpawner.PODMAN_BIN, "ps", "--all", "--format={{.State}}",
-               "--filter=id=%s" % task.spawn_handle]
-        process = subprocess.Popen(cmd,
-                                   stdin=subprocess.DEVNULL,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.DEVNULL)
-        out, _ = process.communicate()
-        # we have to be lenient and allow for the configured state to
-        # be considered "alive" because it happens before the
-        # container transitions into "running"
-        return out in [b'configured\n', b'running\n']
-
-    @asyncio.coroutine
-    def spawn_task(self, task):
-        entry_point_cmd = '/tmp/avocado-runner'
-        entry_point_args = task.get_command_args()
-        entry_point_args.insert(0, "task-run")
-        entry_point_args.insert(0, entry_point_cmd)
-        entry_point = json.dumps(entry_point_args)
-        entry_point_arg = "--entrypoint=" + entry_point
-        # pylint: disable=E1133
-        proc = yield from asyncio.create_subprocess_exec(
-            self.PODMAN_BIN, "create",
-            "--net=host",
-            entry_point_arg,
-            self.IMAGE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
-
-        _ = yield from proc.wait()
-        stdout = yield from proc.stdout.read()
-        container_id = stdout.decode().strip()
-
-        task.spawn_handle = container_id
-
-        # Currently limited to avocado-runner, we'll expand on that
-        # when the runner requirements system is in place
-        this_path = os.path.abspath(__file__)
-        common_path = os.path.dirname(os.path.dirname(this_path))
-        avocado_runner_path = os.path.join(common_path, 'core', 'nrunner.py')
-        proc = yield from asyncio.create_subprocess_exec(
-            self.PODMAN_BIN,
-            "cp",
-            avocado_runner_path,
-            "%s:%s" % (container_id, entry_point_cmd))
-        yield from proc.wait()
-
-        proc = yield from asyncio.create_subprocess_exec(self.PODMAN_BIN,
-                                                         "start",
-                                                         container_id,
-                                                         stdout=asyncio.subprocess.PIPE,
-                                                         stderr=asyncio.subprocess.PIPE)
-        yield from proc.wait()
 
 
 class Runnable:
@@ -181,12 +75,14 @@ class Runnable:
         self.uri = uri
         self.args = args
         self.tags = kwargs.pop('tags', None)
+        self.requirements = kwargs.pop('requirements', None)
         self.kwargs = kwargs
 
     def __repr__(self):
-        fmt = '<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}">'
-        return fmt.format(self.kind, self.uri,
-                          self.args, self.kwargs, self.tags)
+        fmt = ('<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}" '
+               'requirements="{}">')
+        return fmt.format(self.kind, self.uri, self.args, self.kwargs,
+                          self.tags, self.requirements)
 
     @classmethod
     def from_args(cls, args):
@@ -289,6 +185,93 @@ class Runnable:
         with open(recipe_path, 'w') as recipe_file:
             recipe_file.write(self.get_json())
 
+    def is_kind_supported_by_runner_command(self, runner_command):
+        """Checks if a runner command that seems a good fit declares support."""
+        cmd = runner_command + ['capabilities']
+        try:
+            process = subprocess.Popen(cmd,
+                                       stdin=subprocess.DEVNULL,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL)
+        except (FileNotFoundError, PermissionError):
+            return False
+        out, _ = process.communicate()
+
+        try:
+            capabilities = json.loads(out.decode())
+        except json.decoder.JSONDecodeError:
+            return False
+
+        return self.kind in capabilities.get('runnables', [])
+
+    def pick_runner_command(self, runners_registry=None):
+        """Selects a runner command based on the runner.
+
+        And when finding a suitable runner, keeps found runners in registry.
+
+        This utility function will look at the given task and try to find
+        a matching runner.  The matching runner probe results are kept in
+        a registry (that is modified by this function) so that further
+        executions take advantage of previous probes.
+
+        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
+
+        :param runners_registry: a registry with previously found (and not
+                                 found) runners keyed by runnable kind
+        :param runners_registry: dict
+        :returns: command line arguments to execute the runner
+        :rtype: list of str or None
+        """
+        if runners_registry is None:
+            runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
+        runner_cmd = runners_registry.get(self.kind)
+        if runner_cmd is False:
+            return None
+        if runner_cmd is not None:
+            return runner_cmd
+
+        standalone_executable_cmd = ['avocado-runner-%s' % self.kind]
+        if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
+            runners_registry[self.kind] = standalone_executable_cmd
+            return standalone_executable_cmd
+
+        # attempt to find Python module files that are named after the
+        # runner convention within the avocado.core namespace dir.
+        # Looking for the file only avoids an attempt to load the module
+        # and should be a lot faster
+        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        module_name = self.kind.replace('-', '_')
+        module_filename = 'nrunner_%s.py' % module_name
+        if os.path.exists(os.path.join(core_dir, module_filename)):
+            full_module_name = 'avocado.core.%s' % module_name
+            candidate_cmd = [sys.executable, '-m', full_module_name]
+            if self.is_kind_supported_by_runner_command(candidate_cmd):
+                runners_registry[self.kind] = candidate_cmd
+                return candidate_cmd
+
+        # exhausted probes, let's save the negative on the cache and avoid
+        # future similar problems
+        runners_registry[self.kind] = False
+
+    def pick_runner_class(self, runners_registry=None):
+        """Selects a runner class from the registry based on kind.
+
+        This is related to the :data:`SpawnMethod.PYTHON_CLASS`
+
+        :param runners_registry: a registry with previously registered
+                                 runner classes, keyed by runnable kind
+        :param runners_registry: dict
+        :returns: a class that inherits from :class:`BaseRunner`
+        :raises: ValueError if kind there's no runner from kind of runnable
+        """
+        if runners_registry is None:
+            runners_registry = RUNNERS_REGISTRY_PYTHON_CLASS
+
+        runner = runners_registry.get(self.kind, None)
+        if runner is not None:
+            return runner
+        raise ValueError('Unsupported kind of runnable: %s' % self.kind)
+
 
 class BaseRunner:
     """
@@ -297,6 +280,26 @@ class BaseRunner:
 
     def __init__(self, runnable):
         self.runnable = runnable
+
+    def prepare_status(self, status_type, additional_info=None):
+        """Prepare a status dict with some basic information.
+
+        This will add the keyword 'status' and 'time' to all status.
+
+        :param: status_type: The type of event ('started', 'running',
+                             'finished')
+        :param: addional_info: Any additional information that you
+                               would like to add to the dict. This must be a
+                               dict.
+
+        :rtype: dict
+        """
+        status = {'status': status_type,
+                  'time': time.time()}
+
+        if isinstance(additional_info, dict):
+            status.update(additional_info)
+        return status
 
     def run(self):
         yield {}
@@ -313,11 +316,11 @@ class NoOpRunner(BaseRunner):
      * args: not used
     """
     def run(self):
-        time_start = time.time()
-        yield {'status': 'finished',
-               'result': 'pass',
-               'time_start': time_start,
-               'time_end': time.time()}
+        yield self.prepare_status('started')
+        yield self.prepare_status('finished', {'result': 'pass'})
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['noop'] = NoOpRunner
 
 
 class ExecRunner(BaseRunner):
@@ -335,9 +338,12 @@ class ExecRunner(BaseRunner):
        process
     """
     def run(self):
-        env = self.runnable.kwargs or None
-        time_start = time.time()
-        time_start_sent = False
+        env = None
+        if self.runnable.kwargs:
+            current = dict(os.environ)
+            current.update(self.runnable.kwargs)
+            env = current
+
         process = subprocess.Popen(
             [self.runnable.uri] + list(self.runnable.args),
             stdin=subprocess.DEVNULL,
@@ -345,6 +351,7 @@ class ExecRunner(BaseRunner):
             stderr=subprocess.PIPE,
             env=env)
 
+        yield self.prepare_status('started')
         most_current_execution_state_time = None
         while process.poll() is None:
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
@@ -355,22 +362,20 @@ class ExecRunner(BaseRunner):
             if (most_current_execution_state_time is None or
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
-                if not time_start_sent:
-                    time_start_sent = True
-                    yield {'status': 'running',
-                           'time_start': time_start}
-                yield {'status': 'running'}
+                yield self.prepare_status('running')
 
         stdout = process.stdout.read()
         process.stdout.close()
         stderr = process.stderr.read()
         process.stderr.close()
 
-        yield {'status': 'finished',
-               'returncode': process.returncode,
-               'stdout': stdout,
-               'stderr': stderr,
-               'time_end': time.time()}
+        return_code = process.returncode
+        yield self.prepare_status('finished', {'returncode': return_code,
+                                               'stdout': stdout,
+                                               'stderr': stderr})
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['exec'] = ExecRunner
 
 
 class ExecTestRunner(ExecRunner):
@@ -391,6 +396,9 @@ class ExecTestRunner(ExecRunner):
                 else:
                     most_current_execution_state['result'] = 'fail'
             yield most_current_execution_state
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner
 
 
 class PythonUnittestRunner(BaseRunner):
@@ -434,23 +442,22 @@ class PythonUnittestRunner(BaseRunner):
         output = {'status': 'finished',
                   'result': result,
                   'output': stream.read(),
-                  'time_end': time_end}
+                  'time': time_end}
         stream.close()
         queue.put(output)
 
     def run(self):
         if not self.runnable.uri:
-            yield {'status': 'finished',
-                   'result': 'error',
-                   'output': 'uri is required but was not given'}
+            error_msg = 'uri is required but was not given'
+            yield self.prepare_status('finished', {'result': 'error',
+                                                   'output': error_msg})
             return
 
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_unittest,
                                           args=(self.runnable.uri, queue))
-        time_start = time.time()
-        time_start_sent = False
         process.start()
+        yield self.prepare_status('started')
 
         most_current_execution_state_time = None
         while queue.empty():
@@ -462,23 +469,12 @@ class PythonUnittestRunner(BaseRunner):
             if (most_current_execution_state_time is None or
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
-                if not time_start_sent:
-                    time_start_sent = True
-                    yield {'status': 'running',
-                           'time_start': time_start}
-                yield {'status': 'running'}
+                yield self.prepare_status('running')
 
         yield queue.get()
 
 
-def runner_from_runnable(runnable, known_runners):
-    """
-    Gets a Runner instance from a Runnable
-    """
-    runner = known_runners.get(runnable.kind, None)
-    if runner is not None:
-        return runner(runnable)
-    raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
+RUNNERS_REGISTRY_PYTHON_CLASS['python-unittest'] = PythonUnittestRunner
 
 
 def _parse_key_val(argument):
@@ -591,7 +587,8 @@ class Task:
     :param identifier:
     :param runnable:
     """
-    def __init__(self, identifier, runnable, status_uris=None, known_runners=None):
+    def __init__(self, identifier, runnable, status_uris=None,
+                 known_runners=None):
         self.identifier = identifier
         self.runnable = runnable
         self.status_services = []
@@ -602,6 +599,7 @@ class Task:
             known_runners = {}
         self.known_runners = known_runners
         self.spawn_handle = None
+        self._output_dir = None
 
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
@@ -615,8 +613,13 @@ class Task:
         :doc:`/blueprints/BP002`.
         """
         if runners_registry is None:
-            runners_registry = KNOWN_RUNNERS
-        return self.pick_runner_command(runners_registry)
+            runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
+        return self.runnable.pick_runner_command(runners_registry)
+
+    def setup_output_dir(self):
+        self._output_dir = tempfile.mkdtemp(prefix='.avocado-task-')
+        env_var = {'AVOCADO_TEST_OUTPUT_DIR': self._output_dir}
+        self.runnable.kwargs.update(env_var)
 
     @classmethod
     def from_recipe(cls, task_path, known_runners):
@@ -658,78 +661,13 @@ class Task:
 
         return args
 
-    def is_kind_supported_by_runner_command(self, runner_command):
-        """Checks if a runner command that seems a good fit declares support."""
-        cmd = runner_command + ['capabilities']
-        try:
-            process = subprocess.Popen(cmd,
-                                       stdin=subprocess.DEVNULL,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.DEVNULL)
-        except FileNotFoundError:
-            return False
-        out, _ = process.communicate()
-
-        try:
-            capabilities = json.loads(out.decode())
-        except json.decoder.JSONDecodeError:
-            return False
-
-        return self.runnable.kind in capabilities.get('runnables', [])
-
-    def pick_runner_command(self, runners_registry=None):
-        """Selects a runner command based on the task.
-
-        And when finding a suitable runner, keeps found runners in registry.
-
-        This utility function will look at the given task and try to find
-        a matching runner.  The matching runner probe results are kept in
-        a registry (that is modified by this function) so that further
-        executions take advantage of previous probes.
-
-        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
-
-        :param runners_registry: a registry with previously found (and not
-                                 found) runners keyed by task kind
-        :param runners_registry: dict
-        :returns: command line arguments to execute the runner
-        :rtype: list of str or None
-        """
-        if runners_registry is None:
-            runners_registry = KNOWN_RUNNERS
-        kind = self.runnable.kind
-        runner_cmd = runners_registry.get(kind)
-        if runner_cmd is False:
-            return None
-        if runner_cmd is not None:
-            return runner_cmd
-
-        standalone_executable_cmd = ['avocado-runner-%s' % kind]
-        if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
-            runners_registry[kind] = standalone_executable_cmd
-            return standalone_executable_cmd
-
-        # attempt to find Python module files that are named after the
-        # runner convention within the avocado.core namespace dir.
-        # Looking for the file only avoids an attempt to load the module
-        # and should be a lot faster
-        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        module_name = kind.replace('-', '_')
-        module_filename = 'nrunner_%s.py' % module_name
-        if os.path.exists(os.path.join(core_dir, module_filename)):
-            full_module_name = 'avocado.core.%s' % module_name
-            candidate_cmd = [sys.executable, '-m', full_module_name]
-            if self.is_kind_supported_by_runner_command(candidate_cmd):
-                runners_registry[kind] = candidate_cmd
-                return candidate_cmd
-
-        # exhausted probes, let's save the negative on the cache and avoid
-        # future similar problems
-        runners_registry[kind] = False
-
     def run(self):
-        runner = runner_from_runnable(self.runnable, self.known_runners)
+        self.setup_output_dir()
+        runner_klass = self.runnable.pick_runner_class(self.known_runners)
+        runner = runner_klass(self.runnable)
         for status in runner.run():
+            if status['status'] == 'started':
+                status.update({'output_dir': self._output_dir})
             status.update({"id": self.identifier})
             for status_service in self.status_services:
                 status_service.post(status)
@@ -738,30 +676,30 @@ class Task:
 
 class StatusServer:
 
-    def __init__(self, uri, tasks_pending=None):
+    def __init__(self, uri, tasks_pending=None, verbose=False):
         self.uri = uri
         self.server_task = None
         self.result = {}
         if tasks_pending is None:
             tasks_pending = []
         self.tasks_pending = tasks_pending
+        self.verbose = verbose
         self.wait_on_tasks_pending = len(self.tasks_pending) > 0
 
-    @asyncio.coroutine
-    def cb(self, reader, _):
+    async def cb(self, reader, _):
         while True:
             if self.wait_on_tasks_pending:
                 if not self.tasks_pending:
                     print('Status server: exiting due to all tasks finished')
                     self.server_task.cancel()
-                    yield from self.server_task
+                    await self.server_task
                     return True
 
-            message = yield from reader.readline()
+            message = await reader.readline()
             if message == b'bye\n':
                 print('Status server: exiting due to user request')
                 self.server_task.cancel()
-                yield from self.server_task
+                await self.server_task
                 return True
 
             if not message:
@@ -769,47 +707,55 @@ class StatusServer:
 
             data = json_loads(message.strip())
 
-            if data['status'] not in ["init", "running"]:
-                try:
-                    self.tasks_pending.remove(data['id'])
-                    print('Task complete (%s): %s' % (data['result'],
-                                                      data['id']))
-                except IndexError:
-                    pass
-                except ValueError:
-                    pass
-                if data['result'] in self.result:
-                    self.result[data['result']] += 1
-                else:
-                    self.result[data['result']] = 1
+            if data.get('status') in ['started']:
+                self.handle_task_started(data)
+            elif data.get('status') in ['finished']:
+                self.handle_task_finished(data)
 
-                if data['result'] not in ('pass', 'skip'):
-                    stdout = data.get('stdout', b'')
-                    if stdout:
-                        print('Task %s stdout:\n%s\n' % (data['id'], stdout))
-                    stderr = data.get('stderr', b'')
-                    if stderr:
-                        print('Task %s stderr:\n%s\n' % (data['id'], stderr))
-                    output = data.get('output', b'')
-                    if output:
-                        print('Task %s output:\n%s\n' % (data['id'], output))
-
-    @asyncio.coroutine
-    def create_server_task(self):
+    async def create_server_task(self):
         host, port = self.uri.split(':')
         port = int(port)
-        server = yield from asyncio.start_server(self.cb, host=host, port=port)
+        server = await asyncio.start_server(self.cb, host=host, port=port)
         print("Results server started at:", self.uri)
-        yield from server.wait_closed()
+        await server.wait_closed()
+
+    def handle_task_started(self, data):
+        if self.verbose:
+            print("Task started: {}. Outputdir: {}".format(data['id'],
+                                                           data['output_dir']))
+
+    def handle_task_finished(self, data):
+        if 'result' not in data:
+            return
+
+        result = data['result']
+        task_id = data['id']
+
+        self.tasks_pending.remove(task_id)
+        print('Task complete (%s): %s' % (result, task_id))
+
+        if result not in self.result:
+            self.result[result] = []
+        self.result[result].append(task_id)
+
+        if result not in ('pass', 'skip'):
+            stdout = data.get('stdout', b'')
+            if stdout:
+                print('Task %s stdout:\n%s\n' % (task_id, stdout))
+            stderr = data.get('stderr', b'')
+            if stderr:
+                print('Task %s stderr:\n%s\n' % (task_id, stderr))
+            output = data.get('output', b'')
+            if output:
+                print('Task %s output:\n%s\n' % (task_id, output))
 
     def start(self):
         loop = asyncio.get_event_loop()
         self.server_task = loop.create_task(self.create_server_task())
 
-    @asyncio.coroutine
-    def wait(self):
+    async def wait(self):
         while not self.server_task.done():
-            yield from asyncio.sleep(0.1)
+            await asyncio.sleep(0.1)
 
 
 class BaseRunnerApp:
@@ -831,14 +777,14 @@ class BaseRunnerApp:
 
     #: The command line arguments to the "runnable-run" command
     CMD_RUNNABLE_RUN_ARGS = (
-        (("-k", "--kind"),
+        (('-k', '--kind'),
          {'type': str, 'required': True, 'help': 'Kind of runnable'}),
 
-        (("-u", "--uri"),
+        (('-u', '--uri'),
          {'type': str, 'default': None, 'help': 'URI of runnable'}),
 
-        (("-a", "--arg"),
-         {'action': "append", 'default': [],
+        (('-a', '--arg'),
+         {'action': 'append', 'default': [],
           'help': 'Simple arguments to runnable'}),
 
         (('kwargs',),
@@ -848,26 +794,26 @@ class BaseRunnerApp:
     )
 
     CMD_RUNNABLE_RUN_RECIPE_ARGS = (
-        (("recipe", ),
+        (('recipe', ),
          {'type': str, 'help': 'Path to the runnable recipe file'}),
     )
 
     CMD_TASK_RUN_ARGS = (
-        (("-i", "--identifier"),
+        (('-i', '--identifier'),
          {'type': str, 'required': True, 'help': 'Task unique identifier'}),
-        (("-s", "--status-uri"),
-         {'action': "append", 'default': None,
+        (('-s', '--status-uri'),
+         {'action': 'append', 'default': None,
           'help': 'URIs of status services to report to'}),
     )
     CMD_TASK_RUN_ARGS += CMD_RUNNABLE_RUN_ARGS
 
     CMD_TASK_RUN_RECIPE_ARGS = (
-        (("recipe", ),
+        (('recipe', ),
          {'type': str, 'help': 'Path to the task recipe file'}),
     )
 
     CMD_STATUS_SERVER_ARGS = (
-        (("uri", ),
+        (('uri', ),
          {'type': str, 'help': 'URI to bind a status server to'}),
     )
 
@@ -926,7 +872,7 @@ class BaseRunnerApp:
         """
         Return the command names, as seen on the command line application
 
-        For every method whose name starts with "command_", a the name of
+        For every method whose name starts with "command", and the name of
         the command follows, with underscores replaced by dashes.  So, a
         method named "command_foo_bar", will be a command available on the
         command line as "foo-bar".
@@ -1041,12 +987,7 @@ class BaseRunnerApp:
 class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner'
     PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner'
-    RUNNABLE_KINDS_CAPABLE = {
-        'noop': NoOpRunner,
-        'exec': ExecRunner,
-        'exec-test': ExecTestRunner,
-        'python-unittest': PythonUnittestRunner
-    }
+    RUNNABLE_KINDS_CAPABLE = RUNNERS_REGISTRY_PYTHON_CLASS
 
 
 def main(app_class=RunnerApp):

@@ -311,8 +311,8 @@ class RpmBackend(BaseBackend):
         result = process.run(cmd, ignore_status=True)
 
         # unstable approach but currently works
-        #installed_pattern = r"\s" + package_name + r" is installed\s+"
-        #match = re.search(installed_pattern, result)
+        # installed_pattern = r"\s" + package_name + r" is installed\s+"
+        # match = re.search(installed_pattern, result)
         match = (result.exit_status == 0)
         if match:
             logging.info("Verification successful.")
@@ -631,8 +631,8 @@ class YumBackend(RpmBackend):
                       "yum module is required for this operation")
             return None
         try:
-            #Python API need to be passed globs along with name for searching
-            #all possible occurrences of pattern 'name'
+            # Python API need to be passed globs along with name for searching
+            # all possible occurrences of pattern 'name'
             d_provides = self.yum_base.searchPackageProvides(args=['*/' + name])
         except Exception as exc:  # pylint: disable=W0703
             log.error("Error searching for package that "
@@ -693,10 +693,10 @@ class YumBackend(RpmBackend):
                               path, next(os.walk(path))[2])
                     return ""
                 if self.rpm_install(os.path.join(path, src_rpms[-1])):
-                    if self.build_dep(name):
-                        spec_path = os.path.join(os.environ['HOME'],
-                                                 "rpmbuild", "SPECS",
-                                                 "%s.spec" % name)
+                    spec_path = os.path.join(os.environ['HOME'],
+                                             "rpmbuild", "SPECS",
+                                             "%s.spec" % name)
+                    if self.build_dep(spec_path):
                         return self.prepare_source(spec_path, dest_path)
                     else:
                         log.error("Installing build dependencies failed")
@@ -724,6 +724,22 @@ class DnfBackend(YumBackend):
         Initializes the base command and the DNF package repository.
         """
         super(DnfBackend, self).__init__(cmd='dnf')
+
+    def build_dep(self, name):
+        """
+        Install build-dependencies for package [name]
+
+        :param name: name of the package
+
+        :return True: If build dependencies are installed properly
+        """
+        try:
+            process.system('%s builddep %s' % (self.base_command, name),
+                           sudo=True)
+            return True
+        except process.CmdError as details:
+            log.error(details)
+            return False
 
 
 class ZypperBackend(RpmBackend):

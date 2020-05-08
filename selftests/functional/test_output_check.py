@@ -146,6 +146,12 @@ if __name__ == "__main__":
 
 class RunnerSimpleTest(unittest.TestCase):
 
+    def assertIsFile(self, path):
+        self.assertTrue(os.path.isfile(path))
+
+    def assertIsNotFile(self, path):
+        self.assertFalse(os.path.isfile(path))
+
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
@@ -200,10 +206,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        stdout_file = "%s.data/stdout.expected" % self.output_script
-        stderr_file = "%s.data/stderr.expected" % self.output_script
-        self.assertFalse(os.path.isfile(stdout_file))
-        self.assertFalse(os.path.isfile(stderr_file))
+        self.assertIsNotFile("%s.data/stdout.expected" % self.output_script)
+        self.assertIsNotFile("%s.data/stderr.expected" % self.output_script)
 
     def test_output_record_stdout(self):
         os.chdir(BASEDIR)
@@ -219,7 +223,7 @@ class RunnerSimpleTest(unittest.TestCase):
         stderr_file = "%s.data/stderr.expected" % self.output_script
         with open(stdout_file, 'rb') as fd_stdout:
             self.assertEqual(fd_stdout.read(), STDOUT)
-        self.assertFalse(os.path.isfile(stderr_file))
+        self.assertIsNotFile(stderr_file)
 
     def test_output_record_and_check(self):
         self._check_output_record_all()
@@ -348,8 +352,8 @@ class RunnerSimpleTest(unittest.TestCase):
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
-        self.assertTrue(os.path.isfile("%s.data/stdout.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/stderr.expected" % simple_test))
+        self.assertIsFile("%s.data/stdout.expected" % simple_test)
+        self.assertIsFile("%s.data/stderr.expected" % simple_test)
 
     def test_merge_records_different_output(self):
         os.chdir(BASEDIR)
@@ -363,12 +367,12 @@ class RunnerSimpleTest(unittest.TestCase):
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
-        self.assertFalse(os.path.isfile("%s.data/stdout.expected" % simple_test))
-        self.assertFalse(os.path.isfile("%s.data/stderr.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/PassTest.test_1/stdout.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/PassTest.test_1/stderr.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/PassTest.test_2/stdout.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/PassTest.test_2/stderr.expected" % simple_test))
+        self.assertIsNotFile("%s.data/stdout.expected" % simple_test)
+        self.assertIsNotFile("%s.data/stderr.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
 
     def test_merge_records_different_output_variants(self):
         os.chdir(BASEDIR)
@@ -382,14 +386,14 @@ class RunnerSimpleTest(unittest.TestCase):
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
-        self.assertFalse(os.path.isfile("%s.data/stdout.expected" % simple_test))
-        self.assertFalse(os.path.isfile("%s.data/stderr.expected" % simple_test))
-        self.assertFalse(os.path.isfile("%s.data/PassTest.test_1/stdout.expected" % simple_test))
-        self.assertFalse(os.path.isfile("%s.data/PassTest.test_1/stderr.expected" % simple_test))
-        self.assertFalse(os.path.isfile("%s.data/PassTest.test_2/stdout.expected" % simple_test))
-        self.assertFalse(os.path.isfile("%s.data/PassTest.test_2/stderr.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/PassTest.test_2/bar/stderr.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/PassTest.test_2/foo/stderr.expected" % simple_test))
+        self.assertIsNotFile("%s.data/stdout.expected" % simple_test)
+        self.assertIsNotFile("%s.data/stderr.expected" % simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_2/bar/stderr.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_2/foo/stderr.expected" % simple_test)
 
     def test_merge_records_different_and_same_output(self):
         os.chdir(BASEDIR)
@@ -403,12 +407,12 @@ class RunnerSimpleTest(unittest.TestCase):
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
-        self.assertTrue(os.path.isfile("%s.data/stdout.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/stderr.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/PassTest.test_1/stdout.expected" % simple_test))
-        self.assertTrue(os.path.isfile("%s.data/PassTest.test_1/stderr.expected" % simple_test))
-        self.assertFalse(os.path.isfile("%s.data/PassTest.test_2/stdout.expected" % simple_test))
-        self.assertFalse(os.path.isfile("%s.data/PassTest.test_2/stderr.expected" % simple_test))
+        self.assertIsFile("%s.data/stdout.expected" % simple_test)
+        self.assertIsFile("%s.data/stderr.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
 
     def tearDown(self):
         self.output_script.remove()

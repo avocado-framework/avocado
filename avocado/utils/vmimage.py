@@ -39,6 +39,16 @@ from . import process
 QEMU_IMG = None
 
 
+#: Default image architecture, which defaults to the current machine
+#: architecture, if that's can be retrieved via :func:`os.uname`. If
+#: not, it defaults to "x86_64" simply because it's the most commonly
+#: used architecture and lack of a better default
+if hasattr(os, 'uname'):
+    DEFAULT_ARCH = os.uname()[4]
+else:
+    DEFAULT_ARCH = 'x86_64'
+
+
 class ImageProviderError(Exception):
     """
     Generic error class for ImageProvider
@@ -210,7 +220,7 @@ class FedoraImageProvider(FedoraImageProviderBase):
     name = 'Fedora'
 
     def __init__(self, version='[0-9]+', build='[0-9]+.[0-9]+',
-                 arch=os.uname()[4]):
+                 arch=DEFAULT_ARCH):
         super(FedoraImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora/linux/releases/'
         self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
@@ -225,7 +235,7 @@ class FedoraSecondaryImageProvider(FedoraImageProviderBase):
     name = 'FedoraSecondary'
 
     def __init__(self, version='[0-9]+', build='[0-9]+.[0-9]+',
-                 arch=os.uname()[4]):
+                 arch=DEFAULT_ARCH):
         super(FedoraSecondaryImageProvider, self).__init__(version, build,
                                                            arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora-secondary/releases/'
@@ -240,7 +250,7 @@ class CentOSImageProvider(ImageProviderBase):
 
     name = 'CentOS'
 
-    def __init__(self, version='[0-9]+', build='[0-9]{4}', arch=os.uname()[4]):
+    def __init__(self, version='[0-9]+', build='[0-9]{4}', arch=DEFAULT_ARCH):
         super(CentOSImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cloud.centos.org/centos/'
         self.url_images = self.url_versions + '{version}/images/'
@@ -262,7 +272,7 @@ class UbuntuImageProvider(ImageProviderBase):
     name = 'Ubuntu'
 
     def __init__(self, version='[0-9]+.[0-9]+', build=None,
-                 arch=os.uname()[4]):
+                 arch=DEFAULT_ARCH):
         # Ubuntu uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = 'amd64'
@@ -290,7 +300,7 @@ class DebianImageProvider(ImageProviderBase):
     name = 'Debian'
 
     def __init__(self, version='[0-9]+.[0-9]+.[0-9]+.*', build=None,
-                 arch=os.uname()[4]):
+                 arch=DEFAULT_ARCH):
         # Debian uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = 'amd64'
@@ -312,7 +322,7 @@ class JeosImageProvider(ImageProviderBase):
     name = 'JeOS'
 
     def __init__(self, version='[0-9]+', build=None,
-                 arch=os.uname()[4]):
+                 arch=DEFAULT_ARCH):
         # JeOS uses '64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = '64'
@@ -331,7 +341,7 @@ class OpenSUSEImageProvider(ImageProviderBase):
     HTML_ENCODING = 'iso-8859-1'
     name = 'OpenSUSE'
 
-    def __init__(self, version='[0-9]{2}.[0-9]{1}', build=None, arch=os.uname()[4]):
+    def __init__(self, version='[0-9]{2}.[0-9]{1}', build=None, arch=DEFAULT_ARCH):
         super(OpenSUSEImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://download.opensuse.org/repositories/Cloud:/Images:/'
         self.url_images = self.url_versions + 'Leap_{version}/images/'
@@ -381,7 +391,7 @@ class CirrOSImageProvider(ImageProviderBase):
 
     name = 'CirrOS'
 
-    def __init__(self, version=r'[0-9]+\.[0-9]+\.[0-9]+', build=None, arch=os.uname()[4]):
+    def __init__(self, version=r'[0-9]+\.[0-9]+\.[0-9]+', build=None, arch=DEFAULT_ARCH):
         super(CirrOSImageProvider, self).__init__(version=version, build=build, arch=arch)
         self.url_versions = 'https://download.cirros-cloud.net/'
         self.url_images = self.url_versions + '{version}/'

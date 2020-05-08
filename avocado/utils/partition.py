@@ -201,7 +201,7 @@ class Partition:
         else:
             self.fstype = fstype
 
-    def mount(self, mountpoint=None, fstype=None, args=''):
+    def mount(self, mountpoint=None, fstype=None, args='', mnt_check=True):
         """
         Mount this partition to a mount point
 
@@ -210,6 +210,7 @@ class Partition:
         :param fstype: Filesystem type. If not provided partition object value
                 will be used.
         :param args: Arguments to be passed to "mount" command.
+        :param mnt_check: Flag to check/avoid checking existing device/mountpoint
         """
         if not mountpoint:
             mountpoint = self.mountpoint
@@ -230,10 +231,11 @@ class Partition:
         args = args.lstrip()
 
         with MtabLock():
-            if self.device in self.list_mount_devices():
-                raise PartitionError(self, "Attempted to mount mounted device")
-            if mountpoint in self.list_mount_points():
-                raise PartitionError(self, "Attempted to mount busy directory")
+            if mnt_check:
+                if self.device in self.list_mount_devices():
+                    raise PartitionError(self, "Attempted to mount mounted device")
+                if mountpoint in self.list_mount_points():
+                    raise PartitionError(self, "Attempted to mount busy directory")
             if not os.path.isdir(mountpoint):
                 os.makedirs(mountpoint)
             try:
@@ -248,10 +250,6 @@ class Partition:
         """
         Returns a list of processes using a given mountpoint
         """
-        try:
-            FileNotFoundError
-        except NameError:
-            FileNotFoundError = IOError   # pylint: disable=W0622
         try:
             cmd = "lsof " + mnt
             out = process.system_output(cmd, sudo=True)

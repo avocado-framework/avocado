@@ -1,8 +1,8 @@
 # Avocado test requirements
 
 # inspektor (static and style checks)
-pylint==2.3.0
-astroid==2.2.0
+pylint==2.5.0
+astroid==2.4.0
 inspektor==0.5.2
 
 # funcsigs

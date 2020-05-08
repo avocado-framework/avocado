@@ -91,3 +91,9 @@ def test_suite(base_selftests=True, plugin_selftests=None):
                                 plugin_dir, 'tests')
             suite.addTests(loader.discover(start_dir=path, top_level_dir=path))
     return suite
+
+
+def skipOnLevelsInferiorThan(level):
+    return unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < level,
+                           "Skipping test that take a long time to run, are "
+                           "resource intensive or time sensitve")

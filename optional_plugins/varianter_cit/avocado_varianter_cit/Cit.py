@@ -70,16 +70,19 @@ class Cit:
                 delete_row = matrix.pop(random.randint(0, len(matrix) - 1))
                 self.combination_matrix.uncover_solution_row(delete_row)
                 deleted_rows.append(delete_row)
-            LOG.debug("I'm trying solution with size " + str(len(matrix)) + " and " + str(iterations) + " iterations")
+            LOG.debug("I'm trying solution with size %s and %s iterations",
+                      len(matrix), iterations)
             matrix, is_better_solution = self.find_better_solution(iterations, matrix)
             if is_better_solution:
                 self.final_matrix = matrix[:]
                 deleted_rows = []
                 step_size *= 2
-                LOG.debug("-----solution with size " + str(len(matrix)) + " was found-----\n")
+                LOG.debug("-----solution with size %s was found-----\n",
+                          len(matrix))
                 iterations = ITERATIONS_SIZE
             else:
-                LOG.debug("-----solution with size " + str(len(matrix)) + " was not found-----\n")
+                LOG.debug("-----solution with size %s was not found-----\n",
+                          len(matrix))
                 for i in range(step_size):
                     self.combination_matrix.cover_solution_row(deleted_rows[i])
                     matrix.append(deleted_rows[i])
@@ -300,15 +303,17 @@ class Cit:
         return distance
 
     def create_random_row_with_constraints(self):
-        row = []
-        data_matrix = []
-        for parameter in self.data:
-            data_matrix.append(list(range(0, parameter)))
+        """
+        Create a new test-case random row, and the row meets the constraints.
 
-        # delete the forbidden values ​by constraints
-        self.solver.clean_data_matrix(data_matrix)
-        for parameter, possible_values in enumerate(data_matrix):
+        :return: new random row
+        :rtype: list
+        """
+        data_size = len(self.data)
+        row = [-1]*data_size
+
+        for parameter in random.sample(range(data_size), data_size):
+            possible_values = self.solver.get_possible_values(row, parameter)
             value_choice = random.choice(possible_values)
-            self.solver.clean_data_matrix(data_matrix, {"name": parameter, "value": value_choice})
-            row.append(value_choice)
+            row[parameter] = value_choice
         return row

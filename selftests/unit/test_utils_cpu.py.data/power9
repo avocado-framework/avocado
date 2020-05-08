@@ -1,0 +1,10 @@
+processor    : 20
+cpu        : POWER9 (raw), altivec supported
+clock        : 2050.000000MHz
+revision    : 1.0 (pvr 004e 0100)
+
+timebase    : 512000000
+platform    : PowerNV
+model        : 8375-42A
+machine        : PowerNV 8375-42A
+firmware    : OPAL

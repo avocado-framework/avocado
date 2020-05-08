@@ -4,7 +4,7 @@
     name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-result-html&subdirectory=optional_plugins/html"
     virtualenv: "{{ temporary_dir.path }}"
   when: method == 'pip'
-  
+
 - name: Avocado resultsdb plugin installation via pip
   pip:
     name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-resultsdb&subdirectory=optional_plugins/resultsdb"

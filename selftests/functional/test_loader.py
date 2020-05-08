@@ -11,7 +11,7 @@ from avocado.core import exit_codes
 from avocado.utils import script
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipOnLevelsInferiorThan
 
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
@@ -186,9 +186,7 @@ class LoaderTestFunctional(unittest.TestCase):
         # 2 because both FileLoader and the TAP loader cannot recognize the test
         self._test('passtest', AVOCADO_TEST_OK, 'NOT_A_TEST', count=2)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_sleep_a_lot(self):
         """
         Verifies that the test loader, at list time, does not load the Python
@@ -225,9 +223,7 @@ class LoaderTestFunctional(unittest.TestCase):
         # 2 because both FileLoader and the TAP loader cannot recognize the test
         self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST', count=2)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_runner_simple_python_like_multiple_files(self):
         mylib = script.TemporaryScript(
             'test2.py',
@@ -249,9 +245,7 @@ class LoaderTestFunctional(unittest.TestCase):
                     % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
+    @skipOnLevelsInferiorThan(2)
     def test_simple_using_main(self):
         mytest = script.TemporaryScript("simple_using_main.py",
                                         AVOCADO_TEST_SIMPLE_USING_MAIN,
