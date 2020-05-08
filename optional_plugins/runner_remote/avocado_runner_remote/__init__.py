@@ -20,6 +20,7 @@ import os
 import re
 import sys
 import time
+import warnings
 
 import fabric.api
 import fabric.network
@@ -329,7 +330,7 @@ class RemoteTestRunner(Runner):
     """
 
     name = 'remote'
-    description = 'Runs on a remote machine using SSH'
+    description = '*DEPRECATED* Runs on a remote machine using SSH'
 
     # Let's use re.MULTILINE because sometimes servers might have MOTD
     # that will introduce a line break on output.
@@ -607,7 +608,7 @@ class RemoteCLI(CLI):
     """
 
     name = 'remote'
-    description = "Remote machine options for 'run' subcommand"
+    description = "*DEPRECATED* Remote machine options for 'run' subcommand"
 
     def configure(self, parser):
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
@@ -682,6 +683,8 @@ class RemoteCLI(CLI):
     def run(self, config):
         if self._check_required_config(config, 'remote_hostname',
                                        ('remote_hostname',)):
+            warnings.warn("The remote runner plugin is deprecated, and will "
+                          "be removed soon", FutureWarning)
             loader.loader.clear_plugins()
             loader.loader.register_plugin(DummyLoader)
             config['test_runner'] = 'remote'

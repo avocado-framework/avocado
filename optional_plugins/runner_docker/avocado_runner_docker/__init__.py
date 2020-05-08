@@ -17,6 +17,7 @@ import logging
 import os
 import socket
 import time
+import warnings
 
 import aexpect
 
@@ -116,7 +117,7 @@ class DockerTestRunner(RemoteTestRunner):
     """
 
     name = 'docker'
-    description = 'Runs on a Docker (or compatible) container'
+    description = '*DEPRECATED* Runs on a Docker (or compatible) container'
 
     def __init__(self):
         super(DockerTestRunner, self).__init__()
@@ -153,7 +154,7 @@ class DockerCLI(CLI):
     """
 
     name = 'docker'
-    description = "Run tests inside docker container"
+    description = "*DEPRECATED* Run tests inside docker container"
 
     def configure(self, parser):
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
@@ -177,4 +178,6 @@ class DockerCLI(CLI):
 
     def run(self, config):
         if config.get("docker", None):
+            warnings.warn("The docker runner plugin is deprecated, and will "
+                          "be removed soon", FutureWarning)
             config['test_runner'] = 'docker'
