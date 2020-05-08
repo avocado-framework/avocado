@@ -132,6 +132,9 @@ class VMImagePlugin(unittest.TestCase):
     @unittest.skipIf(missing_binary('qemu-img'),
                      "QEMU disk image utility is required by the vmimage utility ")
     def test_download_image(self):
+        """
+        :avocado: tags=parallel:1
+        """
         with unittest.mock.patch('avocado.core.data_dir.settings.settings', self.stg):
             try:
                 expected_image_info = vmimage_util.get_best_provider(name="CirrOS")

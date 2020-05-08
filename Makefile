@@ -31,7 +31,6 @@ all:
 	@echo
 	@echo "Development related targets:"
 	@echo "check:       Runs tree static check, unittests and fast functional tests"
-	@echo "check-full:  Runs tree static check, and all unittests and functional tests"
 	@echo "develop:     Runs 'python setup.py --develop' on this tree alone"
 	@echo "link:        Runs 'python setup.py --develop' in all subprojects and links the needed resources"
 	@echo "clean:       Get rid of scratch, byte files and removes the links to other subprojects"
@@ -139,10 +138,6 @@ endif
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
 	PYTHON=$(PYTHON) $(PYTHON) -m avocado nrun selftests/*.sh selftests/unit/ selftests/functional/ $(AVOCADO_OPTIONAL_PLUGINS_TESTS)
-	selftests/check_tmp_dirs
-
-check-full: clean develop
-	PYTHON=$(PYTHON) AVOCADO_CHECK_LEVEL=3 selftests/checkall
 	selftests/check_tmp_dirs
 
 develop:

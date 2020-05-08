@@ -191,6 +191,8 @@ class LoaderTestFunctional(unittest.TestCase):
         """
         Verifies that the test loader, at list time, does not load the Python
         module and thus executes its contents.
+
+        :avocado: tags=parallel:1
         """
         test_script = script.TemporaryScript('sleepeleven.py',
                                              AVOCADO_TEST_SLEEP_ELEVEN,
@@ -225,6 +227,9 @@ class LoaderTestFunctional(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_runner_simple_python_like_multiple_files(self):
+        """
+        :avocado: tags=parallel:1
+        """
         mylib = script.TemporaryScript(
             'test2.py',
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES_LIB,
@@ -247,6 +252,9 @@ class LoaderTestFunctional(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_simple_using_main(self):
+        """
+        :avocado: tags=parallel:1
+        """
         mytest = script.TemporaryScript("simple_using_main.py",
                                         AVOCADO_TEST_SIMPLE_USING_MAIN,
                                         'avocado_simpletest_functional')

@@ -292,6 +292,9 @@ class TestProcessRun(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_run_with_timeout_ugly_cmd(self):
+        """
+        :avocado: tags=parallel:1
+        """
         with script.TemporaryScript("refuse_to_die", REFUSE_TO_DIE) as exe:
             cmd = "%s '%s'" % (sys.executable, exe.path)
             # Wait 1s to set the traps
@@ -305,6 +308,9 @@ class TestProcessRun(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_run_with_negative_timeout_ugly_cmd(self):
+        """
+        :avocado: tags=parallel:1
+        """
         with script.TemporaryScript("refuse_to_die", REFUSE_TO_DIE) as exe:
             cmd = "%s '%s'" % (sys.executable, exe.path)
             # Wait 1s to set the traps

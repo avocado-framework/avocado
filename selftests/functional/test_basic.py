@@ -275,7 +275,10 @@ class RunnerOperationTest(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(1)
     def test_hanged_test_with_status(self):
-        """ Check that avocado handles hanged tests properly """
+        """Check that avocado handles hanged tests properly.
+
+        :avocado: tags=parallel:1
+        """
         with script.TemporaryScript("report_status_and_hang.py",
                                     REPORTS_STATUS_AND_HANG,
                                     "hanged_test_with_status") as tst:
@@ -427,6 +430,9 @@ class RunnerOperationTest(unittest.TestCase):
 
     @skipOnLevelsInferiorThan(2)
     def test_runner_abort(self):
+        """
+        :avocado: tags=parallel:1
+        """
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     '--xunit - abort.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
@@ -499,6 +505,8 @@ class RunnerOperationTest(unittest.TestCase):
     def test_early_latest_result(self):
         """
         Tests that the `latest` link to the latest job results is created early
+
+        :avocado: tags=parallel:1
         """
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
@@ -549,6 +557,9 @@ class RunnerOperationTest(unittest.TestCase):
     @unittest.skipIf(not READ_BINARY, "read binary not available.")
     @skipOnLevelsInferiorThan(1)
     def test_read(self):
+        """
+        :avocado: tags=parallel:1
+        """
         cmd = "%s run --sysinfo=off --job-results-dir %%s %%s" % AVOCADO
         cmd %= (self.tmpdir.name, READ_BINARY)
         result = process.run(cmd, timeout=10, ignore_status=True)
@@ -725,6 +736,8 @@ class RunnerSimpleTest(unittest.TestCase):
 
         Notice: on a current machine this takes about 0.12s, so 30 seconds is
         considered to be pretty safe here.
+
+        :avocado: tags=parallel:1
         """
         one_hundred = 'failtest.py ' * 100
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s'
@@ -742,6 +755,8 @@ class RunnerSimpleTest(unittest.TestCase):
         """
         Sleeptest is supposed to take 1 second, let's make a sandwich of
         100 failtests and check the test runner timing.
+
+        :avocado: tags=parallel:1
         """
         sleep_fail_sleep = ('sleeptest.py ' + 'failtest.py ' * 100 +
                             'sleeptest.py')
@@ -837,6 +852,9 @@ class RunnerSimpleTest(unittest.TestCase):
     @skipOnLevelsInferiorThan(2)
     @unittest.skipUnless(AEXPECT_CAPABLE, 'aexpect package not available')
     def test_kill_stopped_sleep(self):
+        """
+        :avocado: tags=parallel:1
+        """
         proc = aexpect.Expect("%s run 60 --job-results-dir %s "
                               "--external-runner %s --sysinfo=off "
                               "--job-timeout 3"
