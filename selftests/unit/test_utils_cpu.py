@@ -49,6 +49,15 @@ class Cpu(Test):
                                  return_value=self._get_data_mock('x86_64')):
             self.assertEqual(cpu.get_arch(), "x86_64")
 
+    def test_cpu_has_flags(self):
+        with unittest.mock.patch('builtins.open',
+                                 return_value=self._get_data_mock('x86_64')):
+            self.assertTrue(cpu.cpu_has_flags('flexpriority'))
+            self.assertTrue(cpu.cpu_has_flags(['sse4_2', 'xsaveopt']))
+            self.assertFalse(cpu.cpu_has_flags('THIS_WILL_NEVER_BE_A_FLAG_NAME'))
+            self.assertFalse(cpu.cpu_has_flags(['THIS_WILL_NEVER_BE_A_FLAG_NAME',
+                                                'NEITHER_WILL_THIS_WILL_EVER_BE']))
+
     def test_cpu_arch_power8(self):
         with unittest.mock.patch('builtins.open',
                                  return_value=self._get_data_mock('power8')):

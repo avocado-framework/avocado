@@ -80,7 +80,7 @@ def cpu_has_flags(flags):
     Check if a list of flags are available on current CPU info
 
     :param flags: A `list` of cpu flags that must exists on the current CPU.
-    :type flags: `list`
+    :type flags: `list` of str
     :returns: `bool` True if all the flags were found or False if not
     :rtype: `list`
     """
@@ -90,7 +90,7 @@ def cpu_has_flags(flags):
         flags = [flags]
 
     for flag in flags:
-        if not _list_matches(cpu_info, '.*%s.*' % flag):
+        if not any([flag.encode() in line for line in cpu_info]):
             return False
     return True
 
