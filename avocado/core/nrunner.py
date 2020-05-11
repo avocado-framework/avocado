@@ -824,6 +824,7 @@ class BaseRunnerApp:
             prog = self.PROG_NAME
         if description is None:
             description = self.PROG_DESCRIPTION
+        self._class_commands_method = self._get_commands_method()
         self._setup_parser(prog, description)
 
     def _setup_parser(self, prog, description):
@@ -831,25 +832,24 @@ class BaseRunnerApp:
                                               description=description)
         subcommands = self.parser.add_subparsers(dest='subcommand')
         subcommands.required = True
-        for cmd_meth in self._get_commands_method_without_prefix():
-            attr = "CMD_%s_ARGS" % cmd_meth.upper()
-            cmd = cmd_meth.replace('_', '-')
-            cmd_parser = subcommands.add_parser(
-                cmd,
-                help=self._get_command_method_help_message(cmd_meth))
-            if hasattr(self, attr):
-                for arg in getattr(self, attr):
-                    cmd_parser.add_argument(*arg[0], **arg[1])
+        for command, method in self._class_commands_method.items():
+            command_args = "CMD_%s_ARGS" % command.upper().replace('-', '_')
+            command_parser = subcommands.add_parser(
+                command,
+                help=self._get_command_method_help_message(method))
+            if hasattr(self, command_args):
+                for arg in getattr(self, command_args):
+                    command_parser.add_argument(*arg[0], **arg[1])
 
-    def _get_commands_method_without_prefix(self):
+    def _get_commands_method(self):
         prefix = 'command_'
-        return [c[0][len(prefix):]
+        return {c[0][len(prefix):].replace('_', '-'): getattr(self, c[0])
                 for c in inspect.getmembers(self, inspect.ismethod)
-                if c[0].startswith(prefix)]
+                if c[0].startswith(prefix)}
 
     def _get_command_method_help_message(self, command_method):
         help_message = ''
-        docstring = getattr(self, 'command_%s' % command_method).__doc__
+        docstring = command_method.__doc__
         if docstring:
             docstring_lines = docstring.strip().splitlines()
             if docstring_lines:
@@ -862,11 +862,9 @@ class BaseRunnerApp:
         """
         args = vars(self.parser.parse_args())
         subcommand = args.get('subcommand')
-        if subcommand in self.get_commands():
-            meth_name = 'command_' + subcommand.replace('-', '_')
-            if hasattr(self, meth_name):
-                kallable = getattr(self, meth_name)
-                return kallable(args)
+        kallable = self._class_commands_method.get(subcommand, None)
+        if kallable is not None:
+            return kallable(args)
 
     def get_commands(self):
         """
@@ -879,8 +877,7 @@ class BaseRunnerApp:
 
         :rtype: list
         """
-        return [c.replace('_', '-') for c in
-                self._get_commands_method_without_prefix()]
+        return list(self._class_commands_method.keys())
 
     def get_capabilities(self):
         """
