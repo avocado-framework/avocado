@@ -53,9 +53,9 @@ def get_disks():
     :returns: a list of paths to the physical disks on the system
     :rtype: list of str
     """
-    json_result = process.run('lsblk --json')
+    json_result = process.run('lsblk --json --paths --inverse')
     json_data = json.loads(json_result.stdout_text)
-    return ['/dev/%s' % str(disk['name']) for disk in json_data['blockdevices']]
+    return [str(disk['name']) for disk in json_data['blockdevices']]
 
 
 def get_available_filesystems():
