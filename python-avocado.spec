@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit     b325e95fbffd0aa06a470c6a03a2664cd0b64481
+        %global commit      d914f64be8982da77be4c5c15b817fe5c1c209de
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20200413
+        %global commit_date 20200511
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -58,7 +58,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 78.0
+Version: 79.0
 Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -75,7 +75,8 @@ BuildRequires: kmod
 %if %{with_python3_fabric}
 BuildRequires: python3-fabric3
 %endif
-%endif # with_fabric
+%endif
+# with_fabric
 %if 0%{?fedora} >= 30
 BuildRequires: glibc-all-langpacks
 %endif
@@ -150,14 +151,16 @@ pushd optional_plugins/runner_remote
 %if %{with_python3_fabric}
 %py3_build
 %endif
-%endif # with_fabric
+%endif
+# with_fabric
 popd
 pushd optional_plugins/runner_vm
 %if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_build
 %endif
-%endif # with_fabric
+%endif
+# with_fabric
 popd
 pushd optional_plugins/runner_docker
 %if %{with_python3_aexpect}
@@ -165,8 +168,10 @@ pushd optional_plugins/runner_docker
 %if %{with_python3_fabric}
 %py3_build
 %endif
-%endif # with_fabric
-%endif # with_python3_aexpect
+%endif
+# with_fabric
+%endif
+# with_python3_aexpect
 popd
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
@@ -213,14 +218,16 @@ pushd optional_plugins/runner_remote
 %if %{with_python3_fabric}
 %py3_install
 %endif
-%endif # with_fabric
+%endif
+# with_fabric
 popd
 pushd optional_plugins/runner_vm
 %if %{with_fabric}
 %if %{with_python3_fabric}
 %py3_install
 %endif
-%endif # with_fabric
+%endif
+# with_fabric
 popd
 pushd optional_plugins/runner_docker
 %if %{with_python3_aexpect}
@@ -228,8 +235,10 @@ pushd optional_plugins/runner_docker
 %if %{with_python3_fabric}
 %py3_install
 %endif
-%endif # with_fabric
-%endif # with_python3_aexpect
+%endif
+# with_fabric
+%endif
+# with_python3_aexpect
 popd
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
@@ -290,10 +299,13 @@ popd
 pushd optional_plugins/runner_docker
 %if %{with_python3_aexpect}
 %{__python3} setup.py develop --user
-%endif # with_python3_aexpect
+%endif
+# with_python3_aexpect
 popd
-%endif # with_python3_fabric
-%endif # with_fabric
+%endif
+# with_python3_fabric
+%endif
+# with_fabric
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %{__python3} setup.py develop --user
@@ -329,7 +341,7 @@ popd
 # unittests needs to be a Python specific one on Fedora >= 28.  Let's
 # use the one that was setup in the source tree by the "setup.py
 # develop --user" step and is guaranteed to be version specific.
-LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado %{__python3} selftests/run
+PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado %{__python3} selftests/run
 %endif
 
 %files -n python3-%{srcname}
@@ -424,8 +436,10 @@ connection.  Avocado must be previously installed on the remote machine.
 %files -n python3-%{srcname}-plugins-runner-remote
 %{python3_sitelib}/avocado_runner_remote*
 %{python3_sitelib}/avocado_framework_plugin_runner_remote*
-%endif # with_python3_fabric
-%endif # with_fabric
+%endif
+# with_python3_fabric
+%endif
+# with_fabric
 
 %if %{with_fabric}
 %if %{with_python3_fabric}
@@ -443,8 +457,10 @@ itself.  Avocado must be previously installed on the VM.
 %files -n python3-%{srcname}-plugins-runner-vm
 %{python3_sitelib}/avocado_runner_vm*
 %{python3_sitelib}/avocado_framework_plugin_runner_vm*
-%endif # with_python3_fabric
-%endif # with_fabric
+%endif
+# with_python3_fabric
+%endif
+# with_fabric
 
 %if %{with_python3_aexpect}
 %if %{with_fabric}
@@ -463,9 +479,12 @@ be previously installed on the container.
 %files -n python3-%{srcname}-plugins-runner-docker
 %{python3_sitelib}/avocado_runner_docker*
 %{python3_sitelib}/avocado_framework_plugin_runner_docker*
-%endif # with_python3_fabric
-%endif # with_fabric
-%endif # with_python3_aexpect
+%endif
+# with_python3_fabric
+%endif
+# with_fabric
+%endif
+# with_python3_aexpect
 
 %if ! 0%{?rhel}
 %package -n python3-%{srcname}-plugins-resultsdb
@@ -604,6 +623,13 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon May 11 2020 Cleber Rosa <cleber@redhat.com> - 79.0-0
+- New release
+- Added current user's ~/local/.bin to the PATH environment variable
+  while running tests, so that avocado-runner-* scripts can be found
+- Moved comment to new lines closing the conditionals, to avoid
+  errors from rpmlint and rpmbuild
+
 * Mon Apr 13 2020 Cleber Rosa <cleber@redhat.com> - 78.0-0
 - New release
 

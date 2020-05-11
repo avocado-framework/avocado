@@ -560,6 +560,8 @@ In this example, the ``test`` method just gets into the base directory of
 the compiled suite  and executes the ``./synctest`` command, with appropriate
 parameters, using :func:`avocado.utils.process.system`.
 
+.. _Fetching asset files:
+
 Fetching asset files
 --------------------
 

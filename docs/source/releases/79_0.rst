@@ -1,0 +1,140 @@
+====================
+79.0 La vita è bella
+====================
+
+The Avocado team is proud to present another release: Avocado 79.0,
+AKA "La vita è bella", is now available!
+
+This releases contains mainly internal changes in preparation for the
+N(ext)Runner architecture to replace the current one.  It's expected
+that an LTS release will be done within the next two or three releases,
+before the switch the current runner architecture is deprecated and
+removed.
+
+Release documentation: `Avocado 79.0
+<http://avocado-framework.readthedocs.io/en/79.0/>`_
+
+Users/Test Writers
+==================
+
+* The Remote, VM and Docker runner plugins have been deprecated.  The
+  current implementation would require a major rewrite to be
+  compatible with the new Fabric API (currently uses the Fabric3 API).
+  Also, the N(ext)Runner architecture requires that individual tests
+  be executed in isolated environments (be them local or remote) and
+  the current implementation actually runs a complete Avocado Job
+  so it's not suitable to be reused in the N(ext)Runner.
+
+* The Avocado docstring directives (the ones that go into docstrings
+  and are prefixed with ``:avocado:``) now support ``requirement``
+  entries.  Those will be used as part of the "Requirements Resolver"
+  features, as per :doc:`/blueprints/BP002`.
+
+* The ``--ignore-missing-references`` option, which used to take a
+  ``on`` or ``off`` parameter, now takes no parameter. Now, the
+  feature  it controls is not enabled unless you supply the command
+  line option (but no ``on`` or ``off`` is required).
+
+Bug Fixes
+=========
+
+* When using the Job API (with the conventional runner or the
+  N(ext)Runner) the ``job.log`` ended up being empty empty, but now it
+  produces just like when using the Avocado command line tool.  This
+  fix is part of the stabilization effort to declare the Job API as
+  supported soon.
+
+* Fixed an issue with the :mod:`avocado.core.safeloader` that would
+  return duplicate tests when both a parent and child class
+  implemented methods with the same name.
+
+* Fixed an issue in the :func:`avocado.core.utils.cpu.cpu_has_flags`
+  that could cause a crash because of a mixed used of bytes coming
+  from reading ``/proc/cpuinfo`` and a string based regex.
+
+Utility APIs
+============
+
+* The :class:`avocado.utils.gdb.GDBRemote` implementation of the GDB
+  Remote Protocol now deals with bytes (instead of possibly multibyte
+  strings), more in line with the original protocol specification.
+
+* Users of the :func:`avocado.utils.partition.mount` can now skip
+  checking if the devices/mountpoints are mounted, which is useful
+  for bind mounts.
+
+* The :func:`avocado.utils.cpu.online` and
+  :func:`avocado.utils.cpu.offline` will now check the status of the
+  CPU before attempting to apply a possibly (unnecessary) action.
+
+* The :class:`avocado.utils.software_manager.DnfBackend` now properly
+  implements a ``build_dep`` functionality, which differs from its
+  parent :class:`avocado.utils.software_manager.YUMBackend`.
+
+Internal Changes
+================
+
+* Optional plugins (shipped by Avocado) will now require a matching
+  Avocado version.  This should prevent users from having installation
+  and usage problems with versions mismatch.
+
+* A number of selftests were ported from :class:`unittest.TestCase` to
+  :class:`avocado.Test`, making use of Avocado's features and following
+  a "eat your own dog food" approach.
+
+* A new code style lint check is now enforced, W601, which drops the
+  use of ``has_key()`` in favor for the ``key in`` idiom.
+
+* The N(ext)Runner main module, :class:`avocado.core.nrunner`, now has
+  two explicit registries for the two different types of supported
+  runners.  The first one,
+  :data:`avocado.core.nrunner.RUNNERS_REGISTRY_STANDALONE_EXECUTABLE`
+  is populated at run time with standalone executable runners
+  available on the system (those named ``avocado-runner-$kind``).  The
+  second one,
+  :data:`avocado.core.nrunner.RUNNERS_REGISTRY_PYTHON_CLASS` contains
+  Python based runner implementations, which are currently set
+  manually following a class implementation definition (but may be
+  converted to dynamic lookups, such as setuptools' entrypoints in
+  the future).
+
+* The N(ext)Runner example job is one way of checking the progress
+  of its integration into the overall Avocado framework.  It's been
+  broken, but it's now back to operation status and being used by the
+  release process in the ``jobs/timesensitive.py`` job, which has
+  replaced the ``make check-full`` rule.
+
+* The N(ext)Runner standard runner implementations, say,
+  ``avocado-runner-exec-text``, will now create an "output directory"
+  on behalf of the test, and communicate its location via the
+  ``AVOCADO_TEST_OUTPUT_DIR`` environment variable.  Further work will
+  implement the retrieval and storage of individual tests' output into
+  an organized Avocado Job result structure.
+
+* The ``nrun`` command, a temporary entrypoint into the N(ext)Runner,
+  will now show a list of tasks that failed with ``fail`` or ``error``
+  results, which can be helpful while debugging Avocado's own selftests
+  failures (or for those brave enough to be running nrun already).
+
+* A number of optional plugins, including ``resultsdb``,
+  ``results_upload``, ``varianter_cit`` and ``varianter_pict`` have
+  been migrated to the "future" settings API, which delivers a
+  consistent configuration between command line, configuration files
+  and Job API usage.
+
+* Documentation improvements on the :ref:`Fetching asset files`
+  section, and on the explanation of the current and :ref:`nrunner`
+  architecture.
+
+* Because the minimum supported Python version was lifted from 3.4 to
+  3.5 back in Avocado version 74.0, it was possible, but not done
+  before, to upgrade the :mod:`asyncio` syntax from the
+  :func:`asyncio.coroutine` and ``yield from`` to the more modern
+  ``async def`` and ``await`` syntax.
+
+* Python 3.8 is now formally supported, being enabled in the Python
+  package manifest, and being actively tested on our CI.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/78.0...79.0>`_.
