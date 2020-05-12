@@ -889,7 +889,7 @@ class BaseRunnerApp:
 
         :rtype: dict
         """
-        return {"runnables": [k for k in self.RUNNABLE_KINDS_CAPABLE.keys()],
+        return {"runnables": list(self.RUNNABLE_KINDS_CAPABLE.keys()),
                 "commands": self.get_commands()}
 
     def get_runner_from_runnable(self, runnable):
