@@ -40,9 +40,9 @@ def log_exc_info(exc_info, logger=''):
     called_from = inspect.currentframe().f_back
     logger.error("Reproduced traceback from: %s:%s",
                  called_from.f_code.co_filename, called_from.f_lineno)
-    for line in tb_info(exc_info):
-        for l in line.splitlines():
-            logger.error(l)
+    for trace in tb_info(exc_info):
+        for line in trace.splitlines():
+            logger.error(line)
     logger.error('')
 
 
