@@ -1,4 +1,4 @@
-ifneq "" "$(findstring fedora-32-,$(MOCK_CONFIG))$(findstring fedora-rawhide-,$(MOCK_CONFIG))"
+ifneq "" "$(findstring fedora-33-,$(MOCK_CONFIG))$(findstring fedora-rawhide-,$(MOCK_CONFIG))"
     modenable := avocado:latest
     modrepos  := --enablerepo=rawhide-modular
 else ifneq "" "$(findstring fedora-30-,$(MOCK_CONFIG))$(findstring fedora-31-,$(MOCK_CONFIG))"
