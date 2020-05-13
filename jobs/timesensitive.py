@@ -9,7 +9,7 @@ from avocado.core.job import Job
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 CONFIG = {
-    'test_runner': 'nrunner',
+    'run.test_runner': 'nrunner',
     'nrun.references': [os.path.join(ROOT_DIR, 'selftests', 'unit'),
                         os.path.join(ROOT_DIR, 'selftests', 'functional')],
     'filter_by_tags': ['parallel:1'],
