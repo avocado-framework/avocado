@@ -67,10 +67,13 @@ class SysInfo(CLICmd):
         """
         parser = super(SysInfo, self).configure(parser)
 
-        help_msg = 'Directory where Avocado will dump sysinfo data.'
+        help_msg = ('Directory where Avocado will dump sysinfo data.  If one '
+                    'is not given explicitly, it will default to a directory '
+                    'named "sysinfo-" followed by a timestamp in the current '
+                    'working directory.')
         settings.register_option(section='sysinfo.collect',
                                  key='sysinfodir',
-                                 default='./',
+                                 default=None,
                                  help_msg=help_msg,
                                  parser=parser,
                                  positional_arg=True,
