@@ -4,7 +4,7 @@ import sys
 from avocado.core.job import Job
 
 config = {'run.references': ['/bin/true'],
-          'test_runner': 'docker',
+          'run.test_runner': 'docker',
           'docker': 'ldoktor/fedora-avocado',
           'docker_cmd': 'podman',
           'docker_options': '',

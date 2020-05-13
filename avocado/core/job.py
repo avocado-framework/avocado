@@ -548,7 +548,7 @@ class Job:
         refs = self.config.get('run.references')
         if not refs:
             refs = self.config.get('nrun.references')
-        runner_name = self.config.get('test_runner', 'runner')
+        runner_name = self.config.get('run.test_runner', 'runner')
         try:
             if runner_name == 'nrunner':
                 self.test_suite = self._make_test_suite_resolver(refs)
@@ -595,7 +595,7 @@ class Job:
                 raise exceptions.OptionValidationError("Unable to parse "
                                                        "variant: %s" % details)
 
-        runner_name = self.config.get('test_runner', 'runner')
+        runner_name = self.config.get('run.test_runner', 'runner')
         try:
             runner_extension = dispatcher.RunnerDispatcher()[runner_name]
         except KeyError:

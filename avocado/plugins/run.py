@@ -87,6 +87,19 @@ class Run(CLICmd):
                                  long_arg='--test-parameter',
                                  short_arg='-p')
 
+        help_msg = ('Selects the runner implementation from one of the '
+                    'installed and active implementations.  You can run '
+                    '"avocado plugins" and find the list of valid runners '
+                    'under the "Plugins that run test suites on a job '
+                    '(runners) section.  Defaults to "runner", which is '
+                    'the conventional and traditional runner.')
+        settings.register_option(section='run',
+                                 key='test_runner',
+                                 default='runner',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--test-runner')
+
         help_msg = ('Instead of running the test only list them and log '
                     'their params.')
         settings.register_option(section='run.dry_run',
