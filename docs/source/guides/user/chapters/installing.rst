@@ -47,42 +47,19 @@ Installing from packages
 Fedora
 ~~~~~~
 
-Avocado is available in stock Fedora 24 and later.  The main package name is
-``python-avocado``, and can be installed with::
+Avocado modules are available on standard Fedora repos starting with
+version 29.  To subscribe to the latest version stream, run::
 
-    $ dnf install python-avocado
+  $ dnf module enable avocado:latest
 
-.. _fedora-from-avocados-own-repo:
+Or, to use the LTS (Long Term Stability) version stream, run::
 
-Fedora from Avocado's own Repo
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  $ dnf module enable avocado:69lts
 
-The Avocado project also makes the latest release, and the LTS (Long Term
-Stability) releases available from its own package repository.  To use it,
-first get the package repositories configuration file by running the following
-command::
+Then proceed to install a module profile or individual packages.  If you're
+unsure about what to do, simply run::
 
-    $ sudo curl https://avocado-project.org/data/repos/avocado-fedora.repo -o /etc/yum.repos.d/avocado.repo
-
-Now check if you have the ``avocado`` and ``avocado-lts`` repositories
-configured by running::
-
-    $ sudo dnf repolist avocado avocado-lts
-    ...
-    repo id      repo name                          status
-    avocado      Avocado                            50
-    avocado-lts  Avocado LTS (Long Term Stability)  disabled
-
-Regular users of Avocado will want to use the standard ``avocado`` repository,
-which tracks the latest Avocado releases.  For more information about the LTS
-releases, please refer to :ref:`rfc-long-term-stability`  and to your package
-management docs on how to switch to the ``avocado-lts`` repo.
-
-Finally, after deciding between regular Avocado releases or LTS, you can
-install the RPM packages by running the following commands::
-
-    $ dnf install python-avocado
-
+  $ dnf module install avocado
 
 Enterprise Linux
 ~~~~~~~~~~~~~~~~
