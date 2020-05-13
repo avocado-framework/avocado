@@ -12,12 +12,12 @@
          "description": "Run the command: `make propagate-version` to propagate this change to all optional and “linkabe” plugins sharing the parent dir (eg. avocado-vt)."
 	 },
          {
-	 "name": "Version Bump: Commit the bump",
-         "description": "Commit the version bump. Don't forget to commit the changes of 'linked' plugins as they live in different repositories."
+	 "name": "Write the release notes",
+         "description": "Under `docs/source/releases/` create a new .rst file describing the release changes. Also, update the `docs/source/releases/index.rst` file.  Look at the sprint issues and PRs on GitHub, specially the ones with the `comment-on-sprint-review` label."
 	 },
          {
-	 "name": "Changelog: Create a Changelog",
-         "description": "Under `docs/source/releases/` create a new .rst file describing the release changes. Also, update the `docs/source/releases/index.rst` file"
+	 "name": "Version Bump: Commit the bump",
+         "description": "Commit the version bump, python-avocado.spec and release notes. Don't forget to commit the changes of 'linked' plugins as they live in different repositories."
 	 },
          {
 	 "name": "Build RPMs",
@@ -42,10 +42,6 @@
          {
 	 "name": "Upload packages to repository: Copy the content",
          "description": "Copy the content with the command:\n\n`rsync -va $REPO_ROOT user@repo_web_server:/path`"
-	 },
-         {
-	 "name": "Write release notes",
-         "description": "Release notes give an idea of what has changed on a given development cycle. Good places to go for release notes are: 1) git logs; 2) Trello cards (look for the done list); 3) Github compare views.\n\nGo there and try to write a text that represents the changes that the release encompasses."
 	 },
          {
 	 "name": "Upload package to PyPI",
