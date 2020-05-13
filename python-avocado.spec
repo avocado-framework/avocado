@@ -26,31 +26,6 @@
 # enabled by default.
 %global with_tests 1
 
-# Avocado is currently incompatible with the Fabric API in Fedora 31 and later
-# https://github.com/avocado-framework/avocado/issues/3125
-%if 0%{?fedora} >= 31
-%global with_fabric 0
-%else
-%global with_fabric 1
-%endif
-
-# Python 3 version of Fabric package is new starting with Fedora 29
-%if 0%{?fedora} >= 29
-%global with_python3_fabric 1
-%else
-%global with_python3_fabric 0
-%endif
-
-# Python 3 version of aexpect is available on a module on Fedora >= 30
-# and package build dependency resolution seems to be currently broken
-# for modules.  Other developers have reported similar scenarios as this:
-# https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/thread/V6SBSAS5TBGNORGLYW75TIRX6JDBXQ2Q/
-%if 0%{?fedora} >= 30 || 0%{?rhel}
-%global with_python3_aexpect 0
-%else
-%global with_python3_aexpect 1
-%endif
-
 # The Python dependencies are already tracked by the python2
 # or python3 "Requires".  This filters out the python binaries
 # from the RPM automatic requires/provides scanner.
@@ -59,7 +34,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 79.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -71,19 +46,9 @@ Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.g
 BuildArch: noarch
 BuildRequires: procps-ng
 BuildRequires: kmod
-%if %{with_fabric}
-%if %{with_python3_fabric}
-BuildRequires: python3-fabric3
-%endif
-%endif
-# with_fabric
 %if 0%{?fedora} >= 30
 BuildRequires: glibc-all-langpacks
 %endif
-%if %{with_python3_aexpect}
-BuildRequires: python3-aexpect
-%endif
-
 BuildRequires: python3-jinja2
 BuildRequires: python3-devel
 BuildRequires: python3-docutils
@@ -146,33 +111,6 @@ sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to
 pushd optional_plugins/html
 %py3_build
 popd
-pushd optional_plugins/runner_remote
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%py3_build
-%endif
-%endif
-# with_fabric
-popd
-pushd optional_plugins/runner_vm
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%py3_build
-%endif
-%endif
-# with_fabric
-popd
-pushd optional_plugins/runner_docker
-%if %{with_python3_aexpect}
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%py3_build
-%endif
-%endif
-# with_fabric
-%endif
-# with_python3_aexpect
-popd
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %py3_build
@@ -212,33 +150,6 @@ popd
 %{__sed} -e 's/ etc\/avocado\/sysinfo\// \/etc\/avocado\/sysinfo\//' -i %{buildroot}/etc/avocado/avocado.conf
 pushd optional_plugins/html
 %py3_install
-popd
-pushd optional_plugins/runner_remote
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%py3_install
-%endif
-%endif
-# with_fabric
-popd
-pushd optional_plugins/runner_vm
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%py3_install
-%endif
-%endif
-# with_fabric
-popd
-pushd optional_plugins/runner_docker
-%if %{with_python3_aexpect}
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%py3_install
-%endif
-%endif
-# with_fabric
-%endif
-# with_python3_aexpect
 popd
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
@@ -288,24 +199,6 @@ find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x 
 pushd optional_plugins/html
 %{__python3} setup.py develop --user
 popd
-%if %{with_fabric}
-%if %{with_python3_fabric}
-pushd optional_plugins/runner_remote
-%{__python3} setup.py develop --user
-popd
-pushd optional_plugins/runner_vm
-%{__python3} setup.py develop --user
-popd
-pushd optional_plugins/runner_docker
-%if %{with_python3_aexpect}
-%{__python3} setup.py develop --user
-%endif
-# with_python3_aexpect
-popd
-%endif
-# with_python3_fabric
-%endif
-# with_fabric
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %{__python3} setup.py develop --user
@@ -358,9 +251,6 @@ PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOC
 %{_bindir}/avocado-software-manager
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
-%exclude %{python3_sitelib}/avocado_runner_remote*
-%exclude %{python3_sitelib}/avocado_runner_vm*
-%exclude %{python3_sitelib}/avocado_runner_docker*
 %exclude %{python3_sitelib}/avocado_resultsdb*
 %exclude %{python3_sitelib}/avocado_loader_yaml*
 %exclude %{python3_sitelib}/avocado_golang*
@@ -370,9 +260,6 @@ PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOC
 %exclude %{python3_sitelib}/avocado_result_upload*
 %exclude %{python3_sitelib}/avocado_glib*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_html*
-%exclude %{python3_sitelib}/avocado_framework_plugin_runner_remote*
-%exclude %{python3_sitelib}/avocado_framework_plugin_runner_vm*
-%exclude %{python3_sitelib}/avocado_framework_plugin_runner_docker*
 %exclude %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
@@ -421,70 +308,6 @@ arbitrary filesystem location.
 %files -n python3-%{srcname}-plugins-output-html
 %{python3_sitelib}/avocado_result_html*
 %{python3_sitelib}/avocado_framework_plugin_result_html*
-
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%package -n python3-%{srcname}-plugins-runner-remote
-Summary: Avocado Runner for Remote Execution
-Requires: python3-%{srcname} == %{version}
-Requires: python3-fabric3
-
-%description -n python3-%{srcname}-plugins-runner-remote
-Allows Avocado to run jobs on a remote machine, by means of an SSH
-connection.  Avocado must be previously installed on the remote machine.
-
-%files -n python3-%{srcname}-plugins-runner-remote
-%{python3_sitelib}/avocado_runner_remote*
-%{python3_sitelib}/avocado_framework_plugin_runner_remote*
-%endif
-# with_python3_fabric
-%endif
-# with_fabric
-
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%package -n python3-%{srcname}-plugins-runner-vm
-Summary: Avocado Runner for libvirt VM Execution
-Requires: python3-%{srcname} == %{version}
-Requires: python3-%{srcname}-plugins-runner-remote == %{version}
-Requires: python3-libvirt
-
-%description -n python3-%{srcname}-plugins-runner-vm
-Allows Avocado to run jobs on a libvirt based VM, by means of
-interaction with a libvirt daemon and an SSH connection to the VM
-itself.  Avocado must be previously installed on the VM.
-
-%files -n python3-%{srcname}-plugins-runner-vm
-%{python3_sitelib}/avocado_runner_vm*
-%{python3_sitelib}/avocado_framework_plugin_runner_vm*
-%endif
-# with_python3_fabric
-%endif
-# with_fabric
-
-%if %{with_python3_aexpect}
-%if %{with_fabric}
-%if %{with_python3_fabric}
-%package -n python3-%{srcname}-plugins-runner-docker
-Summary: Avocado Runner for Execution on Docker Containers
-Requires: python3-%{srcname} == %{version}
-Requires: python3-%{srcname}-plugins-runner-remote == %{version}
-Requires: python3-aexpect
-
-%description -n python3-%{srcname}-plugins-runner-docker
-Allows Avocado to run jobs on a Docker container by interacting with a
-Docker daemon and attaching to the container itself.  Avocado must
-be previously installed on the container.
-
-%files -n python3-%{srcname}-plugins-runner-docker
-%{python3_sitelib}/avocado_runner_docker*
-%{python3_sitelib}/avocado_framework_plugin_runner_docker*
-%endif
-# with_python3_fabric
-%endif
-# with_fabric
-%endif
-# with_python3_aexpect
 
 %if ! 0%{?rhel}
 %package -n python3-%{srcname}-plugins-resultsdb
@@ -623,6 +446,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue May 12 2020 Cleber Rosa <cleber@redhat.com> - 79.0-1
+- Do not build deprecated runners
+
 * Mon May 11 2020 Cleber Rosa <cleber@redhat.com> - 79.0-0
 - New release
 - Added current user's ~/local/.bin to the PATH environment variable

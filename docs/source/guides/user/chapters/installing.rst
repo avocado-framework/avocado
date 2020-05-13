@@ -47,69 +47,43 @@ Installing from packages
 Fedora
 ~~~~~~
 
-Avocado is available in stock Fedora 24 and later.  The main package name is
-``python-avocado``, and can be installed with::
+Avocado modules are available on standard Fedora repos starting with
+version 29.  To subscribe to the latest version stream, run::
 
-    $ dnf install python-avocado
+  $ dnf module enable avocado:latest
 
-.. _fedora-from-avocados-own-repo:
+Or, to use the LTS (Long Term Stability) version stream, run::
 
-Fedora from Avocado's own Repo
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  $ dnf module enable avocado:69lts
 
-The Avocado project also makes the latest release, and the LTS (Long Term
-Stability) releases available from its own package repository.  To use it,
-first get the package repositories configuration file by running the following
-command::
+Then proceed to install a module profile or individual packages.  If you're
+unsure about what to do, simply run::
 
-    $ sudo curl https://avocado-project.org/data/repos/avocado-fedora.repo -o /etc/yum.repos.d/avocado.repo
-
-Now check if you have the ``avocado`` and ``avocado-lts`` repositories
-configured by running::
-
-    $ sudo dnf repolist avocado avocado-lts
-    ...
-    repo id      repo name                          status
-    avocado      Avocado                            50
-    avocado-lts  Avocado LTS (Long Term Stability)  disabled
-
-Regular users of Avocado will want to use the standard ``avocado`` repository,
-which tracks the latest Avocado releases.  For more information about the LTS
-releases, please refer to :ref:`rfc-long-term-stability`  and to your package
-management docs on how to switch to the ``avocado-lts`` repo.
-
-Finally, after deciding between regular Avocado releases or LTS, you can
-install the RPM packages by running the following commands::
-
-    $ dnf install python-avocado
-
+  $ dnf module install avocado
 
 Enterprise Linux
 ~~~~~~~~~~~~~~~~
 
-Avocado packages for Enterprise Linux are available from the Avocado project
-RPM repository.  Additionally, some packages from the EPEL repo are necessary,
-so you need to enable it first.  For EL7, running the following command should
-do it::
+Avocado modules are also available on EPEL (Extra Packages for Enterprise Linux)
+repos, starting with version 8.  To enable the EPEL repository, run::
 
-    $ yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  $ dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
-Then you must use the Avocado project RHEL repository_.  Running the following
-command should give you the basic Avocado installation ready::
+Then to enable the module, run::
 
-    $ curl https://avocado-project.org/data/repos/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
-    $ yum install python-avocado
+  $ dnf module enable avocado:latest
 
-The LTS (Long Term Stability) repositories are also available for Enterprise
-Linux.  Please refer to :ref:`rfc-long-term-stability` and to your package
-management docs on how to switch to the ``avocado-lts`` repo.
+And finally, install any number of packages, such as::
+
+  $ dnf install python3-avocado python3-avocado-plugins-output-html python3-avocado-plugins-varianter-yaml-to-mux
 
 Latest Development RPM Packages from COPR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Avocado provides a repository of continuously built packages from the GitHub
-repository's master branch.  These packages are currently available for EL7,
-Fedora 28 and Fedora 29, for both x86_64 and ppc64le.
+Avocado provides a repository of continuously built packages from the
+GitHub repository's master branch.  These packages are currently
+available for some of the latest Enterprise Linux and Fedora versions,
+for a few different architectures.
 
 If you're interested in using the very latest development version of Avocado
 from RPM packages, you can do so by running::
@@ -152,6 +126,5 @@ Then to install Avocado from the git repository run::
     $ sudo make requirements
     $ sudo python3 setup.py install
 
-.. _repository: https://avocado-project.org/data/repos/avocado-el.repo
 .. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado
 .. _Avocado-VT: https://avocado-vt.readthedocs.io/en/latest/GetStartedGuide.html#installing-avocado-vt
