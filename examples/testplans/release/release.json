@@ -40,6 +40,10 @@
          "description": "Visit the link below:\n\nhttps://readthedocs.org/dashboard/avocado-framework/edit/\n\n 1) Click in *Versions*. In *Choose Active Versions*, find the version you're releasing and check the *Active* option. *Submit*;\n 2) Click in *Versions* again. In *Default Version*, select the new version you're releasing. *Submit*."
 	 },
          {
+	 "name": "Update the Fedora and EPEL RPM packages and module",
+         "description": "Follow the instructions on:\n\nhttps://github.com/mmathesius/howtos/blob/master/how_to_refresh_avocado_module_for_new_upstream_release.rst\n\nand work with the package maintainer by sending a PR to update the Avocado version on the `avocado:latest` stream."
+	 },
+         {
 	 "name": "Send e-emails",
          "description": "Send the e-email with the release notes to avocado-devel and virt-test-devel."
 	 }
