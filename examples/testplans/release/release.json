@@ -20,6 +20,10 @@
          "description": "Commit the version bump, python-avocado.spec and release notes. Don't forget to commit the changes of 'linked' plugins as they live in different repositories."
 	 },
          {
+	 "name": "Version Bump: Tag the repository",
+         "description": "Tagging the repository locally (but not pushing it yet), will let you do a `make rpm-release` in the next step. Run `git tag -u $(GPG_ID) -s $(RELEASE) -m 'Release $(RELEASE)'`"
+	 },
+         {
 	 "name": "Build RPMs",
          "description": "Go to the source directory and do:\n\n`make rpm-release && echo $?`\n\nThis should be all. It will build packages using mock, targeting your default configuration. That usually means the same platform you’re currently on."
 	 },
@@ -30,10 +34,6 @@
          {
 	 "name": "Upload packages to repository: Create the metadata",
          "description": "The current distribution method is based on serving content over HTTP. That means that repository metadata is created locally and synchronized to the well know public Web server. Create the repo metadata with the command:\n\n`cd $REPO_ROOT && for DIR in epel-?-noarch fedora-??-noarch; do cd $DIR && createrepo -v . && cd ..; done;`"
-	 },
-         {
-	 "name": "Version Bump: Tag the repository",
-         "description": "When everything is in good shape, commit the version changes and tag that commit in master with:\n\n`git tag -u $(GPG_ID) -s $(RELEASE) -m 'Avocado Release $(RELEASE)'`"
 	 },
          {
 	 "name": "Version Bump: Push the tag",
