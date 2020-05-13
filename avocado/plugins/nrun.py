@@ -63,11 +63,11 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg='--status-server')
 
-        settings.register_option(section="nrun.spawners.podman",
-                                 key="enabled",
-                                 default=False,
-                                 key_type=bool,
-                                 help_msg="Spawn tests in podman containers",
+        help_msg = "Spawn tests in a specific spawner. Available for now: Process, Podman"
+        settings.register_option(section="nrun",
+                                 key="spawner",
+                                 default='Process',
+                                 help_msg=help_msg,
                                  parser=parser,
                                  long_arg="--podman-spawner")
 
@@ -132,7 +132,7 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
-            if config.get('nrun.spawners.podman.enabled'):
+            if config.get('nrun.spawner') == 'Podman':
                 if not os.path.exists(PodmanSpawner.PODMAN_BIN):
                     msg = ('Podman Spawner selected, but podman binary "%s" '
                            'is not available on the system.  Please install '
@@ -141,8 +141,12 @@ class NRun(CLICmd):
                     LOG_UI.error(msg)
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 self.spawner = PodmanSpawner()  # pylint: disable=W0201
-            else:
+            elif config.get('nrun.spawner') == 'Process':
                 self.spawner = ProcessSpawner()  # pylint: disable=W0201
+            else:
+                LOG_UI.error("Spawner not implemented or invalid.")
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
             listen = config.get('nrun.status_server.listen')
             verbose = config.get('core.verbose')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
