@@ -80,9 +80,10 @@ And finally, install any number of packages, such as::
 Latest Development RPM Packages from COPR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Avocado provides a repository of continuously built packages from the GitHub
-repository's master branch.  These packages are currently available for EL7,
-Fedora 28 and Fedora 29, for both x86_64 and ppc64le.
+Avocado provides a repository of continuously built packages from the
+GitHub repository's master branch.  These packages are currently
+available for some of the latest Enterprise Linux and Fedora versions,
+for a few different architectures.
 
 If you're interested in using the very latest development version of Avocado
 from RPM packages, you can do so by running::
