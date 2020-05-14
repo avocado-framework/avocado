@@ -3,6 +3,7 @@ import enum
 from mmap import mmap
 from mmap import ACCESS_READ
 
+from ...core.data_dir import get_job_results_dir
 from .exceptions import SpawnerException
 
 from pathlib import Path
@@ -51,8 +52,9 @@ class BaseSpawner:
         one is not suitable for your spawner. i.e: if the spawner is trying to
         access a remote output file.
         """
-        src = '~/avocado/job-results/{}/test-results/{}/data'.format(job_id,
-                                                                     task_id)
+        results_dir = get_job_results_dir(job_id)
+        src = '{}/test-results/{}/data'.format(results_dir,
+                                               task_id.replace('/', '_'))
         try:
             for path in Path(src).expanduser().iterdir():
                 if path.is_file() and path.stat().st_size != 0:
