@@ -132,6 +132,8 @@ class Job:
         self.loglevel = settings.get_value('job.output', 'loglevel',
                                            default='DEBUG')
         self.__logging_handlers = {}
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         self.standalone = self.config.get('standalone', False)
         if self.config.get('run.dry_run.enabled'):  # Modify args for dry-run
             unique_id = self.config.get('run.unique_job_id')
@@ -174,7 +176,7 @@ class Job:
                                                            % self.unique_id,
                                                            LOG_JOB)
         self._stdout_stderr = None
-        self.replay_sourcejob = self.config.get('replay_sourcejob', None)
+        self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
         #: The list of discovered/resolved tests that will be attempted to
         #: be run by this job.  If set to None, it means that test resolution
@@ -318,8 +320,8 @@ class Job:
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
-        # TODO: Fix this, this is the only case using the new settings where
-        # get has a 'default' value
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         try:
             store_logging_stream = self.config.get('run.store_logging_stream', [])
         except AttributeError:
@@ -347,6 +349,8 @@ class Job:
                 self.__logging_handlers[handler] = [name]
 
         # Enable console loggers
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         enabled_logs = self.config.get("show", [])
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
@@ -414,7 +418,7 @@ class Job:
         try:
             force = self.config.get('run.ignore_missing_references')
             suite = loader.loader.discover(references, force=force)
-            if self.config.get('filter_by_tags', False):
+            if self.config.get('filter_by_tags'):
                 suite = tags.filter_test_tags(
                     suite,
                     self.config.get('filter_by_tags'),
@@ -529,6 +533,8 @@ class Job:
         refs = self.config.get('run.references')
         if not refs:
             refs = self.config.get('nrun.references')
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         runner_name = self.config.get('test_runner', 'runner')
         try:
             if runner_name == 'nrunner':
@@ -564,7 +570,7 @@ class Job:
         """
         The actual test execution phase
         """
-        variant = self.config.get("avocado_variants", None)
+        variant = self.config.get("avocado_variants")
         refs = self.config.get('run.references')
         if not refs:
             refs = self.config.get('nrun.references')
@@ -577,6 +583,8 @@ class Job:
                 raise exceptions.OptionValidationError("Unable to parse "
                                                        "variant: %s" % details)
 
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         runner_name = self.config.get('test_runner', 'runner')
         try:
             runner_extension = dispatcher.RunnerDispatcher()[runner_name]
@@ -587,7 +595,7 @@ class Job:
         self._log_job_debug_info(variant)
         jobdata.record(self.config, self.logdir, variant,
                        refs, sys.argv)
-        replay_map = self.config.get('replay_map', None)
+        replay_map = self.config.get('replay_map')
         execution_order = self.config.get('run.execution_order')
         summary = self.test_runner.run_suite(self,
                                              self.result,
