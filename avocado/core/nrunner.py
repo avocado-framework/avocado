@@ -696,7 +696,7 @@ class StatusServer:
                     return True
 
             message = await reader.readline()
-            if message == b'bye\n':
+            if message.strip() == b'bye':
                 print('Status server: exiting due to user request')
                 self.server_task.cancel()
                 await self.server_task
