@@ -457,8 +457,8 @@ class Settings:
         namespace = "{}.{}".format(section, key)
         # Check if namespace is already registered
         if namespace in self._namespaces:
-            msg = "Key {} already registered in section {}".format(key,
-                                                                   section)
+            msg = 'Key "{}" already registered under section "{}"'.format(key,
+                                                                          section)
             raise DuplicatedNamespace(msg)
 
         option = ConfigOption(namespace, help_msg, key_type, default,
