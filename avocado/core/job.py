@@ -554,7 +554,6 @@ class Job:
                 self.test_suite = self._make_test_suite_resolver(refs)
             else:
                 self.test_suite = self._make_test_suite_loader(refs)
-            self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
             raise exceptions.OptionValidationError(details)
@@ -568,6 +567,8 @@ class Job:
                          "resolved into tests. Please double check the "
                          "executed command.")
             raise exceptions.OptionValidationError(e_msg)
+
+        self.result.tests_total = len(self.test_suite)
 
     def pre_tests(self):
         """
