@@ -119,12 +119,6 @@ class Job:
     along with setup operations and event recording.
     """
 
-    LOG_MAP = {'info': logging.INFO,
-               'debug': logging.DEBUG,
-               'warning': logging.WARNING,
-               'error': logging.ERROR,
-               'critical': logging.CRITICAL}
-
     def __init__(self, config=None):
         """
         Creates an instance of Job class.
@@ -135,10 +129,8 @@ class Job:
         """
         self.config = config or {}
         self.log = LOG_UI
-        self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
-                                                            'loglevel',
-                                                            default='debug'),
-                                         logging.DEBUG)
+        self.loglevel = settings.get_value('job.output', 'loglevel',
+                                           default='DEBUG')
         self.__logging_handlers = {}
         self.standalone = self.config.get('standalone', False)
         if self.config.get('run.dry_run.enabled'):  # Modify args for dry-run
