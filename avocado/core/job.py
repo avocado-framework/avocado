@@ -20,6 +20,7 @@ Job module - describes a sequence of automated test operations.
 import argparse
 import logging
 import os
+import pprint
 import re
 import shutil
 import sys
@@ -489,22 +490,10 @@ class Job:
         LOG_JOB.info('Avocado version: %s', version_log)
         LOG_JOB.info('')
 
-    @staticmethod
-    def _log_avocado_config():
-        LOG_JOB.info('Config files read (in order):')
-        for cfg_path in settings.config_paths:
-            LOG_JOB.info(cfg_path)
-        LOG_JOB.info('')
-
+    def _log_avocado_config(self):
         LOG_JOB.info('Avocado config:')
-        header = ('Section.Key', 'Value')
-        config_matrix = []
-        for section in settings.config.sections():
-            for value in settings.config.items(section):
-                config_key = ".".join((section, value[0]))
-                config_matrix.append([config_key, value[1]])
-
-        for line in astring.iter_tabular_output(config_matrix, header):
+        LOG_JOB.info('')
+        for line in pprint.pformat(self.config).splitlines():
             LOG_JOB.info(line)
         LOG_JOB.info('')
 
