@@ -38,7 +38,8 @@ class JobTest(unittest.TestCase):
         return found
 
     def test_job_empty_suite(self):
-        config = {'run.results_dir': self.tmpdir.name,
+        config = {'job.output.loglevel': 'DEBUG',
+                  'run.results_dir': self.tmpdir.name,
                   'run.store_logging_stream': [],
                   'show': ['none']}
         self.job = job.Job(config)
