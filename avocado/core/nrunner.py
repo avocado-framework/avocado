@@ -706,7 +706,10 @@ class StatusServer:
             if not message:
                 return False
 
-            data = json_loads(message)
+            try:
+                data = json_loads(message)
+            except json.decoder.JSONDecodeError:
+                return False
 
             if data.get('status') in ['started']:
                 self.handle_task_started(data)
