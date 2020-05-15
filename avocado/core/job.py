@@ -202,6 +202,9 @@ class Job:
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
+        #: An instance of the :class:`avocado.core.plugin_interfaces.Runner`
+        #: that will be used to effectivelly run the tests in the this job's
+        #: :attr:`test_suite`
         self.test_runner = None
 
         #: Placeholder for test parameters (related to --test-parameters command
