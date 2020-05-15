@@ -696,7 +696,8 @@ class StatusServer:
                     return True
 
             message = await reader.readline()
-            if message == b'bye\n':
+            message = message.strip()
+            if message == b'bye':
                 print('Status server: exiting due to user request')
                 self.server_task.cancel()
                 await self.server_task
@@ -705,7 +706,10 @@ class StatusServer:
             if not message:
                 return False
 
-            data = json_loads(message.strip())
+            try:
+                data = json_loads(message)
+            except json.decoder.JSONDecodeError:
+                return False
 
             if data.get('status') in ['started']:
                 self.handle_task_started(data)
