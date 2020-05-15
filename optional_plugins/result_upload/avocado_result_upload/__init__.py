@@ -88,7 +88,7 @@ class ResultUploadCLI(CLI):
 
         help_msg = 'Specify the command to upload results'
         settings.register_option(section='plugins.result_upload',
-                                 key='command',
+                                 key='cmd',
                                  help_msg=help_msg,
                                  default=def_upload_cmd,
                                  parser=parser,
