@@ -20,6 +20,7 @@ Job module - describes a sequence of automated test operations.
 import argparse
 import logging
 import os
+import pprint
 import re
 import shutil
 import sys
@@ -118,12 +119,6 @@ class Job:
     along with setup operations and event recording.
     """
 
-    LOG_MAP = {'info': logging.INFO,
-               'debug': logging.DEBUG,
-               'warning': logging.WARNING,
-               'error': logging.ERROR,
-               'critical': logging.CRITICAL}
-
     def __init__(self, config=None):
         """
         Creates an instance of Job class.
@@ -134,11 +129,11 @@ class Job:
         """
         self.config = config or {}
         self.log = LOG_UI
-        self.loglevel = self.LOG_MAP.get(settings.get_value('job.output',
-                                                            'loglevel',
-                                                            default='debug'),
-                                         logging.DEBUG)
+        self.loglevel = settings.get_value('job.output', 'loglevel',
+                                           default='DEBUG')
         self.__logging_handlers = {}
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         self.standalone = self.config.get('standalone', False)
         if self.config.get('run.dry_run.enabled'):  # Modify args for dry-run
             unique_id = self.config.get('run.unique_job_id')
@@ -181,7 +176,7 @@ class Job:
                                                            % self.unique_id,
                                                            LOG_JOB)
         self._stdout_stderr = None
-        self.replay_sourcejob = self.config.get('replay_sourcejob', None)
+        self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
         #: The list of discovered/resolved tests that will be attempted to
         #: be run by this job.  If set to None, it means that test resolution
@@ -325,8 +320,8 @@ class Job:
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
-        # TODO: Fix this, this is the only case using the new settings where
-        # get has a 'default' value
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         try:
             store_logging_stream = self.config.get('run.store_logging_stream', [])
         except AttributeError:
@@ -354,6 +349,8 @@ class Job:
                 self.__logging_handlers[handler] = [name]
 
         # Enable console loggers
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         enabled_logs = self.config.get("show", [])
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
@@ -421,7 +418,7 @@ class Job:
         try:
             force = self.config.get('run.ignore_missing_references')
             suite = loader.loader.discover(references, force=force)
-            if self.config.get('filter_by_tags', False):
+            if self.config.get('filter_by_tags'):
                 suite = tags.filter_test_tags(
                     suite,
                     self.config.get('filter_by_tags'),
@@ -489,22 +486,10 @@ class Job:
         LOG_JOB.info('Avocado version: %s', version_log)
         LOG_JOB.info('')
 
-    @staticmethod
-    def _log_avocado_config():
-        LOG_JOB.info('Config files read (in order):')
-        for cfg_path in settings.config_paths:
-            LOG_JOB.info(cfg_path)
-        LOG_JOB.info('')
-
+    def _log_avocado_config(self):
         LOG_JOB.info('Avocado config:')
-        header = ('Section.Key', 'Value')
-        config_matrix = []
-        for section in settings.config.sections():
-            for value in settings.config.items(section):
-                config_key = ".".join((section, value[0]))
-                config_matrix.append([config_key, value[1]])
-
-        for line in astring.iter_tabular_output(config_matrix, header):
+        LOG_JOB.info('')
+        for line in pprint.pformat(self.config).splitlines():
             LOG_JOB.info(line)
         LOG_JOB.info('')
 
@@ -548,13 +533,14 @@ class Job:
         refs = self.config.get('run.references')
         if not refs:
             refs = self.config.get('nrun.references')
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         runner_name = self.config.get('test_runner', 'runner')
         try:
             if runner_name == 'nrunner':
                 self.test_suite = self._make_test_suite_resolver(refs)
             else:
                 self.test_suite = self._make_test_suite_loader(refs)
-            self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
             raise exceptions.OptionValidationError(details)
@@ -569,6 +555,8 @@ class Job:
                          "executed command.")
             raise exceptions.OptionValidationError(e_msg)
 
+        self.result.tests_total = len(self.test_suite)
+
     def pre_tests(self):
         """
         Run the pre tests execution hooks
@@ -582,7 +570,7 @@ class Job:
         """
         The actual test execution phase
         """
-        variant = self.config.get("avocado_variants", None)
+        variant = self.config.get("avocado_variants")
         refs = self.config.get('run.references')
         if not refs:
             refs = self.config.get('nrun.references')
@@ -595,6 +583,8 @@ class Job:
                 raise exceptions.OptionValidationError("Unable to parse "
                                                        "variant: %s" % details)
 
+        # TODO: Fix this, this is one of the few cases where using the config
+        # generated from the new settings with a hardcoded 'default' value
         runner_name = self.config.get('test_runner', 'runner')
         try:
             runner_extension = dispatcher.RunnerDispatcher()[runner_name]
@@ -605,7 +595,7 @@ class Job:
         self._log_job_debug_info(variant)
         jobdata.record(self.config, self.logdir, variant,
                        refs, sys.argv)
-        replay_map = self.config.get('replay_map', None)
+        replay_map = self.config.get('replay_map')
         execution_order = self.config.get('run.execution_order')
         summary = self.test_runner.run_suite(self,
                                              self.result,
