@@ -82,7 +82,7 @@ class NRun(CLICmd):
             try:
                 task = self.pending_tasks[0]
             except IndexError:
-                print("Finished spawning tasks")
+                LOG_UI.info("Finished spawning tasks")
                 break
 
             spawn_result = await self.spawner.spawn_task(task)
