@@ -49,7 +49,7 @@ class Jobs(CLICmd):
 
     def _print_job_details(self, details):
         for key, value in details.items():
-            LOG_UI.info("%-15s: %s", key, value)
+            LOG_UI.info("%-12s: %s", key, value)
 
     def _print_job_tests(self, tests):
         test_matrix = []
@@ -230,14 +230,20 @@ class Jobs(CLICmd):
         except FileNotFoundError:
             pass
 
-        data = {'Job id': job_id,
-                'Debug log': results_data.get('debuglog'),
-                'Spawner': config_data.get('nrun.spawner', 'unknown'),
-                '#total tests': results_data.get('total'),
-                '#pass tests': results_data.get('pass'),
-                '#skip tests': results_data.get('skip'),
-                '#errors tests': results_data.get('errors'),
-                '#cancel tests': results_data.get('cancel')}
+        results = ('PASS %d | ERROR %d | FAIL %d | SKIP %d |'
+                   'WARN %d | INTERRUPT %s | CANCEL %s')
+        results %= (results_data.get('pass', 0),
+                    results_data.get('error', 0),
+                    results_data.get('failures', 0),
+                    results_data.get('skip', 0),
+                    results_data.get('warn', 0),
+                    results_data.get('interrupt', 0),
+                    results_data.get('cancel', 0))
+
+        data = {'JOB ID': job_id,
+                'JOB LOG': results_data.get('debuglog'),
+                'SPAWNER': config_data.get('nrun.spawner', 'unknown'),
+                'RESULTS': results}
 
         # We could improve this soon with more data and colors
         self._print_job_details(data)
