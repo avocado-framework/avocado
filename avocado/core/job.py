@@ -202,6 +202,12 @@ class Job:
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
+        # To avoid requiring an explicit runner from Job API users, this sets
+        # a job built-in default for the runner
+        self._test_runner_name = self.config.get('run.test_runner') or 'runner'
+        #: An instance of the :class:`avocado.core.plugin_interfaces.Runner`
+        #: that will be used to effectivelly run the tests in the this job's
+        #: :attr:`test_suite`
         self.test_runner = None
 
         #: Placeholder for test parameters (related to --test-parameters command
@@ -552,11 +558,8 @@ class Job:
         refs = self.config.get('run.references')
         if not refs:
             refs = self.config.get('nrun.references')
-        # TODO: Fix this, this is one of the few cases where using the config
-        # generated from the new settings with a hardcoded 'default' value
-        runner_name = self.config.get('test_runner', 'runner')
         try:
-            if runner_name == 'nrunner':
+            if self._test_runner_name == 'nrunner':
                 self.test_suite = self._make_test_suite_resolver(refs)
             else:
                 self.test_suite = self._make_test_suite_loader(refs)
@@ -602,11 +605,8 @@ class Job:
                 raise exceptions.OptionValidationError("Unable to parse "
                                                        "variant: %s" % details)
 
-        # TODO: Fix this, this is one of the few cases where using the config
-        # generated from the new settings with a hardcoded 'default' value
-        runner_name = self.config.get('test_runner', 'runner')
         try:
-            runner_extension = dispatcher.RunnerDispatcher()[runner_name]
+            runner_extension = dispatcher.RunnerDispatcher()[self._test_runner_name]
         except KeyError:
             return
         self.test_runner = runner_extension.obj
