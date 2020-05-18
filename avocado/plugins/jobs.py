@@ -58,21 +58,17 @@ class Jobs(CLICmd):
             status = test.get('status')
             decorator = output.TEST_STATUS_DECORATOR_MAPPING.get(status)
             end = datetime.fromtimestamp(test.get('end'))
-            test_matrix.append((decorator(status, ''),
+            test_matrix.append((test.get('id'),
                                 end.strftime(date_fmt),
                                 "%5f" % float(test.get('time')),
-                                test.get('id')))
-        header = (output.TERM_SUPPORT.header_str('Status'),
+                                decorator(status, '')))
+        header = (output.TERM_SUPPORT.header_str('Test ID'),
                   output.TERM_SUPPORT.header_str('End Time'),
                   output.TERM_SUPPORT.header_str('Run Time'),
-                  output.TERM_SUPPORT.header_str('Test ID'))
-        separator = False
+                  output.TERM_SUPPORT.header_str('Status'))
         for line in astring.iter_tabular_output(test_matrix,
                                                 header=header,
                                                 strip=True):
-            if not separator:
-                LOG_UI.debug('')
-                separator = True
             LOG_UI.debug(line)
 
     def _save_stream_to_file(self, stream, filename):
@@ -230,6 +226,13 @@ class Jobs(CLICmd):
         except FileNotFoundError:
             pass
 
+        data = {'JOB ID': job_id,
+                'JOB LOG': results_data.get('debuglog'),
+                'SPAWNER': config_data.get('nrun.spawner', 'unknown')}
+
+        # We could improve this soon with more data and colors
+        self._print_job_details(data)
+        self._print_job_tests(results_data.get('tests'))
         results = ('PASS %d | ERROR %d | FAIL %d | SKIP %d |'
                    'WARN %d | INTERRUPT %s | CANCEL %s')
         results %= (results_data.get('pass', 0),
@@ -239,15 +242,7 @@ class Jobs(CLICmd):
                     results_data.get('warn', 0),
                     results_data.get('interrupt', 0),
                     results_data.get('cancel', 0))
-
-        data = {'JOB ID': job_id,
-                'JOB LOG': results_data.get('debuglog'),
-                'SPAWNER': config_data.get('nrun.spawner', 'unknown'),
-                'RESULTS': results}
-
-        # We could improve this soon with more data and colors
-        self._print_job_details(data)
-        self._print_job_tests(results_data.get('tests'))
+        self._print_job_details({'RESULTS': results})
         return exit_codes.AVOCADO_ALL_OK
 
     def run(self, config):
