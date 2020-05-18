@@ -720,7 +720,7 @@ class StatusServer:
         host, port = self.uri.split(':')
         port = int(port)
         server = await asyncio.start_server(self.cb, host=host, port=port)
-        print("Results server started at:", self.uri)
+        print("Status server started at:", self.uri)
         await server.wait_closed()
 
     def handle_task_started(self, data):
