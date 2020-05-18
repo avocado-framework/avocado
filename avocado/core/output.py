@@ -157,53 +157,53 @@ class TermSupport:
         """
         return self.PARTIAL + msg + self.ENDC
 
-    def pass_str(self):
+    def pass_str(self, msg='PASS'):
         """
         Print a pass string (green colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.PASS + 'PASS' + self.ENDC
+        return self.MOVE_BACK + self.PASS + msg + self.ENDC
 
-    def skip_str(self):
+    def skip_str(self, msg='SKIP'):
         """
         Print a skip string (yellow colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.SKIP + 'SKIP' + self.ENDC
+        return self.MOVE_BACK + self.SKIP + msg + self.ENDC
 
-    def fail_str(self):
+    def fail_str(self, msg='FAIL'):
         """
         Print a fail string (red colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.FAIL + 'FAIL' + self.ENDC
+        return self.MOVE_BACK + self.FAIL + msg + self.ENDC
 
-    def error_str(self):
+    def error_str(self, msg='ERROR'):
         """
         Print a error string (red colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.ERROR + 'ERROR' + self.ENDC
+        return self.MOVE_BACK + self.ERROR + msg + self.ENDC
 
-    def interrupt_str(self):
+    def interrupt_str(self, msg='INTERRUPT'):
         """
         Print an interrupt string (red colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.INTERRUPT + 'INTERRUPT' + self.ENDC
+        return self.MOVE_BACK + self.INTERRUPT + msg + self.ENDC
 
-    def warn_str(self):
+    def warn_str(self, msg='WARN'):
         """
         Print an warning string (yellow colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
+        return self.MOVE_BACK + self.WARN + msg + self.ENDC
 
 
 #: Transparently handles colored terminal, when one is used
