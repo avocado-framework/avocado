@@ -30,14 +30,6 @@ class Human(ResultEvents):
     name = 'human'
     description = "Human Interface UI"
 
-    output_mapping = {'PASS': output.TERM_SUPPORT.PASS,
-                      'ERROR': output.TERM_SUPPORT.ERROR,
-                      'FAIL': output.TERM_SUPPORT.FAIL,
-                      'SKIP': output.TERM_SUPPORT.SKIP,
-                      'WARN': output.TERM_SUPPORT.WARN,
-                      'INTERRUPTED': output.TERM_SUPPORT.INTERRUPT,
-                      'CANCEL': output.TERM_SUPPORT.CANCEL}
-
     def __init__(self, config):
         self.__throbber = output.Throbber()
         stdout_claimed_by = config.get('stdout_claimed_by', None)
@@ -76,7 +68,7 @@ class Human(ResultEvents):
                      output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
 
     def get_colored_status(self, status, extra=None):
-        out = (output.TERM_SUPPORT.MOVE_BACK + self.output_mapping[status] +
+        out = (output.TERM_SUPPORT.MOVE_BACK + output.TEST_STATUS_MAPPING[status] +
                status)
         if extra:
             if len(extra) > 255:

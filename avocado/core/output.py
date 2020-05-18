@@ -210,6 +210,17 @@ class TermSupport:
 TERM_SUPPORT = TermSupport()
 
 
+#: A collection of mapping from test statuses to colors to be used
+#: consistently across the various plugins
+TEST_STATUS_MAPPING = {'PASS': TERM_SUPPORT.PASS,
+                       'ERROR': TERM_SUPPORT.ERROR,
+                       'FAIL': TERM_SUPPORT.FAIL,
+                       'SKIP': TERM_SUPPORT.SKIP,
+                       'WARN': TERM_SUPPORT.WARN,
+                       'INTERRUPTED': TERM_SUPPORT.INTERRUPT,
+                       'CANCEL': TERM_SUPPORT.CANCEL}
+
+
 class _StdOutputFile:
 
     """
