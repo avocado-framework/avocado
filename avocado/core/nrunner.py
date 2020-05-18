@@ -720,7 +720,7 @@ class StatusServer:
         host, port = self.uri.split(':')
         port = int(port)
         server = await asyncio.start_server(self.cb, host=host, port=port)
-        print("Results server started at:", self.uri)
+        print("Status server started at:", self.uri)
         await server.wait_closed()
 
     def handle_task_started(self, data):
@@ -735,23 +735,25 @@ class StatusServer:
         result = data['result']
         task_id = data['id']
 
-        self.tasks_pending.remove(task_id)
-        print('Task complete (%s): %s' % (result, task_id))
+        if self.wait_on_tasks_pending:
+            self.tasks_pending.remove(task_id)
 
         if result not in self.result:
             self.result[result] = []
         self.result[result].append(task_id)
 
-        if result not in ('pass', 'skip'):
-            stdout = data.get('stdout', b'')
-            if stdout:
-                print('Task %s stdout:\n%s\n' % (task_id, stdout))
-            stderr = data.get('stderr', b'')
-            if stderr:
-                print('Task %s stderr:\n%s\n' % (task_id, stderr))
-            output = data.get('output', b'')
-            if output:
-                print('Task %s output:\n%s\n' % (task_id, output))
+        if self.verbose:
+            print('Task complete (%s): %s' % (result, task_id))
+            if result not in ('pass', 'skip'):
+                stdout = data.get('stdout', b'')
+                if stdout:
+                    print('Task %s stdout:\n%s\n' % (task_id, stdout))
+                stderr = data.get('stderr', b'')
+                if stderr:
+                    print('Task %s stderr:\n%s\n' % (task_id, stderr))
+                output = data.get('output', b'')
+                if output:
+                    print('Task %s output:\n%s\n' % (task_id, output))
 
     def start(self):
         loop = asyncio.get_event_loop()
