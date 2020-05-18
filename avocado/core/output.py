@@ -221,6 +221,17 @@ TEST_STATUS_MAPPING = {'PASS': TERM_SUPPORT.PASS,
                        'CANCEL': TERM_SUPPORT.CANCEL}
 
 
+#: A collection of mapping from test status to formatting functions
+#: to be used consistently across the various plugins
+TEST_STATUS_DECORATOR_MAPPING = {'PASS': TERM_SUPPORT.pass_str,
+                                 'ERROR': TERM_SUPPORT.error_str,
+                                 'FAIL': TERM_SUPPORT.fail_str,
+                                 'SKIP': TERM_SUPPORT.skip_str,
+                                 'WARN': TERM_SUPPORT.warn_str,
+                                 'INTERRUPTED': TERM_SUPPORT.interrupt_str,
+                                 'CANCEL': TERM_SUPPORT.skip_str}
+
+
 class _StdOutputFile:
 
     """
