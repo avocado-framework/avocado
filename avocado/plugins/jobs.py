@@ -22,13 +22,13 @@ from datetime import datetime
 from glob import glob
 
 from avocado.core import exit_codes
-from avocado.core.output import LOG_UI
 from avocado.core.data_dir import get_job_results_dir, get_logs_dir
-from avocado.core.spawners.process import ProcessSpawner
-from avocado.core.spawners.podman import PodmanSpawner
-from avocado.core.spawners.exceptions import SpawnerException
 from avocado.core.future.settings import settings
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.spawners.exceptions import SpawnerException
+from avocado.core.spawners.podman import PodmanSpawner
+from avocado.core.spawners.process import ProcessSpawner
 
 
 class Jobs(CLICmd):
