@@ -134,7 +134,7 @@ def get_multipath_details():
     :rtype: dict
     """
     mpath_op = process.run("multipathd show maps json",
-                           sudo=True).stdout_text
+                           sudo=True, verbose=False).stdout_text
     if 'multipath-tools v' in mpath_op:
         return ''
     mpath_op = ast.literal_eval(mpath_op.replace("\n", '').replace(' ', ''))
