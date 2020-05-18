@@ -22,6 +22,7 @@ from datetime import datetime
 from glob import glob
 
 from avocado.core import exit_codes
+from avocado.core import output
 from avocado.core.data_dir import get_job_results_dir, get_logs_dir
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
@@ -29,6 +30,7 @@ from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.spawners.exceptions import SpawnerException
 from avocado.core.spawners.podman import PodmanSpawner
 from avocado.core.spawners.process import ProcessSpawner
+from avocado.utils import astring
 
 
 class Jobs(CLICmd):
@@ -47,23 +49,27 @@ class Jobs(CLICmd):
 
     def _print_job_details(self, details):
         for key, value in details.items():
-            LOG_UI.info("%-15s: %s", key, value)
+            LOG_UI.info("%-12s: %s", key, value)
 
     def _print_job_tests(self, tests):
-        LOG_UI.info("\nTests:\n")
+        test_matrix = []
         date_fmt = "%Y/%m/%d %H:%M:%S"
-        LOG_UI.info(" Status  End Time              Run Time   Test ID")
         for test in tests:
-            end = datetime.fromtimestamp(test.get('end'))
             status = test.get('status')
-            method = LOG_UI.info
-            if status in ['ERROR', 'FAIL']:
-                method = LOG_UI.error
-            method(" %-7s %-20s  %.5f    %s",
-                   status,
-                   end.strftime(date_fmt),
-                   float(test.get('time')),
-                   test.get('id'))
+            decorator = output.TEST_STATUS_DECORATOR_MAPPING.get(status)
+            end = datetime.fromtimestamp(test.get('end'))
+            test_matrix.append((test.get('id'),
+                                end.strftime(date_fmt),
+                                "%5f" % float(test.get('time')),
+                                decorator(status, '')))
+        header = (output.TERM_SUPPORT.header_str('Test ID'),
+                  output.TERM_SUPPORT.header_str('End Time'),
+                  output.TERM_SUPPORT.header_str('Run Time'),
+                  output.TERM_SUPPORT.header_str('Status'))
+        for line in astring.iter_tabular_output(test_matrix,
+                                                header=header,
+                                                strip=True):
+            LOG_UI.debug(line)
 
     def _save_stream_to_file(self, stream, filename):
         """Save stream to a file.
@@ -75,8 +81,8 @@ class Jobs(CLICmd):
             LOG_UI.error("%s does not exist. Exiting...", dirname)
             return exit_codes.AVOCADO_GENERIC_CRASH
 
-        with open(filename, 'ab') as output:
-            output.write(stream)
+        with open(filename, 'ab') as output_file:
+            output_file.write(stream)
 
     def configure(self, parser):
         """
@@ -220,18 +226,23 @@ class Jobs(CLICmd):
         except FileNotFoundError:
             pass
 
-        data = {'Job id': job_id,
-                'Debug log': results_data.get('debuglog'),
-                'Spawner': config_data.get('nrun.spawner', 'unknown'),
-                '#total tests': results_data.get('total'),
-                '#pass tests': results_data.get('pass'),
-                '#skip tests': results_data.get('skip'),
-                '#errors tests': results_data.get('errors'),
-                '#cancel tests': results_data.get('cancel')}
+        data = {'JOB ID': job_id,
+                'JOB LOG': results_data.get('debuglog'),
+                'SPAWNER': config_data.get('nrun.spawner', 'unknown')}
 
         # We could improve this soon with more data and colors
         self._print_job_details(data)
         self._print_job_tests(results_data.get('tests'))
+        results = ('PASS %d | ERROR %d | FAIL %d | SKIP %d |'
+                   'WARN %d | INTERRUPT %s | CANCEL %s')
+        results %= (results_data.get('pass', 0),
+                    results_data.get('error', 0),
+                    results_data.get('failures', 0),
+                    results_data.get('skip', 0),
+                    results_data.get('warn', 0),
+                    results_data.get('interrupt', 0),
+                    results_data.get('cancel', 0))
+        self._print_job_details({'RESULTS': results})
         return exit_codes.AVOCADO_ALL_OK
 
     def run(self, config):
