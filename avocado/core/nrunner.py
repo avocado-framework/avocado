@@ -735,7 +735,8 @@ class StatusServer:
         result = data['result']
         task_id = data['id']
 
-        self.tasks_pending.remove(task_id)
+        if self.wait_on_tasks_pending:
+            self.tasks_pending.remove(task_id)
         print('Task complete (%s): %s' % (result, task_id))
 
         if result not in self.result:
