@@ -123,10 +123,11 @@ class TestLoaderProxy:
         subcommand = args.get('subcommand')
         self.register_plugin(TapLoader)
         # Register external runner when --external-runner is used
-        if args.get("external_runner", None):
+        external_runner = args.get("{}.external_runner".format(subcommand))
+        if external_runner:
             self.register_plugin(ExternalLoader)
             key = "{}.loaders".format(subcommand)
-            args[key] = ["external:%s" % args.get('external_runner')]
+            args[key] = ["external:{}".format(external_runner)]
         else:
             # Add (default) file loader if not already registered
             if FileLoader not in self.registered_plugins:
@@ -411,15 +412,17 @@ def add_loader_options(parser, section='run'):
                                     parser=arggrp,
                                     long_arg='--loaders')
 
-    arggrp.add_argument('--external-runner', default=None,
-                        metavar='EXECUTABLE',
-                        help=('Path to an specific test runner that '
-                              'allows the use of its own tests. This '
-                              'should be used for running tests that '
-                              'do not conform to Avocado\' SIMPLE test'
-                              'interface and can not run standalone. Note: '
-                              'the use of --external-runner overwrites the --'
-                              'loaders to "external_runner"'))
+    help_msg = ("Path to an specific test runner that allows the use of its "
+                "own tests. This should be used for running tests that do not "
+                "conform to Avocado\'s SIMPLE test interface and can not run "
+                "standalone. Note: the use of --external-runner overwrites "
+                "the --loaders to 'external_runner'")
+    future_settings.register_option(section=section,
+                                    key='external_runner',
+                                    default=None,
+                                    help_msg=help_msg,
+                                    parser=arggrp,
+                                    long_arg='--external-runner')
 
     chdir_help = ('Change directory before executing tests. This option '
                   'may be necessary because of requirements and/or '
