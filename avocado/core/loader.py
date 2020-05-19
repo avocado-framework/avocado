@@ -139,8 +139,6 @@ class TestLoaderProxy:
         loaders = args.get('loaders', None)
         if not loaders:
             loaders = settings.get_value("plugins", "loaders", list, [])
-        if '?' in loaders:
-            raise LoaderError("Available loader plugins:\n%s" % _str_loaders())
         if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders

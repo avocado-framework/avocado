@@ -58,11 +58,6 @@ loaders. You can specify either loader_name (``file``), loader_name + TEST_TYPE
 ``:`` (``external:/bin/echo -e``. You can also supply ``@DEFAULT``, which
 injects into that position all the remaining unused loaders.
 
-To get help about ``--loaders``::
-
-    $ avocado run --loaders ?
-    $ avocado run --loaders external:?
-
 Example of how ``--loaders`` affects the produced tests (manually gathered as
 some of them result in error)::
 
