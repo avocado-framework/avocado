@@ -440,13 +440,17 @@ def add_loader_options(parser, section='run'):
                                     choices=('runner', 'test'),
                                     long_arg='--external-runner-chdir')
 
-    arggrp.add_argument('--external-runner-testdir', metavar='DIRECTORY',
-                        default=None,
-                        help=('Where test files understood by the external'
-                              ' test runner are located in the '
-                              'filesystem. Obviously this assumes and '
-                              'only applies to external test runners that '
-                              'run tests from files'))
+    help_msg = ("Where test files understood by the external test runner "
+                "are located in the filesystem. Obviously this assumes and "
+                "only applies to external test runners that run tests from "
+                "files")
+    future_settings.register_option(section=section,
+                                    key='external_runner_testdir',
+                                    metavar='DIRECTORY',
+                                    default=None,
+                                    help_msg=help_msg,
+                                    parser=arggrp,
+                                    long_arg='--external-runner-testdir')
 
 
 class NotATest:
@@ -826,7 +830,7 @@ class ExternalLoader(TestLoader):
         """ Enables the external_runner when asked for """
         subcommand = args.get('subcommand')
         chdir = args.get("{}.external_runner_chdir".format(subcommand))
-        test_dir = args.get('external_runner_testdir', None)
+        test_dir = args.get("{}.external_runner_testdir".format(subcommand))
 
         if runner:
             external_runner_and_args = shlex.split(runner)
