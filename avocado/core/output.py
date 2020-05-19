@@ -157,57 +157,79 @@ class TermSupport:
         """
         return self.PARTIAL + msg + self.ENDC
 
-    def pass_str(self):
+    def pass_str(self, msg='PASS', move=MOVE_BACK):
         """
         Print a pass string (green colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.PASS + 'PASS' + self.ENDC
+        return move + self.PASS + msg + self.ENDC
 
-    def skip_str(self):
+    def skip_str(self, msg='SKIP', move=MOVE_BACK):
         """
         Print a skip string (yellow colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.SKIP + 'SKIP' + self.ENDC
+        return move + self.SKIP + msg + self.ENDC
 
-    def fail_str(self):
+    def fail_str(self, msg='FAIL', move=MOVE_BACK):
         """
         Print a fail string (red colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.FAIL + 'FAIL' + self.ENDC
+        return move + self.FAIL + msg + self.ENDC
 
-    def error_str(self):
+    def error_str(self, msg='ERROR', move=MOVE_BACK):
         """
         Print a error string (red colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.ERROR + 'ERROR' + self.ENDC
+        return move + self.ERROR + msg + self.ENDC
 
-    def interrupt_str(self):
+    def interrupt_str(self, msg='INTERRUPT', move=MOVE_BACK):
         """
         Print an interrupt string (red colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.INTERRUPT + 'INTERRUPT' + self.ENDC
+        return move + self.INTERRUPT + msg + self.ENDC
 
-    def warn_str(self):
+    def warn_str(self, msg='WARN', move=MOVE_BACK):
         """
         Print an warning string (yellow colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
+        return move + self.WARN + msg + self.ENDC
 
 
 #: Transparently handles colored terminal, when one is used
 TERM_SUPPORT = TermSupport()
+
+
+#: A collection of mapping from test statuses to colors to be used
+#: consistently across the various plugins
+TEST_STATUS_MAPPING = {'PASS': TERM_SUPPORT.PASS,
+                       'ERROR': TERM_SUPPORT.ERROR,
+                       'FAIL': TERM_SUPPORT.FAIL,
+                       'SKIP': TERM_SUPPORT.SKIP,
+                       'WARN': TERM_SUPPORT.WARN,
+                       'INTERRUPTED': TERM_SUPPORT.INTERRUPT,
+                       'CANCEL': TERM_SUPPORT.CANCEL}
+
+
+#: A collection of mapping from test status to formatting functions
+#: to be used consistently across the various plugins
+TEST_STATUS_DECORATOR_MAPPING = {'PASS': TERM_SUPPORT.pass_str,
+                                 'ERROR': TERM_SUPPORT.error_str,
+                                 'FAIL': TERM_SUPPORT.fail_str,
+                                 'SKIP': TERM_SUPPORT.skip_str,
+                                 'WARN': TERM_SUPPORT.warn_str,
+                                 'INTERRUPTED': TERM_SUPPORT.interrupt_str,
+                                 'CANCEL': TERM_SUPPORT.skip_str}
 
 
 class _StdOutputFile:
