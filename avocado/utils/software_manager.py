@@ -867,6 +867,21 @@ class ZypperBackend(RpmBackend):
         except process.CmdError:
             return None
 
+    def build_dep(self, name):
+        """Return True if build-dependencies are installed for provided package
+
+        Keyword argument:
+        name -- name of the package
+        """
+        s_cmd = '%s source-install -d %s' % (self.base_command, name)
+
+        try:
+            process.system(s_cmd, sudo=True)
+            return True
+        except process.CmdError:
+            log.error('Installing dependencies failed')
+            return False
+
     def _source_install(self, name):
         """
         Source install the given package [name]
@@ -880,9 +895,8 @@ class ZypperBackend(RpmBackend):
 
         try:
             process.system(s_cmd, sudo=True)
-            s_cmd = '%s source-install -d %s' % (self.base_command, name)
-            process.system(s_cmd, sudo=True)
-            return '/usr/src/packages/SPECS/%s.spec' % name
+            if self.build_dep(name):
+                return '/usr/src/packages/SPECS/%s.spec' % name
         except process.CmdError:
             log.error('Installing source failed')
             return ""
