@@ -32,7 +32,7 @@ from . import test
 from . import safeloader
 from .references import reference_split
 from ..utils import stacktrace
-from .settings import settings
+from .future.settings import settings as future_settings
 from .output import LOG_UI
 
 
@@ -120,11 +120,13 @@ class TestLoaderProxy:
                                        ", ".join(_good_test_types(plugin)))
             return out.rstrip('\n')
 
+        subcommand = args.get('subcommand')
         self.register_plugin(TapLoader)
         # Register external runner when --external-runner is used
         if args.get("external_runner", None):
             self.register_plugin(ExternalLoader)
-            args['loaders'] = ["external:%s" % args.get('external_runner')]
+            key = "{}.loaders".format(subcommand)
+            args[key] = ["external:%s" % args.get('external_runner')]
         else:
             # Add (default) file loader if not already registered
             if FileLoader not in self.registered_plugins:
@@ -135,10 +137,10 @@ class TestLoaderProxy:
         supported_types = []
         for plugin in self.registered_plugins:
             supported_types.extend(_good_test_types(plugin))
-        # Load plugin by the priority from settings
-        loaders = args.get('loaders', None)
-        if not loaders:
-            loaders = settings.get_value("plugins", "loaders", list, [])
+
+        # Here is one of the few exceptions that has a hardcoded default
+        loaders = args.get("{}.loaders".format(subcommand)) or ['file',
+                                                                '@DEFAULT']
         if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
@@ -394,13 +396,21 @@ class AccessDeniedPath:
     """ Dummy object to represent reference pointing to a inaccessible path """
 
 
-def add_loader_options(parser):
+def add_loader_options(parser, section='run'):
     arggrp = parser.add_argument_group('loader options')
-    arggrp.add_argument('--loaders', nargs='*', help="Overrides the priority "
-                        "of the test loaders. You can specify either "
-                        "@loader_name or TEST_TYPE. By default it tries all "
-                        "available loaders according to priority set in "
-                        "settings->plugins.loaders.")
+    help_msg = ("Overrides the priority of the test loaders. You can specify "
+                "either @loader_name or TEST_TYPE. By default it tries all "
+                "available loaders according to priority set in "
+                "settings->plugins.loaders.")
+    future_settings.register_option(section=section,
+                                    key='loaders',
+                                    nargs='*',
+                                    key_type=list,
+                                    default=['file', '@DEFAULT'],
+                                    help_msg=help_msg,
+                                    parser=arggrp,
+                                    long_arg='--loaders')
+
     arggrp.add_argument('--external-runner', default=None,
                         metavar='EXECUTABLE',
                         help=('Path to an specific test runner that '
