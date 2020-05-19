@@ -232,7 +232,8 @@ class Replay(CLI):
                 # Temporary, this will be removed soon
                 if option in ['failfast',
                               'ignore_missing_references',
-                              'execution_order']:
+                              'execution_order',
+                              'loaders']:
                     optvalue = config.get('run.{}'.format(option))
                 if optvalue is not None:
                     LOG_UI.warn("Overriding the replay %s with the --%s value "

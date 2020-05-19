@@ -172,7 +172,7 @@ class List(CLICmd):
                                  help_msg=help_msg,
                                  parser=parser,
                                  positional_arg=True)
-        loader.add_loader_options(parser)
+        loader.add_loader_options(parser, 'list')
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
