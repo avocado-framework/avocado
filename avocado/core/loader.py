@@ -424,18 +424,21 @@ def add_loader_options(parser, section='run'):
                                     parser=arggrp,
                                     long_arg='--external-runner')
 
-    chdir_help = ('Change directory before executing tests. This option '
-                  'may be necessary because of requirements and/or '
-                  'limitations of the external test runner. If the external '
-                  'runner requires to be run from its own base directory,'
-                  'use "runner" here. If the external runner runs tests based'
-                  ' on files and requires to be run from the directory '
-                  'where those files are located, use "test" here and '
-                  'specify the test directory with the option '
-                  '"--external-runner-testdir". Defaults to "%(default)s"')
-    arggrp.add_argument('--external-runner-chdir', default=None,
-                        choices=('runner', 'test'),
-                        help=chdir_help)
+    help_msg = ("Change directory before executing tests. This option may be "
+                "necessary because of requirements and/or limitations of the "
+                "external test runner. If the external runner requires to be "
+                "run from its own base directory, use 'runner' here. If the "
+                "external runner runs tests based  on files and requires to "
+                "be run from the directory where those files are located, "
+                "use 'test' here and specify the test directory with the "
+                "option '--external-runner-testdir'.")
+    future_settings.register_option(section=section,
+                                    key='external_runner_chdir',
+                                    help_msg=help_msg,
+                                    default=None,
+                                    parser=arggrp,
+                                    choices=('runner', 'test'),
+                                    long_arg='--external-runner-chdir')
 
     arggrp.add_argument('--external-runner-testdir', metavar='DIRECTORY',
                         default=None,
@@ -821,7 +824,8 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def _process_external_runner(args, runner):
         """ Enables the external_runner when asked for """
-        chdir = args.get('external_runner_chdir', None)
+        subcommand = args.get('subcommand')
+        chdir = args.get("{}.external_runner_chdir".format(subcommand))
         test_dir = args.get('external_runner_testdir', None)
 
         if runner:

@@ -234,7 +234,9 @@ class Replay(CLI):
                               'ignore_missing_references',
                               'execution_order',
                               'loaders',
-                              'external_runner']:
+                              'external_runner',
+                              'external_runner_testdir',
+                              'external_runner_chdir']:
                     optvalue = config.get('run.{}'.format(option))
                 if optvalue is not None:
                     LOG_UI.warn("Overriding the replay %s with the --%s value "
