@@ -7,12 +7,12 @@ from avocado.utils import process
 LSBLK_OUTPUT = b'''
 {
    "blockdevices": [
-      {"name": "vda", "maj:min": "252:0", "rm": "0", "size": "6G", "ro": "0", "type": "disk", "mountpoint": null,
+      {"name": "/dev/vda", "maj:min": "252:0", "rm": "0", "size": "6G", "ro": "0", "type": "disk", "mountpoint": null,
          "children": [
-            {"name": "vda1", "maj:min": "252:1", "rm": "0", "size": "1M", "ro": "0", "type": "part", "mountpoint": null},
-            {"name": "vda2", "maj:min": "252:2", "rm": "0", "size": "1G", "ro": "0", "type": "part", "mountpoint": "/boot"},
-            {"name": "vda3", "maj:min": "252:3", "rm": "0", "size": "615M", "ro": "0", "type": "part", "mountpoint": "[SWAP]"},
-            {"name": "vda4", "maj:min": "252:4", "rm": "0", "size": "4.4G", "ro": "0", "type": "part", "mountpoint": "/"}
+            {"name": "/dev/vda1", "maj:min": "252:1", "rm": "0", "size": "1M", "ro": "0", "type": "part", "mountpoint": null},
+            {"name": "/dev/vda2", "maj:min": "252:2", "rm": "0", "size": "1G", "ro": "0", "type": "part", "mountpoint": "/boot"},
+            {"name": "/dev/vda3", "maj:min": "252:3", "rm": "0", "size": "615M", "ro": "0", "type": "part", "mountpoint": "[SWAP]"},
+            {"name": "/dev/vda4", "maj:min": "252:4", "rm": "0", "size": "4.4G", "ro": "0", "type": "part", "mountpoint": "/"}
          ]
       }
    ]
@@ -40,7 +40,7 @@ class Disk(unittest.TestCase):
 
     def test_empty(self):
         mock_result = process.CmdResult(
-            command='lsblk --json',
+            command='lsblk --json --paths --inverse',
             stdout=b'{"blockdevices": []}')
         with unittest.mock.patch('avocado.utils.disk.process.run',
                                  return_value=mock_result):
@@ -48,7 +48,7 @@ class Disk(unittest.TestCase):
 
     def test_disks(self):
         mock_result = process.CmdResult(
-            command='lsblk --json',
+            command='lsblk --json --paths --inverse',
             stdout=LSBLK_OUTPUT)
         with unittest.mock.patch('avocado.utils.disk.process.run',
                                  return_value=mock_result):
