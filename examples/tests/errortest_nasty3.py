@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 from avocado import Test
-from avocado import main
 
 
 class NastyException:
@@ -28,7 +25,3 @@ class FailTest(Test):
         Avocado should report this as TestError.
         """
         raise NastyException("Nasty-string-like-exception")   # pylint: disable=E0710
-
-
-if __name__ == "__main__":
-    main()

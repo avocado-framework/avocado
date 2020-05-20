@@ -17,7 +17,6 @@
 Job module - describes a sequence of automated test operations.
 """
 
-import argparse
 import logging
 import os
 import pprint
@@ -27,7 +26,6 @@ import sys
 import tempfile
 import time
 import traceback
-import warnings
 
 from . import data_dir
 from . import dispatcher
@@ -720,60 +718,3 @@ class Job:
                     shutil.rmtree(base_logdir)
                 except FileNotFoundError:
                     pass
-
-
-class TestProgram:
-
-    """
-    Convenience class to make avocado test modules executable.
-    """
-
-    def __init__(self):
-        # Avoid fork loop/bomb when running a test via avocado.main() that
-        # calls avocado.main() itself
-        if os.environ.get('AVOCADO_STANDALONE_IN_MAIN', False):
-            sys.stderr.write('AVOCADO_STANDALONE_IN_MAIN environment variable '
-                             'found. This means that this code is being '
-                             'called recursively. Exiting to avoid an infinite'
-                             ' fork loop.\n')
-            sys.exit(exit_codes.AVOCADO_FAIL)
-        os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
-
-        warnings.warn("The standalone job feature will be removed soon. "
-                      "It can be replaced in the future by using the Job API "
-                      "and use __file__ as a reference.", FutureWarning)
-
-        self.prog_name = os.path.basename(sys.argv[0])
-        output.add_log_handler("", output.ProgressStreamHandler,
-                               fmt="%(message)s")
-        self.parse_args(sys.argv[1:])
-        self.config['run.references'] = [sys.argv[0]]
-        self.config['nrun.references'] = [sys.argv[0]]
-        self.run_tests()
-
-    def parse_args(self, argv):
-        self.parser = argparse.ArgumentParser(prog=self.prog_name)
-        self.parser.add_argument('-r', '--remove-test-results',
-                                 action='store_true', help="remove all test "
-                                 "results files after test execution")
-        self.parser.add_argument('-d', '--test-results-dir', dest='base_logdir',
-                                 default=None, metavar='TEST_RESULTS_DIR',
-                                 help="use an alternative test results "
-                                 "directory")
-        self.config = vars(self.parser.parse_args(argv))
-
-    def run_tests(self):
-        self.config['standalone'] = True
-        self.config['show'] = ["test"]
-        output.reconfigure(self.config)
-        with Job(self.config) as self.job:
-            exit_status = self.job.run()
-            if self.config.get('remove_test_results') is True:
-                shutil.rmtree(self.job.logdir)
-        sys.exit(exit_status)
-
-    def __del__(self):
-        data_dir.clean_tmp_files()
-
-
-main = TestProgram

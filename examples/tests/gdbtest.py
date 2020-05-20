@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import os
 
 from avocado import Test
-from avocado import main
 from avocado.utils import gdb
 from avocado.utils import genio
 from avocado.utils import process
@@ -398,7 +395,3 @@ class GdbTest(Test):
         r.cmd("qSupported")
         r.cmd("qfThreadInfo")
         s.exit()
-
-
-if __name__ == '__main__':
-    main()

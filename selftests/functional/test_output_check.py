@@ -28,7 +28,6 @@ JSON_VARIANTS = """
 
 TEST_WITH_SAME_EXPECTED_OUTPUT = """
 from avocado import Test
-from avocado import main
 import logging
 
 
@@ -47,15 +46,10 @@ class PassTest(Test):
         stdout.info('Informational line that will go to stdout')
         stderr = logging.getLogger('avocado.test.stderr')
         stderr.info('Informational line that will go to stderr')
-
-
-if __name__ == "__main__":
-    main()
 """
 
 TEST_WITH_DIFFERENT_EXPECTED_OUTPUT = """
 from avocado import Test
-from avocado import main
 import logging
 
 
@@ -74,15 +68,10 @@ class PassTest(Test):
         stdout.info('Informational line that will go to stdout_2')
         stderr = logging.getLogger('avocado.test.stderr')
         stderr.info('Informational line that will go to stderr_2')
-
-
-if __name__ == "__main__":
-    main()
 """
 
 TEST_WITH_DIFFERENT_EXPECTED_OUTPUT_VARIANTS = """
 from avocado import Test
-from avocado import main
 import logging
 
 
@@ -103,15 +92,10 @@ class PassTest(Test):
         stderr = logging.getLogger('avocado.test.stderr')
         stderr.info('Informational line that will go to stderr_2 %s'%bar)
         print("bar %s" %bar)
-
-
-if __name__ == "__main__":
-    main()
 """
 
 TEST_WITH_DIFFERENT_AND_SAME_EXPECTED_OUTPUT = """
 from avocado import Test
-from avocado import main
 import logging
 
 
@@ -137,10 +121,6 @@ class PassTest(Test):
         stdout.info('Informational line that will go to stdout_2')
         stderr = logging.getLogger('avocado.test.stderr')
         stderr.info('Informational line that will go to stderr_2')
-
-
-if __name__ == "__main__":
-    main()
 """
 
 

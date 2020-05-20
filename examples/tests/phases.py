@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-from avocado import main
 from avocado import Test
 
 
@@ -18,7 +15,3 @@ class Phases(Test):
 
     def tearDown(self):
         self.assertEqual(self.phase, 'TEARDOWN')
-
-
-if __name__ == "__main__":
-    main()

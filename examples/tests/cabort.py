@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-
 import os
 import shutil
 
 from avocado import Test
-from avocado import main
 from avocado.utils import build
 from avocado.utils import process
 
@@ -41,7 +38,3 @@ class CAbort(Test):
         self.log.info(cmd_result)
         expected_result = -6  # SIGABRT = 6
         self.assertEqual(cmd_result.exit_status, expected_result)
-
-
-if __name__ == "__main__":
-    main()
