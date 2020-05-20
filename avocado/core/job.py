@@ -27,6 +27,7 @@ import sys
 import tempfile
 import time
 import traceback
+import warnings
 
 from . import data_dir
 from . import dispatcher
@@ -737,6 +738,10 @@ class TestProgram:
                              ' fork loop.\n')
             sys.exit(exit_codes.AVOCADO_FAIL)
         os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
+
+        warnings.warn("The standalone job feature will be removed soon. "
+                      "It can be replaced in the future by using the Job API "
+                      "and use __file__ as a reference.", FutureWarning)
 
         self.prog_name = os.path.basename(sys.argv[0])
         output.add_log_handler("", output.ProgressStreamHandler,
