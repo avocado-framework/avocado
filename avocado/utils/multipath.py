@@ -26,6 +26,12 @@ from . import service
 from . import wait
 
 
+class MPException(Exception):
+    """
+    Base Exception Class for all exceptions
+    """
+
+
 def get_svc_name():
     """
     Gets the multipath service name based on distro.
@@ -104,6 +110,42 @@ def get_multipath_wwids():
                         sudo=True, shell=True).stdout_text
     wwids = wwids.strip("\n").replace("/", "").split("\n")
     return wwids
+
+
+def get_multipath_wwid(mpath):
+    """
+    Get the wwid binding for given mpath name
+
+    :return: Multipath wwid
+    :rtype: str
+    """
+    cmd = "multipathd show maps format '%n %w'"
+    try:
+        wwids = process.run(cmd, ignore_status=True,
+                            sudo=True, shell=True).stdout_text
+    except process.CmdError as ex:
+        raise MPException("Multipathd Command Failed : %s " % ex)
+    for wwid in wwids.splitlines():
+        if mpath in wwid:
+            return wwid.split()[1]
+
+
+def is_mpath_dev(mpath):
+    """
+    Check the give name is a multipath device name or not.
+
+    :return: True if device is multipath or False
+    :rtype: Boolean
+    """
+    cmd = "multipath -l -v 1"
+    try:
+        mpaths = process.run(cmd, ignore_status=True,
+                             sudo=True, shell=True).stdout_text
+    except process.CmdError as ex:
+        raise MPException("Multipath Command Failed : %s " % ex)
+    if mpath in mpaths.strip('\n').split("\n"):
+        return True
+    return False
 
 
 def get_paths(wwid):
