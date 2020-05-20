@@ -32,7 +32,7 @@ from . import test
 from . import safeloader
 from .references import reference_split
 from ..utils import stacktrace
-from .settings import settings
+from .future.settings import settings as future_settings
 from .output import LOG_UI
 
 
@@ -120,11 +120,14 @@ class TestLoaderProxy:
                                        ", ".join(_good_test_types(plugin)))
             return out.rstrip('\n')
 
+        subcommand = args.get('subcommand')
         self.register_plugin(TapLoader)
         # Register external runner when --external-runner is used
-        if args.get("external_runner", None):
+        external_runner = args.get("{}.external_runner".format(subcommand))
+        if external_runner:
             self.register_plugin(ExternalLoader)
-            args['loaders'] = ["external:%s" % args.get('external_runner')]
+            key = "{}.loaders".format(subcommand)
+            args[key] = ["external:{}".format(external_runner)]
         else:
             # Add (default) file loader if not already registered
             if FileLoader not in self.registered_plugins:
@@ -135,12 +138,10 @@ class TestLoaderProxy:
         supported_types = []
         for plugin in self.registered_plugins:
             supported_types.extend(_good_test_types(plugin))
-        # Load plugin by the priority from settings
-        loaders = args.get('loaders', None)
-        if not loaders:
-            loaders = settings.get_value("plugins", "loaders", list, [])
-        if '?' in loaders:
-            raise LoaderError("Available loader plugins:\n%s" % _str_loaders())
+
+        # Here is one of the few exceptions that has a hardcoded default
+        loaders = args.get("{}.loaders".format(subcommand)) or ['file',
+                                                                '@DEFAULT']
         if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
@@ -396,43 +397,60 @@ class AccessDeniedPath:
     """ Dummy object to represent reference pointing to a inaccessible path """
 
 
-def add_loader_options(parser):
+def add_loader_options(parser, section='run'):
     arggrp = parser.add_argument_group('loader options')
-    arggrp.add_argument('--loaders', nargs='*', help="Overrides the priority "
-                        "of the test loaders. You can specify either "
-                        "@loader_name or TEST_TYPE. By default it tries all "
-                        "available loaders according to priority set in "
-                        "settings->plugins.loaders.")
-    arggrp.add_argument('--external-runner', default=None,
-                        metavar='EXECUTABLE',
-                        help=('Path to an specific test runner that '
-                              'allows the use of its own tests. This '
-                              'should be used for running tests that '
-                              'do not conform to Avocado\' SIMPLE test'
-                              'interface and can not run standalone. Note: '
-                              'the use of --external-runner overwrites the --'
-                              'loaders to "external_runner"'))
+    help_msg = ("Overrides the priority of the test loaders. You can specify "
+                "either @loader_name or TEST_TYPE. By default it tries all "
+                "available loaders according to priority set in "
+                "settings->plugins.loaders.")
+    future_settings.register_option(section=section,
+                                    key='loaders',
+                                    nargs='*',
+                                    key_type=list,
+                                    default=['file', '@DEFAULT'],
+                                    help_msg=help_msg,
+                                    parser=arggrp,
+                                    long_arg='--loaders')
 
-    chdir_help = ('Change directory before executing tests. This option '
-                  'may be necessary because of requirements and/or '
-                  'limitations of the external test runner. If the external '
-                  'runner requires to be run from its own base directory,'
-                  'use "runner" here. If the external runner runs tests based'
-                  ' on files and requires to be run from the directory '
-                  'where those files are located, use "test" here and '
-                  'specify the test directory with the option '
-                  '"--external-runner-testdir". Defaults to "%(default)s"')
-    arggrp.add_argument('--external-runner-chdir', default=None,
-                        choices=('runner', 'test'),
-                        help=chdir_help)
+    help_msg = ("Path to an specific test runner that allows the use of its "
+                "own tests. This should be used for running tests that do not "
+                "conform to Avocado\'s SIMPLE test interface and can not run "
+                "standalone. Note: the use of --external-runner overwrites "
+                "the --loaders to 'external_runner'")
+    future_settings.register_option(section=section,
+                                    key='external_runner',
+                                    default=None,
+                                    help_msg=help_msg,
+                                    parser=arggrp,
+                                    long_arg='--external-runner')
 
-    arggrp.add_argument('--external-runner-testdir', metavar='DIRECTORY',
-                        default=None,
-                        help=('Where test files understood by the external'
-                              ' test runner are located in the '
-                              'filesystem. Obviously this assumes and '
-                              'only applies to external test runners that '
-                              'run tests from files'))
+    help_msg = ("Change directory before executing tests. This option may be "
+                "necessary because of requirements and/or limitations of the "
+                "external test runner. If the external runner requires to be "
+                "run from its own base directory, use 'runner' here. If the "
+                "external runner runs tests based  on files and requires to "
+                "be run from the directory where those files are located, "
+                "use 'test' here and specify the test directory with the "
+                "option '--external-runner-testdir'.")
+    future_settings.register_option(section=section,
+                                    key='external_runner_chdir',
+                                    help_msg=help_msg,
+                                    default=None,
+                                    parser=arggrp,
+                                    choices=('runner', 'test'),
+                                    long_arg='--external-runner-chdir')
+
+    help_msg = ("Where test files understood by the external test runner "
+                "are located in the filesystem. Obviously this assumes and "
+                "only applies to external test runners that run tests from "
+                "files")
+    future_settings.register_option(section=section,
+                                    key='external_runner_testdir',
+                                    metavar='DIRECTORY',
+                                    default=None,
+                                    help_msg=help_msg,
+                                    parser=arggrp,
+                                    long_arg='--external-runner-testdir')
 
 
 class NotATest:
@@ -810,8 +828,9 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def _process_external_runner(args, runner):
         """ Enables the external_runner when asked for """
-        chdir = args.get('external_runner_chdir', None)
-        test_dir = args.get('external_runner_testdir', None)
+        subcommand = args.get('subcommand')
+        chdir = args.get("{}.external_runner_chdir".format(subcommand))
+        test_dir = args.get("{}.external_runner_testdir".format(subcommand))
 
         if runner:
             external_runner_and_args = shlex.split(runner)
