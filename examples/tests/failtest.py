@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 from avocado import Test
-from avocado import main
 
 
 class FailTest(Test):
@@ -17,7 +14,3 @@ class FailTest(Test):
         Should fail.
         """
         self.fail('This test is supposed to fail')
-
-
-if __name__ == "__main__":
-    main()

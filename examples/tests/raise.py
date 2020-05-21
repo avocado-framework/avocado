@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-
 import os
 import shutil
 
 from avocado import Test
-from avocado import main
 from avocado.utils import build
 from avocado.utils import process
 
@@ -50,7 +47,3 @@ class Raise(Test):
             expected_result = 255
             self.assertIn("raise: Invalid argument", cmd_result.stderr)
         self.assertEqual(cmd_result.exit_status, expected_result)
-
-
-if __name__ == "__main__":
-    main()

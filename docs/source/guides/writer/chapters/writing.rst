@@ -504,12 +504,9 @@ say you want to pick up a test suite written in C that it is in a tarball,
 uncompress it, compile the suite code, and then executing the test. Here's
 an example that does that::
 
-    #!/usr/bin/env python
-
     import os
 
     from avocado import Test
-    from avocado import main
     from avocado.utils import archive
     from avocado.utils import build
     from avocado.utils import process
@@ -544,10 +541,6 @@ an example that does that::
                    (self.sync_length, self.sync_loop))
             process.system(cmd)
             os.chdir(self.cwd)
-
-
-    if __name__ == "__main__":
-        main()
 
 Here we have an example of the ``setUp`` method in action: Here we get the
 location of the test suite code (tarball) through
@@ -1083,11 +1076,7 @@ You can cancel a test calling `self.cancel()` at any phase of the test
 status and will not make the Job to exit with a non-0 status. Example::
 
 
-
-    #!/usr/bin/env python
-
     from avocado import Test
-    from avocado import main
 
     from avocado.utils.process import run
     from avocado.utils.software_manager import SoftwareManager
@@ -1114,9 +1103,6 @@ status and will not make the Job to exit with a non-0 status. Example::
                 self.cancel('gcc is not installed or wrong version')
             self.assertIn('enable-gnu-indirect-function',
                           run('gcc -v', ignore_status=True).stderr)
-
-    if __name__ == "__main__":
-        main()
 
 In a system missing the `iperf` package but with `gcc` installed in
 the correct version, the result will be::

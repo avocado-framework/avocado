@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import os
 import shutil
 
-from avocado import main
 from avocado import Test
 from avocado.utils import gdb
 from avocado.utils import build
@@ -54,7 +51,3 @@ class PrintVariableTest(Test):
         self.log.info(out)
         app.exit()
         self.assertIn("MY VARIABLE 'A' IS: ff", out)
-
-
-if __name__ == "__main__":
-    main()

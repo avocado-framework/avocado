@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import avocado
 
 
@@ -22,7 +20,3 @@ class CancelOnException(avocado.Test):
         def foo():
             raise RuntimeError
         foo()
-
-
-if __name__ == "__main__":
-    avocado.main()

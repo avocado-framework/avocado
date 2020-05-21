@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-from avocado import main
 from avocado import Test
 
 
@@ -18,7 +15,3 @@ class CitParameters(Test):
         self.params.get('state')
         self.params.get('material')
         self.params.get('coating')
-
-
-if __name__ == "__main__":
-    main()

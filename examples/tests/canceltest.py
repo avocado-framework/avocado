@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 from avocado import Test
-from avocado import main
 
 
 class CancelTest(Test):
@@ -12,7 +9,3 @@ class CancelTest(Test):
 
     def test(self):
         self.cancel("This should end with CANCEL.")
-
-
-if __name__ == "__main__":
-    main()

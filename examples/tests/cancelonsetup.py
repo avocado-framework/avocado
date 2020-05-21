@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 from avocado import Test
-from avocado import main
 
 
 class CancelOnSetupTest(Test):
@@ -17,7 +14,3 @@ class CancelOnSetupTest(Test):
         """
         This won't get to be executed, given that setUp calls .cancel().
         """
-
-
-if __name__ == "__main__":
-    main()

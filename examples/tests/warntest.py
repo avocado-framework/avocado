@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 from avocado import Test
-from avocado import main
 
 
 class WarnTest(Test):
@@ -15,7 +12,3 @@ class WarnTest(Test):
         This should throw a TestWarn.
         """
         self.log.warn("This marks test as WARN")
-
-
-if __name__ == "__main__":
-    main()

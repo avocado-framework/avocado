@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import avocado
 
 
@@ -23,7 +21,3 @@ class FailOnException(avocado.Test):
         errors.
         """
         raise ValueError('This raises a ValueError and should end as a FAIL')
-
-
-if __name__ == "__main__":
-    avocado.main()

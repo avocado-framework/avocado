@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 from avocado import Test
-from avocado import main
 
 
 class MultipleTests(Test):
@@ -31,7 +29,3 @@ class MultipleTests(Test):
         This method should never execute
         """
         raise Exception('This action method should never be executed.')
-
-
-if __name__ == '__main__':
-    main()

@@ -3,7 +3,6 @@
 import os
 
 from avocado import Test
-from avocado import main
 from avocado.utils import archive
 from avocado.utils import build
 from avocado.utils import process
@@ -51,7 +50,3 @@ class SyncTest(Test):
                 self.params.get('sync_loop', default=10)))
         process.system(cmd)
         os.chdir(self.cwd)
-
-
-if __name__ == "__main__":
-    main()

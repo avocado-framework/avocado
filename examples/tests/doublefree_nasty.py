@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import os
 import shutil
 
-from avocado import main
 from avocado import Test
 from avocado.utils import build
 from avocado.utils import process
@@ -42,7 +39,3 @@ class DoubleFreeTest(Test):
         cmd = os.path.join(self.workdir, self.__binary)
         cmd_result = process.run(cmd)
         self.log.info(cmd_result)
-
-
-if __name__ == "__main__":
-    main()

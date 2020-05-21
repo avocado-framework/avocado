@@ -815,7 +815,6 @@ class Test(unittest.TestCase, TestData):
         genio.write_file(whiteboard_file, self.whiteboard)
 
         if self.job is not None:
-            job_standalone = self.job.config.get('standalone', False)
             output_check_record = self.job.config.get('run.output_check_record')
             output_check = self.job.config.get('run.output_check')
 
@@ -832,8 +831,7 @@ class Test(unittest.TestCase, TestData):
                                            "stderr.expected")
 
             # check the output and produce test failures
-            if ((not job_standalone or
-                 output_check_record != 'none') and output_check == 'on'):
+            if output_check_record != 'none' and output_check == 'on':
                 output_checked = False
                 try:
                     output_checked = self._check_reference(

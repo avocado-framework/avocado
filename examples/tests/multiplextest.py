@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 from avocado import Test
-from avocado import main
 
 
 class MultiplexTest(Test):
@@ -73,7 +70,3 @@ class MultiplexTest(Test):
             cmdline += ' %s' % ping_flags
 
         self.log.info(cmdline)
-
-
-if __name__ == "__main__":
-    main()

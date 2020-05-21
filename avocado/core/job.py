@@ -17,7 +17,6 @@
 Job module - describes a sequence of automated test operations.
 """
 
-import argparse
 import logging
 import os
 import pprint
@@ -28,7 +27,6 @@ import tempfile
 import time
 import traceback
 import uuid
-import warnings
 
 from . import data_dir
 from . import dispatcher
@@ -145,9 +143,6 @@ class Job:
         self.log = LOG_UI
         self.loglevel = self.config.get('job.output.loglevel')
         self.__logging_handlers = {}
-        # TODO: Fix this, this is one of the few cases where using the config
-        # generated from the new settings with a hardcoded 'default' value
-        self.standalone = self.config.get('standalone', False)
         if self.config.get('run.dry_run.enabled'):  # Modify args for dry-run
             unique_id = self.config.get('run.unique_job_id')
             if unique_id is None:
@@ -256,21 +251,13 @@ class Job:
         Prepares a job result directory, also known as logdir, for this job
         """
         base_logdir = self.config.get('run.results_dir')
-        if self.standalone:
-            if base_logdir is not None:
-                base_logdir = os.path.abspath(base_logdir)
-                self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
-                                                           unique_id=self.unique_id)
-            else:
-                self.logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        if base_logdir is None:
+            self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
         else:
-            if base_logdir is None:
-                self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
-            else:
-                base_logdir = os.path.abspath(base_logdir)
-                self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
-                                                           unique_id=self.unique_id)
-        if not (self.standalone or self.config.get('run.dry_run.enabled')):
+            base_logdir = os.path.abspath(base_logdir)
+            self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
+                                                       unique_id=self.unique_id)
+        if not self.config.get('run.dry_run.enabled'):
             self._update_latest_link()
         self.logfile = os.path.join(self.logdir, "job.log")
         idfile = os.path.join(self.logdir, "id")
@@ -718,60 +705,3 @@ class Job:
                     shutil.rmtree(base_logdir)
                 except FileNotFoundError:
                     pass
-
-
-class TestProgram:
-
-    """
-    Convenience class to make avocado test modules executable.
-    """
-
-    def __init__(self):
-        # Avoid fork loop/bomb when running a test via avocado.main() that
-        # calls avocado.main() itself
-        if os.environ.get('AVOCADO_STANDALONE_IN_MAIN', False):
-            sys.stderr.write('AVOCADO_STANDALONE_IN_MAIN environment variable '
-                             'found. This means that this code is being '
-                             'called recursively. Exiting to avoid an infinite'
-                             ' fork loop.\n')
-            sys.exit(exit_codes.AVOCADO_FAIL)
-        os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
-
-        warnings.warn("The standalone job feature will be removed soon. "
-                      "It can be replaced in the future by using the Job API "
-                      "and use __file__ as a reference.", FutureWarning)
-
-        self.prog_name = os.path.basename(sys.argv[0])
-        output.add_log_handler("", output.ProgressStreamHandler,
-                               fmt="%(message)s")
-        self.parse_args(sys.argv[1:])
-        self.config['run.references'] = [sys.argv[0]]
-        self.config['nrun.references'] = [sys.argv[0]]
-        self.run_tests()
-
-    def parse_args(self, argv):
-        self.parser = argparse.ArgumentParser(prog=self.prog_name)
-        self.parser.add_argument('-r', '--remove-test-results',
-                                 action='store_true', help="remove all test "
-                                 "results files after test execution")
-        self.parser.add_argument('-d', '--test-results-dir', dest='base_logdir',
-                                 default=None, metavar='TEST_RESULTS_DIR',
-                                 help="use an alternative test results "
-                                 "directory")
-        self.config = vars(self.parser.parse_args(argv))
-
-    def run_tests(self):
-        self.config['standalone'] = True
-        self.config['core.show'] = ["test"]
-        output.reconfigure(self.config)
-        with Job(self.config) as self.job:
-            exit_status = self.job.run()
-            if self.config.get('remove_test_results') is True:
-                shutil.rmtree(self.job.logdir)
-        sys.exit(exit_status)
-
-    def __del__(self):
-        data_dir.clean_tmp_files()
-
-
-main = TestProgram
