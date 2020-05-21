@@ -175,7 +175,6 @@ class Job:
         self.status = "RUNNING"
         self.result = None
         self.interrupted_reason = None
-        self.sysinfo = None
         timeout = self.config.get('run.job_timeout')
         try:
             self.timeout = data_structures.time_to_seconds(timeout)

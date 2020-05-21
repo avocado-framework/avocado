@@ -48,7 +48,6 @@ class JobTest(unittest.TestCase):
         self.assertIsNone(self.job.logfile)
         self.assertIsNone(self.job.replay_sourcejob)
         self.assertIsNone(self.job.result)
-        self.assertIsNone(self.job.sysinfo)
         self.assertIsNone(self.job.test_runner)
         self.assertIsNone(self.job.test_suite)
         self.assertIsNone(self.job.tmpdir)
