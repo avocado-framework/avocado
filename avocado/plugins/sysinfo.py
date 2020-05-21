@@ -41,13 +41,13 @@ class SysInfoJob(JobPreTests, JobPostTests):
         if not self.sysinfo_enabled:
             return
         self._init_sysinfo(job.logdir)
-        self.sysinfo.start_job_hook()
+        self.sysinfo.start()
 
     def post_tests(self, job):
         if not self.sysinfo_enabled:
             return
         self._init_sysinfo(job.logdir)
-        self.sysinfo.end_job_hook()
+        self.sysinfo.end()
 
 
 class SysInfo(CLICmd):
