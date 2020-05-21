@@ -25,7 +25,6 @@ from avocado.core import job
 from avocado.core import loader
 from avocado.core import output
 from avocado.core import parser_common_args
-from avocado.core.dispatcher import ResultDispatcher
 from avocado.core.dispatcher import JobPrePostDispatcher
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
@@ -320,9 +319,4 @@ class Run(CLICmd):
                 # Run JobPost plugins
                 pre_post_dispatcher.map_method('post', job_instance)
 
-            result_dispatcher = ResultDispatcher()
-            if result_dispatcher.extensions:
-                result_dispatcher.map_method('render',
-                                             job_instance.result,
-                                             job_instance)
         return job_run
