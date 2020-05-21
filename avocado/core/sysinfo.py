@@ -457,11 +457,6 @@ class SysInfo:
         self.start_test_collectibles = set()
         self.end_test_collectibles = set()
 
-        self.hook_mapping = {'start_job': self.start_job_collectibles,
-                             'end_job': self.end_job_collectibles,
-                             'start_test': self.start_test_collectibles,
-                             'end_test': self.end_test_collectibles}
-
         self.pre_dir = utils_path.init_dir(self.basedir, 'pre')
         self.post_dir = utils_path.init_dir(self.basedir, 'post')
         self.profile_dir = utils_path.init_dir(self.basedir, 'profile')
@@ -509,46 +504,6 @@ class SysInfo:
             log.info(details)
 
         self.end_test_collectibles.add(JournalctlWatcher())
-
-    def _get_collectibles(self, hook):
-        collectibles = self.hook_mapping.get(hook)
-        if collectibles is None:
-            raise ValueError('Incorrect hook, valid hook names: %s' %
-                             self.hook_mapping.keys())
-        return collectibles
-
-    def add_cmd(self, cmd, hook):
-        """
-        Add a command collectible.
-
-        :param cmd: Command to log.
-        :param hook: In which hook this cmd should be logged (start job, end
-                     job).
-        """
-        collectibles = self._get_collectibles(hook)
-        collectibles.add(Command(cmd))
-
-    def add_file(self, filename, hook):
-        """
-        Add a system file collectible.
-
-        :param filename: Path to the file to be logged.
-        :param hook: In which hook this file should be logged (start job, end
-                     job).
-        """
-        collectibles = self._get_collectibles(hook)
-        collectibles.add(Logfile(filename))
-
-    def add_watcher(self, filename, hook):
-        """
-        Add a system file watcher collectible.
-
-        :param filename: Path to the file to be logged.
-        :param hook: In which hook this watcher should be logged
-                    (start job, end job).
-        """
-        collectibles = self._get_collectibles(hook)
-        collectibles.add(LogWatcher(filename))
 
     def _get_installed_packages(self):
         sm = software_manager.SoftwareManager()
