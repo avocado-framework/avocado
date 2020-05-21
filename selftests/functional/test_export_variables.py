@@ -16,15 +16,13 @@ echo "Avocado Test workdir: $AVOCADO_TEST_WORKDIR"
 echo "Avocado Test logdir: $AVOCADO_TEST_LOGDIR"
 echo "Avocado Test logfile: $AVOCADO_TEST_LOGFILE"
 echo "Avocado Test outputdir: $AVOCADO_TEST_OUTPUTDIR"
-echo "Avocado Test sysinfodir: $AVOCADO_TEST_SYSINFODIR"
 
 test "$AVOCADO_VERSION" = "{version}" -a \
      -d "$AVOCADO_TEST_BASEDIR" -a \
      -d "$AVOCADO_TEST_WORKDIR" -a \
      -d "$AVOCADO_TEST_LOGDIR" -a \
      -f "$AVOCADO_TEST_LOGFILE" -a \
-     -d "$AVOCADO_TEST_OUTPUTDIR" -a \
-     -d "$AVOCADO_TEST_SYSINFODIR"
+     -d "$AVOCADO_TEST_OUTPUTDIR"
 """.format(version=VERSION)
 
 
