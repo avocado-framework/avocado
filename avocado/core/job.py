@@ -649,6 +649,16 @@ class Job:
         """
         self.result_events_dispatcher.map_method('post_tests', self)
 
+    def render_results(self):
+        """Render test results that depend on all tests having finished.
+
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.Result` interface.
+        """
+        result_dispatcher = dispatcher.ResultDispatcher()
+        if result_dispatcher.extensions:
+            result_dispatcher.map_method('render', self.result, self)
+
     def run(self):
         """
         Runs all job phases, returning the test execution results.
@@ -696,6 +706,7 @@ class Job:
             if self.time_end == -1:
                 self.time_end = time.time()
                 self.time_elapsed = self.time_end - self.time_start
+            self.render_results()
 
     def cleanup(self):
         """
