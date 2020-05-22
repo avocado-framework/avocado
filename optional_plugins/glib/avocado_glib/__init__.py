@@ -27,7 +27,7 @@ from avocado.core import output
 from avocado.core import test
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.plugin_interfaces import Resolver
-from avocado.core.settings import settings
+from avocado.core.future.settings import settings
 from avocado.core.resolver import ReferenceResolution
 from avocado.core.resolver import ReferenceResolutionResult
 from avocado.core.nrunner import Runnable
@@ -74,6 +74,7 @@ class GLibLoader(loader.TestLoader):
     def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
         avocado_suite = []
         subtests_filter = None
+        unsafe = settings.as_dict().get('plugins.glib.unsafe')
 
         if reference is None:
             return []
@@ -84,7 +85,7 @@ class GLibLoader(loader.TestLoader):
 
         if (os.path.isfile(reference) and
                 path.PathInspector(reference).has_exec_permission() and
-                settings.get_value("plugins.glib", "unsafe", bool, False)):
+                unsafe):
             try:
                 cmd = '%s -l' % (reference)
                 result = process.run(cmd)
@@ -124,9 +125,10 @@ class GLibResolver(Resolver):
 
     @staticmethod
     def resolve(reference):
+        unsafe = settings.as_dict().get('plugins.glib.unsafe')
         if (os.path.isfile(reference) and
                 os.access(reference, os.R_OK) and
-                settings.get_value("plugins.glib", "unsafe", bool, False)):
+                unsafe):
             try:
                 cmd = '%s -l' % (reference)
                 result = process.run(cmd)
@@ -157,7 +159,11 @@ class GLibCLI(CLI):
     description = "GLib Framework options for 'run' subcommand"
 
     def configure(self, parser):
-        pass
+        settings.register_option(section='plugins.glib',
+                                 key='unsafe',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg='Force unsafe mode.')
 
     def run(self, config):
         loader.loader.register_plugin(GLibLoader)
