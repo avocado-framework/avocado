@@ -528,7 +528,7 @@ class RemoteTestRunner(Runner):
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
         remote_logger.addHandler(file_handler)
-        if "test" in job.config.get("show", []):
+        if "test" in job.config.get("core.show"):
             output.add_log_handler(paramiko_logger.name)
         logger_list = [output.LOG_JOB]
         sys.stdout = output.LoggingFile(loggers=logger_list)

@@ -62,6 +62,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
                     'filter_by_tags_include_empty': False,
                     'env_keep': None,
                     'base_logdir': self.tmpdir.name,
+                    'core.show': ['test'],
                     'run.keep_tmp': 'on',
                     'run.store_logging_stream': [],
                     'run.dry_run.enabled': True,

@@ -375,9 +375,7 @@ class Job:
                 self.__logging_handlers[handler] = [name]
 
         # Enable console loggers
-        # TODO: Fix this, this is one of the few cases where using the config
-        # generated from the new settings with a hardcoded 'default' value
-        enabled_logs = self.config.get("show", [])
+        enabled_logs = self.config.get("core.show")
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
             self._stdout_stderr = sys.stdout, sys.stderr
@@ -775,7 +773,7 @@ class TestProgram:
 
     def run_tests(self):
         self.config['standalone'] = True
-        self.config['show'] = ["test"]
+        self.config['core.show'] = ["test"]
         output.reconfigure(self.config)
         with Job(self.config) as self.job:
             exit_status = self.job.run()

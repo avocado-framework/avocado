@@ -116,15 +116,18 @@ class Parser:
         streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.items()] +
                    ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.items()])
         streams = "; ".join(streams)
-        self.application.add_argument('--show', action="store",
-                                      type=lambda value: value.split(","),
-                                      metavar="STREAM[:LVL]", nargs='?',
-                                      default=['app'], help="List of comma "
-                                      "separated builtin logs, or logging "
-                                      "streams optionally followed by LEVEL "
-                                      "(DEBUG,INFO,...). Builtin streams "
-                                      "are: %s. By default: 'app'"
-                                      % streams)
+        help_msg = ("List of comma separated builtin logs, or logging streams "
+                    "optionally followed by LEVEL (DEBUG,INFO,...). Builtin "
+                    "streams are: %s. By default: 'app'" % streams)
+        future_settings.register_option(section='core',
+                                        key='show',
+                                        key_type=lambda x: x.split(','),
+                                        metavar="STREAM[:LVL]",
+                                        nargs='?',
+                                        default=['app'],
+                                        help_msg=help_msg,
+                                        parser=self.application,
+                                        long_arg='--show')
 
     def start(self):
         """

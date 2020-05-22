@@ -54,9 +54,9 @@ class AvocadoApp:
         self.parser.start()
         output.early_start()
 
-        show = getattr(self.parser.args, 'show', None)
+        show = getattr(self.parser.args, 'core.show')
         reconfigure_settings = {'core.paginator': 'off',
-                                'show': show}
+                                'core.show': show}
         try:
             self.cli_dispatcher = CLIDispatcher()
             self.cli_cmd_dispatcher = CLICmdDispatcher()

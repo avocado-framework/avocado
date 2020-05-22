@@ -406,10 +406,10 @@ def reconfigure(args):
     Adjust logging handlers accordingly to app args and re-log messages.
     """
     # Reconfigure stream loggers
-    enabled = args.get("show", None)
+    enabled = args.get("core.show")
     if not isinstance(enabled, list):
         enabled = ["app"]
-        args["show"] = enabled
+        args["core.show"] = enabled
     if "none" in enabled:
         del enabled[:]
     elif "all" in enabled:
