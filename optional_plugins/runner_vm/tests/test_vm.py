@@ -58,7 +58,8 @@ class VMTestRunnerSetup(unittest.TestCase):
                     'base_logdir': self.tmpdir.name,
                     'run.keep_tmp': 'on',
                     'run.store_logging_stream': [],
-                    'run.dry_run.enabled': True}
+                    'run.dry_run.enabled': True,
+                    'core.show': ['test']}
         with Job(job_args) as job:
             with unittest.mock.patch('avocado_runner_vm.vm_connect',
                                      return_value=mock_vm):
