@@ -37,7 +37,6 @@ from . import defaults
 from . import exceptions
 from . import output
 from . import parameters
-from . import sysinfo
 from . import tapparser
 from ..utils import asset
 from ..utils import astring
@@ -375,17 +374,6 @@ class Test(unittest.TestCase, TestData):
         self._logging_handlers = {}
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
-
-        # For some reason, sometimes, job.config if None here.
-        # This is the only place that we create a "default" in code.
-        try:
-            self.__sysinfo_enabled = job.config.get('sysinfo.collect.per_test')
-        except AttributeError:
-            self.__sysinfo_enabled = False
-
-        if self.__sysinfo_enabled:
-            self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
-            self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)
 
         self.__log = LOG_JOB
         original_log_warn = self.log.warning
@@ -831,8 +819,6 @@ class Test(unittest.TestCase, TestData):
 
         testMethod = getattr(self, self._testMethodName)
         self._start_logging()
-        if self.__sysinfo_enabled:
-            self.__sysinfo_logger.start()
         test_exception = None
         cleanup_exception = None
         output_check_exception = None
@@ -951,9 +937,6 @@ class Test(unittest.TestCase, TestData):
                                                 logger=LOG_JOB)
                         stderr_check_exception = details
 
-        if self.__sysinfo_enabled:
-            self.__sysinfo_logger.end()
-
         # pylint: disable=E0702
         if test_exception is not None:
             raise test_exception
@@ -980,8 +963,6 @@ class Test(unittest.TestCase, TestData):
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
-        if self.__sysinfo_enabled:
-            os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
 
     def run_avocado(self):
         """
