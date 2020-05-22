@@ -128,7 +128,7 @@ class TestLister:
             test_suite = tags.filter_test_tags(
                 test_suite,
                 self.args.get('list.filter_by_tags'),
-                self.args.get('filter_by_tags_include_empty'),
+                self.args.get('list.filter_by_tags_include_empty'),
                 self.args.get('filter_by_tags_include_empty_key'))
         test_matrix, stats, tag_stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats, tag_stats)

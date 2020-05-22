@@ -99,7 +99,7 @@ def resolutions_to_tasks(resolutions, config):
                 if not filter_test_tags_runnable(
                         runnable,
                         filter_by_tags,
-                        config.get('filter_by_tags_include_empty'),
+                        config.get("{}.filter_by_tags_include_empty".format(sub_cmd)),
                         config.get('filter_by_tags_include_empty_key')):
                     continue
             if runnable.uri:
@@ -449,7 +449,7 @@ class Job:
                 suite = tags.filter_test_tags(
                     suite,
                     filter_tags,
-                    self.config.get('filter_by_tags_include_empty'),
+                    self.config.get("{}.filter_by_tags_include_empty".format(sub_cmd)),
                     self.config.get('filter_by_tags_include_empty_key'))
         except loader.LoaderUnhandledReferenceError as details:
             raise exceptions.OptionValidationError(details)

@@ -116,7 +116,7 @@ class List(CLICmd):
                         if not filter_test_tags_runnable(
                                 runnable,
                                 filter_by_tags,
-                                config.get('filter_by_tags_include_empty'),
+                                config.get('nlist.filter_by_tags_include_empty'),
                                 config.get('filter_by_tags_include_empty_key')):
                             continue
 
