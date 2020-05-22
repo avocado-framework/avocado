@@ -90,10 +90,11 @@ def resolutions_to_tasks(resolutions, config):
     resolutions = [res for res in resolutions if
                    res.result == resolver.ReferenceResolutionResult.SUCCESS]
     no_digits = len(str(len(resolutions)))
+    sub_cmd = config.get('subcommand')
+    filter_by_tags = config.get("{}.filter_by_tags".format(sub_cmd))
     for resolution in resolutions:
         name = resolution.reference
         for runnable in resolution.resolutions:
-            filter_by_tags = config.get('filter_by_tags')
             if filter_by_tags:
                 if not filter_test_tags_runnable(
                         runnable,
@@ -439,13 +440,15 @@ class Job:
         :returns: a test suite (a list of test factories)
         """
         loader.loader.load_plugins(self.config)
+        sub_cmd = self.config.get('subcommand')
         try:
             force = self.config.get('run.ignore_missing_references')
             suite = loader.loader.discover(references, force=force)
-            if self.config.get('filter_by_tags'):
+            filter_tags = self.config.get("{}.filter_by_tags".format(sub_cmd))
+            if filter_tags:
                 suite = tags.filter_test_tags(
                     suite,
-                    self.config.get('filter_by_tags'),
+                    filter_tags,
                     self.config.get('filter_by_tags_include_empty'),
                     self.config.get('filter_by_tags_include_empty_key'))
         except loader.LoaderUnhandledReferenceError as details:

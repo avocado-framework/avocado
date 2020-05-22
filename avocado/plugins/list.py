@@ -124,10 +124,10 @@ class TestLister:
     def _list(self):
         self._extra_listing()
         test_suite = self._get_test_suite(self.args.get('list.references'))
-        if self.args.get('filter_by_tags', False):
+        if self.args.get('list.filter_by_tags'):
             test_suite = tags.filter_test_tags(
                 test_suite,
-                self.args.get('filter_by_tags'),
+                self.args.get('list.filter_by_tags'),
                 self.args.get('filter_by_tags_include_empty'),
                 self.args.get('filter_by_tags_include_empty_key'))
         test_matrix, stats, tag_stats = self._get_test_matrix(test_suite)
@@ -173,7 +173,7 @@ class List(CLICmd):
                                  parser=parser,
                                  positional_arg=True)
         loader.add_loader_options(parser, 'list')
-        parser_common_args.add_tag_filter_args(parser)
+        parser_common_args.add_tag_filter_args(parser, 'list')
 
     def run(self, config):
         test_lister = TestLister(config)
