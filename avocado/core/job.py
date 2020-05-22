@@ -100,7 +100,7 @@ def resolutions_to_tasks(resolutions, config):
                         runnable,
                         filter_by_tags,
                         config.get("{}.filter_by_tags_include_empty".format(sub_cmd)),
-                        config.get('filter_by_tags_include_empty_key')):
+                        config.get('{}.filter_by_tags_include_empty_key'.format(sub_cmd))):
                     continue
             if runnable.uri:
                 name = runnable.uri
@@ -450,7 +450,7 @@ class Job:
                     suite,
                     filter_tags,
                     self.config.get("{}.filter_by_tags_include_empty".format(sub_cmd)),
-                    self.config.get('filter_by_tags_include_empty_key'))
+                    self.config.get('{}.filter_by_tags_include_empty_key'.format(sub_cmd)))
         except loader.LoaderUnhandledReferenceError as details:
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:

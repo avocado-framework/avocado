@@ -39,10 +39,13 @@ def add_tag_filter_args(parser, section):
                              parser=group,
                              long_arg='--filter-by-tags-include-empty')
 
-    group.add_argument('--filter-by-tags-include-empty-key',
-                       action='store_true', default=False,
-                       help=('Include all tests that do not have a '
-                             'matching key in its key:val tags. This '
-                             'effectively means those tests will be '
-                             'kept in the test suite found previously '
-                             'to filtering.'))
+    help_msg = ('Include all tests that do not have a matching key in its '
+                'key:val tags. This effectively means those tests will be '
+                'kept in the test suite found previously to filtering.')
+    settings.register_option(section=section,
+                             key='filter_by_tags_include_empty_key',
+                             default=False,
+                             key_type=bool,
+                             help_msg=help_msg,
+                             parser=group,
+                             long_arg='--filter-by-tags-include-empty-key')

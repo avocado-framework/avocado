@@ -117,7 +117,7 @@ class List(CLICmd):
                                 runnable,
                                 filter_by_tags,
                                 config.get('nlist.filter_by_tags_include_empty'),
-                                config.get('filter_by_tags_include_empty_key')):
+                                config.get('nlist.filter_by_tags_include_empty_key')):
                             continue
 
                     type_label = runnable.kind
