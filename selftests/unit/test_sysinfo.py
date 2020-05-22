@@ -79,13 +79,13 @@ class SysinfoTest(unittest.TestCase):
         sysinfo_logger.end_test_hook()
         self.assertGreaterEqual(len(os.listdir(testdir)), 2,
                                 "Test does not have 'pre' dir")
-        job_postdir = os.path.join(testdir, 'post')
-        self.assertTrue(os.path.isdir(job_postdir))
+        test_postdir = os.path.join(testdir, 'post')
+        self.assertTrue(os.path.isdir(test_postdir))
         # By default, there are no post test files
-        self.assertLess(len(os.listdir(job_postdir)), 3,
+        self.assertLess(len(os.listdir(test_postdir)), 3,
                         "Post dir can contain 0-2 files depending on whether "
                         "sys messages are obtainable or not:\n%s"
-                        % os.listdir(job_postdir))
+                        % os.listdir(test_postdir))
 
     def tearDown(self):
         self.tmpdir.cleanup()
