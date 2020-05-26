@@ -370,8 +370,6 @@ class TestRunner(Runner):
         :return: a set with types of test failures.
         """
         summary = set()
-        if job.sysinfo is not None:
-            job.sysinfo.start_job_hook()
         queue = multiprocessing.SimpleQueue()
         if timeout > 0:
             deadline = time.time() + timeout
@@ -418,8 +416,6 @@ class TestRunner(Runner):
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')
 
-        if job.sysinfo is not None:
-            job.sysinfo.end_job_hook()
         result.end_tests()
         job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)

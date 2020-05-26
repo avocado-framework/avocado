@@ -101,7 +101,6 @@ if __name__ == '__main__':
                   'teststmpdir = avocado.plugins.teststmpdir:TestsTmpDir',
                   'human = avocado.plugins.human:HumanJob',
                   'merge_files = avocado.plugins.expected_files_merge:FilesMerge',
-                  'sysinfo = avocado.plugins.sysinfo:SysInfoJob',
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
@@ -113,6 +112,7 @@ if __name__ == '__main__':
                   'tap = avocado.plugins.tap:TAPResult',
                   'journal = avocado.plugins.journal:JournalResult',
                   'fetchasset = avocado.plugins.assets:FetchAssetJob',
+                  'sysinfo = avocado.plugins.sysinfo:SysInfoJob',
                   ],
               'avocado.plugins.varianter': [
                   'json_variants = avocado.plugins.json_variants:JsonVariants',

@@ -367,12 +367,11 @@ class LogWatcher(Collectible):
 class SysInfo:
 
     """
-    Log different system properties at some key control points:
+    Log different system properties at some key control points.
 
-    * start_job
-    * start_test
-    * end_test
-    * end_job
+    Includes support for a start and stop event, with daemons running in
+    between.  An event may be a job, a test, or any other even with a
+    beginning and end.
     """
 
     def __init__(self, basedir=None, log_packages=None, profiler=None):
@@ -451,16 +450,8 @@ class SysInfo:
             log.debug('File %s does not exist.', profiler_file)
             self.profilers = []
 
-        self.start_job_collectibles = set()
-        self.end_job_collectibles = set()
-
-        self.start_test_collectibles = set()
-        self.end_test_collectibles = set()
-
-        self.hook_mapping = {'start_job': self.start_job_collectibles,
-                             'end_job': self.end_job_collectibles,
-                             'start_test': self.start_test_collectibles,
-                             'end_test': self.end_test_collectibles}
+        self.start_collectibles = set()
+        self.end_collectibles = set()
 
         self.pre_dir = utils_path.init_dir(self.basedir, 'pre')
         self.post_dir = utils_path.init_dir(self.basedir, 'post')
@@ -479,76 +470,19 @@ class SysInfo:
                          logpaths)
 
     def _set_collectibles(self):
-        add_per_test = settings.get_value("sysinfo.collect", "per_test",
-                                          bool, None)
         if self.profiler:
             for cmd in self.profilers:
-                self.start_job_collectibles.add(Daemon(cmd))
-                if add_per_test:
-                    self.start_test_collectibles.add(Daemon(cmd))
+                self.start_collectibles.add(Daemon(cmd))
 
         for cmd in self.commands:
-            self.start_job_collectibles.add(Command(cmd))
-            self.end_job_collectibles.add(Command(cmd))
-            if add_per_test:
-                self.start_test_collectibles.add(Command(cmd))
-                self.end_test_collectibles.add(Command(cmd))
+            self.start_collectibles.add(Command(cmd))
+            self.end_collectibles.add(Command(cmd))
 
         for filename in self.files:
-            self.start_job_collectibles.add(Logfile(filename))
-            self.end_job_collectibles.add(Logfile(filename))
-            if add_per_test:
-                self.start_test_collectibles.add(Logfile(filename))
-                self.end_test_collectibles.add(Logfile(filename))
+            self.start_collectibles.add(Logfile(filename))
+            self.end_collectibles.add(Logfile(filename))
 
-        # As the system log path is not standardized between distros,
-        # we have to probe and find out the correct path.
-        try:
-            self.end_test_collectibles.add(self._get_syslog_watcher())
-        except ValueError as details:
-            log.info(details)
-
-        self.end_test_collectibles.add(JournalctlWatcher())
-
-    def _get_collectibles(self, hook):
-        collectibles = self.hook_mapping.get(hook)
-        if collectibles is None:
-            raise ValueError('Incorrect hook, valid hook names: %s' %
-                             self.hook_mapping.keys())
-        return collectibles
-
-    def add_cmd(self, cmd, hook):
-        """
-        Add a command collectible.
-
-        :param cmd: Command to log.
-        :param hook: In which hook this cmd should be logged (start job, end
-                     job).
-        """
-        collectibles = self._get_collectibles(hook)
-        collectibles.add(Command(cmd))
-
-    def add_file(self, filename, hook):
-        """
-        Add a system file collectible.
-
-        :param filename: Path to the file to be logged.
-        :param hook: In which hook this file should be logged (start job, end
-                     job).
-        """
-        collectibles = self._get_collectibles(hook)
-        collectibles.add(Logfile(filename))
-
-    def add_watcher(self, filename, hook):
-        """
-        Add a system file watcher collectible.
-
-        :param filename: Path to the file to be logged.
-        :param hook: In which hook this watcher should be logged
-                    (start job, end job).
-        """
-        collectibles = self._get_collectibles(hook)
-        collectibles.add(LogWatcher(filename))
+        self.end_collectibles.add(JournalctlWatcher())
 
     def _get_installed_packages(self):
         sm = software_manager.SoftwareManager()
@@ -574,11 +508,9 @@ class SysInfo:
         removed_packages = "\n".join(old_packages - new_packages) + "\n"
         genio.write_file(removed_path, removed_packages)
 
-    def start_job_hook(self):
-        """
-        Logging hook called whenever a job starts.
-        """
-        for log_hook in self.start_job_collectibles:
+    def start(self):
+        """Log all collectibles at the start of the event."""
+        for log_hook in self.start_collectibles:
             if isinstance(log_hook, Daemon):  # log daemons in profile directory
                 log_hook.run(self.profile_dir)
             else:
@@ -587,41 +519,14 @@ class SysInfo:
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
 
-    def end_job_hook(self):
+    def end(self):
         """
         Logging hook called whenever a job finishes.
         """
-        for log_hook in self.end_job_collectibles:
+        for log_hook in self.end_collectibles:
             log_hook.run(self.post_dir)
         # Stop daemon(s) started previously
-        for log_hook in self.start_job_collectibles:
-            if isinstance(log_hook, Daemon):
-                log_hook.stop()
-
-        if self.log_packages:
-            self._log_modified_packages(self.post_dir)
-
-    def start_test_hook(self):
-        """
-        Logging hook called before a test starts.
-        """
-        for log_hook in self.start_test_collectibles:
-            if isinstance(log_hook, Daemon):  # log daemons in profile directory
-                log_hook.run(self.profile_dir)
-            else:
-                log_hook.run(self.pre_dir)
-
-        if self.log_packages:
-            self._log_installed_packages(self.pre_dir)
-
-    def end_test_hook(self):
-        """
-        Logging hook called after a test finishes.
-        """
-        for log_hook in self.end_test_collectibles:
-            log_hook.run(self.post_dir)
-        # Stop daemon(s) started previously
-        for log_hook in self.start_test_collectibles:
+        for log_hook in self.start_collectibles:
             if isinstance(log_hook, Daemon):
                 log_hook.stop()
 
@@ -640,6 +545,6 @@ def collect_sysinfo(basedir):
         basedir = os.path.join(cwd, 'sysinfo-%s' % timestamp)
 
     sysinfo_logger = SysInfo(basedir=basedir)
-    sysinfo_logger.start_job_hook()
-    sysinfo_logger.end_job_hook()
+    sysinfo_logger.start()
+    sysinfo_logger.end()
     log.info("Logged system information to %s", basedir)

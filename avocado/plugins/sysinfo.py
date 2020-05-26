@@ -17,36 +17,37 @@ System information plugin
 
 from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.plugin_interfaces import JobPre
-from avocado.core.plugin_interfaces import JobPost
+from avocado.core.plugin_interfaces import JobPreTests
+from avocado.core.plugin_interfaces import JobPostTests
 from avocado.core import sysinfo
 from avocado.utils import path
 
 
-class SysInfoJob(JobPre, JobPost):
+class SysInfoJob(JobPreTests, JobPostTests):
 
     name = 'sysinfo'
     description = 'Collects system information before/after the job is run'
 
-    def __init__(self):
+    def __init__(self, config):
         self.sysinfo = None
+        self.sysinfo_enabled = config.get('sysinfo.collect.enabled') == 'on'
 
     def _init_sysinfo(self, job_logdir):
         if self.sysinfo is None:
             basedir = path.init_dir(job_logdir, 'sysinfo')
             self.sysinfo = sysinfo.SysInfo(basedir=basedir)
 
-    def pre(self, job):
-        if job.config.get('sysinfo.collect.enabled') != 'on':
+    def pre_tests(self, job):
+        if not self.sysinfo_enabled:
             return
         self._init_sysinfo(job.logdir)
-        self.sysinfo.start_job_hook()
+        self.sysinfo.start()
 
-    def post(self, job):
-        if job.config.get('sysinfo.collect.enabled') != 'on':
+    def post_tests(self, job):
+        if not self.sysinfo_enabled:
             return
         self._init_sysinfo(job.logdir)
-        self.sysinfo.end_job_hook()
+        self.sysinfo.end()
 
 
 class SysInfo(CLICmd):

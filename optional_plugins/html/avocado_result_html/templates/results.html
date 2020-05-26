@@ -151,7 +151,7 @@
                     <div class="panel panel-default">
                       <div class="panel-heading" role="tab" id="{{ sysinfo.element_id }}">
                         <h4 class="panel-title">
-                          <a data-toggle="collapse" data-parent="#accordionPre2" href="#{{ sysinfo.collapse_id}}" aria-expanded="false" aria-controls="{{ sysinfo.collapse_id }}"><tt>{{ sysinfo.file }}</tt></a>
+                          <a data-toggle="collapse" data-parent="#accordionPre2" href="#{{ sysinfo.collapse_id }}" aria-expanded="false" aria-controls="{{ sysinfo.collapse_id }}"><tt>{{ sysinfo.file }}</tt></a>
                         </h4>
                       </div>
                       <div id="{{ sysinfo.collapse_id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{ sysinfo.element_id }}">
@@ -186,11 +186,19 @@
                     {% for sysinfo in data.sysinfo_post %}
                     <div class="panel panel-default">
                       <div class="panel-heading" role="tab" id="{{ sysinfo.element_id }}">
-                        <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordionPost2" href="#{{ sysinfo.collapse_id }}" aria-expanded="false" aria-controls="{{ sysinfo.collapse_id }}"><tt>{{ sysinfo.file }}</tt></a></h4>
+                        <h4 class="panel-title">
+                          <a data-toggle="collapse" data-parent="#accordionPost2" href="#{{ sysinfo.collapse_id }}" aria-expanded="false" aria-controls="{{ sysinfo.collapse_id }}"><tt>{{ sysinfo.file }}</tt></a>
+                        </h4>
                       </div>
                       <div id="{{ sysinfo.collapse_id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{ sysinfo.element_id }}">
                         <div class="panel-body">
                           <pre>{{ sysinfo.contents }}</pre>
+                          {% if 'err' in sysinfo %}
+                            <span>{{ sysinfo['err'] }}</span>
+                            <a href="{{ sysinfo['err_file'] }}">{{ sysinfo['err_file'] }}</a>
+                            <br />
+                            <span>{{ sysinfo['err_details'] }}</span>
+                          {% endif %}
                         </div>
                       </div>
                     </div>
@@ -221,6 +229,12 @@
                       <div id="{{ sysinfo.collapse_id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{ sysinfo.element_id }}">
                         <div class="panel-body">
                           <pre>{{ sysinfo.contents }}</pre>
+                          {% if 'err' in sysinfo %}
+                            <span>{{ sysinfo['err'] }}</span>
+                            <a href="{{ sysinfo['err_file'] }}">{{ sysinfo['err_file'] }}</a>
+                            <br />
+                            <span>{{ sysinfo['err_details'] }}</span>
+                          {% endif %}
                         </div>
                       </div>
                     </div>

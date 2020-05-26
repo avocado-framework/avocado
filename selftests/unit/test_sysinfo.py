@@ -51,41 +51,33 @@ class SysinfoTest(unittest.TestCase):
 
         self.assertEqual(len(container), 5)
 
-    def test_logger_job_hooks(self):
+    def test_logger_job(self):
         jobdir = os.path.join(self.tmpdir.name, 'job')
         sysinfo_logger = sysinfo.SysInfo(basedir=jobdir)
-        sysinfo_logger.start_job_hook()
+        sysinfo_logger.start()
         self.assertTrue(os.path.isdir(jobdir))
         self.assertGreaterEqual(len(os.listdir(jobdir)), 1,
                                 "Job does not have 'pre' dir")
         job_predir = os.path.join(jobdir, 'pre')
         self.assertTrue(os.path.isdir(job_predir))
-        sysinfo_logger.end_job_hook()
+        sysinfo_logger.end()
         job_postdir = os.path.join(jobdir, 'post')
         self.assertTrue(os.path.isdir(job_postdir))
 
-    def test_logger_test_hooks(self):
+    def test_logger_test(self):
         testdir = os.path.join(self.tmpdir.name, 'job', 'test1')
         sysinfo_logger = sysinfo.SysInfo(basedir=testdir)
-        sysinfo_logger.start_test_hook()
+        sysinfo_logger.start()
         self.assertTrue(os.path.isdir(testdir))
         self.assertGreaterEqual(len(os.listdir(testdir)), 1,
                                 "Test does not have 'pre' dir")
         test_predir = os.path.join(testdir, 'pre')
         self.assertTrue(os.path.isdir(test_predir))
-        # By default, there are no pre test files
-        self.assertEqual(len(os.listdir(test_predir)), 0,
-                         "Test pre dir is not empty")
-        sysinfo_logger.end_test_hook()
+        sysinfo_logger.end()
         self.assertGreaterEqual(len(os.listdir(testdir)), 2,
                                 "Test does not have 'pre' dir")
-        job_postdir = os.path.join(testdir, 'post')
-        self.assertTrue(os.path.isdir(job_postdir))
-        # By default, there are no post test files
-        self.assertLess(len(os.listdir(job_postdir)), 3,
-                        "Post dir can contain 0-2 files depending on whether "
-                        "sys messages are obtainable or not:\n%s"
-                        % os.listdir(job_postdir))
+        test_postdir = os.path.join(testdir, 'post')
+        self.assertTrue(os.path.isdir(test_postdir))
 
     def tearDown(self):
         self.tmpdir.cleanup()

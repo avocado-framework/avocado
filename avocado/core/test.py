@@ -379,7 +379,7 @@ class Test(unittest.TestCase, TestData):
         # For some reason, sometimes, job.config if None here.
         # This is the only place that we create a "default" in code.
         try:
-            self.__sysinfo_enabled = job.config.get('sysinfo.collect.enabled')
+            self.__sysinfo_enabled = job.config.get('sysinfo.collect.per_test')
         except AttributeError:
             self.__sysinfo_enabled = False
 
@@ -832,7 +832,7 @@ class Test(unittest.TestCase, TestData):
         testMethod = getattr(self, self._testMethodName)
         self._start_logging()
         if self.__sysinfo_enabled:
-            self.__sysinfo_logger.start_test_hook()
+            self.__sysinfo_logger.start()
         test_exception = None
         cleanup_exception = None
         output_check_exception = None
@@ -952,7 +952,7 @@ class Test(unittest.TestCase, TestData):
                         stderr_check_exception = details
 
         if self.__sysinfo_enabled:
-            self.__sysinfo_logger.end_test_hook()
+            self.__sysinfo_logger.end()
 
         # pylint: disable=E0702
         if test_exception is not None:
