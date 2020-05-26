@@ -370,7 +370,7 @@ class SysInfo:
     Log different system properties at some key control points.
 
     Includes support for a start and stop event, with daemons running in
-    between.  An event may be a job, a test, or any other even with a
+    between.  An event may be a job, a test, or any other event with a
     beginning and end.
     """
 
