@@ -18,6 +18,7 @@ NRunner based implementation of job compliant runner
 
 import json
 import os
+import time
 
 from copy import copy
 
@@ -70,11 +71,19 @@ class Runner(RunnerInterface):
     def run_suite(self, job, result, test_suite, variants, timeout=0,
                   replay_map=None, execution_order=None):
         summary = set()
+        if timeout > 0:
+            deadline = time.time() + timeout
+        else:
+            deadline = None
+
         test_suite, _ = nrunner.check_tasks_requirements(test_suite)
         result.tests_total = len(test_suite)  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
 
         for index, task in enumerate(test_suite):
+            if deadline is not None and time.time() > deadline:
+                break
+
             task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
             index += 1
             # this is all rubbish data
@@ -122,4 +131,5 @@ class Runner(RunnerInterface):
 
             result.check_test(test_state)
             result_dispatcher.map_method('end_test', result, test_state)
+        result.end_tests()
         return summary
