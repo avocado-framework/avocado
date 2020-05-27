@@ -111,7 +111,7 @@ def parse_mi(line):
     """
     if not line.endswith('\n'):
         line = "%s\n" % line
-    return gdbmi_parser.process(line)
+    return gdbmi_parser.session().process(line)
 
 
 def encode_mi_cli(command):
