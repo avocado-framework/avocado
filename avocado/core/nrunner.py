@@ -133,6 +133,9 @@ class Runnable:
         if self.tags is not None:
             args.append('tags=json:%s' % json.dumps(self.get_serializable_tags()))
 
+        if self.requirements is not None:
+            args.append('requirements=json:%s' % json.dumps(self.requirements))
+
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):
                 val = "json:%s" % json.dumps(val)
