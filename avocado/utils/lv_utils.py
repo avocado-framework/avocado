@@ -140,10 +140,10 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
 
         LOGGER.debug("Converting and copying /dev/zero")
         if disk:
-            vg_size = get_diskspace(disk)
+            vg_size = get_devices_total_space(disk.split())
 
         # Initializing sparse file with extra few bytes
-        cmd = ("dd if=/dev/zero of=%s bs=1M count=1 seek=%s" %
+        cmd = ("dd if=/dev/zero of=%s bs=1M count=1 seek=%d" %
                (ramdisk_filename, vg_size))
         process.run(cmd)
         if not disk:
