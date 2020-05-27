@@ -161,7 +161,7 @@ class GdbTest(Test):
         other_messages = g.read_until_break()
         core_path = None
         for msg in other_messages:
-            parsed_msg = gdb.parse_mi(msg)
+            parsed_msg = gdb.parse_mi(msg.decode())
             if (hasattr(parsed_msg, 'class_') and
                 (parsed_msg.class_ == 'stopped') and
                     (parsed_msg.result.signal_name == 'SIGSEGV')):
@@ -255,7 +255,7 @@ class GdbTest(Test):
 
         other_messages = g.read_until_break()
         for msg in other_messages:
-            parsed_msg = gdb.parse_mi(msg)
+            parsed_msg = gdb.parse_mi(msg.decode())
             if (hasattr(parsed_msg, 'class_') and
                 parsed_msg.class_ == 'stopped' and
                     parsed_msg.result.reason == 'breakpoint-hit'):
