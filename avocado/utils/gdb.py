@@ -796,7 +796,7 @@ class GDBRemote:
 
         https://sourceware.org/gdb/current/onlinedocs/gdb/Packets.html#extended-mode
         """
-        self.cmd("!", "OK")
+        self.cmd(b"!", b"OK")
         self.extended_mode = True
 
     def start_no_ack_mode(self):
@@ -806,7 +806,7 @@ class GDBRemote:
 
         https://sourceware.org/gdb/current/onlinedocs/gdb/General-Query-Packets.html#QStartNoAckMode
         """
-        self.cmd("QStartNoAckMode", "OK")
+        self.cmd(b"QStartNoAckMode", b"OK")
         self.no_ack_mode = True
 
     def connect(self):

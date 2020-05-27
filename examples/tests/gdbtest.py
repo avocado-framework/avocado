@@ -347,8 +347,8 @@ class GdbTest(Test):
         s = gdb.GDBServer()
         r = gdb.GDBRemote('127.0.0.1', s.port)
         r.connect()
-        r.cmd("qSupported")
-        r.cmd("qfThreadInfo")
+        r.cmd(b"qSupported")
+        r.cmd(b"qfThreadInfo")
         s.exit()
 
 
