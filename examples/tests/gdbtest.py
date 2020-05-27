@@ -283,7 +283,8 @@ class GdbTest(Test):
         c1 = gdb.GDB()
         c1.connect(s.port)
         c2 = gdb.GDB()
-        self.assertRaises(ValueError, c2.connect, s.port)
+        with self.assertRaises(gdb.UnexpectedResponseError):
+            c2.connect(s.port)
         s.exit()
 
     def test_server_exit(self):
