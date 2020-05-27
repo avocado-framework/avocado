@@ -1,9 +1,12 @@
+import argparse
 import os
 import tempfile
 import unittest
 
 from pkg_resources import get_distribution
 from avocado.core import settings
+from avocado.core.future.settings import DuplicatedNamespace
+from avocado.core.future.settings import settings as future_settings
 
 example_1 = """[foo]
 str_key = frobnicate
@@ -101,6 +104,37 @@ class SettingsTest(unittest.TestCase):
     def test_allow_blank_false(self):
         with self.assertRaises(settings.SettingsError):
             self.settings.get_value('foo', 'empty_key', str)
+
+    def test_register_value(self):
+        future_settings.register_option(section='foo',
+                                        key='bar',
+                                        default=1,
+                                        key_type=int,
+                                        help_msg='foo bar')
+        result = future_settings.as_dict()
+        self.assertEqual(result['foo.bar'], 1)
+        self.assertIsInstance(result['foo.bar'], int)
+
+    def test_registered_already(self):
+        with self.assertRaises(DuplicatedNamespace):
+            future_settings.register_option(section='foo',
+                                            key='bar',
+                                            default=1,
+                                            help_msg='foo bar')
+            future_settings.register_option(section='foo',
+                                            key='bar',
+                                            default=1,
+                                            help_msg='foo bar')
+
+    def test_update_argparse(self):
+        future_settings.register_option(section='bar',
+                                        key='foo',
+                                        default=1,
+                                        help_msg='bar foo')
+        parser = argparse.ArgumentParser(description='Basic parser.')
+        future_settings.add_argparser_to_option('bar.foo', parser, '--bar-foo')
+        stored_parser = future_settings._namespaces.get('bar.foo').parser
+        self.assertIsInstance(stored_parser, argparse.ArgumentParser)
 
     def tearDown(self):
         os.unlink(self.config_file.name)

@@ -60,6 +60,12 @@ class DuplicatedNamespace(SettingsError):
     """
 
 
+class NamespaceNotRegistered(SettingsError):
+    """
+    Raised when a namespace is not registered.
+    """
+
+
 class ConfigFileNotFound(SettingsError):
     """
     Error thrown when the main settings file could not be found.
@@ -93,6 +99,8 @@ class ConfigOption:
         self.required = required
         self._action = action
         self._value = None
+
+        self._update_argparser()
 
     @property
     def action(self):
@@ -181,6 +189,32 @@ class ConfigOption:
             return value
 
         raise ValueError("{} could not be converted into a list".format(value))
+
+    def _update_argparser(self):
+        if not self.parser:
+            return
+
+        if self.positional_arg:
+            self.parser.add_argument(self.namespace, **self.arg_parse_args)
+        else:
+            self.parser.add_argument(*self.name_or_tags, **self.arg_parse_args)
+
+    def add_argparser(self, parser, long_arg, short_arg=None,
+                      positional_arg=False, choices=None, nargs=None,
+                      metavar=None, required=None, action=None):
+        """Add an command-line argparser to this option."""
+
+        self.parser = parser
+        self.short_arg = short_arg
+        self.long_arg = long_arg
+        self.positional_arg = positional_arg
+        self.choices = choices
+        self.nargs = nargs
+        self._metavar = metavar
+        self.required = required
+        self._action = action
+
+        self._update_argparser()
 
     def set_value(self, value, convert=False):
         dst_type = self.key_type
@@ -303,6 +337,73 @@ class Settings:
                                                 'avocado.conf')
         self._config_path_local = os.path.join(self._config_dir_local,
                                                'avocado.conf')
+
+    def add_argparser_to_option(self, namespace, parser, long_arg,
+                                short_arg=None, positional_arg=False,
+                                choices=None, nargs=None, metavar=None,
+                                required=None, action=None):
+        """Add a command-line argument parser to an existing option.
+
+        This method is useful to add a parser when the option is registered
+        without any command-line argument options. You should call the
+        "register_option()" method for the namespace before calling this
+        method.
+
+        Arguments
+
+        namespace : str
+            What is the namespace of the option (section.key)
+
+        parser : argparser parser
+            Since that you would like to have a command-line option, you should
+            specify what is the parser or parser group that we should add this
+            option.
+
+        long_arg: : str
+            A long option for the command-line. i.e: `--debug` for debug.
+
+        short_arg : str
+            A short option for the command-line. i.e: `-d` for debug.
+
+        positional_arg : bool
+            If this option is an positional argument or not. Default is
+            `False`.
+
+        choices : tuple
+            If you would like to limit the option to a few choices. i.e:
+            ('foo', 'bar')
+
+        nargs : int or str
+            The number of command-line arguments that should be consumed. Could
+            be a int, '?', '*' or '+'. For more information visit the argparser
+            documentation.
+
+        metavar : str
+            String presenting available sub-commands in help, if None we will
+            use the section+key as metavar.
+
+        required : bool
+            If this is a required option or not when on command-line. Default
+            is False.
+
+        action :
+            The basic type of action to be taken when this argument is
+            encountered at the command line. For more information visit the
+            argparser documentation.
+        """
+        option = None
+        try:
+            option = self._namespaces[namespace]
+        except KeyError:
+            msg = "Namespace not found: {}".format(namespace)
+            raise NamespaceNotRegistered(msg)
+
+        if option and option.parser:
+            msg = "Parser already registered for this namespace"
+            raise SettingsError(msg)
+
+        option.add_argparser(parser, short_arg, long_arg, positional_arg,
+                             choices, nargs, metavar, required, action)
 
     def as_dict(self):
         """Return an dictionary with the current active settings.
@@ -467,14 +568,6 @@ class Settings:
 
         # Register the option to a dynamic in-memory namespaces
         self._namespaces[namespace] = option
-
-        if not parser:
-            return  # Nothing else to do here
-
-        if positional_arg:
-            parser.add_argument(namespace, **option.arg_parse_args)
-        else:
-            parser.add_argument(*option.name_or_tags, **option.arg_parse_args)
 
     def update_option(self, namespace, value, convert=False):
         """Convenient method to change the option's value.
