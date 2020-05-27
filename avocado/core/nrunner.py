@@ -160,6 +160,8 @@ class Runnable:
         kwargs = self.kwargs.copy()
         if self.tags is not None:
             kwargs['tags'] = self.get_serializable_tags()
+        if self.requirements is not None:
+            kwargs['requirements'] = self.requirements
         if kwargs:
             recipe['kwargs'] = kwargs
         return recipe
