@@ -39,8 +39,6 @@ def _namelist(instance):
 class GenericScanner:
 
     def __init__(self, flags=0):
-        self.pos = 0
-        self.string = ""
         pattern = self.reflect()
         self.re = re.compile(pattern, re.VERBOSE | flags)
 
@@ -66,26 +64,19 @@ class GenericScanner:
         print("Lexical error at position %s" % pos)
         raise SystemExit
 
-    def position(self, newpos=None):
-        oldpos = self.pos
-        if newpos is not None:
-            self.pos = newpos
-        return self.string, oldpos
-
     def tokenize(self, s):
-        self.string = s
-        self.pos = 0
+        pos = 0
         n = len(s)
-        while self.pos < n:
-            m = self.re.match(s, self.pos)
+        while pos < n:
+            m = self.re.match(s, pos)
             if m is None:
-                self.error(s, self.pos)
+                self.error(s, pos)
 
             groups = m.groups()
-            self.pos = m.end()
             for i in range(len(groups)):
-                if groups[i] is not None and i in self.index2func:
+                if groups[i] and i in self.index2func:
                     self.index2func[i](groups[i])
+            pos = m.end()
 
     def t_default(self, s):  # pylint: disable=W0613
         r'( . | \n )+'
@@ -120,17 +111,11 @@ class GenericParser:
         self.rules = {}
         self.rule2func = {}
         self.rule2name = {}
-        self.newrules = {}
-        self.new2old = {}
-        self.edges = {}
-        self.cores = {}
-        self.nullable = {}
-        self.links = {}
         self.collectRules()
         self.augment(start)
         self.ruleschanged = 1
 
-    _NULLABLE = '\\e_'
+    _NULLABLE = r'\e_'
     _START = 'START'
     _BOF = '|-'
 
@@ -145,11 +130,11 @@ class GenericParser:
             #  XXX - duplicated from parse()
             #
             self.computeNull()
-            self.newrules = {}
-            self.new2old = {}
+            self.newrules = {}  # pylint: disable=W0201
+            self.new2old = {}  # pylint: disable=W0201
             self.makeNewRules()
             self.ruleschanged = 0
-            self.edges, self.cores = {}, {}
+            self.edges, self.cores = {}, {}  # pylint: disable=W0201
             self.states = {0: self.makeState0()}  # pylint: disable=W0201
             self.makeState(0, self._BOF)
         #
@@ -229,7 +214,7 @@ class GenericParser:
         self.addRule(rule, lambda args: args[1], 0)
 
     def computeNull(self):
-        self.nullable = {}
+        self.nullable = {}  # pylint: disable=W0201
         tbd = []
 
         for rulelist in self.rules.values():
@@ -302,15 +287,15 @@ class GenericParser:
                                  candidate, oldrule))
                 candidate = 0
                 i += 1
-
-            if candidate:
-                lhs = self._NULLABLE + lhs
-                rule = (lhs, rhs)
-            if lhs in self.newrules:
-                self.newrules[lhs].append(rule)
-            else:
-                self.newrules[lhs] = [rule]
-            self.new2old[rule] = oldrule
+            else:  # pylint: disable=W0120
+                if candidate:
+                    lhs = self._NULLABLE + lhs
+                    rule = (lhs, rhs)
+                if lhs in self.newrules:
+                    self.newrules[lhs].append(rule)
+                else:
+                    self.newrules[lhs] = [rule]
+                self.new2old[rule] = oldrule
 
     def typestring(self, token):  # pylint: disable=W0613
         return None
@@ -321,15 +306,15 @@ class GenericParser:
 
     def parse(self, tokens):
         sets = [[(1, 0), (2, 0)]]
-        self.links = {}
+        self.links = {}  # pylint: disable=W0201
 
         if self.ruleschanged:
             self.computeNull()
-            self.newrules = {}
-            self.new2old = {}
+            self.newrules = {}  # pylint: disable=W0201
+            self.new2old = {}  # pylint: disable=W0201
             self.makeNewRules()
             self.ruleschanged = 0
-            self.edges, self.cores = {}, {}
+            self.edges, self.cores = {}, {}  # pylint: disable=W0201
             self.states = {0: self.makeState0()}  # pylint: disable=W0201
             self.makeState(0, self._BOF)
 
@@ -342,8 +327,6 @@ class GenericParser:
         else:
             sets.append([])
             self.makeSet(None, sets, len(tokens))
-
-        # _dump(tokens, sets, self.states)
 
         finalitem = (self.finalState(tokens), 0)
         if finalitem not in sets[-2]:
@@ -362,11 +345,10 @@ class GenericParser:
         #
         return self._NULLABLE == sym[0:len(self._NULLABLE)]
 
-    def skip(self, lhs_rhs, pos=0):
-        _, rhs = lhs_rhs
-        n = len(rhs)
+    def skip(self, hs, pos=0):
+        n = len(hs[1])
         while pos < n:
-            if not self.isnullable(rhs[pos]):
+            if not self.isnullable(hs[1][pos]):
                 break
             pos += 1
         return pos
@@ -440,8 +422,7 @@ class GenericParser:
         #  need to know the entire set of predicted nonterminals
         #  to do this without accidentally duplicating states.
         #
-        core = predicted.keys()
-        core.sort()
+        core = sorted(predicted.keys())
         tcore = tuple(core)
         if tcore in self.cores:
             self.edges[(k, None)] = self.cores[tcore]
@@ -543,7 +524,7 @@ class GenericParser:
             if ttype is not None:
                 k = self.edges.get((state, ttype), None)
                 if k is not None:
-                    # self.add(next, (k, parent), i+1, ptr)
+                    # self.add(next_item, (k, parent), i + 1, ptr)
                     # INLINED --v
                     new = (k, parent)
                     key = (new, i + 1)
@@ -555,7 +536,7 @@ class GenericParser:
                     # nk = self.goto(k, None)
                     nk = self.edges.get((k, None), None)
                     if nk is not None:
-                        # self.add(next, (nk, i+1))
+                        # self.add(next_item, (nk, i + 1))
                         # INLINED --v
                         new = (nk, i + 1)
                         if new not in next_item:
@@ -626,7 +607,6 @@ class GenericParser:
             rule = self.ambiguity(self.newrules[nt])
         else:
             rule = self.newrules[nt][0]
-        # print rule
 
         rhs = rule[1]
         attr = [None] * len(rhs)
@@ -645,7 +625,6 @@ class GenericParser:
         rule = choices[0]
         if len(choices) > 1:
             rule = self.ambiguity(choices)
-        # print rule
 
         rhs = rule[1]
         attr = [None] * len(rhs)
@@ -809,7 +788,6 @@ class GenericASTMatcher(GenericParser):
     def __init__(self, start, ast):
         GenericParser.__init__(self, start)
         self.ast = ast
-        self.input = []
 
     def preprocess(self, rule, func):
         rebind = (lambda func, self=self:
@@ -841,7 +819,7 @@ class GenericASTMatcher(GenericParser):
     def match(self, ast=None):
         if ast is None:
             ast = self.ast
-        self.input = []
+        self.input = []  # pylint: disable=W0201
 
         self.match_r(ast)
         self.parse(self.input)
@@ -851,17 +829,3 @@ class GenericASTMatcher(GenericParser):
         #  Resolve ambiguity in favor of the longest RHS.
         #
         return input_list[-1]
-
-
-def _dump(tokens, sets, states):
-    for i in range(len(sets)):
-        print('set %s' % i)
-        for item in sets[i]:
-            print('\t %s' % item)
-            for (lhs, rhs), pos in states[item[0]].items:
-                print('\t\t %s %s' % (lhs, '::='))
-                print(' '.join(rhs[:pos]))
-                print('. ')
-                print(' '.join(rhs[pos:]))
-        if i < len(tokens):
-            print('\ntoken %s\n' % str(tokens[i]))

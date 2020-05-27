@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import os
 
 from avocado import Test
-from avocado import main
 from avocado.utils import gdb
 from avocado.utils import genio
 from avocado.utils import process
@@ -161,7 +158,7 @@ class GdbTest(Test):
         other_messages = g.read_until_break()
         core_path = None
         for msg in other_messages:
-            parsed_msg = gdb.parse_mi(msg)
+            parsed_msg = gdb.parse_mi(msg.decode())
             if (hasattr(parsed_msg, 'class_') and
                 (parsed_msg.class_ == 'stopped') and
                     (parsed_msg.result.signal_name == 'SIGSEGV')):
@@ -255,7 +252,7 @@ class GdbTest(Test):
 
         other_messages = g.read_until_break()
         for msg in other_messages:
-            parsed_msg = gdb.parse_mi(msg)
+            parsed_msg = gdb.parse_mi(msg.decode())
             if (hasattr(parsed_msg, 'class_') and
                 parsed_msg.class_ == 'stopped' and
                     parsed_msg.result.reason == 'breakpoint-hit'):
@@ -283,7 +280,8 @@ class GdbTest(Test):
         c1 = gdb.GDB()
         c1.connect(s.port)
         c2 = gdb.GDB()
-        self.assertRaises(ValueError, c2.connect, s.port)
+        with self.assertRaises(gdb.UnexpectedResponseError):
+            c2.connect(s.port)
         s.exit()
 
     def test_server_exit(self):
@@ -315,43 +313,6 @@ class GdbTest(Test):
             server_instances[i].exit()
             self.assertFalse(self.is_process_alive(server_instances[i].process))
 
-    def test_interactive(self):
-        """
-        Tests avocado's GDB plugin features
-
-        If GDB command line options are given, `--gdb-run-bin=return99` for
-        this particular test, the test will stop at binary main() function.
-        """
-        self.log.info('Testing GDB interactivity')
-        process.run(self.return99_binary_path, ignore_status=True)
-
-    def test_interactive_args(self):
-        """
-        Tests avocado's GDB plugin features with an executable and args
-
-        If GDB command line options are given, `--gdb-run-bin=return99` for
-        this particular test, the test will stop at binary main() function.
-
-        This test uses `process.run()` without an `ignore_status` parameter
-        """
-        self.log.info('Testing GDB interactivity with arguments')
-        result = process.run("%s 0" % self.return99_binary_path)
-        self.assertEqual(result.exit_status, 0)
-
-    def test_exit_status(self):
-        """
-        Tests avocado's GDB plugin features
-
-        If GDB command line options are given, `--gdb-run-bin=return99` for
-        this particular test, the test will stop at binary main() function.
-        """
-        self.log.info('Testing process exit statuses')
-        for arg, exp in [(-1, 255), (8, 8)]:
-            self.log.info('Expecting exit status "%s"', exp)
-            cmd = "%s %s" % (self.return99_binary_path, arg)
-            result = process.run(cmd, ignore_status=True)
-            self.assertEqual(result.exit_status, exp)
-
     def test_server_stderr(self):
         self.log.info('Testing server stderr collection')
         s = gdb.GDBServer()
@@ -377,17 +338,6 @@ class GdbTest(Test):
         stdout_lines = genio.read_all_lines(s.stdout_path)
         self.assertIn("return 99", stdout_lines)
 
-    def test_interactive_stdout(self):
-        """
-        Tests avocado's GDB plugin features
-
-        If GDB command line options are given, `--gdb-run-bin=return99` for
-        this particular test, the test will stop at binary main() function.
-        """
-        self.log.info('Testing GDB interactivity')
-        result = process.run(self.return99_binary_path, ignore_status=True)
-        self.assertIn("return 99\n", result.stdout)
-
     def test_remote(self):
         """
         Tests GDBRemote interaction with a GDBServer
@@ -395,10 +345,6 @@ class GdbTest(Test):
         s = gdb.GDBServer()
         r = gdb.GDBRemote('127.0.0.1', s.port)
         r.connect()
-        r.cmd("qSupported")
-        r.cmd("qfThreadInfo")
+        r.cmd(b"qSupported")
+        r.cmd(b"qfThreadInfo")
         s.exit()
-
-
-if __name__ == '__main__':
-    main()
