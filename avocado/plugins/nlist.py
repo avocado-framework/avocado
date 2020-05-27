@@ -66,7 +66,7 @@ class List(CLICmd):
                                  parser=parser,
                                  long_arg='--write-recipes-to-directory')
 
-        parser_common_args.add_tag_filter_args(parser)
+        parser_common_args.add_tag_filter_args(parser, 'nlist')
 
     def run(self, config):
         references = config.get('nlist.references')
@@ -111,13 +111,13 @@ class List(CLICmd):
             if result.resolutions:
                 for runnable in result.resolutions:
 
-                    filter_by_tags = config.get('filter_by_tags')
+                    filter_by_tags = config.get('nlist.filter_by_tags')
                     if filter_by_tags:
                         if not filter_test_tags_runnable(
                                 runnable,
                                 filter_by_tags,
-                                config.get('filter_by_tags_include_empty'),
-                                config.get('filter_by_tags_include_empty_key')):
+                                config.get('nlist.filter_by_tags_include_empty'),
+                                config.get('nlist.filter_by_tags_include_empty_key')):
                             continue
 
                     type_label = runnable.kind

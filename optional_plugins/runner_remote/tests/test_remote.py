@@ -59,7 +59,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
                     'remote_key_file': None,
                     'remote_timeout': 60,
                     'filter_by_tags': ["-foo", "-bar"],
-                    'filter_by_tags_include_empty': False,
+                    'run.filter_by_tags_include_empty': False,
                     'env_keep': None,
                     'base_logdir': self.tmpdir.name,
                     'core.show': ['test'],

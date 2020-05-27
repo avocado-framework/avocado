@@ -279,7 +279,7 @@ class Run(CLICmd):
                                  long_arg='--output-check')
 
         loader.add_loader_options(parser, 'run')
-        parser_common_args.add_tag_filter_args(parser)
+        parser_common_args.add_tag_filter_args(parser, 'run')
 
     def run(self, config):
         """

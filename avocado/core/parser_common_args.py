@@ -12,22 +12,40 @@
 # Copyright: Red Hat Inc. 2019
 # Author: Cleber Rosa <crosa@redhat.com>
 
+from .future.settings import settings
 
-def add_tag_filter_args(parser):
+
+def add_tag_filter_args(parser, section):
     group = parser.add_argument_group('filtering parameters')
-    group.add_argument('-t', '--filter-by-tags', metavar='TAGS',
-                       action='append',
-                       help='Filter tests based on tags')
-    group.add_argument('--filter-by-tags-include-empty',
-                       action='store_true', default=False,
-                       help=('Include all tests without tags during '
-                             'filtering. This effectively means they '
-                             'will be kept in the test suite found '
-                             'previously to filtering.'))
-    group.add_argument('--filter-by-tags-include-empty-key',
-                       action='store_true', default=False,
-                       help=('Include all tests that do not have a '
-                             'matching key in its key:val tags. This '
-                             'effectively means those tests will be '
-                             'kept in the test suite found previously '
-                             'to filtering.'))
+    settings.register_option(section=section,
+                             key='filter_by_tags',
+                             help_msg='Filter tests based on tags',
+                             action='append',
+                             key_type=list,
+                             default=[],
+                             metavar='TAGS',
+                             parser=group,
+                             short_arg='-t',
+                             long_arg='--filter-by-tags')
+
+    help_msg = ('Include all tests without tags during filtering. This '
+                'effectively means they will be kept in the test suite '
+                'found previously to filtering.')
+    settings.register_option(section=section,
+                             key='filter_by_tags_include_empty',
+                             default=False,
+                             key_type=bool,
+                             help_msg=help_msg,
+                             parser=group,
+                             long_arg='--filter-by-tags-include-empty')
+
+    help_msg = ('Include all tests that do not have a matching key in its '
+                'key:val tags. This effectively means those tests will be '
+                'kept in the test suite found previously to filtering.')
+    settings.register_option(section=section,
+                             key='filter_by_tags_include_empty_key',
+                             default=False,
+                             key_type=bool,
+                             help_msg=help_msg,
+                             parser=group,
+                             long_arg='--filter-by-tags-include-empty-key')
