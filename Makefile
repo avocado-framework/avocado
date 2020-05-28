@@ -37,7 +37,6 @@ all:
 	@echo "spell:       Runs spell checker on comments and docstrings (requires python-enchant)"
 	@echo
 	@echo "Package requirements related targets"
-	@echo "requirements:            Install runtime requirements"
 	@echo "requirements-selftests:  Install runtime and selftests requirements"
 	@echo "requirements-plugins:    Install plugins requirements"
 	@echo
@@ -118,7 +117,7 @@ clean:
 	find . -name '*.pyc' -delete
 	find $(AVOCADO_OPTIONAL_PLUGINS) -name '*.egg-info' -exec rm -r {} +
 
-requirements-plugins: requirements
+requirements-plugins:
 	for PLUGIN in $(AVOCADO_PLUGINS);do\
 		if test -f $$PLUGIN/Makefile; then echo ">> REQUIREMENTS (Makefile) $$PLUGIN"; AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN requirements &>/dev/null;\
 		elif test -f $$PLUGIN/requirements.txt; then echo ">> REQUIREMENTS (requirements.txt) $$PLUGIN"; pip install $(PYTHON_DEVELOP_ARGS) -r $$PLUGIN/requirements.txt;\
