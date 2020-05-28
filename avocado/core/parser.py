@@ -27,7 +27,7 @@ from . import varianter
 from . import settings
 from .future.settings import settings as future_settings
 from .nrunner import Runnable
-from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS, LOG_UI
+from .output import LOG_UI
 from .resolver import ReferenceResolution
 from .resolver import ReferenceResolutionResult
 from .version import VERSION
@@ -113,21 +113,9 @@ class Parser:
                                         long_arg='--verbose',
                                         short_arg='-V')
 
-        streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.items()] +
-                   ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.items()])
-        streams = "; ".join(streams)
-        help_msg = ("List of comma separated builtin logs, or logging streams "
-                    "optionally followed by LEVEL (DEBUG,INFO,...). Builtin "
-                    "streams are: %s. By default: 'app'" % streams)
-        future_settings.register_option(section='core',
-                                        key='show',
-                                        key_type=lambda x: x.split(','),
-                                        metavar="STREAM[:LVL]",
-                                        nargs='?',
-                                        default=['app'],
-                                        help_msg=help_msg,
-                                        parser=self.application,
-                                        long_arg='--show')
+        future_settings.add_argparser_to_option(namespace='core.show',
+                                                parser=self.application,
+                                                long_arg='--show')
 
     def start(self):
         """

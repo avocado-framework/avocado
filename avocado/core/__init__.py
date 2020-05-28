@@ -11,3 +11,26 @@
 #
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+
+
+from .future.settings import settings as future_settings
+from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
+
+
+def register_core_options():
+    streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.items()] +
+               ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.items()])
+    streams = "; ".join(streams)
+    help_msg = ("List of comma separated builtin logs, or logging streams "
+                "optionally followed by LEVEL (DEBUG,INFO,...). Builtin "
+                "streams are: %s. By default: 'app'" % streams)
+    future_settings.register_option(section='core',
+                                    key='show',
+                                    key_type=lambda x: x.split(','),
+                                    metavar="STREAM[:LVL]",
+                                    nargs='?',
+                                    default=['app'],
+                                    help_msg=help_msg)
+
+
+register_core_options()
