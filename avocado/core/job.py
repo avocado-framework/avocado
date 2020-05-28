@@ -557,8 +557,6 @@ class Job:
         This is a public Job API as part of the documented Job phases
         """
         refs = self.config.get('run.references')
-        if not refs:
-            refs = self.config.get('nrun.references')
         try:
             if self._test_runner_name == 'nrunner':
                 self.test_suite = self._make_test_suite_resolver(refs)
@@ -595,8 +593,6 @@ class Job:
         """
         variant = self.config.get("avocado_variants")
         refs = self.config.get('run.references')
-        if not refs:
-            refs = self.config.get('nrun.references')
         if variant is None:
             variant = varianter.Varianter()
         if not variant.is_parsed():   # Varianter not yet parsed, apply args
