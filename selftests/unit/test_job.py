@@ -275,7 +275,7 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'run.results_dir': self.tmpdir.name,
                   'run.store_logging_stream': [],
-                  'nrun.references': simple_tests_found,
+                  'run.references': simple_tests_found,
                   'run.test_runner': 'nrunner',
                   'core.show': ['none']}
         self.job = job.Job(config)
