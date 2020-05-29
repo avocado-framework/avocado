@@ -11,7 +11,7 @@ RELEASE_TESTS_DIR = os.path.join(ROOT_DIR, 'selftests', 'release')
 
 CONFIG = {
     'run.references': [os.path.join(RELEASE_TESTS_DIR, 'vmimage.py')],
-    'mux_yaml': [os.path.join(RELEASE_TESTS_DIR, 'vmimage.py.data', 'variants.yml')],
+    'yaml_to_mux.files': [os.path.join(RELEASE_TESTS_DIR, 'vmimage.py.data', 'variants.yml')],
     }
 
 

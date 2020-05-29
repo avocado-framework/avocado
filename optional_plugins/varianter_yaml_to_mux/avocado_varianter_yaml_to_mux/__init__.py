@@ -25,7 +25,7 @@ import yaml
 from avocado.core import exit_codes
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLI, Varianter
+from avocado.core.plugin_interfaces import Init, CLI, Varianter
 from avocado.utils import astring
 
 from . import mux  # pylint: disable=W0406
@@ -373,6 +373,54 @@ def create_from_yaml(paths, debug=False):
     return data
 
 
+class YamlToMuxInit(Init):
+
+    """
+    YamlToMux initialization plugin
+    """
+
+    name = 'yaml_to_mux'
+    description = "YamlToMux initialization plugin"
+
+    def initialize(self):
+        help_msg = ("Location of one or more Avocado multiplex (.yaml) "
+                    "FILE(s) (order dependent)")
+        settings.register_option(section=self.name,
+                                 key='files',
+                                 default=[],
+                                 key_type=list,
+                                 help_msg=help_msg)
+
+        help_msg = 'Filter only path(s) from multiplexing'
+        settings.register_option(section=self.name,
+                                 key='filter_only',
+                                 default=[],
+                                 key_type=list,
+                                 help_msg=help_msg)
+
+        help_msg = 'Filter out path(s) from multiplexing'
+        settings.register_option(section=self.name,
+                                 key='filter_out',
+                                 default=[],
+                                 help_msg=help_msg)
+
+        help_msg = ("List of default paths used to determine path priority "
+                    "when querying for parameters")
+        settings.register_option(section=self.name,
+                                 key='parameter_paths',
+                                 default=['/run/*'],
+                                 key_type=list,
+                                 help_msg=help_msg)
+
+        help_msg = ("Inject [path:]key:node values into the final "
+                    "multiplex tree.")
+        settings.register_option(section=self.name,
+                                 key='inject',
+                                 default=[],
+                                 help_msg=help_msg,
+                                 key_type=list)
+
+
 class YamlToMuxCLI(CLI):
 
     """
@@ -391,59 +439,42 @@ class YamlToMuxCLI(CLI):
             if subparser is None:
                 continue
             agroup = subparser.add_argument_group("yaml to mux options")
-            help_msg = ("Location of one or more Avocado multiplex (.yaml) "
-                        "FILE(s) (order dependent)")
-            settings.register_option(section=name,
-                                     key='mux_yaml_files',
-                                     help_msg=help_msg,
-                                     parser=agroup,
-                                     metavar='FILE',
-                                     nargs='*',
-                                     key_type=list,
-                                     default=[],
-                                     short_arg='-m',
-                                     long_arg='--mux-yaml')
+            settings.add_argparser_to_option(
+                namespace="%s.%s" % (self.name, 'files'),
+                parser=agroup,
+                long_arg='--mux-yaml',
+                short_arg='-m',
+                metavar='FILE',
+                nargs='*',
+                allow_multiple=True)
 
-            help_msg = 'Filter only path(s) from multiplexing'
-            settings.register_option(section=name,
-                                     key='mux_filter_only',
-                                     nargs='*',
-                                     default=[],
-                                     key_type=list,
-                                     help_msg=help_msg,
-                                     parser=agroup,
-                                     long_arg='--mux-filter-only')
+            settings.add_argparser_to_option(
+                namespace="%s.%s" % (self.name, 'filter_only'),
+                parser=agroup,
+                long_arg='--mux-filter-only',
+                nargs='*',
+                allow_multiple=True)
 
-            help_msg = 'Filter out path(s) from multiplexing'
-            settings.register_option(section=name,
-                                     key='mux_filter_out',
-                                     nargs='*',
-                                     help_msg=help_msg,
-                                     default=[],
-                                     parser=agroup,
-                                     long_arg='--mux-filter-out')
+            settings.add_argparser_to_option(
+                namespace="%s.%s" % (self.name, 'filter_out'),
+                parser=agroup,
+                long_arg='--mux-filter-out',
+                nargs='*',
+                allow_multiple=True)
 
-            help_msg = ("List of default paths used to determine path priority "
-                        "when querying for parameters")
-            settings.register_option(section=name,
-                                     key='mux_parameter_paths',
-                                     nargs='*',
-                                     default=['/run/*'],
-                                     key_type=list,
-                                     help_msg=help_msg,
-                                     parser=agroup,
-                                     long_arg='--mux-path')
+            settings.add_argparser_to_option(
+                namespace="%s.%s" % (self.name, 'parameter_paths'),
+                parser=agroup,
+                long_arg='--mux-path',
+                nargs='*',
+                allow_multiple=True)
 
-            help_msg = ("Inject [path:]key:node values into the final "
-                        "multiplex tree.")
-            settings.register_option(section=name,
-                                     key='mux_inject',
-                                     default=[],
-                                     nargs='*',
-                                     help_msg=help_msg,
-                                     key_type=list,
-                                     parser=agroup,
-                                     long_arg='--mux-inject')
+            settings.add_argparser_to_option(
+                namespace="%s.%s" % (self.name, 'inject'),
+                parser=agroup,
+                long_arg='--mux-inject',
+                nargs='*',
+                allow_multiple=True)
 
     def run(self, config):
         """
@@ -464,16 +495,13 @@ class YamlToMux(mux.MuxPlugin, Varianter):
         debug = config.get('variants.debug')
         subcommand = config.get('subcommand')
 
-        if subcommand is None:
-            return
-
         if debug:
             data = mux.MuxTreeNodeDebug()
         else:
             data = mux.MuxTreeNode()
 
         # Merge the multiplex
-        multiplex_files = config.get("{}.mux_yaml_files".format(subcommand))
+        multiplex_files = config.get("yaml_to_mux.files")
         if multiplex_files:
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
@@ -486,7 +514,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                     sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Extend default multiplex tree of --mux-inject values
-        for inject in config.get("{}.mux_inject".format(subcommand)):
+        for inject in config.get("yaml_to_mux.inject"):
             entry = inject.split(':', 3)
             if len(entry) < 2:
                 raise ValueError("key:entry pairs required, found only %s"
@@ -495,9 +523,9 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                 entry.insert(0, '')  # add path='' (root)
             data.get_node(entry[0], True).value[entry[1]] = entry[2]
 
-        mux_filter_only = config.get('{}.mux_filter_only'.format(subcommand))
-        mux_filter_out = config.get('{}.mux_filter_out'.format(subcommand))
+        mux_filter_only = config.get('yaml_to_mux.filter_only')
+        mux_filter_out = config.get('yaml_to_mux.filter_out')
         data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
         if data != mux.MuxTreeNode():
-            paths = config.get("{}.mux_parameter_paths".format(subcommand))
+            paths = config.get("yaml_to_mux.parameter_paths")
             self.initialize_mux(data, paths, debug)
