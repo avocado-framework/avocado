@@ -467,7 +467,7 @@ class Settings:
     def register_option(self, section, key, default, help_msg, key_type=str,
                         parser=None, positional_arg=False, short_arg=None,
                         long_arg=None, choices=None, nargs=None, metavar=None,
-                        required=False, action=None):
+                        required=False, action=None, allow_multiple=False):
         """Method used to register a configuration option inside Avocado.
 
         This should be used to register a settings option (either config file
@@ -556,6 +556,11 @@ class Settings:
             encountered at the command line. For more information visit the
             argparser documentation.
 
+        allow_multiple :
+            Whether the same option may be available on different parsers.
+            This is useful when the same option is avaiable on different
+            commands, such as "avocado run" or "avocado list".
+
         .. note:: Most of the arguments here (like parser, positional_arg,
                   short_arg, long_arg, choices, nargs, metavar, required and
                   action) are only necessary if you would like to add a
@@ -564,16 +569,23 @@ class Settings:
         namespace = "{}.{}".format(section, key)
         # Check if namespace is already registered
         if namespace in self._namespaces:
-            msg = 'Key "{}" already registered under section "{}"'.format(key,
-                                                                          section)
-            raise DuplicatedNamespace(msg)
+            if not allow_multiple:
+                msg = 'Key "{}" already registered under section "{}"'.format(key,
+                                                                              section)
+                raise DuplicatedNamespace(msg)
+            else:
+                self.add_argparser_to_option(namespace, parser, long_arg,
+                                             short_arg, positional_arg,
+                                             choices, nargs, metavar,
+                                             required, action,
+                                             allow_multiple)
+        else:
+            option = ConfigOption(namespace, help_msg, key_type, default,
+                                  parser, short_arg, long_arg, positional_arg,
+                                  choices, nargs, metavar, required, action)
 
-        option = ConfigOption(namespace, help_msg, key_type, default,
-                              parser, short_arg, long_arg, positional_arg,
-                              choices, nargs, metavar, required, action)
-
-        # Register the option to a dynamic in-memory namespaces
-        self._namespaces[namespace] = option
+            # Register the option to a dynamic in-memory namespaces
+            self._namespaces[namespace] = option
 
     def update_option(self, namespace, value, convert=False):
         """Convenient method to change the option's value.
