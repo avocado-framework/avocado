@@ -460,9 +460,9 @@ class YamlToMux(mux.MuxPlugin, Varianter):
     name = 'yaml_to_mux'
     description = 'Multiplexer plugin to parse yaml files to params'
 
-    def initialize(self, args):
-        debug = args.get('variants.debug')
-        subcommand = args.get('subcommand')
+    def initialize(self, config):
+        debug = config.get('variants.debug')
+        subcommand = config.get('subcommand')
 
         if subcommand is None:
             return
@@ -473,7 +473,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             data = mux.MuxTreeNode()
 
         # Merge the multiplex
-        multiplex_files = args.get("{}.mux_yaml_files".format(subcommand))
+        multiplex_files = config.get("{}.mux_yaml_files".format(subcommand))
         if multiplex_files:
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
@@ -486,7 +486,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                     sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Extend default multiplex tree of --mux-inject values
-        for inject in args.get("{}.mux_inject".format(subcommand)):
+        for inject in config.get("{}.mux_inject".format(subcommand)):
             entry = inject.split(':', 3)
             if len(entry) < 2:
                 raise ValueError("key:entry pairs required, found only %s"
@@ -495,9 +495,9 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                 entry.insert(0, '')  # add path='' (root)
             data.get_node(entry[0], True).value[entry[1]] = entry[2]
 
-        mux_filter_only = args.get('{}.mux_filter_only'.format(subcommand))
-        mux_filter_out = args.get('{}.mux_filter_out'.format(subcommand))
+        mux_filter_only = config.get('{}.mux_filter_only'.format(subcommand))
+        mux_filter_out = config.get('{}.mux_filter_out'.format(subcommand))
         data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
         if data != mux.MuxTreeNode():
-            paths = args.get("{}.mux_parameter_paths".format(subcommand))
+            paths = config.get("{}.mux_parameter_paths".format(subcommand))
             self.initialize_mux(data, paths, debug)
