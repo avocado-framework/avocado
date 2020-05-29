@@ -90,8 +90,7 @@ def resolutions_to_tasks(resolutions, config):
     resolutions = [res for res in resolutions if
                    res.result == resolver.ReferenceResolutionResult.SUCCESS]
     no_digits = len(str(len(resolutions)))
-    sub_cmd = config.get('subcommand')
-    filter_by_tags = config.get("{}.filter_by_tags".format(sub_cmd))
+    filter_by_tags = config.get("filter_by_tags.tags")
     for resolution in resolutions:
         name = resolution.reference
         for runnable in resolution.resolutions:
@@ -99,8 +98,8 @@ def resolutions_to_tasks(resolutions, config):
                 if not filter_test_tags_runnable(
                         runnable,
                         filter_by_tags,
-                        config.get("{}.filter_by_tags_include_empty".format(sub_cmd)),
-                        config.get('{}.filter_by_tags_include_empty_key'.format(sub_cmd))):
+                        config.get("filter_by_tags.include_empty"),
+                        config.get('filter_by_tags.include_empty_key')):
                     continue
             if runnable.uri:
                 name = runnable.uri
@@ -439,17 +438,16 @@ class Job:
         :returns: a test suite (a list of test factories)
         """
         loader.loader.load_plugins(self.config)
-        sub_cmd = self.config.get('subcommand')
         try:
             force = self.config.get('run.ignore_missing_references')
             suite = loader.loader.discover(references, force=force)
-            filter_tags = self.config.get("{}.filter_by_tags".format(sub_cmd))
+            filter_tags = self.config.get("filter_by_tags.tags")
             if filter_tags:
                 suite = tags.filter_test_tags(
                     suite,
                     filter_tags,
-                    self.config.get("{}.filter_by_tags_include_empty".format(sub_cmd)),
-                    self.config.get('{}.filter_by_tags_include_empty_key'.format(sub_cmd)))
+                    self.config.get("filter_by_tags.include_empty"),
+                    self.config.get('filter_by_tags.include_empty_key'))
         except loader.LoaderUnhandledReferenceError as details:
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
