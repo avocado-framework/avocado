@@ -23,6 +23,19 @@ class Plugin(metaclass=abc.ABCMeta):
     """
 
 
+class Init(Plugin):
+
+    """
+    Base plugin interface for plugins that needs to initialize itself
+    """
+
+    @abc.abstractmethod
+    def initialize(self):
+        """
+        Entry point for the plugin to perform its initialization
+        """
+
+
 class Settings(Plugin):
 
     """

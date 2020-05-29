@@ -116,3 +116,9 @@ class RunnerDispatcher(EnabledExtensionManager):
 
     def __init__(self):
         super(RunnerDispatcher, self).__init__('avocado.plugins.runner')
+
+
+class InitDispatcher(EnabledExtensionManager):
+
+    def __init__(self):
+        super(InitDispatcher, self).__init__('avocado.plugins.init')
