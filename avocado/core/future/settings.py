@@ -341,7 +341,8 @@ class Settings:
     def add_argparser_to_option(self, namespace, parser, long_arg,
                                 short_arg=None, positional_arg=False,
                                 choices=None, nargs=None, metavar=None,
-                                required=None, action=None):
+                                required=None, action=None,
+                                allow_multiple=False):
         """Add a command-line argument parser to an existing option.
 
         This method is useful to add a parser when the option is registered
@@ -390,6 +391,11 @@ class Settings:
             The basic type of action to be taken when this argument is
             encountered at the command line. For more information visit the
             argparser documentation.
+
+        allow_multiple :
+            Whether the same option may be available on different parsers.
+            This is useful when the same option is avaiable on different
+            commands, such as "avocado run" or "avocado list".
         """
         option = None
         try:
@@ -398,7 +404,7 @@ class Settings:
             msg = "Namespace not found: {}".format(namespace)
             raise NamespaceNotRegistered(msg)
 
-        if option and option.parser:
+        if option and option.parser and not allow_multiple:
             msg = "Parser already registered for this namespace"
             raise SettingsError(msg)
 
