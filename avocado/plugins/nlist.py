@@ -66,7 +66,7 @@ class List(CLICmd):
                                  parser=parser,
                                  long_arg='--write-recipes-to-directory')
 
-        parser_common_args.add_tag_filter_args(parser, 'nlist')
+        parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
         references = config.get('nlist.references')
