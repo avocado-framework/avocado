@@ -11,9 +11,11 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
 CONFIG = {
     'run.test_runner': 'nrunner',
-    'nrun.references': [os.path.join(ROOT_DIR, 'selftests', 'unit'),
-                        os.path.join(ROOT_DIR, 'selftests', 'functional')],
-    'filter_by_tags': ['parallel:1'],
+    'run.references': [os.path.join(ROOT_DIR, 'selftests', 'unit'),
+                       os.path.join(ROOT_DIR, 'selftests', 'functional')],
+    # FIXME: when using the job API, there's no command to be registered as part
+    # of the section name
+    'None.filter_by_tags': ['parallel:1'],
     # These are not currently supported by plugins/runner_nrunner.py, but better
     # be prepared
     'nrun.parallel_tasks': 1,
