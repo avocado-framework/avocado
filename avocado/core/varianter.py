@@ -187,18 +187,20 @@ class Varianter:
         else:
             self.load(state)
 
-    def parse(self, args):
+    def parse(self, config):
         """
         Apply options defined on the cmdline and initialize the plugins.
 
-        :param args: Parsed cmdline arguments
+        :param config: Configuration received from configuration files, command
+                       line parser, etc.
+        :type config: dict
         """
         default_params = self.node_class()
         for default_param in self.default_params.values():
             default_params.merge(default_param)
         self._default_params = default_params
         self.default_params.clear()
-        self._variant_plugins.map_method_with_return("initialize", args)
+        self._variant_plugins.map_method_with_return("initialize", config)
         self._variant_plugins.map_method_with_return_copy("update_defaults", self._default_params)
         self._no_variants = sum(self._variant_plugins.map_method_with_return("__len__"))
 

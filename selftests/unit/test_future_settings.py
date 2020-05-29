@@ -1,3 +1,4 @@
+import argparse
 import os
 import tempfile
 import unittest
@@ -78,6 +79,16 @@ class SettingsTest(unittest.TestCase):
         result = config.get('foo.bar')
         self.assertIsInstance(result, list)
         self.assertEqual(0, len(result))
+
+    def test_add_argparser(self):
+        stgs = settings.Settings(self.config_file.name)
+        stgs.register_option('section', 'key', 'default', 'help')
+        parser = argparse.ArgumentParser(description='description')
+        stgs.add_argparser_to_option('section.key', parser, '--long-arg')
+        with self.assertRaises(settings.SettingsError):
+            stgs.add_argparser_to_option('section.key', parser, '--other-arg')
+        stgs.add_argparser_to_option('section.key', parser, '--other-arg',
+                                     allow_multiple=True)
 
     def tearDown(self):
         os.unlink(self.config_file.name)

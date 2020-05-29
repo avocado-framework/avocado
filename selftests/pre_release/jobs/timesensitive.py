@@ -5,8 +5,9 @@ import sys
 
 from avocado.core.job import Job
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 CONFIG = {
     'run.test_runner': 'nrunner',

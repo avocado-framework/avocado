@@ -33,6 +33,8 @@ class Plugins(CLICmd):
 
     def run(self, config):
         plugin_types = [
+            (dispatcher.InitDispatcher(),
+             'Plugins that always need to be initialized (init): '),
             (dispatcher.CLICmdDispatcher(),
              'Plugins that add new commands (cli.cmd):'),
             (dispatcher.CLIDispatcher(),

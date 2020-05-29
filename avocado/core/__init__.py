@@ -13,6 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
+from .dispatcher import InitDispatcher
 from .future.settings import settings as future_settings
 from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
 
@@ -33,4 +34,9 @@ def register_core_options():
                                     help_msg=help_msg)
 
 
+def initialize_plugins():
+    InitDispatcher().map_method('initialize')
+
+
 register_core_options()
+initialize_plugins()

@@ -11,16 +11,16 @@
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make check`. Expected result: Make command should say OK."},
 
 	{"name": "Avocado time/resource sensitive tests",
-	 "description": "With a load as light as possible on your system, run `jobs/timesensitive.py`. Expected results: all tests PASSed"},
+	 "description": "With a load as light as possible on your system, run `selftests/pre_release/jobs/timesensitive.py`. Expected results: all tests PASSed"},
 
 	{"name": "Avocado vmimage tests",
-	 "description": "Run `jobs/vmimage.py`. Expected results: all tests PASSed"},
+	 "description": "Run `selftests/pre_release/jobs/vmimage.py`. Expected results: all tests PASSed"},
 
 	{"name": "Avocado source does not contain spelling errors",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
 
         {"name": "Check the right RPM packages are available in COPR",
-         "description": "Run `selftests/release/check-copr-rpm-version.sh`. Expected result: last line with: python3-avocado-$VERSION-$DATE-git$COMMIT"},
+         "description": "Run `selftests/pre_release/tests/check-copr-rpm-version.sh`. Expected result: last line with: python3-avocado-$VERSION-$DATE-git$COMMIT"},
 
 	{"name": "Avocado deployment",
 	 "description": "Execute the ansible playbook located at selftests/deployments/deployment.yml with '-e method=copr' on one or many fresh virtual machines."},
