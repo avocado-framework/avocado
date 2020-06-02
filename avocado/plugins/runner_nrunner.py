@@ -22,8 +22,8 @@ import time
 
 from copy import copy
 
-from avocado.core import test
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
+from avocado.core.test_id import TestID
 
 from avocado.core import nrunner
 
@@ -79,16 +79,18 @@ class Runner(RunnerInterface):
         test_suite, _ = nrunner.check_tasks_requirements(test_suite)
         result.tests_total = len(test_suite)  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
+        no_digits = len(str(len(test_suite)))
 
-        for index, task in enumerate(test_suite):
+        for index, task in enumerate(test_suite, start=1):
             if deadline is not None and time.time() > deadline:
                 break
 
             task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
-            index += 1
             # this is all rubbish data
+            test_id = TestID(index, task.runnable.uri, None, no_digits)
+            task.identifier = str(test_id)
             early_state = {
-                'name': test.TestID(index, task.identifier),
+                'name': test_id,
                 'job_logdir': job.logdir,
                 'job_unique_id': job.unique_id,
             }

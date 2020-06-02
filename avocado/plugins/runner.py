@@ -32,7 +32,6 @@ from avocado.utils import wait
 from avocado.core import defaults
 from avocado.core import output
 from avocado.core import status
-from avocado.core import test
 from avocado.core import tree
 from avocado.core import varianter
 from avocado.core.loader import loader
@@ -43,6 +42,8 @@ from avocado.core.runner import add_runner_failure
 from avocado.core.runner import TestStatus
 from avocado.core.settings import settings
 from avocado.core.status import mapping
+from avocado.core.test import TimeOutSkipTest
+from avocado.core.test_id import TestID
 
 
 class TestRunner(Runner):
@@ -379,7 +380,7 @@ class TestRunner(Runner):
         test_result_total = variants.get_number_of_tests(test_suite)
         no_digits = len(str(test_result_total))
         result.tests_total = test_result_total
-        index = -1
+        index = 1
         try:
             for test_factory in test_suite:
                 test_factory[1]["base_logdir"] = job.logdir
@@ -390,28 +391,28 @@ class TestRunner(Runner):
                                                           test_suite,
                                                           variants,
                                                           execution_order):
-                index += 1
                 test_parameters = test_factory[1]
                 name = test_parameters.get("name")
-                test_parameters["name"] = test.TestID(index + 1, name,
-                                                      variant,
-                                                      no_digits)
+                test_parameters["name"] = TestID(index, name,
+                                                 variant,
+                                                 no_digits)
                 if deadline is not None and time.time() > deadline:
                     summary.add('INTERRUPTED')
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
-                    test_factory = (test.TimeOutSkipTest, test_parameters)
+                    test_factory = (TimeOutSkipTest, test_parameters)
                     if not self.run_test(job, result, test_factory, queue, summary):
                         break
                 else:
                     if (replay_map is not None and
-                            replay_map[index] is not None):
+                            replay_map[index - 1] is not None):
                         test_parameters["methodName"] = "test"
                         test_factory = (replay_map[index], test_parameters)
 
                     if not self.run_test(job, result, test_factory, queue, summary,
                                          deadline):
                         break
+                index += 1
         except KeyboardInterrupt:
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')
