@@ -411,6 +411,20 @@ class SysInfo:
             log.debug('File %s does not exist.', commands_file)
             self.commands = []
 
+        fail_commands_file = settings.get_value('sysinfo.collectibles',
+                                                'fail_commands',
+                                                key_type='path',
+                                                default='')
+
+        if os.path.isfile(fail_commands_file):
+            log.info('Commands configured by file: %s', fail_commands_file)
+            self.fail_commands = genio.read_all_lines(fail_commands_file)
+            self.fail_commands = [
+                cmd for cmd in self.fail_commands if cmd not in self.commands]
+        else:
+            log.debug('File %s does not exist.', fail_commands_file)
+            self.fail_commands = []
+
         files_file = settings.get_value('sysinfo.collectibles',
                                         'files',
                                         key_type='path',
@@ -421,6 +435,19 @@ class SysInfo:
         else:
             log.debug('File %s does not exist.', files_file)
             self.files = []
+
+        fail_files_file = settings.get_value('sysinfo.collectibles',
+                                             'fail_files',
+                                             key_type='path',
+                                             default='')
+        if os.path.isfile(fail_files_file):
+            log.info('Files configured by file: %s', fail_files_file)
+            self.fail_files = genio.read_all_lines(fail_files_file)
+            self.fail_files = [
+                files for files in self.fail_files if files not in self.files]
+        else:
+            log.debug('File %s does not exist.', fail_files_file)
+            self.fail_files = []
 
         if profiler is None:
             self.profiler = settings.get_value('sysinfo.collect',
@@ -452,6 +479,7 @@ class SysInfo:
 
         self.start_collectibles = set()
         self.end_collectibles = set()
+        self.end_fail_collectibles = set()
 
         self.pre_dir = utils_path.init_dir(self.basedir, 'pre')
         self.post_dir = utils_path.init_dir(self.basedir, 'post')
@@ -478,9 +506,15 @@ class SysInfo:
             self.start_collectibles.add(Command(cmd))
             self.end_collectibles.add(Command(cmd))
 
+        for fail_cmd in self.fail_commands:
+            self.end_fail_collectibles.add(Command(fail_cmd))
+
         for filename in self.files:
             self.start_collectibles.add(Logfile(filename))
             self.end_collectibles.add(Logfile(filename))
+
+        for fail_filename in self.fail_files:
+            self.end_fail_collectibles.add(Logfile(fail_filename))
 
         self.end_collectibles.add(JournalctlWatcher())
 
@@ -519,12 +553,16 @@ class SysInfo:
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
 
-    def end(self):
+    def end(self, status=""):
         """
         Logging hook called whenever a job finishes.
         """
         for log_hook in self.end_collectibles:
             log_hook.run(self.post_dir)
+
+        if status == "FAIL":
+            for log_hook in self.end_fail_collectibles:
+                log_hook.run(self.post_dir)
         # Stop daemon(s) started previously
         for log_hook in self.start_collectibles:
             if isinstance(log_hook, Daemon):

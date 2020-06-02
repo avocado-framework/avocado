@@ -870,9 +870,6 @@ class Test(unittest.TestCase, TestData):
                                                 logger=LOG_JOB)
                         stderr_check_exception = details
 
-        if self.__sysinfo_enabled:
-            self.__sysinfo_logger.end()
-
         # pylint: disable=E0702
         if test_exception is not None:
             raise test_exception
@@ -936,6 +933,8 @@ class Test(unittest.TestCase, TestData):
             for e_line in tb_info:
                 self.log.error(e_line)
         finally:
+            if self.__sysinfo_enabled:
+                self.__sysinfo_logger.end(self.__status)
             self.__phase = 'FINISHED'
             self._tag_end()
             self._report()
