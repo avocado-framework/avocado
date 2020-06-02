@@ -16,11 +16,35 @@ System information plugin
 """
 
 from avocado.core.future.settings import settings
+from avocado.core.plugin_interfaces import Init
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.plugin_interfaces import JobPreTests
 from avocado.core.plugin_interfaces import JobPostTests
 from avocado.core import sysinfo
 from avocado.utils import path
+
+
+class SysinfoInit(Init):
+
+    name = 'sysinfo'
+    description = 'Initializes sysinfo settings'
+
+    def initialize(self):
+        help_msg = ('Enable or disable sysinfo information. Like hardware '
+                    'details, profiles, etc.')
+        settings.register_option(section='sysinfo.collect',
+                                 key='enabled',
+                                 default='on',
+                                 key_type=str,
+                                 help_msg=help_msg,
+                                 choices=('on', 'off'))
+
+        help_msg = 'Enable sysinfo collection per-test'
+        settings.register_option(section='sysinfo.collect',
+                                 key='per_test',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg)
 
 
 class SysInfoJob(JobPreTests, JobPostTests):
