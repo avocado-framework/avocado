@@ -32,7 +32,6 @@ from avocado.utils import wait
 from avocado.core import defaults
 from avocado.core import output
 from avocado.core import status
-from avocado.core import test
 from avocado.core import tree
 from avocado.core import varianter
 from avocado.core.loader import loader
@@ -43,6 +42,8 @@ from avocado.core.runner import add_runner_failure
 from avocado.core.runner import TestStatus
 from avocado.core.settings import settings
 from avocado.core.status import mapping
+from avocado.core.test import TimeOutSkipTest
+from avocado.core.test_id import TestID
 
 
 class TestRunner(Runner):
@@ -393,14 +394,14 @@ class TestRunner(Runner):
                 index += 1
                 test_parameters = test_factory[1]
                 name = test_parameters.get("name")
-                test_parameters["name"] = test.TestID(index + 1, name,
-                                                      variant,
-                                                      no_digits)
+                test_parameters["name"] = TestID(index + 1, name,
+                                                 variant,
+                                                 no_digits)
                 if deadline is not None and time.time() > deadline:
                     summary.add('INTERRUPTED')
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
-                    test_factory = (test.TimeOutSkipTest, test_parameters)
+                    test_factory = (TimeOutSkipTest, test_parameters)
                     if not self.run_test(job, result, test_factory, queue, summary):
                         break
                 else:

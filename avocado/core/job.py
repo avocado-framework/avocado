@@ -41,7 +41,6 @@ from . import output
 from . import resolver
 from . import result
 from . import tags
-from . import test
 from . import varianter
 from . import version
 from ..utils import astring
@@ -54,6 +53,8 @@ from .output import LOG_UI
 from .output import STD_OUTPUT
 from .future.settings import settings
 from .tags import filter_test_tags_runnable
+from .test import DryRunTest
+from .test_id import TestID
 
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
@@ -103,7 +104,7 @@ def resolutions_to_tasks(resolutions, config):
                     continue
             if runnable.uri:
                 name = runnable.uri
-            identifier = str(test.TestID(index + 1, name, None, no_digits))
+            identifier = str(TestID(index + 1, name, None, no_digits))
             status_server = config.get('nrun.status_server.listen')
             tasks.append(nrunner.Task(identifier, runnable,
                                       [status_server]))
@@ -456,7 +457,7 @@ class Job:
         if not self.config.get('run.dry_run.enabled'):
             return suite
         for i in range(len(suite)):
-            suite[i] = [test.DryRunTest, suite[i][1]]
+            suite[i] = [DryRunTest, suite[i][1]]
         return suite
 
     def _make_test_suite_resolver(self, references):

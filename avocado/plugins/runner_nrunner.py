@@ -22,8 +22,8 @@ import time
 
 from copy import copy
 
-from avocado.core import test
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
+from avocado.core.test_id import TestID
 
 from avocado.core import nrunner
 
@@ -88,7 +88,7 @@ class Runner(RunnerInterface):
             index += 1
             # this is all rubbish data
             early_state = {
-                'name': test.TestID(index, task.identifier),
+                'name': TestID(index, task.identifier),
                 'job_logdir': job.logdir,
                 'job_unique_id': job.unique_id,
             }
