@@ -380,7 +380,7 @@ class TestRunner(Runner):
         test_result_total = variants.get_number_of_tests(test_suite)
         no_digits = len(str(test_result_total))
         result.tests_total = test_result_total
-        index = -1
+        index = 1
         try:
             for test_factory in test_suite:
                 test_factory[1]["base_logdir"] = job.logdir
@@ -391,10 +391,9 @@ class TestRunner(Runner):
                                                           test_suite,
                                                           variants,
                                                           execution_order):
-                index += 1
                 test_parameters = test_factory[1]
                 name = test_parameters.get("name")
-                test_parameters["name"] = TestID(index + 1, name,
+                test_parameters["name"] = TestID(index, name,
                                                  variant,
                                                  no_digits)
                 if deadline is not None and time.time() > deadline:
@@ -406,13 +405,14 @@ class TestRunner(Runner):
                         break
                 else:
                     if (replay_map is not None and
-                            replay_map[index] is not None):
+                            replay_map[index - 1] is not None):
                         test_parameters["methodName"] = "test"
                         test_factory = (replay_map[index], test_parameters)
 
                     if not self.run_test(job, result, test_factory, queue, summary,
                                          deadline):
                         break
+                index += 1
         except KeyboardInterrupt:
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')
