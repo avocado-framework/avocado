@@ -79,6 +79,7 @@ class Runner(RunnerInterface):
         test_suite, _ = nrunner.check_tasks_requirements(test_suite)
         result.tests_total = len(test_suite)  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
+        no_digits = len(str(len(test_suite)))
 
         for index, task in enumerate(test_suite, start=1):
             if deadline is not None and time.time() > deadline:
@@ -86,8 +87,10 @@ class Runner(RunnerInterface):
 
             task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
             # this is all rubbish data
+            test_id = TestID(index, task.runnable.uri, None, no_digits)
+            task.identifier = str(test_id)
             early_state = {
-                'name': TestID(index, task.identifier),
+                'name': test_id,
                 'job_logdir': job.logdir,
                 'job_unique_id': job.unique_id,
             }
