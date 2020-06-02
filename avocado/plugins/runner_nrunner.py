@@ -80,12 +80,11 @@ class Runner(RunnerInterface):
         result.tests_total = len(test_suite)  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
 
-        for index, task in enumerate(test_suite):
+        for index, task in enumerate(test_suite, start=1):
             if deadline is not None and time.time() > deadline:
                 break
 
             task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
-            index += 1
             # this is all rubbish data
             early_state = {
                 'name': TestID(index, task.identifier),
