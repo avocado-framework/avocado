@@ -196,6 +196,16 @@ class RunnerSimpleTest(unittest.TestCase):
         with open(output_file, 'rb') as fd_output:
             self.assertEqual(fd_output.read(), STDOUT + STDERR)
 
+    def _setup_simple_test(self, simple_test_content):
+        os.chdir(BASEDIR)
+        variants_file = os.path.join(self.tmpdir.name, 'variants.json')
+        with open(variants_file, 'w') as file_obj:
+            file_obj.write(JSON_VARIANTS)
+        simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
+        with open(simple_test, 'w') as file_obj:
+            file_obj.write(simple_test_content)
+        return (simple_test, variants_file)
+
     def test_output_record_none(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
@@ -356,13 +366,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertIsFile("%s.data/stderr.expected" % simple_test)
 
     def test_merge_records_different_output(self):
-        os.chdir(BASEDIR)
-        variants_file = os.path.join(self.tmpdir.name, 'variants.json')
-        with open(variants_file, 'w') as file_obj:
-            file_obj.write(JSON_VARIANTS)
-        simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
-        with open(simple_test, 'w') as file_obj:
-            file_obj.write(TEST_WITH_DIFFERENT_EXPECTED_OUTPUT)
+        simple_test, variants_file = self._setup_simple_test(
+            TEST_WITH_DIFFERENT_EXPECTED_OUTPUT)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
@@ -375,13 +380,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertIsFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
 
     def test_merge_records_different_output_variants(self):
-        os.chdir(BASEDIR)
-        variants_file = os.path.join(self.tmpdir.name, 'variants.json')
-        with open(variants_file, 'w') as file_obj:
-            file_obj.write(JSON_VARIANTS)
-        simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
-        with open(simple_test, 'w') as file_obj:
-            file_obj.write(TEST_WITH_DIFFERENT_EXPECTED_OUTPUT_VARIANTS)
+        simple_test, variants_file = self._setup_simple_test(
+            TEST_WITH_DIFFERENT_EXPECTED_OUTPUT_VARIANTS)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
@@ -396,13 +396,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertIsFile("%s.data/PassTest.test_2/foo/stderr.expected" % simple_test)
 
     def test_merge_records_different_and_same_output(self):
-        os.chdir(BASEDIR)
-        variants_file = os.path.join(self.tmpdir.name, 'variants.json')
-        with open(variants_file, 'w') as file_obj:
-            file_obj.write(JSON_VARIANTS)
-        simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
-        with open(simple_test, 'w') as file_obj:
-            file_obj.write(TEST_WITH_DIFFERENT_AND_SAME_EXPECTED_OUTPUT)
+        simple_test, variants_file = self._setup_simple_test(
+            TEST_WITH_DIFFERENT_AND_SAME_EXPECTED_OUTPUT)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))

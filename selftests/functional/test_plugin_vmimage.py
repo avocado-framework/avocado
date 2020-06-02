@@ -1,11 +1,10 @@
 import json
 import os
-import tempfile
 import unittest.mock
 
 from avocado.core import exit_codes
 from avocado.utils import process, path
-from .. import AVOCADO, temp_dir_prefix
+from .. import AVOCADO, get_temporary_config
 
 
 def missing_binary(binary):
@@ -26,39 +25,11 @@ def create_metadata_file(image_file, metadata):
 
 class VMImagePlugin(unittest.TestCase):
 
-    def _get_temporary_config(self):
-        """
-        Creates a temporary bogus config file
-        returns base directory, dictionary containing the temporary data dir
-        paths and the configuration file contain those same settings
-        """
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        base_dir = tempfile.TemporaryDirectory(prefix=prefix)
-        test_dir = os.path.join(base_dir.name, 'tests')
-        os.mkdir(test_dir)
-        data_directory = os.path.join(base_dir.name, 'data')
-        os.mkdir(data_directory)
-        cache_dir = os.path.join(data_directory, 'cache')
-        os.mkdir(cache_dir)
-        mapping = {'base_dir': base_dir.name,
-                   'test_dir': test_dir,
-                   'data_dir': data_directory,
-                   'logs_dir': os.path.join(base_dir.name, 'logs'),
-                   'cache_dir': cache_dir}
-        temp_settings = ('[datadir.paths]\n'
-                         'base_dir = %(base_dir)s\n'
-                         'test_dir = %(test_dir)s\n'
-                         'data_dir = %(data_dir)s\n'
-                         'logs_dir = %(logs_dir)s\n') % mapping
-        config_file = tempfile.NamedTemporaryFile('w', delete=False)
-        config_file.write(temp_settings)
-        config_file.close()
-        return base_dir, mapping, config_file
-
     @unittest.skipUnless(os.environ.get('AVOCADO_SELFTESTS_NETWORK_ENABLED', False),
                          "Network required to run these tests")
     def setUp(self):
-        (self.base_dir, self.mapping, self.config_file) = self._get_temporary_config()
+        (self.base_dir, self.mapping, self.config_file) = get_temporary_config(
+            __name__, self, 'setUp')
 
     @unittest.skipIf(missing_binary('qemu-img'),
                      "QEMU disk image utility is required by the vmimage utility ")
