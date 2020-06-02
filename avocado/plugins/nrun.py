@@ -72,7 +72,7 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg="--spawner")
 
-        parser_common_args.add_tag_filter_args(parser, 'nrun')
+        parser_common_args.add_tag_filter_args(parser)
 
     async def spawn_tasks(self, parallel_tasks):
         while True:

@@ -90,6 +90,20 @@ class SettingsTest(unittest.TestCase):
         stgs.add_argparser_to_option('section.key', parser, '--other-arg',
                                      allow_multiple=True)
 
+    def test_multiple_parsers(self):
+        stgs = settings.Settings(self.config_file.name)
+        parser1 = argparse.ArgumentParser(description='description')
+        stgs.register_option('section', 'key', 'default', 'help',
+                             parser=parser1, long_arg='--first-option')
+        parser2 = argparse.ArgumentParser(description='other description')
+        with self.assertRaises(settings.DuplicatedNamespace):
+            stgs.register_option('section', 'key', 'default', 'help',
+                                 parser=parser2, long_arg='--other-option')
+        stgs.register_option('section', 'key', 'default', 'help',
+                             parser=parser2, long_arg='--other-option',
+                             allow_multiple=True)
+        self.assertIs(stgs._namespaces['section.key'].parser, parser2)
+
     def tearDown(self):
         os.unlink(self.config_file.name)
 
