@@ -14,6 +14,7 @@ from avocado.core.spawners.podman import PodmanSpawner
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
+from avocado.core.test_id import TestID
 from avocado.core.plugin_interfaces import CLICmd
 
 
@@ -126,6 +127,9 @@ class NRun(CLICmd):
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        for index, task in enumerate(self.pending_tasks, start=1):
+            task.identifier = str(TestID(index, task.runnable.uri))
 
         if not config.get('nrun.disable_task_randomization'):
             random.shuffle(self.pending_tasks)

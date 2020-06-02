@@ -27,6 +27,7 @@ import sys
 import tempfile
 import time
 import traceback
+import uuid
 import warnings
 
 from . import data_dir
@@ -54,7 +55,6 @@ from .output import STD_OUTPUT
 from .future.settings import settings
 from .tags import filter_test_tags_runnable
 from .test import DryRunTest
-from .test_id import TestID
 
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
@@ -72,10 +72,9 @@ def resolutions_to_tasks(resolutions, config):
     :class:`avocado.core.nrunner.Runnable`.
 
     This method transforms those runnables into Tasks
-    (:class:`avocado.core.nrunner.Task`), which will include an
-    unique sequential identification and a status reporting URI.
-    It also performs tag based filtering on the runnables for
-    possibly excluding some of the Runnables.
+    (:class:`avocado.core.nrunner.Task`), which will include a status
+    reporting URI.  It also performs tag based filtering on the
+    runnables for possibly excluding some of the Runnables.
 
     :param resolutions: possible multiple resolutions for multiple
                         references
@@ -87,13 +86,10 @@ def resolutions_to_tasks(resolutions, config):
     """
 
     tasks = []
-    index = 0
     resolutions = [res for res in resolutions if
                    res.result == resolver.ReferenceResolutionResult.SUCCESS]
-    no_digits = len(str(len(resolutions)))
     filter_by_tags = config.get("filter.by_tags.tags")
     for resolution in resolutions:
-        name = resolution.reference
         for runnable in resolution.resolutions:
             if filter_by_tags:
                 if not filter_test_tags_runnable(
@@ -102,13 +98,9 @@ def resolutions_to_tasks(resolutions, config):
                         config.get("filter.by_tags.include_empty"),
                         config.get('filter.by_tags.include_empty_key')):
                     continue
-            if runnable.uri:
-                name = runnable.uri
-            identifier = str(TestID(index + 1, name, None, no_digits))
             status_server = config.get('nrun.status_server.listen')
-            tasks.append(nrunner.Task(identifier, runnable,
+            tasks.append(nrunner.Task(str(uuid.uuid1()), runnable,
                                       [status_server]))
-            index += 1
     return tasks
 
 
