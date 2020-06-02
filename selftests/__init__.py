@@ -2,6 +2,7 @@ import logging
 import os
 import pkg_resources
 import sys
+import tempfile
 import unittest.mock
 
 
@@ -50,6 +51,36 @@ def temp_dir_prefix(module_name, klass, method):
     """
     fmt = 'avocado__%s__%s__%s__'
     return fmt % (module_name, klass.__class__.__name__, method)
+
+
+def get_temporary_config(module_name, klass, method):
+    """
+    Creates a temporary bogus config file
+    returns base directory, dictionary containing the temporary data dir
+    paths and the configuration file contain those same settings
+    """
+    prefix = temp_dir_prefix(module_name, klass, method)
+    base_dir = tempfile.TemporaryDirectory(prefix=prefix)
+    test_dir = os.path.join(base_dir.name, 'tests')
+    os.mkdir(test_dir)
+    data_directory = os.path.join(base_dir.name, 'data')
+    os.mkdir(data_directory)
+    cache_dir = os.path.join(data_directory, 'cache')
+    os.mkdir(cache_dir)
+    mapping = {'base_dir': base_dir.name,
+               'test_dir': test_dir,
+               'data_dir': data_directory,
+               'logs_dir': os.path.join(base_dir.name, 'logs'),
+               'cache_dir': cache_dir}
+    temp_settings = ('[datadir.paths]\n'
+                     'base_dir = %(base_dir)s\n'
+                     'test_dir = %(test_dir)s\n'
+                     'data_dir = %(data_dir)s\n'
+                     'logs_dir = %(logs_dir)s\n') % mapping
+    config_file = tempfile.NamedTemporaryFile('w', delete=False)
+    config_file.write(temp_settings)
+    config_file.close()
+    return base_dir, mapping, config_file
 
 
 #: The plugin module names and directories under optional_plugins

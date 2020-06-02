@@ -10,7 +10,7 @@ import warnings
 
 from avocado.core import exit_codes
 from avocado.utils import process
-from .. import AVOCADO, temp_dir_prefix
+from .. import AVOCADO, get_temporary_config
 
 
 TEST_TEMPLATE = r"""
@@ -43,36 +43,6 @@ class FetchAssets:
 """
 
 
-def get_temporary_config(args):
-    """
-    Creates a temporary bogus config file
-    returns base directory, dictionary containing the temporary data dir
-    paths and the configuration file contain those same settings
-    """
-    prefix = temp_dir_prefix(__name__, args, 'setUp')
-    base_dir = tempfile.TemporaryDirectory(prefix=prefix)
-    test_dir = os.path.join(base_dir.name, 'tests')
-    os.mkdir(test_dir)
-    data_directory = os.path.join(base_dir.name, 'data')
-    os.mkdir(data_directory)
-    cache_dir = os.path.join(data_directory, 'cache')
-    os.mkdir(cache_dir)
-    mapping = {'base_dir': base_dir.name,
-               'test_dir': test_dir,
-               'data_dir': data_directory,
-               'logs_dir': os.path.join(base_dir.name, 'logs'),
-               'cache_dir': cache_dir}
-    temp_settings = ('[datadir.paths]\n'
-                     'base_dir = %(base_dir)s\n'
-                     'test_dir = %(test_dir)s\n'
-                     'data_dir = %(data_dir)s\n'
-                     'logs_dir = %(logs_dir)s\n') % mapping
-    config_file = tempfile.NamedTemporaryFile('w', delete=False)
-    config_file.write(temp_settings)
-    config_file.close()
-    return base_dir, mapping, config_file
-
-
 class AssetsFetchSuccess(unittest.TestCase):
     """
     Assets fetch with success functional test class
@@ -83,8 +53,8 @@ class AssetsFetchSuccess(unittest.TestCase):
         Setup configuration file and folders
         """
         warnings.simplefilter("ignore", ResourceWarning)
-        self.base_dir, self.mapping, self.config_file = (
-            get_temporary_config(self))
+        self.base_dir, self.mapping, self.config_file = get_temporary_config(
+            __name__, self, 'setUp')
         asset_dir = os.path.join(self.mapping['cache_dir'], 'by_location',
                                  'a784600d3e01b346e8813bbd065d00048be8a482')
         os.makedirs(asset_dir)
@@ -133,8 +103,8 @@ class AssetsPlugin(unittest.TestCase):
         Setup configuration file and folders
         """
         warnings.simplefilter("ignore", ResourceWarning)
-        self.base_dir, self.mapping, self.config_file = (
-            get_temporary_config(self))
+        self.base_dir, self.mapping, self.config_file = get_temporary_config(
+            __name__, self, 'setUp')
 
     def test_asset_fetch(self):
         """
