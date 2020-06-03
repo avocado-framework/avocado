@@ -70,6 +70,9 @@ if __name__ == '__main__':
                   'avocado-runner-tap = avocado.core.nrunner_tap:main',
                   'avocado-software-manager = avocado.utils.software_manager:main',
                   ],
+              "avocado.plugins.init": [
+                  "sysinfo = avocado.plugins.sysinfo:SysinfoInit",
+              ],
               'avocado.plugins.cli': [
                   'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnitCLI',

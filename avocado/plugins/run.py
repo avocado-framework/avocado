@@ -193,17 +193,11 @@ class Run(CLICmd):
                                  parser=parser,
                                  long_arg='--ignore-missing-references')
 
-        help_msg = ('Enable or disable sysinfo information. Like hardware '
-                    'details, profiles, etc.')
-        settings.register_option(section='sysinfo.collect',
-                                 key='enabled',
-                                 default='on',
-                                 key_type=str,
-                                 help_msg=help_msg,
-                                 choices=('on', 'off'),
-                                 parser=parser,
-                                 short_arg='-S',
-                                 long_arg='--sysinfo')
+        settings.add_argparser_to_option(namespace='sysinfo.collect.enabled',
+                                         parser=parser,
+                                         choices=('on', 'off'),
+                                         short_arg='-S',
+                                         long_arg='--sysinfo')
 
         help_msg = ('Defines the order of iterating through test suite '
                     'and test variants')
