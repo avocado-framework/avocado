@@ -40,9 +40,10 @@ class xUnitSucceedTest(unittest.TestCase):
         self.tmpfile = tempfile.mkstemp()
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        config = {'run.xunit.output': self.tmpfile[1],
+        config = {'job.run.result.xunit.output': self.tmpfile[1],
                   'run.results_dir': self.tmpdir.name}
         self.job = job.Job(config)
+        self.job.setup()
         self.test_result = Result(UNIQUE_ID, LOGFILE)
         self.test_result.tests_total = 1
         self.test_result.logfile = ("/.../avocado/job-results/"
@@ -53,6 +54,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test1.time_elapsed = 678.23689
 
     def tearDown(self):
+        self.job.cleanup()
         errs = []
         cleanups = (lambda: os.close(self.tmpfile[0]),
                     lambda: os.remove(self.tmpfile[1]),
@@ -73,7 +75,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result.end_tests()
         xunit_result = xunit.XUnitResult()
         xunit_result.render(self.test_result, self.job)
-        xunit_output = self.job.config.get('run.xunit.output')
+        xunit_output = self.job.config.get('job.run.result.xunit.output')
         with open(xunit_output, 'rb') as fp:
             xml = fp.read()
         try:
@@ -112,7 +114,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result.end_tests()
         xunit_result = xunit.XUnitResult()
         xunit_result.render(self.test_result, self.job)
-        xunit_output = self.job.config.get('run.xunit.output')
+        xunit_output = self.job.config.get('job.run.result.xunit.output')
         with open(xunit_output, 'rb') as fp:
             unlimited = fp.read()
         self.job.config['xunit.max_test_log_chars'] = 10

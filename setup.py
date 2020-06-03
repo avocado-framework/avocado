@@ -71,6 +71,7 @@ if __name__ == '__main__':
                   'avocado-software-manager = avocado.utils.software_manager:main',
                   ],
               "avocado.plugins.init": [
+                  "xunit = avocado.plugins.xunit:XUnitInit",
                   "jsonresult = avocado.plugins.jsonresult:JSONInit",
                   "sysinfo = avocado.plugins.sysinfo:SysinfoInit",
               ],
