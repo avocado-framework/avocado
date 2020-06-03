@@ -6,11 +6,7 @@ import os
 import sys
 from avocado.core.job import Job
 
-config = {'run.references': [os.path.join(os.path.dirname(__file__), 'tests', 'pass')],
-          # This creates the temporary directory along the results directory
-          # preventing a failure from the "selftests/check_tmp_dirs" that runs
-          # right after the tests in Avocado's "make check" rule
-          'run.keep_tmp': 'on'}
+config = {'run.references': [os.path.join(os.path.dirname(__file__), 'tests', 'pass')]}
 
 with Job(config) as j:
     sys.exit(j.run())
