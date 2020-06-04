@@ -25,3 +25,4 @@ echo
 $COVERAGE report -m --include "avocado/plugins/*"
 echo
 $COVERAGE report -m --include "optional_plugins/*"
+$COVERAGE xml

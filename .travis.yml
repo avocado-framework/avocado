@@ -30,17 +30,21 @@ script:
 
 matrix:
   include:
-    - python: "3.7"
+    - name: "Code Coverage"
+      python: "3.8"
       arch: amd64
       env:
         - SELF_CHECK_CONTINUOUS=yes
+        - CC_TEST_REPORTER_ID=387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6
       install:
         - pip install -r requirements-selftests.txt
-        - pip install codecov
+        - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        - chmod +x ./cc-test-reporter
+        - ./cc-test-reporter before-build
       script:
-        - make develop
-        - ./selftests/run_coverage
-        - codecov
+        - make develop && ./selftests/run_coverage
+      after_script:
+        - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
     - python: "3.7"
       arch: s390x
       env:
