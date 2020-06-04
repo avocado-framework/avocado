@@ -161,8 +161,8 @@ class Jobs(CLICmd):
             try:
                 files_buffers = spawner().stream_output(job_id, test_id)
                 for filename, stream in files_buffers:
-                    destination = os.path.join(destination, filename)
-                    self._save_stream_to_file(stream, destination)
+                    dest = os.path.join(destination, filename)
+                    self._save_stream_to_file(stream, dest)
             except SpawnerException as ex:
                 LOG_UI.error("Error: Failed to download: %s. Exiting...", ex)
                 return exit_codes.AVOCADO_GENERIC_CRASH
@@ -232,6 +232,7 @@ class Jobs(CLICmd):
 
         # We could improve this soon with more data and colors
         self._print_job_details(data)
+        LOG_UI.info("")
         self._print_job_tests(results_data.get('tests'))
         results = ('PASS %d | ERROR %d | FAIL %d | SKIP %d |'
                    'WARN %d | INTERRUPT %s | CANCEL %s')

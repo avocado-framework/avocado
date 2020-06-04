@@ -55,7 +55,8 @@ class BaseSpawner:
         """
         results_dir = get_job_results_dir(job_id)
         task_id = string_to_safe_path(task_id)
-        src = '{}/test-results/{}/data'.format(results_dir, task_id)
+        data_pointer = '{}/test-results/{}/data'.format(results_dir, task_id)
+        src = open(data_pointer, 'r').readline().rstrip()
         try:
             for path in Path(src).expanduser().iterdir():
                 if path.is_file() and path.stat().st_size != 0:
