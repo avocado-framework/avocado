@@ -22,14 +22,14 @@ def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=None, kwargs=No
         args = []
     if kwargs is None:
         kwargs = {}
-    start_time = time.time()
+    start_time = time.monotonic()
     end_time = start_time + timeout
 
     time.sleep(first)
 
-    while time.time() < end_time:
+    while time.monotonic() < end_time:
         if text:
-            log.debug("%s (%f secs)", text, (time.time() - start_time))
+            log.debug("%s (%f secs)", text, (time.monotonic() - start_time))
 
         output = func(*args, **kwargs)
         if output:
