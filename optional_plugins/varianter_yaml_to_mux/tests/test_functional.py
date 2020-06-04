@@ -3,19 +3,14 @@ import json
 import os
 import tempfile
 import unittest
-import sys
 import shutil
 
 from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import genio
 
+from selftests import AVOCADO, BASEDIR
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..')
-basedir = os.path.abspath(basedir)
-
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",
-                         "%s ./scripts/avocado" % sys.executable)
 
 DEBUG_OUT = b"""
 Variant mint-debug-amd-virtio-022a:    amd@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, mint@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, debug@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml
@@ -35,7 +30,7 @@ class MultiplexTests(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix='avocado_' + __name__)
 
     def run_and_check(self, cmd_line, expected_rc, tests=None):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
@@ -199,7 +194,7 @@ class ReplayTests(unittest.TestCase):
             self.jobid = f.read().strip('\n')
 
     def run_and_check(self, cmd_line, expected_rc):
-        os.chdir(basedir)
+        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
