@@ -4,7 +4,6 @@ import os
 import re
 import shutil
 import signal
-import sys
 import tempfile
 import time
 import xml.dom.minidom
@@ -835,12 +834,11 @@ class RunnerSimpleTest(unittest.TestCase):
             self.assertTrue(sysinfo)
 
     def test_non_absolute_path(self):
-        avocado_path = os.path.join(BASEDIR, 'scripts', 'avocado')
         test_base_dir = os.path.dirname(self.pass_script.path)
         os.chdir(test_base_dir)
         test_file_name = os.path.basename(self.pass_script.path)
-        cmd_line = ('%s %s run --job-results-dir %s --sysinfo=off'
-                    ' "%s"' % (sys.executable, avocado_path, self.tmpdir.name,
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
+                    ' "%s"' % (AVOCADO, self.tmpdir.name,
                                test_file_name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -1018,12 +1016,11 @@ class ExternalRunnerTest(unittest.TestCase):
 
     @unittest.skipIf(os.environ.get("RUNNING_COVERAGE"), "Running coverage")
     def test_externalrunner_chdir_runner_relative(self):
-        avocado_abs = " ".join([os.path.abspath(_) for _ in AVOCADO.split(" ")])
         pass_abs = os.path.abspath(self.pass_script.path)
         os.chdir('/')
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--external-runner=bin/sh --external-runner-chdir=runner -- %s'
-                    % (avocado_abs, self.tmpdir.name, pass_abs))
+                    % (AVOCADO, self.tmpdir.name, pass_abs))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

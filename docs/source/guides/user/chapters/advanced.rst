@@ -42,11 +42,11 @@ Example of a transparent way of running strace as a wrapper::
 
 To have all programs started by ``test.py`` wrapped with ``~/bin/my-wrapper.sh``::
 
-    $ scripts/avocado run --wrapper ~/bin/my-wrapper.sh tests/test.py
+    $ avocado run --wrapper ~/bin/my-wrapper.sh tests/test.py
 
 To have only ``my-binary`` wrapped with ``~/bin/my-wrapper.sh``::
 
-    $ scripts/avocado run --wrapper ~/bin/my-wrapper.sh:*my-binary tests/test.py
+    $ avocado run --wrapper ~/bin/my-wrapper.sh:*my-binary tests/test.py
 
 Caveats
 ~~~~~~~

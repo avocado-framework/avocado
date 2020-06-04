@@ -11,7 +11,7 @@ BASEDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)
 
 #: The name of the avocado test runner entry point
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",
-                         "%s ./scripts/avocado" % sys.executable)
+                         "%s -m avocado" % sys.executable)
 
 
 def python_module_available(module_name):

@@ -813,7 +813,7 @@ that returns 0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
 
 Let's record the output for this one::
 
-    $ scripts/avocado run output_record.sh --output-check-record all
+    $ avocado run output_record.sh --output-check-record all
     JOB ID    : 25c4244dda71d0570b7f849319cd71fe1722be8b
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
      (1/1) output_record.sh: PASS (0.01 s)
@@ -837,7 +837,7 @@ Now, every time this test runs, it'll take into account the expected files that
 were recorded, no need to do anything else but run the test. Let's see what
 happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!``::
 
-    $ scripts/avocado run output_record.sh
+    $ avocado run output_record.sh
     JOB ID    : f0521e524face93019d7cb99c5765aedd933cb2e
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
      (1/1) output_record.sh: FAIL (0.02 s)

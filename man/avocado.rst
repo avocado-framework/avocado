@@ -487,7 +487,7 @@ straight output of the job log in the stdout, without having to tail the
 job log. In order to do that, you can use --show=test to the avocado
 test runner::
 
-    $ scripts/avocado --show=test run examples/tests/sleeptest.py
+    $ avocado --show=test run examples/tests/sleeptest.py
     ...
     PARAMS (key=timeout, path=*, default=None) => None
     START 1-sleeptest.py:SleepTest.test
@@ -509,7 +509,7 @@ Edit your `~/.config/avocado/avocado.conf` file and add::
 
 Running the same example with this option will give you::
 
-    $ scripts/avocado --show=test run sleeptest.py
+    $ avocado --show=test run sleeptest.py
     ...
     START 1-sleeptest.py:SleepTest.test
     PASS 1-sleeptest.py:SleepTest.test

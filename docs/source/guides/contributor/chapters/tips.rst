@@ -36,7 +36,7 @@ install it using pip::
 and then simply mark the desired function with `@profile` (no need to import
 it from anywhere). Then you execute::
 
-    kernprof -l -v ./scripts/avocado run ...
+    kernprof -l -v avocado run ...
 
 and when the process finishes you'll see the profiling information. (sometimes
 the binary is called `kernprof.py`)

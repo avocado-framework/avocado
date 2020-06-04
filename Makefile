@@ -129,7 +129,7 @@ requirements-selftests: pip
 	- $(PYTHON) -m pip install -r requirements-selftests.txt
 
 smokecheck: clean develop
-	./scripts/avocado run passtest.py
+	PYTHON=$(PYTHON) $(PYTHON) -m avocado run passtest.py
 
 ifndef AVOCADO_OPTIONAL_PLUGINS_TESTS
 AVOCADO_OPTIONAL_PLUGINS_TESTS=$(patsubst %,%/tests/, $(AVOCADO_OPTIONAL_PLUGINS))

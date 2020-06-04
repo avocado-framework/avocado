@@ -58,9 +58,9 @@ if __name__ == '__main__':
               ],
           packages=find_packages(exclude=('selftests*',)),
           include_package_data=True,
-          scripts=['scripts/avocado'],
           entry_points={
               'console_scripts': [
+                  'avocado = avocado.core.main:main',
                   'avocado-runner = avocado.core.nrunner:main',
                   'avocado-runner-noop = avocado.core.nrunner:main',
                   'avocado-runner-exec = avocado.core.nrunner:main',

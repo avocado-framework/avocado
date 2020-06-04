@@ -1,5 +1,4 @@
 import os
-import shlex
 import tempfile
 import unittest
 
@@ -54,9 +53,9 @@ class StreamsTest(unittest.TestCase):
                  {'AVOCADO_LOG_EARLY': 'y'}))
         for cmd, env in cmds:
             result = process.run(cmd, env=env, shell=True)
+            # Avocado will see the main module on the command line
+            cmd_in_log = os.path.join(BASEDIR, 'avocado', '__main__.py')
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            # If using the Python interpreter, Avocado won't know about it
-            cmd_in_log = shlex.split(AVOCADO)[-1]
             self.assertIn("avocado.test: Command line: %s" % cmd_in_log,
                           result.stdout_text)
 
@@ -68,8 +67,8 @@ class StreamsTest(unittest.TestCase):
                'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        # If using the Python interpreter, Avocado won't know about it
-        cmd_in_log = shlex.split(AVOCADO)[-1]
+        # Avocado will see the main module on the command line
+        cmd_in_log = os.path.join(BASEDIR, 'avocado', '__main__.py')
         self.assertIn("Command line: %s" % cmd_in_log,
                       result.stdout_text)
         self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
