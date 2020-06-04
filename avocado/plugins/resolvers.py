@@ -49,39 +49,55 @@ class ExecTestResolver(Resolver):
                                    [Runnable('exec-test', reference)])
 
 
+def python_resolver(name, reference, find_tests):
+    module_path, tests_filter = reference_split(reference)
+    if tests_filter is not None:
+        tests_filter = re.compile(tests_filter)
+
+    criteria_check = check_file(module_path, reference)
+    if criteria_check is not True:
+        return criteria_check
+
+    # disabled tests not needed here
+    class_methods_info, _ = find_tests(module_path)
+    runnables = []
+    for klass, methods_tags_reqs in class_methods_info.items():
+        for (method, tags, reqs) in methods_tags_reqs:
+            klass_method = "%s.%s" % (klass, method)
+            if tests_filter is not None:
+                if not tests_filter.search(klass_method):
+                    continue
+            uri = "%s:%s" % (module_path, klass_method)
+            runnables.append(Runnable(name,
+                                      uri=uri,
+                                      tags=tags,
+                                      requirements=reqs))
+    if runnables:
+        return ReferenceResolution(reference,
+                                   ReferenceResolutionResult.SUCCESS,
+                                   runnables)
+
+    return ReferenceResolution(reference,
+                               ReferenceResolutionResult.NOTFOUND)
+
+
 class PythonUnittestResolver(Resolver):
 
     name = 'python-unittest'
     description = 'Test resolver for Python Unittests'
 
     @staticmethod
+    def _find_compat(module_path):
+        """
+        Used as compatiblity for the  :func:`python_resolver()` interface
+        """
+        return find_python_unittests(module_path), None
+
+    @staticmethod
     def resolve(reference):
-
-        criteria_check = check_file(reference, reference)
-        if criteria_check is not True:
-            return criteria_check
-
-        class_methods = find_python_unittests(reference)
-        if class_methods:
-            runnables = []
-            mod = os.path.relpath(reference)
-            if mod.endswith('.py'):
-                mod = mod[:-3]
-            mod = mod.replace(os.path.sep, ".")
-            for klass, meths in class_methods.items():
-                for (meth, tags, reqs) in meths:
-                    uri = '%s.%s.%s' % (mod, klass, meth)
-                    runnables.append(Runnable('python-unittest',
-                                              uri=uri,
-                                              tags=tags,
-                                              requirements=reqs))
-            if runnables:
-                return ReferenceResolution(reference,
-                                           ReferenceResolutionResult.SUCCESS,
-                                           runnables)
-
-        return ReferenceResolution(reference,
-                                   ReferenceResolutionResult.NOTFOUND)
+        return python_resolver(PythonUnittestResolver.name,
+                               reference,
+                               PythonUnittestResolver._find_compat)
 
 
 class AvocadoInstrumentedResolver(Resolver):
@@ -91,35 +107,9 @@ class AvocadoInstrumentedResolver(Resolver):
 
     @staticmethod
     def resolve(reference):
-        module_path, tests_filter = reference_split(reference)
-        if tests_filter is not None:
-            tests_filter = re.compile(tests_filter)
-
-        criteria_check = check_file(module_path, reference)
-        if criteria_check is not True:
-            return criteria_check
-
-        # disabled tests not needed here
-        class_methods_info, _ = find_avocado_tests(module_path)
-        runnables = []
-        for klass, methods_tags_reqs in class_methods_info.items():
-            for (method, tags, reqs) in methods_tags_reqs:
-                klass_method = "%s.%s" % (klass, method)
-                if tests_filter is not None:
-                    if not tests_filter.search(klass_method):
-                        continue
-                uri = "%s:%s" % (module_path, klass_method)
-                runnables.append(Runnable('avocado-instrumented',
-                                          uri=uri,
-                                          tags=tags,
-                                          requirements=reqs))
-        if runnables:
-            return ReferenceResolution(reference,
-                                       ReferenceResolutionResult.SUCCESS,
-                                       runnables)
-
-        return ReferenceResolution(reference,
-                                   ReferenceResolutionResult.NOTFOUND)
+        return python_resolver(AvocadoInstrumentedResolver.name,
+                               reference,
+                               find_avocado_tests)
 
 
 class TapResolver(Resolver):
