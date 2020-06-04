@@ -232,6 +232,7 @@ class Jobs(CLICmd):
 
         # We could improve this soon with more data and colors
         self._print_job_details(data)
+        LOG_UI.info("")
         self._print_job_tests(results_data.get('tests'))
         results = ('PASS %d | ERROR %d | FAIL %d | SKIP %d |'
                    'WARN %d | INTERRUPT %s | CANCEL %s')
