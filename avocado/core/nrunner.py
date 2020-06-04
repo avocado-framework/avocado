@@ -599,7 +599,7 @@ class Task:
             known_runners = {}
         self.known_runners = known_runners
         self.spawn_handle = None
-        self._output_dir = None
+        self.output_dir = None
 
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
@@ -617,8 +617,8 @@ class Task:
         return self.runnable.pick_runner_command(runners_registry)
 
     def setup_output_dir(self):
-        self._output_dir = tempfile.mkdtemp(prefix='.avocado-task-')
-        env_var = {'AVOCADO_TEST_OUTPUT_DIR': self._output_dir}
+        self.output_dir = tempfile.mkdtemp(prefix='.avocado-task-')
+        env_var = {'AVOCADO_TEST_OUTPUT_DIR': self.output_dir}
         self.runnable.kwargs.update(env_var)
 
     @classmethod
@@ -667,7 +667,7 @@ class Task:
         runner = runner_klass(self.runnable)
         for status in runner.run():
             if status['status'] == 'started':
-                status.update({'output_dir': self._output_dir})
+                status.update({'output_dir': self.output_dir})
             status.update({"id": self.identifier})
             for status_service in self.status_services:
                 status_service.post(status)
