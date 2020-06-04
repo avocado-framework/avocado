@@ -68,6 +68,10 @@ class Runner(RunnerInterface):
             with open(debug, 'w') as fp:
                 json.dump(local_statuses, fp)
 
+        data_file = os.path.join(task_path, 'data')
+        with open(data_file, 'w') as fp:
+            fp.write("{}\n".format(task.output_dir))
+
     def run_suite(self, job, result, test_suite, variants, timeout=0,
                   replay_map=None, execution_order=None):
         summary = set()
