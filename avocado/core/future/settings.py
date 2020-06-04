@@ -65,20 +65,6 @@ class NamespaceNotRegistered(SettingsError):
     """
 
 
-class ConfigFileNotFound(SettingsError):
-    """
-    Error thrown when the main settings file could not be found.
-    """
-
-    def __init__(self, path_list):
-        super(ConfigFileNotFound, self).__init__()
-        self.path_list = path_list
-
-    def __str__(self):
-        return ("Could not find the avocado config file after looking in: %s" %
-                self.path_list)
-
-
 class ConfigOption:
     def __init__(self, namespace, help_msg, key_type=str, default=None,
                  parser=None, short_arg=None, long_arg=None,
@@ -278,9 +264,6 @@ class Settings:
 
         # 2. Parse/read all config paths
         self._config_paths = self._config.read(self._all_config_paths)
-
-        if not self._config_paths:
-            raise ConfigFileNotFound(self._all_config_paths)
 
     def _append_config_paths(self):
         # Override with system config
