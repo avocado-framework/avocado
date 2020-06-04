@@ -23,7 +23,7 @@ from xml.dom.minidom import Document
 from avocado.core.future.settings import settings
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLI, Result
+from avocado.core.plugin_interfaces import Init, CLI, Result
 from avocado.utils import astring
 from avocado.utils.data_structures import DataSize
 
@@ -134,9 +134,9 @@ class XUnitResult(Result):
         return document.toprettyxml(encoding='UTF-8')
 
     def render(self, result, job):
-        job_result = job.config.get('run.xunit.job_result')
-        xunit_output = job.config.get('run.xunit.output')
-        if not (job_result or xunit_output):
+        xunit_enabled = job.config.get('job.run.result.xunit.enabled')
+        xunit_output = job.config.get('job.run.result.xunit.output')
+        if not (xunit_enabled or xunit_output):
             return
 
         if not result.tests_total:
@@ -145,7 +145,7 @@ class XUnitResult(Result):
         max_test_log_size = job.config.get('xunit.max_test_log_chars')
         job_name = job.config.get('xunit.job_name')
         content = self._render(result, max_test_log_size, job_name)
-        if job_result == 'on':
+        if xunit_enabled == 'on':
             xunit_path = os.path.join(job.logdir, 'results.xml')
             with open(xunit_path, 'wb') as xunit_file:
                 xunit_file.write(content)
@@ -157,6 +157,45 @@ class XUnitResult(Result):
             else:
                 with open(xunit_path, 'wb') as xunit_file:
                     xunit_file.write(content)
+
+
+class XUnitInit(Init):
+
+    name = 'xunit'
+    description = 'xUnit job result initialization'
+
+    def initialize(self):
+        section = 'job.run.result.xunit'
+        help_msg = ('Enable xUnit result format and write it to FILE. '
+                    'Use "-" to redirect to the standard output.')
+        settings.register_option(section=section,
+                                 key='output',
+                                 help_msg=help_msg,
+                                 default=None)
+
+        help_msg = ('Enables default xUnit result in the job results '
+                    'directory. File will be named "results.xml".')
+        settings.register_option(section=section,
+                                 key='enabled',
+                                 help_msg=help_msg,
+                                 default='on')
+
+        help_msg = ('Override the reported job name. By default uses the '
+                    'Avocado job name which is always unique. This is useful '
+                    'for reporting in Jenkins as it only evaluates '
+                    'first-failure from jobs of the same name.')
+        settings.register_option(section='job.run.result.xunit',
+                                 key='job_name',
+                                 default=None,
+                                 help_msg=help_msg)
+
+        help_msg = ('Limit the attached job log to given number of characters '
+                    '(k/m/g suffix allowed)')
+        settings.register_option(section='job.run.result.xunit',
+                                 key='max_test_log_chars',
+                                 help_msg=help_msg,
+                                 key_type=lambda x: DataSize(x).b,
+                                 default='100000')
 
 
 class XUnitCLI(CLI):
@@ -172,49 +211,29 @@ class XUnitCLI(CLI):
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
         if run_subcommand_parser is None:
             return
+        settings.add_argparser_to_option(
+            namespace='job.run.result.xunit.output',
+            metavar='FILE',
+            action=FileOrStdoutAction,
+            parser=run_subcommand_parser.output,
+            long_arg='--xunit')
 
-        help_msg = ('Enable xUnit result format and write it to FILE. '
-                    'Use "-" to redirect to the standard output.')
-        settings.register_option(section='run.xunit',
-                                 key='output',
-                                 metavar='FILE',
-                                 action=FileOrStdoutAction,
-                                 help_msg=help_msg,
-                                 default=None,
-                                 parser=run_subcommand_parser.output,
-                                 long_arg='--xunit')
+        settings.add_argparser_to_option(
+            namespace='job.run.result.xunit.enabled',
+            choices=('on', 'off'),
+            parser=run_subcommand_parser.output,
+            long_arg='--xunit-job-result')
 
-        help_msg = ('Enables default xUnit result in the job results '
-                    'directory. File will be named "results.xml".')
-        settings.register_option(section='run.xunit',
-                                 key='job_result',
-                                 help_msg=help_msg,
-                                 choices=('on', 'off'),
-                                 default='on',
-                                 parser=run_subcommand_parser.output,
-                                 long_arg='--xunit-job-result')
+        settings.add_argparser_to_option(
+            namespace='job.run.result.xunit.job_name',
+            parser=run_subcommand_parser.output,
+            long_arg='--xunit-job-name')
 
-        help_msg = ('Override the reported job name. By default uses the '
-                    'Avocado job name which is always unique. This is useful '
-                    'for reporting in Jenkins as it only evaluates '
-                    'first-failure from jobs of the same name.')
-        settings.register_option(section='run.xunit',
-                                 key='job_name',
-                                 default=None,
-                                 help_msg=help_msg,
-                                 parser=run_subcommand_parser.output,
-                                 long_arg='--xunit-job-name')
-
-        help_msg = ('Limit the attached job log to given number of characters '
-                    '(k/m/g suffix allowed)')
-        settings.register_option(section='run.xunit',
-                                 key='max_test_log_chars',
-                                 metavar='SIZE',
-                                 help_msg=help_msg,
-                                 default='100000',
-                                 key_type=lambda x: DataSize(x).b,
-                                 parser=run_subcommand_parser.output,
-                                 long_arg='--xunit-max-test-log-chars')
+        settings.add_argparser_to_option(
+            namespace='job.run.result.xunit.max_test_log_chars',
+            metavar='SIZE',
+            parser=run_subcommand_parser.output,
+            long_arg='--xunit-max-test-log-chars')
 
     def run(self, config):
         pass

@@ -4,8 +4,8 @@ Main entry point when called by 'python -m'.
 
 import sys
 
-from avocado.core.app import AvocadoApp
+from avocado.core.main import main
+
 
 if __name__ == '__main__':
-    main = AvocadoApp()
-    sys.exit(main.run())
+    sys.exit(main())

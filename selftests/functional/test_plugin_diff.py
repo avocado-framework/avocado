@@ -1,7 +1,6 @@
 import glob
 import os
 import tempfile
-import shlex
 import unittest
 
 from avocado.core import exit_codes
@@ -42,14 +41,14 @@ class DiffTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
 
+    @unittest.skipIf(os.environ.get("RUNNING_COVERAGE"), "Running coverage")
     def test_diff(self):
         cmd_line = ('%s diff %s %s' %
                     (AVOCADO, self.jobdir, self.jobdir2))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        # Avocado won't know about the Python interpreter used on the
-        # command line
-        avocado_in_log = shlex.split(AVOCADO)[-1]
+        # Avocado will see the main module on the command line
+        avocado_in_log = os.path.join(BASEDIR, 'avocado', '__main__.py')
         self.assertIn(b"# COMMAND LINE", result.stdout)
         self.assertIn("-%s run" % avocado_in_log, result.stdout_text)
         self.assertIn("+%s run" % avocado_in_log, result.stdout_text)

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; specifically version 2 of the License.
@@ -60,7 +58,7 @@ def handle_exception(*exc_info):
     sys.exit(-1)
 
 
-if __name__ == '__main__':
+def main():
     sys.excepthook = handle_exception
     from avocado.core.app import AvocadoApp    # pylint: disable=E0611
 
@@ -75,4 +73,8 @@ if __name__ == '__main__':
         if os.path.exists("/var/tmp"):
             os.environ["TMP"] = "/var/tmp"
     app = AvocadoApp()
-    sys.exit(app.run())
+    return app.run()
+
+
+if __name__ == '__main__':
+    sys.exit(main())

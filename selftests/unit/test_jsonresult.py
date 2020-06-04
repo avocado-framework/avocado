@@ -31,8 +31,9 @@ class JSONResultTest(unittest.TestCase):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         config = {'run.results_dir': self.tmpdir.name,
-                  'run.json.output': self.tmpfile[1]}
+                  'job.run.result.json.output': self.tmpfile[1]}
         self.job = job.Job(config)
+        self.job.setup()
         self.test_result = Result(UNIQUE_ID, LOGFILE)
         self.test_result.filename = self.tmpfile[1]
         self.test_result.tests_total = 1
@@ -41,6 +42,7 @@ class JSONResultTest(unittest.TestCase):
         self.test1.time_elapsed = 1.23
 
     def tearDown(self):
+        self.job.cleanup()
         os.close(self.tmpfile[0])
         os.remove(self.tmpfile[1])
         self.tmpdir.cleanup()
@@ -51,7 +53,7 @@ class JSONResultTest(unittest.TestCase):
         self.test_result.end_tests()
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
-        with open(self.job.config.get('run.json.output')) as fp:
+        with open(self.job.config.get('job.run.result.json.output')) as fp:
             j = fp.read()
         obj = json.loads(j)
         self.assertTrue(obj)
@@ -86,7 +88,7 @@ class JSONResultTest(unittest.TestCase):
         self.test_result.end_tests()
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
-        output = self.job.config.get('run.json.output')
+        output = self.job.config.get('job.run.result.json.output')
         res = json.loads(open(output).read())
         check_item("[pass]", res["pass"], 2)
         check_item("[errors]", res["errors"], 4)
@@ -105,7 +107,7 @@ class JSONResultTest(unittest.TestCase):
         self.test_result.end_tests()
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
-        output = self.job.config.get('run.json.output')
+        output = self.job.config.get('job.run.result.json.output')
         res = json.loads(open(output).read())
         check_item("[total]", res["total"], 1)
         check_item("[skip]", res["skip"], 0)

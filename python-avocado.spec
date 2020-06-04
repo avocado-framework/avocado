@@ -34,7 +34,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 79.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -230,11 +230,7 @@ popd
 # AVOCADO_CHECK_LEVEL: package build environments have the least
 # amount of resources we have observed so far.  Let's avoid tests that
 # require too much resources or are time sensitive
-# UNITTEST_AVOCADO_CMD: the "avocado" command to be run during
-# unittests needs to be a Python specific one on Fedora >= 28.  Let's
-# use the one that was setup in the source tree by the "setup.py
-# develop --user" step and is guaranteed to be version specific.
-PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado %{__python3} selftests/run
+PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %endif
 
 %files -n python3-%{srcname}
@@ -446,6 +442,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Jun  4 2020 Cleber Rosa <cleber@redhat.com> - 79.0-2
+- Dropped use of custom avocado command for tests
+
 * Tue May 12 2020 Cleber Rosa <cleber@redhat.com> - 79.0-1
 - Do not build deprecated runners
 

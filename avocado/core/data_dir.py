@@ -25,6 +25,7 @@ The general reasoning to find paths is:
 * The next best location is the default system wide one.
 * The next best location is the default user specific one.
 """
+import atexit
 import glob
 import os
 import shutil
@@ -346,3 +347,6 @@ def get_job_results_dir(job_ref, logs_dir=None):
     if matches == 1:
         return os.path.dirname(match_file)
     return None
+
+
+atexit.register(clean_tmp_files)
