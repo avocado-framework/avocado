@@ -45,7 +45,6 @@ import json
 import os
 
 from ..settings_dispatcher import SettingsDispatcher
-from ...utils import path
 
 
 class SettingsError(Exception):
@@ -304,21 +303,8 @@ class Settings:
             self._all_config_paths.append(extra_file)
 
     def _append_user_config(self):
-        if not os.path.exists(self._config_path_local):
-            self._create_empty_config()
-        self._all_config_paths.append(self._config_path_local)
-
-    def _create_empty_config(self):
-        try:
-            path.init_dir(self._config_dir_local)
-            with open(self._config_path_local, 'w') as config_local_fileobj:
-                content = ("# You can use this file to override "
-                           "configuration values from '%s and %s\n"
-                           % (self._config_path_system,
-                              self._config_dir_system_extra))
-                config_local_fileobj.write(content)
-        except IOError:     # Some users can't write it (docker)
-            pass
+        if os.path.exists(self._config_path_local):
+            self._all_config_paths.append(self._config_path_local)
 
     def _prepare_base_dirs(self):
         cfg_dir = '/etc'

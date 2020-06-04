@@ -26,7 +26,6 @@ from pkg_resources import resource_isdir
 from pkg_resources import resource_listdir
 
 from .settings_dispatcher import SettingsDispatcher
-from ..utils import path
 
 # pylint: disable-msg=too-many-locals
 # pylint: disable-msg=too-many-arguments
@@ -117,25 +116,14 @@ class Settings:
             for extra_file in glob.glob(os.path.join(_config_dir_system_extra,
                                                      '*.conf')):
                 self.all_config_paths.append(extra_file)
-            # And the local config
-            if not os.path.exists(config_path_local):
-                try:
-                    path.init_dir(_config_dir_local)
-                    with open(config_path_local, 'w') as config_local_fileobj:
-                        content = ("# You can use this file to override "
-                                   "configuration values from '%s and %s\n"
-                                   % (config_path_system,
-                                      _config_dir_system_extra))
-                        config_local_fileobj.write(content)
-                except IOError:     # Some users can't write it (docker)
-                    pass
             # Allow plugins to modify/extend the list of configs
             dispatcher = SettingsDispatcher()
             if dispatcher.extensions:
                 dispatcher.map_method('adjust_settings_paths',
                                       self.all_config_paths)
             # Register user config as last to always take precedence
-            self.all_config_paths.append(config_path_local)
+            if os.path.exists(config_path_local):
+                self.all_config_paths.append(config_path_local)
         else:
             # Only used by unittests (the --config parses the file later)
             self.all_config_paths.append(config_path)
