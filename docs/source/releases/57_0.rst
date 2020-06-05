@@ -14,7 +14,7 @@ roughly categorized into major topics and intended audience:
 Users/Test Writers
 ==================
 
-* A new (optional) plugin is avaiable, the "result uploader".  It
+* A new (optional) plugin is available, the "result uploader".  It
   allows job results to be copied over to a centralized results server
   at the end of job execution.  Please refer to
   :ref:`results-upload-plugin` for more information.

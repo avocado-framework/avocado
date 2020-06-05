@@ -363,7 +363,7 @@ class Settings:
 
         allow_multiple :
             Whether the same option may be available on different parsers.
-            This is useful when the same option is avaiable on different
+            This is useful when the same option is available on different
             commands, such as "avocado run" or "avocado list".
         """
         option = None
@@ -527,7 +527,7 @@ class Settings:
 
         allow_multiple :
             Whether the same option may be available on different parsers.
-            This is useful when the same option is avaiable on different
+            This is useful when the same option is available on different
             commands, such as "avocado run" or "avocado list".
 
         .. note:: Most of the arguments here (like parser, positional_arg,
