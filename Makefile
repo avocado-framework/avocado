@@ -9,11 +9,8 @@ AVOCADO_EXTERNAL_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -m
 # List of optional plugins that have to be in setup in a giver order
 # because there may be depedencies between plugins
 ifndef AVOCADO_OPTIONAL_PLUGINS
-AVOCADO_OPTIONAL_PLUGINS_ORDERED="./optional_plugins/runner_remote"
-# Other optional plugins found in "optional_plugins" directory
-AVOCADO_OPTIONAL_PLUGINS_OTHERS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
 # Unique list of optional plugins
-AVOCADO_OPTIONAL_PLUGINS=$(shell (echo "$(AVOCADO_OPTIONAL_PLUGINS_ORDERED) $(AVOCADO_OPTIONAL_PLUGINS_OTHERS)" | tr ' ' '\n' | awk '!a[$$0]++'))
+AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
 endif
 AVOCADO_PLUGINS=$(AVOCADO_OPTIONAL_PLUGINS) $(AVOCADO_EXTERNAL_PLUGINS)
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))

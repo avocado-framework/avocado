@@ -286,7 +286,6 @@ class Test(unittest.TestCase, TestData):
                                            % logdir)
         self.__logdir = utils_path.init_dir(logdir)
         self.__logfile = os.path.join(self.logdir, 'debug.log')
-        self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
 
         self._stdout_file = os.path.join(self.logdir, 'stdout')
         self._stderr_file = os.path.join(self.logdir, 'stderr')
@@ -629,10 +628,6 @@ class Test(unittest.TestCase, TestData):
                                         stream_formatter,
                                         self._output_file,
                                         raw=True)
-
-        self._register_log_file_handler(logging.getLogger('paramiko'),
-                                        formatter,
-                                        self._ssh_logfile)
 
         if isinstance(sys.stdout, output.LoggingFile):
             sys.stdout.add_logger(log_test_stdout)

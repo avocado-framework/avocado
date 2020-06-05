@@ -65,7 +65,6 @@ BuildRequires: python3-pycdlib
 BuildRequires: genisoimage
 BuildRequires: libcdio
 BuildRequires: psmisc
-BuildRequires: python3-libvirt
 BuildRequires: python3-yaml
 BuildRequires: python3-netifaces
 %if ! 0%{?rhel}
@@ -442,6 +441,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Jun  5 2020 Cleber Rosa <cleber@redhat.com> - 80.0-2
+- Removed python3-libvirt build requirement
+
 * Fri Jun  5 2020 Cleber Rosa <cleber@redhat.com> - 80.0-1
 - New release
 

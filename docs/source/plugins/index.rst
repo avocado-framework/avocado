@@ -8,7 +8,6 @@ Optional plugins
    optional/avocado_ec2
    optional/glib
    optional/golang
-   optional/remote_runners
    optional/results
    optional/robot
    optional/varianter_cit

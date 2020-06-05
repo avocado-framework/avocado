@@ -25,7 +25,6 @@ you list available plugins. The usage is pretty simple::
  sysinfo   Collect system information
  ...
  Plugins that add new options to commands (avocado.plugins.cli):
- remote  Remote machine options for 'run' subcommand
  journal Journal options for the 'run' subcommand
  ...
 

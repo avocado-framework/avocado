@@ -342,7 +342,6 @@ vgs
 selftests
 lvm
 workflow
-paramiko
 ecdsa
 rsa
 dss
