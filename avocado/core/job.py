@@ -199,7 +199,7 @@ class Job:
         # a job built-in default for the runner
         self._test_runner_name = self.config.get('run.test_runner') or 'runner'
         #: An instance of the :class:`avocado.core.plugin_interfaces.Runner`
-        #: that will be used to effectivelly run the tests in the this job's
+        #: that will be used to effectively run the tests in the this job's
         #: :attr:`test_suite`
         self.test_runner = None
 
