@@ -1,0 +1,165 @@
+=============
+80.0 Parasite
+=============
+
+The Avocado team is proud to present another release: Avocado 80.0,
+AKA "Parasite", is now available!
+
+This release (and the previous one) contains mainly internal changes
+in preparation for the N(ext) Runner architecture to replace the
+current one, and for the Job API to become a fully supported feature.
+
+It's expected that release 81.0 will be the last release containing
+major changes before a "pre-LTS release".  This way, development
+sprint #82 will focus on stabilization, culminating in an 82.0 LTS
+release.
+
+Release documentation: `Avocado 80.0
+<http://avocado-framework.readthedocs.io/en/80.0/>`_
+
+Users/Test Writers
+==================
+
+* The Avocado configuration that is logged during a job execution is
+  now the dictionary that is produced by the
+  :mod:`avocado.core.future.settings` module, instead of the
+  configuration file(s) content.  This is relevant because this
+  configuration contains the result of everything that affects a job,
+  such as defaults registered by plugins, command line options, all
+  in addition to the configuration file.  The goal is to have more
+  consistent behavior and increased job "replayability".
+
+* As explained in the previous point, an Avocado Job is now configured
+  by the configuration set by the :mod:`avocado.core.future.settings`
+  code.  Because of the way this module works, options need to be
+  registered, before the content on the config files can be considered
+  valid values for a given option.  This has been done for a large
+  number of Avocado features, but be advised that some configuration
+  may not yet be seen by the job, because of the lack of option
+  registration. We're working to identify and enable complete feature
+  configuration on the next release.
+
+* The "log level" of an Avocado is now defined using the standard
+  Python level names.  If you have a custom configuration for this
+  setting, you may need to adjust it (usually only a matter of
+  lowercase to uppercase).
+
+* The runner that will be used in a job can now be defined in the
+  command line (in addition to being previously supported by a
+  configuration entry).  If you want to try out the experimental
+  N(ext) Runner, for instance, you should be able to use a command
+  such as ``avocado run --test-runner=nrunner /path/to/my/tests``.
+
+* The N(ext) Runner received support for job timeouts, and won't
+  run further tests if the timeout expires.
+
+* The N(ext) Runner now users the same Test ID that the current test
+  runner uses, both in the to-be-removed ``avocado nrun`` and in the
+  ``avocado run --test-runner=nrunner`` scenario.
+
+* A brand new command, ``jobs`` enables users to, among other things
+  to list information about previously executed jobs.  A command such
+  as ``avocado jobs show`` will show the latest job information.
+
+* The "standalone jobs" feature has been **deprecated**.  This feature
+  allows users to write a test, that contains a builtin job executor
+  for such a test that allows the test file to be executable.  This
+  will be replaced by the Job API, which transparently supports the
+  specification of the **same** file as a source of tests.
+
+* The ``avocado run --loaders ?`` command to list available loaders
+  has been removed.  This command line usage pattern is not consistent
+  across Avocado (or follows the POSIX guidelines), and with the
+  N(ext) Runner architecture depending on the
+  :mod:`avocado.core.resolver` feature set, one will be able to see
+  the resolvers with the ``avocado plugins`` command.
+
+* The lower level :class:`avocado.core.job.Job`, instead of the
+  ``avocado run`` command, is now responsible for generating result
+  files, such as the JSON (``results.json``), xUnit (``results.xml``),
+  etc.  This allows users of the Job API, as well as users of the
+  ``avocado run`` command to have results generated as intended.
+
+* The lower level :class:`avocado.core.job.Job`, instead of the
+  ``avocado run`` command, is now also responsible for collecting the
+  job-level system information (AKA ``sysinfo``).  This allows users
+  of the Job API, as well as users of the ``avocado run`` command to
+  have this feature available.
+
+Bug Fixes
+=========
+
+* The ``avocado sysinfo`` command reverts to the pre-regression
+  behavior, and now creates a directory following the
+  ``sysinfo-$TIMESTAMP`` pattern and uses that for the content of the
+  sysinfo output, instead of using the current directory by default.
+
+* An incorrect configuration key name of the ``result_upload`` command,
+  as part of the "results_upload" plugin, was fixed.
+
+* :func:`avocado.utils.disk.get_disks` now supports all block devices,
+  like multipaths, LVs, etc. Previously it used to return only
+  ``/dev/sdX`` devices.
+
+Utility APIs
+============
+
+* All of the :class:`avocado.utils.gdb` APIs are now back to a working
+  state, with many fixes related to bytes and strings, as well as
+  buffered I/O caching fixes.
+
+* :mod:`avocado.utils.pmem` now supports the ``all`` namespace behavior
+  for newer versions of the ``ndctl`` utility.
+
+* :mod:`avocado.utils.software_manager` support for the Zypper package
+  manager was improved to support the installation of package build
+  dependencies.
+
+Internal Changes
+================
+
+* Refactors for the :class:`avocado.core.nrunner.BaseRunnerApp` that
+  made the list of commands available as a class attribute avoiding
+  multiple resolutions and string manipulation when a command needs to
+  be resolved.
+
+* The N(ext) Runner received some foundation work for the persistence
+  and retrieval of test generated artifacts.  The work takes into
+  consideration that tests may be run disconnected of the the overall
+  test job, and the job can retrieve those at a later time.
+
+* The N(ext) Runner spawner selection is on the ``avocado nrun``
+  command is now done by means of the ``--spawner=`` option that takes
+  a spawner name, instead of the previous ``--podman-spawner`` option.
+  This logic should be kept on the ``avocado run`` implementation and
+  allow for new spawners to be used transparently.
+
+* Internal reliability improvements to the N(ext) Runner status server
+  implementation.
+
+* The ``avocado nrun`` command now respects the ``--verbose`` command
+  line option, producing less output if it's not given.
+
+* The core sysinfo implementation received cleanups and now makes now
+  distinction between collection at job or test time, and works on
+  both or at any other moment.
+
+* The :mod:`avocado.core.future.settings` now allows command line
+  parsers to be added to previously registered options.  This allows
+  features that don't require a command line to register options, and
+  plugins that want to control such options with a command line to do
+  so in a decoupled and extensive way.
+
+* A new plugin interface, :class:`avocado.core.plugin_interfaces.Init`,
+  was introduced to allow plugins that need to initialize themselves
+  very early (and automatically) on Avocado.  Such plugins have no
+  knowledge of the current configuration, but may use that interface
+  to register new options (among other things).
+
+* An Avocado Job is now run as part of the selftests suite, and more
+  can be added.  This is intended to avoid breakage of the Job API as
+  it gets closer to become a supported feature.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/79.0...80.0>`_.

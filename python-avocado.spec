@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      d914f64be8982da77be4c5c15b817fe5c1c209de
+        %global commit      e74adbdb9d0c8d456437969f4aeaaf4aeec7166d
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20200511
+        %global commit_date 20200605
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -33,8 +33,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 79.0
-Release: 2%{?gitrel}%{?dist}
+Version: 80.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -442,6 +442,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Jun  5 2020 Cleber Rosa <cleber@redhat.com> - 80.0-1
+- New release
+
 * Thu Jun  4 2020 Cleber Rosa <cleber@redhat.com> - 79.0-2
 - Dropped use of custom avocado command for tests
 
