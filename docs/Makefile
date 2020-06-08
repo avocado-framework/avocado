@@ -154,13 +154,3 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
-
-
-# Requires:
-# - snakefood (pip install snakefood)
-# - graphviz (yum install graphviz / apt-get install graphviz)
-modules.png:
-	cd .. && sfood --internal avocado | sfood-graph --remove-extensions | \
-		grep -v 'size = "8,10"' | sed 's/fontsize=7/fontsize=16/' | \
-		grep -v 'avocado.core.plugins' | \
-		dot -Tpng -o docs/source/modules.png
