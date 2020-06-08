@@ -22,6 +22,7 @@ import subprocess
 import time
 
 from . import output
+from .future.settings import settings as future_settings
 from .settings import settings
 from ..utils import astring
 from ..utils import genio
@@ -150,9 +151,10 @@ class Command(Collectible):
         :param logdir: Path to a log directory.
         """
         env = os.environ.copy()
+        config = future_settings.as_dict()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
-        locale = settings.get_value("sysinfo.collect", "locale", str, None)
+        locale = config.get("sysinfo.collect.locale")
         if locale:
             env["LC_ALL"] = locale
         timeout = settings.get_value("sysinfo.collect", "commands_timeout",
@@ -205,9 +207,10 @@ class Daemon(Command):
         :param logdir: Path to a log directory.
         """
         env = os.environ.copy()
+        config = future_settings.as_dict()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
-        locale = settings.get_value("sysinfo.collect", "locale", str, None)
+        locale = config.get("sysinfo.collect.locale")
         if locale:
             env["LC_ALL"] = locale
         logf_path = os.path.join(logdir, self.logf)

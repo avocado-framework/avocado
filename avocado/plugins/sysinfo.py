@@ -46,6 +46,12 @@ class SysinfoInit(Init):
                                  key_type=bool,
                                  help_msg=help_msg)
 
+        help_msg = 'Force LANG for sysinfo collection'
+        settings.register_option(section='sysinfo.collect',
+                                 key='locale',
+                                 default='C',
+                                 help_msg=help_msg)
+
 
 class SysInfoJob(JobPreTests, JobPostTests):
 
