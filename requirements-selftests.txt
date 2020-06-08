@@ -5,6 +5,8 @@ pylint==2.5.0
 astroid==2.4.0
 inspektor==0.5.2
 
+coverage==5.1
+
 # funcsigs
 funcsigs>=0.4
 
