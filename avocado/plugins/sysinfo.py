@@ -54,6 +54,14 @@ class SysinfoInit(Init):
                                  default=-1,
                                  help_msg=help_msg)
 
+        help_msg = ('Whether to take a list of installed packages previous '
+                    'to avocado jobs')
+        settings.register_option(section='sysinfo.collect',
+                                 key='installed_packages',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg)
+
         help_msg = 'Force LANG for sysinfo collection'
         settings.register_option(section='sysinfo.collect',
                                  key='locale',

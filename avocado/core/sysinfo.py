@@ -388,16 +388,16 @@ class SysInfo:
         :param profiler: Whether to use the profiler. If not given explicitly,
                          tries to look in the config files.
         """
+        config = future_settings.as_dict()
+
         if basedir is None:
             basedir = utils_path.init_dir('sysinfo')
         self.basedir = basedir
 
         self._installed_pkgs = None
         if log_packages is None:
-            self.log_packages = settings.get_value('sysinfo.collect',
-                                                   'installed_packages',
-                                                   key_type='bool',
-                                                   default=False)
+            packages_namespace = 'sysinfo.collect.installed_packages'
+            self.log_packages = config.get(packages_namespace)
         else:
             self.log_packages = log_packages
 
