@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import os
 
 from avocado import Test
-from avocado import main
 
 
 class GenDataTest(Test):
@@ -19,7 +16,3 @@ class GenDataTest(Test):
                   "outputdir": self.outputdir}
         with open(output_path, "w") as output_file:
             json.dump(output, output_file)
-
-
-if __name__ == "__main__":
-    main()

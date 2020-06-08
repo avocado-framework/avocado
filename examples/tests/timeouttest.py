@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import time
 
 from avocado import Test
-from avocado import main
 
 
 class TimeoutTest(Test):
@@ -24,7 +21,3 @@ class TimeoutTest(Test):
         self.log.info('Sleeping for %.2f seconds (2 more than the timeout)',
                       sleep_time)
         time.sleep(sleep_time)
-
-
-if __name__ == "__main__":
-    main()

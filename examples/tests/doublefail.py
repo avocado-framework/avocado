@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 from avocado import Test
-from avocado import main
 
 
 class DoubleFail(Test):
@@ -24,7 +21,3 @@ class DoubleFail(Test):
         Should also fail.
         """
         raise self.error('Failing during tearDown. Yay!')
-
-
-if __name__ == "__main__":
-    main()

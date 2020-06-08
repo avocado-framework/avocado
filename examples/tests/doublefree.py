@@ -1,11 +1,8 @@
-#!/usr/bin/env python
-
 import os
 import shutil
 import sys
 
 from avocado import Test
-from avocado import main
 from avocado.utils import build
 from avocado.utils import process
 
@@ -51,7 +48,3 @@ class DoubleFreeTest(Test):
         self.assertTrue(pattern in output,
                         msg='Could not find pattern %s in output %s' %
                             (pattern, output))
-
-
-if __name__ == "__main__":
-    main()

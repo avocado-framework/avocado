@@ -13,8 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-__all__ = ['main',
-           'Test',
+__all__ = ['Test',
            'VERSION',
            'fail_on',
            'cancel_on',
@@ -26,7 +25,6 @@ __all__ = ['main',
            'TestCancel']
 
 
-from avocado.core.job import main
 from avocado.core.test import Test
 from avocado.core.version import VERSION
 from avocado.core.decorators import fail_on

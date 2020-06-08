@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-from avocado import main
 from avocado import Test
 
 
@@ -16,7 +13,3 @@ class PassTest(Test):
         """
         A test simply doesn't have to fail in order to pass
         """
-
-
-if __name__ == "__main__":
-    main()

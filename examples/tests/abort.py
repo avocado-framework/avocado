@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import os
 
 from avocado import Test
-from avocado import main
 
 
 class AbortTest(Test):
@@ -18,7 +15,3 @@ class AbortTest(Test):
 
     def test(self):
         os.abort()
-
-
-if __name__ == "__main__":
-    main()

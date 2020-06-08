@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 from avocado import Test
-from avocado import main
 from avocado.utils import kernel
 
 
@@ -38,7 +35,3 @@ class LinuxBuildTest(Test):
         self.linux_build.build(True if self.do_kernel_install is not None else False)
         if self.do_kernel_install is not None:
             self.linux_build.install()
-
-
-if __name__ == "__main__":
-    main()
