@@ -162,5 +162,5 @@ doctest:
 modules.png:
 	cd .. && sfood --internal avocado | sfood-graph --remove-extensions | \
 		grep -v 'size = "8,10"' | sed 's/fontsize=7/fontsize=16/' | \
-		grep -v 'avocado.core.plugins' | grep -v 'avocado.core.restclient' | \
+		grep -v 'avocado.core.plugins' | \
 		dot -Tpng -o docs/source/modules.png
