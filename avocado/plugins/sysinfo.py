@@ -62,6 +62,14 @@ class SysinfoInit(Init):
                                  default=False,
                                  help_msg=help_msg)
 
+        help_msg = ('Whether to run certain commands in bg to give extra job '
+                    'debug information')
+        settings.register_option(section='sysinfo.collect',
+                                 key='profiler',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg)
+
         help_msg = 'Force LANG for sysinfo collection'
         settings.register_option(section='sysinfo.collect',
                                  key='locale',

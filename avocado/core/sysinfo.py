@@ -425,10 +425,7 @@ class SysInfo:
             self.files = []
 
         if profiler is None:
-            self.profiler = settings.get_value('sysinfo.collect',
-                                               'profiler',
-                                               key_type='bool',
-                                               default=False)
+            self.profiler = config.get('sysinfo.collect.profiler')
         else:
             self.profiler = profiler
 
