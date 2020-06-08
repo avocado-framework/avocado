@@ -68,7 +68,7 @@ if __name__ == '__main__':
                   'avocado-runner-python-unittest = avocado.core.nrunner:main',
                   'avocado-runner-avocado-instrumented = avocado.core.nrunner_avocado_instrumented:main',
                   'avocado-runner-tap = avocado.core.nrunner_tap:main',
-                  'avocado-software-manager = avocado.utils.software_manager:main',
+                  'avocado-software-manager = avocado.utils.software_manager.main:main',
                   ],
               "avocado.plugins.init": [
                   "xunit = avocado.plugins.xunit:XUnitInit",
