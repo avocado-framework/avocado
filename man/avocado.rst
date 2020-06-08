@@ -39,10 +39,9 @@ on them being loaded (`avocado --help`)::
                           Builtin streams are: "test": test output; "debug":
                           tracebacks and other debugging info; "app":
                           application output; "early": early logging of other
-                          streams, including test (very verbose); "remote":
-                          fabric/paramiko debug; "all": all builtin streams;
-                          "none": disables regular output (leaving only errors
-                          enabled). By default: 'app'
+                          streams, including test (very verbose); "all": all
+                          builtin streams; "none": disables regular output
+                          (leaving only errors enabled). By default: 'app'
 
 Real use of avocado depends on running avocado subcommands. This a
 typical list of avocado subcommands::
@@ -219,25 +218,6 @@ Options for subcommand `run` (`avocado run --help`)::
                             Automatically generate a core dump when the inferior
                             process received a fatal signal such as SIGSEGV or
                             SIGABRT
-
-    test execution on a remote machine:
-      --remote-hostname REMOTE_HOSTNAME
-                            Specify the hostname to login on remote machine
-      --remote-port REMOTE_PORT
-                            Specify the port number to login on remote machine.
-                            Current: 22
-      --remote-username REMOTE_USERNAME
-                            Specify the username to login on remote machine.
-                            Current: apahim
-      --remote-password REMOTE_PASSWORD
-                            Specify the password to login on remote machine
-      --remote-key-file REMOTE_KEY_FILE
-                            Specify an identity file with a private key instead of
-                            a password (Example: .pem files from Amazon EC2)
-      --remote-timeout SECONDS
-                            Amount of time (in seconds) to wait for a successful
-                            connection to the remote machine. Defaults to 60
-                            seconds.
 
     job replay:
       --replay REPLAY_JOBID
@@ -637,7 +617,6 @@ Since this is a directory, it should have content similar to::
     $ ls -1 ~/avocado/job-results/latest/test-results/1-sleeptest.py\:SleepTest.test/
     data
     debug.log
-    remote.log
     stderr
     stdout
     sysinfo
@@ -994,37 +973,6 @@ Let's look what's in each of them::
 
 Now, every time this test runs, it'll take into account the expected
 files that were recorded, no need to do anything else but run the test.
-
-RUNNING REMOTE TESTS
-====================
-
-Avocado allows you to execute tests on a remote machine by means of a
-SSH network connection. The remote machine must be configured to accept
-remote connections and the Avocado framework have to be installed in
-both origin and remote machines.
-
-When running tests on remote machine, the test sources and its data (if 
-any present) are transferred to the remote target, just before the test
-execution. After the test execution, all test results are transferred 
-back to the origin machine.
-
-Here is how to run the sleeptest example test in a remote machine with IP
-address 192.168.0.123 (standard port 22), remote user name `fedora` and
-remote user password `123456`::
-
-    $ avocado run sleeptest.py --remote-hostname 192.168.0.123 --remote-username fedora --remote-password 123456
-
-The output should look like::
-
-    JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    LOGIN      : fedora@localhost:22 (TIMEOUT: 60 seconds)
-     (1/1) sleeptest.py:SleepTest.test: PASS (1.02 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB TIME   : 1.12 s
-
-For more information, please consult the topic Remote Machine Plugin
-on Avocado's online documentation.
 
 LINUX DISTRIBUTION UTILITIES
 ============================

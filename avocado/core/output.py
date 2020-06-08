@@ -39,7 +39,6 @@ LOG_JOB = logging.getLogger("avocado.test")
 BUILTIN_STREAMS = {'app': 'application output',
                    'test': 'test output',
                    'debug': 'tracebacks and other debugging info',
-                   'remote': 'fabric/paramiko debug',
                    'early':  'early logging of other streams, including test (very verbose)'}
 #: Groups of builtin streams
 BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
@@ -453,14 +452,6 @@ def reconfigure(args):
                             STD_OUTPUT.stdout, logging.DEBUG)
         else:
             disable_log_handler("")
-    if "remote" in enabled:
-        add_log_handler("avocado.fabric", stream=STD_OUTPUT.stdout,
-                        level=logging.DEBUG)
-        add_log_handler("paramiko", stream=STD_OUTPUT.stdout,
-                        level=logging.DEBUG)
-    else:
-        disable_log_handler("avocado.fabric")
-        disable_log_handler("paramiko")
     # Not enabled by env
     if not os.environ.get('AVOCADO_LOG_DEBUG'):
         if "debug" in enabled:
