@@ -157,8 +157,7 @@ class Command(Collectible):
         locale = config.get("sysinfo.collect.locale")
         if locale:
             env["LC_ALL"] = locale
-        timeout = settings.get_value("sysinfo.collect", "commands_timeout",
-                                     int, -1)
+        timeout = config.get('sysinfo.collect.commands_timeout')
         # the sysinfo configuration supports negative or zero integer values
         # but the avocado.utils.process APIs define no timeouts as "None"
         if int(timeout) <= 0:

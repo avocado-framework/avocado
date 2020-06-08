@@ -46,6 +46,14 @@ class SysinfoInit(Init):
                                  key_type=bool,
                                  help_msg=help_msg)
 
+        help_msg = ('Overall timeout to collect commands, when <=0'
+                    'no timeout is enforced')
+        settings.register_option(section='sysinfo.collect',
+                                 key='commands_timeout',
+                                 key_type=int,
+                                 default=-1,
+                                 help_msg=help_msg)
+
         help_msg = 'Force LANG for sysinfo collection'
         settings.register_option(section='sysinfo.collect',
                                  key='locale',
