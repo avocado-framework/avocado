@@ -22,6 +22,7 @@ import subprocess
 import time
 
 from . import output
+from .future.settings import settings as future_settings
 from .settings import settings
 from ..utils import astring
 from ..utils import genio
@@ -150,13 +151,13 @@ class Command(Collectible):
         :param logdir: Path to a log directory.
         """
         env = os.environ.copy()
+        config = future_settings.as_dict()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
-        locale = settings.get_value("sysinfo.collect", "locale", str, None)
+        locale = config.get("sysinfo.collect.locale")
         if locale:
             env["LC_ALL"] = locale
-        timeout = settings.get_value("sysinfo.collect", "commands_timeout",
-                                     int, -1)
+        timeout = config.get('sysinfo.collect.commands_timeout')
         # the sysinfo configuration supports negative or zero integer values
         # but the avocado.utils.process APIs define no timeouts as "None"
         if int(timeout) <= 0:
@@ -205,9 +206,10 @@ class Daemon(Command):
         :param logdir: Path to a log directory.
         """
         env = os.environ.copy()
+        config = future_settings.as_dict()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
-        locale = settings.get_value("sysinfo.collect", "locale", str, None)
+        locale = config.get("sysinfo.collect.locale")
         if locale:
             env["LC_ALL"] = locale
         logf_path = os.path.join(logdir, self.logf)
@@ -386,16 +388,16 @@ class SysInfo:
         :param profiler: Whether to use the profiler. If not given explicitly,
                          tries to look in the config files.
         """
+        config = future_settings.as_dict()
+
         if basedir is None:
             basedir = utils_path.init_dir('sysinfo')
         self.basedir = basedir
 
         self._installed_pkgs = None
         if log_packages is None:
-            self.log_packages = settings.get_value('sysinfo.collect',
-                                                   'installed_packages',
-                                                   key_type='bool',
-                                                   default=False)
+            packages_namespace = 'sysinfo.collect.installed_packages'
+            self.log_packages = config.get(packages_namespace)
         else:
             self.log_packages = log_packages
 
@@ -423,10 +425,7 @@ class SysInfo:
             self.files = []
 
         if profiler is None:
-            self.profiler = settings.get_value('sysinfo.collect',
-                                               'profiler',
-                                               key_type='bool',
-                                               default=False)
+            self.profiler = config.get('sysinfo.collect.profiler')
         else:
             self.profiler = profiler
 

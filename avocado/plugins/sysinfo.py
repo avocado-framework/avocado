@@ -46,6 +46,36 @@ class SysinfoInit(Init):
                                  key_type=bool,
                                  help_msg=help_msg)
 
+        help_msg = ('Overall timeout to collect commands, when <=0'
+                    'no timeout is enforced')
+        settings.register_option(section='sysinfo.collect',
+                                 key='commands_timeout',
+                                 key_type=int,
+                                 default=-1,
+                                 help_msg=help_msg)
+
+        help_msg = ('Whether to take a list of installed packages previous '
+                    'to avocado jobs')
+        settings.register_option(section='sysinfo.collect',
+                                 key='installed_packages',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg)
+
+        help_msg = ('Whether to run certain commands in bg to give extra job '
+                    'debug information')
+        settings.register_option(section='sysinfo.collect',
+                                 key='profiler',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg)
+
+        help_msg = 'Force LANG for sysinfo collection'
+        settings.register_option(section='sysinfo.collect',
+                                 key='locale',
+                                 default='C',
+                                 help_msg=help_msg)
+
 
 class SysInfoJob(JobPreTests, JobPostTests):
 
