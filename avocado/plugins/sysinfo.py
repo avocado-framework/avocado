@@ -105,6 +105,15 @@ class SysinfoInit(Init):
                                  default=default,
                                  help_msg=help_msg)
 
+        help_msg = ('File with list of commands that will run alongside the '
+                    'job/test')
+        default = prepend_base_path('etc/avocado/sysinfo/profilers')
+        settings.register_option(section='sysinfo.collectibles',
+                                 key='profilers',
+                                 key_type=prepend_base_path,
+                                 default=default,
+                                 help_msg=help_msg)
+
 
 class SysInfoJob(JobPreTests, JobPostTests):
 

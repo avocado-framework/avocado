@@ -423,10 +423,7 @@ class SysInfo:
         else:
             self.profiler = profiler
 
-        profiler_file = settings.get_value('sysinfo.collectibles',
-                                           'profilers',
-                                           key_type='path',
-                                           default='')
+        profiler_file = config.get('sysinfo.collectibles.profilers')
         if os.path.isfile(profiler_file):
             self.profilers = genio.read_all_lines(profiler_file)
             log.info('Profilers configured by file: %s', profiler_file)
