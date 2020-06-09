@@ -34,9 +34,19 @@ def register_core_options():
                                     help_msg=help_msg)
 
 
+def register_datadir_options():
+    help_msg = 'Cache directories to be used by the avocado test'
+    future_settings.register_option(section='datadir.paths',
+                                    key='cache_dirs',
+                                    key_type=list,
+                                    default=[],
+                                    help_msg=help_msg)
+
+
 def initialize_plugins():
     InitDispatcher().map_method('initialize')
 
 
 register_core_options()
+register_datadir_options()
 initialize_plugins()
