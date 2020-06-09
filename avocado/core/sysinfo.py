@@ -401,10 +401,7 @@ class SysInfo:
         else:
             self.log_packages = log_packages
 
-        commands_file = settings.get_value('sysinfo.collectibles',
-                                           'commands',
-                                           key_type='path',
-                                           default='')
+        commands_file = config.get('sysinfo.collectibles.commands')
 
         if os.path.isfile(commands_file):
             log.info('Commands configured by file: %s', commands_file)
