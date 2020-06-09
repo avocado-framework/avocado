@@ -23,7 +23,6 @@ import time
 
 from . import output
 from .future.settings import settings as future_settings
-from .settings import settings
 from ..utils import astring
 from ..utils import genio
 from ..utils import process
