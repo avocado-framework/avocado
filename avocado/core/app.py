@@ -40,15 +40,10 @@ class AvocadoApp:
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
-        def sigterm_handler(signum, frame):     # pylint: disable=W0613
-            children = process.get_children_pids(os.getpid())
-            for child in children:
-                process.kill_process_tree(int(child))
-            raise SystemExit('Terminated')
+        self._cli_dispatcher = None
+        self._cli_cmd_dispatcher = None
 
-        signal.signal(signal.SIGTERM, sigterm_handler)
-        if hasattr(signal, 'SIGTSTP'):
-            signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
+        self._setup_signals()
         self.parser = Parser()
         self.parser.start()
         output.early_start()
@@ -57,20 +52,13 @@ class AvocadoApp:
         reconfigure_settings = {'core.paginator': 'off',
                                 'core.show': show}
         try:
-            self.cli_dispatcher = CLIDispatcher()
-            self.cli_cmd_dispatcher = CLICmdDispatcher()
-            output.log_plugin_failures(self.cli_dispatcher.load_failures +
-                                       self.cli_cmd_dispatcher.load_failures)
-            if self.cli_cmd_dispatcher.extensions:
-                self.cli_cmd_dispatcher.map_method('configure', self.parser)
-            if self.cli_dispatcher.extensions:
-                self.cli_dispatcher.map_method('configure', self.parser)
+            self._load_cli_plugins()
+            self._configure_cli_plugins()
             self.parser.finish()
             settings.merge_with_configs()
             settings.merge_with_arguments(self.parser.config)
             self.parser.config.update(settings.as_dict())
-            if self.cli_dispatcher.extensions:
-                self.cli_dispatcher.map_method('run', self.parser.config)
+            self._run_cli_plugins()
         except SystemExit as detail:
             # If someone tries to exit Avocado, we should first close the
             # STD_OUTPUT and only then exit.
@@ -86,11 +74,39 @@ class AvocadoApp:
             # In case of no exceptions, we just reconfigure the output.
             output.reconfigure(self.parser.config)
 
+    def _load_cli_plugins(self):
+        self._cli_dispatcher = CLIDispatcher()
+        self._cli_cmd_dispatcher = CLICmdDispatcher()
+        output.log_plugin_failures(self._cli_dispatcher.load_failures +
+                                   self._cli_cmd_dispatcher.load_failures)
+
+    def _configure_cli_plugins(self):
+        if self._cli_cmd_dispatcher.extensions:
+            self._cli_cmd_dispatcher.map_method('configure', self.parser)
+        if self._cli_dispatcher.extensions:
+            self._cli_dispatcher.map_method('configure', self.parser)
+
+    def _run_cli_plugins(self):
+        if self._cli_dispatcher.extensions:
+            self._cli_dispatcher.map_method('run', self.parser.config)
+
+    @staticmethod
+    def _setup_signals():
+        def sigterm_handler(signum, frame):     # pylint: disable=W0613
+            children = process.get_children_pids(os.getpid())
+            for child in children:
+                process.kill_process_tree(int(child))
+            raise SystemExit('Terminated')
+
+        signal.signal(signal.SIGTERM, sigterm_handler)
+        if hasattr(signal, 'SIGTSTP'):
+            signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
+
     def run(self):
         try:
             try:
                 subcmd = self.parser.config.get('subcommand')
-                extension = self.cli_cmd_dispatcher[subcmd]
+                extension = self._cli_cmd_dispatcher[subcmd]
             except KeyError:
                 return
             method = extension.obj.run
