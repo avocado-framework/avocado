@@ -64,6 +64,21 @@ class PMem:
                                 "proper daxctl binary")
         self.daxctl = abs_daxctl
 
+    def check_ndctl_subcmd(self, command):
+        """
+        Check if given sub command is supported by ndctl
+
+        :param command: sub command of ndctl to check for existance
+        :return: True if sub command is available
+        :rtype: bool
+        """
+        cmd = "%s --list-cmds" % self.ndctl
+        out = process.system_output(cmd).decode().splitlines()
+        if command in out:
+            return True
+
+        return False
+
     def run_ndctl_list(self, option=''):
         """
         Get the json of each provided options
