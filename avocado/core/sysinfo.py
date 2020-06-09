@@ -410,10 +410,7 @@ class SysInfo:
             log.debug('File %s does not exist.', commands_file)
             self.commands = []
 
-        files_file = settings.get_value('sysinfo.collectibles',
-                                        'files',
-                                        key_type='path',
-                                        default='')
+        files_file = config.get('sysinfo.collectibles.files')
         if os.path.isfile(files_file):
             log.info('Files configured by file: %s', files_file)
             self.files = genio.read_all_lines(files_file)
