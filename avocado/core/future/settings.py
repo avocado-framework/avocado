@@ -433,6 +433,11 @@ class Settings:
                 namespace = "{}.{}".format(section, key)
                 self.update_option(namespace, value, convert=True)
 
+    def process_config_path(self, path):
+        """Update list of config paths and process the given path."""
+        self._all_config_paths.append(path)
+        self._config_paths.extend(self._config.read(path))
+
     def register_option(self, section, key, default, help_msg, key_type=str,
                         parser=None, positional_arg=False, short_arg=None,
                         long_arg=None, choices=None, nargs=None, metavar=None,
