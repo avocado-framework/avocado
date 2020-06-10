@@ -47,7 +47,7 @@ from ..utils import path as utils_path
 from ..utils import process
 from ..utils import stacktrace
 from .decorators import skip
-from .settings import settings
+from .future.settings import settings
 from .test_id import TestID
 from .version import VERSION
 from .output import LOG_JOB
@@ -1118,23 +1118,12 @@ class SimpleTest(Test):
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
 
-        warn_regex = settings.get_value('simpletests.status',
-                                        'warn_regex',
-                                        key_type='str',
-                                        default=None)
+        config = settings.as_dict()
 
-        warn_location = settings.get_value('simpletests.status',
-                                           'warn_location',
-                                           default='all')
-
-        skip_regex = settings.get_value('simpletests.status',
-                                        'skip_regex',
-                                        key_type='str',
-                                        default=None)
-
-        skip_location = settings.get_value('simpletests.status',
-                                           'skip_location',
-                                           default='all')
+        warn_regex = config.get('simpletests.status.warn_regex')
+        warn_location = config.get('simpletests.status.warn_location')
+        skip_regex = config.get('simpletests.status.skip_regex')
+        skip_location = config.get('simpletests.status.skip_location')
 
         # Keeping compatibility with 'avocado_warn' libexec
         for regex in [warn_regex, r'^\d\d:\d\d:\d\d WARN \|']:
