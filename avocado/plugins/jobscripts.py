@@ -1,12 +1,46 @@
 import os
 
+from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import JobPre, JobPost
-from avocado.core.settings import settings
+from avocado.core.plugin_interfaces import JobPre, JobPost, Init
+from avocado.core.utils import prepend_base_path
 from avocado.utils import process
 
 
-CONFIG_SECTION = 'plugins.jobscripts'
+class JobScriptsInit(Init):
+    name = 'jobscripts-init'
+    description = 'Jobscripts plugin initialization'
+
+    def initialize(self):
+        help_msg = 'Warn if configured (or default) directory does not exist'
+        future_settings.register_option(section='plugins.jobscripts',
+                                        key='warn_non_existing_dir',
+                                        key_type=bool,
+                                        default=False,
+                                        help_msg=help_msg)
+
+        help_msg = 'Warn if any script run return non-zero status'
+        future_settings.register_option(section='plugins.jobscripts',
+                                        key='warn_non_zero_status',
+                                        key_type=bool,
+                                        default=True,
+                                        help_msg=help_msg)
+
+        help_msg = 'Directory with scripts to be executed before a job is run'
+        default = '/etc/avocado/scripts/job/pre.d/'
+        future_settings.register_option(section='plugins.jobscripts',
+                                        key='pre',
+                                        key_type=prepend_base_path,
+                                        help_msg=help_msg,
+                                        default=default)
+
+        help_msg = 'Directory with scripts to be executed after a job is run'
+        default = '/etc/avocado/scripts/job/post.d/'
+        future_settings.register_option(section='plugins.jobscripts',
+                                        key='post',
+                                        key_type=prepend_base_path,
+                                        help_msg=help_msg,
+                                        default=default)
 
 
 class JobScripts(JobPre, JobPost):
@@ -14,19 +48,10 @@ class JobScripts(JobPre, JobPost):
     name = 'jobscripts'
     description = 'Runs scripts before/after the job is run'
 
-    def __init__(self):
-        self.warn_non_existing_dir = settings.get_value(section=CONFIG_SECTION,
-                                                        key="warn_non_existing_dir",
-                                                        key_type=bool,
-                                                        default=False)
-        self.warn_non_zero_status = settings.get_value(section=CONFIG_SECTION,
-                                                       key="warn_non_zero_status",
-                                                       key_type=bool,
-                                                       default=True)
-
     def _run_scripts(self, kind, scripts_dir, job):
+        config = job.config
         if not os.path.isdir(scripts_dir):
-            if self.warn_non_existing_dir:
+            if config.get('plugins.jobscripts.warn_non_existing_dir'):
                 LOG_UI.error("Directory configured to hold %s-job scripts "
                              "has not been found: %s", kind, scripts_dir)
             return
@@ -40,9 +65,11 @@ class JobScripts(JobPre, JobPost):
             return
 
         env = self._job_to_environment_variables(job)
+        non_zero_namespace = 'plugins.jobscripts.warn_non_zero_status'
+        warn_non_zero_status = config.get(non_zero_namespace)
         for script in scripts:
             result = process.run(script, ignore_status=True, env=env)
-            if (result.exit_status != 0) and self.warn_non_zero_status:
+            if (result.exit_status != 0) and warn_non_zero_status:
                 LOG_UI.error('%s job script "%s" exited with status "%i"',
                              kind.capitalize(), script, result.exit_status)
 
@@ -56,13 +83,9 @@ class JobScripts(JobPre, JobPost):
         return env
 
     def pre(self, job):
-        path = settings.get_value(section=CONFIG_SECTION,
-                                  key="pre", key_type='path',
-                                  default="/etc/avocado/scripts/job/pre.d/")
+        path = job.config.get('plugins.jobscripts.pre')
         self._run_scripts('pre', path, job)
 
     def post(self, job):
-        path = settings.get_value(section=CONFIG_SECTION,
-                                  key="post", key_type='path',
-                                  default="/etc/avocado/scripts/job/post.d/")
+        path = job.config.get('plugins.jobscripts.post')
         self._run_scripts('post', path, job)
