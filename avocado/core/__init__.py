@@ -33,6 +33,34 @@ def register_core_options():
                                     default=['app'],
                                     help_msg=help_msg)
 
+    help_msg = ('Python regular expression that will make the test '
+                'status WARN when matched.')
+    future_settings.register_option(section='simpletests.status',
+                                    key='warn_regex',
+                                    default='^WARN$',
+                                    help_msg=help_msg)
+
+    help_msg = ('Location to search the regular expression on. '
+                'Accepted values: all, stdout, stderr.')
+    future_settings.register_option(section='simpletests.status',
+                                    key='warn_location',
+                                    default='all',
+                                    help_msg=help_msg)
+
+    help_msg = ('Python regular expression that will make the test '
+                'status SKIP when matched.')
+    future_settings.register_option(section='simpletests.status',
+                                    key='skip_regex',
+                                    default='^SKIP$',
+                                    help_msg=help_msg)
+
+    help_msg = ('Location to search the regular expression on. '
+                'Accepted values: all, stdout, stderr.')
+    future_settings.register_option(section='simpletests.status',
+                                    key='skip_location',
+                                    default='all',
+                                    help_msg=help_msg)
+
 
 def initialize_plugins():
     InitDispatcher().map_method('initialize')
