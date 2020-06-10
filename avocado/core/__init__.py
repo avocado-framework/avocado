@@ -61,6 +61,14 @@ def register_core_options():
                                     default='all',
                                     help_msg=help_msg)
 
+    help_msg = ('The amount of time to give to the test process after '
+                'it it has been interrupted (such as with CTRL+C)')
+    future_settings.register_option(section='runner.timeout',
+                                    key='after_interrupted',
+                                    key_type=int,
+                                    help_msg=help_msg,
+                                    default=60)
+
 
 def initialize_plugins():
     InitDispatcher().map_method('initialize')
