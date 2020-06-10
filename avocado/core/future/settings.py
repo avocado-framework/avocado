@@ -244,23 +244,16 @@ class Settings:
     public methods and attributes should be used outside this module.
     """
 
-    def __init__(self, config_path=None):
-        """Constructor. Tries to find the main settings files and load them.
-
-        :param config_path: Path to a config file. Useful for unittesting.
-        """
+    def __init__(self):
+        """Constructor. Tries to find the main settings files and load them."""
         self._config = configparser.ConfigParser()
         self._all_config_paths = []
         self._config_paths = []
         self._namespaces = {}
 
         # 1. Prepare config paths
-        if config_path is None:
-            self._prepare_base_dirs()
-            self._append_config_paths()
-        else:
-            # Only used by unittests (the --config parses the file later)
-            self._all_config_paths.append(config_path)
+        self._prepare_base_dirs()
+        self._append_config_paths()
 
         # 2. Parse/read all config paths
         self._config_paths = self._config.read(self._all_config_paths)

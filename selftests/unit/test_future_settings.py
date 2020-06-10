@@ -23,14 +23,16 @@ class SettingsTest(unittest.TestCase):
 
         This should force plugins to run register_option().
         """
-        stgs = settings.Settings(self.config_file.name)
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
         config = stgs.as_dict()
         self.assertIsNone(config.get('foo.non_registered'))
 
     def test_override_default(self):
         """Test if default option is being overwritten by configfile."""
 
-        stgs = settings.Settings(self.config_file.name)
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
         default = 'default from code'
         stgs.register_option(section='foo',
                              key='bar',
@@ -41,12 +43,14 @@ class SettingsTest(unittest.TestCase):
         self.assertEqual(config.get('foo.bar'), 'default from file')
 
     def test_non_existing_key(self):
-        stgs = settings.Settings(self.config_file.name)
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
         config = stgs.as_dict()
         self.assertIsNone(config.get('foo.non_existing'))
 
     def test_bool(self):
-        stgs = settings.Settings(self.config_file.name)
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
         stgs.register_option(section='foo',
                              key='bar',
                              default=False,
@@ -58,7 +62,8 @@ class SettingsTest(unittest.TestCase):
         self.assertFalse(result)
 
     def test_string(self):
-        stgs = settings.Settings(self.config_file.name)
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
         stgs.register_option(section='foo',
                              key='bar',
                              default='just a test',
@@ -69,7 +74,8 @@ class SettingsTest(unittest.TestCase):
         self.assertEqual(result, 'just a test')
 
     def test_list(self):
-        stgs = settings.Settings(self.config_file.name)
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
         stgs.register_option(section='foo',
                              key='bar',
                              key_type=list,
@@ -81,7 +87,8 @@ class SettingsTest(unittest.TestCase):
         self.assertEqual(0, len(result))
 
     def test_add_argparser(self):
-        stgs = settings.Settings(self.config_file.name)
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
         stgs.register_option('section', 'key', 'default', 'help')
         parser = argparse.ArgumentParser(description='description')
         stgs.add_argparser_to_option('section.key', parser, '--long-arg')
@@ -91,7 +98,8 @@ class SettingsTest(unittest.TestCase):
                                      allow_multiple=True)
 
     def test_multiple_parsers(self):
-        stgs = settings.Settings(self.config_file.name)
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
         parser1 = argparse.ArgumentParser(description='description')
         stgs.register_option('section', 'key', 'default', 'help',
                              parser=parser1, long_arg='--first-option')
