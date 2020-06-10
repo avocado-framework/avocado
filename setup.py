@@ -75,6 +75,7 @@ if __name__ == '__main__':
                   "jsonresult = avocado.plugins.jsonresult:JSONInit",
                   "sysinfo = avocado.plugins.sysinfo:SysinfoInit",
                   "tap = avocado.plugins.tap:TAPInit",
+                  "jobscripts = avocado.plugins.jobscripts:JobScriptsInit",
               ],
               'avocado.plugins.cli': [
                   'wrapper = avocado.plugins.wrapper:Wrapper',
