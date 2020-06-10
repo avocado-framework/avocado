@@ -64,9 +64,8 @@ def python_resolver(name, reference, find_tests):
     for klass, methods_tags_reqs in class_methods_info.items():
         for (method, tags, reqs) in methods_tags_reqs:
             klass_method = "%s.%s" % (klass, method)
-            if tests_filter is not None:
-                if not tests_filter.search(klass_method):
-                    continue
+            if tests_filter is not None and not tests_filter.search(klass_method):
+                continue
             uri = "%s:%s" % (module_path, klass_method)
             runnables.append(Runnable(name,
                                       uri=uri,
