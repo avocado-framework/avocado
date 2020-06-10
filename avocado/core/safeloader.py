@@ -448,7 +448,7 @@ def _examine_class(path, class_name, match, target_module, target_class,
             _info, _disabled, _match = _examine_class(module.path, parent_class,
                                                       match, target_module,
                                                       target_class,
-                                                      _determine_match_avocado)
+                                                      determine_match)
             if _info:
                 parents.remove(parent)
                 _extend_test_list(info, _info)
