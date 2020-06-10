@@ -24,12 +24,21 @@ INTERFACE
 
 """
 
+from pkg_resources import get_distribution
 from glob import iglob
 import os
 from pwd import getpwnam, getpwuid
 from grp import getgrnam, getgrgid
 from stat import S_IMODE
 import logging
+
+
+def prepend_base_path(value):
+    expanded = os.path.expanduser(value)
+    if not expanded.startswith(('/', '~', '.')):
+        dist = get_distribution('avocado-framework')
+        return os.path.join(dist.location, 'avocado', expanded)
+    return expanded
 
 
 def check_owner(owner, group, file_name_pattern, check_recursive=False):

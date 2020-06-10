@@ -15,10 +15,6 @@
 System information plugin
 """
 
-import os
-
-from pkg_resources import get_distribution
-
 from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import Init
 from avocado.core.plugin_interfaces import CLICmd
@@ -26,14 +22,7 @@ from avocado.core.plugin_interfaces import JobPreTests
 from avocado.core.plugin_interfaces import JobPostTests
 from avocado.core import sysinfo
 from avocado.utils import path
-
-
-def prepend_base_path(value):
-    expanded = os.path.expanduser(value)
-    if not expanded.startswith(('/', '~', '.')):
-        dist = get_distribution('avocado-framework')
-        return os.path.join(dist.location, 'avocado', expanded)
-    return expanded
+from avocado.utils.file_utils import prepend_base_path
 
 
 class SysinfoInit(Init):
