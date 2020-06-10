@@ -15,6 +15,10 @@
 System information plugin
 """
 
+import os
+
+from pkg_resources import get_distribution
+
 from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import Init
 from avocado.core.plugin_interfaces import CLICmd
@@ -22,6 +26,14 @@ from avocado.core.plugin_interfaces import JobPreTests
 from avocado.core.plugin_interfaces import JobPostTests
 from avocado.core import sysinfo
 from avocado.utils import path
+
+
+def prepend_base_path(value):
+    expanded = os.path.expanduser(value)
+    if not expanded.startswith(('/', '~', '.')):
+        dist = get_distribution('avocado-framework')
+        return os.path.join(dist.location, 'avocado', expanded)
+    return expanded
 
 
 class SysinfoInit(Init):
@@ -74,6 +86,32 @@ class SysinfoInit(Init):
         settings.register_option(section='sysinfo.collect',
                                  key='locale',
                                  default='C',
+                                 help_msg=help_msg)
+
+        help_msg = ('File with list of commands that will be executed and '
+                    'have their output collected')
+        default = prepend_base_path('etc/avocado/sysinfo/commands')
+        settings.register_option(section='sysinfo.collectibles',
+                                 key='commands',
+                                 key_type=prepend_base_path,
+                                 default=default,
+                                 help_msg=help_msg)
+
+        help_msg = 'File with list of files that will be collected verbatim'
+        default = prepend_base_path('etc/avocado/sysinfo/files')
+        settings.register_option(section='sysinfo.collectibles',
+                                 key='files',
+                                 key_type=prepend_base_path,
+                                 default=default,
+                                 help_msg=help_msg)
+
+        help_msg = ('File with list of commands that will run alongside the '
+                    'job/test')
+        default = prepend_base_path('etc/avocado/sysinfo/profilers')
+        settings.register_option(section='sysinfo.collectibles',
+                                 key='profilers',
+                                 key_type=prepend_base_path,
+                                 default=default,
                                  help_msg=help_msg)
 
 

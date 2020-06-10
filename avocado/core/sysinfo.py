@@ -23,7 +23,6 @@ import time
 
 from . import output
 from .future.settings import settings as future_settings
-from .settings import settings
 from ..utils import astring
 from ..utils import genio
 from ..utils import process
@@ -401,10 +400,7 @@ class SysInfo:
         else:
             self.log_packages = log_packages
 
-        commands_file = settings.get_value('sysinfo.collectibles',
-                                           'commands',
-                                           key_type='path',
-                                           default='')
+        commands_file = config.get('sysinfo.collectibles.commands')
 
         if os.path.isfile(commands_file):
             log.info('Commands configured by file: %s', commands_file)
@@ -413,10 +409,7 @@ class SysInfo:
             log.debug('File %s does not exist.', commands_file)
             self.commands = []
 
-        files_file = settings.get_value('sysinfo.collectibles',
-                                        'files',
-                                        key_type='path',
-                                        default='')
+        files_file = config.get('sysinfo.collectibles.files')
         if os.path.isfile(files_file):
             log.info('Files configured by file: %s', files_file)
             self.files = genio.read_all_lines(files_file)
@@ -429,10 +422,7 @@ class SysInfo:
         else:
             self.profiler = profiler
 
-        profiler_file = settings.get_value('sysinfo.collectibles',
-                                           'profilers',
-                                           key_type='path',
-                                           default='')
+        profiler_file = config.get('sysinfo.collectibles.profilers')
         if os.path.isfile(profiler_file):
             self.profilers = genio.read_all_lines(profiler_file)
             log.info('Profilers configured by file: %s', profiler_file)
