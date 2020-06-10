@@ -422,9 +422,28 @@ class PythonUnittestRunner(BaseRunner):
      * kwargs: not used
     """
     @staticmethod
+    def _uri_to_unittest_name(uri):
+        if ':' in uri:
+            module, class_method = uri.rsplit(':', 1)
+        else:
+            module = uri
+            class_method = None
+        if module.endswith('.py'):
+            module = module[:-3]
+        if module.startswith(os.path.curdir):
+            module = module[1:]
+            if module.startswith(os.path.sep):
+                module = module[1:]
+        module = module.replace(os.path.sep, ".")
+        if class_method:
+            return '%s.%s' % (module, class_method)
+        return module
+
+    @staticmethod
     def _run_unittest(uri, queue):
         stream = io.StringIO()
-        suite = unittest.TestLoader().loadTestsFromName(uri)
+        unittest_name = PythonUnittestRunner._uri_to_unittest_name(uri)
+        suite = unittest.TestLoader().loadTestsFromName(unittest_name)
         runner = unittest.TextTestRunner(stream=stream, verbosity=0)
         unittest_result = runner.run(suite)
         time_end = time.time()
