@@ -29,7 +29,6 @@ from queue import Full as queueFullException
 from avocado.utils import process
 from avocado.utils import stacktrace
 from avocado.utils import wait
-from avocado.core import defaults
 from avocado.core import output
 from avocado.core import status
 from avocado.core import tree
@@ -40,7 +39,6 @@ from avocado.core.output import LOG_UI as APP_LOG
 from avocado.core.plugin_interfaces import Runner
 from avocado.core.runner import add_runner_failure
 from avocado.core.runner import TestStatus
-from avocado.core.settings import settings
 from avocado.core.status import mapping
 from avocado.core.test import TimeOutSkipTest
 from avocado.core.test_id import TestID
@@ -247,11 +245,8 @@ class TestRunner(Runner):
 
         # Get/update the test status (decrease timeout on abort)
         if abort_reason:
-            finish_deadline = time.time() + settings.get_value(
-                'runner.timeout',
-                'after_interrupted',
-                key_type=int,
-                default=defaults.TIMEOUT_AFTER_INTERRUPTED)
+            after_interrupted = job.config.get('runner.timeout.after_interrupted')
+            finish_deadline = time.time() + after_interrupted
         else:
             finish_deadline = deadline
         test_state = test_status.finish(proc, time_started, step,
