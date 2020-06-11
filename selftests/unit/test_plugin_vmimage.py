@@ -3,9 +3,10 @@ import os
 import tempfile
 from urllib.error import URLError
 
-from avocado.core import settings, data_dir
+from avocado.core import data_dir
 from avocado.plugins import vmimage as vmimage_plugin
 from avocado.utils import vmimage as vmimage_util
+from avocado.core.future import settings as future_settings
 from .. import temp_dir_prefix, skipOnLevelsInferiorThan
 from ..functional.test_plugin_vmimage import missing_binary, create_metadata_file
 
@@ -87,7 +88,7 @@ class VMImagePlugin(unittest.TestCase):
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
     def _create_test_files(self, urlopen_mock):
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', self.stg):
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', self.stg):
             expected_images = [{'name': 'Fedora', 'file': 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2',
                                 'url': FEDORA_PAGE},
                                {'name': 'JeOS', 'file': 'jeos-{version}-{arch}.qcow2.xz', 'url': JEOS_PAGE},
@@ -113,14 +114,65 @@ class VMImagePlugin(unittest.TestCase):
                         create_metadata_file(image['file'], image)
             return sorted(expected_images, key=lambda i: i['name'])
 
+    @staticmethod
+    def _make_dummy_registrations(stg):
+        """
+        Register dummy options to be updated by the new Settings API
+
+        The new Settings API never register options from config files. This
+        method creates dummy registrations to be updated later with the
+        correct values for the options.
+        """
+        help_msg = 'Cache directories to be used by the avocado test'
+        stg.register_option(section='datadir.paths',
+                            key='cache_dirs',
+                            key_type=list,
+                            default=[],
+                            help_msg=help_msg)
+
+        help_msg = 'Base directory for Avocado tests and auxiliary data'
+        stg.register_option(section='datadir.paths',
+                            key='base_dir',
+                            key_type=os.path.expanduser,
+                            default=os.path.expanduser(
+                                '/var/lib/avocado'),
+                            help_msg=help_msg)
+
+        help_msg = 'Test directory for Avocado tests'
+        stg.register_option(section='datadir.paths',
+                            key='test_dir',
+                            key_type=os.path.expanduser,
+                            default=os.path.expanduser(
+                                '/usr/share/doc/avocado/tests'),
+                            help_msg=help_msg)
+
+        help_msg = 'Data directory for Avocado'
+        stg.register_option(section='datadir.paths',
+                            key='data_dir',
+                            key_type=os.path.expanduser,
+                            default=os.path.expanduser(
+                                '/var/lib/avocado/data'),
+                            help_msg=help_msg)
+
+        help_msg = 'Logs directory for Avocado'
+        stg.register_option(section='datadir.paths',
+                            key='logs_dir',
+                            key_type=os.path.expanduser,
+                            default=os.path.expanduser(
+                                '~/avocado/job-results'),
+                            help_msg=help_msg)
+
     def setUp(self):
         (self.base_dir, self.mapping,
          self.config_file_path) = self._get_temporary_dirs_mapping_and_config()
-        self.stg = settings.Settings(self.config_file_path)
+        self.stg = future_settings.Settings()
+        self._make_dummy_registrations(self.stg)
+        self.stg.process_config_path(self.config_file_path)
+        self.stg.merge_with_configs()
         self.expected_images = self._create_test_files()
 
     def test_list_downloaded_images(self):
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', self.stg):
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', self.stg):
             with unittest.mock.patch('avocado.utils.vmimage.ImageProviderBase.get_version'):
                 images = sorted(vmimage_plugin.list_downloaded_images(), key=lambda i: i['name'])
                 for index, image in enumerate(images):
@@ -135,7 +187,7 @@ class VMImagePlugin(unittest.TestCase):
         """
         :avocado: tags=parallel:1
         """
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', self.stg):
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', self.stg):
             try:
                 expected_image_info = vmimage_util.get_best_provider(name="CirrOS")
                 image_info = vmimage_plugin.download_image(distro="CirrOS")

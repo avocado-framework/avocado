@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import settings
+from avocado.core.future import settings as future_settings
 
 from .. import temp_dir_prefix
 
@@ -34,6 +34,54 @@ class Base(unittest.TestCase):
         config_file.close()
         return (base_dir, mapping, config_file.name)
 
+    @staticmethod
+    def _make_dummy_registrations(stg):
+        """
+        Register dummy options to be updated by the new Settings API
+
+        The new Settings API never register options from config files. This
+        method creates dummy registrations to be updated later with the
+        correct values for the options.
+        """
+        help_msg = 'Cache directories to be used by the avocado test'
+        stg.register_option(section='datadir.paths',
+                            key='cache_dirs',
+                            key_type=list,
+                            default=[],
+                            help_msg=help_msg)
+
+        help_msg = 'Base directory for Avocado tests and auxiliary data'
+        stg.register_option(section='datadir.paths',
+                            key='base_dir',
+                            key_type=os.path.expanduser,
+                            default=os.path.expanduser(
+                                '/var/lib/avocado'),
+                            help_msg=help_msg)
+
+        help_msg = 'Test directory for Avocado tests'
+        stg.register_option(section='datadir.paths',
+                            key='test_dir',
+                            key_type=os.path.expanduser,
+                            default=os.path.expanduser(
+                                '/usr/share/doc/avocado/tests'),
+                            help_msg=help_msg)
+
+        help_msg = 'Data directory for Avocado'
+        stg.register_option(section='datadir.paths',
+                            key='data_dir',
+                            key_type=os.path.expanduser,
+                            default=os.path.expanduser(
+                                '/var/lib/avocado/data'),
+                            help_msg=help_msg)
+
+        help_msg = 'Logs directory for Avocado'
+        stg.register_option(section='datadir.paths',
+                            key='logs_dir',
+                            key_type=os.path.expanduser,
+                            default=os.path.expanduser(
+                                '~/avocado/job-results'),
+                            help_msg=help_msg)
+
     def setUp(self):
         (self.base_dir,
          self.mapping,
@@ -50,12 +98,16 @@ class DataDirTest(Base):
         """
         When avocado.conf is present, honor the values coming from it.
         """
-        stg = settings.Settings(self.config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
+        stg = future_settings.Settings()
+        self._make_dummy_registrations(stg)
+        stg.process_config_path(self.config_file_path)
+        stg.merge_with_configs()
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', stg):
             from avocado.core import data_dir
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
-                self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
+                namespace = 'datadir.paths.{}'.format(key)
+                self.assertEqual(data_dir_func(), stg.as_dict().get(namespace))
 
     def test_unique_log_dir(self):
         """
@@ -159,8 +211,11 @@ class DataDirTest(Base):
                          data_dir.get_job_results_dir('latest', logs_dir),
                          "It should get from the 'latest' id")
 
-        stg = settings.Settings(self.config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings',
+        stg = future_settings.Settings()
+        self._make_dummy_registrations(stg)
+        stg.process_config_path(self.config_file_path)
+        stg.merge_with_configs()
+        with unittest.mock.patch('avocado.core.data_dir.future_settings',
                                  stg):
             self.assertEqual(expected_jrd,
                              data_dir.get_job_results_dir(unique_id),
@@ -181,8 +236,11 @@ class AltDataDirTest(Base):
         from data_dir APIs.
         """
         # Initial settings with initial data_dir locations
-        stg = settings.Settings(self.config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
+        stg = future_settings.Settings()
+        self._make_dummy_registrations(stg)
+        stg.process_config_path(self.config_file_path)
+        stg.merge_with_configs()
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', stg):
             from avocado.core import data_dir
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
@@ -194,8 +252,11 @@ class AltDataDirTest(Base):
          self.alt_config_file_path) = self._get_temp_dirs_mapping_and_config()
 
         # Alternate settings with different data_dir location
-        alt_stg = settings.Settings(self.alt_config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', alt_stg):
+        alt_stg = future_settings.Settings()
+        self._make_dummy_registrations(alt_stg)
+        alt_stg.process_config_path(self.alt_config_file_path)
+        alt_stg.merge_with_configs()
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', alt_stg):
             for key in alt_mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
                 self.assertEqual(data_dir_func(), alt_mapping[key])
