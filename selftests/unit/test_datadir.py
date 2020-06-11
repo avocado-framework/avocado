@@ -51,16 +51,11 @@ class DataDirTest(Base):
         When avocado.conf is present, honor the values coming from it.
         """
         stg = settings.Settings(self.config_file_path)
-        # Trick the module to think we're on a system wide install
-        stg.intree = False
         with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
             from avocado.core import data_dir
-            self.assertFalse(data_dir.settings.settings.intree)
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
                 self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
-        # make sure that without the patch, we have a different value here
-        self.assertTrue(data_dir.settings.settings.intree)
 
     def test_unique_log_dir(self):
         """

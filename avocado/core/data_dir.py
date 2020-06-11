@@ -101,18 +101,19 @@ def get_test_dir():
     The heuristics used to determine the test dir are:
     1) If an explicit test dir is set in the configuration system, it
     is used.
-    2) If user is running Avocado out of the source tree, the example
-    test dir is used
-    3) System wide test dir is used
-    4) User default test dir (~/avocado/tests) is used
+    2) If user is running Avocado in the source tree, the example test dir is
+    used.
+    3) System wide test dir is used.
+    4) User default test dir (~/avocado/tests) is used.
     """
     configured = _get_settings_dir('test_dir')
     if utils_path.usable_ro_dir(configured):
         return configured
 
-    if settings.settings.intree:
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        return os.path.join(base_dir, 'examples', 'tests')
+    source_tree_root = os.path.dirname(os.path.dirname(
+        os.path.dirname(__file__)))
+    if os.path.exists(os.path.join(source_tree_root, 'examples')):
+        return os.path.join(source_tree_root, 'examples', 'tests')
 
     if utils_path.usable_ro_dir(SYSTEM_TEST_DIR):
         return SYSTEM_TEST_DIR
