@@ -55,6 +55,8 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             if status in ['pass', 'fail', 'skip', 'error']:
                 state['result'] = status
                 state['status'] = 'finished'
+            else:
+                state['status'] = 'running'
 
         # This is a hack because the name is a TestID instance that can not
         # at this point be converted to JSON
@@ -62,14 +64,17 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             del state['name']
         if 'time_start' in state:
             del state['time_start']
+        state['time'] = time.time()
         queue.put(state)
 
     def run(self):
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_avocado,
                                           args=(self.runnable, queue))
+
         process.start()
 
+        self.prepare_status('started')
         most_current_execution_state_time = None
         while queue.empty():
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
