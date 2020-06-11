@@ -429,7 +429,7 @@ class Job:
                     self.config.get("filter.by_tags.include_empty"),
                     self.config.get('filter.by_tags.include_empty_key'))
         except loader.LoaderUnhandledReferenceError as details:
-            raise exceptions.OptionValidationError(details)
+            raise exceptions.JobTestSuiteError(details)
         except KeyboardInterrupt:
             raise exceptions.JobError('Command interrupted by user...')
 
@@ -542,7 +542,7 @@ class Job:
                 self.test_suite = self._make_test_suite_loader(refs)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
-            raise exceptions.OptionValidationError(details)
+            raise exceptions.JobTestSuiteError(details)
 
         if not self.test_suite:
             if refs:
@@ -552,7 +552,7 @@ class Job:
                 e_msg = ("No test references provided nor any other arguments "
                          "resolved into tests. Please double check the "
                          "executed command.")
-            raise exceptions.OptionValidationError(e_msg)
+            raise exceptions.JobTestSuiteEmptyError(e_msg)
 
         self.result.tests_total = len(self.test_suite)
 

@@ -36,6 +36,22 @@ class JobError(JobBaseException):
     status = "ERROR"
 
 
+class JobTestSuiteError(JobBaseException):
+
+    """
+    Generic error happened during the creation of a job's test suite
+    """
+    status = "ERROR"
+
+
+class JobTestSuiteEmptyError(JobTestSuiteError):
+
+    """
+    Error raised when the creation of a test suite results in an empty suite
+    """
+    status = "ERROR"
+
+
 class OptionValidationError(Exception):
 
     """

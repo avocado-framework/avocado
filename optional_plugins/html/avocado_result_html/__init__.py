@@ -218,8 +218,8 @@ class HTMLResult(Result):
             report_file.write(report_contents)
 
     def render(self, result, job):
-        if job.status == "RUNNING":
-            return  # Don't create results on unfinished jobs
+        if job.status in ("RUNNING", "ERROR"):
+            return  # Don't create results on unfinished or errored jobs
         if not (job.config.get('run.html_job_result') or
                 job.config.get('run.html_output')):
             return
