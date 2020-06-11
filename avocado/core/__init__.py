@@ -13,9 +13,12 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
+import os
+
 from .dispatcher import InitDispatcher
 from .future.settings import settings as future_settings
 from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
+from .utils import prepend_base_path
 
 
 def register_core_options():
@@ -68,6 +71,45 @@ def register_core_options():
                                     key_type=int,
                                     help_msg=help_msg,
                                     default=60)
+
+    help_msg = 'Cache directories to be used by the avocado test'
+    future_settings.register_option(section='datadir.paths',
+                                    key='cache_dirs',
+                                    key_type=list,
+                                    default=[],
+                                    help_msg=help_msg)
+
+    help_msg = 'Base directory for Avocado tests and auxiliary data'
+    default = prepend_base_path('/var/lib/avocado')
+    future_settings.register_option(section='datadir.paths',
+                                    key='base_dir',
+                                    key_type=prepend_base_path,
+                                    default=default,
+                                    help_msg=help_msg)
+
+    help_msg = 'Test directory for Avocado tests'
+    default = prepend_base_path('/usr/share/doc/avocado/tests')
+    future_settings.register_option(section='datadir.paths',
+                                    key='test_dir',
+                                    key_type=prepend_base_path,
+                                    default=default,
+                                    help_msg=help_msg)
+
+    help_msg = 'Data directory for Avocado'
+    default = prepend_base_path('/var/lib/avocado/data')
+    future_settings.register_option(section='datadir.paths',
+                                    key='data_dir',
+                                    key_type=prepend_base_path,
+                                    default=default,
+                                    help_msg=help_msg)
+
+    help_msg = 'Logs directory for Avocado'
+    default = prepend_base_path('~/avocado/job-results')
+    future_settings.register_option(section='datadir.paths',
+                                    key='logs_dir',
+                                    key_type=prepend_base_path,
+                                    default=default,
+                                    help_msg=help_msg)
 
 
 def initialize_plugins():
