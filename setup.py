@@ -134,6 +134,11 @@ if __name__ == '__main__':
                   'runner = avocado.plugins.runner:TestRunner',
                   'nrunner = avocado.plugins.runner_nrunner:Runner',
                   ],
+              'avocado.plugins.runnable.runner': [
+                  ('avocado-instrumented = avocado.core.'
+                   'nrunner_avocado_instrumented:AvocadoInstrumentedTestRunner'),
+                  'tap = avocado.core.nrunner_tap:TAPRunner',
+                  ],
               },
           zip_safe=False,
           test_suite='selftests',
