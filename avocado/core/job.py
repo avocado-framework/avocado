@@ -570,7 +570,6 @@ class Job:
         The actual test execution phase
         """
         variant = self.config.get("avocado_variants")
-        refs = self.config.get('run.references')
         if variant is None:
             variant = varianter.Varianter()
         if not variant.is_parsed():   # Varianter not yet parsed, apply args
@@ -587,8 +586,7 @@ class Job:
         self.test_runner = runner_extension.obj
 
         self._log_job_debug_info(variant)
-        jobdata.record(self.config, self.logdir, variant,
-                       refs, sys.argv)
+        jobdata.record(self.config, self.logdir, variant, sys.argv)
         replay_map = self.config.get('replay_map')
         execution_order = self.config.get('run.execution_order')
         summary = self.test_runner.run_suite(self,

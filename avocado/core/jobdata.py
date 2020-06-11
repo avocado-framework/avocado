@@ -35,7 +35,7 @@ JOB_CONFIG_FILENAME = 'args.json'
 CMDLINE_FILENAME = 'cmdline'
 
 
-def record(config, logdir, variants, references=None, cmdline=None):
+def record(config, logdir, variants, cmdline=None):
     """
     Records all required job information.
     """
@@ -51,6 +51,7 @@ def record(config, logdir, variants, references=None, cmdline=None):
     path_job_config = os.path.join(base_dir, JOB_CONFIG_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
+    references = config.get('run.references')
     if references:
         with open(path_references, 'w') as references_file:
             references_file.write('%s' % references)
