@@ -408,7 +408,7 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
-    def _make_test_suite_loader(self, references):
+    def _make_test_suite(self, references, ignore_missing):
         """
         Prepares a test suite to be used for running tests
 
@@ -417,10 +417,20 @@ class Job:
         :type references: list of str
         :returns: a test suite (a list of test factories)
         """
+        if self._test_runner_name == 'nrunner':
+            make_test_suite = self._make_test_suite_resolver
+        else:
+            make_test_suite = self._make_test_suite_loader
+        try:
+            self.test_suite = make_test_suite(references, ignore_missing)
+        except loader.LoaderError as details:
+            stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
+            raise exceptions.JobTestSuiteError(details)
+
+    def _make_test_suite_loader(self, references, ignore_missing):
         loader.loader.load_plugins(self.config)
         try:
-            force = self.config.get('run.ignore_missing_references')
-            suite = loader.loader.discover(references, force=force)
+            suite = loader.loader.discover(references, force=ignore_missing)
             filter_tags = self.config.get("filter.by_tags.tags")
             if filter_tags:
                 suite = tags.filter_test_tags(
@@ -437,7 +447,7 @@ class Job:
             suite[i] = [DryRunTest, suite[i][1]]
         return suite
 
-    def _make_test_suite_resolver(self, references):
+    def _make_test_suite_resolver(self, references, _):
         resolutions = resolver.resolve(references)
         return resolutions_to_tasks(resolutions, self.config)
 
@@ -533,15 +543,8 @@ class Job:
         This is a public Job API as part of the documented Job phases
         """
         refs = self.config.get('run.references')
-        try:
-            if self._test_runner_name == 'nrunner':
-                self.test_suite = self._make_test_suite_resolver(refs)
-            else:
-                self.test_suite = self._make_test_suite_loader(refs)
-        except loader.LoaderError as details:
-            stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
-            raise exceptions.JobTestSuiteError(details)
-
+        ignore_missing = self.config.get('run.ignore_missing_references')
+        self._make_test_suite(refs, ignore_missing)
         if not self.test_suite:
             if refs:
                 e_msg = ("No tests found for given test references, try "
