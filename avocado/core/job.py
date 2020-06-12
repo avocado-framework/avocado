@@ -430,8 +430,6 @@ class Job:
                     self.config.get('filter.by_tags.include_empty_key'))
         except loader.LoaderUnhandledReferenceError as details:
             raise exceptions.JobTestSuiteError(details)
-        except KeyboardInterrupt:
-            raise exceptions.JobError('Command interrupted by user...')
 
         if not self.config.get('run.dry_run.enabled'):
             return suite
