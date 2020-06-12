@@ -447,8 +447,23 @@ class Job:
             suite[i] = [DryRunTest, suite[i][1]]
         return suite
 
-    def _make_test_suite_resolver(self, references, _):
+    @staticmethod
+    def _resolver_check_missing_references(references, resolutions):
+        missing = []
+        for reference in references:
+            results = [res.result for res in resolutions if
+                       res.reference == reference]
+            if resolver.ReferenceResolutionResult.SUCCESS not in results:
+                missing.append(reference)
+        if missing:
+            msg = "Could not resolve references: %s" % ",".join(missing)
+            raise exceptions.JobTestSuiteReferenceResolutionError(msg)
+
+    def _make_test_suite_resolver(self, references, ignore_missing):
         resolutions = resolver.resolve(references)
+        if not ignore_missing:
+            self._resolver_check_missing_references(references,
+                                                    resolutions)
         return resolutions_to_tasks(resolutions, self.config)
 
     def _log_job_id(self):

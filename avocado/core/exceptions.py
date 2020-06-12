@@ -52,6 +52,14 @@ class JobTestSuiteEmptyError(JobTestSuiteError):
     status = "ERROR"
 
 
+class JobTestSuiteReferenceResolutionError(JobTestSuiteError):
+
+    """
+    Test References did not produce a valid reference by any resolver
+    """
+    status = "ERROR"
+
+
 class OptionValidationError(Exception):
 
     """
