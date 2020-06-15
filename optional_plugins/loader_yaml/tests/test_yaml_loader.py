@@ -5,7 +5,7 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from selftests import AVOCADO, BASEDIR
+from selftests import AVOCADO, BASEDIR, skipUnlessPathExists
 
 
 class YamlLoaderTests(unittest.TestCase):
@@ -50,10 +50,8 @@ class YamlLoaderTests(unittest.TestCase):
                '--replay %s' % (AVOCADO, self.tmpdir.name, srcjob.decode('utf-8')))
         self.run_and_check(cmd, exit_codes.AVOCADO_ALL_OK, tests, not_tests)
 
-    @unittest.skipUnless(os.path.exists("/bin/true"), "/bin/true not "
-                         "available")
-    @unittest.skipUnless(os.path.exists("/bin/echo"), "/bin/echo not "
-                         "available")
+    @skipUnlessPathExists('/bin/true')
+    @skipUnlessPathExists('/bin/echo')
     def test_yaml_loader_list(self):
         # Verifies that yaml_loader list won't crash and is able to detect
         # various test types

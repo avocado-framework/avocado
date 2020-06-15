@@ -6,7 +6,7 @@ import unittest.mock
 from avocado.core import nrunner
 from avocado.core import nrunner_tap
 
-from .. import temp_dir_prefix
+from .. import temp_dir_prefix, skipUnlessPathExists
 
 
 class Runnable(unittest.TestCase):
@@ -310,9 +310,7 @@ class RunnerTmp(unittest.TestCase):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
-    @unittest.skipUnless(os.path.exists('/bin/sh'),
-                         ('Executable "/bin/sh" used in this test is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/sh')
     def test_runner_tap_fail(self):
         tap_script = """#!/bin/sh
 echo '1..2'
@@ -332,9 +330,7 @@ echo 'not ok 2 - description 2'"""
         self.assertEqual(last_result['result'], 'fail')
         self.assertEqual(last_result['returncode'], 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/sh'),
-                         ('Executable "/bin/sh" used in this test is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/sh')
     def test_runner_tap_ok(self):
         tap_script = """#!/bin/sh
 echo '1..2'
@@ -354,9 +350,7 @@ echo 'ok 2 - description 2'"""
         self.assertEqual(last_result['result'], 'pass')
         self.assertEqual(last_result['returncode'], 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/sh'),
-                         ('Executable "/bin/sh" used in this test is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/sh')
     def test_runner_tap_skip(self):
         tap_script = """#!/bin/sh
 echo '1..2'
@@ -376,9 +370,7 @@ echo 'ok 2 - description 2'"""
         self.assertEqual(last_result['result'], 'skip')
         self.assertEqual(last_result['returncode'], 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/sh'),
-                         ('Executable "/bin/sh" used in this test is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/sh')
     def test_runner_tap_bailout(self):
         tap_script = """#!/bin/sh
 echo '1..2'
@@ -398,15 +390,13 @@ echo 'ok 2 - description 2'"""
         self.assertEqual(last_result['result'], 'error')
         self.assertEqual(last_result['returncode'], 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/sh'),
-                         ('Executable "/bin/sh" used in this test is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/sh')
     def test_runner_tap_error(self):
         tap_script = """#!/bin/sh
-    echo '1..2'
-    echo '# Defining an basic test'
-    echo 'error - description 1'
-    echo 'ok 2 - description 2'"""
+echo '1..2'
+echo '# Defining an basic test'
+echo 'error - description 1'
+echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
 
         with open(tap_path, 'w') as fp:
@@ -424,9 +414,7 @@ echo 'ok 2 - description 2'"""
         self.tmpdir.cleanup()
 
 
-@unittest.skipUnless(os.path.exists('/bin/sh'),
-                     ('Executable "/bin/sh" used in this test is not '
-                      'available in the system'))
+@skipUnlessPathExists('/bin/sh')
 class RunnerCommandSelection(unittest.TestCase):
 
     def setUp(self):

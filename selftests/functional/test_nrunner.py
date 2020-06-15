@@ -3,7 +3,7 @@ import sys
 import unittest
 import tempfile
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipUnlessPathExists
 
 from avocado.utils import process
 
@@ -31,9 +31,7 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'returncode': 99", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/echo'),
-                         ('Executable "/bin/echo" used in test is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/sh')
     def test_exec_echo(self):
         # 'base64:LW4=' becomes '-n' and prevents echo from printing a newline
         cmd = ("%s runnable-run -k exec -u /bin/echo -a 'base64:LW4=' -a "
@@ -44,12 +42,8 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'returncode': 0", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/sh'),
-                         ('Executable "/bin/sh" used in recipe is not '
-                          'available in the system'))
-    @unittest.skipUnless(os.path.exists('/bin/echo'),
-                         ('Executable "/bin/echo" used in recipe is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/sh')
+    @skipUnlessPathExists('/bin/echo')
     def test_recipe(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
                               "runnables", "exec_sh_echo_env_var.json")
@@ -79,9 +73,7 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b'Invalid keyword parameter: "foo"', res.stderr)
         self.assertEqual(res.exit_status, 2)
 
-    @unittest.skipUnless(os.path.exists('/bin/env'),
-                         ('Executable "/bin/env" used in test is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/env')
     def test_exec_kwargs(self):
         res = process.run("%s runnable-run -k exec -u /bin/env X=Y" % RUNNER,
                           ignore_status=True)
@@ -99,9 +91,7 @@ class TaskRun(unittest.TestCase):
         self.assertIn(b"'id': 'XXXno-opXXX'", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/uname'),
-                         ('Executable "/bin/uname" used in recipe is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/uname')
     def test_recipe_exec_1(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
                               "tasks", "exec", "1-uname.json")
@@ -119,9 +109,7 @@ class TaskRun(unittest.TestCase):
         self.assertIn("'status': 'finished'", final_status)
         self.assertEqual(res.exit_status, 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/echo'),
-                         ('Executable "/bin/echo" used in recipe is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/echo')
     def test_recipe_exec_2(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
                               "tasks", "exec", "2-echo.json")
@@ -140,9 +128,7 @@ class TaskRun(unittest.TestCase):
         self.assertIn("'stdout': b'avocado'", final_status)
         self.assertEqual(res.exit_status, 0)
 
-    @unittest.skipUnless(os.path.exists('/bin/sleep'),
-                         ('Executable "/bin/sleep" used in recipe is not '
-                          'available in the system'))
+    @skipUnlessPathExists('/bin/sleep')
     def test_recipe_exec_3(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
                               "tasks", "exec", "3-sleep.json")
@@ -162,8 +148,7 @@ class TaskRun(unittest.TestCase):
 
 
 class ResolveSerializeRun(unittest.TestCase):
-    @unittest.skipUnless(os.path.exists('/bin/true'),
-                         ('Executable "/bin/true" used in test'))
+    @skipUnlessPathExists('/bin/true')
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)

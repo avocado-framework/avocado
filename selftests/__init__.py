@@ -128,3 +128,9 @@ def skipOnLevelsInferiorThan(level):
     return unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < level,
                            "Skipping test that take a long time to run, are "
                            "resource intensive or time sensitve")
+
+
+def skipUnlessPathExists(path):
+    return unittest.skipUnless(os.path.exists(path),
+                               ('File or directory at path "%s" used in test is'
+                                ' not available in the system' % path))
