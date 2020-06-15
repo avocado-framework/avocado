@@ -16,7 +16,6 @@ from avocado.core import data_dir
 from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.settings import settings
 
 
 class Config(CLICmd):
@@ -44,27 +43,24 @@ class Config(CLICmd):
         LOG_UI.info("Config files read (in order, '*' means the file exists "
                     "and had been read):")
 
-        for cfg_path in settings.all_config_paths:
-            if cfg_path in settings.config_paths:
+        for cfg_path in future_settings.all_config_paths:
+            if cfg_path in future_settings.config_paths:
                 LOG_UI.debug('    * %s', cfg_path)
             else:
                 LOG_UI.debug('      %s', cfg_path)
         LOG_UI.debug("")
         if not config.get('config.datadir'):
             blength = 0
-            for section in settings.config.sections():
-                for value in settings.config.items(section):
-                    clength = len('%s.%s' % (section, value[0]))
-                    if clength > blength:
-                        blength = clength
+            for namespace, value in config.items():
+                clength = len(namespace)
+                if clength > blength:
+                    blength = clength
 
             format_str = "    %-" + str(blength) + "s %s"
 
             LOG_UI.debug(format_str, 'Section.Key', 'Value')
-            for section in settings.config.sections():
-                for value in settings.config.items(section):
-                    config_key = ".".join((section, value[0]))
-                    LOG_UI.debug(format_str, config_key, value[1])
+            for namespace, value in config.items():
+                LOG_UI.debug(format_str, namespace, value)
         else:
             LOG_UI.debug("Avocado replaces config dirs that can't be accessed")
             LOG_UI.debug("with sensible defaults. Please edit your local config")
