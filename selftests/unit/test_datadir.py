@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import settings
+from avocado.core.future import settings as future_settings
 
 from .. import temp_dir_prefix
 
@@ -50,17 +50,18 @@ class DataDirTest(Base):
         """
         When avocado.conf is present, honor the values coming from it.
         """
-        stg = settings.Settings(self.config_file_path)
-        # Trick the module to think we're on a system wide install
-        stg.intree = False
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
+        stg = future_settings.Settings()
+        with unittest.mock.patch('avocado.core.future_settings', stg):
+            import avocado.core
+            avocado.core.register_core_options()
+        stg.process_config_path(self.config_file_path)
+        stg.merge_with_configs()
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', stg):
             from avocado.core import data_dir
-            self.assertFalse(data_dir.settings.settings.intree)
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
-                self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
-        # make sure that without the patch, we have a different value here
-        self.assertTrue(data_dir.settings.settings.intree)
+                namespace = 'datadir.paths.{}'.format(key)
+                self.assertEqual(data_dir_func(), stg.as_dict().get(namespace))
 
     def test_unique_log_dir(self):
         """
@@ -164,8 +165,13 @@ class DataDirTest(Base):
                          data_dir.get_job_results_dir('latest', logs_dir),
                          "It should get from the 'latest' id")
 
-        stg = settings.Settings(self.config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings',
+        stg = future_settings.Settings()
+        with unittest.mock.patch('avocado.core.future_settings', stg):
+            import avocado.core
+            avocado.core.register_core_options()
+        stg.process_config_path(self.config_file_path)
+        stg.merge_with_configs()
+        with unittest.mock.patch('avocado.core.data_dir.future_settings',
                                  stg):
             self.assertEqual(expected_jrd,
                              data_dir.get_job_results_dir(unique_id),
@@ -186,8 +192,13 @@ class AltDataDirTest(Base):
         from data_dir APIs.
         """
         # Initial settings with initial data_dir locations
-        stg = settings.Settings(self.config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', stg):
+        stg = future_settings.Settings()
+        with unittest.mock.patch('avocado.core.future_settings', stg):
+            import avocado.core
+            avocado.core.register_core_options()
+        stg.process_config_path(self.config_file_path)
+        stg.merge_with_configs()
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', stg):
             from avocado.core import data_dir
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
@@ -199,8 +210,13 @@ class AltDataDirTest(Base):
          self.alt_config_file_path) = self._get_temp_dirs_mapping_and_config()
 
         # Alternate settings with different data_dir location
-        alt_stg = settings.Settings(self.alt_config_file_path)
-        with unittest.mock.patch('avocado.core.data_dir.settings.settings', alt_stg):
+        alt_stg = future_settings.Settings()
+        with unittest.mock.patch('avocado.core.future_settings', alt_stg):
+            import avocado.core
+            avocado.core.register_core_options()
+        alt_stg.process_config_path(self.alt_config_file_path)
+        alt_stg.merge_with_configs()
+        with unittest.mock.patch('avocado.core.data_dir.future_settings', alt_stg):
             for key in alt_mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
                 self.assertEqual(data_dir_func(), alt_mapping[key])

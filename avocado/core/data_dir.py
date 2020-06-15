@@ -34,8 +34,8 @@ import time
 import tempfile
 
 from . import job_id
-from . import settings
 from . import exit_codes
+from .future.settings import settings as future_settings
 from .output import LOG_JOB, LOG_UI
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
@@ -60,7 +60,8 @@ def _get_settings_dir(dir_name):
     """
     Returns a given "datadir" directory as set by the configuration system
     """
-    path = settings.settings.get_value('datadir.paths', dir_name, 'path')
+    namespace = 'datadir.paths.{}'.format(dir_name)
+    path = future_settings.as_dict().get(namespace)
     return os.path.abspath(path)
 
 
@@ -101,18 +102,19 @@ def get_test_dir():
     The heuristics used to determine the test dir are:
     1) If an explicit test dir is set in the configuration system, it
     is used.
-    2) If user is running Avocado out of the source tree, the example
-    test dir is used
-    3) System wide test dir is used
-    4) User default test dir (~/avocado/tests) is used
+    2) If user is running Avocado from its source code tree, the example test
+    dir is used.
+    3) System wide test dir is used.
+    4) User default test dir (~/avocado/tests) is used.
     """
     configured = _get_settings_dir('test_dir')
     if utils_path.usable_ro_dir(configured):
         return configured
 
-    if settings.settings.intree:
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        return os.path.join(base_dir, 'examples', 'tests')
+    source_tree_root = os.path.dirname(os.path.dirname(
+        os.path.dirname(__file__)))
+    if os.path.exists(os.path.join(source_tree_root, 'examples')):
+        return os.path.join(source_tree_root, 'examples', 'tests')
 
     if utils_path.usable_ro_dir(SYSTEM_TEST_DIR):
         return SYSTEM_TEST_DIR
@@ -203,8 +205,7 @@ def get_cache_dirs():
     """
     Returns the list of cache dirs, according to configuration and convention
     """
-    cache_dirs = settings.settings.get_value('datadir.paths', 'cache_dirs',
-                                             key_type=list, default=[])
+    cache_dirs = future_settings.as_dict().get('datadir.paths.cache_dirs')
     datadir_cache = os.path.join(get_data_dir(), 'cache')
     if datadir_cache not in cache_dirs:
         cache_dirs.append(datadir_cache)
