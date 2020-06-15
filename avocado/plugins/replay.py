@@ -26,7 +26,6 @@ from avocado.core import status
 from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
-from avocado.core.settings import settings
 from avocado.core.test import ReplaySkipTest
 
 
@@ -113,7 +112,7 @@ class Replay(CLI):
     def load_config(self, resultsdir):
         config = jobdata.retrieve_config(resultsdir)
         if config is not None:
-            settings.process_config_path(config)
+            future_settings.process_config_path(config)
 
     def _get_tests_from_tap(self, path):
         if not os.path.exists(path):
