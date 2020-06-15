@@ -20,7 +20,6 @@ from avocado.core import exit_codes
 from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.settings import settings
 
 
 _VERBOSITY_LEVELS = {"none": 0, "brief": 1, "normal": 2, "verbose": 3,
@@ -145,8 +144,7 @@ class Variants(CLICmd):
         except (IOError, ValueError) as details:
             LOG_UI.error("Unable to parse varianter: %s", details)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        use_utf8 = settings.get_value("runner.output", "utf8",
-                                      key_type=bool, default=None)
+        use_utf8 = config.get("runner.output.utf8")
         # Parse obsolete options (unsafe to combine them with new args)
         if tree:
             variants = 0

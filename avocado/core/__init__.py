@@ -17,8 +17,8 @@ import os
 
 from .dispatcher import InitDispatcher
 from .future.settings import settings as future_settings
-from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
 from .utils import prepend_base_path
+from .streams import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
 
 
 def register_core_options():
@@ -126,6 +126,27 @@ def register_core_options():
                                     key_type=int,
                                     help_msg=help_msg,
                                     default=10)
+    help_msg = ('Whether to display colored output in terminals that '
+                'support it')
+    future_settings.register_option(section='runner.output',
+                                    key='colored',
+                                    key_type=bool,
+                                    default=True,
+                                    help_msg=help_msg)
+
+    help_msg = ('Whether to force colored output to non-tty outputs '
+                '(e.g. log files). Allowed values: auto, always, never')
+    future_settings.register_option(section='runner.output',
+                                    key='color',
+                                    default='auto',
+                                    help_msg=help_msg)
+
+    help_msg = 'Use UTF8 encoding (True or False)'
+    future_settings.register_option(section='runner.output',
+                                    key='utf8',
+                                    key_type=bool,
+                                    help_msg=help_msg,
+                                    default=True)
 
 
 def initialize_plugins():

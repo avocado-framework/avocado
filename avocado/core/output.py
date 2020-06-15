@@ -24,7 +24,9 @@ import traceback
 
 from . import exit_codes
 from ..utils import path as utils_path
+from .future.settings import settings as future_settings
 from .settings import settings
+from .streams import BUILTIN_STREAMS
 
 
 #: Handle cases of logging exceptions which will lead to recursion error
@@ -34,15 +36,6 @@ logging.raiseExceptions = False
 LOG_UI = logging.getLogger("avocado.app")
 #: Pre-defined Avocado job/test logger
 LOG_JOB = logging.getLogger("avocado.test")
-
-#: Builtin special keywords to enable set of logging streams
-BUILTIN_STREAMS = {'app': 'application output',
-                   'test': 'test output',
-                   'debug': 'tracebacks and other debugging info',
-                   'early':  'early logging of other streams, including test (very verbose)'}
-#: Groups of builtin streams
-BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
-                       'none': 'disables regular output (leaving only errors enabled)'}
 
 
 class TermSupport:
@@ -84,10 +77,9 @@ class TermSupport:
         allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
                          'screen-256color', 'screen.xterm-256color']
         term = os.environ.get("TERM")
-        colored = settings.get_value('runner.output', 'colored',
-                                     key_type='bool', default=True)
-        force_color = settings.get_value('runner.output', 'color',
-                                         default="auto")
+        config = future_settings.as_dict()
+        colored = config.get('runner.output.colored')
+        force_color = config.get('runner.output.color')
         if force_color == "never":
             self.disable()
         elif force_color == "auto":
