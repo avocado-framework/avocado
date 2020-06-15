@@ -11,6 +11,7 @@ from avocado.utils import process
 from avocado.utils import path
 
 from .. import setup_avocado_loggers, skipOnLevelsInferiorThan
+from .. import skipUnlessPathExists
 
 
 setup_avocado_loggers()
@@ -220,8 +221,7 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @unittest.skipUnless(os.path.exists('/bin/sudo'),
-                         "/bin/sudo not available")
+    @skipUnlessPathExists('/bin/sudo')
     @unittest.mock.patch.object(path, 'find_command',
                                 unittest.mock.Mock(return_value='/bin/sudo'))
     @unittest.mock.patch.object(os, 'getuid',
