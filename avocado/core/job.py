@@ -408,7 +408,7 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
-    def _make_test_suite_loader(self, references):
+    def _make_test_suite(self, references, ignore_missing):
         """
         Prepares a test suite to be used for running tests
 
@@ -417,10 +417,20 @@ class Job:
         :type references: list of str
         :returns: a test suite (a list of test factories)
         """
+        if self._test_runner_name == 'nrunner':
+            make_test_suite = self._make_test_suite_resolver
+        else:
+            make_test_suite = self._make_test_suite_loader
+        try:
+            self.test_suite = make_test_suite(references, ignore_missing)
+        except loader.LoaderError as details:
+            stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
+            raise exceptions.JobTestSuiteError(details)
+
+    def _make_test_suite_loader(self, references, ignore_missing):
         loader.loader.load_plugins(self.config)
         try:
-            force = self.config.get('run.ignore_missing_references')
-            suite = loader.loader.discover(references, force=force)
+            suite = loader.loader.discover(references, force=ignore_missing)
             filter_tags = self.config.get("filter.by_tags.tags")
             if filter_tags:
                 suite = tags.filter_test_tags(
@@ -429,9 +439,7 @@ class Job:
                     self.config.get("filter.by_tags.include_empty"),
                     self.config.get('filter.by_tags.include_empty_key'))
         except loader.LoaderUnhandledReferenceError as details:
-            raise exceptions.OptionValidationError(details)
-        except KeyboardInterrupt:
-            raise exceptions.JobError('Command interrupted by user...')
+            raise exceptions.JobTestSuiteError(details)
 
         if not self.config.get('run.dry_run.enabled'):
             return suite
@@ -439,8 +447,23 @@ class Job:
             suite[i] = [DryRunTest, suite[i][1]]
         return suite
 
-    def _make_test_suite_resolver(self, references):
+    @staticmethod
+    def _resolver_check_missing_references(references, resolutions):
+        missing = []
+        for reference in references:
+            results = [res.result for res in resolutions if
+                       res.reference == reference]
+            if resolver.ReferenceResolutionResult.SUCCESS not in results:
+                missing.append(reference)
+        if missing:
+            msg = "Could not resolve references: %s" % ",".join(missing)
+            raise exceptions.JobTestSuiteReferenceResolutionError(msg)
+
+    def _make_test_suite_resolver(self, references, ignore_missing):
         resolutions = resolver.resolve(references)
+        if not ignore_missing:
+            self._resolver_check_missing_references(references,
+                                                    resolutions)
         return resolutions_to_tasks(resolutions, self.config)
 
     def _log_job_id(self):
@@ -535,15 +558,8 @@ class Job:
         This is a public Job API as part of the documented Job phases
         """
         refs = self.config.get('run.references')
-        try:
-            if self._test_runner_name == 'nrunner':
-                self.test_suite = self._make_test_suite_resolver(refs)
-            else:
-                self.test_suite = self._make_test_suite_loader(refs)
-        except loader.LoaderError as details:
-            stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
-            raise exceptions.OptionValidationError(details)
-
+        ignore_missing = self.config.get('run.ignore_missing_references')
+        self._make_test_suite(refs, ignore_missing)
         if not self.test_suite:
             if refs:
                 e_msg = ("No tests found for given test references, try "
@@ -552,7 +568,7 @@ class Job:
                 e_msg = ("No test references provided nor any other arguments "
                          "resolved into tests. Please double check the "
                          "executed command.")
-            raise exceptions.OptionValidationError(e_msg)
+            raise exceptions.JobTestSuiteEmptyError(e_msg)
 
         self.result.tests_total = len(self.test_suite)
 
@@ -570,7 +586,6 @@ class Job:
         The actual test execution phase
         """
         variant = self.config.get("avocado_variants")
-        refs = self.config.get('run.references')
         if variant is None:
             variant = varianter.Varianter()
         if not variant.is_parsed():   # Varianter not yet parsed, apply args
@@ -587,8 +602,7 @@ class Job:
         self.test_runner = runner_extension.obj
 
         self._log_job_debug_info(variant)
-        jobdata.record(self.config, self.logdir, variant,
-                       refs, sys.argv)
+        jobdata.record(self.config, self.logdir, variant, sys.argv)
         replay_map = self.config.get('replay_map')
         execution_order = self.config.get('run.execution_order')
         summary = self.test_runner.run_suite(self,

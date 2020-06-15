@@ -107,7 +107,7 @@ class JobTest(unittest.TestCase):
                   'core.show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
-        self.assertRaises(exceptions.OptionValidationError,
+        self.assertRaises(exceptions.JobTestSuiteEmptyError,
                           self.job.create_test_suite)
 
     def test_job_create_test_suite_simple(self):
