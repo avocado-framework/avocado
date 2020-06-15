@@ -21,9 +21,8 @@ import os
 import signal
 import time
 
-from . import defaults
 from . import exceptions
-from .settings import settings
+from .future.settings import settings
 from .output import LOG_JOB as TEST_LOG
 from ..utils import wait
 
@@ -197,12 +196,9 @@ class TestStatus:
         """
         # Wait for either process termination or test status
         wait.wait_for(lambda: not proc.is_alive() or self.status, 1, 0, step)
+        config = settings.as_dict()
         if self.status:     # status exists, wait for process to finish
-            timeout_process_alive = settings.get_value(
-                'runner.timeout',
-                'process_alive',
-                key_type=int,
-                default=defaults.TIMEOUT_PROCESS_ALIVE)
+            timeout_process_alive = config.get('runner.timeout.process_alive')
             deadline = min(deadline, time.time() + timeout_process_alive)
             while time.time() < deadline:
                 result_dispatcher.map_method('test_progress', False)
@@ -210,11 +206,7 @@ class TestStatus:
                     return self._add_status_failures(self.status)
             err = "Test reported status but did not finish"
         else:   # proc finished, wait for late status delivery
-            timeout_process_died = settings.get_value(
-                'runner.timeout',
-                'process_died',
-                key_type=int,
-                default=defaults.TIMEOUT_PROCESS_DIED)
+            timeout_process_died = config.get('runner.timeout.process_died')
             deadline = min(deadline, time.time() + timeout_process_died)
             while time.time() < deadline:
                 result_dispatcher.map_method('test_progress', False)

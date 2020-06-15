@@ -111,6 +111,22 @@ def register_core_options():
                                     default=default,
                                     help_msg=help_msg)
 
+    help_msg = ('The amount of time to wait after a test has reported '
+                'status but the test process has not finished')
+    future_settings.register_option(section='runner.timeout',
+                                    key='process_alive',
+                                    key_type=int,
+                                    help_msg=help_msg,
+                                    default=60)
+
+    help_msg = ('The amount of to wait for a test status after the '
+                'process has been noticed to be dead')
+    future_settings.register_option(section='runner.timeout',
+                                    key='process_died',
+                                    key_type=int,
+                                    help_msg=help_msg,
+                                    default=10)
+
 
 def initialize_plugins():
     InitDispatcher().map_method('initialize')
