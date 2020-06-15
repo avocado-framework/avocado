@@ -16,6 +16,12 @@ import tempfile
 import time
 import unittest
 
+try:
+    import pkg_resources
+    PKG_RESOURCES_AVAILABLE = True
+except ImportError:
+    PKG_RESOURCES_AVAILABLE = False
+
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -253,6 +259,26 @@ class Runnable:
         # future similar problems
         runners_registry[self.kind] = False
 
+    def pick_runner_class_from_entry_point(self):
+        """Selects a runner class from entry points based on kind.
+
+        This is related to the :data:`SpawnMethod.PYTHON_CLASS`.  This
+        completements the :data:`RUNNERS_REGISTRY_PYTHON_CLASS` on systems
+        that have setuptools available.
+
+        :returns: a class that inherits from :class:`BaseRunner` or None
+        """
+        if not PKG_RESOURCES_AVAILABLE:
+            return
+        namespace = 'avocado.plugins.runnable.runner'
+        for ep in pkg_resources.iter_entry_points(namespace):
+            if ep.name == self.kind:
+                try:
+                    obj = ep.load()
+                    return obj
+                except ImportError:
+                    return
+
     def pick_runner_class(self, runners_registry=None):
         """Selects a runner class from the registry based on kind.
 
@@ -268,6 +294,8 @@ class Runnable:
             runners_registry = RUNNERS_REGISTRY_PYTHON_CLASS
 
         runner = runners_registry.get(self.kind, None)
+        if runner is None:
+            runner = self.pick_runner_class_from_entry_point()
         if runner is not None:
             return runner
         raise ValueError('Unsupported kind of runnable: %s' % self.kind)

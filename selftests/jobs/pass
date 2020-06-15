@@ -6,7 +6,12 @@ import os
 import sys
 from avocado.core.job import Job
 
-config = {'run.references': [os.path.join(os.path.dirname(__file__), 'tests', 'pass')]}
+config = {
+    'run.references': [
+        os.path.join(os.path.dirname(__file__), 'tests', 'pass'),
+        os.path.join(os.path.dirname(__file__), 'tests', 'passtest.py')
+        ]
+    }
 
 with Job(config) as j:
     sys.exit(j.run())
