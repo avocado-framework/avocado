@@ -249,8 +249,8 @@ class Settings:
     def __init__(self):
         """Constructor. Tries to find the main settings files and load them."""
         self._config = configparser.ConfigParser()
-        self._all_config_paths = []
-        self._config_paths = []
+        self.all_config_paths = []
+        self.config_paths = []
         self._namespaces = {}
 
         # 1. Prepare config paths
@@ -258,7 +258,7 @@ class Settings:
         self._append_config_paths()
 
         # 2. Parse/read all config paths
-        self._config_paths = self._config.read(self._all_config_paths)
+        self.config_paths = self._config.read(self.all_config_paths)
 
     def _append_config_paths(self):
         # Override with system config
@@ -268,22 +268,22 @@ class Settings:
         dispatcher = SettingsDispatcher()
         if dispatcher.extensions:
             dispatcher.map_method('adjust_settings_paths',
-                                  self._all_config_paths)
+                                  self.all_config_paths)
 
         # Override with the user's local config
         self._append_user_config()
 
     def _append_system_config(self):
-        self._all_config_paths.append(self._config_path_pkg)
-        self._all_config_paths.append(self._config_path_system)
+        self.all_config_paths.append(self._config_path_pkg)
+        self.all_config_paths.append(self._config_path_system)
         configs = glob.glob(os.path.join(self._config_dir_system_extra,
                                          '*.conf'))
         for extra_file in configs:
-            self._all_config_paths.append(extra_file)
+            self.all_config_paths.append(extra_file)
 
     def _append_user_config(self):
         if os.path.exists(self._config_path_local):
-            self._all_config_paths.append(self._config_path_local)
+            self.all_config_paths.append(self._config_path_local)
 
     def _prepare_base_dirs(self):
         cfg_dir = '/etc'
@@ -434,8 +434,8 @@ class Settings:
 
     def process_config_path(self, path):
         """Update list of config paths and process the given path."""
-        self._all_config_paths.append(path)
-        self._config_paths.extend(self._config.read(path))
+        self.all_config_paths.append(path)
+        self.config_paths.extend(self._config.read(path))
 
     def register_option(self, section, key, default, help_msg, key_type=str,
                         parser=None, positional_arg=False, short_arg=None,
