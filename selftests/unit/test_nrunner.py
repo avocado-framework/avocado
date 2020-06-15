@@ -393,10 +393,10 @@ echo 'ok 2 - description 2'"""
     @skipUnlessPathExists('/bin/sh')
     def test_runner_tap_error(self):
         tap_script = """#!/bin/sh
-    echo '1..2'
-    echo '# Defining an basic test'
-    echo 'error - description 1'
-    echo 'ok 2 - description 2'"""
+echo '1..2'
+echo '# Defining an basic test'
+echo 'error - description 1'
+echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
 
         with open(tap_path, 'w') as fp:
