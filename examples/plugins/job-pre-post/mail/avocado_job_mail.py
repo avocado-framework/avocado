@@ -2,47 +2,62 @@ import smtplib
 from email.mime.text import MIMEText
 
 from avocado.core.output import LOG_UI
-from avocado.core.settings import settings
-from avocado.core.plugin_interfaces import JobPre, JobPost
+from avocado.core.future.settings import settings as future_settings
+from avocado.core.plugin_interfaces import JobPre, JobPost, Init
+
+
+class MailInit(Init):
+    name = 'mail-init'
+    description = 'Mail plugin initialization'
+
+    def initialize(self):
+        help_msg = 'Mail recipient.'
+        future_settings.register_option(section='plugins.job.mail',
+                                        key='recipient',
+                                        default='root@localhost.localdomain',
+                                        help_msg=help_msg)
+
+        help_msg = 'Mail header.'
+        future_settings.register_option(section='plugins.job.mail',
+                                        key='header',
+                                        default='[AVOCADO JOB NOTIFICATION]',
+                                        help_msg=help_msg)
+
+        help_msg = 'Mail sender.'
+        future_settings.register_option(section='plugins.job.mail',
+                                        key='sender',
+                                        default='avocado@localhost.localdomain',
+                                        help_msg=help_msg)
+
+        help_msg = 'Mail server.'
+        future_settings.register_option(section='plugins.job.mail',
+                                        key='server',
+                                        default='localhost',
+                                        help_msg=help_msg)
 
 
 class Mail(JobPre, JobPost):
-
     name = 'mail'
     description = 'Sends mail to notify on job start/end'
 
-    def __init__(self):
-        self.rcpt = settings.get_value(section="plugins.job.mail",
-                                       key="recipient",
-                                       key_type=str,
-                                       default='root@localhost.localdomain')
-        self.subject = settings.get_value(section="plugins.job.mail",
-                                          key="subject",
-                                          key_type=str,
-                                          default='[AVOCADO JOB NOTIFICATION]')
-        self.sender = settings.get_value(section="plugins.job.mail",
-                                         key="sender",
-                                         key_type=str,
-                                         default='avocado@localhost.localdomain')
-        self.server = settings.get_value(section="plugins.job.mail",
-                                         key="server",
-                                         key_type=str,
-                                         default='localhost')
-
     def mail(self, job):
+        rcpt = job.config.get('plugins.job.mail.recipient')
+        header = job.config.get('plugins.job.mail.header')
+        sender = job.config.get('plugins.job.mail.sender')
+        server = job.config.get('plugins.job.mail.server')
         # build proper subject based on job status
-        subject = '%s Job %s - Status: %s' % (self.subject,
+        subject = '%s Job %s - Status: %s' % (header,
                                               job.unique_id,
                                               job.status)
         msg = MIMEText(subject)
-        msg['Subject'] = self.subject
-        msg['From'] = self.sender
-        msg['To'] = self.rcpt
+        msg['Subject'] = subject
+        msg['From'] = sender
+        msg['To'] = rcpt
 
         # So many possible failures, let's just tell the user about it
         try:
-            smtp = smtplib.SMTP(self.server)
-            smtp.sendmail(self.sender, [self.rcpt], msg.as_string())
+            smtp = smtplib.SMTP(server)
+            smtp.sendmail(sender, [rcpt], msg.as_string())
             smtp.quit()
         except Exception:  # pylint: disable=W0703
             LOG_UI.error("Failure to send email notification: "
