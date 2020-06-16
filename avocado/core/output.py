@@ -25,7 +25,6 @@ import traceback
 from . import exit_codes
 from ..utils import path as utils_path
 from .future.settings import settings as future_settings
-from .settings import settings
 from .streams import BUILTIN_STREAMS
 
 
@@ -715,9 +714,8 @@ def log_plugin_failures(failures):
                      attribute `load_failures`
     """
     msg_fmt = 'Failed to load plugin from module "%s": %s :\n%s'
-    silenced = settings.get_value('plugins',
-                                  'skip_broken_plugin_notification',
-                                  list, [])
+    config = future_settings.as_dict()
+    silenced = config.get('plugins.skip_broken_plugin_notification')
     for failure in failures:
         if failure[0].module_name in silenced:
             continue

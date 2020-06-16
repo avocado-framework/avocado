@@ -148,6 +148,16 @@ def register_core_options():
                                     help_msg=help_msg,
                                     default=True)
 
+    help_msg = ('Suppress notification about broken plugins in the app '
+                'standard error. Add the name of each broken plugin you '
+                'want to suppress the notification in the list. (e.g. '
+                '"avocado_result_html")')
+    future_settings.register_option(section='plugins',
+                                    key='skip_broken_plugin_notification',
+                                    key_type=list,
+                                    default=[],
+                                    help_msg=help_msg)
+
 
 def initialize_plugins():
     InitDispatcher().map_method('initialize')
