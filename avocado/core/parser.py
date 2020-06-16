@@ -26,6 +26,7 @@ from . import exit_codes
 from . import varianter
 from . import settings
 from .future.settings import settings as future_settings
+from .future.settings import ConfigFileNotFound, SettingsError
 from .nrunner import Runnable
 from .output import LOG_UI
 from .resolver import ReferenceResolution
@@ -233,7 +234,7 @@ class HintParser:
         self.config = ConfigParser()
         config_paths = self.config.read(self.filename)
         if not config_paths:
-            raise settings.ConfigFileNotFound(self.filename)
+            raise ConfigFileNotFound(self.filename)
 
     def get_resolutions(self):
         """Return a list of resolutions based on the file definitions."""
@@ -254,9 +255,9 @@ class HintParser:
         """
         if kind not in self.config:
             msg = 'Section {} is not defined. Please check your hint file.'
-            raise settings.SettingsError(msg.format(kind))
+            raise SettingsError(msg.format(kind))
 
         uri = self._get_uri_from_section(kind)
         if uri is None:
             msg = "uri needs to be defined inside {}".format(kind)
-            raise settings.SettingsError(msg)
+            raise SettingsError(msg)

@@ -55,6 +55,21 @@ class SettingsError(Exception):
     """
 
 
+class ConfigFileNotFound(SettingsError):
+
+    """
+    Error thrown when the main settings file could not be found.
+    """
+
+    def __init__(self, path_list):
+        super(ConfigFileNotFound, self).__init__()
+        self.path_list = path_list
+
+    def __str__(self):
+        return ("Could not find the avocado config file after looking in: %s" %
+                self.path_list)
+
+
 class DuplicatedNamespace(SettingsError):
     """
     Raised when a namespace is already registered.
