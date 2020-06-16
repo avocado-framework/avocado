@@ -390,6 +390,16 @@ class Settings:
             result[namespace] = option.value
         return result
 
+    def as_full_dict(self):
+        result = {}
+        for namespace, option in self._namespaces.items():
+            result[namespace] = {'help': option.help_msg,
+                                 'type': option.key_type,
+                                 'default': option.default,
+                                 'section': option.section,
+                                 'key': option.key}
+        return result
+
     def as_json(self):
         """Return a JSON with the current active settings.
 

@@ -45,6 +45,7 @@ clean:
 	-rm -rf $(BUILDDIR)
 
 html:
+	avocado config reference > source/config/reference.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

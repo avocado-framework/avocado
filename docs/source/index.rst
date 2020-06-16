@@ -47,6 +47,13 @@ Contents:
 
    misc/index
 
+.. toctree::
+   :caption: Configuration Reference
+   :maxdepth: 3
+
+   config/index
+
+
 ========
 Test API
 ========
