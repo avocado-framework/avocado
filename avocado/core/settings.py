@@ -19,6 +19,7 @@ import ast
 import os
 import glob
 import configparser
+import warnings
 
 from pkg_resources import get_distribution
 from pkg_resources import resource_filename
@@ -29,6 +30,11 @@ from .settings_dispatcher import SettingsDispatcher
 
 # pylint: disable-msg=too-many-locals
 # pylint: disable-msg=too-many-arguments
+
+
+warnings.warn("settings modules is deprecated, please use future.settings.",
+              DeprecationWarning,
+              stacklevel=2)
 
 
 class SettingsError(Exception):
