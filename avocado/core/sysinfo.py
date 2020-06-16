@@ -97,6 +97,14 @@ class Logfile(Collectible):
         :param logdir: Log directory which the file is going to be copied to.
         """
         if os.path.exists(self.path):
+            config = future_settings.as_dict()
+            if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
+                pre_file = os.path.join(os.path.dirname(logdir), 'pre', self.logf)
+                with open(self.path) as f1:
+                    with open(pre_file) as f2:
+                        if f1.read() == f2.read():
+                            log.debug("Not logging %s (no change detected)", self.path)
+                            return
             try:
                 shutil.copyfile(self.path, os.path.join(logdir, self.logf))
             except IOError:
@@ -176,6 +184,12 @@ class Command(Collectible):
             log.warning('Could not execute "%s": %s', self.cmd, exc)
             return
         logf_path = os.path.join(logdir, self.logf)
+        if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
+            pre_file = os.path.join(os.path.dirname(logdir), 'pre', self.logf)
+            with open(pre_file, 'rb') as f1:
+                if f1.read() == result.stdout:
+                    log.debug("Not logging %s (no change detected)", self.cmd)
+                    return
         if self._compress_log:
             with gzip.GzipFile(logf_path, 'wb') as logf:
                 logf.write(result.stdout)

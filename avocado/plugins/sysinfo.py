@@ -77,6 +77,14 @@ class SysinfoInit(Init):
                                  default='C',
                                  help_msg=help_msg)
 
+        help_msg = ('Optimize sysinfo collected so that duplicates between pre '
+                    'and post re not stored in post')
+        settings.register_option(section='sysinfo.collect',
+                                 key='optimize',
+                                 default=False,
+                                 key_type=bool,
+                                 help_msg=help_msg)
+
         help_msg = ('File with list of commands that will be executed and '
                     'have their output collected')
         default = prepend_base_path('etc/avocado/sysinfo/commands')
