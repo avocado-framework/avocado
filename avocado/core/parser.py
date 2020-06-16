@@ -124,7 +124,6 @@ class Parser:
 
         # Load settings from file, if user provides one
         if self.args.config is not None:
-            settings.settings.process_config_path(self.args.config)
             future_settings.process_config_path(self.args.config)
 
         # Use parent parsing to avoid breaking the output of --help option
