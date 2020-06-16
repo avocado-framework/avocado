@@ -158,6 +158,12 @@ def register_core_options():
                                     default=[],
                                     help_msg=help_msg)
 
+    help_msg = 'The encoding used by default on all data input'
+    future_settings.register_option(section='core',
+                                    key='input_encoding',
+                                    default='utf-8',
+                                    help_msg=help_msg)
+
 
 def initialize_plugins():
     InitDispatcher().map_method('initialize')
