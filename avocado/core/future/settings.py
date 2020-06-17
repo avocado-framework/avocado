@@ -39,6 +39,7 @@ ATTENTION: This is a future module, and will be moved out from this package
 soon.
 """
 
+import ast
 import configparser
 import glob
 import json
@@ -170,7 +171,7 @@ class ConfigOption:
             return []
 
         if isinstance(value, str):
-            return [v for v in value.strip('[]').split(',') if v]
+            return ast.literal_eval(value)
 
         if isinstance(value, list):
             return value
