@@ -122,7 +122,7 @@ class ConfigOption(unittest.TestCase):
         config_option = settings.ConfigOption('namespace', 'help_message')
         self.assertEqual(config_option._as_list(''), [])
         self.assertEqual(config_option._as_list('[]'), [])
-        self.assertEqual(config_option._as_list('[,,,]'), [])
+        self.assertEqual(2, len(config_option._as_list('["foo", "bar", ]')))
 
     def test_as_list_fails(self):
         with self.assertRaises(ValueError):
