@@ -4,7 +4,7 @@ import unittest
 from avocado.core.nrunner import Runnable
 from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolution
-from avocado.core.settings import SettingsError
+from avocado.core.future.settings import SettingsError
 
 BAD = """[kinds]
 tap = ./tests/*.t
