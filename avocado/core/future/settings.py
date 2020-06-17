@@ -263,7 +263,7 @@ class Settings:
 
     def __init__(self):
         """Constructor. Tries to find the main settings files and load them."""
-        self._config = configparser.ConfigParser()
+        self.config = configparser.ConfigParser()
         self.all_config_paths = []
         self.config_paths = []
         self._namespaces = {}
@@ -273,7 +273,7 @@ class Settings:
         self._append_config_paths()
 
         # 2. Parse/read all config paths
-        self.config_paths = self._config.read(self.all_config_paths)
+        self.config_paths = self.config.read(self.all_config_paths)
 
     def _append_config_paths(self):
         # Override with system config
@@ -441,8 +441,8 @@ class Settings:
         After parsing config file options this method should be executed to
         have an unified settings.
         """
-        for section in self._config:
-            items = self._config.items(section)
+        for section in self.config:
+            items = self.config.items(section)
             for key, value in items:
                 namespace = "{}.{}".format(section, key)
                 self.update_option(namespace, value, convert=True)
@@ -450,7 +450,7 @@ class Settings:
     def process_config_path(self, path):
         """Update list of config paths and process the given path."""
         self.all_config_paths.append(path)
-        self.config_paths.extend(self._config.read(path))
+        self.config_paths.extend(self.config.read(path))
 
     def register_option(self, section, key, default, help_msg, key_type=str,
                         parser=None, positional_arg=False, short_arg=None,
