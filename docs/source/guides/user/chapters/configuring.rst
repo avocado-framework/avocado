@@ -137,4 +137,119 @@ of precedence for variables (from least precedence to most):
 So the least important value comes from the library or test code default, going
 all the way up to the test parameters system.
 
+Supported data types when configuring Avocado
+---------------------------------------------
+
+As already said before, Avocado allows users to use both: configuration files
+and command-line options to configure its behavior. It is important to have a
+very well defined system type for the configuration file and argument options.
+
+Although config files options and command-line arguments are always considered
+``strings``, you should give a proper format representation so those values can
+be parsed into a proper type internally on Avocado.
+
+Currently Avocado supports the following data types for the configuration options:
+``string``, ``integer``, ``float``, ``bool`` and ``list``. Besides those
+primitives data types Avocado also supports custom data types that can be used
+by a particular plugin.
+
+Bellow, you will find information on how to set options based on those basic
+data types using both: configuration files and command-line arguments.
+
+Strings
+~~~~~~~
+
+Strings are the basic ones and the syntax is the same for both: configuration
+files and command-line arguments: Just the string that can be inside ``""`` or
+``''``.
+
+Example using the configuration file:
+
+.. code-block:: ini
+
+  [foo]
+  bar = 'hello world'
+
+Example using the command-line:
+
+.. code-block:: bash
+
+  $ avocado run --foo bar /bin/true
+
+Integers
+~~~~~~~~
+
+Integer numbers are as simple as strings.
+
+Example using the configuration file:
+
+.. code-block:: ini
+
+  [run]
+  job_timeout = 60
+
+Example using the command-line:
+
+.. code-block:: bash
+
+  $ avocado run --job-timeout 50 /bin/true
+
+Floats
+~~~~~~
+
+Float numbers has the same representation as integers, but you should use `.`
+(dot) to separate the decimals. i.e: `80.3`.
+
+Booleans
+~~~~~~~~
+
+When talking about configuration files, accepted values for a boolean option
+are '1', 'yes', 'true', and 'on', which cause this method to return True, and
+'0', 'no', 'false', and 'off', which cause it to return False. But, when
+talking about command-line, booleans options don't need any argument, the
+option itself will enable or disable the settings, depending on the context.
+
+Example using the configuration file:
+
+.. code-block:: ini
+
+  [core]
+  verbose = 'true'
+
+Example using the command-line:
+
+.. code-block:: bash
+
+  $ avocado run --verbose /bin/true
+
+.. note:: Currently we still have some "old style boolean" options where you
+  should pass "on" or "off" on the command-line. i.e: ``--sysinfo=off``. Those
+  options are going to be replaced soon.
+
+Lists
+~~~~~
+
+Lists are peculiar when configuring. On configuration files you can use the
+default "python" syntax for lists: ``["foo", "bar"]``, but when using the
+command-line arguments lists are strings separated by spaces:
+
+Example using the configuration file:
+
+.. code-block:: ini
+
+  [assets.fetch]
+  references = ["foo.py", "bar.py"]
+
+Example using the command-line:
+
+.. code-block:: bash
+
+  $ avocado assets fetch foo.py bar.py
+
+
+Complete Configuration Reference
+--------------------------------
+
+For a complete configuration reference, please visit :ref:`config-reference`.
+
 .. _INI: http://en.wikipedia.org/wiki/INI_file
