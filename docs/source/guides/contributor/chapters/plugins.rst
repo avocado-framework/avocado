@@ -77,3 +77,62 @@ definition itself, in this case, ``jobscripts``.
 
 To summarize, still using the same example, the fully qualified Avocado plugin
 name is going to be ``job.prepost.jobscripts``.
+
+
+Plugin config files
+~~~~~~~~~~~~~~~~~~~
+
+Plugins can extend the list of config files parsed by ``Settings`` objects by
+dropping the individual config files into ``/etc/avocado/conf.d``
+(linux/posix-way) or they can take advantages of the Python entry point using
+``avocado.plugins.settings``.
+
+1. `/etc/avocado/conf.d`:
+
+In order to not disturb the main Avocado config file, those plugins, if they
+wish so, may install additional config files to
+``/etc/avocado/conf.d/[pluginname].conf``, that will be parsed after the system
+wide config file. Users can override those values as well at the local config
+file level. Considering the config for the hypothethical plugin ``salad``:
+
+.. code-block:: ini
+
+    [salad.core]
+    base = ceasar
+    dressing = ceasar
+
+If you want, you may change ``dressing`` in your config file by simply adding a
+``[salad.core]`` new section in your local config file, and set a different
+value for ``dressing`` there.
+
+2. `avocado.plugins.settings`:
+
+This entry-point uses ``avocado.core.plugin_interfaces.Settings``-like object
+to extend the list of parsed files. It only accepts individual files, but you
+can use something like ``glob.glob("*.conf")`` to add all config files inside a
+directory.
+
+You need to create the plugin (eg. ``my_plugin/settings.py``)::
+
+   from avocado.core.plugin_interfaces import Settings
+
+   class MyPluginSettings(Settings):
+       def adjust_settings_paths(self, paths):
+           paths.extend(glob.glob("/etc/my_plugin/conf.d/*.conf"))
+
+
+And register it in your ``setup.py`` entry-points::
+
+   from setuptools import setup
+   ...
+   setup(name="my-plugin",
+         entry_points={
+             'avocado.plugins.settings': [
+                 "my-plugin-settings = my_plugin.settings.MyPluginSettings",
+                 ],
+             ...
+
+Which extends the list of files to be parsed by settings object. Note this
+has to be executed early in the code so try to keep the required deps
+minimal (for example the `avocado.core.settings.settings` is not yet
+available).
