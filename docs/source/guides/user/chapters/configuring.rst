@@ -26,27 +26,23 @@ You can also choose to set those other important directories by means of the
 variables ``test_dir``, ``data_dir`` and ``logs_dir``. You can do this by
 simply editing the config files available.
 
-
 Config file parsing order
 -------------------------
 
 Avocado starts by parsing what it calls system wide config file, that is
 shipped to all Avocado users on a system wide directory,
-``/etc/avocado/avocado.conf``. Then it'll verify if there's a local user config
-file, that is located usually in ``~/.config/avocado/avocado.conf``. The order
-of the parsing matters, so the system wide file is parsed, then the user config
-file is parsed last, so that the user can override values at will. There is
-another directory that will be scanned by extra config files,
+``/etc/avocado/avocado.conf`` (when installed by your distro's package
+manager).
+
+There is another directory that will be scanned by extra config files,
 ``/etc/avocado/conf.d``. This directory may contain plugin config files, and
 extra additional config files that the system administrator/avocado developers
 might judge necessary to put there.
 
-Please note that for base directories, if you chose a directory that can't be
-properly used by Avocado (some directories require read access, others, read
-and write access), Avocado will fall back to some defaults. So if your regular
-user wants to write logs to ``/root/avocado/logs``, Avocado will not use that
-directory, since it can't write files to that place. A new location, by default
-``~/avocado/job-results`` will be selected instead.
+Then it'll verify if there's a local user config file, that is located usually
+in ``~/.config/avocado/avocado.conf``. The order of the parsing matters, so the
+system wide file is parsed, then the user config file is parsed last, so that
+the user can override values at will.
 
 The order of files described in this section is only valid if Avocado was
 installed in the system. For people using Avocado from git repos (usually
@@ -55,13 +51,24 @@ Avocado will read the config files present in the git repos, and will ignore
 the system wide config files. Running ``avocado config`` will let you know
 which files are actually being used.
 
+Configuring via command-line
+----------------------------
+
+Besides the configuration files, the most used options has also the hability to
+be configured by the command-line arguments. For instance, regardless what you
+have on your configuration files, you can disable sysinfo logging by running:
+
+.. code-block::
+
+   $ avocado run --sysinfo off /bin/true
 
 
+.. note:: Please keep in mind that sysinfo option will be a boolean
+  command-line option soon.
 
-
-
-
-
+So, command-line options always will have preference during the configuration
+parsing. Use this if you would like to change some beahviour on just one or a
+few specific executions.
 
 Parsing order recap
 -------------------
@@ -71,6 +78,10 @@ So the file parsing order is:
   * ``/etc/avocado/avocado.conf``
   * ``/etc/avocado/conf.d/*.conf``
   * ``avocado.plugins.settings`` plugins (but they can insert to any location)
+
+        - For more information about this, visit the "Contributor's Guide"
+          section named "Writing an Avocado plugin"
+
   * ``~/.config/avocado/avocado.conf``
 
 You can see the actual set of files/location by using ``avocado config`` which
