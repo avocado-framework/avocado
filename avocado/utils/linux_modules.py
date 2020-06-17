@@ -51,9 +51,10 @@ def load_module(module_name):
     :rtype: Bool
     """
     if module_is_loaded(module_name):
-        return False
+        return True
 
-    process.system('/sbin/modprobe ' + module_name)
+    if process.system('/sbin/modprobe ' + module_name, ignore_status=True):
+        return False
     return True
 
 
