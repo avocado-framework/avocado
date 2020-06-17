@@ -17,7 +17,7 @@ Extension manager with disable/ordering support
 """
 
 from .extension_manager import ExtensionManager
-from .settings import settings
+from .future.settings import settings as future_settings
 from .settings import SettingsError
 
 
@@ -25,8 +25,8 @@ class EnabledExtensionManager(ExtensionManager):
 
     def __init__(self, namespace, invoke_kwds=None):
         super(EnabledExtensionManager, self).__init__(namespace, invoke_kwds)
-        configured_order = settings.get_value(self.settings_section(), "order",
-                                              key_type=list, default=[])
+        namespace = '{}.order'.format(self.settings_section())
+        configured_order = future_settings.as_dict().get(namespace)
         ordered = []
         for name in configured_order:
             for ext in self.extensions:
@@ -45,7 +45,7 @@ class EnabledExtensionManager(ExtensionManager):
         is disabled.
         """
         try:
-            disabled = settings.get_value('plugins', 'disable', key_type=list)
+            disabled = future_settings.as_dict().get('plugins.disable')
             return self.fully_qualified_name(extension) not in disabled
         except SettingsError:
             return True

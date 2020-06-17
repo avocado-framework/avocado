@@ -164,6 +164,13 @@ def register_core_options():
                                     default='utf-8',
                                     help_msg=help_msg)
 
+    help_msg = 'List of disabled plugins'
+    future_settings.register_option(section='plugins',
+                                    key='disable',
+                                    key_type=list,
+                                    default=[],
+                                    help_msg=help_msg)
+
 
 def initialize_plugins():
     InitDispatcher().map_method('initialize')

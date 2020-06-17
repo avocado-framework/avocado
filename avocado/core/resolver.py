@@ -20,6 +20,7 @@ import os
 from enum import Enum
 
 from .enabled_extension_manager import EnabledExtensionManager
+from .future.settings import settings as future_settings
 
 
 class ReferenceResolutionResult(Enum):
@@ -95,6 +96,12 @@ class Resolver(EnabledExtensionManager):
     }
 
     def __init__(self):
+        help_msg = 'Resolver extension dispatcher'
+        future_settings.register_option(section='plugins.resolver',
+                                        key='order',
+                                        key_type=list,
+                                        default=[],
+                                        help_msg=help_msg)
         super(Resolver, self).__init__('avocado.plugins.resolver')
 
     def resolve(self, reference):

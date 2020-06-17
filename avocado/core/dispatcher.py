@@ -21,6 +21,8 @@ dispatcher that these depend upon:
 """
 
 from .enabled_extension_manager import EnabledExtensionManager
+from .future.settings import DuplicatedNamespace
+from .future.settings import settings as future_settings
 
 
 class CLIDispatcher(EnabledExtensionManager):
@@ -106,7 +108,8 @@ class VarianterDispatcher(EnabledExtensionManager):
 
     def map_method_with_return_copy(self, method_name, *args, **kwargs):
         """
-        The same as map_method_with_return, but use copy.deepcopy on each passed arg
+        The same as map_method_with_return, but use copy.deepcopy on each
+        passed arg
         """
         return super(VarianterDispatcher, self).map_method_with_return(
             method_name, deepcopy=True, *args, **kwargs)
@@ -121,4 +124,84 @@ class RunnerDispatcher(EnabledExtensionManager):
 class InitDispatcher(EnabledExtensionManager):
 
     def __init__(self):
+        try:
+            help_msg = 'Init extension dispatcher'
+            future_settings.register_option(section='plugins.init',
+                                            key='order',
+                                            key_type=list,
+                                            default=[],
+                                            help_msg=help_msg)
+        except DuplicatedNamespace:
+            pass
+
+        try:
+            help_msg = 'CLI extension dispatcher'
+            future_settings.register_option(section='plugins.cli',
+                                            key='order',
+                                            key_type=list,
+                                            default=[],
+                                            help_msg=help_msg)
+        except DuplicatedNamespace:
+            pass
+
+        try:
+            help_msg = 'CLI command extension dispatcher'
+            future_settings.register_option(section='plugins.cli.cmd',
+                                            key='order',
+                                            key_type=list,
+                                            default=[],
+                                            help_msg=help_msg)
+        except DuplicatedNamespace:
+            pass
+
+        try:
+            help_msg = 'Job Pre/Post extension dispatcher'
+            future_settings.register_option(section='plugins.job.prepost',
+                                            key='order',
+                                            key_type=list,
+                                            default=[],
+                                            help_msg=help_msg)
+        except DuplicatedNamespace:
+            pass
+        try:
+            help_msg = 'Result extension dispatcher'
+            future_settings.register_option(section='plugins.result',
+                                            key='order',
+                                            key_type=list,
+                                            default=[],
+                                            help_msg=help_msg)
+        except DuplicatedNamespace:
+            pass
+
+        try:
+            help_msg = 'Result Events extension dispatcher'
+            future_settings.register_option(
+                section='plugins.result_events',
+                key='order',
+                key_type=list,
+                default=[],
+                help_msg=help_msg)
+        except DuplicatedNamespace:
+            pass
+
+        try:
+            help_msg = 'Varianter extension dispatcher'
+            future_settings.register_option(section='plugins.varianter',
+                                            key='order',
+                                            key_type=list,
+                                            default=[],
+                                            help_msg=help_msg)
+        except DuplicatedNamespace:
+            pass
+
+        try:
+            help_msg = 'Runner extension dispatcher'
+            future_settings.register_option(section='plugins.runner',
+                                            key='order',
+                                            key_type=list,
+                                            default=[],
+                                            help_msg=help_msg)
+        except DuplicatedNamespace:
+            pass
+
         super(InitDispatcher, self).__init__('avocado.plugins.init')
