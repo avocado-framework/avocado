@@ -1,6 +1,10 @@
 Configuring
 ===========
 
+.. warning:: Please, keep in mind that we are doing a significant refactoring
+  on settings to have consistency when using Avocado. Some options are changing
+  soon.
+
 Avocado utilities have a certain default behavior based on educated, reasonable
 (we hope) guesses about how users like to use their systems. Of course,
 different people will have different needs and/or dislike our defaults, and
