@@ -33,7 +33,6 @@ import unittest
 from difflib import unified_diff
 
 from . import data_dir
-from . import defaults
 from . import exceptions
 from . import output
 from . import parameters
@@ -1085,6 +1084,7 @@ class SimpleTest(Test):
         self._command = None
         if self.filename is not None:
             self._command = pipes.quote(self.filename)
+        self._config = settings.as_dict()
 
     @property
     def filename(self):
@@ -1110,20 +1110,21 @@ class SimpleTest(Test):
             test_params = dict([(str(key), str(val)) for _, key, val in
                                 self.params.iteritems()])
 
-            result = process.run(self._command, verbose=True,
-                                 env=test_params, encoding=defaults.ENCODING)
+            input_encoding = self._config.get('core.input_encoding')
+            result = process.run(self._command,
+                                 verbose=True,
+                                 env=test_params,
+                                 encoding=input_encoding)
 
             self._log_detailed_cmd_info(result)
         except process.CmdError as details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
 
-        config = settings.as_dict()
-
-        warn_regex = config.get('simpletests.status.warn_regex')
-        warn_location = config.get('simpletests.status.warn_location')
-        skip_regex = config.get('simpletests.status.skip_regex')
-        skip_location = config.get('simpletests.status.skip_location')
+        warn_regex = self._config.get('simpletests.status.warn_regex')
+        warn_location = self._config.get('simpletests.status.warn_location')
+        skip_regex = self._config.get('simpletests.status.skip_regex')
+        skip_location = self._config.get('simpletests.status.skip_location')
 
         # Keeping compatibility with 'avocado_warn' libexec
         for regex in [warn_regex, r'^\d\d:\d\d:\d\d WARN \|']:
@@ -1267,9 +1268,12 @@ class TapTest(SimpleTest):
             test_params = {str(key): str(val)
                            for _, key, val in self.params.iteritems()}
 
-            result = process.run(self._command, verbose=True,
+            input_encoding = self._config.get('core.input_encoding')
+            result = process.run(self._command,
+                                 verbose=True,
                                  allow_output_check='stdout',
-                                 env=test_params, encoding=defaults.ENCODING)
+                                 env=test_params,
+                                 encoding=input_encoding)
 
             self._log_detailed_cmd_info(result)
         except process.CmdError as details:
