@@ -11,6 +11,9 @@
 #
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+#         Beraldo Leal <bleal@redhat.com>
+
+import textwrap
 
 from avocado.core import data_dir
 from avocado.core.future.settings import settings as future_settings
@@ -39,7 +42,32 @@ class Config(CLICmd):
                                         parser=parser,
                                         long_arg='--datadir')
 
+        subcommands = parser.add_subparsers(dest='config_subcommand',
+                                            metavar='sub-command')
+
+        help_msg = 'Show a configuration reference with all registered options'
+        subcommands.add_parser('reference', help=help_msg)
+
     def run(self, config):
+        if config.get('config_subcommand') == 'reference':
+            self.handle_reference()
+        else:
+            self.handle_default(config)
+
+    def handle_reference(self):
+        full = future_settings.as_full_dict()
+        for namespace, option in full.items():
+            LOG_UI.debug(namespace)
+            LOG_UI.debug("~" * len(namespace))
+            help_lines = textwrap.wrap(option.get('help'))
+            for line in help_lines:
+                LOG_UI.debug(line)
+            LOG_UI.debug("")
+            LOG_UI.debug("* Default: %s", option.get('default'))
+            LOG_UI.debug("* Type: %s", option.get('type'))
+            LOG_UI.debug("")
+
+    def handle_default(self, config):
         LOG_UI.info("Config files read (in order, '*' means the file exists "
                     "and had been read):")
 
