@@ -31,6 +31,17 @@ try:
 except path.CmdNotFoundError:
     APIDOC = False
 
+
+def generate_reference():
+    from avocado.plugins.config import Config
+    reference_path = os.path.join(ROOT_PATH, 'docs', 'source',
+                                  'config', 'reference.rst')
+    with open(reference_path, 'w') as reference:
+        Config.handle_reference(lambda x: reference.write(x + '\n'))
+
+
+generate_reference()
+
 # Documentation sections. Key is the name of the section, followed by:
 # Second level module name (after avocado), Module description,
 # Output directory, List of directory to exclude from API  generation,

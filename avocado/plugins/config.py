@@ -50,22 +50,23 @@ class Config(CLICmd):
 
     def run(self, config):
         if config.get('config_subcommand') == 'reference':
-            self.handle_reference()
+            self.handle_reference(LOG_UI.debug)
         else:
             self.handle_default(config)
 
-    def handle_reference(self):
+    @staticmethod
+    def handle_reference(print_function):
         full = future_settings.as_full_dict()
         for namespace, option in full.items():
-            LOG_UI.debug(namespace)
-            LOG_UI.debug("~" * len(namespace))
+            print_function(namespace)
+            print_function("~" * len(namespace))
             help_lines = textwrap.wrap(option.get('help'))
             for line in help_lines:
-                LOG_UI.debug(line)
-            LOG_UI.debug("")
-            LOG_UI.debug("* Default: %s", option.get('default'))
-            LOG_UI.debug("* Type: %s", option.get('type'))
-            LOG_UI.debug("")
+                print_function(line)
+            print_function("")
+            print_function("* Default: %s" % option.get('default'))
+            print_function("* Type: %s" % option.get('type'))
+            print_function("")
 
     def handle_default(self, config):
         LOG_UI.info("Config files read (in order, '*' means the file exists "
