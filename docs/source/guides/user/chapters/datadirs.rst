@@ -26,7 +26,7 @@ it will give you an output similar to the one seen below::
 
     Avocado replaces config dirs that can't be accessed
     with sensible defaults. Please edit your local config
-    file to customize values
+    file to customize values.
 
     Avocado Data Directories:
         base  $HOME/avocado
