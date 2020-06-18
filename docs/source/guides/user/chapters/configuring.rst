@@ -71,7 +71,7 @@ configuration files, you can disable sysinfo logging by running:
   command-line option soon.
 
 So, command-line options always will have the highest precedence during the
-configuration parsing. Use this if you would like to change some beahviour on
+configuration parsing. Use this if you would like to change some behavior on
 just one or a few specific executions.
 
 Parsing order recap
@@ -150,7 +150,7 @@ be parsed into a proper type internally on Avocado.
 
 Currently Avocado supports the following data types for the configuration options:
 ``string``, ``integer``, ``float``, ``bool`` and ``list``. Besides those
-primitives data types Avocado also supports custom data types that can be used
+primitive data types Avocado also supports custom data types that can be used
 by a particular plugin.
 
 Bellow, you will find information on how to set options based on those basic
@@ -159,7 +159,7 @@ data types using both: configuration files and command-line arguments.
 Strings
 ~~~~~~~
 
-Strings are the basic ones and the syntax is the same for both: configuration
+Strings are the basic ones and the syntax is the same in both configuration
 files and command-line arguments: Just the string that can be inside ``""`` or
 ``''``.
 
@@ -169,6 +169,16 @@ Example using the configuration file:
 
   [foo]
   bar = 'hello world'
+
+String and all following types could be used with or without quotes but using
+quotes for strings is important on the command line to safely handle empty
+spaces and distinguish it from a list type. Therefore, the following example
+will also be well handled:
+
+.. code-block:: ini
+
+  [foo]
+  bar = hello world
 
 Example using the command-line:
 
@@ -214,7 +224,7 @@ Example using the configuration file:
 .. code-block:: ini
 
   [core]
-  verbose = 'true'
+  verbose = true
 
 Example using the command-line:
 
