@@ -1,6 +1,10 @@
 Configuring
 ===========
 
+.. warning:: Please, keep in mind that we are doing a significant refactoring
+  on settings to have consistency when using Avocado. Some options are changing
+  soon.
+
 Avocado utilities have a certain default behavior based on educated, reasonable
 (we hope) guesses about how users like to use their systems. Of course,
 different people will have different needs and/or dislike our defaults, and
@@ -26,27 +30,23 @@ You can also choose to set those other important directories by means of the
 variables ``test_dir``, ``data_dir`` and ``logs_dir``. You can do this by
 simply editing the config files available.
 
-
 Config file parsing order
 -------------------------
 
 Avocado starts by parsing what it calls system wide config file, that is
 shipped to all Avocado users on a system wide directory,
-``/etc/avocado/avocado.conf``. Then it'll verify if there's a local user config
-file, that is located usually in ``~/.config/avocado/avocado.conf``. The order
-of the parsing matters, so the system wide file is parsed, then the user config
-file is parsed last, so that the user can override values at will. There is
-another directory that will be scanned by extra config files,
+``/etc/avocado/avocado.conf`` (when installed by your distro's package
+manager).
+
+There is another directory that will be scanned by extra config files,
 ``/etc/avocado/conf.d``. This directory may contain plugin config files, and
 extra additional config files that the system administrator/avocado developers
 might judge necessary to put there.
 
-Please note that for base directories, if you chose a directory that can't be
-properly used by Avocado (some directories require read access, others, read
-and write access), Avocado will fall back to some defaults. So if your regular
-user wants to write logs to ``/root/avocado/logs``, Avocado will not use that
-directory, since it can't write files to that place. A new location, by default
-``~/avocado/job-results`` will be selected instead.
+Then it'll verify if there's a local user config file, that is located usually
+in ``~/.config/avocado/avocado.conf``. The order of the parsing matters, so the
+system wide file is parsed, then the user config file is parsed last, so that
+the user can override values at will.
 
 The order of files described in this section is only valid if Avocado was
 installed in the system. For people using Avocado from git repos (usually
@@ -55,65 +55,24 @@ Avocado will read the config files present in the git repos, and will ignore
 the system wide config files. Running ``avocado config`` will let you know
 which files are actually being used.
 
-Plugin config files
--------------------
+Configuring via command-line
+----------------------------
 
-There are two ways to extend settings of extra plugin configuration. Plugins
-can extend the list of files parsed by ``Settings`` object by using
-``avocado.plugins.settings`` entry-point (Python-way) or they can simply drop
-the individual config files into ``/etc/avocado/conf.d`` (linux/posix-way).
+Besides the configuration files, the most used features can also be configured
+by command-line arguments.  For instance, regardless what you have on your
+configuration files, you can disable sysinfo logging by running:
 
-`avocado.plugins.settings`
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code-block::
 
-This entry-point uses ``avocado.core.plugin_interfaces.Settings``-like object
-to extend the list of parsed files. It only accepts individual files, but you
-can use something like ``glob.glob("*.conf")`` to add all config files inside a
-directory.
-
-You need to create the plugin (eg. ``my_plugin/settings.py``)::
-
-   from avocado.core.plugin_interfaces import Settings
-
-   class MyPluginSettings(Settings):
-       def adjust_settings_paths(self, paths):
-           paths.extend(glob.glob("/etc/my_plugin/conf.d/*.conf"))
+   $ avocado run --sysinfo off /bin/true
 
 
-And register it in your ``setup.py`` entry-points::
+.. note:: Please keep in mind that sysinfo option will be a boolean
+  command-line option soon.
 
-   from setuptools import setup
-   ...
-   setup(name="my-plugin",
-         entry_points={
-             'avocado.plugins.settings': [
-                 "my-plugin-settings = my_plugin.settings.MyPluginSettings",
-                 ],
-             ...
-
-Which extends the list of files to be parsed by settings object. Note this
-has to be executed early in the code so try to keep the required deps
-minimal (for example the `avocado.core.settings.settings` is not yet
-available).
-
-`/etc/avocado/conf.d`
-~~~~~~~~~~~~~~~~~~~~~
-
-In order to not disturb the main Avocado config file, those plugins, if they
-wish so, may install additional config files to
-``/etc/avocado/conf.d/[pluginname].conf``, that will be parsed after the system
-wide config file. Users can override those values as well at the local config
-file level. Considering the config for the hypothethical plugin ``salad``:
-
-.. code-block:: ini
-
-    [salad.core]
-    base = ceasar
-    dressing = ceasar
-
-If you want, you may change ``dressing`` in your config file by simply adding a
-``[salad.core]`` new section in your local config file, and set a different
-value for ``dressing`` there.
+So, command-line options always will have the highest precedence during the
+configuration parsing. Use this if you would like to change some beahviour on
+just one or a few specific executions.
 
 Parsing order recap
 -------------------
@@ -123,6 +82,10 @@ So the file parsing order is:
   * ``/etc/avocado/avocado.conf``
   * ``/etc/avocado/conf.d/*.conf``
   * ``avocado.plugins.settings`` plugins (but they can insert to any location)
+
+        - For more information about this, visit the "Contributor's Guide"
+          section named "Writing an Avocado plugin"
+
   * ``~/.config/avocado/avocado.conf``
 
 You can see the actual set of files/location by using ``avocado config`` which
@@ -174,59 +137,119 @@ of precedence for variables (from least precedence to most):
 So the least important value comes from the library or test code default, going
 all the way up to the test parameters system.
 
-Avocado Data Directories
-------------------------
+Supported data types when configuring Avocado
+---------------------------------------------
 
-When running tests, we are frequently looking to:
+As already said before, Avocado allows users to use both: configuration files
+and command-line options to configure its behavior. It is important to have a
+very well defined system type for the configuration file and argument options.
 
-* Locate tests
-* Write logs to a given location
-* Grab files that will be useful for tests, such as ISO files or VM disk
-  images
+Although config files options and command-line arguments are always considered
+``strings``, you should give a proper format representation so those values can
+be parsed into a proper type internally on Avocado.
 
-Avocado has a module dedicated to find those paths, to avoid cumbersome
-path manipulation magic that people had to do in previous test frameworks [#f1]_.
+Currently Avocado supports the following data types for the configuration options:
+``string``, ``integer``, ``float``, ``bool`` and ``list``. Besides those
+primitives data types Avocado also supports custom data types that can be used
+by a particular plugin.
 
-If you want to list all relevant directories for your test, you can use
-`avocado config --datadir` command to list those directories. Executing
-it will give you an output similar to the one seen below::
+Bellow, you will find information on how to set options based on those basic
+data types using both: configuration files and command-line arguments.
 
-    $ avocado config --datadir
-    Config files read (in order):
-        * /etc/avocado/avocado.conf
-        * /etc/avocado/conf.d/resultsdb.conf
-        * /etc/avocado/conf.d/result_upload.conf
-        * /etc/avocado/conf.d/jobscripts.conf
-        * /etc/avocado/conf.d/gdb.conf
-          $HOME/.config/avocado/avocado.conf
+Strings
+~~~~~~~
 
-    Avocado replaces config dirs that can't be accessed
-    with sensible defaults. Please edit your local config
-    file to customize values
+Strings are the basic ones and the syntax is the same for both: configuration
+files and command-line arguments: Just the string that can be inside ``""`` or
+``''``.
 
-    Avocado Data Directories:
-        base  $HOME/avocado
-        tests $HOME/Code/avocado/examples/tests
-        data  $HOME/avocado/data
-        logs  $HOME/avocado/job-results
+Example using the configuration file:
 
-Note that, while Avocado will do its best to use the config values you
-provide in the config file, if it can't write values to the locations
-provided, it will fall back to (we hope) reasonable defaults, and we
-notify the user about that in the output of the command.
+.. code-block:: ini
 
-The relevant API documentation and meaning of each of those data directories
-is in :mod:`avocado.core.data_dir`, so it's highly recommended you take a look.
+  [foo]
+  bar = 'hello world'
 
-You may set your preferred data dirs by setting them in the Avocado config files.
-The only exception for important data dirs here is the Avocado tmp dir, used to
-place temporary files used by tests. That directory will be in normal circumstances
-`/var/tmp/avocado_XXXXX`, (where `XXXXX` is in actuality a random string) securely
-created on `/var/tmp/`, unless the user has the `$TMPDIR` environment variable set,
-since that is customary among unix programs.
+Example using the command-line:
 
-The next section of the documentation explains how you can see and set config
-values that modify the behavior for the Avocado utilities and plugins.
+.. code-block:: bash
+
+  $ avocado run --foo bar /bin/true
+
+Integers
+~~~~~~~~
+
+Integer numbers are as simple as strings.
+
+Example using the configuration file:
+
+.. code-block:: ini
+
+  [run]
+  job_timeout = 60
+
+Example using the command-line:
+
+.. code-block:: bash
+
+  $ avocado run --job-timeout 50 /bin/true
+
+Floats
+~~~~~~
+
+Float numbers has the same representation as integers, but you should use `.`
+(dot) to separate the decimals. i.e: `80.3`.
+
+Booleans
+~~~~~~~~
+
+When talking about configuration files, accepted values for a boolean option
+are '1', 'yes', 'true', and 'on', which cause this method to return True, and
+'0', 'no', 'false', and 'off', which cause it to return False. But, when
+talking about command-line, booleans options don't need any argument, the
+option itself will enable or disable the settings, depending on the context.
+
+Example using the configuration file:
+
+.. code-block:: ini
+
+  [core]
+  verbose = 'true'
+
+Example using the command-line:
+
+.. code-block:: bash
+
+  $ avocado run --verbose /bin/true
+
+.. note:: Currently we still have some "old style boolean" options where you
+  should pass "on" or "off" on the command-line. i.e: ``--sysinfo=off``. Those
+  options are going to be replaced soon.
+
+Lists
+~~~~~
+
+Lists are peculiar when configuring. On configuration files you can use the
+default "python" syntax for lists: ``["foo", "bar"]``, but when using the
+command-line arguments lists are strings separated by spaces:
+
+Example using the configuration file:
+
+.. code-block:: ini
+
+  [assets.fetch]
+  references = ["foo.py", "bar.py"]
+
+Example using the command-line:
+
+.. code-block:: bash
+
+  $ avocado assets fetch foo.py bar.py
+
+
+Complete Configuration Reference
+--------------------------------
+
+For a complete configuration reference, please visit :ref:`config-reference`.
 
 .. _INI: http://en.wikipedia.org/wiki/INI_file
-.. [#f1] For example, autotest.

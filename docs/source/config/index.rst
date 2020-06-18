@@ -1,3 +1,5 @@
+.. _config-reference:
+
 Avocado's Configuration Reference
 =================================
 

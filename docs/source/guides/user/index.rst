@@ -13,6 +13,7 @@ Avocado User's Guide
    chapters/results
    chapters/tags
    chapters/configuring
+   chapters/datadirs
    chapters/logging
    chapters/plugins
    chapters/loaders
