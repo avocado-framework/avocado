@@ -14,6 +14,7 @@
 
 
 import os
+import pkg_resources
 
 from .dispatcher import InitDispatcher
 from .future.settings import settings as future_settings
@@ -165,7 +166,28 @@ def register_core_options():
                                     help_msg=help_msg)
 
 
+def initialize_plugin_infrastructure():
+    help_msg = 'Plugins that will not be loaded and executed'
+    future_settings.register_option(section='plugins',
+                                    key='disable',
+                                    key_type=list,
+                                    default=[],
+                                    help_msg=help_msg)
+
+    kinds = pkg_resources.get_entry_map('avocado-framework').keys()
+    plugin_types = [kind[8:] for kind in kinds
+                    if kind.startswith('avocado.plugins.')]
+    for plugin_type in plugin_types:
+        help_msg = 'Execution order for "%s" plugins' % plugin_type
+        future_settings.register_option(section=plugin_type,
+                                        key='order',
+                                        key_type=list,
+                                        default=[],
+                                        help_msg=help_msg)
+
+
 def initialize_plugins():
+    initialize_plugin_infrastructure()
     InitDispatcher().map_method('initialize')
 
 
