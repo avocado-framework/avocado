@@ -433,18 +433,16 @@ class Settings:
         :param arg_parse_config: argparse.config dictionary with all
                                  command-line parsed arguments.
         """
-        for tag, value in arg_parse_config.items():
+        for namespace, value in arg_parse_config.items():
             # This check is important! For argparse when an option is
             # not passed will return None. We need to update only the
             # options that the user has specified.
             if value is not None:
                 try:
-                    option = self._namespaces[tag]
+                    _ = self._namespaces[namespace]
                 except KeyError:
                     continue  # Not registered yet, using the new module
-                self.update_option("{}.{}".format(option.section,
-                                                  option.key),
-                                   value)
+                self.update_option(namespace, value)
 
     def merge_with_configs(self):
         """Merge the current settings with the config file options.
