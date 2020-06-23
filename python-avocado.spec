@@ -15,7 +15,7 @@
     %if ! 0%{?commit_date:1}
         %global commit_date 20200605
     %endif
-    %global shortcommit     %(c=%{commit};echo ${c:0:8})
+    %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
     %global gittar          %{srcname}-%{shortcommit}.tar.gz
 %endif
@@ -34,7 +34,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 80.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -441,6 +441,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jun 23 2020 Cleber Rosa <cleber@redhat.com> - 80.0-2
+- Add on extra character to short commit
+
 * Fri Jun  5 2020 Cleber Rosa <cleber@redhat.com> - 80.0-2
 - Removed python3-libvirt build requirement
 
