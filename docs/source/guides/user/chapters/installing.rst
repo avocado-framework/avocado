@@ -123,7 +123,7 @@ Then to install Avocado from the git repository run::
 
     $ git clone git://github.com/avocado-framework/avocado.git
     $ cd avocado
-    $ sudo make requirements
+    $ sudo make requirements-selftests
     $ sudo python3 setup.py install
 
 .. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado
