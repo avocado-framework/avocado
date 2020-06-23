@@ -348,8 +348,7 @@ class TestRunner(Runner):
             raise NotImplementedError("Suite_order %s is not supported"
                                       % execution_order)
 
-    def run_suite(self, job, result, test_suite, variants, timeout=0,
-                  replay_map=None, execution_order=None):
+    def run_suite(self, job, result, test_suite, variants):
         """
         Run one or more tests and report with test result.
 
@@ -357,15 +356,12 @@ class TestRunner(Runner):
         :param result: an instance of :class:`avocado.core.result.Result`
         :param test_suite: a list of tests to run.
         :param variants: A varianter iterator to produce test params.
-        :param timeout: maximum amount of time (in seconds) to execute.
-        :param replay_map: optional list to override test class based on test
-                           index.
-        :param execution_order: Mode in which we should iterate through tests
-                                and variants.  If not provided, will default to
-                                :attr:`DEFAULT_EXECUTION_ORDER`.
         :return: a set with types of test failures.
         """
         summary = set()
+        timeout = job.config.get('run.job_timeout')
+        replay_map = job.config.get('replay_map')
+        execution_order = job.config.get('run.execution_order')
         queue = multiprocessing.SimpleQueue()
         if timeout > 0:
             deadline = time.time() + timeout

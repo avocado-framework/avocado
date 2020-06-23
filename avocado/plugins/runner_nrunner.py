@@ -72,9 +72,9 @@ class Runner(RunnerInterface):
         with open(data_file, 'w') as fp:
             fp.write("{}\n".format(task.output_dir))
 
-    def run_suite(self, job, result, test_suite, variants, timeout=0,
-                  replay_map=None, execution_order=None):
+    def run_suite(self, job, result, test_suite, variants):
         summary = set()
+        timeout = job.config.get('run.job_timeout')
         if timeout > 0:
             deadline = time.time() + timeout
         else:

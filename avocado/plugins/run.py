@@ -30,6 +30,7 @@ from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import process
+from avocado.utils.data_structures import time_to_seconds
 
 
 class Run(CLICmd):
@@ -157,7 +158,8 @@ class Run(CLICmd):
         settings.register_option(section='run',
                                  key='job_timeout',
                                  help_msg=help_msg,
-                                 default='0',
+                                 default=0,
+                                 key_type=time_to_seconds,
                                  metavar='SECONDS',
                                  parser=parser,
                                  long_arg='--job-timeout')

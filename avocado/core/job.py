@@ -146,12 +146,7 @@ class Job:
         self.status = "RUNNING"
         self.result = None
         self.interrupted_reason = None
-        timeout = self.config.get('run.job_timeout')
-        try:
-            self.timeout = data_structures.time_to_seconds(timeout)
-        except ValueError as detail:
-            LOG_UI.error(detail.args[0])
-            sys.exit(exit_codes.AVOCADO_FAIL)
+        self.timeout = self.config.get('run.job_timeout')
 
         #: The time at which the job has started or `-1` if it has not been
         #: started by means of the `run()` method.
@@ -586,15 +581,10 @@ class Job:
 
         self._log_job_debug_info(variant)
         jobdata.record(self.config, self.logdir, variant, sys.argv)
-        replay_map = self.config.get('replay_map')
-        execution_order = self.config.get('run.execution_order')
         summary = self.test_runner.run_suite(self,
                                              self.result,
                                              self.test_suite,
-                                             variant,
-                                             self.timeout,
-                                             replay_map,
-                                             execution_order)
+                                             variant)
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
