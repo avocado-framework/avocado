@@ -33,6 +33,7 @@ from . import (data_dir, dispatcher, exceptions, exit_codes, job_id, jobdata,
                loader, nrunner, output, result, tags, varianter, version)
 from .future.settings import settings
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
+from .resolver import ReferenceResolutionResult, resolve
 from .tags import filter_test_tags_runnable
 from .test import DryRunTest
 
@@ -65,19 +66,20 @@ def resolutions_to_tasks(resolutions, config):
     """
 
     tasks = []
-    resolutions = [res for res in resolutions if
-                   res.result == resolver.ReferenceResolutionResult.SUCCESS]
     filter_by_tags = config.get("filter.by_tags.tags")
+    include_empty = config.get("filter.by_tags.include_empty")
+    include_empty_key = config.get('filter.by_tags.include_empty_key')
+    status_server = config.get('nrun.status_server.listen')
     for resolution in resolutions:
+        if resolution.result != ReferenceResolutionResult.SUCCESS:
+            continue
         for runnable in resolution.resolutions:
             if filter_by_tags:
-                if not filter_test_tags_runnable(
-                        runnable,
-                        filter_by_tags,
-                        config.get("filter.by_tags.include_empty"),
-                        config.get('filter.by_tags.include_empty_key')):
+                if not filter_test_tags_runnable(runnable,
+                                                 filter_by_tags,
+                                                 include_empty,
+                                                 include_empty_key):
                     continue
-            status_server = config.get('nrun.status_server.listen')
             tasks.append(nrunner.Task(str(uuid.uuid1()), runnable,
                                       [status_server]))
     return tasks
@@ -434,14 +436,14 @@ class Job:
         for reference in references:
             results = [res.result for res in resolutions if
                        res.reference == reference]
-            if resolver.ReferenceResolutionResult.SUCCESS not in results:
+            if ReferenceResolutionResult.SUCCESS not in results:
                 missing.append(reference)
         if missing:
             msg = "Could not resolve references: %s" % ",".join(missing)
             raise exceptions.JobTestSuiteReferenceResolutionError(msg)
 
     def _make_test_suite_resolver(self, references, ignore_missing):
-        resolutions = resolver.resolve(references)
+        resolutions = resolve(references)
         if not ignore_missing:
             self._resolver_check_missing_references(references,
                                                     resolutions)
