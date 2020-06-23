@@ -125,7 +125,7 @@ class ConfigOption:
 
     @property
     def value(self):
-        if self._value:
+        if self._value is not None:
             return self._value
         return self.default
 
