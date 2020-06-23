@@ -28,32 +28,13 @@ import time
 import traceback
 import uuid
 
-from . import data_dir
-from . import dispatcher
-from . import exceptions
-from . import exit_codes
-from . import job_id
-from . import jobdata
-from . import loader
-from . import nrunner
-from . import output
-from . import resolver
-from . import result
-from . import tags
-from . import varianter
-from . import version
-from ..utils import astring
-from ..utils import data_structures
-from ..utils import path
-from ..utils import process
-from ..utils import stacktrace
-from .output import LOG_JOB
-from .output import LOG_UI
-from .output import STD_OUTPUT
+from ..utils import astring, data_structures, path, process, stacktrace
+from . import (data_dir, dispatcher, exceptions, exit_codes, job_id, jobdata,
+               loader, nrunner, output, result, tags, varianter, version)
 from .future.settings import settings
+from .output import LOG_JOB, LOG_UI, STD_OUTPUT
 from .tags import filter_test_tags_runnable
 from .test import DryRunTest
-
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
