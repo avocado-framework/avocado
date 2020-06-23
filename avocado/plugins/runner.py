@@ -26,6 +26,7 @@ import multiprocessing
 from queue import Full as queueFullException
 
 
+from avocado.utils import data_structures
 from avocado.utils import process
 from avocado.utils import stacktrace
 from avocado.utils import wait
@@ -33,6 +34,7 @@ from avocado.core import output
 from avocado.core import status
 from avocado.core import tree
 from avocado.core import varianter
+from avocado.core.exit_codes import AVOCADO_FAIL
 from avocado.core.loader import loader
 from avocado.core.output import LOG_JOB as TEST_LOG
 from avocado.core.output import LOG_UI as APP_LOG
@@ -348,8 +350,7 @@ class TestRunner(Runner):
             raise NotImplementedError("Suite_order %s is not supported"
                                       % execution_order)
 
-    def run_suite(self, job, result, test_suite, variants, timeout=0,
-                  replay_map=None, execution_order=None):
+    def run_suite(self, job, result, test_suite, variants, config):
         """
         Run one or more tests and report with test result.
 
@@ -357,15 +358,17 @@ class TestRunner(Runner):
         :param result: an instance of :class:`avocado.core.result.Result`
         :param test_suite: a list of tests to run.
         :param variants: A varianter iterator to produce test params.
-        :param timeout: maximum amount of time (in seconds) to execute.
-        :param replay_map: optional list to override test class based on test
-                           index.
-        :param execution_order: Mode in which we should iterate through tests
-                                and variants.  If not provided, will default to
-                                :attr:`DEFAULT_EXECUTION_ORDER`.
+        :param config: config dict to run the suite.
         :return: a set with types of test failures.
         """
         summary = set()
+        try:
+            timeout = data_structures.time_to_seconds(config.get('run.job_timeout'))
+        except ValueError as detail:
+            APP_LOG.error(detail.args[0])
+            sys.exit(AVOCADO_FAIL)
+        replay_map = config.get('replay_map')
+        execution_order = config.get('run.execution_order')
         queue = multiprocessing.SimpleQueue()
         if timeout > 0:
             deadline = time.time() + timeout

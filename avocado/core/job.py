@@ -586,15 +586,11 @@ class Job:
 
         self._log_job_debug_info(variant)
         jobdata.record(self.config, self.logdir, variant, sys.argv)
-        replay_map = self.config.get('replay_map')
-        execution_order = self.config.get('run.execution_order')
         summary = self.test_runner.run_suite(self,
                                              self.result,
                                              self.test_suite,
                                              variant,
-                                             self.timeout,
-                                             replay_map,
-                                             execution_order)
+                                             self.config)
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
