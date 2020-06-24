@@ -43,7 +43,7 @@ jobs:
         - make develop && ./selftests/run_coverage
       after_script:
         - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
-    - python: "3.7"
+    - python: "3.8"
       arch: s390x
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
@@ -52,7 +52,7 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
-    - python: "3.7"
+    - python: "3.8"
       arch: ppc64le
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
@@ -61,7 +61,7 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
-    - python: "3.7"
+    - python: "3.8"
       arch: arm64
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
