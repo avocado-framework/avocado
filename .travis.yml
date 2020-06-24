@@ -52,14 +52,10 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
-      script:
-        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
     - python: "3.7"
       arch: ppc64le
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
-      script:
-        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
     - python: "3.7"
       arch: arm64
       env:
@@ -69,8 +65,6 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
-      script:
-        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
 
   allow_failures:
     - python: "nightly"
