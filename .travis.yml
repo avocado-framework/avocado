@@ -12,9 +12,7 @@ python:
     - "nightly"
 
 env:
-    - AVOCADO_PARALLEL_CHECK=yes
       AVOCADO_LOG_DEBUG=yes
-      SELF_CHECK_CONTINUOUS=y
       AVOCADO_CHECK_LEVEL=1
 
 addons:
