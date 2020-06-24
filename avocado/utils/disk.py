@@ -144,7 +144,8 @@ def get_filesystem_type(mount_point='/'):
     The default mount point considered when none is informed
     is the root "/" mount point.
 
-    :param str mount_point: mount point to asses the filesystem type, default "/"
+    :param str mount_point: mount point to asses the filesystem type.
+                            Default "/"
     :returns: filesystem type
     :rtype: str
     """
