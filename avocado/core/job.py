@@ -28,7 +28,8 @@ import time
 import traceback
 import uuid
 
-from ..utils import astring, data_structures, path, process, stacktrace
+from ..utils import astring, path, process, stacktrace
+from ..utils.data_structures import CallbackRegister
 from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata,
                loader, nrunner, output, result, tags, varianter, version)
 from .job_id import create_unique_job_id
@@ -143,9 +144,9 @@ class Job:
         self.status = "RUNNING"
         self.result = None
         self.interrupted_reason = None
-        self.timeout = self.config.get('run.job_timeout')
 
         self._test_parameters = None
+        self._timeout = None
         self._unique_id = None
 
         #: The time at which the job has started or `-1` if it has not been
@@ -157,9 +158,7 @@ class Job:
         #: The total amount of time the job took from start to finish,
         #: or `-1` if it has not been started by means of the `run()` method
         self.time_elapsed = -1
-        self.funcatexit = data_structures.CallbackRegister("JobExit %s"
-                                                           % self.unique_id,
-                                                           LOG_JOB)
+        self.funcatexit = CallbackRegister("JobExit %s" % self.unique_id, LOG_JOB)
         self._stdout_stderr = None
         self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
@@ -205,6 +204,12 @@ class Job:
                                      in self.config.get('run.test_parameters',
                                                         [])}
         return self._test_parameters
+
+    @property
+    def timeout(self):
+        if self._timeout is None:
+            self._timeout = self.config.get('run.job_timeout')
+        return self._timeout
 
     @property
     def unique_id(self):
