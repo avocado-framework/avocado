@@ -74,13 +74,16 @@ def init_dir(*args):
     return directory
 
 
-def find_command(cmd, default=None):
+def find_command(cmd, default=None, check_exec=True):
     """
     Try to find a command in the PATH, paranoid version.
 
     :param cmd: Command to be found.
     :param default: Command path to use as a fallback if not found
                     in the standard directories.
+    :param check_exec: if a check for permissions that render the command
+                       executable by the current user should be performed.
+    :type check_exec: bool
     :raise: :class:`avocado.utils.path.CmdNotFoundError` in case the
             command was not found and no default was given.
     """
@@ -95,6 +98,9 @@ def find_command(cmd, default=None):
     for dir_path in path_paths:
         cmd_path = os.path.join(dir_path, cmd)
         if os.path.isfile(cmd_path):
+            if check_exec:
+                if not os.access(cmd_path, os.R_OK | os.X_OK):
+                    continue
             return os.path.abspath(cmd_path)
 
     if default is not None:
