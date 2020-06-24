@@ -20,7 +20,6 @@ env:
 addons:
   apt:
     packages:
-    - libvirt-dev
     - golang
 
 install:
@@ -61,12 +60,6 @@ jobs:
       arch: ppc64le
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
-      addons:
-        apt:
-          packages:
-            - libvirt-dev
-            - golang
-            - pkg-config
       script:
         - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
     - python: "3.7"
