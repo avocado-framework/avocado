@@ -70,6 +70,24 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
+    - name: "Ad hoc checks on OS X"
+      os: osx
+      language: c
+      osx_image: xcode10.3
+      compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - python
+          update: false
+      install:
+        - python3 -m pip install -r requirements-selftests.txt
+        - python3 setup.py develop --user
+      script:
+        - python3 -m avocado --help
+        - python3 -m avocado nlist --verbose selftests/unit/* selftests/functional/* selftests/*sh
+        - python3 -m unittest discover -v selftests.unit
 
   allow_failures:
     - python: "nightly"
+    - os: osx
