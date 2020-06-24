@@ -145,6 +145,7 @@ class Job:
         self.interrupted_reason = None
         self.timeout = self.config.get('run.job_timeout')
 
+        self._test_parameters = None
         self._unique_id = None
 
         #: The time at which the job has started or `-1` if it has not been
@@ -175,16 +176,6 @@ class Job:
         #: :attr:`test_suite`
         self.test_runner = None
 
-        #: Placeholder for test parameters (related to --test-parameters command
-        #: line option).  They're kept in the job because they will be prepared
-        #: only once, since they are read only and will be shared across all
-        #: tests of a job.
-        self.test_parameters = None
-        if "run.test_parameters" in self.config:
-            self.test_parameters = {}
-            for name, value in self.config.get('run.test_parameters'):
-                self.test_parameters[name] = value
-
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
         # freely, let's get the result events dispatcher ready early.
@@ -200,6 +191,20 @@ class Job:
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.cleanup()
+
+    @property
+    def test_parameters(self):
+        """Placeholder for test parameters.
+
+        This is related to --test-parameters command line option. They're kept
+        in the job because they will be prepared only once, since they are read
+        only and will be shared across all tests of a job.
+        """
+        if self._test_parameters is None:
+            self._test_parameters = {name: value for name, value
+                                     in self.config.get('run.test_parameters',
+                                                        [])}
+        return self._test_parameters
 
     @property
     def unique_id(self):
