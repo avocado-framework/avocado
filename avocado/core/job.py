@@ -29,8 +29,9 @@ import traceback
 import uuid
 
 from ..utils import astring, data_structures, path, process, stacktrace
-from . import (data_dir, dispatcher, exceptions, exit_codes, job_id, jobdata,
+from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata,
                loader, nrunner, output, result, tags, varianter, version)
+from .job_id import create_unique_job_id
 from .future.settings import settings
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
 from .resolver import ReferenceResolutionResult, resolve
@@ -132,10 +133,6 @@ class Job:
                 self.config['run.unique_job_id'] = '0' * 40
             self.config['sysinfo.collect.enabled'] = 'off'
 
-        unique_id = self.config.get('run.unique_job_id')
-        if unique_id is None:
-            unique_id = job_id.create_unique_job_id()
-        self.unique_id = unique_id
         #: The log directory for this job, also known as the job results
         #: directory.  If it's set to None, it means that the job results
         #: directory has not yet been created.
@@ -147,6 +144,8 @@ class Job:
         self.result = None
         self.interrupted_reason = None
         self.timeout = self.config.get('run.job_timeout')
+
+        self._unique_id = None
 
         #: The time at which the job has started or `-1` if it has not been
         #: started by means of the `run()` method.
@@ -201,6 +200,13 @@ class Job:
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.cleanup()
+
+    @property
+    def unique_id(self):
+        if self._unique_id is None:
+            self._unique_id = self.config.get('run.unique_job_id') \
+                or create_unique_job_id()
+        return self._unique_id
 
     def setup(self):
         """
