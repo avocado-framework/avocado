@@ -150,17 +150,10 @@ class Run(CLICmd):
                                  metavar='CATEGORY',
                                  long_arg='--job-category')
 
-        help_msg = ('Set the maximum amount of time (in SECONDS) that tests '
-                    'are allowed to execute. Values <= zero means "no '
-                    'timeout". You can also use suffixes, like: s (seconds), '
-                    'm (minutes), h (hours). ')
-        settings.register_option(section='run',
-                                 key='job_timeout',
-                                 help_msg=help_msg,
-                                 default='0',
-                                 metavar='SECONDS',
-                                 parser=parser,
-                                 long_arg='--job-timeout')
+        settings.add_argparser_to_option(namespace='job.run.timeout',
+                                         metavar='SECONDS',
+                                         parser=parser,
+                                         long_arg='--job-timeout')
 
         help_msg = ('Enable or disable the job interruption on first failed '
                     'test. "on" and "off" will be deprecated soon.')

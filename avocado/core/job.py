@@ -28,32 +28,16 @@ import time
 import traceback
 import uuid
 
-from . import data_dir
-from . import dispatcher
-from . import exceptions
-from . import exit_codes
-from . import job_id
-from . import jobdata
-from . import loader
-from . import nrunner
-from . import output
-from . import resolver
-from . import result
-from . import tags
-from . import varianter
-from . import version
-from ..utils import astring
-from ..utils import data_structures
-from ..utils import path
-from ..utils import process
-from ..utils import stacktrace
-from .output import LOG_JOB
-from .output import LOG_UI
-from .output import STD_OUTPUT
+from ..utils import astring, path, process, stacktrace
+from ..utils.data_structures import CallbackRegister, time_to_seconds
+from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata,
+               loader, nrunner, output, result, tags, varianter, version)
+from .job_id import create_unique_job_id
 from .future.settings import settings
+from .output import LOG_JOB, LOG_UI, STD_OUTPUT
+from .resolver import ReferenceResolutionResult, resolve
 from .tags import filter_test_tags_runnable
 from .test import DryRunTest
-
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
@@ -84,19 +68,20 @@ def resolutions_to_tasks(resolutions, config):
     """
 
     tasks = []
-    resolutions = [res for res in resolutions if
-                   res.result == resolver.ReferenceResolutionResult.SUCCESS]
     filter_by_tags = config.get("filter.by_tags.tags")
+    include_empty = config.get("filter.by_tags.include_empty")
+    include_empty_key = config.get('filter.by_tags.include_empty_key')
+    status_server = config.get('nrun.status_server.listen')
     for resolution in resolutions:
+        if resolution.result != ReferenceResolutionResult.SUCCESS:
+            continue
         for runnable in resolution.resolutions:
             if filter_by_tags:
-                if not filter_test_tags_runnable(
-                        runnable,
-                        filter_by_tags,
-                        config.get("filter.by_tags.include_empty"),
-                        config.get('filter.by_tags.include_empty_key')):
+                if not filter_test_tags_runnable(runnable,
+                                                 filter_by_tags,
+                                                 include_empty,
+                                                 include_empty_key):
                     continue
-            status_server = config.get('nrun.status_server.listen')
             tasks.append(nrunner.Task(str(uuid.uuid1()), runnable,
                                       [status_server]))
     return tasks
@@ -115,6 +100,16 @@ def register_job_options():
                              key='loglevel',
                              default='DEBUG',
                              help_msg=msg)
+
+    help_msg = ('Set the maximum amount of time (in SECONDS) that tests are '
+                'allowed to execute. Values <= zero means "no timeout". You '
+                'can also use suffixes, like: s (seconds), m (minutes), h '
+                '(hours). ')
+    settings.register_option(section='job.run',
+                             key='timeout',
+                             default=0,
+                             key_type=time_to_seconds,
+                             help_msg=help_msg)
 
 
 register_job_options()
@@ -149,10 +144,6 @@ class Job:
                 self.config['run.unique_job_id'] = '0' * 40
             self.config['sysinfo.collect.enabled'] = 'off'
 
-        unique_id = self.config.get('run.unique_job_id')
-        if unique_id is None:
-            unique_id = job_id.create_unique_job_id()
-        self.unique_id = unique_id
         #: The log directory for this job, also known as the job results
         #: directory.  If it's set to None, it means that the job results
         #: directory has not yet been created.
@@ -163,12 +154,10 @@ class Job:
         self.status = "RUNNING"
         self.result = None
         self.interrupted_reason = None
-        timeout = self.config.get('run.job_timeout')
-        try:
-            self.timeout = data_structures.time_to_seconds(timeout)
-        except ValueError as detail:
-            LOG_UI.error(detail.args[0])
-            sys.exit(exit_codes.AVOCADO_FAIL)
+
+        self._test_parameters = None
+        self._timeout = None
+        self._unique_id = None
 
         #: The time at which the job has started or `-1` if it has not been
         #: started by means of the `run()` method.
@@ -179,9 +168,7 @@ class Job:
         #: The total amount of time the job took from start to finish,
         #: or `-1` if it has not been started by means of the `run()` method
         self.time_elapsed = -1
-        self.funcatexit = data_structures.CallbackRegister("JobExit %s"
-                                                           % self.unique_id,
-                                                           LOG_JOB)
+        self.funcatexit = CallbackRegister("JobExit %s" % self.unique_id, LOG_JOB)
         self._stdout_stderr = None
         self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
@@ -198,16 +185,6 @@ class Job:
         #: :attr:`test_suite`
         self.test_runner = None
 
-        #: Placeholder for test parameters (related to --test-parameters command
-        #: line option).  They're kept in the job because they will be prepared
-        #: only once, since they are read only and will be shared across all
-        #: tests of a job.
-        self.test_parameters = None
-        if "run.test_parameters" in self.config:
-            self.test_parameters = {}
-            for name, value in self.config.get('run.test_parameters'):
-                self.test_parameters[name] = value
-
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
         # freely, let's get the result events dispatcher ready early.
@@ -223,6 +200,33 @@ class Job:
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.cleanup()
+
+    @property
+    def test_parameters(self):
+        """Placeholder for test parameters.
+
+        This is related to --test-parameters command line option. They're kept
+        in the job because they will be prepared only once, since they are read
+        only and will be shared across all tests of a job.
+        """
+        if self._test_parameters is None:
+            self._test_parameters = {name: value for name, value
+                                     in self.config.get('run.test_parameters',
+                                                        [])}
+        return self._test_parameters
+
+    @property
+    def timeout(self):
+        if self._timeout is None:
+            self._timeout = self.config.get('job.run.timeout')
+        return self._timeout
+
+    @property
+    def unique_id(self):
+        if self._unique_id is None:
+            self._unique_id = self.config.get('run.unique_job_id') \
+                or create_unique_job_id()
+        return self._unique_id
 
     def setup(self):
         """
@@ -453,14 +457,14 @@ class Job:
         for reference in references:
             results = [res.result for res in resolutions if
                        res.reference == reference]
-            if resolver.ReferenceResolutionResult.SUCCESS not in results:
+            if ReferenceResolutionResult.SUCCESS not in results:
                 missing.append(reference)
         if missing:
             msg = "Could not resolve references: %s" % ",".join(missing)
             raise exceptions.JobTestSuiteReferenceResolutionError(msg)
 
     def _make_test_suite_resolver(self, references, ignore_missing):
-        resolutions = resolver.resolve(references)
+        resolutions = resolve(references)
         if not ignore_missing:
             self._resolver_check_missing_references(references,
                                                     resolutions)
@@ -603,15 +607,10 @@ class Job:
 
         self._log_job_debug_info(variant)
         jobdata.record(self.config, self.logdir, variant, sys.argv)
-        replay_map = self.config.get('replay_map')
-        execution_order = self.config.get('run.execution_order')
         summary = self.test_runner.run_suite(self,
                                              self.result,
                                              self.test_suite,
-                                             variant,
-                                             self.timeout,
-                                             replay_map,
-                                             execution_order)
+                                             variant)
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
