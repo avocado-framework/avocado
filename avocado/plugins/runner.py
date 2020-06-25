@@ -347,9 +347,9 @@ class TestRunner(Runner):
             raise NotImplementedError("Suite_order %s is not supported"
                                       % execution_order)
 
-    def run_suite(self, job, variants):
+    def run_job(self, job, variants):
         """
-        Run one or more tests and report with test result.
+        Run a job with one test_suite (for now) and report with test result.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         :param variants: A varianter iterator to produce test params.
