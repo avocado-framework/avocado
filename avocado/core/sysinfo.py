@@ -99,11 +99,13 @@ class Logfile(Collectible):
         if os.path.exists(self.path):
             config = future_settings.as_dict()
             if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
-                pre_file = os.path.join(os.path.dirname(logdir), 'pre', self.logf)
-                with open(self.path) as f1:
-                    with open(pre_file) as f2:
+                pre_file = os.path.join(os.path.dirname(logdir), 'pre',
+                                        self.logf)
+                if os.path.isfile(pre_file):
+                    with open(self.path) as f1, open(pre_file) as f2:
                         if f1.read() == f2.read():
-                            log.debug("Not logging %s (no change detected)", self.path)
+                            log.debug("Not logging %s (no change detected)",
+                                      self.path)
                             return
             try:
                 shutil.copyfile(self.path, os.path.join(logdir, self.logf))
@@ -186,10 +188,12 @@ class Command(Collectible):
         logf_path = os.path.join(logdir, self.logf)
         if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
             pre_file = os.path.join(os.path.dirname(logdir), 'pre', self.logf)
-            with open(pre_file, 'rb') as f1:
-                if f1.read() == result.stdout:
-                    log.debug("Not logging %s (no change detected)", self.cmd)
-                    return
+            if os.path.isfile(pre_file):
+                with open(pre_file, 'rb') as f1:
+                    if f1.read() == result.stdout:
+                        log.debug("Not logging %s (no change detected)",
+                                  self.cmd)
+                        return
         if self._compress_log:
             with gzip.GzipFile(logf_path, 'wb') as logf:
                 logf.write(result.stdout)
@@ -401,7 +405,7 @@ class SysInfo:
         :param profiler: Whether to use the profiler. If not given explicitly,
                          tries to look in the config files.
         """
-        config = future_settings.as_dict()
+        self.config = future_settings.as_dict()
 
         if basedir is None:
             basedir = utils_path.init_dir('sysinfo')
@@ -410,57 +414,66 @@ class SysInfo:
         self._installed_pkgs = None
         if log_packages is None:
             packages_namespace = 'sysinfo.collect.installed_packages'
-            self.log_packages = config.get(packages_namespace)
+            self.log_packages = self.config.get(packages_namespace)
         else:
             self.log_packages = log_packages
 
-        commands_file = config.get('sysinfo.collectibles.commands')
-
-        if os.path.isfile(commands_file):
-            log.info('Commands configured by file: %s', commands_file)
-            self.commands = genio.read_all_lines(commands_file)
-        else:
-            log.debug('File %s does not exist.', commands_file)
-            self.commands = []
-
-        files_file = config.get('sysinfo.collectibles.files')
-        if os.path.isfile(files_file):
-            log.info('Files configured by file: %s', files_file)
-            self.files = genio.read_all_lines(files_file)
-        else:
-            log.debug('File %s does not exist.', files_file)
-            self.files = []
-
-        if profiler is None:
-            self.profiler = config.get('sysinfo.collect.profiler')
-        else:
-            self.profiler = profiler
-
-        profiler_file = config.get('sysinfo.collectibles.profilers')
-        if os.path.isfile(profiler_file):
-            self.profilers = genio.read_all_lines(profiler_file)
-            log.info('Profilers configured by file: %s', profiler_file)
-            if not self.profilers:
-                self.profiler = False
-
-            if self.profiler is False:
-                if not self.profilers:
-                    log.info('Profiler disabled: no profiler'
-                             ' commands configured')
-                else:
-                    log.info('Profiler disabled')
-        else:
-            log.debug('File %s does not exist.', profiler_file)
-            self.profilers = []
+        self._get_collectibles(profiler)
 
         self.start_collectibles = set()
         self.end_collectibles = set()
+        self.end_fail_collectibles = set()
 
         self.pre_dir = utils_path.init_dir(self.basedir, 'pre')
         self.post_dir = utils_path.init_dir(self.basedir, 'post')
         self.profile_dir = utils_path.init_dir(self.basedir, 'profile')
 
         self._set_collectibles()
+
+    def _get_collectibles(self, c_profiler):
+        self.sysinfo_files = {}
+
+        for collectible in ['commands', 'files', 'fail_commands', 'fail_files']:
+            tmp_file = self.config.get(
+                'sysinfo.collectibles.%s' % collectible)
+            if os.path.isfile(tmp_file):
+                log.info('%s configured by file: %s', collectible.title(),
+                         tmp_file)
+                self.sysinfo_files[collectible] = genio.read_all_lines(
+                    tmp_file)
+            else:
+                log.debug('File %s does not exist.', tmp_file)
+                self.sysinfo_files[collectible] = []
+
+            if 'fail_' in collectible:
+                list1 = self.sysinfo_files[collectible]
+                list2 = self.sysinfo_files[collectible.split('_')[1]]
+                self.sysinfo_files[collectible] = [
+                    tmp for tmp in list1 if tmp not in list2]
+
+        profiler = c_profiler
+        if profiler is None:
+            self.profiler = self.config.get('sysinfo.collect.profiler')
+        else:
+            self.profiler = profiler
+
+        profiler_file = self.config.get('sysinfo.collectibles.profilers')
+        if os.path.isfile(profiler_file):
+            self.sysinfo_files["profilers"] = genio.read_all_lines(
+                profiler_file)
+            log.info('Profilers configured by file: %s', profiler_file)
+            if not self.sysinfo_files["profilers"]:
+                self.profiler = False
+
+            if self.profiler is False:
+                if not self.sysinfo_files["profilers"]:
+                    log.info('Profiler disabled: no profiler'
+                             ' commands configured')
+                else:
+                    log.info('Profiler disabled')
+        else:
+            log.debug('File %s does not exist.', profiler_file)
+            self.sysinfo_files["profilers"] = []
 
     def _get_syslog_watcher(self):
         logpaths = ["/var/log/messages",
@@ -474,16 +487,22 @@ class SysInfo:
 
     def _set_collectibles(self):
         if self.profiler:
-            for cmd in self.profilers:
+            for cmd in self.sysinfo_files["profilers"]:
                 self.start_collectibles.add(Daemon(cmd))
 
-        for cmd in self.commands:
+        for cmd in self.sysinfo_files["commands"]:
             self.start_collectibles.add(Command(cmd))
             self.end_collectibles.add(Command(cmd))
 
-        for filename in self.files:
+        for fail_cmd in self.sysinfo_files["fail_commands"]:
+            self.end_fail_collectibles.add(Command(fail_cmd))
+
+        for filename in self.sysinfo_files["files"]:
             self.start_collectibles.add(Logfile(filename))
             self.end_collectibles.add(Logfile(filename))
+
+        for fail_filename in self.sysinfo_files["fail_files"]:
+            self.end_fail_collectibles.add(Logfile(fail_filename))
 
         self.end_collectibles.add(JournalctlWatcher())
 
@@ -522,12 +541,17 @@ class SysInfo:
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
 
-    def end(self):
+    def end(self, status=""):
         """
         Logging hook called whenever a job finishes.
         """
         for log_hook in self.end_collectibles:
             log_hook.run(self.post_dir)
+
+        if status == "FAIL":
+            for log_hook in self.end_fail_collectibles:
+                log_hook.run(self.post_dir)
+
         # Stop daemon(s) started previously
         for log_hook in self.start_collectibles:
             if isinstance(log_hook, Daemon):

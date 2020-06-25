@@ -93,11 +93,28 @@ class SysinfoInit(Init):
                                  key_type=prepend_base_path,
                                  default=default,
                                  help_msg=help_msg)
+        help_msg = ('File with list of commands that will be executed and '
+                    'have their output collected, in case of failed test')
+        default = prepend_base_path('etc/avocado/sysinfo/fail_commands')
+        settings.register_option(section='sysinfo.collectibles',
+                                 key='fail_commands',
+                                 key_type=prepend_base_path,
+                                 default=default,
+                                 help_msg=help_msg)
 
         help_msg = 'File with list of files that will be collected verbatim'
         default = prepend_base_path('etc/avocado/sysinfo/files')
         settings.register_option(section='sysinfo.collectibles',
                                  key='files',
+                                 key_type=prepend_base_path,
+                                 default=default,
+                                 help_msg=help_msg)
+
+        help_msg = ('File with list of files that will be collected verbatim'
+                    ', in case of failed test')
+        default = prepend_base_path('etc/avocado/sysinfo/fail_files')
+        settings.register_option(section='sysinfo.collectibles',
+                                 key='fail_files',
                                  key_type=prepend_base_path,
                                  default=default,
                                  help_msg=help_msg)
