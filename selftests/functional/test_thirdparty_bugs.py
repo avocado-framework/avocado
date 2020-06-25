@@ -51,7 +51,7 @@ class TestThirdPartyBugs(unittest.TestCase):
         self.assertEqual(issue['state'], 'open', 'The issue %s is not open '
                          'anymore. Please double check and, if already fixed, '
                          'remove the selftests/unit/test_utils_cpu.py from '
-                         'the exclusion list of indent in selftests/checkall' %
+                         'the exclusion list in selftests/inspekt-indent.sh ' %
                          'https://github.com/avocado-framework/inspektor/issues/31')
 
 

@@ -12,15 +12,12 @@ python:
     - "nightly"
 
 env:
-    - AVOCADO_PARALLEL_CHECK=yes
       AVOCADO_LOG_DEBUG=yes
-      SELF_CHECK_CONTINUOUS=y
       AVOCADO_CHECK_LEVEL=1
 
 addons:
   apt:
     packages:
-    - libvirt-dev
     - golang
 
 install:
@@ -46,7 +43,7 @@ jobs:
         - make develop && ./selftests/run_coverage
       after_script:
         - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
-    - python: "3.7"
+    - python: "3.8"
       arch: s390x
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
@@ -55,21 +52,16 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
-      script:
-        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
-    - python: "3.7"
+    - python: "3.8"
       arch: ppc64le
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
-      addons:
-        apt:
-          packages:
-            - libvirt-dev
-            - golang
-            - pkg-config
-      script:
-        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
-    - python: "3.7"
+      # Travis ppc64 builders currently shows:
+      # [Errno 13] Permission denied: '/home/travis/.cache/pip/wheels/xx'
+      # Disable pip cache dir temporarily
+      install:
+       - pip install --no-cache-dir -r requirements-selftests.txt
+    - python: "3.8"
       arch: arm64
       env:
         - AVOCADO_PARALLEL_LINT_JOBS=1
@@ -78,8 +70,24 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
+    - name: "Ad hoc checks on OS X"
+      os: osx
+      language: c
+      osx_image: xcode10.3
+      compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - python
+          update: false
+      install:
+        - python3 -m pip install -r requirements-selftests.txt
+        - python3 setup.py develop --user
       script:
-        - make AVOCADO_OPTIONAL_PLUGINS="optional_plugins/glib optional_plugins/golang optional_plugins/html optional_plugins/loader_yaml optional_plugins/resultsdb optional_plugins/result_upload optional_plugins/robot optional_plugins/varianter_cit optional_plugins/varianter_pict optional_plugins/varianter_yaml_to_mux" check
+        - python3 -m avocado --help
+        - python3 -m avocado nlist --verbose selftests/unit/* selftests/functional/* selftests/*sh
+        - python3 -m unittest discover -v selftests.unit
 
   allow_failures:
     - python: "nightly"
+    - os: osx

@@ -6,6 +6,9 @@ from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolution
 from avocado.core.future.settings import SettingsError
 
+from .. import skipUnlessPathExists
+
+
 BAD = """[kinds]
 tap = ./tests/*.t
 """
@@ -35,6 +38,7 @@ class HintTest(unittest.TestCase):
             self.wrong_hint.validate_kind_section('tap')
         self.assertTrue('Section tap is not defined' in str(context.exception))
 
+    @skipUnlessPathExists('/bin/true')
     def test_types(self):
         res = self.good_hint.get_resolutions()
         self.assertEqual(len(res), 1)
@@ -44,6 +48,7 @@ class HintTest(unittest.TestCase):
         self.assertEqual(len(resolutions), 1)
         self.assertIsInstance(resolutions[0], Runnable)
 
+    @skipUnlessPathExists('/bin/true')
     def test_reference_names(self):
         res = self.good_hint.get_resolutions()[0]
         self.assertEqual(res.reference, '/bin/true')

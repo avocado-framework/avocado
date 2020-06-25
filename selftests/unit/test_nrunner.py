@@ -220,6 +220,7 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time', last_result)
 
+    @skipUnlessPathExists('/bin/false')
     def test_runner_exec_test_fail(self):
         runnable = nrunner.Runnable('exec-test', '/bin/false')
         runner_klass = runnable.pick_runner_class()
