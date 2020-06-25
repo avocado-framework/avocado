@@ -704,7 +704,7 @@ class GDBRemote:
             total += i
         result = total % 256
 
-        return b'%2x' % result
+        return b'%02x' % result
 
     @staticmethod
     def encode(data):
