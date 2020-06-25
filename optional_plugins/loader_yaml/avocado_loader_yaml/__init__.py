@@ -82,14 +82,14 @@ class YamlTestsuiteLoader(loader.TestLoader):
                                % (mod, klass))
         _args = params.get("test_reference_resolver_args")
         if not _args:
-            args = self.args
+            config = self.config
         else:
-            args = copy.copy(self.args)
-            args.update(_args)
+            config = copy.copy(self.config)
+            config.update(_args)
         extra_params = params.get("test_reference_resolver_extra", default={})
         if extra_params:
             extra_params = copy.deepcopy(extra_params)
-        return loader_class(args, extra_params)
+        return loader_class(config, extra_params)
 
     def discover(self, reference, which_tests=loader.DiscoverMode.DEFAULT):
         tests = []
@@ -97,8 +97,8 @@ class YamlTestsuiteLoader(loader.TestLoader):
             return tests
         try:
             root = mux.apply_filters(create_from_yaml([reference], False),
-                                     self.args.get("run.mux_suite_only", []),
-                                     self.args.get("run.mux_suite_out", []))
+                                     self.config.get("run.mux_suite_only", []),
+                                     self.config.get("run.mux_suite_out", []))
         except IOError:
             return []
         mux_tree = mux.MuxTree(root)

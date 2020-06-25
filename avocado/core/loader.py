@@ -96,7 +96,7 @@ class TestLoaderProxy:
             raise InvalidLoaderPlugin("Object %s is not an instance of "
                                       "TestLoader" % plugin)
 
-    def load_plugins(self, args):
+    def load_plugins(self, config):
         def _good_test_types(plugin):
             """
             List all supported test types (excluding incorrect ones)
@@ -120,14 +120,14 @@ class TestLoaderProxy:
                                        ", ".join(_good_test_types(plugin)))
             return out.rstrip('\n')
 
-        subcommand = args.get('subcommand')
+        subcommand = config.get('subcommand')
         self.register_plugin(TapLoader)
         # Register external runner when --external-runner is used
-        external_runner = args.get("{}.external_runner".format(subcommand))
+        external_runner = config.get("{}.external_runner".format(subcommand))
         if external_runner:
             self.register_plugin(ExternalLoader)
             key = "{}.loaders".format(subcommand)
-            args[key] = ["external:{}".format(external_runner)]
+            config[key] = ["external:{}".format(external_runner)]
         else:
             # Add (default) file loader if not already registered
             if FileLoader not in self.registered_plugins:
@@ -140,7 +140,7 @@ class TestLoaderProxy:
             supported_types.extend(_good_test_types(plugin))
 
         # Here is one of the few exceptions that has a hardcoded default
-        loaders = args.get("{}.loaders".format(subcommand)) or ['file',
+        loaders = config.get("{}.loaders".format(subcommand)) or ['file',
                                                                 '@DEFAULT']
         if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
@@ -163,7 +163,7 @@ class TestLoaderProxy:
             if len(loaders[i]) == 2:
                 extra_params['loader_options'] = loaders[i][1]
             plugin = self.registered_plugins[supported_loaders.index(name)]
-            self._initialized_plugins.append(plugin(args, extra_params))
+            self._initialized_plugins.append(plugin(config, extra_params))
 
     def _update_mappings(self):
         """
@@ -316,7 +316,7 @@ class TestLoader:
 
     name = None     # Human friendly name of the loader
 
-    def __init__(self, args, extra_params):  # pylint: disable=W0613
+    def __init__(self, config, extra_params):  # pylint: disable=W0613
         if "allowed_test_types" in extra_params:
             mapping = self.get_type_label_mapping()
             types = extra_params.pop("allowed_test_types")
@@ -341,7 +341,7 @@ class TestLoader:
             raise LoaderError("Loader '%s' doesn't handle extra params %s, "
                               "please adjust your plugin to take care of them."
                               % (self.name, extra_params))
-        self.args = args
+        self.config = config
 
     def get_extra_listing(self):
         pass
@@ -468,9 +468,9 @@ class SimpleFileLoader(TestLoader):
     name = 'file'
     NOT_TEST_STR = ("Not a supported test")
 
-    def __init__(self, args, extra_params):
+    def __init__(self, config, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
-        super(SimpleFileLoader, self).__init__(args, extra_params)
+        super(SimpleFileLoader, self).__init__(config, extra_params)
         self.test_type = test_type
 
     @staticmethod
@@ -816,21 +816,21 @@ class ExternalLoader(TestLoader):
     """
     name = 'external'
 
-    def __init__(self, args, extra_params):
+    def __init__(self, config, extra_params):
         loader_options = extra_params.pop('loader_options', None)
-        super(ExternalLoader, self).__init__(args, extra_params)
+        super(ExternalLoader, self).__init__(config, extra_params)
         if loader_options == '?':
             raise LoaderError("File loader accepts an option to set the "
                               "external-runner executable.")
         self._external_runner = self._process_external_runner(
-            args, loader_options)
+            config, loader_options)
 
     @staticmethod
-    def _process_external_runner(args, runner):
+    def _process_external_runner(config, runner):
         """ Enables the external_runner when asked for """
-        subcommand = args.get('subcommand')
-        chdir = args.get("{}.external_runner_chdir".format(subcommand))
-        test_dir = args.get("{}.external_runner_testdir".format(subcommand))
+        subcommand = config.get('subcommand')
+        chdir = config.get("{}.external_runner_chdir".format(subcommand))
+        test_dir = config.get("{}.external_runner_testdir".format(subcommand))
 
         if runner:
             external_runner_and_args = shlex.split(runner)

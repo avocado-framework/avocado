@@ -31,20 +31,20 @@ class TestLister:
     Lists available test modules
     """
 
-    def __init__(self, args):
+    def __init__(self, config):
         try:
-            loader.loader.load_plugins(args)
+            loader.loader.load_plugins(config)
         except loader.LoaderError as details:
             sys.stderr.write(str(details))
             sys.stderr.write('\n')
             sys.exit(exit_codes.AVOCADO_FAIL)
-        self.args = args
+        self.config = config
 
     def _extra_listing(self):
         loader.loader.get_extra_listing()
 
     def _get_test_suite(self, paths):
-        if self.args.get('core.verbose'):
+        if self.config.get('core.verbose'):
             which_tests = loader.DiscoverMode.ALL
         else:
             which_tests = loader.DiscoverMode.AVAILABLE
@@ -74,7 +74,7 @@ class TestLister:
             stats[type_label.lower()] += 1
             type_label = decorator(type_label)
 
-            if self.args.get('core.verbose'):
+            if self.config.get('core.verbose'):
                 if 'tags' in params:
                     tgs = params['tags']
                 else:
@@ -98,7 +98,7 @@ class TestLister:
 
     def _display(self, test_matrix, stats, tag_stats):
         header = None
-        if self.args.get('core.verbose'):
+        if self.config.get('core.verbose'):
             header = (output.TERM_SUPPORT.header_str('Type'),
                       output.TERM_SUPPORT.header_str('Test'),
                       output.TERM_SUPPORT.header_str('Tag(s)'))
@@ -107,7 +107,7 @@ class TestLister:
                                                 strip=True):
             LOG_UI.debug(line)
 
-        if self.args.get('core.verbose'):
+        if self.config.get('core.verbose'):
             LOG_UI.info("")
             LOG_UI.info("TEST TYPES SUMMARY")
             LOG_UI.info("==================")
@@ -123,13 +123,13 @@ class TestLister:
 
     def _list(self):
         self._extra_listing()
-        test_suite = self._get_test_suite(self.args.get('list.references'))
-        if self.args.get('list.filter_by_tags'):
+        test_suite = self._get_test_suite(self.config.get('list.references'))
+        if self.config.get('list.filter_by_tags'):
             test_suite = tags.filter_test_tags(
                 test_suite,
-                self.args.get('list.filter_by_tags'),
-                self.args.get('list.filter_by_tags_include_empty'),
-                self.args.get('list.filter_by_tags_include_empty_key'))
+                self.config.get('list.filter_by_tags'),
+                self.config.get('list.filter_by_tags_include_empty'),
+                self.config.get('list.filter_by_tags_include_empty_key'))
         test_matrix, stats, tag_stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats, tag_stats)
 
