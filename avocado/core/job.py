@@ -138,7 +138,7 @@ class Job:
         self.log = LOG_UI
         self.loglevel = self.config.get('job.output.loglevel')
         self.__logging_handlers = {}
-        if self.config.get('run.dry_run.enabled'):  # Modify args for dry-run
+        if self.config.get('run.dry_run.enabled'):  # Modify config for dry-run
             unique_id = self.config.get('run.unique_job_id')
             if unique_id is None:
                 self.config['run.unique_job_id'] = '0' * 40
@@ -292,7 +292,7 @@ class Job:
             LOG_JOB.warning(msg)
             return
 
-        # we could also get "base_logdir" from args, but I believe this is
+        # we could also get "base_logdir" from config, but I believe this is
         # the best choice because it reduces the dependency surface (depends
         # only on self.logdir)
         category_path = os.path.join(os.path.dirname(self.logdir),
