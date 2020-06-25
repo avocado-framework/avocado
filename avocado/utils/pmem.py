@@ -209,9 +209,6 @@ class PMem:
             args = '%s -r %s' % (args, region)
         if bus:
             args = '%s -b %s' % (args, bus)
-        if namespace == 'all':
-            if not self.run_ndctl_list('%s -N' % args.replace(namespace, '')):
-                return True
         if verbose:
             args = '%s -v' % args
 
@@ -315,9 +312,6 @@ class PMem:
         for option in list(args_dict.keys()):
             if option:
                 args += ' %s %s' % (args_dict[option], option)
-        if namespace == 'all':
-            if not self.run_ndctl_list('%s -N' % args.replace(namespace, '')):
-                return True
         if force:
             args += ' -f'
 
