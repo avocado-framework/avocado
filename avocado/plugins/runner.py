@@ -324,12 +324,11 @@ class TestRunner(Runner):
                           "variant_id": varianter.generate_variant_id(var),
                           "paths": paths}
 
-    def _iter_suite(self, job, test_suite, variants, execution_order):
+    def _iter_suite(self, job, variants, execution_order):
         """
         Iterates through test_suite and variants in defined order
 
         :param job: an instance of :class:`avocado.core.job.Job`
-        :param test_suite: a list of tests to run
         :param variants: a varianter object to produce test params
         :param execution_order: way of iterating through tests/variants
         :return: generator yielding tuple(test_factory, variant)
@@ -337,24 +336,22 @@ class TestRunner(Runner):
         if execution_order == "variants-per-test":
             return (self._template_to_factory(job.test_parameters,
                                               template, variant)
-                    for template in test_suite
+                    for template in job.test_suite
                     for variant in variants.itertests())
         elif execution_order == "tests-per-variant":
             return (self._template_to_factory(job.test_parameters,
                                               template, variant)
                     for variant in variants.itertests()
-                    for template in test_suite)
+                    for template in job.test_suite)
         else:
             raise NotImplementedError("Suite_order %s is not supported"
                                       % execution_order)
 
-    def run_suite(self, job, result, test_suite, variants):
+    def run_suite(self, job, variants):
         """
         Run one or more tests and report with test result.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
-        :param result: an instance of :class:`avocado.core.result.Result`
-        :param test_suite: a list of tests to run.
         :param variants: A varianter iterator to produce test params.
         :return: a set with types of test failures.
         """
@@ -367,18 +364,17 @@ class TestRunner(Runner):
         else:
             deadline = None
 
-        test_result_total = variants.get_number_of_tests(test_suite)
+        test_result_total = variants.get_number_of_tests(job.test_suite)
         no_digits = len(str(test_result_total))
-        result.tests_total = test_result_total
+        job.result.tests_total = test_result_total
         index = 1
         try:
-            for test_factory in test_suite:
+            for test_factory in job.test_suite:
                 test_factory[1]["base_logdir"] = job.logdir
                 test_factory[1]["job"] = job
             if execution_order is None:
                 execution_order = self.DEFAULT_EXECUTION_ORDER
             for test_factory, variant in self._iter_suite(job,
-                                                          test_suite,
                                                           variants,
                                                           execution_order):
                 test_parameters = test_factory[1]
@@ -391,7 +387,8 @@ class TestRunner(Runner):
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (TimeOutSkipTest, test_parameters)
-                    if not self.run_test(job, result, test_factory, queue, summary):
+                    if not self.run_test(job, job.result, test_factory, queue,
+                                         summary):
                         break
                 else:
                     if (replay_map is not None and
@@ -399,15 +396,15 @@ class TestRunner(Runner):
                         test_parameters["methodName"] = "test"
                         test_factory = (replay_map[index], test_parameters)
 
-                    if not self.run_test(job, result, test_factory, queue, summary,
-                                         deadline):
+                    if not self.run_test(job, job.result, test_factory, queue,
+                                         summary, deadline):
                         break
                 index += 1
         except KeyboardInterrupt:
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')
 
-        result.end_tests()
+        job.result.end_tests()
         job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return summary

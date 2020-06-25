@@ -72,19 +72,20 @@ class Runner(RunnerInterface):
         with open(data_file, 'w') as fp:
             fp.write("{}\n".format(task.output_dir))
 
-    def run_suite(self, job, result, test_suite, variants):
+    def run_suite(self, job, variants):
         summary = set()
         if job.timeout > 0:
             deadline = time.time() + job.timeout
         else:
             deadline = None
 
-        test_suite, _ = nrunner.check_tasks_requirements(test_suite)
-        result.tests_total = len(test_suite)  # no support for variants yet
+        job.test_suite, _ = nrunner.check_tasks_requirements(job.test_suite)
+        # no support for variants yet
+        job.result.tests_total = len(job.test_suite)
         result_dispatcher = job.result_events_dispatcher
-        no_digits = len(str(len(test_suite)))
+        no_digits = len(str(len(job.test_suite)))
 
-        for index, task in enumerate(test_suite, start=1):
+        for index, task in enumerate(job.test_suite, start=1):
             if deadline is not None and time.time() > deadline:
                 break
 
@@ -97,9 +98,9 @@ class Runner(RunnerInterface):
                 'job_logdir': job.logdir,
                 'job_unique_id': job.unique_id,
             }
-            result.start_test(early_state)
+            job.result.start_test(early_state)
             job.result_events_dispatcher.map_method('start_test',
-                                                    result,
+                                                    job.result,
                                                     early_state)
 
             statuses = []
@@ -134,7 +135,7 @@ class Runner(RunnerInterface):
                                        statuses,
                                        job.config.get('core.debug'))
 
-            result.check_test(test_state)
-            result_dispatcher.map_method('end_test', result, test_state)
-        result.end_tests()
+            job.result.check_test(test_state)
+            result_dispatcher.map_method('end_test', job.result, test_state)
+        job.result.end_tests()
         return summary
