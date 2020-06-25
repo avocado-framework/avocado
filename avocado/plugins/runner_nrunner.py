@@ -74,9 +74,8 @@ class Runner(RunnerInterface):
 
     def run_suite(self, job, result, test_suite, variants):
         summary = set()
-        timeout = job.config.get('run.job_timeout')
-        if timeout > 0:
-            deadline = time.time() + timeout
+        if job.timeout > 0:
+            deadline = time.time() + job.timeout
         else:
             deadline = None
 

@@ -359,12 +359,11 @@ class TestRunner(Runner):
         :return: a set with types of test failures.
         """
         summary = set()
-        timeout = job.config.get('run.job_timeout')
         replay_map = job.config.get('replay_map')
         execution_order = job.config.get('run.execution_order')
         queue = multiprocessing.SimpleQueue()
-        if timeout > 0:
-            deadline = time.time() + timeout
+        if job.timeout > 0:
+            deadline = time.time() + job.timeout
         else:
             deadline = None
 

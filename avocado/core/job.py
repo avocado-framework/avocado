@@ -29,7 +29,7 @@ import traceback
 import uuid
 
 from ..utils import astring, path, process, stacktrace
-from ..utils.data_structures import CallbackRegister
+from ..utils.data_structures import CallbackRegister, time_to_seconds
 from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata,
                loader, nrunner, output, result, tags, varianter, version)
 from .job_id import create_unique_job_id
@@ -100,6 +100,16 @@ def register_job_options():
                              key='loglevel',
                              default='DEBUG',
                              help_msg=msg)
+
+    help_msg = ('Set the maximum amount of time (in SECONDS) that tests are '
+                'allowed to execute. Values <= zero means "no timeout". You '
+                'can also use suffixes, like: s (seconds), m (minutes), h '
+                '(hours). ')
+    settings.register_option(section='job.run',
+                             key='timeout',
+                             default=0,
+                             key_type=time_to_seconds,
+                             help_msg=help_msg)
 
 
 register_job_options()
@@ -208,7 +218,7 @@ class Job:
     @property
     def timeout(self):
         if self._timeout is None:
-            self._timeout = self.config.get('run.job_timeout')
+            self._timeout = self.config.get('job.run.timeout')
         return self._timeout
 
     @property
