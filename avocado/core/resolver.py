@@ -20,6 +20,7 @@ import os
 from enum import Enum
 
 from .enabled_extension_manager import EnabledExtensionManager
+from .exceptions import JobTestSuiteReferenceResolutionError
 
 
 class ReferenceResolutionResult(Enum):
@@ -160,7 +161,7 @@ def _extend_directory(path):
     return paths
 
 
-def resolve(references, hint=None):
+def resolve(references, hint=None, ignore_missing=True):
     resolutions = []
     hint_resolutions = []
     hint_references = {}
@@ -187,4 +188,18 @@ def resolve(references, hint=None):
                 resolutions.append(hint_references[reference])
             else:
                 resolutions.extend(resolver.resolve(reference))
+
+    # This came up from a previous method and can be refactored to improve
+    # peformance since that we could merge with the loop above.
+    if not ignore_missing:
+        missing = []
+        for reference in references:
+            results = [res.result for res in resolutions if
+                       res.reference == reference]
+            if ReferenceResolutionResult.SUCCESS not in results:
+                missing.append(reference)
+        if missing:
+            msg = "Could not resolve references: %s" % ",".join(missing)
+            raise JobTestSuiteReferenceResolutionError(msg)
+
     return resolutions
