@@ -34,9 +34,9 @@ from ..utils import astring
 from ..utils.data_structures import CallbackRegister, time_to_seconds
 from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata, output,
                result, version)
-from .future.settings import settings
 from .job_id import create_unique_job_id
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
+from .settings import settings
 from .suite import TestSuite, TestSuiteError
 from .utils import get_avocado_git_version
 

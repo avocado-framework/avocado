@@ -20,10 +20,9 @@ import os
 import time
 
 import resultsdb_api
-
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Result, ResultEvents
+from avocado.core.settings import settings
 
 
 class ResultsdbResultEvent(ResultEvents):

@@ -3,9 +3,9 @@ import os
 import re
 
 from avocado.core import data_dir, exit_codes, output
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.settings import settings
 from avocado.utils import astring, vmimage
 
 

@@ -21,10 +21,10 @@ import os
 import urllib.parse
 
 from avocado.core import data_dir, exit_codes, safeloader
-from avocado.core.future.settings import settings
 from avocado.core.nrunner import Task
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, JobPreTests
+from avocado.core.settings import settings
 from avocado.utils import data_structures
 from avocado.utils.asset import Asset
 

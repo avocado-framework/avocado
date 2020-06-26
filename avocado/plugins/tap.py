@@ -17,10 +17,10 @@ TAP output module.
 
 import os
 
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, Init, ResultEvents
+from avocado.core.settings import settings
 
 
 def file_log_factory(log_file):

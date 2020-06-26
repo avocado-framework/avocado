@@ -17,7 +17,7 @@ Extension manager with disable/ordering support
 """
 
 from .extension_manager import ExtensionManager
-from .future.settings import settings
+from .settings import settings
 
 
 class EnabledExtensionManager(ExtensionManager):

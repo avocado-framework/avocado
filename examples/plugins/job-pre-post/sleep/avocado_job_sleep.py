@@ -1,8 +1,8 @@
 import time
 
-from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import Init, JobPost, JobPre
+from avocado.core.settings import settings
 
 
 class SleepInit(Init):
@@ -11,10 +11,10 @@ class SleepInit(Init):
 
     def initialize(self):
         help_msg = 'Number of seconds to sleep.'
-        future_settings.register_option(section='plugins.job.sleep',
-                                        key='seconds',
-                                        default=3,
-                                        help_msg=help_msg)
+        settings.register_option(section='plugins.job.sleep',
+                                 key='seconds',
+                                 default=3,
+                                 help_msg=help_msg)
 
 
 class Sleep(JobPre, JobPost):
