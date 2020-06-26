@@ -21,9 +21,9 @@ import sys
 
 from avocado.core import exit_codes, job, loader, output, parser_common_args
 from avocado.core.dispatcher import JobPrePostDispatcher
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, Init
+from avocado.core.settings import settings
 from avocado.core.suite import TestSuite, TestSuiteError
 from avocado.utils import process
 

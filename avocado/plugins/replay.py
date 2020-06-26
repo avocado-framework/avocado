@@ -21,8 +21,8 @@ import sys
 from avocado.core import exit_codes, job, output
 from avocado.core.data_dir import get_job_results_dir
 from avocado.core.dispatcher import JobPrePostDispatcher
-from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.settings import settings
 
 
 class Replay(CLICmd):

@@ -27,9 +27,9 @@ import tempfile
 from difflib import HtmlDiff, unified_diff
 
 from avocado.core import data_dir, exit_codes, jobdata, output
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.settings import settings
 from avocado.core.varianter import Varianter
 
 

@@ -36,8 +36,8 @@ from ..utils import path as utils_path
 from ..utils import process, stacktrace
 from . import data_dir, exceptions, output, parameters, sysinfo, tapparser
 from .decorators import skip
-from .future.settings import settings
 from .output import LOG_JOB
+from .settings import settings
 from .test_id import TestID
 from .version import VERSION
 

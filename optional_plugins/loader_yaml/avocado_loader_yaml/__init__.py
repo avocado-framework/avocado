@@ -16,8 +16,8 @@
 import copy
 
 from avocado.core import loader, output, parameters
-from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLI
+from avocado.core.settings import settings
 from avocado_varianter_yaml_to_mux import create_from_yaml, mux
 
 

@@ -34,9 +34,6 @@ options from many sources, in the following order:
 
   3. Command-line options parsed in runtime. This is configured by the user, on
      a more "temporary way";
-
-ATTENTION: This is a future module, and will be moved out from this package
-soon.
 """
 
 import ast
@@ -47,7 +44,7 @@ import os
 
 from pkg_resources import resource_filename
 
-from ..settings_dispatcher import SettingsDispatcher
+from .settings_dispatcher import SettingsDispatcher
 
 
 class SettingsError(Exception):
@@ -234,7 +231,7 @@ class ConfigOption:
 
 
 class Settings:
-    """Settings, an experimental Avocado configuration handler.
+    """Settings is the Avocado configuration handler.
 
     It is a simple wrapper around configparser and argparse.
 
@@ -246,7 +243,7 @@ class Settings:
     need to instantiate a new settings, just import and use
     `register_option()`.
 
-        from avocado.core.future.settings import settings
+        from avocado.core.settings import settings
         settings.register_option(...)
 
     And when you needs get the current value, check on your configuration for

@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 
-from avocado.core.future import settings
+from avocado.core import settings
 
 example = """[foo]
 bar = default from file

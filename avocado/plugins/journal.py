@@ -18,8 +18,8 @@ import datetime
 import os
 import sqlite3
 
-from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLI, ResultEvents
+from avocado.core.settings import settings
 
 JOURNAL_FILENAME = ".journal.sqlite"
 

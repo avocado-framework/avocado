@@ -3,9 +3,9 @@ from uuid import uuid4
 
 from .dispatcher import RunnerDispatcher
 from .exceptions import OptionValidationError
-from .future.settings import settings
 from .loader import LoaderError, LoaderUnhandledReferenceError, loader
 from .resolver import resolve
+from .settings import settings
 from .tags import filter_test_tags
 from .test import DryRunTest
 from .utils import resolutions_to_tasks

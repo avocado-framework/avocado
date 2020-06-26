@@ -20,11 +20,11 @@ import os
 import re
 
 from avocado.core import loader, output, test
-from avocado.core.future.settings import settings
 from avocado.core.nrunner import Runnable
 from avocado.core.plugin_interfaces import CLI, Resolver
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult)
+from avocado.core.settings import settings
 from avocado.utils import path, process
 
 

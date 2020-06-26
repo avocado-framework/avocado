@@ -26,7 +26,7 @@ __all__ = ['Test',
 
 
 from avocado.core import register_core_options, initialize_plugins
-from avocado.core.future.settings import settings
+from avocado.core.settings import settings
 
 register_core_options()
 settings.merge_with_configs()
