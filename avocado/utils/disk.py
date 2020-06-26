@@ -25,8 +25,15 @@ Disk utilities
 import os
 import json
 import re
+import string
 
 from . import process
+
+
+class DiskUtilsError(Exception):
+    """
+    Base Exception Class for all DiskUtils Error
+    """
 
 
 def freespace(path):
@@ -87,3 +94,41 @@ def get_filesystem_type(mount_point='/'):
             _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
             if fs_file == mount_point:
                 return fs_vfstype
+
+
+def get_io_scheduler_list(device_name):
+    """
+    Returns io scheduler available for the IO Device
+    :param device_name: Device  name example like sda , hda
+    :return: list of IO scheduler
+    """
+    names = open(__sched_path(device_name)).read()
+    return names.translate(string.maketrans('[]', '  ')).split()
+
+
+def get_io_scheduler(device_name):
+    """
+    Return io scheduler name which is set currently  for device
+    :param device_name: Device  name example like sda , hda
+    :return: IO scheduler
+    :rtype :  str
+    """
+    return re.split(r'[\[\]]',
+                    open(__sched_path(device_name)).read())[1]
+
+
+def set_io_scheduler(device_name, name):
+    """
+    Set io scheduler to a device
+    :param device_name:  Device  name example like sda , hda
+    :param name: io scheduler name
+    """
+    if name not in get_io_scheduler_list(device_name):
+        raise DiskUtilsError('No such IO scheduler: %s' % name)
+
+    with open(__sched_path(device_name), 'w') as fp:
+        fp.write(name)
+
+
+def __sched_path(device_name):
+    return '/sys/block/%s/queue/scheduler' % device_name
