@@ -152,12 +152,11 @@ class NRun(CLICmd):
                 LOG_UI.error("Spawner not implemented or invalid.")
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
-            listen = config.get('nrun.status_server.listen')
-            verbose = config.get('core.verbose')
-            self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
+            dots = FancyDots(len(self.pending_tasks))
+
+            self.status_server = nrunner.StatusServer(config,  # pylint: disable=W0201
                                                       [t.identifier for t in
-                                                       self.pending_tasks],
-                                                      verbose)
+                                                       self.pending_tasks])
             self.status_server.start()
             parallel_tasks = config.get('nrun.parallel_tasks')
             loop = asyncio.get_event_loop()

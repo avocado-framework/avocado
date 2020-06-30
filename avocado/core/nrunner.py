@@ -723,15 +723,31 @@ class Task:
 
 class StatusServer:
 
-    def __init__(self, uri, tasks_pending=None, verbose=False):
-        self.uri = uri
+    def __init__(self, config, tasks_pending=None, dots=None):
+        self.config = config
         self.server_task = None
+        self.dots = dots
         self.result = {}
         if tasks_pending is None:
             tasks_pending = []
         self.tasks_pending = tasks_pending
-        self.verbose = verbose
         self.wait_on_tasks_pending = len(self.tasks_pending) > 0
+
+        self._fancy_dots = None
+        self._uri = None
+        self._verbose = None
+
+    @property
+    def uri(self):
+        if self._uri is None:
+            self._uri = self.config.get('nrun.status_server.listen')
+        return self._uri
+
+    @property
+    def verbose(self):
+        if self._verbose is None:
+            self._verbose = self.config.get('core.verbose')
+        return self._verbose
 
     async def cb(self, reader, _):
         while True:
@@ -1028,7 +1044,9 @@ class BaseRunnerApp:
         :param args: parsed command line arguments turned into a dictionary
         :type args: dict
         """
-        server = StatusServer(args.get('uri'))
+        config = {'nrun.status_server.listen': args.get('uri'),
+                  'core.verbose': False}
+        server = StatusServer(config)
         server.start()
         loop = asyncio.get_event_loop()
         loop.run_until_complete(server.wait())
