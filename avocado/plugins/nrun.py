@@ -5,12 +5,12 @@ import random
 import sys
 
 from avocado.core import exit_codes
-from avocado.core import job
 from avocado.core import nrunner
 from avocado.core import parser_common_args
 from avocado.core import resolver
 from avocado.core.spawners.process import ProcessSpawner
 from avocado.core.spawners.podman import PodmanSpawner
+from avocado.core.utils import resolutions_to_tasks
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
@@ -116,7 +116,7 @@ class NRun(CLICmd):
         if os.path.exists(hint_filepath):
             hint = HintParser(hint_filepath)
         resolutions = resolver.resolve(config.get('nrun.references'), hint)
-        tasks = job.resolutions_to_tasks(resolutions, config)
+        tasks = resolutions_to_tasks(resolutions, config)
         # pylint: disable=W0201
         self.pending_tasks, missing_requirements = nrunner.check_tasks_requirements(tasks)
         if missing_requirements:
