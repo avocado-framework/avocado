@@ -4,11 +4,11 @@ import tempfile
 import unittest.mock
 
 from avocado.core import data_dir
-from avocado.core import exceptions
 from avocado.core import exit_codes
 from avocado.core import job
 from avocado.core import nrunner
 from avocado.core import test
+from avocado.core.exceptions import JobBaseException
 from avocado.utils import path as utils_path
 
 from .. import setup_avocado_loggers, temp_dir_prefix
@@ -107,8 +107,8 @@ class JobTest(unittest.TestCase):
                   'core.show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
-        self.assertRaises(exceptions.JobTestSuiteEmptyError,
-                          self.job.create_test_suite)
+        with self.assertRaises(JobBaseException):
+            self.job.create_test_suite()
 
     def test_job_create_test_suite_simple(self):
         simple_tests_found = self._find_simple_test_candidates()
@@ -125,7 +125,7 @@ class JobTest(unittest.TestCase):
         class JobFilterTime(job.Job):
             def pre_tests(self):
                 filtered_test_suite = []
-                for test_factory in self.test_suite:
+                for test_factory in self.test_suite.tests:
                     if self.config.get('run.test_runner') == 'runner':
                         if test_factory[0] is test.SimpleTest:
                             if not test_factory[1].get('name', '').endswith('time'):
@@ -134,7 +134,7 @@ class JobTest(unittest.TestCase):
                         task = test_factory
                         if not task.runnable.url.endswith('time'):
                             filtered_test_suite.append(test_factory)
-                self.test_suite = filtered_test_suite
+                self.test_suite.tests = filtered_test_suite
                 super(JobFilterTime, self).pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
@@ -189,7 +189,7 @@ class JobTest(unittest.TestCase):
         class JobFilterLog(job.Job):
             def pre_tests(self):
                 filtered_test_suite = []
-                for test_factory in self.test_suite:
+                for test_factory in self.test_suite.tests:
                     if self.config.get('run.test_runner') == 'runner':
                         if test_factory[0] is test.SimpleTest:
                             if not test_factory[1].get('name', '').endswith('time'):
@@ -198,7 +198,7 @@ class JobTest(unittest.TestCase):
                         task = test_factory
                         if not task.runnable.url.endswith('time'):
                             filtered_test_suite.append(test_factory)
-                self.test_suite = filtered_test_suite
+                self.test_suite.tests = filtered_test_suite
                 super(JobFilterLog, self).pre_tests()
 
             def post_tests(self):
@@ -294,7 +294,7 @@ class JobTest(unittest.TestCase):
         self.job.create_test_suite()
         self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
         if self.job.test_suite:
-            self.assertIsInstance(self.job.test_suite[0], nrunner.Task)
+            self.assertIsInstance(self.job.test_suite.tests[0], nrunner.Task)
 
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
