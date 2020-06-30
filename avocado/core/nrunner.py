@@ -787,7 +787,7 @@ class StatusServer:
         await server.wait_closed()
 
     def handle_task_started(self, data):
-        if self.verbose:
+        if self.verbose and not self.dots:
             print("Task started: {}. Outputdir: {}".format(data['id'],
                                                            data['output_dir']))
 
@@ -805,7 +805,7 @@ class StatusServer:
             self.result[result] = []
         self.result[result].append(task_id)
 
-        if self.verbose:
+        if self.verbose and not self.dots:
             print('Task complete (%s): %s' % (result, task_id))
             if result not in ('pass', 'skip'):
                 stdout = data.get('stdout', b'')
@@ -817,6 +817,8 @@ class StatusServer:
                 output = data.get('output', b'')
                 if output:
                     print('Task %s output:\n%s\n' % (task_id, output))
+        if self.dots is not None:
+            self.dots.update_test(int(task_id.split('-')[0]), result[0].upper())
 
     def start(self):
         loop = asyncio.get_event_loop()

@@ -13,6 +13,7 @@ from avocado.core.spawners.process import ProcessSpawner
 from avocado.core.spawners.podman import PodmanSpawner
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
+from avocado.core.ui.dots import FancyDots
 from avocado.core.parser import HintParser
 from avocado.core.test_id import TestID
 from avocado.core.plugin_interfaces import CLICmd
@@ -73,9 +74,14 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg="--spawner")
 
+        settings.add_argparser_to_option(namespace='runner.output.fancy_dots',
+                                         parser=parser,
+                                         short_arg='-f',
+                                         long_arg='--enable-fancy-dots')
+
         parser_common_args.add_tag_filter_args(parser)
 
-    async def spawn_tasks(self, parallel_tasks):
+    async def spawn_tasks(self, parallel_tasks, dots=None):
         while True:
             while len(set(self.status_server.tasks_pending).intersection(self.spawned_tasks)) >= parallel_tasks:
                 await asyncio.sleep(0.1)
@@ -88,6 +94,7 @@ class NRun(CLICmd):
 
             spawn_result = await self.spawner.spawn_task(task)
             identifier = task.identifier
+            task_id = int(identifier.split('-')[0])
             self.pending_tasks.remove(task)
             self.spawned_tasks.append(identifier)
             if not spawn_result:
@@ -98,7 +105,10 @@ class NRun(CLICmd):
             if not alive:
                 LOG_UI.warning("%s is not alive shortly after being spawned", identifier)
             else:
-                LOG_UI.info("%s spawned and alive", identifier)
+                if dots is None:
+                    LOG_UI.info("%s spawned and alive", identifier)
+                else:
+                    dots.update_test(task_id, 's')
 
     def report_results(self):
         """Reports a summary, with verbose listing of fail/error tasks."""
@@ -152,15 +162,18 @@ class NRun(CLICmd):
                 LOG_UI.error("Spawner not implemented or invalid.")
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
-            dots = FancyDots(len(self.pending_tasks))
+            dots = None
+            if config.get('runner.output.fancy_dots'):
+                dots = FancyDots(len(self.pending_tasks))
 
             self.status_server = nrunner.StatusServer(config,  # pylint: disable=W0201
                                                       [t.identifier for t in
-                                                       self.pending_tasks])
+                                                       self.pending_tasks],
+                                                      dots)
             self.status_server.start()
             parallel_tasks = config.get('nrun.parallel_tasks')
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.spawn_tasks(parallel_tasks))
+            loop.run_until_complete(self.spawn_tasks(parallel_tasks, dots))
             loop.run_until_complete(self.status_server.wait())
             self.report_results()
             exit_code = exit_codes.AVOCADO_ALL_OK

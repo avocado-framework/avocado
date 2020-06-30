@@ -135,6 +135,13 @@ def register_core_options():
                                     default=True,
                                     help_msg=help_msg)
 
+    help_msg = 'Should we use the fancy dots UI? This is experimental.'
+    future_settings.register_option(section='runner.output',
+                                    key='fancy_dots',
+                                    key_type=bool,
+                                    default=False,
+                                    help_msg=help_msg)
+
     help_msg = ('Whether to force colored output to non-tty outputs '
                 '(e.g. log files). Allowed values: auto, always, never')
     future_settings.register_option(section='runner.output',
