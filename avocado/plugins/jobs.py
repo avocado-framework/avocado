@@ -159,7 +159,9 @@ class Jobs(CLICmd):
             try:
                 files_buffers = spawner().stream_output(job_id, test_id)
                 for filename, stream in files_buffers:
-                    dest = os.path.join(destination, filename)
+                    dest = os.path.join(destination,
+                                        test_id.replace('/', '_'),
+                                        filename)
                     self._save_stream_to_file(stream, dest)
             except SpawnerException as ex:
                 LOG_UI.error("Error: Failed to download: %s. Exiting...", ex)
