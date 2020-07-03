@@ -77,9 +77,7 @@ class Jobs(CLICmd):
         Directory must exists before calling this function.
         """
         dirname = os.path.dirname(filename)
-        if not os.path.isdir(dirname):
-            LOG_UI.error("%s does not exist. Exiting...", dirname)
-            return exit_codes.AVOCADO_GENERIC_CRASH
+        os.makedirs(dirname, exist_ok=True)
 
         with open(filename, 'ab') as output_file:
             output_file.write(stream)
