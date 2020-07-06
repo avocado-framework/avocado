@@ -261,7 +261,7 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
             logger = job.log
         else:
             logger = None
-        for test in job.test_suite:
+        for test in job.test_suite.tests:
             # ignore nrunner/resolver based test suites that contain
             # task, because the requirements resolution planned is
             # completely different from the traditional job runner

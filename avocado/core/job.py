@@ -26,65 +26,17 @@ import sys
 import tempfile
 import time
 import traceback
-import uuid
 
-from ..utils import astring, path, process, stacktrace
+from ..utils import astring, path, process
 from ..utils.data_structures import CallbackRegister, time_to_seconds
 from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata,
-               loader, nrunner, output, result, tags, varianter, version)
+               output, result, varianter, version)
 from .job_id import create_unique_job_id
 from .future.settings import settings
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
-from .resolver import ReferenceResolutionResult, resolve
-from .tags import filter_test_tags_runnable
-from .test import DryRunTest
+from .suite import TestSuite, TestSuiteError
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
-
-
-def resolutions_to_tasks(resolutions, config):
-    """
-    Transforms resolver resolutions into tasks
-
-    A resolver resolution
-    (:class:`avocado.core.resolver.ReferenceResolution`) contains
-    information about the resolution process (if it was successful
-    or not) and in case of successful resolutions a list of
-    resolutions.  It's expected that the resolution are
-    :class:`avocado.core.nrunner.Runnable`.
-
-    This method transforms those runnables into Tasks
-    (:class:`avocado.core.nrunner.Task`), which will include a status
-    reporting URI.  It also performs tag based filtering on the
-    runnables for possibly excluding some of the Runnables.
-
-    :param resolutions: possible multiple resolutions for multiple
-                        references
-    :type resolutions: list of :class:`avocado.core.resolver.ReferenceResolution`
-    :param config: job configuration
-    :type config: dict
-    :returns: the resolutions converted to tasks
-    :rtype: list of :class:`avocado.core.nrunner.Task`
-    """
-
-    tasks = []
-    filter_by_tags = config.get("filter.by_tags.tags")
-    include_empty = config.get("filter.by_tags.include_empty")
-    include_empty_key = config.get('filter.by_tags.include_empty_key')
-    status_server = config.get('nrun.status_server.listen')
-    for resolution in resolutions:
-        if resolution.result != ReferenceResolutionResult.SUCCESS:
-            continue
-        for runnable in resolution.resolutions:
-            if filter_by_tags:
-                if not filter_test_tags_runnable(runnable,
-                                                 filter_by_tags,
-                                                 include_empty,
-                                                 include_empty_key):
-                    continue
-            tasks.append(nrunner.Task(str(uuid.uuid1()), runnable,
-                                      [status_server]))
-    return tasks
 
 
 def register_job_options():
@@ -386,7 +338,7 @@ class Job:
         """
         def soft_abort(msg):
             """ Only log the problem """
-            LOG_JOB.warning("Unable to update the latest link: {}", msg)
+            LOG_JOB.warning("Unable to update the latest link: %s", msg)
         basedir = os.path.dirname(self.logdir)
         basename = os.path.basename(self.logdir)
         proc_latest = os.path.join(basedir, "latest.%s" % os.getpid())
@@ -411,64 +363,6 @@ class Job:
         finally:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
-
-    def _make_test_suite(self, references, ignore_missing):
-        """
-        Prepares a test suite to be used for running tests
-
-        :param references: List of tests references to be resolved and
-                           transformed into test factories
-        :type references: list of str
-        :returns: a test suite (a list of test factories)
-        """
-        if self._test_runner_name == 'nrunner':
-            make_test_suite = self._make_test_suite_resolver
-        else:
-            make_test_suite = self._make_test_suite_loader
-        try:
-            self.test_suite = make_test_suite(references, ignore_missing)
-        except loader.LoaderError as details:
-            stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
-            raise exceptions.JobTestSuiteError(details)
-
-    def _make_test_suite_loader(self, references, ignore_missing):
-        loader.loader.load_plugins(self.config)
-        try:
-            suite = loader.loader.discover(references, force=ignore_missing)
-            filter_tags = self.config.get("filter.by_tags.tags")
-            if filter_tags:
-                suite = tags.filter_test_tags(
-                    suite,
-                    filter_tags,
-                    self.config.get("filter.by_tags.include_empty"),
-                    self.config.get('filter.by_tags.include_empty_key'))
-        except loader.LoaderUnhandledReferenceError as details:
-            raise exceptions.JobTestSuiteError(details)
-
-        if not self.config.get('run.dry_run.enabled'):
-            return suite
-        for i in range(len(suite)):
-            suite[i] = [DryRunTest, suite[i][1]]
-        return suite
-
-    @staticmethod
-    def _resolver_check_missing_references(references, resolutions):
-        missing = []
-        for reference in references:
-            results = [res.result for res in resolutions if
-                       res.reference == reference]
-            if ReferenceResolutionResult.SUCCESS not in results:
-                missing.append(reference)
-        if missing:
-            msg = "Could not resolve references: %s" % ",".join(missing)
-            raise exceptions.JobTestSuiteReferenceResolutionError(msg)
-
-    def _make_test_suite_resolver(self, references, ignore_missing):
-        resolutions = resolve(references)
-        if not ignore_missing:
-            self._resolver_check_missing_references(references,
-                                                    resolutions)
-        return resolutions_to_tasks(resolutions, self.config)
 
     def _log_job_id(self):
         LOG_JOB.info('Job ID: %s', self.unique_id)
@@ -556,25 +450,16 @@ class Job:
         self._log_job_id()
 
     def create_test_suite(self):
-        """
-        Creates the test suite for this Job
-
-        This is a public Job API as part of the documented Job phases
-        """
-        refs = self.config.get('run.references')
-        ignore_missing = self.config.get('run.ignore_missing_references')
-        self._make_test_suite(refs, ignore_missing)
-        if not self.test_suite:
-            if refs:
-                e_msg = ("No tests found for given test references, try "
-                         "'avocado list -V %s' for details") % " ".join(refs)
-            else:
-                e_msg = ("No test references provided nor any other arguments "
-                         "resolved into tests. Please double check the "
-                         "executed command.")
-            raise exceptions.JobTestSuiteEmptyError(e_msg)
-
-        self.result.tests_total = len(self.test_suite)
+        try:
+            self.test_suite = TestSuite.from_config(self.config)
+            if self.test_suite.size == 0:
+                refs = self.test_suite.references
+                msg = ("No tests found for given test references, try "
+                       "'avocado list -V %s' for details") % " ".join(refs)
+                raise exceptions.JobTestSuiteEmptyError(msg)
+        except TestSuiteError as details:
+            raise exceptions.JobBaseException(details)
+        self.result.tests_total = self.test_suite.size
 
     def pre_tests(self):
         """
@@ -609,7 +494,7 @@ class Job:
         jobdata.record(self.config, self.logdir, variant, sys.argv)
         summary = self.test_runner.run_suite(self,
                                              self.result,
-                                             self.test_suite,
+                                             self.test_suite.tests,
                                              variant)
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
