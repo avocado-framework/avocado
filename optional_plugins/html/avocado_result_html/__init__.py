@@ -220,12 +220,12 @@ class HTMLResult(Result):
     def render(self, result, job):
         if job.status in ("RUNNING", "ERROR"):
             return  # Don't create results on unfinished or errored jobs
-        if not (job.config.get('run.html_job_result') or
+        if not (job.config.get('job.run.result.html.enabled') or
                 job.config.get('run.html_output')):
             return
 
         open_browser = job.config.get('run.open_browser', False)
-        if job.config.get('run.html_job_result', 'off') == 'on':
+        if job.config.get('job.run.result.html.enabled', 'off') == 'on':
             html_path = os.path.join(job.logdir, 'results.html')
             self._render(result, html_path)
             if job.config.get('stdout_claimed_by', None) is None:
@@ -281,10 +281,9 @@ class HTML(CLI):
                                  long_arg='--open-browser')
 
         help_msg = ('Enables default HTML result in the job results '
-                    'directory. File will be located at '
-                    '"html/results.html".')
-        settings.register_option(section='run',
-                                 key='html_job_result',
+                    'directory. File will be named "results.html".')
+        settings.register_option(section='job.run.result.html',
+                                 key='enabled',
                                  default='on',
                                  choices=('on', 'off'),
                                  parser=run_subcommand_parser,
