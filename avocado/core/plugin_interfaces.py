@@ -312,12 +312,11 @@ class Runner(Plugin):
     """
 
     @abc.abstractmethod
-    def run_suite(self, job, test_suite, variants):
+    def run_suite(self, job, test_suite):
         """
         Run one or more tests and report with test result.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
-        :param test_suite: a list of tests to run.
-        :param variants: A varianter iterator to produce test params.
+        :param test_suite: an instance of TestSuite with some tests to run.
         :return: a set with types of test failures.
         """

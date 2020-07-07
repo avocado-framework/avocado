@@ -30,7 +30,7 @@ import traceback
 from ..utils import astring, path, process
 from ..utils.data_structures import CallbackRegister, time_to_seconds
 from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata,
-               output, result, varianter, version)
+               output, result, version)
 from .job_id import create_unique_job_id
 from .future.settings import settings
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
@@ -544,27 +544,20 @@ class Job:
         """
         The actual test execution phase
         """
-        variant = self.config.get("avocado_variants")
-        if variant is None:
-            variant = varianter.Varianter()
-        if not variant.is_parsed():   # Varianter not yet parsed, apply args
-            try:
-                variant.parse(self.config)
-            except (IOError, ValueError) as details:
-                raise exceptions.OptionValidationError("Unable to parse "
-                                                       "variant: %s" % details)
-
         try:
             runner_extension = dispatcher.RunnerDispatcher()[self._test_runner_name]
         except KeyError:
             return
         self.test_runner = runner_extension.obj
 
-        self._log_job_debug_info(variant)
-        jobdata.record(self.config, self.logdir, variant, sys.argv)
-        summary = self.test_runner.run_suite(self,
-                                             self.test_suite.tests,
-                                             variant)
+        self._log_job_debug_info(self.test_suite.variants)
+        jobdata.record(self.config,
+                       self.logdir,
+                       self.test_suite.variants,
+                       sys.argv)
+
+        summary = self.test_runner.run_suite(self, self.test_suite)
+
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'

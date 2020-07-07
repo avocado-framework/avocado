@@ -33,7 +33,7 @@ class TestSuite:
         if config:
             self.config.update(config)
 
-        self._variant = None
+        self._variants = None
         self._references = None
 
         if (config.get('run.dry_run.enabled') and
@@ -117,11 +117,18 @@ class TestSuite:
             return TestSuiteStatus.UNKNOWN
 
     @property
-    def variant(self):
-        if self._variant is None:
-            self._variant = self.config.get("avocado_variants") or Varianter()
-        self._parse_variant()
-        return self._variant
+    def variants(self):
+        if self._variants is None:
+            # TODO: We need to register this with register_option()
+            variants = self.config.get('avocado_variants', Varianter())
+            if not variants.is_parsed():
+                try:
+                    variants.parse(self.config)
+                except (IOError, ValueError) as details:
+                    raise OptionValidationError("Unable to parse "
+                                                "variant: %s" % details)
+            self._variants = variants
+        return self._variants
 
     @classmethod
     def from_config(cls, config, name=None):
