@@ -9,6 +9,7 @@ from .tags import filter_test_tags
 from .test import DryRunTest
 from .utils import resolutions_to_tasks
 from .varianter import Varianter
+from .dispatcher import RunnerDispatcher
 
 
 class TestSuiteError(Exception):
@@ -35,6 +36,7 @@ class TestSuite:
 
         self._variants = None
         self._references = None
+        self._runner = None
 
         if (config.get('run.dry_run.enabled') and
                 self.config.get('run.test_runner') == 'runner'):
@@ -83,20 +85,22 @@ class TestSuite:
                    config=config,
                    tests=tasks)
 
-    def _parse_variant(self):
-        # Varianter not yet parsed, apply configs
-        if not self.variant.is_parsed():
-            try:
-                self.variant.parse(self.config)
-            except (IOError, ValueError) as details:
-                raise OptionValidationError("Unable to parse "
-                                            "variant: %s" % details)
-
     @property
     def references(self):
         if self._references is None:
             self._references = self.config.get('run.references')
         return self._references
+
+    @property
+    def runner(self):
+        if self._runner is None:
+            runner_name = self.config.get('run.test_runner') or 'runner'
+            try:
+                runner_extension = RunnerDispatcher()[runner_name]
+                self._runner = runner_extension.obj
+            except KeyError:
+                raise TestSuiteError("Runner not implemented.")
+        return self._runner
 
     @property
     def size(self):
@@ -129,6 +133,14 @@ class TestSuite:
                                                 "variant: %s" % details)
             self._variants = variants
         return self._variants
+
+    def run(self, job):
+        """Run this test suite with the job context in mind.
+
+        :param job: A :class:`avocado.core.job.Job` instance.
+        :rtype: set
+        """
+        return self.runner.run_suite(job, self)
 
     @classmethod
     def from_config(cls, config, name=None):

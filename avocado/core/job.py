@@ -129,13 +129,6 @@ class Job:
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
-        # To avoid requiring an explicit runner from Job API users, this sets
-        # a job built-in default for the runner
-        self._test_runner_name = self.config.get('run.test_runner') or 'runner'
-        #: An instance of the :class:`avocado.core.plugin_interfaces.Runner`
-        #: that will be used to effectively run the tests in the this job's
-        #: :attr:`test_suite`
-        self.test_runner = None
 
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
@@ -544,19 +537,14 @@ class Job:
         """
         The actual test execution phase
         """
-        try:
-            runner_extension = dispatcher.RunnerDispatcher()[self._test_runner_name]
-        except KeyError:
-            return
-        self.test_runner = runner_extension.obj
-
         self._log_job_debug_info(self.test_suite.variants)
         jobdata.record(self.config,
                        self.logdir,
                        self.test_suite.variants,
                        sys.argv)
 
-        summary = self.test_runner.run_suite(self, self.test_suite)
+        # This is "almost ready" for a loop
+        summary = self.test_suite.run(self)
 
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
