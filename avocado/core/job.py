@@ -563,7 +563,6 @@ class Job:
         self._log_job_debug_info(variant)
         jobdata.record(self.config, self.logdir, variant, sys.argv)
         summary = self.test_runner.run_suite(self,
-                                             self.result,
                                              self.test_suite.tests,
                                              variant)
         # If it's all good so far, set job status to 'PASS'
