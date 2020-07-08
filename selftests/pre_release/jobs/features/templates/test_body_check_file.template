@@ -1,0 +1,6 @@
+        # check file
+        file_path = os.path.join(
+            self.tmpdir.name, 'latest', '{file}')
+        msg_file = '{assert_err}' % file_path
+        {assert}(os.path.exists(file_path), msg_file)
+

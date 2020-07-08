@@ -1,0 +1,3 @@
+        # add the feature to the config
+        self.base_config['{feature}'] = '{value}'
+

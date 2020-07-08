@@ -1,0 +1,5 @@
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.base_config = {'core.show': ['none'],
+                            'run.results_dir': self.tmpdir.name,
+                            'run.references': ['examples/tests/passtest.py']}

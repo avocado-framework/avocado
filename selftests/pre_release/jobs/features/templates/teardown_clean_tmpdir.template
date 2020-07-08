@@ -1,0 +1,2 @@
+        # clean up temp dir
+        self.tmpdir.cleanup()

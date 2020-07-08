@@ -1,0 +1,7 @@
+        # run the job
+        with Job(self.base_config) as j:
+            result = j.run()
+
+        # check if job ended with success
+        self.assertEqual(result, exit_codes.AVOCADO_ALL_OK)
+

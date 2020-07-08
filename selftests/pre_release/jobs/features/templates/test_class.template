@@ -1,0 +1,39 @@
+import os
+import tempfile
+
+from avocado import Test
+from avocado.core import exit_codes
+from avocado.core.job import Job
+
+
+def file_has_content(file_path, content):
+    """
+    Check if a file contains `content`.
+    """
+
+    if os.path.isfile(file_path):
+        with open(file_path, "r") as f:
+            source_content = f.read()
+
+    if content in source_content:
+        return True
+    return False
+
+def temp_dir_prefix(module_name, klass, method):
+    """
+    Returns a standard name for the temp dir prefix used by the tests
+    """
+    fmt = 'avocado__%s__%s__%s__'
+    return fmt % (module_name, klass.__class__.__name__, method)
+
+
+class JobAPI_{class_name}(Test):
+
+    def setUp(self):
+{setup}
+
+    def test_{test_name}(self):
+{test_body}
+
+    def tearDown(self):
+{tear_down}

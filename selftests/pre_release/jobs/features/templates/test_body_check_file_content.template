@@ -1,0 +1,9 @@
+        # check file content
+        msg_content = 'Could not find content on %s: %s' % (
+            file_path, '{content}')
+        self.assertTrue(
+            file_has_content(
+                file_path,
+                '{content}'
+            ), msg_content)
+
