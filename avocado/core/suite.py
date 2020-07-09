@@ -77,12 +77,6 @@ class TestSuite:
         ignore_missing = config.get('run.ignore_missing_references')
         references = config.get('run.references')
         resolutions = resolve(references, ignore_missing=ignore_missing)
-
-        if not resolutions:
-            msg = ("Test Suite could not be created. References failed to "
-                   "resolve into resolutions.")
-            raise TestSuiteError(msg)
-
         tasks = resolutions_to_tasks(resolutions, config)
 
         return cls(name=name or str(uuid1),
@@ -131,14 +125,16 @@ class TestSuite:
 
     @classmethod
     def from_config(cls, config, name=None):
-        references = config.get('run.references')
         runner = config.get('run.test_runner') or 'runner'
-        if not references:
-            msg = ("Test Suite could not be create. No test references "
-                   "provided nor any other arguments resolved into tests")
-            raise TestSuiteError(msg)
-
         if runner == 'nrunner':
-            return cls._from_config_with_resolver(config, name)
+            suite = cls._from_config_with_resolver(config, name)
         else:
-            return cls._from_config_with_loader(config, name)
+            suite = cls._from_config_with_loader(config, name)
+
+        if not config.get('run.ignore_missing_references'):
+            if not suite.tests:
+                msg = ("Test Suite could not be create. No test references "
+                       "provided nor any other arguments resolved into tests")
+                raise TestSuiteError(msg)
+
+        return suite
