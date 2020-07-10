@@ -92,9 +92,9 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn(b"(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn(b"(2/8) passtest.py:PassTest.test;medium", result.stdout)
-        self.assertIn(b"(8/8) failtest.py:FailTest.test;longest",
+        self.assertIn(b"(1/8) passtest.py:PassTest.test;run-short-beaf", result.stdout)
+        self.assertIn(b"(2/8) passtest.py:PassTest.test;run-medium-5595", result.stdout)
+        self.assertIn(b"(8/8) failtest.py:FailTest.test;run-longest-efc4",
                       result.stdout)
 
     def test_run_mplex_failtest_tests_per_variant(self):
@@ -105,9 +105,9 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn(b"(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn(b"(2/8) failtest.py:FailTest.test;short", result.stdout)
-        self.assertIn(b"(8/8) failtest.py:FailTest.test;longest",
+        self.assertIn(b"(1/8) passtest.py:PassTest.test;run-short-beaf", result.stdout)
+        self.assertIn(b"(2/8) failtest.py:FailTest.test;run-short-beaf", result.stdout)
+        self.assertIn(b"(8/8) failtest.py:FailTest.test;run-longest-efc4",
                       result.stdout)
 
     def test_run_double_mplex(self):
