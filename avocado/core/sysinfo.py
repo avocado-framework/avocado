@@ -177,6 +177,7 @@ class Command(Collectible):
                                  verbose=False,
                                  ignore_status=True,
                                  allow_output_check='combined',
+                                 shell=True,
                                  env=env)
         except FileNotFoundError as exc_fnf:
             log.debug("Not logging '%s' (command '%s' was not found)", self.cmd,
@@ -532,6 +533,7 @@ class SysInfo:
 
     def start(self):
         """Log all collectibles at the start of the event."""
+        os.environ['AVOCADO_SYSINFODIR'] = self.pre_dir
         for log_hook in self.start_collectibles:
             if isinstance(log_hook, Daemon):  # log daemons in profile directory
                 log_hook.run(self.profile_dir)
@@ -545,6 +547,7 @@ class SysInfo:
         """
         Logging hook called whenever a job finishes.
         """
+        os.environ['AVOCADO_SYSINFODIR'] = self.post_dir
         for log_hook in self.end_collectibles:
             log_hook.run(self.post_dir)
 

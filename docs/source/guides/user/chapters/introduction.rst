@@ -515,6 +515,8 @@ the sysinfo collection. Avocado supports three types of tasks:
    before and after the job/test (single execution commands). It is possible
    to set a timeout which is enforced per each executed command in
    [sysinfo.collect] by setting "commands_timeout" to a positive number.
+   You can also use the environment variable AVOCADO_SYSINFODIR which points
+   to the sysinfo directory in results.
 2. files - file with new-line separated list of files to be copied
 3. profilers - file with new-line separated list of commands to be executed
    before the job/test and killed at the end of the job/test (follow-like
