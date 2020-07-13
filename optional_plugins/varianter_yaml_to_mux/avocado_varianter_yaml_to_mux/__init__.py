@@ -19,6 +19,7 @@ import copy
 import os
 import re
 import sys
+import ast
 
 import yaml
 
@@ -492,6 +493,13 @@ class YamlToMux(mux.MuxPlugin, Varianter):
     description = 'Multiplexer plugin to parse yaml files to params'
 
     def initialize(self, config):
+        """
+        :warning message: We are using `ast.literal_eval()` despite warning.
+
+        It is possible to crash the Python interpreter with a sufficiently
+        large/complex string due to stack depth limitations in Python’s
+        AST compiler.
+        """
         debug = config.get('variants.debug')
         subcommand = config.get('subcommand')
 
@@ -515,12 +523,17 @@ class YamlToMux(mux.MuxPlugin, Varianter):
 
         # Extend default multiplex tree of --mux-inject values
         for inject in config.get("yaml_to_mux.inject"):
-            entry = inject.split(':', 3)
+            entry = inject.split(':', 2)
             if len(entry) < 2:
                 raise ValueError("key:entry pairs required, found only %s"
                                  % (entry))
             elif len(entry) == 2:   # key, entry
                 entry.insert(0, '')  # add path='' (root)
+            # We try to maintain the data type of the provided value
+            try:
+                entry[2] = ast.literal_eval(entry[2])
+            except (ValueError, SyntaxError, NameError, RecursionError):
+                pass
             data.get_node(entry[0], True).value[entry[1]] = entry[2]
 
         mux_filter_only = config.get('yaml_to_mux.filter_only')
