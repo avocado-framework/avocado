@@ -9,7 +9,7 @@ class ErrorTest(Test):
     """
     Example test that ends with ERROR.
 
-    :avocado: tags=failure_expected
+    :avocado: tags=failure_expected.
     """
 
     def test(self):
