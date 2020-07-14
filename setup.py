@@ -30,7 +30,7 @@ def get_long_description():
     return req_contents
 
 
-INSTALL_REQUIREMENTS = ['requests', 'stevedore>=0.14', 'six>=1.10.0', 'setuptools']
+INSTALL_REQUIREMENTS = ['requests', 'stevedore>=0.14,<3.0', 'six>=1.10.0', 'setuptools']
 
 if sys.version_info[0] == 2:
     INSTALL_REQUIREMENTS.append('enum34')
