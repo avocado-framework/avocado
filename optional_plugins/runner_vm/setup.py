@@ -16,15 +16,18 @@
 from setuptools import setup, find_packages
 
 
+VERSION = open("VERSION", "r").read().strip()
+
 setup(name='avocado-framework-plugin-runner-vm',
       description='Avocado Runner for libvirt VM Execution',
-      version=open("VERSION", "r").read().strip(),
+      version=VERSION,
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
       packages=find_packages(exclude=('tests*',)),
       include_package_data=True,
-      install_requires=['avocado-framework-plugin-runner-remote', 'libvirt-python'],
+      install_requires=['avocado-framework-plugin-runner-remote==%s' % VERSION,
+                        'libvirt-python'],
       test_suite='tests',
       entry_points={
           'avocado.plugins.cli': [
