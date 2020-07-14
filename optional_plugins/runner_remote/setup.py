@@ -29,7 +29,6 @@ if detected_distro.name == 'fedora' and int(detected_distro.version) >= 29:
     fabric = 'Fabric3>=1.1.4,<2.0.0'
 
 
-
 VERSION = open("VERSION", "r").read().strip()
 
 setup(name='avocado-framework-plugin-runner-remote',
