@@ -33,11 +33,12 @@ except path.CmdNotFoundError:
 
 
 def generate_reference():
-    from avocado.plugins.config import Config
+    avocado = os.path.join(API_SOURCE_DIR, '__main__.py')
+    result = process.run("%s %s  config reference" % (sys.executable, avocado))
     reference_path = os.path.join(ROOT_PATH, 'docs', 'source',
                                   'config', 'reference.rst')
     with open(reference_path, 'w') as reference:
-        Config.handle_reference(lambda x: reference.write(x + '\n'))
+        reference.write(result.stdout_text)
 
 
 generate_reference()
