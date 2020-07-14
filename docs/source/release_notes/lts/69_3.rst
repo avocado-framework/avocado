@@ -1,0 +1,49 @@
+========
+69.3 LTS
+========
+
+The Avocado team is proud to present a minor release in the 69.0 LTS (Long Term Stability)
+series, version 69.3 LTS, is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 69.x to 69.3
+===========================
+
+Upgrading should be smooth, and there are no additional instructions
+besides the steps on the installation method used.  For instance,
+if using pip, it should be as simple as::
+
+  $ pip install avocado-framework==69.3
+
+To use the latest 69.x release, you can also always do::
+
+  $ pip install avocado-framework<70.0
+
+Changes from 69.2
+=================
+
+Bug Fixes
+~~~~~~~~~
+
+* Pin stevedore to a version under 3.0.  At version 3.0, stevedore
+  had a major API change, causing breakage with how Avocado uses it.
+
+* Pin robotframework version, also to avoid compatibility issues.
+
+* Pin jinja2 version, as newer versions drop support for Python 3.5
+  and earlier.
+
+* Pin PyYAML version, as versions after 5.2 do not support Python 3.4,
+  which is supported by Avocado 69.x.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (69.2) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/69.2...69.3>`_.
