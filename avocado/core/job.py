@@ -30,7 +30,7 @@ import traceback
 from ..utils import astring, path, process
 from ..utils.data_structures import CallbackRegister, time_to_seconds
 from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata,
-               output, result, varianter, version)
+               output, result, version)
 from .job_id import create_unique_job_id
 from .future.settings import settings
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
@@ -129,13 +129,6 @@ class Job:
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
-        # To avoid requiring an explicit runner from Job API users, this sets
-        # a job built-in default for the runner
-        self._test_runner_name = self.config.get('run.test_runner') or 'runner'
-        #: An instance of the :class:`avocado.core.plugin_interfaces.Runner`
-        #: that will be used to effectively run the tests in the this job's
-        #: :attr:`test_suite`
-        self.test_runner = None
 
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
@@ -152,119 +145,6 @@ class Job:
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.cleanup()
-
-    @property
-    def test_parameters(self):
-        """Placeholder for test parameters.
-
-        This is related to --test-parameters command line option. They're kept
-        in the job because they will be prepared only once, since they are read
-        only and will be shared across all tests of a job.
-        """
-        if self._test_parameters is None:
-            self._test_parameters = {name: value for name, value
-                                     in self.config.get('run.test_parameters',
-                                                        [])}
-        return self._test_parameters
-
-    @property
-    def timeout(self):
-        if self._timeout is None:
-            self._timeout = self.config.get('job.run.timeout')
-        return self._timeout
-
-    @property
-    def unique_id(self):
-        if self._unique_id is None:
-            self._unique_id = self.config.get('run.unique_job_id') \
-                or create_unique_job_id()
-        return self._unique_id
-
-    def setup(self):
-        """
-        Setup the temporary job handlers (dirs, global setting, ...)
-        """
-        assert self.tmpdir is None, "Job.setup() already called"
-        if self.config.get('run.dry_run.enabled'):  # Create the dry-run dirs
-            if self.config.get('run.results_dir') is None:
-                tmp_dir = tempfile.mkdtemp(prefix="avocado-dry-run-")
-                self.config['run.results_dir'] = tmp_dir
-        self._setup_job_results()
-        self.result = result.Result(self.unique_id, self.logfile)
-        self.__start_job_logging()
-        self._setup_job_category()
-        # Use "logdir" in case "keep_tmp" is enabled
-        if self.config.get('run.keep_tmp') == 'on':
-            base_tmpdir = self.logdir
-        else:
-            base_tmpdir = data_dir.get_tmp_dir()
-            self.__keep_tmpdir = False
-        self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_",
-                                       dir=base_tmpdir)
-
-    def _setup_job_results(self):
-        """
-        Prepares a job result directory, also known as logdir, for this job
-        """
-        base_logdir = self.config.get('run.results_dir')
-        if base_logdir is None:
-            self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
-        else:
-            base_logdir = os.path.abspath(base_logdir)
-            self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
-                                                       unique_id=self.unique_id)
-        if not self.config.get('run.dry_run.enabled'):
-            self._update_latest_link()
-        self.logfile = os.path.join(self.logdir, "job.log")
-        idfile = os.path.join(self.logdir, "id")
-        with open(idfile, 'w') as id_file_obj:
-            id_file_obj.write("%s\n" % self.unique_id)
-            id_file_obj.flush()
-            os.fsync(id_file_obj)
-
-    def _setup_job_category(self):
-        """
-        This has to be called after self.logdir has been defined
-
-        It attempts to create a directory one level up from the job results,
-        with the given category name.  Then, a symbolic link is created to
-        this job results directory.
-
-        This should allow a user to look at a single directory for all
-        jobs of a given category.
-        """
-        category = self.config.get('run.job_category')
-        if category is None:
-            return
-
-        if category != astring.string_to_safe_path(category):
-            msg = ("Unable to set category in job results: name is not "
-                   "filesystem safe: %s" % category)
-            LOG_UI.warning(msg)
-            LOG_JOB.warning(msg)
-            return
-
-        # we could also get "base_logdir" from config, but I believe this is
-        # the best choice because it reduces the dependency surface (depends
-        # only on self.logdir)
-        category_path = os.path.join(os.path.dirname(self.logdir),
-                                     category)
-        try:
-            os.mkdir(category_path)
-        except FileExistsError:
-            pass
-
-        try:
-            os.symlink(os.path.relpath(self.logdir, category_path),
-                       os.path.join(category_path, os.path.basename(self.logdir)))
-        except NotImplementedError:
-            msg = "Unable to link this job to category %s" % category
-            LOG_UI.warning(msg)
-            LOG_JOB.warning(msg)
-        except OSError:
-            msg = "Permission denied to link this job to category %s" % category
-            LOG_UI.warning(msg)
-            LOG_JOB.warning(msg)
 
     def __start_job_logging(self):
         # Enable test logger
@@ -332,6 +212,155 @@ class Job:
             for logger in loggers:
                 logging.getLogger(logger).removeHandler(handler)
 
+    @staticmethod
+    def _get_avocado_git_version():
+        # if running from git sources, there will be a ".git" directory
+        # 3 levels up
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        git_dir = os.path.join(base_dir, '.git')
+        if not os.path.isdir(git_dir):
+            return
+        if not os.path.exists(os.path.join(base_dir, 'python-avocado.spec')):
+            return
+
+        try:
+            git = path.find_command('git')
+        except path.CmdNotFoundError:
+            return
+
+        olddir = os.getcwd()
+        try:
+            os.chdir(os.path.abspath(base_dir))
+            cmd = "%s show --summary --pretty='%%H'" % git
+            res = process.run(cmd, ignore_status=True, verbose=False)
+            if res.exit_status == 0:
+                top_commit = res.stdout_text.splitlines()[0][:8]
+                return " (GIT commit %s)" % top_commit
+        finally:
+            os.chdir(olddir)
+
+    def _log_avocado_config(self):
+        LOG_JOB.info('Avocado config:')
+        LOG_JOB.info('')
+        for line in pprint.pformat(self.config).splitlines():
+            LOG_JOB.info(line)
+        LOG_JOB.info('')
+
+    def _log_avocado_datadir(self):
+        LOG_JOB.info('Avocado Data Directories:')
+        LOG_JOB.info('')
+        LOG_JOB.info('base     %s', data_dir.get_base_dir())
+        LOG_JOB.info('tests    %s', data_dir.get_test_dir())
+        LOG_JOB.info('data     %s', data_dir.get_data_dir())
+        LOG_JOB.info('logs     %s', self.logdir)
+        LOG_JOB.info('')
+
+    def _log_avocado_version(self):
+        version_log = version.VERSION
+        git_version = self._get_avocado_git_version()
+        if git_version is not None:
+            version_log += git_version
+        LOG_JOB.info('Avocado version: %s', version_log)
+        LOG_JOB.info('')
+
+    @staticmethod
+    def _log_cmdline():
+        cmdline = " ".join(sys.argv)
+        LOG_JOB.info("Command line: %s", cmdline)
+        LOG_JOB.info('')
+
+    def _log_job_debug_info(self, variants):
+        """
+        Log relevant debug information to the job log.
+        """
+        self._log_cmdline()
+        self._log_avocado_version()
+        self._log_avocado_config()
+        self._log_avocado_datadir()
+        self._log_variants(variants)
+        self._log_tmp_dir()
+        self._log_job_id()
+
+    def _log_job_id(self):
+        LOG_JOB.info('Job ID: %s', self.unique_id)
+        if self.replay_sourcejob is not None:
+            LOG_JOB.info('Replay of Job ID: %s', self.replay_sourcejob)
+        LOG_JOB.info('')
+
+    def _log_tmp_dir(self):
+        LOG_JOB.info('Temporary dir: %s', self.tmpdir)
+        LOG_JOB.info('')
+
+    @staticmethod
+    def _log_variants(variants):
+        lines = variants.to_str(summary=1, variants=1, use_utf8=False)
+        for line in lines.splitlines():
+            LOG_JOB.info(line)
+
+    def _setup_job_category(self):
+        """
+        This has to be called after self.logdir has been defined
+
+        It attempts to create a directory one level up from the job results,
+        with the given category name.  Then, a symbolic link is created to
+        this job results directory.
+
+        This should allow a user to look at a single directory for all
+        jobs of a given category.
+        """
+        category = self.config.get('run.job_category')
+        if category is None:
+            return
+
+        if category != astring.string_to_safe_path(category):
+            msg = ("Unable to set category in job results: name is not "
+                   "filesystem safe: %s" % category)
+            LOG_UI.warning(msg)
+            LOG_JOB.warning(msg)
+            return
+
+        # we could also get "base_logdir" from config, but I believe this is
+        # the best choice because it reduces the dependency surface (depends
+        # only on self.logdir)
+        category_path = os.path.join(os.path.dirname(self.logdir),
+                                     category)
+        try:
+            os.mkdir(category_path)
+        except FileExistsError:
+            pass
+
+        try:
+            os.symlink(os.path.relpath(self.logdir, category_path),
+                       os.path.join(category_path, os.path.basename(self.logdir)))
+        except NotImplementedError:
+            msg = "Unable to link this job to category %s" % category
+            LOG_UI.warning(msg)
+            LOG_JOB.warning(msg)
+        except OSError:
+            msg = "Permission denied to link this job to category %s" % category
+            LOG_UI.warning(msg)
+            LOG_JOB.warning(msg)
+
+    def _setup_job_results(self):
+        """
+        Prepares a job result directory, also known as logdir, for this job
+        """
+        base_logdir = self.config.get('run.results_dir')
+        if base_logdir is None:
+            self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
+        else:
+            base_logdir = os.path.abspath(base_logdir)
+            self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
+                                                       unique_id=self.unique_id)
+        if not self.config.get('run.dry_run.enabled'):
+            self._update_latest_link()
+        self.logfile = os.path.join(self.logdir, "job.log")
+        idfile = os.path.join(self.logdir, "id")
+        with open(idfile, 'w') as id_file_obj:
+            id_file_obj.write("%s\n" % self.unique_id)
+            id_file_obj.flush()
+            os.fsync(id_file_obj)
+
     def _update_latest_link(self):
         """
         Update the latest job result symbolic link [avocado-logs-dir]/latest.
@@ -364,90 +393,56 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
-    def _log_job_id(self):
-        LOG_JOB.info('Job ID: %s', self.unique_id)
-        if self.replay_sourcejob is not None:
-            LOG_JOB.info('Replay of Job ID: %s', self.replay_sourcejob)
-        LOG_JOB.info('')
+    @property
+    def test_parameters(self):
+        """Placeholder for test parameters.
 
-    @staticmethod
-    def _log_cmdline():
-        cmdline = " ".join(sys.argv)
-        LOG_JOB.info("Command line: %s", cmdline)
-        LOG_JOB.info('')
-
-    @staticmethod
-    def _get_avocado_git_version():
-        # if running from git sources, there will be a ".git" directory
-        # 3 levels up
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        git_dir = os.path.join(base_dir, '.git')
-        if not os.path.isdir(git_dir):
-            return
-        if not os.path.exists(os.path.join(base_dir, 'python-avocado.spec')):
-            return
-
-        try:
-            git = path.find_command('git')
-        except path.CmdNotFoundError:
-            return
-
-        olddir = os.getcwd()
-        try:
-            os.chdir(os.path.abspath(base_dir))
-            cmd = "%s show --summary --pretty='%%H'" % git
-            res = process.run(cmd, ignore_status=True, verbose=False)
-            if res.exit_status == 0:
-                top_commit = res.stdout_text.splitlines()[0][:8]
-                return " (GIT commit %s)" % top_commit
-        finally:
-            os.chdir(olddir)
-
-    def _log_avocado_version(self):
-        version_log = version.VERSION
-        git_version = self._get_avocado_git_version()
-        if git_version is not None:
-            version_log += git_version
-        LOG_JOB.info('Avocado version: %s', version_log)
-        LOG_JOB.info('')
-
-    def _log_avocado_config(self):
-        LOG_JOB.info('Avocado config:')
-        LOG_JOB.info('')
-        for line in pprint.pformat(self.config).splitlines():
-            LOG_JOB.info(line)
-        LOG_JOB.info('')
-
-    def _log_avocado_datadir(self):
-        LOG_JOB.info('Avocado Data Directories:')
-        LOG_JOB.info('')
-        LOG_JOB.info('base     %s', data_dir.get_base_dir())
-        LOG_JOB.info('tests    %s', data_dir.get_test_dir())
-        LOG_JOB.info('data     %s', data_dir.get_data_dir())
-        LOG_JOB.info('logs     %s', self.logdir)
-        LOG_JOB.info('')
-
-    @staticmethod
-    def _log_variants(variants):
-        lines = variants.to_str(summary=1, variants=1, use_utf8=False)
-        for line in lines.splitlines():
-            LOG_JOB.info(line)
-
-    def _log_tmp_dir(self):
-        LOG_JOB.info('Temporary dir: %s', self.tmpdir)
-        LOG_JOB.info('')
-
-    def _log_job_debug_info(self, variants):
+        This is related to --test-parameters command line option. They're kept
+        in the job because they will be prepared only once, since they are read
+        only and will be shared across all tests of a job.
         """
-        Log relevant debug information to the job log.
+        if self._test_parameters is None:
+            self._test_parameters = {name: value for name, value
+                                     in self.config.get('run.test_parameters',
+                                                        [])}
+        return self._test_parameters
+
+    @property
+    def timeout(self):
+        if self._timeout is None:
+            self._timeout = self.config.get('job.run.timeout')
+        return self._timeout
+
+    @property
+    def unique_id(self):
+        if self._unique_id is None:
+            self._unique_id = self.config.get('run.unique_job_id') \
+                or create_unique_job_id()
+        return self._unique_id
+
+    def cleanup(self):
         """
-        self._log_cmdline()
-        self._log_avocado_version()
-        self._log_avocado_config()
-        self._log_avocado_datadir()
-        self._log_variants(variants)
-        self._log_tmp_dir()
-        self._log_job_id()
+        Cleanup the temporary job handlers (dirs, global setting, ...)
+        """
+        self.__stop_job_logging()
+        if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
+        cleanup_conditionals = (
+            self.config.get('run.dry_run.enabled'),
+            not self.config.get('run.dry_run.no_cleanup')
+        )
+        if all(cleanup_conditionals):
+            # Also clean up temp base directory created because of the dry-run
+            base_logdir = self.config.get('run.results_dir')
+            if base_logdir is not None:
+                try:
+                    FileNotFoundError
+                except NameError:
+                    FileNotFoundError = OSError   # pylint: disable=W0622
+                try:
+                    shutil.rmtree(base_logdir)
+                except FileNotFoundError:
+                    pass
 
     def create_test_suite(self):
         try:
@@ -461,57 +456,6 @@ class Job:
             raise exceptions.JobBaseException(details)
         self.result.tests_total = self.test_suite.size
 
-    def pre_tests(self):
-        """
-        Run the pre tests execution hooks
-
-        By default this runs the plugins that implement the
-        :class:`avocado.core.plugin_interfaces.JobPreTests` interface.
-        """
-        self.result_events_dispatcher.map_method('pre_tests', self)
-
-    def run_tests(self):
-        """
-        The actual test execution phase
-        """
-        variant = self.config.get("avocado_variants")
-        if variant is None:
-            variant = varianter.Varianter()
-        if not variant.is_parsed():   # Varianter not yet parsed, apply args
-            try:
-                variant.parse(self.config)
-            except (IOError, ValueError) as details:
-                raise exceptions.OptionValidationError("Unable to parse "
-                                                       "variant: %s" % details)
-
-        try:
-            runner_extension = dispatcher.RunnerDispatcher()[self._test_runner_name]
-        except KeyError:
-            return
-        self.test_runner = runner_extension.obj
-
-        self._log_job_debug_info(variant)
-        jobdata.record(self.config, self.logdir, variant, sys.argv)
-        summary = self.test_runner.run_suite(self,
-                                             self.result,
-                                             self.test_suite.tests,
-                                             variant)
-        # If it's all good so far, set job status to 'PASS'
-        if self.status == 'RUNNING':
-            self.status = 'PASS'
-        LOG_JOB.info('Test results available in %s', self.logdir)
-
-        if summary is None:
-            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
-            return self.exitcode
-
-        if 'INTERRUPTED' in summary:
-            self.exitcode |= exit_codes.AVOCADO_JOB_INTERRUPTED
-        if 'FAIL' in summary:
-            self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
-
-        return self.exitcode
-
     def post_tests(self):
         """
         Run the post tests execution hooks
@@ -520,6 +464,15 @@ class Job:
         :class:`avocado.core.plugin_interfaces.JobPostTests` interface.
         """
         self.result_events_dispatcher.map_method('post_tests', self)
+
+    def pre_tests(self):
+        """
+        Run the pre tests execution hooks
+
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.JobPreTests` interface.
+        """
+        self.result_events_dispatcher.map_method('pre_tests', self)
 
     def render_results(self):
         """Render test results that depend on all tests having finished.
@@ -580,26 +533,53 @@ class Job:
                 self.time_elapsed = self.time_end - self.time_start
             self.render_results()
 
-    def cleanup(self):
+    def run_tests(self):
         """
-        Cleanup the temporary job handlers (dirs, global setting, ...)
+        The actual test execution phase
         """
-        self.__stop_job_logging()
-        if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
-            shutil.rmtree(self.tmpdir)
-        cleanup_conditionals = (
-            self.config.get('run.dry_run.enabled'),
-            not self.config.get('run.dry_run.no_cleanup')
-        )
-        if all(cleanup_conditionals):
-            # Also clean up temp base directory created because of the dry-run
-            base_logdir = self.config.get('run.results_dir')
-            if base_logdir is not None:
-                try:
-                    FileNotFoundError
-                except NameError:
-                    FileNotFoundError = OSError   # pylint: disable=W0622
-                try:
-                    shutil.rmtree(base_logdir)
-                except FileNotFoundError:
-                    pass
+        self._log_job_debug_info(self.test_suite.variants)
+        jobdata.record(self.config,
+                       self.logdir,
+                       self.test_suite.variants,
+                       sys.argv)
+
+        # This is "almost ready" for a loop
+        summary = self.test_suite.run(self)
+
+        # If it's all good so far, set job status to 'PASS'
+        if self.status == 'RUNNING':
+            self.status = 'PASS'
+        LOG_JOB.info('Test results available in %s', self.logdir)
+
+        if summary is None:
+            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
+            return self.exitcode
+
+        if 'INTERRUPTED' in summary:
+            self.exitcode |= exit_codes.AVOCADO_JOB_INTERRUPTED
+        if 'FAIL' in summary:
+            self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
+
+        return self.exitcode
+
+    def setup(self):
+        """
+        Setup the temporary job handlers (dirs, global setting, ...)
+        """
+        assert self.tmpdir is None, "Job.setup() already called"
+        if self.config.get('run.dry_run.enabled'):  # Create the dry-run dirs
+            if self.config.get('run.results_dir') is None:
+                tmp_dir = tempfile.mkdtemp(prefix="avocado-dry-run-")
+                self.config['run.results_dir'] = tmp_dir
+        self._setup_job_results()
+        self.result = result.Result(self.unique_id, self.logfile)
+        self.__start_job_logging()
+        self._setup_job_category()
+        # Use "logdir" in case "keep_tmp" is enabled
+        if self.config.get('run.keep_tmp') == 'on':
+            base_tmpdir = self.logdir
+        else:
+            base_tmpdir = data_dir.get_tmp_dir()
+            self.__keep_tmpdir = False
+        self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_",
+                                       dir=base_tmpdir)

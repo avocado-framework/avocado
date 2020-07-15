@@ -66,7 +66,7 @@ class TestRunner(Runner):
         self.sigstopped = False
 
     @staticmethod
-    def _run_test(job, result, test_factory, queue):
+    def _run_test(job, test_factory, queue):
         """
         Run a test instance.
 
@@ -108,9 +108,9 @@ class TestRunner(Runner):
         except queueFullException:
             instance.error(stacktrace.str_unpickable_object(early_state))
 
-        result.start_test(early_state)
+        job.result.start_test(early_state)
         job.result_events_dispatcher.map_method('start_test',
-                                                result,
+                                                job.result,
                                                 early_state)
         if job.config.get('run.log_test_data_directories'):
             data_sources = getattr(instance, "DATA_SOURCES", [])
@@ -133,7 +133,7 @@ class TestRunner(Runner):
             except queueFullException:
                 instance.error(stacktrace.str_unpickable_object(state))
 
-    def run_test(self, job, result, test_factory, queue, summary, job_deadline=0):
+    def run_test(self, job, test_factory, queue, summary, job_deadline=0):
         """
         Run a test instance inside a subprocess.
 
@@ -168,7 +168,7 @@ class TestRunner(Runner):
                     self.sigstopped = True
 
         proc = multiprocessing.Process(target=self._run_test,
-                                       args=(job, result, test_factory, queue,))
+                                       args=(job, test_factory, queue,))
         test_status = TestStatus(job, queue)
 
         cycle_timeout = 1
@@ -267,8 +267,8 @@ class TestRunner(Runner):
             test_state = add_runner_failure(test_state, "ERROR", "Test reports"
                                             " unsupported test status.")
 
-        result.check_test(test_state)
-        result_dispatcher.map_method('end_test', result, test_state)
+        job.result.check_test(test_state)
+        result_dispatcher.map_method('end_test', job.result, test_state)
         if test_state['status'] == "INTERRUPTED":
             summary.add("INTERRUPTED")
         elif not mapping[test_state['status']]:
@@ -324,38 +324,35 @@ class TestRunner(Runner):
                           "variant_id": varianter.generate_variant_id(var),
                           "paths": paths}
 
-    def _iter_suite(self, job, test_suite, variants, execution_order):
+    def _iter_suite(self, job, test_suite, execution_order):
         """
         Iterates through test_suite and variants in defined order
 
         :param job: an instance of :class:`avocado.core.job.Job`
-        :param test_suite: a list of tests to run
-        :param variants: a varianter object to produce test params
+        :param test_suite: a TestSuite object to run
         :param execution_order: way of iterating through tests/variants
         :return: generator yielding tuple(test_factory, variant)
         """
         if execution_order == "variants-per-test":
             return (self._template_to_factory(job.test_parameters,
                                               template, variant)
-                    for template in test_suite
-                    for variant in variants.itertests())
+                    for template in test_suite.tests
+                    for variant in test_suite.variants.itertests())
         elif execution_order == "tests-per-variant":
             return (self._template_to_factory(job.test_parameters,
                                               template, variant)
-                    for variant in variants.itertests()
-                    for template in test_suite)
+                    for variant in test_suite.variants.itertests()
+                    for template in test_suite.tests)
         else:
             raise NotImplementedError("Suite_order %s is not supported"
                                       % execution_order)
 
-    def run_suite(self, job, result, test_suite, variants):
+    def run_suite(self, job, test_suite):
         """
         Run one or more tests and report with test result.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
-        :param result: an instance of :class:`avocado.core.result.Result`
         :param test_suite: a list of tests to run.
-        :param variants: A varianter iterator to produce test params.
         :return: a set with types of test failures.
         """
         summary = set()
@@ -367,19 +364,18 @@ class TestRunner(Runner):
         else:
             deadline = None
 
-        test_result_total = variants.get_number_of_tests(test_suite)
+        test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
         no_digits = len(str(test_result_total))
-        result.tests_total = test_result_total
+        job.result.tests_total = test_result_total
         index = 1
         try:
-            for test_factory in test_suite:
+            for test_factory in test_suite.tests:
                 test_factory[1]["base_logdir"] = job.logdir
                 test_factory[1]["job"] = job
             if execution_order is None:
                 execution_order = self.DEFAULT_EXECUTION_ORDER
             for test_factory, variant in self._iter_suite(job,
                                                           test_suite,
-                                                          variants,
                                                           execution_order):
                 test_parameters = test_factory[1]
                 name = test_parameters.get("name")
@@ -391,7 +387,7 @@ class TestRunner(Runner):
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (TimeOutSkipTest, test_parameters)
-                    if not self.run_test(job, result, test_factory, queue, summary):
+                    if not self.run_test(job, test_factory, queue, summary):
                         break
                 else:
                     if (replay_map is not None and
@@ -399,7 +395,7 @@ class TestRunner(Runner):
                         test_parameters["methodName"] = "test"
                         test_factory = (replay_map[index], test_parameters)
 
-                    if not self.run_test(job, result, test_factory, queue, summary,
+                    if not self.run_test(job, test_factory, queue, summary,
                                          deadline):
                         break
                 index += 1
@@ -407,7 +403,7 @@ class TestRunner(Runner):
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')
 
-        result.end_tests()
+        job.result.end_tests()
         job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return summary

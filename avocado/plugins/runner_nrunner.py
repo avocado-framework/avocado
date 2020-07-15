@@ -72,7 +72,7 @@ class Runner(RunnerInterface):
         with open(data_file, 'w') as fp:
             fp.write("{}\n".format(task.output_dir))
 
-    def run_suite(self, job, result, test_suite, variants):
+    def run_suite(self, job, test_suite):
         summary = set()
         if job.timeout > 0:
             deadline = time.time() + job.timeout
@@ -80,7 +80,7 @@ class Runner(RunnerInterface):
             deadline = None
 
         test_suite, _ = nrunner.check_tasks_requirements(test_suite)
-        result.tests_total = len(test_suite)  # no support for variants yet
+        job.result.tests_total = len(test_suite)  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
         no_digits = len(str(len(test_suite)))
 
@@ -97,9 +97,9 @@ class Runner(RunnerInterface):
                 'job_logdir': job.logdir,
                 'job_unique_id': job.unique_id,
             }
-            result.start_test(early_state)
+            job.result.start_test(early_state)
             job.result_events_dispatcher.map_method('start_test',
-                                                    result,
+                                                    job.result,
                                                     early_state)
 
             statuses = []
@@ -134,7 +134,7 @@ class Runner(RunnerInterface):
                                        statuses,
                                        job.config.get('core.debug'))
 
-            result.check_test(test_state)
-            result_dispatcher.map_method('end_test', result, test_state)
-        result.end_tests()
+            job.result.check_test(test_state)
+            result_dispatcher.map_method('end_test', job.result, test_state)
+        job.result.end_tests()
         return summary
