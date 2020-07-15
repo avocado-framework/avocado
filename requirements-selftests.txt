@@ -7,6 +7,7 @@ Sphinx==1.7.8
 # inspektor (static and style checks)
 pylint==1.9.3; python_version <= '2.7'
 pylint==2.3.0; python_version >= '3.4'
+isort==4.3.21; python_version >= '3.6'
 astroid==2.2.0; python_version >= '3.4'
 inspektor==0.5.2
 
