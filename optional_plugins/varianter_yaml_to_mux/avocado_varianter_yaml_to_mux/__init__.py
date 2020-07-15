@@ -331,9 +331,9 @@ def get_named_tree_cls(path, klass):
 
 
 def create_from_yaml(paths, debug=False):
-    """
-    Create tree structure from yaml-like file
-    :param fileobj: File object to be processed
+    """Create tree structure from yaml-like file.
+
+    :param paths: File object to be processed
     :raise SyntaxError: When yaml-file is corrupted
     :return: Root of the created tree structure
     """
