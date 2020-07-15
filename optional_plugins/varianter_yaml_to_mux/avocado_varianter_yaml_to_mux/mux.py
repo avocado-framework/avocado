@@ -23,12 +23,10 @@ a custom Varianter plugin.
 
 import collections
 import itertools
-import re
 import os
+import re
 
-from avocado.core import tree
-from avocado.core import varianter
-from avocado.core import output
+from avocado.core import output, tree, varianter
 
 
 #
