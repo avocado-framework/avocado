@@ -48,28 +48,6 @@ __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
 __RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
 
 
-class _BaseLoader(SafeLoader):
-
-    """
-    YAML loader with additional features related to mux
-    """
-
-    SafeLoader.add_constructor(u'!include',
-                               lambda *_: mux.Control(YAML_INCLUDE))
-    SafeLoader.add_constructor(u'!using',
-                               lambda *_: mux.Control(YAML_USING))
-    SafeLoader.add_constructor(u'!remove_node',
-                               lambda *_: mux.Control(YAML_REMOVE_NODE))
-    SafeLoader.add_constructor(u'!remove_value',
-                               lambda *_: mux.Control(YAML_REMOVE_VALUE))
-    SafeLoader.add_constructor(u'!filter-only',
-                               lambda *_: mux.Control(YAML_FILTER_ONLY))
-    SafeLoader.add_constructor(u'!filter-out',
-                               lambda *_: mux.Control(YAML_FILTER_OUT))
-    SafeLoader.add_constructor(u'tag:yaml.org,2002:python/dict',
-                               SafeLoader.construct_yaml_map)
-
-
 class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
 
     """
@@ -233,7 +211,7 @@ def _tree_node_from_values(path, name, values, using):
     return node
 
 
-def _mapping_to_tree_loader(loader, node, path, using, looks_like_node=False):
+def _mapping_to_tree_loader(loader, node, looks_like_node=False):
     """Maps yaml mapping tag to TreeNode structure"""
     _value = []
     for key_node, value_node in node.value:
@@ -259,7 +237,8 @@ def _mapping_to_tree_loader(loader, node, path, using, looks_like_node=False):
     looks_like_node = False
     for name, values in _value:
         if isinstance(values, ListOfNodeObjects):   # New node from list
-            objects.append(_tree_node_from_values(path, name, values, using))
+            objects.append(_tree_node_from_values(loader.path, name,
+                                                  values, loader.using))
         elif values is None:            # Empty node
             objects.append(mux.MuxTreeNode(astring.to_text(name)))
         else:                           # Values
@@ -267,17 +246,41 @@ def _mapping_to_tree_loader(loader, node, path, using, looks_like_node=False):
     return objects
 
 
-def _mux_loader(loader, node, path, using):
+def _mux_loader(loader, node):
     """
     Special !mux loader which allows to tag node as 'multiplex = True'.
     """
     if not isinstance(node, yaml.ScalarNode):
-        objects = _mapping_to_tree_loader(loader, node, path,
-                                          using, looks_like_node=True)
+        objects = _mapping_to_tree_loader(loader, node, looks_like_node=True)
     else:   # This means it's empty node. Don't call mapping_to_tree_loader
         objects = ListOfNodeObjects()
     objects.append((mux.Control(YAML_MUX), None))
     return objects
+
+
+class _BaseLoader(SafeLoader):
+
+    """
+    YAML loader with additional features related to mux
+    """
+
+    SafeLoader.add_constructor(u'!include',
+                               lambda *_: mux.Control(YAML_INCLUDE))
+    SafeLoader.add_constructor(u'!using',
+                               lambda *_: mux.Control(YAML_USING))
+    SafeLoader.add_constructor(u'!remove_node',
+                               lambda *_: mux.Control(YAML_REMOVE_NODE))
+    SafeLoader.add_constructor(u'!remove_value',
+                               lambda *_: mux.Control(YAML_REMOVE_VALUE))
+    SafeLoader.add_constructor(u'!filter-only',
+                               lambda *_: mux.Control(YAML_FILTER_ONLY))
+    SafeLoader.add_constructor(u'!filter-out',
+                               lambda *_: mux.Control(YAML_FILTER_OUT))
+    SafeLoader.add_constructor(u'tag:yaml.org,2002:python/dict',
+                               SafeLoader.construct_yaml_map)
+    SafeLoader.add_constructor(u'!mux', _mux_loader)
+    SafeLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+                               _mapping_to_tree_loader)
 
 
 def _create_from_yaml(path):
@@ -296,18 +299,13 @@ def _create_from_yaml(path):
         path = __RE_FILE_SUBS.sub(':', path[1])
 
     # For loader instance needs different "path" and "using" values
-    loader = copy.copy(_BaseLoader)
-    loader.add_constructor(
-        u'!mux',
-        lambda loader, node: _mux_loader(loader, node, path, using))
-    loader.add_constructor(
-        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-        lambda loader, node: _mapping_to_tree_loader(loader, node,
-                                                     path, using))
+    class Loader(_BaseLoader):
+        _BaseLoader.path = path
+        _BaseLoader.using = using
 
     # Load the tree
     with open(path) as stream:
-        loaded_tree = yaml.load(stream, loader)
+        loaded_tree = yaml.load(stream, Loader)
         if loaded_tree is None:
             return
 
