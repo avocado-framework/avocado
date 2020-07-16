@@ -120,6 +120,8 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
     - lv_snapshot_size='1G'
     The ramdisk volume group size is in MB.
     """
+    warnings.warn("deprecated, use existing methods: vg_create, lv_create",
+                  DeprecationWarning)
     vg_size = ramdisk_vg_size
     vg_ramdisk_dir = os.path.join(ramdisk_basedir, vg_name)
     ramdisk_filename = os.path.join(vg_ramdisk_dir,
@@ -194,6 +196,8 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
     :rtype: (str, str, str, str)
     :raises: :py:class:`LVException` on intolerable failure at any stage
     """
+    warnings.warn("deprecated, use existing methods: vg_remove, lv_remove",
+                  DeprecationWarning)
     errs = []
     if vg_name is not None:
         loop_device = re.search(r"([/\w-]+) +%s +lvm2" % vg_name,
