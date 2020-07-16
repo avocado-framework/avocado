@@ -23,7 +23,6 @@ a custom Varianter plugin.
 
 import collections
 import itertools
-import os
 import re
 
 from avocado.core import output, tree, varianter
@@ -154,10 +153,9 @@ class MuxPlugin:
     variants = None
     default_params = None
     paths = None
-    debug = None
     variant_ids = []
 
-    def initialize_mux(self, root, paths, debug):
+    def initialize_mux(self, root, paths):
         """
         Initialize the basic values
 
@@ -166,7 +164,6 @@ class MuxPlugin:
         """
         self.root = root
         self.paths = paths
-        self.debug = debug
         self.variant_ids = [varianter.generate_variant_id(variant)
                             for variant in MuxTree(self.root)]
 
@@ -218,7 +215,7 @@ class MuxPlugin:
             out.append("Multiplex variants (%s):" % len(self))
             for variant in self:
                 out.extend(varianter.variant_to_str(variant, variants - 1,
-                                                    kwargs, self.debug))
+                                                    kwargs))
         return "\n".join(out)
 
     def __len__(self):
@@ -372,60 +369,6 @@ class MuxTreeNode(tree.TreeNode):
             self.multiplex = True
         elif other.multiplex is False:
             self.multiplex = False
-
-
-class TreeNodeDebug(tree.TreeNode):  # only container pylint: disable=R0903
-
-    """
-    Debug version of TreeNodeDebug
-    :warning: Origin of the value is appended to all values thus it's not
-    suitable for running tests.
-    """
-
-    def __init__(self, name='', value=None, parent=None, children=None,
-                 srcyaml=None):
-        if value is None:
-            value = {}
-        if srcyaml:
-            srcyaml = os.path.relpath(srcyaml)
-        super(TreeNodeDebug, self).__init__(name,
-                                            ValueDict(srcyaml, self, value),
-                                            parent, children)
-        self.yaml = srcyaml
-
-    def merge(self, other):
-        """
-        Override origin with the one from other tree. Updated/Newly set values
-        are going to use this location as origin.
-        """
-        if hasattr(other, 'yaml') and other.yaml:
-            srcyaml = os.path.relpath(other.yaml)
-            # when we use TreeNodeDebug, value is always ValueDict
-            self.value.yaml_per_key.update(other.value.yaml_per_key)    # pylint: disable=E1101
-        else:
-            srcyaml = "Unknown"
-        self.yaml = srcyaml
-        self.value.yaml = srcyaml
-        return super(TreeNodeDebug, self).merge(other)
-
-
-class MuxTreeNodeDebug(MuxTreeNode, TreeNodeDebug):
-
-    """
-    Debug version of TreeNodeDebug
-    :warning: Origin of the value is appended to all values thus it's not
-    suitable for running tests.
-    """
-
-    def __init__(self, name='', value=None, parent=None, children=None,
-                 srcyaml=None):
-        MuxTreeNode.__init__(self, name, value, parent, children)
-        TreeNodeDebug.__init__(self, name, value, parent, children,
-                               srcyaml)
-
-    def merge(self, other):
-        MuxTreeNode.merge(self, other)
-        TreeNodeDebug.merge(self, other)
 
 
 #
