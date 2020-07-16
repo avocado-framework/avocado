@@ -305,7 +305,7 @@ def _create_from_yaml(path):
 
     # Load the tree
     with open(path) as stream:
-        loaded_tree = yaml.load(stream, Loader)
+        loaded_tree = yaml.load(stream, Loader)  # nosec
         if loaded_tree is None:
             return
 
