@@ -67,7 +67,7 @@ class _BaseLoader(SafeLoader):
     SafeLoader.add_constructor(u'!filter-out',
                                lambda *_: mux.Control(YAML_FILTER_OUT))
     SafeLoader.add_constructor(u'tag:yaml.org,2002:python/dict',
-                               lambda self, node: dict(self.construct_mapping(node)))
+                               SafeLoader.construct_yaml_map)
 
 
 class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
