@@ -12,18 +12,6 @@ from avocado.utils import genio
 from selftests import AVOCADO, BASEDIR
 
 
-DEBUG_OUT = b"""
-Variant mint-debug-amd-virtio-022a:    amd@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, mint@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, debug@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml
-    /distro/mint:init         => systemv@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/distro/mint
-    /env/debug:opt_CFLAGS     => -O0 -g@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/env/debug
-    /hw/cpu/amd:cpu_CFLAGS    => -march=athlon64@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/hw/cpu/amd
-    /hw/cpu/amd:joinlist      => ['first_item']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/cpu + ['second', 'third']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/cpu/amd
-    /hw/disk/virtio:disk_type => virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/hw/disk/virtio
-    /hw/disk:corruptlist      => nonlist@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/disk
-    /hw:corruptlist           => ['upper_node_list']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw
-"""
-
-
 class MultiplexTests(unittest.TestCase):
 
     def setUp(self):
@@ -60,17 +48,6 @@ class MultiplexTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(b' /foo/baz/bar', result.stdout)
-
-    def test_mplex_debug(self):
-        cmd_line = ('%s variants -c -d -m '
-                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml '
-                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml '
-                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml '
-                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml'
-                    % AVOCADO)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        result = self.run_and_check(cmd_line, expected_rc)
-        self.assertIn(DEBUG_OUT, result.stdout)
 
     def test_run_mplex_noid(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '

@@ -96,7 +96,7 @@ class YamlTestsuiteLoader(loader.TestLoader):
         if reference is None:
             return tests
         try:
-            root = mux.apply_filters(create_from_yaml([reference], False),
+            root = mux.apply_filters(create_from_yaml([reference]),
                                      self.config.get("run.mux_suite_only", []),
                                      self.config.get("run.mux_suite_out", []))
         except IOError:
