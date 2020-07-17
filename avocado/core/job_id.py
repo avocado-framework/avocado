@@ -27,4 +27,6 @@ def create_unique_job_id():
     :return: 40 digit hex number string
     :rtype: str
     """
-    return hashlib.sha1(hex(_RAND_POOL.getrandbits(160)).encode()).hexdigest()
+    start = random.randint(0, 24)
+    end = 40 + start
+    return hashlib.sha256(hex(_RAND_POOL.getrandbits(160)).encode()).hexdigest()[start:end]
