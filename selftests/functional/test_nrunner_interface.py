@@ -1,9 +1,7 @@
 import json
 import sys
 
-from avocado import Test
-from avocado import fail_on
-
+from avocado import Test, fail_on
 from avocado.utils import process
 
 

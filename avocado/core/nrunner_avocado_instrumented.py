@@ -2,9 +2,7 @@ import multiprocessing
 import tempfile
 import time
 
-from . import job
-from . import loader
-from . import nrunner
+from . import job, loader, nrunner
 from .test import TestID
 from .tree import TreeNode
 

@@ -17,14 +17,14 @@
 Provides utilities for the Linux kernel.
 """
 
-import os
-import shutil
 import logging
 import multiprocessing
+import os
+import shutil
 import tempfile
 from distutils.version import LooseVersion  # pylint: disable=E0611
 
-from . import asset, archive, build, distro, process
+from . import archive, asset, build, distro, process
 
 LOG = logging.getLogger('avocado.test')
 

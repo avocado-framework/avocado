@@ -2,13 +2,10 @@ import os
 import tempfile
 import unittest
 
-from avocado.core import exit_codes
-from avocado.core import test
-from avocado.utils import process
-from avocado.utils import script
+from avocado.core import exit_codes, test
+from avocado.utils import process, script
 
 from .. import AVOCADO, BASEDIR, temp_dir_prefix
-
 
 INSTRUMENTED_SCRIPT = """import os
 import tempfile

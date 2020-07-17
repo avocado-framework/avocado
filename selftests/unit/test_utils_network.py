@@ -1,13 +1,14 @@
 import socket
 import unittest.mock
 
+import avocado.utils.network.ports as ports
+
 try:
     import netifaces
     HAS_NETIFACES = True
 except ImportError:
     HAS_NETIFACES = False
 
-import avocado.utils.network.ports as ports
 
 
 class PortTrackerTest(unittest.TestCase):

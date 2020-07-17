@@ -1,7 +1,6 @@
 import random
 
-from .common import BaseSpawner
-from .common import SpawnMethod
+from .common import BaseSpawner, SpawnMethod
 
 
 class MockSpawner(BaseSpawner):

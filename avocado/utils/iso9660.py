@@ -35,7 +35,6 @@ import tempfile
 
 from . import process
 
-
 try:
     import pycdlib
 except ImportError:

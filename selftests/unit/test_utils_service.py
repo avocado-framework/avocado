@@ -22,7 +22,6 @@ from avocado.utils import service
 
 from .. import setup_avocado_loggers
 
-
 setup_avocado_loggers()
 
 

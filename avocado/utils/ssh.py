@@ -21,7 +21,6 @@ import tempfile
 from . import path as path_utils
 from . import process
 
-
 try:
     #: The SSH client binary to use, if one is found in the system
     SSH_CLIENT_BINARY = path_utils.find_command('ssh')

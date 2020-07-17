@@ -19,14 +19,12 @@ Test resolver for builtin test types
 import os
 import re
 
-from avocado.core.plugin_interfaces import Resolver
-from avocado.core.safeloader import find_avocado_tests
-from avocado.core.safeloader import find_python_unittests
-from avocado.core.resolver import ReferenceResolution
-from avocado.core.resolver import ReferenceResolutionResult
-from avocado.core.resolver import check_file
-from avocado.core.references import reference_split
 from avocado.core.nrunner import Runnable
+from avocado.core.plugin_interfaces import Resolver
+from avocado.core.references import reference_split
+from avocado.core.resolver import (ReferenceResolution,
+                                   ReferenceResolutionResult, check_file)
+from avocado.core.safeloader import find_avocado_tests, find_python_unittests
 
 
 class ExecTestResolver(Resolver):

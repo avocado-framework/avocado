@@ -29,28 +29,17 @@ import sys
 import tempfile
 import time
 import unittest
-
 from difflib import unified_diff
 
-from . import data_dir
-from . import exceptions
-from . import output
-from . import parameters
-from . import sysinfo
-from . import tapparser
-from ..utils import asset
-from ..utils import astring
-from ..utils import data_structures
-from ..utils import genio
+from ..utils import asset, astring, data_structures, genio
 from ..utils import path as utils_path
-from ..utils import process
-from ..utils import stacktrace
+from ..utils import process, stacktrace
+from . import data_dir, exceptions, output, parameters, sysinfo, tapparser
 from .decorators import skip
 from .future.settings import settings
+from .output import LOG_JOB
 from .test_id import TestID
 from .version import VERSION
-from .output import LOG_JOB
-
 
 #: Environment variable used to store the location of a temporary
 #: directory which is preserved across all tests execution (usually in

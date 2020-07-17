@@ -1,7 +1,7 @@
-import unittest
-import os
 import json
+import os
 import tempfile
+import unittest
 
 from avocado import Test
 from avocado.core import job
@@ -9,7 +9,6 @@ from avocado.core.result import Result
 from avocado.plugins import jsonresult
 
 from .. import setup_avocado_loggers, temp_dir_prefix
-
 
 setup_avocado_loggers()
 

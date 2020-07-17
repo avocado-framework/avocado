@@ -20,7 +20,6 @@ it's running under.
 import os
 import re
 
-
 __all__ = ['LinuxDistro',
            'UNKNOWN_DISTRO_NAME',
            'UNKNOWN_DISTRO_VERSION',

@@ -21,10 +21,8 @@ Base classes for implementing the varianter interface
 
 import hashlib
 
-from . import tree
-from . import dispatcher
-from . import output
 from ..utils import astring
+from . import dispatcher, output, tree
 
 
 def is_empty_variant(variant):

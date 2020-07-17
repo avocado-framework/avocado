@@ -9,12 +9,10 @@ from xml.dom import minidom
 from avocado.core import exit_codes
 from avocado.core.output import TermSupport
 from avocado.utils import genio
-from avocado.utils import process
-from avocado.utils import script
 from avocado.utils import path as utils_path
+from avocado.utils import process, script
 
 from .. import AVOCADO, BASEDIR, temp_dir_prefix
-
 
 # AVOCADO may contain more than a single command, as it can be
 # prefixed by the Python interpreter

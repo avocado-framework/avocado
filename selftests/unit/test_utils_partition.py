@@ -9,9 +9,9 @@ import sys
 import tempfile
 import unittest.mock
 
-from avocado.utils import partition, process
+from avocado.utils import partition
 from avocado.utils import path as utils_path
-from avocado.utils import wait
+from avocado.utils import process, wait
 
 from .. import temp_dir_prefix
 

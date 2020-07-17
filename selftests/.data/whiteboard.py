@@ -2,8 +2,7 @@
 
 import base64
 
-from avocado import Test
-from avocado import main
+from avocado import Test, main
 
 
 class WhiteBoard(Test):

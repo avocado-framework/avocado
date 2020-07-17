@@ -11,9 +11,7 @@ import tempfile
 import time
 import unittest
 
-from avocado.utils import process
-from avocado.utils import lv_utils
-from avocado.utils import linux_modules
+from avocado.utils import linux_modules, lv_utils, process
 
 from .. import temp_dir_prefix
 

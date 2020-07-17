@@ -1,8 +1,7 @@
 import os
 import unittest.mock
 
-from avocado.utils import ssh
-from avocado.utils import process
+from avocado.utils import process, ssh
 
 
 class Session(unittest.TestCase):

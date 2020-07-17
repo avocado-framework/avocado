@@ -16,8 +16,8 @@
 Module with network related utility functions
 """
 
-import socket
 import random
+import socket
 
 from ..data_structures import Borg
 

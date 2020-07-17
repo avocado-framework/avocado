@@ -1,18 +1,14 @@
 import io
 import logging
 import os
-import unittest.mock
 import sys
 import time
+import unittest.mock
 
+from avocado.utils import path, process, script
 
-from avocado.utils import script
-from avocado.utils import process
-from avocado.utils import path
-
-from .. import setup_avocado_loggers, skipOnLevelsInferiorThan
-from .. import skipUnlessPathExists
-
+from .. import (setup_avocado_loggers, skipOnLevelsInferiorThan,
+                skipUnlessPathExists)
 
 setup_avocado_loggers()
 

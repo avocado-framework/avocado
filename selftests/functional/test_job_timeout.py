@@ -1,16 +1,13 @@
 import glob
 import os
 import tempfile
-import xml.dom.minidom
 import unittest
+import xml.dom.minidom
 
 from avocado.core import exit_codes
-from avocado.utils import genio
-from avocado.utils import process
-from avocado.utils import script
+from avocado.utils import genio, process, script
 
 from .. import AVOCADO, BASEDIR, temp_dir_prefix
-
 
 SCRIPT_CONTENT = """#!/bin/bash
 sleep 2

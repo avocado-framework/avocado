@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 from pkg_resources import get_distribution
+
 from avocado.core import settings
 from avocado.core.future.settings import DuplicatedNamespace
 from avocado.core.future.settings import settings as future_settings

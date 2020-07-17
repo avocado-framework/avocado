@@ -2,7 +2,6 @@ import unittest
 
 from avocado.core.result import Result
 
-
 UNIQUE_ID = '0000000000000000000000000000000000000000'
 LOGFILE = None
 

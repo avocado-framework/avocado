@@ -30,15 +30,14 @@ import glob
 import os
 import shutil
 import sys
-import time
 import tempfile
+import time
 
-from . import job_id
-from . import exit_codes
-from .future.settings import settings as future_settings
-from .output import LOG_JOB, LOG_UI
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
+from . import exit_codes, job_id
+from .future.settings import settings as future_settings
+from .output import LOG_JOB, LOG_UI
 
 if 'VIRTUAL_ENV' in os.environ:
     SYSTEM_BASE_DIR = os.environ['VIRTUAL_ENV']

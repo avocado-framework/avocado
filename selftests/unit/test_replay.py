@@ -7,7 +7,6 @@ from avocado.plugins import replay
 
 from .. import setup_avocado_loggers, temp_dir_prefix
 
-
 setup_avocado_loggers()
 
 

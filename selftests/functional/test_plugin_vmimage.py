@@ -3,7 +3,8 @@ import os
 import unittest.mock
 
 from avocado.core import exit_codes
-from avocado.utils import process, path
+from avocado.utils import path, process
+
 from .. import AVOCADO, get_temporary_config
 
 

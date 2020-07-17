@@ -14,13 +14,10 @@
 
 import sys
 
-from avocado.core import exit_codes, output
-from avocado.core import loader
-from avocado.core import test
-from avocado.core import tags
-from avocado.core import parser_common_args
-from avocado.core.output import LOG_UI
+from avocado.core import (exit_codes, loader, output, parser_common_args, tags,
+                          test)
 from avocado.core.future.settings import settings
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import astring
 

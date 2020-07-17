@@ -15,9 +15,9 @@
 avocado.utils.stacktrace unittests
 """
 
+import pickle
 import re
 import unittest
-import pickle
 
 from avocado.utils import stacktrace
 

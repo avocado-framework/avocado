@@ -1,13 +1,10 @@
 import enum
-
-from mmap import mmap
-from mmap import ACCESS_READ
+from mmap import ACCESS_READ, mmap
+from pathlib import Path
 
 from ...core.data_dir import get_job_results_dir
 from ...utils.astring import string_to_safe_path
 from .exceptions import SpawnerException
-
-from pathlib import Path
 
 
 class SpawnMethod(enum.Enum):

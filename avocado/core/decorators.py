@@ -12,8 +12,8 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Amador Pahim <apahim@redhat.com>
 
-from functools import wraps
 import types
+from functools import wraps
 
 from . import exceptions as core_exceptions
 

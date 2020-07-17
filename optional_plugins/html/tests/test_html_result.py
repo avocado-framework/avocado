@@ -5,8 +5,7 @@ import unittest
 from xml.dom import minidom
 
 from avocado.core import exit_codes
-from avocado.utils import genio
-from avocado.utils import process
+from avocado.utils import genio, process
 
 
 class HtmlResultTest(unittest.TestCase):

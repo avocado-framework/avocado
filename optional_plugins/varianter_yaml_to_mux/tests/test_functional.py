@@ -1,14 +1,12 @@
 import glob
 import json
 import os
+import shutil
 import tempfile
 import unittest
-import shutil
 
 from avocado.core import exit_codes
-from avocado.utils import process
-from avocado.utils import genio
-
+from avocado.utils import genio, process
 from selftests import AVOCADO, BASEDIR
 
 

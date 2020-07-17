@@ -21,9 +21,10 @@ Module for all PCI devices related functions.
 """
 
 
-import re
 import os
-from . import process, genio
+import re
+
+from . import genio, process
 
 
 def get_domains():

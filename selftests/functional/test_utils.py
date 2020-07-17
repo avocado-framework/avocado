@@ -7,12 +7,11 @@ import tempfile
 import time
 import unittest
 
+from avocado.utils import process
 from avocado.utils.filelock import FileLock
 from avocado.utils.stacktrace import prepare_exc_info
-from avocado.utils import process
 
-from .. import temp_dir_prefix, skipOnLevelsInferiorThan
-
+from .. import skipOnLevelsInferiorThan, temp_dir_prefix
 
 # What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |

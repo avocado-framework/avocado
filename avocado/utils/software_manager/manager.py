@@ -1,4 +1,4 @@
-from .inspector import SystemInspector, SUPPORTED_PACKAGE_MANAGERS
+from .inspector import SUPPORTED_PACKAGE_MANAGERS, SystemInspector
 
 
 class SoftwareManager:

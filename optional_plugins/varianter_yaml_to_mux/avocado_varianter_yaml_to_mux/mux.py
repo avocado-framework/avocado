@@ -27,7 +27,6 @@ import re
 
 from avocado.core import output, tree, varianter
 
-
 #
 # Multiplex-enabled tree objects
 #

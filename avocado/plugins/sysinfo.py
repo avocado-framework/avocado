@@ -15,12 +15,10 @@
 System information plugin
 """
 
-from avocado.core.future.settings import settings
-from avocado.core.plugin_interfaces import Init
-from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.plugin_interfaces import JobPreTests
-from avocado.core.plugin_interfaces import JobPostTests
 from avocado.core import sysinfo
+from avocado.core.future.settings import settings
+from avocado.core.plugin_interfaces import (CLICmd, Init, JobPostTests,
+                                            JobPreTests)
 from avocado.core.utils import prepend_base_path
 from avocado.utils import path
 

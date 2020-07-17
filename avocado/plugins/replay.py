@@ -18,11 +18,7 @@ import os
 import re
 import sys
 
-from avocado.core import data_dir
-from avocado.core import exit_codes
-from avocado.core import jobdata
-from avocado.core import status
-
+from avocado.core import data_dir, exit_codes, jobdata, status
 from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI

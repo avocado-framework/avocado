@@ -16,9 +16,9 @@ Plugins information plugin
 """
 
 from avocado.core import dispatcher
-from avocado.core.resolver import Resolver
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.resolver import Resolver
 from avocado.utils import astring
 
 

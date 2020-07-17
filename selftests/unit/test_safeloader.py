@@ -1,14 +1,13 @@
 import ast
-import sys
 import os
 import re
+import sys
 import unittest
 
 from avocado.core import safeloader
 from avocado.utils import script
 
 from .. import BASEDIR, setup_avocado_loggers
-
 
 setup_avocado_loggers()
 

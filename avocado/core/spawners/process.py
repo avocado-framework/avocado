@@ -1,7 +1,6 @@
 import asyncio
 
-from .common import BaseSpawner
-from .common import SpawnMethod
+from .common import BaseSpawner, SpawnMethod
 
 
 class ProcessSpawner(BaseSpawner):

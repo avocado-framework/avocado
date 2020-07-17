@@ -1,11 +1,11 @@
 """
 Traceback standard module plus some additional APIs.
 """
-from traceback import format_exception
-import logging
 import inspect
+import logging
 import pickle
 from pprint import pformat
+from traceback import format_exception
 
 
 def tb_info(exc_info):

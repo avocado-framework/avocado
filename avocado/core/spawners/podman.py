@@ -1,10 +1,9 @@
 import asyncio
 import json
-import subprocess
 import os
+import subprocess
 
-from .common import BaseSpawner
-from .common import SpawnMethod
+from .common import BaseSpawner, SpawnMethod
 
 
 class PodmanSpawner(BaseSpawner):

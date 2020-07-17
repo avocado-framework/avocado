@@ -29,11 +29,9 @@ import signal
 import subprocess
 import threading
 import time
-
 from io import BytesIO, UnsupportedOperation
 
-from . import astring
-from . import path
+from . import astring, path
 from .wait import wait_for
 
 log = logging.getLogger('avocado.test')

@@ -1,4 +1,5 @@
 import unittest
+
 from avocado_varianter_cit.CombinationRow import CombinationRow
 
 

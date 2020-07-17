@@ -1,12 +1,11 @@
 import os
 import sys
-import unittest
 import tempfile
-
-from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipUnlessPathExists
+import unittest
 
 from avocado.utils import process
 
+from .. import AVOCADO, BASEDIR, skipUnlessPathExists, temp_dir_prefix
 
 RUNNER = "%s -m avocado.core.nrunner" % sys.executable
 

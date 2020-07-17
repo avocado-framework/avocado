@@ -20,11 +20,10 @@ import ast
 import json
 import os
 
+from ..utils.path import init_dir
 from . import varianter
 from .future.settings import settings
-from .output import LOG_UI, LOG_JOB
-from ..utils.path import init_dir
-
+from .output import LOG_JOB, LOG_UI
 
 JOB_DATA_DIR = 'jobdata'
 CONFIG_FILENAME = 'config'

@@ -20,11 +20,7 @@ import argparse
 import sys
 import warnings
 
-from avocado.core import exit_codes
-from avocado.core import job
-from avocado.core import loader
-from avocado.core import output
-from avocado.core import parser_common_args
+from avocado.core import exit_codes, job, loader, output, parser_common_args
 from avocado.core.dispatcher import JobPrePostDispatcher
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI

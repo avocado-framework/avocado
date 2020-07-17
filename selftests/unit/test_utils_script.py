@@ -1,7 +1,6 @@
 import os
 import unittest
 
-
 from avocado.utils import script
 
 

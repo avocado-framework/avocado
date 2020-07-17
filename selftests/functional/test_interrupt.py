@@ -1,19 +1,16 @@
 import os
-import tempfile
-import time
 import signal
 import stat
 import subprocess
+import tempfile
+import time
 import unittest
 
 import psutil
 
-from avocado.utils import process
-from avocado.utils import wait
-from avocado.utils import script
-from avocado.utils import data_factory
+from avocado.utils import data_factory, process, script, wait
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipOnLevelsInferiorThan
+from .. import AVOCADO, BASEDIR, skipOnLevelsInferiorThan, temp_dir_prefix
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |

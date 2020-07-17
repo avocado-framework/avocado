@@ -18,30 +18,23 @@
 Conventional Test Runner Plugin
 """
 
+import multiprocessing
 import os
-import time
 import signal
 import sys
-import multiprocessing
+import time
 from queue import Full as queueFullException
 
-
-from avocado.utils import process
-from avocado.utils import stacktrace
-from avocado.utils import wait
-from avocado.core import output
-from avocado.core import status
-from avocado.core import tree
-from avocado.core import varianter
+from avocado.core import output, status, tree, varianter
 from avocado.core.loader import loader
 from avocado.core.output import LOG_JOB as TEST_LOG
 from avocado.core.output import LOG_UI as APP_LOG
 from avocado.core.plugin_interfaces import Runner
-from avocado.core.runner import add_runner_failure
-from avocado.core.runner import TestStatus
+from avocado.core.runner import TestStatus, add_runner_failure
 from avocado.core.status import mapping
 from avocado.core.test import TimeOutSkipTest
 from avocado.core.test_id import TestID
+from avocado.utils import process, stacktrace, wait
 
 
 class TestRunner(Runner):

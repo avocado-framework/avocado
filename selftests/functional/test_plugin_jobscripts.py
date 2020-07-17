@@ -3,11 +3,9 @@ import tempfile
 import unittest
 
 from avocado.core import exit_codes
-from avocado.utils import process
-from avocado.utils import script
+from avocado.utils import process, script
 
 from .. import AVOCADO, BASEDIR, temp_dir_prefix
-
 
 SCRIPT_PRE_TOUCH = """#!/bin/sh -e
 touch %s"""
