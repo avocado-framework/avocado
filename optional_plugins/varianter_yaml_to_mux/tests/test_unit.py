@@ -439,7 +439,8 @@ class TestMultipleLoaders(unittest.TestCase):
         treenode = yaml_to_mux.create_from_yaml([yaml_url])
         self.assertEqual(type(treenode), mux.MuxTreeNode)
         self.assertEqual(type(treenode.children[0]), mux.MuxTreeNode)
-        plain = yaml.load("foo: bar", Loader=yaml.SafeLoader)
+        # equivalent to yaml.load("...", Loader=yaml.SafeLoader)
+        plain = yaml.safe_load("foo: bar")
         self.assertEqual(type(plain), dict)
 
 
