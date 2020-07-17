@@ -517,10 +517,13 @@ the sysinfo collection. Avocado supports three types of tasks:
    [sysinfo.collect] by setting "commands_timeout" to a positive number.
    You can also use the environment variable AVOCADO_SYSINFODIR which points
    to the sysinfo directory in results.
-2. files - file with new-line separated list of files to be copied
-3. profilers - file with new-line separated list of commands to be executed
+2. fail_commands - similar to commands, but gets executed only when the test
+   fails.
+3. files - file with new-line separated list of files to be copied.
+4. fail_files - similar to files, but copied only when the test fails.
+5. profilers - file with new-line separated list of commands to be executed
    before the job/test and killed at the end of the job/test (follow-like
-   commands)
+   commands).
 
 Additionally this plugin tries to follow the system log via ``journalctl``
 if available.
@@ -538,7 +541,13 @@ the filenames are safely-escaped executed commands or file-names.
 You can also see the sysinfo in html results when you have html
 results plugin enabled.
 
+It is also possible to save only the files / commands which were changed
+during the course of the test, in the ``post`` directory, using the setting
+``optimize = True`` in the ``sysinfo.collect`` section. This collects all
+sysinfo on ``pre``, but saves only changed ones on ``post``. It is set to
+False by default.
+
 .. warning:: If you are using Avocado from sources, you need to manually place
-   the ``commands``/``files``/``profilers`` into the ``/etc/avocado/sysinfo``
-   directories or adjust the paths in
+   the ``commands``/``fail_commands``/``fail_files``/``files``/``profilers``
+   into the ``/etc/avocado/sysinfo`` directories or adjust the paths in
    ``$AVOCADO_SRC/etc/avocado/avocado.conf``.
