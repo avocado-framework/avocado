@@ -612,3 +612,12 @@ Or, add the / to the list of paths searched for by default::
 
    $ avocado --show=test run --mux-inject os_type:myos --mux-path / -- examples/tests/multiplextest.py  | grep os_type
    PARAMS (key=os_type, path=*, default=linux) => 'myos'
+
+.. warning:: By default, the values are parsed for the respective data types.
+   When not possible, it falls back to string. If you want to maintain some
+   value as string, enclose within quotes, properly escaped, and eclose that
+   again in quotes.
+   For example: a value of ``1`` is treated as integer, a value of ``1,2`` is
+   treated as list, a value of ``abc`` is treated as string, a value of
+   ``1,2,5-10`` is treated as list of integers as ``1,2,-5``. If you want to
+   maintain this as string, provide the value as ``"\"1,2,5-10\""``
