@@ -1,0 +1,11 @@
+features: !mux
+  tap:
+    namespace: 'job.run.result.tap.include_logs'
+    file: 'results.tap'
+    content: "Command '/bin/true' finished with 0"
+
+status: !mux
+  enabled:
+    value: 'on'
+  disabled:
+    value: 'off'

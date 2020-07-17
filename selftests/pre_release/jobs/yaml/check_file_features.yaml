@@ -1,0 +1,19 @@
+features: !mux
+  html:
+    namespace: 'job.run.result.html.enabled'
+    file: 'results.html'
+  json:
+    namespace: 'job.run.result.json.enabled'
+    file: 'results.json'
+  tap:
+    namespace: 'job.run.result.tap.enabled'
+    file: 'results.tap'
+  xunit:
+    namespace: 'job.run.result.xunit.enabled'
+    file: 'results.xml'
+
+status: !mux
+  enabled:
+    value: 'on'
+  disabled:
+    value: 'off'
