@@ -268,7 +268,8 @@ def get_tmp_dir(basedir=None):
     msg = ('Temporary dir %s no longer exists. This likely means the '
            'directory was incorrectly deleted before the end of the job' %
            tmp_dir)
-    assert os.path.isdir(tmp_dir), msg
+    if not os.path.isdir(tmp_dir):
+        raise AssertionError(msg)
     return tmp_dir
 
 
