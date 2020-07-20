@@ -104,6 +104,7 @@ if __name__ == '__main__':
                   'nlist = avocado.plugins.nlist:List',
                   'assets = avocado.plugins.assets:Assets',
                   'jobs = avocado.plugins.jobs:Jobs',
+                  'magic = avocado.plugins.magic:Magic',
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
