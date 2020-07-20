@@ -69,7 +69,7 @@ we have ``/bin/echo`` which is going to be executed via
 ``nonexisting-file`` which would execute ``/bin/sh -c nonexisting-file``
 which most probably fails.
 
-Note that you are responsible for quotating the test-id (see the
+Note that you are responsible for quoting the test-id (see the
 ``"'/bin/echo something'"`` example).
 
 Filtering tests by tags
