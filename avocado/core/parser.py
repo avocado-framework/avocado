@@ -17,20 +17,15 @@ Avocado application command line parsing.
 """
 
 import argparse
-
-from configparser import ConfigParser
-from configparser import NoOptionError
+from configparser import ConfigParser, NoOptionError
 from glob import glob
 
-from . import exit_codes
-from . import varianter
-from . import settings
-from .future.settings import settings as future_settings
+from . import exit_codes, settings, varianter
 from .future.settings import ConfigFileNotFound, SettingsError
+from .future.settings import settings as future_settings
 from .nrunner import Runnable
 from .output import LOG_UI
-from .resolver import ReferenceResolution
-from .resolver import ReferenceResolutionResult
+from .resolver import ReferenceResolution, ReferenceResolutionResult
 from .version import VERSION
 
 PROG = 'avocado'

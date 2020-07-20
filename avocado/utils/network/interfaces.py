@@ -20,16 +20,13 @@ import json
 import logging
 import os
 import shutil
-
 from ipaddress import ip_interface
-
-from .common import run_command
-from .exceptions import NWException
 
 from ..distro import detect as distro_detect
 from ..process import CmdError
 from ..wait import wait_for
-
+from .common import run_command
+from .exceptions import NWException
 
 log = logging.getLogger('avocado.test')
 

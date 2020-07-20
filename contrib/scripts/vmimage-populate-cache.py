@@ -4,9 +4,8 @@
 Script that downloads cloud images via avocado.utils.vmimage
 """
 
-from avocado.utils import vmimage
 from avocado.core import data_dir
-
+from avocado.utils import vmimage
 
 KNOWN_IMAGES = (
     # from https://download.cirros-cloud.net/0.4.0/MD5SUMS

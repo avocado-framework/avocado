@@ -1,9 +1,9 @@
 import smtplib
 from email.mime.text import MIMEText
 
-from avocado.core.output import LOG_UI
 from avocado.core.future.settings import settings as future_settings
-from avocado.core.plugin_interfaces import JobPre, JobPost, Init
+from avocado.core.output import LOG_UI
+from avocado.core.plugin_interfaces import Init, JobPost, JobPre
 
 
 class MailInit(Init):

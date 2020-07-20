@@ -29,12 +29,10 @@ import tempfile
 import time
 import urllib.parse
 
-from . import astring
-from . import crypto
+from . import astring, crypto
 from . import path as utils_path
 from .download import url_download
 from .filelock import FileLock
-
 
 LOG = logging.getLogger('avocado.test')
 #: The default hash algorithm to use on asset cache operations

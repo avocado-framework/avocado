@@ -23,17 +23,13 @@ import os
 import re
 import shlex
 import sys
-
 from enum import Enum
 
-from . import data_dir
-from . import output
-from . import test
-from . import safeloader
-from .references import reference_split
 from ..utils import stacktrace
+from . import data_dir, output, safeloader, test
 from .future.settings import settings as future_settings
 from .output import LOG_UI
+from .references import reference_split
 
 
 class DiscoverMode(Enum):

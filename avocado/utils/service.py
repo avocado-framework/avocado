@@ -21,9 +21,9 @@
 # client/shared/service.py
 # Original author: Ross Brattain <ross.b.brattain@intel.com>
 
+import logging
 import os
 import re
-import logging
 from tempfile import mkstemp
 
 from . import process

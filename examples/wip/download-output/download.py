@@ -26,13 +26,13 @@ files inside `test-results/<task_id>/data` folder. You can create files there
 manually if necessary.
 """
 
-import sys
 import json
 import os
+import sys
 
-from avocado.core.spawners.process import ProcessSpawner
-from avocado.core.spawners.podman import PodmanSpawner
 from avocado.core.spawners.exceptions import SpawnerException
+from avocado.core.spawners.podman import PodmanSpawner
+from avocado.core.spawners.process import ProcessSpawner
 
 
 def discover_spawner(job_id):

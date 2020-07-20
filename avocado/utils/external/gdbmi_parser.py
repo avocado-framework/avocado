@@ -24,8 +24,8 @@
 #   Michael Eddington (mike@phed.org)
 
 
-import re
 import pprint
+import re
 
 from . import spark
 

@@ -23,9 +23,8 @@ import os
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
-from avocado.core.plugin_interfaces import Init, CLI, Result
+from avocado.core.plugin_interfaces import CLI, Init, Result
 from avocado.utils import astring
-
 
 UNKNOWN = '<unknown>'
 

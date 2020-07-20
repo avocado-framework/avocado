@@ -20,14 +20,11 @@ import os
 import re
 import tempfile
 import uuid
-
-from urllib.request import urlopen
-from urllib.error import HTTPError
 from html.parser import HTMLParser
+from urllib.error import HTTPError
+from urllib.request import urlopen
 
-from . import archive
-from . import asset
-from . import astring
+from . import archive, asset, astring
 from . import path as utils_path
 from . import process
 

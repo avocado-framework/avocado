@@ -24,7 +24,6 @@ import stat
 import tarfile
 import zipfile
 
-
 LOG = logging.getLogger(__name__)
 
 

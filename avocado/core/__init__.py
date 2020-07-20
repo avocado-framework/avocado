@@ -14,12 +14,13 @@
 
 
 import os
+
 import pkg_resources
 
 from .dispatcher import InitDispatcher
 from .future.settings import settings as future_settings
+from .streams import BUILTIN_STREAM_SETS, BUILTIN_STREAMS
 from .utils import prepend_base_path
-from .streams import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
 
 
 def register_core_options():

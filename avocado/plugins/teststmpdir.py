@@ -19,8 +19,8 @@ import os
 import shutil
 import tempfile
 
-from avocado.core.plugin_interfaces import JobPre, JobPost
 from avocado.core import test
+from avocado.core.plugin_interfaces import JobPost, JobPre
 
 
 class TestsTmpDir(JobPre, JobPost):

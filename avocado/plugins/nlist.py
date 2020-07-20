@@ -14,13 +14,11 @@
 
 import os
 
+from avocado.core import output, parser_common_args, resolver
 from avocado.core.future.settings import settings
-from avocado.core.plugin_interfaces import CLICmd
-from avocado.core import resolver
-from avocado.core import output
-from avocado.core import parser_common_args
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.tags import filter_test_tags_runnable
 from avocado.utils import astring
 

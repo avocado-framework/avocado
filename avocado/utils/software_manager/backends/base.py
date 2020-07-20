@@ -21,7 +21,6 @@
 
 import logging
 
-
 log = logging.getLogger('avocado.utils.software_manager')
 
 

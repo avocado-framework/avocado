@@ -3,10 +3,9 @@ import os
 import re
 import tempfile
 
-from .dpkg import DpkgBackend
 from ... import path as utils_path
 from ... import process
-
+from .dpkg import DpkgBackend
 
 log = logging.getLogger('avocado.utils.software_manager')
 

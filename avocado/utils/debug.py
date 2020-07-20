@@ -16,9 +16,8 @@
 This file contains tools for (not only) Avocado developers.
 """
 import logging
-import time
 import os
-
+import time
 
 # Use this for debug logging
 LOGGER = logging.getLogger("avocado.app.debug")

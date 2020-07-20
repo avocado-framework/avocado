@@ -15,9 +15,11 @@
 
 import os
 import sys
+
+from setuptools import find_packages, setup
+
 # pylint: disable=E0611
 
-from setuptools import setup, find_packages
 
 BASE_PATH = os.path.dirname(__file__)
 with open(os.path.join(BASE_PATH, 'VERSION'), 'r') as version_file:

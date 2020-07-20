@@ -3,7 +3,6 @@ import tempfile
 import unittest
 
 from avocado.utils import process
-
 from selftests import AVOCADO, BASEDIR, temp_dir_prefix
 
 

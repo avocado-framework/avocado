@@ -21,7 +21,6 @@ from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 
-
 _VERBOSITY_LEVELS = {"none": 0, "brief": 1, "normal": 2, "verbose": 3,
                      "full": 4, "max": 99}
 

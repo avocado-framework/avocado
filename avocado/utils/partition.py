@@ -22,14 +22,12 @@
 Utility for handling partitions.
 """
 
+import hashlib
 import logging
 import os
-import hashlib
 import tempfile
 
-from . import process
-from . import filelock
-
+from . import filelock, process
 
 LOG = logging.getLogger(__name__)
 

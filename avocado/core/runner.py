@@ -21,10 +21,10 @@ import os
 import signal
 import time
 
+from ..utils import wait
 from . import exceptions
 from .future.settings import settings
 from .output import LOG_JOB as TEST_LOG
-from ..utils import wait
 
 
 def add_runner_failure(test_state, new_status, message):

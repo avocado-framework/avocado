@@ -4,7 +4,6 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
-
 from selftests import AVOCADO, BASEDIR, skipUnlessPathExists
 
 

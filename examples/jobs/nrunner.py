@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+
 from avocado.core.job import Job
 
 config = {

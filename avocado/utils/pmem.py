@@ -15,14 +15,12 @@
 #
 
 
-import re
-import json
 import glob
+import json
 import logging
+import re
 
-from . import path
-from . import process
-from . import genio
+from . import genio, path, process
 
 log = logging.getLogger('avocado.test')
 

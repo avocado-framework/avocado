@@ -24,8 +24,8 @@ import re
 import shutil
 import time
 import warnings
-from . import process
 
+from . import process
 
 LOGGER = logging.getLogger('avocado.test')
 

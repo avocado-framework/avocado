@@ -6,10 +6,10 @@ import os
 import tempfile
 import unittest
 
-from .. import temp_dir_prefix
-
-from avocado.core.job import Job
 from avocado.core import exit_codes
+from avocado.core.job import Job
+
+from .. import temp_dir_prefix
 
 
 class Test(unittest.TestCase):

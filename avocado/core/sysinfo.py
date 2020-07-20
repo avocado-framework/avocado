@@ -21,13 +21,11 @@ import shutil
 import subprocess
 import time
 
+from ..utils import astring, genio
+from ..utils import path as utils_path
+from ..utils import process, software_manager
 from . import output
 from .future.settings import settings as future_settings
-from ..utils import astring
-from ..utils import genio
-from ..utils import process
-from ..utils import software_manager
-from ..utils import path as utils_path
 
 log = logging.getLogger("avocado.sysinfo")
 

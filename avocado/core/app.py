@@ -20,13 +20,12 @@ import os
 import signal
 import sys
 
+from ..utils import process
 from . import output
-from .dispatcher import CLICmdDispatcher
-from .dispatcher import CLIDispatcher
+from .dispatcher import CLICmdDispatcher, CLIDispatcher
+from .future.settings import settings
 from .output import STD_OUTPUT
 from .parser import Parser
-from .future.settings import settings
-from ..utils import process
 
 
 class AvocadoApp:

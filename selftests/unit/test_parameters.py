@@ -1,7 +1,6 @@
 import unittest
 
-from avocado.core import parameters
-from avocado.core import tree
+from avocado.core import parameters, tree
 
 
 class Parameters(unittest.TestCase):

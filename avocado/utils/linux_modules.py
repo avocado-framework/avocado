@@ -21,15 +21,12 @@
 Linux kernel modules APIs
 """
 
-import re
 import logging
 import platform
-
+import re
 from enum import Enum
 
-from . import astring
-from . import process
-from . import data_structures
+from . import astring, data_structures, process
 
 LOG = logging.getLogger('avocado.test')
 

@@ -1,10 +1,10 @@
 import logging
 import os
-import pkg_resources
 import sys
 import tempfile
 import unittest.mock
 
+import pkg_resources
 
 #: The base directory for the avocado source tree
 BASEDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))

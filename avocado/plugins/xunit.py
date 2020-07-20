@@ -21,9 +21,9 @@ import string
 from xml.dom.minidom import Document
 
 from avocado.core.future.settings import settings
-from avocado.core.parser import FileOrStdoutAction
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import Init, CLI, Result
+from avocado.core.parser import FileOrStdoutAction
+from avocado.core.plugin_interfaces import CLI, Init, Result
 from avocado.utils import astring
 from avocado.utils.data_structures import DataSize
 

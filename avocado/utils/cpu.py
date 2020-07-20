@@ -20,12 +20,12 @@
 Get information from the current's machine CPU.
 """
 
-import re
-import os
-import platform
 import glob
 import logging
+import os
+import platform
 import random
+import re
 import warnings
 
 

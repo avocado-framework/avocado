@@ -1,15 +1,15 @@
 from enum import Enum
 from uuid import uuid1
 
+from .dispatcher import RunnerDispatcher
 from .exceptions import OptionValidationError
 from .future.settings import settings
-from .loader import loader, LoaderError, LoaderUnhandledReferenceError
+from .loader import LoaderError, LoaderUnhandledReferenceError, loader
 from .resolver import resolve
 from .tags import filter_test_tags
 from .test import DryRunTest
 from .utils import resolutions_to_tasks
 from .varianter import Varianter
-from .dispatcher import RunnerDispatcher
 
 
 class TestSuiteError(Exception):

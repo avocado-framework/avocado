@@ -1,14 +1,16 @@
-import unittest.mock
 import os
 import tempfile
+import unittest.mock
 from urllib.error import URLError
 
 from avocado.core import data_dir
+from avocado.core.future import settings as future_settings
 from avocado.plugins import vmimage as vmimage_plugin
 from avocado.utils import vmimage as vmimage_util
-from avocado.core.future import settings as future_settings
-from .. import temp_dir_prefix, skipOnLevelsInferiorThan
-from ..functional.test_plugin_vmimage import missing_binary, create_metadata_file
+
+from .. import skipOnLevelsInferiorThan, temp_dir_prefix
+from ..functional.test_plugin_vmimage import (create_metadata_file,
+                                              missing_binary)
 
 #: extracted from https://dl.fedoraproject.org/pub/fedora/linux/releases/
 FEDORA_PAGE = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">

@@ -1,18 +1,16 @@
-import os
 import json
-import subprocess
-import time
-import stat
-import tempfile
+import os
 import signal
+import stat
+import subprocess
+import tempfile
+import time
 import unittest
 
 from avocado.core import exit_codes
-from avocado.utils import script
-from avocado.utils import process
+from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipOnLevelsInferiorThan
-
+from .. import AVOCADO, BASEDIR, skipOnLevelsInferiorThan, temp_dir_prefix
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
 from avocado import Test

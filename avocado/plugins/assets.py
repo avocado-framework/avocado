@@ -20,16 +20,13 @@ import ast
 import os
 import urllib.parse
 
-from avocado.core import data_dir
-from avocado.core import exit_codes
-from avocado.core import safeloader
+from avocado.core import data_dir, exit_codes, safeloader
 from avocado.core.future.settings import settings
 from avocado.core.nrunner import Task
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.plugin_interfaces import JobPreTests
-from avocado.utils.asset import Asset
+from avocado.core.plugin_interfaces import CLICmd, JobPreTests
 from avocado.utils import data_structures
+from avocado.utils.asset import Asset
 
 
 class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902

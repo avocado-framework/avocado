@@ -1,7 +1,7 @@
 import os
+from uuid import uuid1
 
 from pkg_resources import get_distribution
-from uuid import uuid1
 
 from .nrunner import Task
 from .resolver import ReferenceResolutionResult

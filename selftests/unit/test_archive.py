@@ -1,12 +1,10 @@
-import unittest
-import tempfile
 import os
-import sys
 import random
+import sys
+import tempfile
+import unittest
 
-from avocado.utils import archive
-from avocado.utils import crypto
-from avocado.utils import data_factory
+from avocado.utils import archive, crypto, data_factory
 
 from .. import BASEDIR, temp_dir_prefix
 

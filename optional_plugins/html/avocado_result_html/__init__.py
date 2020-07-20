@@ -15,12 +15,12 @@
 HTML output module.
 """
 
+import base64
 import codecs
 import os
 import subprocess
 import sys
 import time
-import base64
 
 import jinja2 as jinja
 

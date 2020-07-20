@@ -17,16 +17,13 @@
 # Authors: Yiqiao Pu <ypu@redhat.com>
 
 
+import glob
+import logging
+import math
 import os
 import re
-import glob
-import math
-import logging
 
-from . import process
-from . import genio
-from . import wait
-from . import data_structures
+from . import data_structures, genio, process, wait
 from .data_structures import DataSize
 
 

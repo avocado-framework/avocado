@@ -19,13 +19,11 @@ NRunner based implementation of job compliant runner
 import json
 import os
 import time
-
 from copy import copy
 
+from avocado.core import nrunner
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
 from avocado.core.test_id import TestID
-
-from avocado.core import nrunner
 
 
 class Runner(RunnerInterface):

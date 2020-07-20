@@ -12,10 +12,10 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import io
-import os
-import logging
 import hashlib
+import io
+import logging
+import os
 
 
 def hash_file(filename, size=None, algorithm="md5"):

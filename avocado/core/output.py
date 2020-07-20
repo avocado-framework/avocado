@@ -22,11 +22,10 @@ import re
 import sys
 import traceback
 
-from . import exit_codes
 from ..utils import path as utils_path
+from . import exit_codes
 from .future.settings import settings as future_settings
 from .streams import BUILTIN_STREAMS
-
 
 #: Handle cases of logging exceptions which will lead to recursion error
 logging.raiseExceptions = False

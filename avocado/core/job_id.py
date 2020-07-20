@@ -15,7 +15,6 @@
 import hashlib
 import random
 
-
 _RAND_POOL = random.SystemRandom()
 
 

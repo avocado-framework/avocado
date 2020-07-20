@@ -1,5 +1,6 @@
 import os
 import unittest
+
 import pkg_resources
 
 import avocado_robot

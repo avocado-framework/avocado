@@ -3,11 +3,9 @@ import sys
 import tempfile
 import unittest
 
-from avocado.utils import script
-from avocado.utils import process
+from avocado.utils import process, script
 
 from .. import BASEDIR, temp_dir_prefix
-
 
 UNITTEST_GOOD = """from avocado import Test
 from unittest import main

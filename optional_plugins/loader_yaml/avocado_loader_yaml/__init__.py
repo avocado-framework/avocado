@@ -15,13 +15,10 @@
 
 import copy
 
-from avocado.core import loader
-from avocado.core import parameters
-from avocado.core import output
+from avocado.core import loader, output, parameters
 from avocado.core.future.settings import settings
 from avocado.core.plugin_interfaces import CLI
-from avocado_varianter_yaml_to_mux import create_from_yaml
-from avocado_varianter_yaml_to_mux import mux
+from avocado_varianter_yaml_to_mux import create_from_yaml, mux
 
 
 class YamlTestsuiteLoader(loader.TestLoader):

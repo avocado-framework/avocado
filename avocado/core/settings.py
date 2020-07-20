@@ -16,14 +16,12 @@
 Reads the avocado settings from a .ini file (with Python's configparser).
 """
 import ast
-import os
-import glob
 import configparser
+import glob
+import os
 
-from pkg_resources import get_distribution
-from pkg_resources import resource_filename
-from pkg_resources import resource_isdir
-from pkg_resources import resource_listdir
+from pkg_resources import (get_distribution, resource_filename, resource_isdir,
+                           resource_listdir)
 
 from .settings_dispatcher import SettingsDispatcher
 

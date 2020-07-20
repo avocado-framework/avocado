@@ -15,13 +15,10 @@
 import json
 import sys
 
-from avocado.core import exit_codes
-from avocado.core import varianter
+from avocado.core import exit_codes, varianter
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLI
-from avocado.core.plugin_interfaces import Varianter
-
+from avocado.core.plugin_interfaces import CLI, Varianter
 
 _NO_VARIANTS = -1
 

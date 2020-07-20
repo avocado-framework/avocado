@@ -5,10 +5,10 @@ import re
 import shutil
 import tempfile
 
-from .rpm import RpmBackend
 from ... import data_factory
 from ... import path as utils_path
 from ... import process
+from .rpm import RpmBackend
 
 try:
     import yum

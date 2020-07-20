@@ -1,10 +1,8 @@
-import os
 import glob
+import os
 import unittest
 
-from avocado.core import data_dir
-from avocado.core import job_id
-from avocado.core import exit_codes
+from avocado.core import data_dir, exit_codes, job_id
 from avocado.utils import process
 
 from .. import AVOCADO, BASEDIR

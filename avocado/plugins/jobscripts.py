@@ -2,7 +2,7 @@ import os
 
 from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import JobPre, JobPost, Init
+from avocado.core.plugin_interfaces import Init, JobPost, JobPre
 from avocado.core.utils import prepend_base_path
 from avocado.utils import process
 

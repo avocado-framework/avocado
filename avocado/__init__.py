@@ -25,13 +25,8 @@ __all__ = ['Test',
            'TestCancel']
 
 
+from avocado.core.decorators import (cancel_on, fail_on, skip, skipIf,
+                                     skipUnless)
+from avocado.core.exceptions import TestCancel, TestError, TestFail
 from avocado.core.test import Test
 from avocado.core.version import VERSION
-from avocado.core.decorators import fail_on
-from avocado.core.decorators import cancel_on
-from avocado.core.decorators import skip
-from avocado.core.decorators import skipIf
-from avocado.core.decorators import skipUnless
-from avocado.core.exceptions import TestError
-from avocado.core.exceptions import TestFail
-from avocado.core.exceptions import TestCancel

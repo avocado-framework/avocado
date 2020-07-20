@@ -6,10 +6,19 @@ import shutil
 import signal
 import tempfile
 import time
+import unittest
 import xml.dom.minidom
 import zipfile
-import unittest
+
 import psutil
+
+from avocado.core import exit_codes
+from avocado.utils import astring, genio
+from avocado.utils import path as utils_path
+from avocado.utils import process, script
+
+from .. import (AVOCADO, BASEDIR, python_module_available,
+                skipOnLevelsInferiorThan, temp_dir_prefix)
 
 try:
     import xmlschema
@@ -23,15 +32,7 @@ try:
 except ImportError:
     AEXPECT_CAPABLE = False
 
-from avocado.core import exit_codes
-from avocado.utils import astring
-from avocado.utils import genio
-from avocado.utils import process
-from avocado.utils import script
-from avocado.utils import path as utils_path
 
-from .. import AVOCADO, BASEDIR, python_module_available, temp_dir_prefix
-from .. import skipOnLevelsInferiorThan
 
 
 UNSUPPORTED_STATUS_TEST_CONTENTS = '''

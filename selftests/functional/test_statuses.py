@@ -3,11 +3,9 @@ import os
 import tempfile
 import unittest
 
-from avocado.utils import genio
-from avocado.utils import process
+from avocado.utils import genio, process
 
 from .. import AVOCADO, BASEDIR, temp_dir_prefix
-
 
 ALL_MESSAGES = ['setup pre',
                 'setup post',

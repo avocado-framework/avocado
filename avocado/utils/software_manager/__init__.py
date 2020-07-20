@@ -31,5 +31,5 @@ and multiple high level package managers (here called backends).
 __all__ = ['install_distro_packages', 'SoftwareManager']
 
 
-from .manager import SoftwareManager
 from .distro_packages import install_distro_packages
+from .manager import SoftwareManager

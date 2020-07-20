@@ -3,18 +3,20 @@ import tempfile
 import unittest
 from xml.dom import minidom
 
-try:
-    import xmlschema
-    SCHEMA_CAPABLE = True
-except ImportError:
-    SCHEMA_CAPABLE = False
-
 from avocado import Test
 from avocado.core import job
 from avocado.core.result import Result
 from avocado.plugins import xunit
 
 from .. import setup_avocado_loggers, temp_dir_prefix
+
+try:
+    import xmlschema
+    SCHEMA_CAPABLE = True
+except ImportError:
+    SCHEMA_CAPABLE = False
+
+
 
 
 setup_avocado_loggers()
