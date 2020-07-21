@@ -125,6 +125,7 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.varianter': [
                   'json_variants = avocado.plugins.json_variants:JsonVariants',
+                  'dict_variants = avocado.plugins.dict_variants:DictVariants',
                   ],
               'avocado.plugins.resolver': [
                   'exec-test = avocado.plugins.resolvers:ExecTestResolver',
