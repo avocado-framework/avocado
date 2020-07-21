@@ -43,9 +43,29 @@ def generate_variant_id(variant):
     :return: String compounded of ordered node names and a hash of all
              values.
     """
+    def get_variant_name(variant):
+        """
+        To get the variant full name string
+
+        :param variant: Avocado test variant (list of TreeNode-like objects)
+        :return: Complete variant name string
+        """
+        full_name = []
+        for node in variant:
+            var_str = []
+            while node:
+                var_str.append(node.name)
+                node = node.parent if hasattr(node, 'parent') else None
+            try:
+                # Let's drop repeated node names and empty string
+                full_name.extend([x for x in var_str[::-1][1:] if x not in full_name])
+            except IndexError:
+                pass
+        return "-".join(full_name)
+
     variant = sorted(variant, key=lambda x: x.path)
     fingerprint = "\n".join(_.fingerprint() for _ in variant)
-    return ("-".join(node.name for node in variant) + '-' +
+    return (get_variant_name(variant) + '-' +
             hashlib.sha1(fingerprint.encode(astring.ENCODING)).hexdigest()[:4])
 
 
