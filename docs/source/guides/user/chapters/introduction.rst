@@ -493,7 +493,7 @@ This will run 3 tests, the first one is a normal test defined by
 something'``. The last one would be ``nonexisting-file`` which would execute
 ``/bin/sh -c nonexisting-file`` which most probably fails.
 
-Note that you are responsible for quotating the test-id (see the
+Note that you are responsible for quoting the test-id (see the
 ``"'/bin/echo something'"`` example).
 
 Sysinfo collection
