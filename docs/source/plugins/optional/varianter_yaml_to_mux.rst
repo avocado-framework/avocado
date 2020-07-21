@@ -5,14 +5,15 @@ Yaml_to_mux plugin
 
 :mod:`avocado_varianter_yaml_to_mux`
 
-This plugin utilizes the in-core ``multiplexation`` mechanism to
+This plugin utilizes the ``multiplexation`` mechanism to
 produce variants out of a yaml file. This section is example-based,
 if you are interested in test parameters and/or ``multiplexation``
 overview, please take a look at :ref:`test-parameters`.
 
 As mentioned earlier, it inherits from the
-:class:`avocado.core.mux.MuxPlugin` and the only thing it implements
-is the argument parsing to get some input and a custom ``yaml``
+:class:`avocado_varianter_yaml_to_mux.mux.MuxPlugin`
+and the only thing it implements is the argument parsing
+to get some input and a custom ``yaml``
 parser (which is also capable of parsing ``json``).
 
 The YAML file is perfect for this task as it's easily read by
