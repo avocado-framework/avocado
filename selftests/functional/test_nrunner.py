@@ -1,11 +1,10 @@
 import os
 import sys
-import tempfile
 import unittest
 
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, skipUnlessPathExists, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipUnlessPathExists
 
 RUNNER = "%s -m avocado.core.nrunner" % sys.executable
 
@@ -146,12 +145,8 @@ class TaskRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 0)
 
 
-class ResolveSerializeRun(unittest.TestCase):
+class ResolveSerializeRun(TestCaseTmpDir):
     @skipUnlessPathExists('/bin/true')
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-
     def test(self):
         cmd = "%s nlist --write-recipes-to-directory=%s -- /bin/true"
         cmd %= (AVOCADO, self.tmpdir.name)
@@ -161,6 +156,3 @@ class ResolveSerializeRun(unittest.TestCase):
         cmd %= (RUNNER, os.path.join(self.tmpdir.name, '1.json'))
         res = process.run(cmd)
         self.assertIn(b"'status': 'finished'", res.stdout)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()

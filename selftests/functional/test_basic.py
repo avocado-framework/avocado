@@ -17,7 +17,7 @@ from avocado.utils import astring, genio
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
 
-from .. import (AVOCADO, BASEDIR, python_module_available,
+from .. import (AVOCADO, BASEDIR, TestCaseTmpDir, python_module_available,
                 skipOnLevelsInferiorThan, temp_dir_prefix)
 
 try:
@@ -143,12 +143,7 @@ READ_BINARY = probe_binary('read')
 SLEEP_BINARY = probe_binary('sleep')
 
 
-class RunnerOperationTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class RunnerOperationTest(TestCaseTmpDir):
 
     def test_show_version(self):
         result = process.run('%s -v' % AVOCADO, ignore_status=True)
@@ -600,16 +595,8 @@ class RunnerOperationTest(unittest.TestCase):
             with open(test_log_path, 'rb') as test_log:
                 self.assertIn(b'SHOULD BE ON debug.log', test_log.read())
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
-
-class RunnerHumanOutputTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class RunnerHumanOutputTest(TestCaseTmpDir):
 
     def test_output_pass(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
@@ -689,15 +676,11 @@ class RunnerHumanOutputTest(unittest.TestCase):
                "--replay-test-status PASS" % (AVOCADO, self.tmpdir.name, jobid))
         process.run(cmd)
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
-
-class RunnerSimpleTest(unittest.TestCase):
+class RunnerSimpleTest(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(RunnerSimpleTest, self).setUp()
         self.pass_script = script.TemporaryScript(
             u'\u00e1 \u00e9 \u00ed \u00f3 \u00fa',
             "#!/bin/sh\ntrue",
@@ -708,7 +691,6 @@ class RunnerSimpleTest(unittest.TestCase):
                                                   'avocado_simpletest_'
                                                   'functional')
         self.fail_script.save()
-        os.chdir(BASEDIR)
 
     def test_simpletest_pass(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
@@ -901,22 +883,19 @@ class RunnerSimpleTest(unittest.TestCase):
     def tearDown(self):
         self.pass_script.remove()
         self.fail_script.remove()
-        self.tmpdir.cleanup()
+        super(RunnerSimpleTest, self).tearDown()
 
 
-class RunnerSimpleTestStatus(unittest.TestCase):
+class RunnerSimpleTestStatus(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-
+        super(RunnerSimpleTestStatus, self).setUp()
         self.config_file = script.TemporaryScript('avocado.conf',
                                                   "[simpletests.status]\n"
                                                   "warn_regex = ^WARN$\n"
                                                   "skip_regex = ^SKIP$\n"
                                                   "skip_location = stdout\n")
         self.config_file.save()
-        os.chdir(BASEDIR)
 
     def test_simpletest_status(self):
         # Multi-line warning in STDERR should by default be handled
@@ -961,15 +940,15 @@ class RunnerSimpleTestStatus(unittest.TestCase):
         skip2_script.remove()
 
     def tearDown(self):
+        super(RunnerSimpleTestStatus, self).tearDown()
         self.config_file.remove()
-        self.tmpdir.cleanup()
 
 
-class ExternalRunnerTest(unittest.TestCase):
+
+class ExternalRunnerTest(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(ExternalRunnerTest, self).setUp()
         self.pass_script = script.TemporaryScript(
             'pass',
             "exit 0",
@@ -980,7 +959,6 @@ class ExternalRunnerTest(unittest.TestCase):
             "exit 1",
             'avocado_externalrunner_functional')
         self.fail_script.save()
-        os.chdir(BASEDIR)
 
     def test_externalrunner_pass(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -1041,17 +1019,12 @@ class ExternalRunnerTest(unittest.TestCase):
                          (expected_rc, result))
 
     def tearDown(self):
+        super(ExternalRunnerTest, self).tearDown()
         self.pass_script.remove()
         self.fail_script.remove()
-        self.tmpdir.cleanup()
 
 
-class PluginsTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class PluginsTest(TestCaseTmpDir):
 
     def test_sysinfo_plugin(self):
         cmd_line = '%s sysinfo %s' % (AVOCADO, self.tmpdir.name)
@@ -1240,25 +1213,20 @@ class PluginsTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn(b"'Namespace' object has no attribute", result.stderr)
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
-
 
 class ParseXMLError(Exception):
     pass
 
 
-class PluginsXunitTest(unittest.TestCase):
+class PluginsXunitTest(TestCaseTmpDir):
 
     @unittest.skipUnless(SCHEMA_CAPABLE,
                          'Unable to validate schema due to missing xmlschema library')
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(PluginsXunitTest, self).setUp()
         junit_xsd = os.path.join(os.path.dirname(__file__),
                                  os.path.pardir, ".data", 'jenkins-junit.xsd')
         self.xml_schema = xmlschema.XMLSchema(junit_xsd)
-        super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
@@ -1323,21 +1291,12 @@ class PluginsXunitTest(unittest.TestCase):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
-        super(PluginsXunitTest, self).tearDown()
-
 
 class ParseJSONError(Exception):
     pass
 
 
-class PluginsJSONTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        super(PluginsJSONTest, self).setUp()
+class PluginsJSONTest(TestCaseTmpDir):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip, e_ncancel=0, external_runner=None):
@@ -1401,10 +1360,6 @@ class PluginsJSONTest(unittest.TestCase):
         # logdir name should escape special chars (/)
         self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
                          "1--ne foo__n_'____nbar_baz")
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
-        super(PluginsJSONTest, self).tearDown()
 
 
 if __name__ == '__main__':

@@ -1,11 +1,10 @@
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, skipOnLevelsInferiorThan, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir, skipOnLevelsInferiorThan
 
 COMMANDS_TIMEOUT_CONF = """
 [sysinfo.collect]
@@ -16,14 +15,9 @@ commands = %s
 """
 
 
-class SysInfoTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+class SysInfoTest(TestCaseTmpDir):
 
     def test_sysinfo_enabled(self):
-        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=on '
                     'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
@@ -52,7 +46,6 @@ class SysInfoTest(unittest.TestCase):
             self.assertTrue(os.path.exists(sysinfo_subdir), msg)
 
     def test_sysinfo_disabled(self):
-        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
@@ -74,7 +67,6 @@ class SysInfoTest(unittest.TestCase):
         self.assertFalse(os.path.isdir(sysinfo_dir), msg)
 
     def test_sysinfo_html_output(self):
-        os.chdir(BASEDIR)
         html_output = "{}/output.html".format(self.tmpdir.name)
         cmd_line = ('{} run --html {} --job-results-dir {} --sysinfo=on '
                     'passtest.py'.format(AVOCADO, html_output,
@@ -92,11 +84,7 @@ class SysInfoTest(unittest.TestCase):
         self.assertNotEqual(output.find('root='), -1)
         self.assertNotEqual(output.find('MemAvailable'), -1)
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
-
     def run_sysinfo_interrupted(self, sleep, timeout, exp_duration):
-        os.chdir(BASEDIR)
         commands_path = os.path.join(self.tmpdir.name, "commands")
         script.make_script(commands_path, "sleep %s" % sleep)
         config_path = os.path.join(self.tmpdir.name, "config.conf")

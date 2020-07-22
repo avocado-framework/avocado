@@ -1,19 +1,17 @@
 import glob
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir
 
 
-class ReplayTests(unittest.TestCase):
+class ReplayTests(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(ReplayTests, self).setUp()
         cmd_line = ('%s run passtest.py passtest.py passtest.py passtest.py '
                     '--job-results-dir %s --sysinfo=off --json -'
                     % (AVOCADO, self.tmpdir.name))
@@ -25,7 +23,6 @@ class ReplayTests(unittest.TestCase):
             self.jobid = f.read().strip('\n')
 
     def run_and_check(self, cmd_line, expected_rc):
-        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
@@ -168,9 +165,6 @@ class ReplayTests(unittest.TestCase):
         msg = (b"Option --replay-test-status is incompatible with "
                b"test references given on the command line.")
         self.assertIn(msg, result.stderr)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

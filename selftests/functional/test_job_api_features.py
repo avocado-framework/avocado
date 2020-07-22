@@ -3,20 +3,18 @@ Functional tests for features available through the job API
 """
 
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.core.job import Job
 
-from .. import temp_dir_prefix
+from .. import TestCaseTmpDir
 
 
-class Test(unittest.TestCase):
+class Test(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(Test, self).setUp()
         self.base_config = {'core.show': ['none'],
                             'run.results_dir': self.tmpdir.name,
                             'run.references': ['examples/tests/passtest.py']}
@@ -36,9 +34,6 @@ class Test(unittest.TestCase):
             result = j.run()
         self.assertEqual(result, exit_codes.AVOCADO_ALL_OK)
         self.assertTrue(os.path.exists(json_results_path))
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

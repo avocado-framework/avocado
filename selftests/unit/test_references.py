@@ -1,4 +1,4 @@
-import unittest
+import unittest.mock
 
 from avocado.core import references
 

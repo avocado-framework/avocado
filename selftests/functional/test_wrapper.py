@@ -6,7 +6,7 @@ from avocado.core import exit_codes
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir
 
 SCRIPT_CONTENT = """#!/bin/bash
 touch %s
@@ -26,11 +26,10 @@ def missing_binary(binary):
         return True
 
 
-class WrapperTest(unittest.TestCase):
+class WrapperTest(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(WrapperTest, self).setUp()
         self.tmpfile = tempfile.mktemp()
         self.script = script.TemporaryScript(
             'success.sh',
@@ -96,13 +95,13 @@ class WrapperTest(unittest.TestCase):
                         (self.tmpfile, cmd_line, result.stdout))
 
     def tearDown(self):
+        super(WrapperTest, self).tearDown()
         self.script.remove()
         self.dummy.remove()
         try:
             os.remove(self.tmpfile)
         except OSError:
             pass
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':
