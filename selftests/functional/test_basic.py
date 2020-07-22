@@ -1046,27 +1046,21 @@ class ExternalRunnerTest(unittest.TestCase):
         self.tmpdir.cleanup()
 
 
-class AbsPluginsTest:
+class PluginsTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.base_outputdir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         os.chdir(BASEDIR)
 
-    def tearDown(self):
-        self.base_outputdir.cleanup()
-
-
-class PluginsTest(AbsPluginsTest, unittest.TestCase):
-
     def test_sysinfo_plugin(self):
-        cmd_line = '%s sysinfo %s' % (AVOCADO, self.base_outputdir.name)
+        cmd_line = '%s sysinfo %s' % (AVOCADO, self.tmpdir.name)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        sysinfo_files = os.listdir(self.base_outputdir.name)
+        sysinfo_files = os.listdir(self.tmpdir.name)
         self.assertGreater(len(sysinfo_files), 0, "Empty sysinfo files dir")
 
     def test_list_plugin(self):
@@ -1108,7 +1102,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         """
         Runs list verbosely and check for tag related output
         """
-        test = script.make_script(os.path.join(self.base_outputdir.name, 'test.py'),
+        test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),
                                   VALID_PYTHON_TEST_WITH_TAGS)
         cmd_line = ("%s --verbose list --loaders file -- %s" % (AVOCADO,
                                                                 test))
@@ -1188,7 +1182,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         def run_config(config_path):
             cmd = ('%s --config %s run passtest.py --archive '
                    '--job-results-dir %s --sysinfo=off'
-                   % (AVOCADO, config_path, self.base_outputdir.name))
+                   % (AVOCADO, config_path, self.tmpdir.name))
             result = process.run(cmd, ignore_status=True)
             expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,
@@ -1215,7 +1209,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                                                   config_content_zip_first)
         with config_zip_first:
             run_config(config_zip_first)
-            archives = glob.glob(os.path.join(self.base_outputdir.name, '*.zip'))
+            archives = glob.glob(os.path.join(self.tmpdir.name, '*.zip'))
             self.assertEqual(len(archives), 1, "ZIP Archive not generated")
             zip_file = zipfile.ZipFile(archives[0], 'r')
             zip_file_list = zip_file.namelist()
@@ -1230,7 +1224,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                                                  config_content_zip_last)
         with config_zip_last:
             run_config(config_zip_last)
-            archives = glob.glob(os.path.join(self.base_outputdir.name, '*.zip'))
+            archives = glob.glob(os.path.join(self.tmpdir.name, '*.zip'))
             self.assertEqual(len(archives), 1, "ZIP Archive not generated")
             zip_file = zipfile.ZipFile(archives[0], 'r')
             zip_file_list = zip_file.namelist()
@@ -1246,12 +1240,15 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn(b"'Namespace' object has no attribute", result.stderr)
 
+    def tearDown(self):
+        self.tmpdir.cleanup()
+
 
 class ParseXMLError(Exception):
     pass
 
 
-class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
+class PluginsXunitTest(unittest.TestCase):
 
     @unittest.skipUnless(SCHEMA_CAPABLE,
                          'Unable to validate schema due to missing xmlschema library')
@@ -1335,7 +1332,7 @@ class ParseJSONError(Exception):
     pass
 
 
-class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
+class PluginsJSONTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
