@@ -127,13 +127,13 @@ class ProcessTest(unittest.TestCase):
 
     def setUp(self):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.base_logdir = tempfile.TemporaryDirectory(prefix=prefix)
-        self.fake_vmstat = os.path.join(self.base_logdir.name, 'vmstat')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        self.fake_vmstat = os.path.join(self.tmpdir.name, 'vmstat')
         with open(self.fake_vmstat, 'w') as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)
         os.chmod(self.fake_vmstat, DEFAULT_MODE)
 
-        self.fake_uptime = os.path.join(self.base_logdir.name, 'uptime')
+        self.fake_uptime = os.path.join(self.tmpdir.name, 'uptime')
         with open(self.fake_uptime, 'w') as fake_uptime_obj:
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
         os.chmod(self.fake_uptime, DEFAULT_MODE)
@@ -183,7 +183,7 @@ class ProcessTest(unittest.TestCase):
         self.assertIn(b'load average', result.stdout)
 
     def tearDown(self):
-        self.base_logdir.cleanup()
+        self.tmpdir.cleanup()
 
 
 def file_lock_action(args):
