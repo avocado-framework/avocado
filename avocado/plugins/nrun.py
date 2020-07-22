@@ -70,6 +70,14 @@ class NRun(CLICmd):
                                  parser=parser,
                                  long_arg="--spawner")
 
+        help_msg = ("Select a container image for the podman spawner")
+        settings.register_option(section="nrun.spawner.podman",
+                                 key="image",
+                                 default='fedora:latest',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg="--spawner-image")
+
         parser_common_args.add_tag_filter_args(parser)
 
     async def spawn_tasks(self, parallel_tasks):

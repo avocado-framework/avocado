@@ -3,13 +3,13 @@ import json
 import os
 import subprocess
 
+from ..future.settings import settings
 from .common import BaseSpawner, SpawnMethod
 
 
 class PodmanSpawner(BaseSpawner):
 
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
-    IMAGE = 'fedora:31'
     PODMAN_BIN = "/usr/bin/podman"
 
     @staticmethod
@@ -42,7 +42,7 @@ class PodmanSpawner(BaseSpawner):
                 self.PODMAN_BIN, "create",
                 "--net=host",
                 entry_point_arg,
-                self.IMAGE,
+                settings.as_dict().get('nrun.spawner.podman.image'),
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE)
         except (FileNotFoundError, PermissionError):
