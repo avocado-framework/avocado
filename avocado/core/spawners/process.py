@@ -16,6 +16,19 @@ class ProcessSpawner(BaseSpawner):
             return False
         return task.spawn_handle.returncode is None
 
+    async def check_requirements(self, task):
+        """Checks if the requirements described within a task are available."""
+        if not task.runnable.requirements:
+            return True
+
+        for requirements in task.runnable.requirements:
+            for (req_type, req_value) in requirements.items():
+                # The fact that this is avocado code means this
+                # requirement is fulfilled
+                if req_type == 'core' and req_value == 'avocado':
+                    continue
+        return True
+
     async def spawn_task(self, task):
         runner = task.runnable.pick_runner_command()
         args = runner[1:] + ['task-run'] + task.get_command_args()

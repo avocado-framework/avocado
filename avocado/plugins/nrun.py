@@ -115,6 +115,16 @@ class NRun(CLICmd):
                 LOG_UI.error("Tasks ended with '%s': %s",
                              status, ", ".join(tasks))
 
+    def filter_requirements_on_spawner(self):
+        tasks_capable_on_spawner = []
+        for task in self.pending_tasks:
+            loop = asyncio.get_event_loop()
+            result = loop.run_until_complete(self.spawner.check_requirements(task))
+            if result:
+                tasks_capable_on_spawner.append(task)
+        # pylint: disable=W0201
+        self.pending_tasks = tasks_capable_on_spawner
+
     def run(self, config):
         hint_filepath = '.avocado.hint'
         hint = None
@@ -122,12 +132,35 @@ class NRun(CLICmd):
             hint = HintParser(hint_filepath)
         resolutions = resolver.resolve(config.get('nrun.references'), hint)
         tasks = resolutions_to_tasks(resolutions, config)
+        # Note: this check of requirements outside of the spawner,
+        # currently limited to runners (and should be kept that way
+        # in addition to being renamed) is only applicable if
+        # provisioning of the runner is going to be attempted on the
+        # spawner.  In that situation this early check may still be
+        # valid, or not even so.
         # pylint: disable=W0201
         self.pending_tasks, missing_requirements = nrunner.check_tasks_requirements(tasks)
         if missing_requirements:
             missing_tasks_msg = "\n".join([str(t) for t in missing_requirements])
             LOG_UI.warning('Tasks will not be run due to missing requirements: %s',
                            missing_tasks_msg)
+
+        if config.get('nrun.spawner') == 'podman':
+            if not os.path.exists(PodmanSpawner.PODMAN_BIN):
+                msg = ('Podman Spawner selected, but podman binary "%s" '
+                       'is not available on the system.  Please install '
+                       'podman before attempting to use this feature.')
+                msg %= PodmanSpawner.PODMAN_BIN
+                LOG_UI.error(msg)
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            self.spawner = PodmanSpawner()  # pylint: disable=W0201
+        elif config.get('nrun.spawner') == 'process':
+            self.spawner = ProcessSpawner()  # pylint: disable=W0201
+        else:
+            LOG_UI.error("Spawner not implemented or invalid.")
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        self.filter_requirements_on_spawner()
 
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
@@ -142,21 +175,6 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
-            if config.get('nrun.spawner') == 'podman':
-                if not os.path.exists(PodmanSpawner.PODMAN_BIN):
-                    msg = ('Podman Spawner selected, but podman binary "%s" '
-                           'is not available on the system.  Please install '
-                           'podman before attempting to use this feature.')
-                    msg %= PodmanSpawner.PODMAN_BIN
-                    LOG_UI.error(msg)
-                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-                self.spawner = PodmanSpawner()  # pylint: disable=W0201
-            elif config.get('nrun.spawner') == 'process':
-                self.spawner = ProcessSpawner()  # pylint: disable=W0201
-            else:
-                LOG_UI.error("Spawner not implemented or invalid.")
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
             listen = config.get('nrun.status_server.listen')
             verbose = config.get('core.verbose')
             self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
