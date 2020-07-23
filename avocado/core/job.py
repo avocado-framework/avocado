@@ -27,7 +27,7 @@ import tempfile
 import time
 import traceback
 
-from ..utils import astring, path, process
+from ..utils import astring
 from ..utils.data_structures import CallbackRegister, time_to_seconds
 from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata, output,
                result, version)
@@ -35,6 +35,7 @@ from .future.settings import settings
 from .job_id import create_unique_job_id
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
 from .suite import TestSuite, TestSuiteError
+from .utils import get_avocado_git_version
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
@@ -212,33 +213,6 @@ class Job:
             for logger in loggers:
                 logging.getLogger(logger).removeHandler(handler)
 
-    @staticmethod
-    def _get_avocado_git_version():
-        # if running from git sources, there will be a ".git" directory
-        # 3 levels up
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        git_dir = os.path.join(base_dir, '.git')
-        if not os.path.isdir(git_dir):
-            return
-        if not os.path.exists(os.path.join(base_dir, 'python-avocado.spec')):
-            return
-
-        try:
-            git = path.find_command('git')
-        except path.CmdNotFoundError:
-            return
-
-        olddir = os.getcwd()
-        try:
-            os.chdir(os.path.abspath(base_dir))
-            cmd = "%s show --summary --pretty='%%H'" % git
-            res = process.run(cmd, ignore_status=True, verbose=False)
-            if res.exit_status == 0:
-                top_commit = res.stdout_text.splitlines()[0][:8]
-                return " (GIT commit %s)" % top_commit
-        finally:
-            os.chdir(olddir)
-
     def _log_avocado_config(self):
         LOG_JOB.info('Avocado config:')
         LOG_JOB.info('')
@@ -257,7 +231,7 @@ class Job:
 
     def _log_avocado_version(self):
         version_log = version.VERSION
-        git_version = self._get_avocado_git_version()
+        git_version = get_avocado_git_version()
         if git_version is not None:
             version_log += git_version
         LOG_JOB.info('Avocado version: %s', version_log)
