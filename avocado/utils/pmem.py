@@ -317,3 +317,119 @@ class PMem:
                           shell=True, ignore_status=True):
             raise PMemException('Namespace destroy command failed')
         return True
+
+    @staticmethod
+    def _check_arg(key, kwargs):
+        if key in kwargs and kwargs[key]:
+            return True
+        return False
+
+    @staticmethod
+    def _check_add_arg(args_dict, key, kwargs, pop=False):
+        if PMem._check_arg(key, kwargs):
+            if pop:
+                return " %s" % args_dict[key] % kwargs.pop(key)
+            return " %s" % args_dict[key] % kwargs.get(key)
+        return ""
+
+    @staticmethod
+    def _filter_ns_infoblock(namespace, args_dict, kwargs):
+        args = ""
+        if namespace == "all":
+            for key in ['region', 'bus']:
+                args += PMem._check_add_arg(args_dict, key, kwargs, pop=True)
+        return args
+
+    def write_infoblock(self, namespace='', stdout=False, output=None,
+                        **kwargs):
+        """
+        Write an infoblock to the specified medium.
+
+        :param namespace: Write the infoblock to given namespace
+        :param stdout: Write the infoblock to stdout if True
+        :param output: Write the infoblock to the file path specified
+        :param **kwargs:
+        Example:
+           pmem.write_infoblock(namespace=ns_name, align=align,
+                                size=size, mode='devdax')
+
+        :return: True if command succeeds
+        :rtype: bool
+        :raise: :class:`PMemException`, if command fails.
+        """
+        if not (namespace or stdout or output):
+            raise PMemException("Specify atleast one output medium")
+
+        args_dict = {'region': '-r %s', 'bus': '-b %s', 'mode': '-m %s',
+                     'memmap': '-M %s', 'size': '-s %s', 'align': '-a %s',
+                     'uuid': '-u %s', 'parent_uuid': '-p %', 'offset': '-O %s'}
+
+        if namespace:
+            args = namespace
+        elif stdout:
+            args = "-c"
+        elif output:
+            args = "-o %s" % output
+
+        args += self._filter_ns_infoblock(namespace, args_dict, kwargs)
+        args += " %s" % args_dict['mode'] % kwargs.pop('mode', 'fsdax')
+        args += " %s" % args_dict['memmap'] % kwargs.pop('memmap', 'dev')
+
+        for key, value in kwargs.items():
+            if not value:
+                continue
+            if key in args_dict:
+                args += " %s" % args_dict[key] % value
+            else:
+                raise PMemException("Input not supported for write-infoblock")
+
+        write_cmd = "%s write-infoblock %s" % (self.ndctl, args)
+        if process.system(write_cmd, shell=True, ignore_status=True):
+            raise PMemException("write-infoblock command failed")
+        return True
+
+    def read_infoblock(self, namespace='', inp_file='', **kwargs):
+        """
+        Read an infoblock from the specified medium
+
+        :param namespace: Read the infoblock from given namespace
+        :param inp_file: Input file to read the infoblock from
+        :param **kwargs:
+        Example:
+           self.plib.read_infoblock(namespace=ns_name, json_form=True)
+
+        :return: By default return list of json objects, if json_form is True
+                 Return as raw data, if json_form is False
+                 Return file path if op_file is specified
+        :raise: :class:`PMemException`, if command fails.
+        """
+        if not (namespace or inp_file):
+            raise PMemException("Namespace or input file must be specified")
+
+        args_dict = {"region": "-r %s", "bus": "-b %s", "op_file": "-o %s"}
+        if namespace:
+            args = namespace
+        elif inp_file:
+            args = "-i %s" % inp_file
+
+        args += self._filter_ns_infoblock(namespace, args_dict, kwargs)
+        args += self._check_add_arg(args_dict, 'op_file', kwargs)
+
+        json_form = kwargs.pop('json_form', True)
+        verify = kwargs.pop('verify', False)
+        if verify:
+            args += " -V"
+        if json_form:
+            args += " -j"
+
+        read_cmd = "%s read-infoblock %s" % (self.ndctl, args)
+        ret = process.run(read_cmd, shell=True, ignore_status=True)
+        if ret.exit_status:
+            raise PMemException("read-infoblock command failed")
+        if self._check_arg('op_file', kwargs):
+            return kwargs.get('op_file')
+        read_op = ret.stdout.decode()
+        if json_form:
+            read_op = json.loads(read_op)
+
+        return read_op
