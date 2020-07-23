@@ -75,9 +75,7 @@ class Jobs(CLICmd):
         Directory must exists before calling this function.
         """
         dirname = os.path.dirname(filename)
-        if not os.path.isdir(dirname):
-            LOG_UI.error("%s does not exist. Exiting...", dirname)
-            return exit_codes.AVOCADO_GENERIC_CRASH
+        os.makedirs(dirname, exist_ok=True)
 
         with open(filename, 'ab') as output_file:
             output_file.write(stream)
@@ -159,7 +157,9 @@ class Jobs(CLICmd):
             try:
                 files_buffers = spawner().stream_output(job_id, test_id)
                 for filename, stream in files_buffers:
-                    dest = os.path.join(destination, filename)
+                    dest = os.path.join(destination,
+                                        test_id.replace('/', '_'),
+                                        filename)
                     self._save_stream_to_file(stream, dest)
             except SpawnerException as ex:
                 LOG_UI.error("Error: Failed to download: %s. Exiting...", ex)
