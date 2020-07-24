@@ -126,7 +126,7 @@ def check_file(path, reference, suffix='.py',
             return ReferenceResolution(
                 reference,
                 ReferenceResolutionResult.NOTFOUND,
-                info='File path "%s" does not end with "%s"' % (path, suffix))
+                info='File "%s" does not end with "%s"' % (path, suffix))
 
     if not type_check(path):
         return ReferenceResolution(
