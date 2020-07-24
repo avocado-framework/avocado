@@ -1,12 +1,11 @@
 import json
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir
 
 STDOUT = b"Hello, \xc4\x9b\xc5\xa1\xc4\x8d\xc5\x99\xc5\xbe\xc3\xbd\xc3\xa1\xc3\xad\xc3\xa9!"
 STDERR = b"Hello, stderr!"
@@ -122,7 +121,7 @@ class PassTest(Test):
 """
 
 
-class RunnerSimpleTest(unittest.TestCase):
+class RunnerSimpleTest(TestCaseTmpDir):
 
     def assertIsFile(self, path):
         self.assertTrue(os.path.isfile(path))
@@ -131,8 +130,7 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertFalse(os.path.isfile(path))
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(RunnerSimpleTest, self).setUp()
         content = b"#!/bin/sh\n"
         content += b"echo \"" + STDOUT + b"\"\n"
         content += b"echo \"" + STDERR + b"\" >&2\n"
@@ -144,7 +142,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.output_script.save()
 
     def _check_output_record_all(self):
-        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record all'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
@@ -161,7 +158,6 @@ class RunnerSimpleTest(unittest.TestCase):
             self.assertEqual(fd_stderr.read(), STDERR)
 
     def _check_output_record_combined(self):
-        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record combined'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
@@ -175,7 +171,6 @@ class RunnerSimpleTest(unittest.TestCase):
             self.assertEqual(fd_output.read(), STDOUT + STDERR)
 
     def _setup_simple_test(self, simple_test_content):
-        os.chdir(BASEDIR)
         variants_file = os.path.join(self.tmpdir.name, 'variants.json')
         with open(variants_file, 'w') as file_obj:
             file_obj.write(JSON_VARIANTS)
@@ -185,7 +180,6 @@ class RunnerSimpleTest(unittest.TestCase):
         return (simple_test, variants_file)
 
     def test_output_record_none(self):
-        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record none'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
@@ -198,7 +192,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertIsNotFile("%s.data/stderr.expected" % self.output_script)
 
     def test_output_record_stdout(self):
-        os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check-record stdout'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
@@ -329,7 +322,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertNotIn(tampered_msg, result.stdout)
 
     def test_merge_records_same_output(self):
-        os.chdir(BASEDIR)
         variants_file = os.path.join(self.tmpdir.name, 'variants.json')
         with open(variants_file, 'w') as file_obj:
             file_obj.write(JSON_VARIANTS)
@@ -388,8 +380,8 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
 
     def tearDown(self):
+        super(RunnerSimpleTest, self).tearDown()
         self.output_script.remove()
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

@@ -12,7 +12,7 @@ from avocado.utils import genio
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir
 
 # AVOCADO may contain more than a single command, as it can be
 # prefixed by the Python interpreter
@@ -134,12 +134,7 @@ def missing_binary(binary):
         return True
 
 
-class OutputTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class OutputTest(TestCaseTmpDir):
 
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying doublefree.py test")
@@ -272,12 +267,7 @@ class OutputTest(unittest.TestCase):
         self.tmpdir.cleanup()
 
 
-class OutputPluginTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class OutputPluginTest(TestCaseTmpDir):
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)
@@ -559,9 +549,6 @@ class OutputPluginTest(unittest.TestCase):
 
         # Check that plugins do not produce errors
         self.assertNotIn(b"Error running method ", result.stderr)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

@@ -1,11 +1,10 @@
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir
 
 SCRIPT_PRE_TOUCH = """#!/bin/sh -e
 touch %s"""
@@ -36,16 +35,14 @@ warn_non_existing_dir = False
 warn_non_zero_status = True"""
 
 
-class JobScriptsTest(unittest.TestCase):
+class JobScriptsTest(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(JobScriptsTest, self).setUp()
         self.pre_dir = os.path.join(self.tmpdir.name, 'pre.d')
         os.mkdir(self.pre_dir)
         self.post_dir = os.path.join(self.tmpdir.name, 'post.d')
         os.mkdir(self.post_dir)
-        os.chdir(BASEDIR)
 
     def test_pre_post(self):
         """
@@ -123,9 +120,6 @@ class JobScriptsTest(unittest.TestCase):
         self.assertIn(b'-job scripts has not been found', result.stderr)
         self.assertNotIn('Pre job script "%s" exited with status "1"' % non_zero_script,
                          result.stderr_text)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

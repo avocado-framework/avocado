@@ -1,19 +1,13 @@
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir
 
 
-class StreamsTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class StreamsTest(TestCaseTmpDir):
 
     def test_app_info_stdout(self):
         """
@@ -117,9 +111,6 @@ class StreamsTest(unittest.TestCase):
         run("avocado.app:20", 1)
         run("avocado.app:wARn", 0)
         run("avocado.app:30", 0)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

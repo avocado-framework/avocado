@@ -1,13 +1,12 @@
 import glob
 import os
-import tempfile
 import unittest
 import xml.dom.minidom
 
 from avocado.core import exit_codes
 from avocado.utils import genio, process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir
 
 SCRIPT_CONTENT = """#!/bin/bash
 sleep 2
@@ -31,9 +30,10 @@ class ParseXMLError(Exception):
     pass
 
 
-class JobTimeOutTest(unittest.TestCase):
+class JobTimeOutTest(TestCaseTmpDir):
 
     def setUp(self):
+        super(JobTimeOutTest, self).setUp()
         self.script = script.TemporaryScript(
             'sleep.sh',
             SCRIPT_CONTENT,
@@ -44,9 +44,6 @@ class JobTimeOutTest(unittest.TestCase):
             PYTHON_CONTENT,
             'avocado_timeout_functional')
         self.py.save()
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
 
     def run_and_check(self, cmd_line, e_rc, e_ntests, e_nerrors, e_nfailures,
                       e_nskip):
@@ -161,9 +158,9 @@ class JobTimeOutTest(unittest.TestCase):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
 
     def tearDown(self):
+        super(JobTimeOutTest, self).tearDown()
         self.script.remove()
         self.py.remove()
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

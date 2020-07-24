@@ -5,7 +5,7 @@ import unittest
 from avocado.core import exit_codes, test
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir
 
 INSTRUMENTED_SCRIPT = """import os
 import tempfile
@@ -29,11 +29,10 @@ fi
 """.format(test.COMMON_TMPDIR_NAME)
 
 
-class TestsTmpDirTests(unittest.TestCase):
+class TestsTmpDirTests(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(TestsTmpDirTests, self).setUp()
         self.simple_test = script.TemporaryScript(
             'test_simple.sh',
             SIMPLE_SCRIPT)
@@ -44,7 +43,6 @@ class TestsTmpDirTests(unittest.TestCase):
         self.instrumented_test.save()
 
     def run_and_check(self, cmd_line, expected_rc, env=None):
-        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True, env=env)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
@@ -84,9 +82,9 @@ class TestsTmpDirTests(unittest.TestCase):
                              % (len(content), content))
 
     def tearDown(self):
+        super(TestsTmpDirTests, self).tearDown()
         self.instrumented_test.remove()
         self.simple_test.remove()
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

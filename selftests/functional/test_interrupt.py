@@ -2,7 +2,6 @@ import os
 import signal
 import stat
 import subprocess
-import tempfile
 import time
 import unittest
 
@@ -10,7 +9,7 @@ import psutil
 
 from avocado.utils import data_factory, process, script, wait
 
-from .. import AVOCADO, BASEDIR, skipOnLevelsInferiorThan, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
@@ -50,7 +49,7 @@ if __name__ == "__main__":
 """
 
 
-class InterruptTest(unittest.TestCase):
+class InterruptTest(TestCaseTmpDir):
 
     @staticmethod
     def has_children(proc):
@@ -95,8 +94,7 @@ class InterruptTest(unittest.TestCase):
         return len(test_processes) == 0
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(InterruptTest, self).setUp()
         self.test_module = None
 
     @skipOnLevelsInferiorThan(2)
@@ -270,9 +268,6 @@ class InterruptTest(unittest.TestCase):
 
         # Make sure the Interrupted test sentence is there
         self.assertIn(b'Terminated\n', proc.stdout.read())
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

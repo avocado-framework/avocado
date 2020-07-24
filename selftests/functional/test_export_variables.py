@@ -1,12 +1,11 @@
 import os
-import tempfile
 import unittest
 
 from avocado import VERSION
 from avocado.core import exit_codes
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir
 
 SCRIPT_CONTENT = """#!/bin/sh
 echo "Avocado Version: $AVOCADO_VERSION"
@@ -25,11 +24,10 @@ test "$AVOCADO_VERSION" = "{version}" -a \
 """.format(version=VERSION)
 
 
-class EnvironmentVariablesTest(unittest.TestCase):
+class EnvironmentVariablesTest(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(EnvironmentVariablesTest, self).setUp()
         self.script = script.TemporaryScript(
             'version.sh',
             SCRIPT_CONTENT,
@@ -47,8 +45,8 @@ class EnvironmentVariablesTest(unittest.TestCase):
                          (expected_rc, result))
 
     def tearDown(self):
+        super(EnvironmentVariablesTest, self).tearDown()
         self.script.remove()
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

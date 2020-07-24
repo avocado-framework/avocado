@@ -7,16 +7,15 @@ avocado.utils.lv_utils selftests
 import glob
 import os
 import sys
-import tempfile
 import time
 import unittest
 
 from avocado.utils import linux_modules, lv_utils, process
 
-from .. import temp_dir_prefix
+from .. import TestCaseTmpDir
 
 
-class LVUtilsTest(unittest.TestCase):
+class LVUtilsTest(TestCaseTmpDir):
 
     """
     Check the LVM related utilities
@@ -29,8 +28,7 @@ class LVUtilsTest(unittest.TestCase):
     @unittest.skipIf(not process.can_sudo(), "This test requires root or "
                      "passwordless sudo configured.")
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(LVUtilsTest, self).setUp()
         self.vgs = []
 
     def tearDown(self):

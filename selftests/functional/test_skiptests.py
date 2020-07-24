@@ -1,12 +1,11 @@
 import json
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import genio, process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir
 
 AVOCADO_TEST_SKIP_DECORATORS = """
 import avocado
@@ -182,13 +181,10 @@ class AvocadoSkipTests(avocado.Test):
 """
 
 
-class TestSkipDecorators(unittest.TestCase):
+class TestSkipDecorators(TestCaseTmpDir):
 
     def setUp(self):
-        os.chdir(BASEDIR)
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-
+        super(TestSkipDecorators, self).setUp()
         test_path = os.path.join(self.tmpdir.name, 'test_skip_decorators.py')
         self.test_module = script.Script(test_path,
                                          AVOCADO_TEST_SKIP_DECORATORS)
@@ -229,7 +225,6 @@ class TestSkipDecorators(unittest.TestCase):
         self.bad_teardown.save()
 
     def test_skip_decorators(self):
-        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
@@ -249,7 +244,6 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertFalse('teardown executed' in debuglog_contents)
 
     def test_skip_class_decorators(self):
-        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
@@ -269,7 +263,6 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertFalse('teardown executed' in debuglog_contents)
 
     def test_skipIf_class_decorators(self):
-        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
@@ -285,7 +278,6 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertEqual(json_results['pass'], 3)
 
     def test_skipUnless_class_decorators(self):
-        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
@@ -301,7 +293,6 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertEqual(json_results['pass'], 3)
 
     def test_skip_setup(self):
-        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
@@ -315,7 +306,6 @@ class TestSkipDecorators(unittest.TestCase):
         self.assertEqual(json_results['skip'], 1)
 
     def test_skip_teardown(self):
-        os.chdir(BASEDIR)
         cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
@@ -327,9 +317,6 @@ class TestSkipDecorators(unittest.TestCase):
         json_results = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
         self.assertEqual(json_results['errors'], 1)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

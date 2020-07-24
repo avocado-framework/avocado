@@ -3,14 +3,13 @@ import os
 import signal
 import stat
 import subprocess
-import tempfile
 import time
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, skipOnLevelsInferiorThan, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
 from avocado import Test
@@ -132,7 +131,7 @@ if __name__ == "__main__":
 """
 
 
-class LoaderTestFunctional(unittest.TestCase):
+class LoaderTestFunctional(TestCaseTmpDir):
 
     MODE_0664 = (stat.S_IRUSR | stat.S_IWUSR |
                  stat.S_IRGRP | stat.S_IWGRP |
@@ -141,11 +140,6 @@ class LoaderTestFunctional(unittest.TestCase):
     MODE_0775 = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
                  stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
                  stat.S_IROTH | stat.S_IXOTH)
-
-    def setUp(self):
-        os.chdir(BASEDIR)
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def _test(self, name, content, exp_str, mode=MODE_0664, count=1):
         test_script = script.TemporaryScript(name, content,
@@ -301,9 +295,6 @@ class LoaderTestFunctional(unittest.TestCase):
                     b"INSTRUMENTED examples/tests/failtest.py:FailTest.test\n"
                     b"SIMPLE       examples/tests/failtest.sh\n")
         self.assertEqual(expected, result.stdout)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

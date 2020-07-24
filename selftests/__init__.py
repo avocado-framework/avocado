@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 import tempfile
-import unittest.mock
+import unittest
 
 import pkg_resources
 
@@ -134,3 +134,14 @@ def skipUnlessPathExists(path):
     return unittest.skipUnless(os.path.exists(path),
                                ('File or directory at path "%s" used in test is'
                                 ' not available in the system' % path))
+
+
+class TestCaseTmpDir(unittest.TestCase):
+
+    def setUp(self):
+        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        os.chdir(BASEDIR)
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
