@@ -39,7 +39,7 @@ class DictVariants(Varianter):
 
         variant_ids = []
         for variant in self.variants:
-            variant_ids.append("-".join([variant.get(key)
+            variant_ids.append("-".join([str(variant.get(key))
                                          for key in self.headers]))
 
         for vid, variant in zip(variant_ids, self.variants):
