@@ -23,6 +23,7 @@ import os
 import re
 import shlex
 import sys
+import warnings
 from enum import Enum
 
 from ..utils import stacktrace
@@ -123,6 +124,10 @@ class TestLoaderProxy:
         if external_runner:
             self.register_plugin(ExternalLoader)
             key = "{}.loaders".format(subcommand)
+            if set(config[key]) != {'file', '@DEFAULT'}:
+                warnings.warn("The loadres and external-runner are incompatible."
+                              "The values in loadres will be ignored.",
+                              RuntimeWarning)
             config[key] = ["external:{}".format(external_runner)]
         else:
             # Add (default) file loader if not already registered
