@@ -296,6 +296,29 @@ class LoaderTestFunctional(TestCaseTmpDir):
                     b"SIMPLE       examples/tests/failtest.sh\n")
         self.assertEqual(expected, result.stdout)
 
+    def test_loader_and_external_runner_incompatibility(self):
+        """
+        Check if the user is inform about incompatibility between loader and
+        external_runner.
+        """
+        test_script = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
+                                             'avocado_loader_test',
+                                             mode=self.MODE_0775)
+        test_script.save()
+
+        cmd = "%s run --loaders=FOO " \
+                "--external-runner=/bin/bash %s" % (AVOCADO, test_script.path)
+        result = process.run(cmd)
+        expected_warning = "The loaders and external-runner are incompatible." \
+                           "The values in loaders will be ignored."
+        self.assertTrue(expected_warning in result.stderr_text)
+
+        cmd = "%s run --external-runner=/bin/bash %s" % (AVOCADO,
+                                                         test_script.path)
+        result = process.run(cmd)
+        self.assertFalse(expected_warning in result.stderr_text)
+
+        test_script.remove()
 
 if __name__ == '__main__':
     unittest.main()

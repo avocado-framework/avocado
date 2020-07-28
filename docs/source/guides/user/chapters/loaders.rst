@@ -1,3 +1,5 @@
+.. _test-loaders:
+
 Undestanding the test discovery (Avocado Loaders)
 =================================================
 
@@ -8,6 +10,7 @@ customize this process.
    still be using some of these definitions in its design, however, we are
    working on an improved version of the runner, the NextRunner that will use
    an alternative strategy.
+
 
 Test Loaders
 ------------
