@@ -1,3 +1,5 @@
+.. _test-loaders:
+
 Undestanding the test discovery (Avocado Loaders)
 =================================================
 

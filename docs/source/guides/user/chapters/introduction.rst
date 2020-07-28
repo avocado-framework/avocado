@@ -215,6 +215,10 @@ But now consider the following example::
 This effectively makes `/bin/curl` an "external test runner", responsible for
 trying to fetch those URLs, and reporting PASS or FAIL for each of them.
 
+.. warning:: The external runner is incompatible with loaders from
+   :ref:`test-loaders`. If you use external runner and loader together
+   the job will use the external runner and ignore the loader.
+
 Runner outputs
 --------------
 
