@@ -62,7 +62,7 @@ Besides the configuration files, the most used features can also be configured
 by command-line arguments.  For instance, regardless what you have on your
 configuration files, you can disable sysinfo logging by running:
 
-.. code-block::
+.. code-block:: shell
 
    $ avocado run --sysinfo off /bin/true
 
