@@ -268,7 +268,7 @@ class Replay(CLI):
                 LOG_UI.error('Source job variants data not found. Aborting.')
                 sys.exit(exit_codes.AVOCADO_FAIL)
             else:
-                LOG_UI.warning("Using src job Mux data only, use "
+                LOG_UI.warning("Using src job variants data only, use "
                                "`--replay-ignore variants` to override "
                                "them.")
                 config["avocado_variants"] = variants
