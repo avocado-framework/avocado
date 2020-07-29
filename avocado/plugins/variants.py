@@ -20,6 +20,7 @@ from avocado.core import exit_codes
 from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.varianter import Varianter
 
 _VERBOSITY_LEVELS = {"none": 0, "brief": 1, "normal": 2, "verbose": 3,
                      "full": 4, "max": 99}
@@ -137,7 +138,7 @@ class Variants(CLICmd):
         if err:
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        varianter = config.get('avocado_variants')
+        varianter = Varianter()
         try:
             varianter.parse(config)
         except (IOError, ValueError) as details:
@@ -157,19 +158,19 @@ class Variants(CLICmd):
                 variants += 2
 
         json_variants_dump = config.get('variants.json_variants_dump')
-        # Export the serialized avocado_variants
+        # Export the serialized variants
         if json_variants_dump is not None:
             try:
                 with open(json_variants_dump, 'w') as variants_file:
-                    json.dump(config.get('avocado_variants').dump(), variants_file)
+                    json.dump(varianter.dump(), variants_file)
             except IOError:
                 LOG_UI.error("Cannot write %s", json_variants_dump)
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Produce the output
-        lines = config.get('avocado_variants').to_str(summary=summary,
-                                                      variants=variants,
-                                                      use_utf8=use_utf8)
+        lines = varianter.to_str(summary=summary,
+                                 variants=variants,
+                                 use_utf8=use_utf8)
         for line in lines.splitlines():
             LOG_UI.debug(line)
 
