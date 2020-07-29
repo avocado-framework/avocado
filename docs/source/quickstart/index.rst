@@ -57,7 +57,7 @@ Currently we support, out of box, the following output formats:
   currently in v12. Unlike most existing Avocado machine readable outputs
   this one is streamlined (per test results).
 
-.. note:: You can see the results of the lastest job inside the folder
+.. note:: You can see the results of the latest job inside the folder
   ``$HOME/avocado/job-results/latest/``. You can also specify at the command line
   the options ``--xunit``, ``--json`` or ``--tap`` followed by a filename.
   Avocado will write the output on the specified filename.
