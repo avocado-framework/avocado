@@ -263,7 +263,7 @@ class Replay(CLI):
             LOG_UI.warn("Ignoring variants from source job with "
                         "--replay-ignore.")
         else:
-            variants = jobdata.retrieve_variants(resultsdir)
+            variants = jobdata.get_variants_path(resultsdir)
             if variants is None:
                 LOG_UI.error('Source job variants data not found. Aborting.')
                 sys.exit(exit_codes.AVOCADO_FAIL)
@@ -271,7 +271,7 @@ class Replay(CLI):
                 LOG_UI.warning("Using src job variants data only, use "
                                "`--replay-ignore variants` to override "
                                "them.")
-                config["avocado_variants"] = variants
+                config["json.variants.load"] = variants
 
         # Extend "replay_test_status" of "INTERRUPTED" when --replay-resume
         # supplied.

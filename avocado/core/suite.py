@@ -123,8 +123,7 @@ class TestSuite:
     @property
     def variants(self):
         if self._variants is None:
-            # TODO: We need to register this with register_option()
-            variants = self.config.get('avocado_variants', Varianter())
+            variants = Varianter()
             if not variants.is_parsed():
                 try:
                     variants.parse(self.config)

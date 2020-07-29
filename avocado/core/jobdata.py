@@ -112,6 +112,13 @@ def retrieve_references(resultsdir):
         return ast.literal_eval(references_file.read())
 
 
+def get_variants_path(resultsdir):
+    """
+    Retrieves the variants path from the results directory.
+    """
+    return _retrieve(resultsdir, VARIANTS_FILENAME)
+
+
 def retrieve_variants(resultsdir):
     """
     Retrieves the job variants object from the results directory.
