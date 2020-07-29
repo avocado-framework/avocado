@@ -64,6 +64,16 @@ A Test Reference is a string that can be resolved into
 A given resolver plugin is free to interpret a test reference,
 it is completely abstract to the other components of Avocado.
 
+When the test references are about Instrumented Tests, Avocado will find any
+Instrumented test that **starts** with the reference, like a "wildcard". For
+instance::
+
+  $ avocado run ./test.py:MyTest:test_foo
+
+This command will resolve all tests (methods) that starts with `test_foo`. For
+more information about this type of tests, please visit the :ref:`Instrumented`
+section of this document.
+
 .. note:: Mapping the Test References to tests can be affected
    by command-line switches like `--external-runner`, which
    completelly changes the meaning of the given strings.
@@ -187,6 +197,8 @@ dynamically created cases are not recognized. Also note that test result SKIP
 is reported as CANCEL in Avocado as SKIP test meaning differs from our
 definition. Apart from that there should be no surprises when running unittests
 via Avocado.
+
+.. _Instrumented:
 
 Instrumented
 ~~~~~~~~~~~~
