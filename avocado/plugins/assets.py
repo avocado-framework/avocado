@@ -258,18 +258,19 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
             logger = job.log
         else:
             logger = None
-        for test in job.test_suite.tests:
-            # ignore nrunner/resolver based test suites that contain
-            # task, because the requirements resolution planned is
-            # completely different from the traditional job runner
-            if isinstance(test, Task):
-                continue
-            # fetch assets only on instrumented tests
-            if isinstance(test[0], str):
-                fetch_assets(test[1]['modulePath'],
-                             test[0],
-                             test[1]['methodName'],
-                             logger)
+        for suite in job.test_suites:
+            for test in suite.tests:
+                # ignore nrunner/resolver based test suites that contain
+                # task, because the requirements resolution planned is
+                # completely different from the traditional job runner
+                if isinstance(test, Task):
+                    continue
+                # fetch assets only on instrumented tests
+                if isinstance(test[0], str):
+                    fetch_assets(test[1]['modulePath'],
+                                 test[0],
+                                 test[1]['methodName'],
+                                 logger)
 
 
 class Assets(CLICmd):
