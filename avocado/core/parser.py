@@ -20,7 +20,7 @@ import argparse
 from configparser import ConfigParser, NoOptionError
 from glob import glob
 
-from . import exit_codes, settings, varianter
+from . import exit_codes, settings
 from .future.settings import ConfigFileNotFound, SettingsError
 from .future.settings import settings as future_settings
 from .nrunner import Runnable
@@ -146,10 +146,6 @@ class Parser:
         # constructing the sub parsers, but it is possible to set that
         # option afterwards.
         self.subcommands.required = True
-
-        # Allow overriding default params by plugins
-        variants = varianter.Varianter(getattr(self.args, "variants.debug", False))
-        self.args.avocado_variants = variants
 
     def finish(self):
         """
