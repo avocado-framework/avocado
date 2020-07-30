@@ -14,5 +14,6 @@ config = {'run.references': ['selftests/functional/test_nrunner_interface.py'],
               {'runner': 'avocado-runner-tap'},
               ]}
 
-with Job(config) as j:
-    sys.exit(j.run())
+job = Job.from_config(config)
+job.setup()
+sys.exit(job.run())

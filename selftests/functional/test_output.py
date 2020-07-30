@@ -128,32 +128,37 @@ import sys
 
 from avocado import Test
 from avocado.core.job import Job
+from avocado.core.suite import TestSuite
 
 
 class PassTest(Test):
     def test1(self):
         config = {'core.show': ['none'],
                   'run.references': ['/bin/true']}
-        with Job(config) as j:
+        suite = TestSuite.from_config(config)
+        with Job(config, [suite]) as j:
             j.run()
 
     def test2(self):
         config = {'core.show': ['app'],
                   'run.references': ['/bin/true']}
-        with Job(config) as j:
+        suite = TestSuite.from_config(config)
+        with Job(config, [suite]) as j:
             j.run()
 
     def test3(self):
         config = {'core.show': ['none'],
                   'run.references': ['/bin/true']}
-        with Job(config) as j:
+        suite = TestSuite.from_config(config)
+        with Job(config, [suite]) as j:
             j.run()
 
 
 if __name__ == '__main__':
     config = {'run.references': [__file__],
               'core.show': ['app']}
-    with Job(config) as j:
+    suite = TestSuite.from_config(config)
+    with Job(config, [suite]) as j:
         sys.exit(j.run())
 """
 

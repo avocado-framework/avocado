@@ -17,6 +17,7 @@
 Job module - describes a sequence of automated test operations.
 """
 
+
 import logging
 import os
 import pprint
@@ -26,6 +27,8 @@ import sys
 import tempfile
 import time
 import traceback
+import warnings
+from copy import deepcopy
 
 from ..utils import astring
 from ..utils.data_structures import CallbackRegister, time_to_seconds
@@ -77,13 +80,17 @@ class Job:
     along with setup operations and event recording.
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, test_suites=None):
         """
         Creates an instance of Job class.
 
         :param config: the job configuration, usually set by command
                        line options and argument parsing
         :type config: dict
+        :param test_suites: A list with TestSuite objects. If is None the job
+                            will have an empty list and you can add suites
+                            after init accessing job.test_suites.
+        :type test_suites: list
         """
         self.config = settings.as_dict()
         if config:
@@ -96,6 +103,8 @@ class Job:
             if unique_id is None:
                 self.config['run.unique_job_id'] = '0' * 40
             self.config['sysinfo.collect.enabled'] = 'off'
+
+        self.test_suites = test_suites or []
 
         #: The log directory for this job, also known as the job results
         #: directory.  If it's set to None, it means that the job results
@@ -125,11 +134,6 @@ class Job:
         self._stdout_stderr = None
         self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
-        #: The list of discovered/resolved tests that will be attempted to
-        #: be run by this job.  If set to None, it means that test resolution
-        #: has not been attempted.  If set to an empty list, it means that no
-        #: test was found during resolution.
-        self.test_suite = None
 
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
@@ -367,6 +371,12 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
+    @classmethod
+    def from_config(cls, job_config, suites_configs=None):
+        suites_configs = suites_configs or [deepcopy(job_config)]
+        suites = [TestSuite.from_config(config) for config in suites_configs]
+        return cls(job_config, suites)
+
     @property
     def test_parameters(self):
         """Placeholder for test parameters.
@@ -380,6 +390,23 @@ class Job:
                                      in self.config.get('run.test_parameters',
                                                         [])}
         return self._test_parameters
+
+    @property
+    def test_suite(self):
+        """This is the first test suite of this job (deprecated).
+
+        Please, use test_suites instead.
+        """
+        if self.test_suites:
+            return self.test_suites[0]
+
+    @test_suite.setter
+    def test_suite(self, var):
+        """Temporary setter. Suites should be setter from test_suites."""
+        if self.test_suites:
+            self.test_suites[0] = var
+        else:
+            self.test_suites = [var]
 
     @property
     def timeout(self):
@@ -421,14 +448,15 @@ class Job:
     def create_test_suite(self):
         try:
             self.test_suite = TestSuite.from_config(self.config)
-            if self.test_suite.size == 0:
+            if self.test_suite and self.test_suite.size == 0:
                 refs = self.test_suite.references
                 msg = ("No tests found for given test references, try "
                        "'avocado list -V %s' for details") % " ".join(refs)
                 raise exceptions.JobTestSuiteEmptyError(msg)
         except TestSuiteError as details:
             raise exceptions.JobBaseException(details)
-        self.result.tests_total = self.test_suite.size
+        if self.test_suite:
+            self.result.tests_total = self.test_suite.size
 
     def post_tests(self):
         """
@@ -517,17 +545,18 @@ class Job:
                        self.test_suite.variants,
                        sys.argv)
 
-        # This is "almost ready" for a loop
-        summary = self.test_suite.run(self)
+        if not self.test_suites:
+            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
+            return self.exitcode
+
+        summary = set()
+        for suite in self.test_suites:
+            summary |= suite.run(self)
 
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
         LOG_JOB.info('Test results available in %s', self.logdir)
-
-        if summary is None:
-            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
-            return self.exitcode
 
         if 'INTERRUPTED' in summary:
             self.exitcode |= exit_codes.AVOCADO_JOB_INTERRUPTED
