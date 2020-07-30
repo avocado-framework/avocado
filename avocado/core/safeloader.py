@@ -111,6 +111,12 @@ class PythonModule:
         if getattr(statement, 'module', None) is not None:
             module_path = statement.module.replace('.', os.path.sep)
             path = os.path.join(path, module_path)
+        else:
+            # Module has no name, its path is relative to the directory
+            # structure
+            level = getattr(statement, 'level', 0)
+            for _ in range(level - 1):
+                path = os.path.dirname(path)
         for name in statement.names:
             path = os.path.join(path, name.name.replace('.', os.path.sep))
             final_name = self._get_name_from_alias_statement(name)
