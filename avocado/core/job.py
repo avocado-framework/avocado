@@ -247,7 +247,7 @@ class Job:
         LOG_JOB.info("Command line: %s", cmdline)
         LOG_JOB.info('')
 
-    def _log_job_debug_info(self, variants):
+    def _log_job_debug_info(self):
         """
         Log relevant debug information to the job log.
         """
@@ -255,7 +255,8 @@ class Job:
         self._log_avocado_version()
         self._log_avocado_config()
         self._log_avocado_datadir()
-        self._log_variants(variants)
+        for suite in self.test_suites:
+            self._log_variants(suite.variants)
         self._log_tmp_dir()
         self._log_job_id()
 
@@ -547,11 +548,8 @@ class Job:
         """
         The actual test execution phase
         """
-        self._log_job_debug_info(self.test_suite.variants)
-        jobdata.record(self.config,
-                       self.logdir,
-                       self.test_suite.variants,
-                       sys.argv)
+        self._log_job_debug_info()
+        jobdata.record(self, sys.argv)
 
         if not self.test_suites:
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
