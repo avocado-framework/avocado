@@ -142,8 +142,9 @@ class XUnitResult(Result):
         if not result.tests_total:
             return
 
-        max_test_log_size = job.config.get('xunit.max_test_log_chars')
-        job_name = job.config.get('xunit.job_name')
+        max_test_log_size = job.config.get(
+            'job.run.result.xunit.max_test_log_chars')
+        job_name = job.config.get('job.run.result.xunit.job_name')
         content = self._render(result, max_test_log_size, job_name)
         if xunit_enabled == 'on':
             xunit_path = os.path.join(job.logdir, 'results.xml')
@@ -184,18 +185,18 @@ class XUnitInit(Init):
                     'Avocado job name which is always unique. This is useful '
                     'for reporting in Jenkins as it only evaluates '
                     'first-failure from jobs of the same name.')
-        settings.register_option(section='job.run.result.xunit',
+        settings.register_option(section=section,
                                  key='job_name',
                                  default=None,
                                  help_msg=help_msg)
 
         help_msg = ('Limit the attached job log to given number of characters '
                     '(k/m/g suffix allowed)')
-        settings.register_option(section='job.run.result.xunit',
+        settings.register_option(section=section,
                                  key='max_test_log_chars',
                                  help_msg=help_msg,
                                  key_type=lambda x: DataSize(x).b,
-                                 default='100000')
+                                 default=DataSize('100000').b)
 
 
 class XUnitCLI(CLI):
