@@ -8,47 +8,33 @@ Code example
 ~~~~~~~~~~~~
 
 Let's say you want to write a plugin that adds a new subcommand to the test
-runner, ``hello``. This is how you'd do it::
+runner, ``hello``. This is how you'd do it:
 
-    from avocado.core.output import LOG_JOB
-    from avocado.core.plugin_interfaces import CLICmd
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello/hello.py
 
+This plugins inherits from
+:class:`avocado.core.plugin_interfaces.CLICmd`.  This specific base
+class allows for the creation of new commands for the Avocado CLI
+tool. The only mandatory method to be implemented is :func:`run
+<avocado.core.plugin_interfaces.CLICmd.run>` and it's the plugin main
+entry point.
 
-    class HelloWorld(CLICmd):
+This plugin uses :py:data:`avocado.core.output.LOG_UI` to produce the hello
+world output in the console.
 
-        name = 'hello'
-        description = 'The classical Hello World! plugin example.'
-
-        def run(self, args):
-            LOG_JOB.info(self.description)
-
-As you can see, this plugins inherits from
-:class:`avocado.core.plugin_interfaces.CLICmd`.  This specific base class
-allows for the creation of new commands for the Avocado CLI tool. The only
-mandatory method to be implemented is :func:`run
-<avocado.core.plugin_interfaces.CLICmd.run>` and it's the plugin main entry
-point.
-
-This plugin uses :py:data:`avocado.core.output.LOG_JOB` to produce the hello
-world output in the Job log. One can also use
-:py:data:`avocado.core.output.LOG_UI` to produce output in the human readable
-output.
+.. note:: Different loggers can be used in other contexts and for
+          different purposes.  One such example is
+          :py:data:`avocado.core.output.LOG_JOB`, which can be used to
+          output to job log files when running a job.
 
 Registering Plugins
 ~~~~~~~~~~~~~~~~~~~
 
 Avocado makes use of the `setuptools` and its `entry points` to register and
 find Python objects. So, to make your new plugin visible to Avocado, you need
-to add to your setuptools based `setup.py` file something like::
+to add to your setuptools based `setup.py` file something like:
 
- setup(name='mypluginpack',
- ...
- entry_points={
-    'avocado.plugins.cli': [
-       'hello = mypluginpack.hello:HelloWorld',
-    ]
- }
- ...
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello/setup.py
 
 Then, by running either ``$ python setup.py install`` or ``$ python setup.py
 develop`` your plugin should be visible to Avocado.
