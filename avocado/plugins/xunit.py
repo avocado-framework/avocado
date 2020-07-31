@@ -195,7 +195,7 @@ class XUnitInit(Init):
                                  key='max_test_log_chars',
                                  help_msg=help_msg,
                                  key_type=lambda x: DataSize(x).b,
-                                 default='100000')
+                                 default=DataSize('100000').b)
 
 
 class XUnitCLI(CLI):
