@@ -20,9 +20,13 @@ Base classes for implementing the varianter interface
 """
 
 import hashlib
+import json
+import os
 
 from ..utils import astring
 from . import dispatcher, output, tree
+
+VARIANTS_FILENAME = 'variants.json'
 
 
 def is_empty_variant(variant):
@@ -361,6 +365,18 @@ class Varianter:
             yield {"variant": self._default_params.get_leaves(),
                    "variant_id": None,
                    "paths": ["/run/*"]}
+
+    @classmethod
+    def from_resultsdir(cls, resultsdir):
+        """
+        Retrieves the job variants object from the results directory.
+        """
+        path = os.path.join(resultsdir, 'jobdata', VARIANTS_FILENAME)
+        if not os.path.exists(path):
+            return None
+
+        with open(path, 'r') as variants_file:
+            return cls(state=json.load(variants_file))
 
     def __len__(self):
         return self._no_variants
