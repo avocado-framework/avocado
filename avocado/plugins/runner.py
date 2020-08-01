@@ -48,10 +48,6 @@ class TestRunner(Runner):
 
     DEFAULT_TIMEOUT = 86400
 
-    #: Mode in which this runner should iterate through tests and variants.
-    #: The allowed values are "variants-per-test" or "tests-per-variant"
-    DEFAULT_EXECUTION_ORDER = "variants-per-test"
-
     def __init__(self):
         """
         Creates an instance of TestRunner class.
@@ -365,8 +361,6 @@ class TestRunner(Runner):
             for test_factory in test_suite.tests:
                 test_factory[1]["base_logdir"] = job.logdir
                 test_factory[1]["job"] = job
-            if execution_order is None:
-                execution_order = self.DEFAULT_EXECUTION_ORDER
             for test_factory, variant in self._iter_suite(job,
                                                           test_suite,
                                                           execution_order):
