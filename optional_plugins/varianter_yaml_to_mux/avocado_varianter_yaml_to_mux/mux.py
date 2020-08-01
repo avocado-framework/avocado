@@ -163,8 +163,10 @@ class MuxPlugin:
         """
         self.root = root
         self.paths = paths
-        self.variant_ids = [varianter.generate_variant_id(variant)
-                            for variant in MuxTree(self.root)]
+        if self.root is not None:
+            self.variant_ids = [varianter.generate_variant_id(variant)
+                                for variant in MuxTree(self.root)]
+            self.variants = MuxTree(self.root)
 
     def __iter__(self):
         """

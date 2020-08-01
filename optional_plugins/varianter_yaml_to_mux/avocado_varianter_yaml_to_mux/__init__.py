@@ -473,11 +473,12 @@ class YamlToMux(mux.MuxPlugin, Varianter):
 
     def initialize(self, config):
         subcommand = config.get('subcommand')
-        data = mux.MuxTreeNode()
+        data = None
 
         # Merge the multiplex
         multiplex_files = config.get("yaml_to_mux.files")
         if multiplex_files:
+            data = mux.MuxTreeNode()
             try:
                 data.merge(create_from_yaml(multiplex_files))
             except IOError as details:
@@ -501,11 +502,13 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                 entry[2] = ast.literal_eval(entry[2])
             except (ValueError, SyntaxError, NameError, RecursionError):
                 pass
+            if data is None:
+                data = mux.MuxTreeNode()
             data.get_node(entry[0], True).value[entry[1]] = entry[2]
 
-        mux_filter_only = config.get('yaml_to_mux.filter_only')
-        mux_filter_out = config.get('yaml_to_mux.filter_out')
-        data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
-        if data != mux.MuxTreeNode():
+        if data is not None:
+            mux_filter_only = config.get('yaml_to_mux.filter_only')
+            mux_filter_out = config.get('yaml_to_mux.filter_out')
+            data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
             paths = config.get("yaml_to_mux.parameter_paths")
             self.initialize_mux(data, paths)
