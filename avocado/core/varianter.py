@@ -223,7 +223,6 @@ class Varianter:
         self._default_params = default_params
         self.default_params.clear()
         self._variant_plugins.map_method_with_return("initialize", config)
-        self._variant_plugins.map_method_with_return_copy("update_defaults", self._default_params)
         self._no_variants = sum(self._variant_plugins.map_method_with_return("__len__"))
 
     def is_parsed(self):

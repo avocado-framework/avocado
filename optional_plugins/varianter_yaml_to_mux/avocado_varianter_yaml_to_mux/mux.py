@@ -180,20 +180,6 @@ class MuxPlugin:
                    "variant": variant,
                    "paths": self.paths}
 
-    def update_defaults(self, defaults):
-        """
-        See
-        :meth:`avocado.core.plugin_interfaces.Varianter.update_defaults`
-        """
-        if self.root is None:
-            return
-        if self.default_params:
-            self.default_params.merge(defaults)
-        self.default_params = defaults
-        combination = defaults
-        combination.merge(self.root)
-        self.variants = MuxTree(combination)
-
     def to_str(self, summary, variants, **kwargs):
         """
         See :meth:`avocado.core.plugin_interfaces.Varianter.to_str`

@@ -229,8 +229,6 @@ class TestMuxTree(unittest.TestCase):
         mux2 = mux.MuxPlugin()
         mux1.initialize_mux(tree1, "")
         mux2.initialize_mux(tree2, "")
-        mux1.update_defaults(tree.TreeNode())
-        mux2.update_defaults(tree.TreeNode())
         variant1 = next(iter(mux1))
         variant2 = next(iter(mux2))
         self.assertNotEqual(variant1, variant2)

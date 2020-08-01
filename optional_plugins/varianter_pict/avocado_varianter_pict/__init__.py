@@ -183,9 +183,6 @@ class VarianterPict(Varianter):
     def __len__(self):
         return sum(1 for _ in self)
 
-    def update_defaults(self, defaults):
-        pass
-
     def to_str(self, summary, variants, **kwargs):
         """
         Return human readable representation

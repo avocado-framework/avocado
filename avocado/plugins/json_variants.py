@@ -109,9 +109,6 @@ class JsonVariants(Varianter):
 
         return len(self.variants)
 
-    def update_defaults(self, defaults):
-        pass
-
     def to_str(self, summary, variants, **kwargs):
         """
         Return human readable representation

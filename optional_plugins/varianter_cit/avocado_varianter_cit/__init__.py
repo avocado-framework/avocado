@@ -136,9 +136,6 @@ class VarianterCit(Varianter):
     def __len__(self):
         return sum(1 for _ in self.variants) if self.variants else 0
 
-    def update_defaults(self, defaults):
-        pass
-
     def to_str(self, summary, variants, **kwargs):
         """
         Return human readable representation

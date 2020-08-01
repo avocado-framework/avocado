@@ -40,16 +40,12 @@ Overall picture of how the params handling works is:
    +-------------------+ provide variants +-----------------------+
    |                   |<-----------------|                       |
    | Varianter API     |                  | Varianter plugins API |
-   |                   |----------------->|                       |
-   +-------------------+  update defaults +-----------------------+
-             ^                                ^
-             |                                |
-             |  // default params injected    |  // All plugins are invoked
-   +--------------------------------------+   |  // in turns
-   | +--------------+ +-----------------+ |   |
-   | | avocado-virt | | other providers | |   |
-   | +--------------+ +-----------------+ |   |
-   +--------------------------------------+   |
+   |                   |                  |                       |
+   +-------------------+                  +-----------------------+
+                                              ^
+                                              |
+                                              |  // All plugins are invoked
+                                              |  // in turns
                                               |
                  +----------------------------+-----+
                  |                                  |

@@ -177,9 +177,8 @@ Where:
   of the variant/value/environment as the value for listing purposes
   and is __NOT__ intended for test execution.
 
-This method must be called before the :ref:`varianter`'s second stage
-(the latest opportunity is during ``self.update_defaults``). The
-`MuxPlugin`_'s code will take care of the rest.
+This method must be called before the :ref:`varianter`'s second
+stage. The `MuxPlugin`_'s code will take care of the rest.
 
 MuxTree
 ~~~~~~~
