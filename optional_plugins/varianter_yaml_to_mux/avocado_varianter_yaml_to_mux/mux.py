@@ -150,7 +150,6 @@ class MuxPlugin:
     """
     root = None
     variants = None
-    default_params = None
     paths = None
     variant_ids = []
 

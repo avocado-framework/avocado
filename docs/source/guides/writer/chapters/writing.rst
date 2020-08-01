@@ -519,7 +519,7 @@ an example that does that::
         """
         def setUp(self):
             """
-            Set default params and build the synctest suite.
+            Set attributes from params and build the synctest suite.
             """
             sync_tarball = self.params.get('sync_tarball',
                                            default='synctest.tar.bz2')

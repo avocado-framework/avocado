@@ -205,8 +205,6 @@ Example workflow of `avocado run passtest.py -m example.yaml` is::
      |
      + parser.finish -> Varianter.__init__  // dispatcher initializes all plugins
      |
-     + $PLUGIN -> args.default_avocado_params.add_default_param  // could be used to insert default values
-     |
      + job.run_tests -> Varianter.is_parsed
      |
      + job.run_tests -> Varianter.parse

@@ -199,8 +199,6 @@ class Varianter:
         :note: it's necessary to check whether variants debug is enable
                in order to provide the right results.
         """
-        self.default_params = {}
-        self._default_params = None
         if state is None:
             self.debug = debug
             self.node_class = tree.TreeNodeDebug if debug else tree.TreeNode
@@ -217,11 +215,6 @@ class Varianter:
                        line parser, etc.
         :type config: dict
         """
-        default_params = self.node_class()
-        for default_param in self.default_params.values():
-            default_params.merge(default_param)
-        self._default_params = default_params
-        self.default_params.clear()
         self._variant_plugins.map_method_with_return("initialize", config)
         self._no_variants = sum(self._variant_plugins.map_method_with_return("__len__"))
 
@@ -230,26 +223,6 @@ class Varianter:
         Reports whether the varianter was already parsed
         """
         return self._no_variants is not None
-
-    def add_default_param(self, name, key, value, path=None):   # pylint: disable=E0202
-        """
-        Stores the path/key/value into default params
-
-        This allow injecting default arguments which are mainly intended for
-        machine/os-related params. It should not affect the test results
-        and by definition it should not affect the variant id.
-
-        :param name: Name of the component which injects this param
-        :param key: Key to which we'd like to assign the value
-        :param value: The key's value
-        :param path: Optional path to the node to which we assign the value,
-                     by default '/'.
-        """
-        if path is None:
-            path = "/"
-        if name not in self.default_params:
-            self.default_params[name] = self.node_class()
-        self.default_params[name].get_node(path, True).value[key] = value
 
     def to_str(self, summary=0, variants=0, **kwargs):
         """
@@ -263,7 +236,7 @@ class Varianter:
         :param kwargs: Other free-form arguments
         :rtype: str
         """
-        if self._no_variants == 0:  # No variants, only defaults:
+        if self._no_variants == 0:  # No variants
             return ""
 
         out = [item for item in self._variant_plugins.map_method_with_return("to_str",
@@ -352,8 +325,8 @@ class Varianter:
                              for variant in plugin_variants)
             for variant in iter(iter_variants):
                 yield variant
-        else:   # No variants, use template
-            yield {"variant": self._default_params.get_leaves(),
+        else:   # No real variants, but currently *something* needs to be returned
+            yield {"variant": self.node_class('').get_leaves(),
                    "variant_id": None,
                    "paths": ["/run/*"]}
 
