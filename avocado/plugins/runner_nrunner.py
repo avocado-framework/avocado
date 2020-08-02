@@ -77,12 +77,12 @@ class Runner(RunnerInterface):
         else:
             deadline = None
 
-        test_suite, _ = nrunner.check_tasks_requirements(test_suite)
-        job.result.tests_total = len(test_suite)  # no support for variants yet
+        test_suite.tests, _ = nrunner.check_tasks_requirements(test_suite.tests)
+        job.result.tests_total = test_suite.size  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
         no_digits = len(str(len(test_suite)))
 
-        for index, task in enumerate(test_suite, start=1):
+        for index, task in enumerate(test_suite.tests, start=1):
             if deadline is not None and time.time() > deadline:
                 break
 
