@@ -1090,6 +1090,13 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
+    @staticmethod
+    def _cmd_error_to_test_failure(cmd_error):
+        return ("Exited with status: '%u', stdout: %r stderr: %r" %
+                (cmd_error.result.exit_status, cmd_error.result.stdout_text,
+                 cmd_error.result.stderr_text))
+
+
     def _execute_cmd(self):
         """
         Run the executable, and log its detailed execution.
@@ -1107,7 +1114,8 @@ class SimpleTest(Test):
             self._log_detailed_cmd_info(result)
         except process.CmdError as details:
             self._log_detailed_cmd_info(details.result)
-            raise exceptions.TestFail(details)
+            test_failure = self._cmd_error_to_test_failure(details)
+            raise exceptions.TestFail(test_failure)
 
         warn_regex = self._config.get('simpletests.status.warn_regex')
         warn_location = self._config.get('simpletests.status.warn_location')
