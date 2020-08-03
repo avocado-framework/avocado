@@ -1,7 +1,7 @@
 .. _test-loaders:
 
-Undestanding the test discovery (Avocado Loaders)
-=================================================
+Understanding the test discovery (Avocado Loaders)
+==================================================
 
 In this section you can learn how tests are being discovered and how to
 customize this process.
