@@ -40,16 +40,12 @@ Overall picture of how the params handling works is:
    +-------------------+ provide variants +-----------------------+
    |                   |<-----------------|                       |
    | Varianter API     |                  | Varianter plugins API |
-   |                   |----------------->|                       |
-   +-------------------+  update defaults +-----------------------+
-             ^                                ^
-             |                                |
-             |  // default params injected    |  // All plugins are invoked
-   +--------------------------------------+   |  // in turns
-   | +--------------+ +-----------------+ |   |
-   | | avocado-virt | | other providers | |   |
-   | +--------------+ +-----------------+ |   |
-   +--------------------------------------+   |
+   |                   |                  |                       |
+   +-------------------+                  +-----------------------+
+                                              ^
+                                              |
+                                              |  // All plugins are invoked
+                                              |  // in turns
                                               |
                  +----------------------------+-----+
                  |                                  |
@@ -208,8 +204,6 @@ Example workflow of `avocado run passtest.py -m example.yaml` is::
    avocado run passtest.py -m example.yaml
      |
      + parser.finish -> Varianter.__init__  // dispatcher initializes all plugins
-     |
-     + $PLUGIN -> args.default_avocado_params.add_default_param  // could be used to insert default values
      |
      + job.run_tests -> Varianter.is_parsed
      |

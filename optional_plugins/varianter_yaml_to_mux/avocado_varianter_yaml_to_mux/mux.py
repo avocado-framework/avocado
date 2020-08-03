@@ -150,7 +150,6 @@ class MuxPlugin:
     """
     root = None
     variants = None
-    default_params = None
     paths = None
     variant_ids = []
 
@@ -163,8 +162,10 @@ class MuxPlugin:
         """
         self.root = root
         self.paths = paths
-        self.variant_ids = [varianter.generate_variant_id(variant)
-                            for variant in MuxTree(self.root)]
+        if self.root is not None:
+            self.variant_ids = [varianter.generate_variant_id(variant)
+                                for variant in MuxTree(self.root)]
+            self.variants = MuxTree(self.root)
 
     def __iter__(self):
         """
@@ -177,20 +178,6 @@ class MuxPlugin:
             yield {"variant_id": vid,
                    "variant": variant,
                    "paths": self.paths}
-
-    def update_defaults(self, defaults):
-        """
-        See
-        :meth:`avocado.core.plugin_interfaces.Varianter.update_defaults`
-        """
-        if self.root is None:
-            return
-        if self.default_params:
-            self.default_params.merge(defaults)
-        self.default_params = defaults
-        combination = defaults
-        combination.merge(self.root)
-        self.variants = MuxTree(combination)
 
     def to_str(self, summary, variants, **kwargs):
         """

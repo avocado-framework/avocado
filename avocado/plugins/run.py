@@ -24,8 +24,24 @@ from avocado.core import exit_codes, job, loader, output, parser_common_args
 from avocado.core.dispatcher import JobPrePostDispatcher
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.plugin_interfaces import CLICmd, Init
 from avocado.utils import process
+
+
+class RunInit(Init):
+
+    name = 'run'
+    description = 'Initializes the run options'
+
+    def initialize(self):
+        help_msg = ('Defines the order of iterating through test suite '
+                    'and test variants')
+        settings.register_option(section='run',
+                                 key='execution_order',
+                                 choices=('tests-per-variant',
+                                          'variants-per-test'),
+                                 default='variants-per-test',
+                                 help_msg=help_msg)
 
 
 class Run(CLICmd):
@@ -188,16 +204,9 @@ class Run(CLICmd):
                                          short_arg='-S',
                                          long_arg='--sysinfo')
 
-        help_msg = ('Defines the order of iterating through test suite '
-                    'and test variants')
-        settings.register_option(section='run',
-                                 key='execution_order',
-                                 choices=('tests-per-variant',
-                                          'variants-per-test'),
-                                 default=None,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--execution-order')
+        settings.add_argparser_to_option('run.execution_order',
+                                         parser=parser,
+                                         long_arg='--execution-order')
 
         parser.output = parser.add_argument_group('output and result format')
 

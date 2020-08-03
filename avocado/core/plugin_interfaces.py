@@ -257,14 +257,6 @@ class Varianter(Plugin):
         """
 
     @abc.abstractmethod
-    def update_defaults(self, defaults):
-        """
-        Add default values
-
-        :note: Those values should not be part of the variant_id
-        """
-
-    @abc.abstractmethod
     def to_str(self, summary, variants, **kwargs):
         """
         Return human readable representation

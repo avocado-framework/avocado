@@ -79,6 +79,7 @@ if __name__ == '__main__':
                   "tap = avocado.plugins.tap:TAPInit",
                   "jobscripts = avocado.plugins.jobscripts:JobScriptsInit",
                   "json_variants = avocado.plugins.json_variants:JsonVariantsInit",
+                  "run = avocado.plugins.run:RunInit",
               ],
               'avocado.plugins.cli': [
                   'wrapper = avocado.plugins.wrapper:Wrapper',

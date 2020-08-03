@@ -21,14 +21,13 @@ import json
 import os
 
 from ..utils.path import init_dir
-from . import varianter
 from .future.settings import settings
 from .output import LOG_JOB, LOG_UI
+from .varianter import VARIANTS_FILENAME
 
 JOB_DATA_DIR = 'jobdata'
 CONFIG_FILENAME = 'config'
 TEST_REFERENCES_FILENAME = 'test_references'
-VARIANTS_FILENAME = 'variants.json'
 PWD_FILENAME = 'pwd'
 JOB_CONFIG_FILENAME = 'args.json'
 CMDLINE_FILENAME = 'cmdline'
@@ -117,16 +116,6 @@ def get_variants_path(resultsdir):
     Retrieves the variants path from the results directory.
     """
     return _retrieve(resultsdir, VARIANTS_FILENAME)
-
-
-def retrieve_variants(resultsdir):
-    """
-    Retrieves the job variants object from the results directory.
-    """
-    recorded_variants = _retrieve(resultsdir, VARIANTS_FILENAME)
-    if recorded_variants:
-        with open(recorded_variants, 'r') as variants_file:
-            return varianter.Varianter(state=json.load(variants_file))
 
 
 def retrieve_job_config(resultsdir):

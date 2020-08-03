@@ -30,6 +30,7 @@ from avocado.core import data_dir, exit_codes, jobdata, output
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.varianter import Varianter
 
 
 class Diff(CLICmd):
@@ -387,7 +388,7 @@ class Diff(CLICmd):
     @staticmethod
     def _get_variants(resultsdir):
         results = []
-        variants = jobdata.retrieve_variants(resultsdir)
+        variants = Varianter.from_resultsdir(resultsdir)
         if variants is not None:
             results.extend(variants.to_str(variants=2).splitlines())
         else:
