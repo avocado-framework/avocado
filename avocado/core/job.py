@@ -74,7 +74,6 @@ class Job:
 
     Most of the time, we are interested in simply running tests,
     along with setup operations and event recording.
-    husa
     """
 
     def __init__(self, config=None):
