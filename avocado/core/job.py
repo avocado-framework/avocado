@@ -451,6 +451,9 @@ class Job:
                     pass
 
     def create_test_suite(self):
+        msg = ("create_test_suite() is deprecated. You can also create your "
+               "own suites with TestSuite() or TestSuite.from_config().")
+        warnings.warn(msg, DeprecationWarning)
         try:
             self.test_suite = TestSuite.from_config(self.config)
             if self.test_suite and self.test_suite.size == 0:
