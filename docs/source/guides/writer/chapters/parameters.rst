@@ -226,14 +226,10 @@ look like this::
 
    avocado run --replay latest -m example.yaml
      |
-     + $PLUGIN -> args.default_avocado_params.add_default_param  // could be used to insert default values
-     |
      + replay.run -> Varianter.is_parsed
      |
      + replay.run  // Varianter object is replaced with the replay job's one
      |             // Varianter.ignore_new_data is set
-     |
-     + $PLUGIN -> args.default_avocado_params.add_default_param  // is ignored as new data are not accepted
      |
      + job.run_tests -> Varianter.is_parsed
      |
@@ -248,32 +244,6 @@ The `Varianter`_ itself can only produce an empty variant with the
 of them reports variants it yields them instead of the default variant.
 
 
-
-Default params
-~~~~~~~~~~~~~~
-
-The `Default params`_ is a mechanism to specify default values in
-`Varianter`_ or `Varianter plugins`_. Their purpose is usually to
-define values dependent on the system which should not affect the
-test's results. One example is a qemu binary location which might
-differ from one host to another host, but in the end they should
-result in qemu being executable in test. For this reason the `Default
-params`_ do not affects the test's variant-id (at least not in the
-official `Varianter plugins`_).
-
-These params can be set from plugin/core by getting ``default_avocado_params``
-from ``args`` and using::
-
-    default_avocado_params.add_default_parma(self, name, key, value, path=None)
-
-Where:
-
-* name - name of the plugin which injects data (not yet used for anything,
-  but we plan to allow white/black listing)
-* key - the parameter's name
-* value - the parameter's value
-* path - the location of this parameter. When the path does not exists yet,
-  it's created out of `TreeNode`_.
 
 Test parameters
 ~~~~~~~~~~~~~~~
@@ -314,4 +284,3 @@ are used by `Varianter`_ to get test variants. For inspiration see
 :class:`avocado_varianter_yaml_to_mux.YamlToMux` which is an
 optional varianter plugin. Details about this plugin can be
 found here :ref:`yaml-to-mux-plugin`.
-
