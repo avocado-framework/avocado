@@ -378,6 +378,11 @@ class Job:
         return cls(job_config, suites)
 
     @property
+    def size(self):
+        """Job size is the sum of all test suites sizes."""
+        return sum([suite.size for suite in self.test_suites])
+
+    @property
     def test_parameters(self):
         """Placeholder for test parameters.
 
@@ -500,7 +505,7 @@ class Job:
         if self.time_start == -1:
             self.time_start = time.time()
         try:
-            self.create_test_suite()
+            self.result.tests_total = self.size
             self.pre_tests()
             return self.run_tests()
         except exceptions.JobBaseException as details:
