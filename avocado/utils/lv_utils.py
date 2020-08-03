@@ -327,15 +327,14 @@ def vg_create(vg_name, pv_list, force=False):
     """
     if vg_check(vg_name):
         raise LVException("Volume group '%s' already exist" % vg_name)
-    if force:
-        cmd = "vgcreate -f"
-    else:
-        cmd = "vgcreate"
+    cmd = "vgcreate"
     if isinstance(pv_list, list):
         pv_list = " ".join(pv_list)
     else:
         pv_list = str(pv_list)
     cmd += " %s %s" % (vg_name, pv_list)
+    if force:
+        cmd += "%s -f -y" % cmd
     process.run(cmd, sudo=True)
 
 
