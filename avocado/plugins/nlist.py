@@ -44,17 +44,6 @@ class List(CLICmd):
                                  parser=parser,
                                  positional_arg=True)
 
-        help_msg = ('Show extra information on resolution, besides '
-                    'sucessful resolutions')
-        settings.register_option(section='nlist',
-                                 key='verbose',
-                                 default=False,
-                                 key_type=bool,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--verbose',
-                                 short_arg='-V')
-
         help_msg = 'Writes runnable recipe files to a directory'
         settings.register_option(section='nlist.recipes',
                                  key='write_to_directory',
@@ -68,7 +57,7 @@ class List(CLICmd):
 
     def run(self, config):
         references = config.get('nlist.references')
-        verbose = config.get('nlist.verbose')
+        verbose = config.get('core.verbose')
         hint = None
         hint_filepath = '.avocado.hint'
         if os.path.exists(hint_filepath):
