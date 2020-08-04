@@ -88,7 +88,10 @@ class Runner(RunnerInterface):
 
             task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
             # this is all rubbish data
-            test_id = TestID(index, task.runnable.uri, None, no_digits)
+            test_id = TestID("{}-{}".format(test_suite.name, index),
+                             task.runnable.uri,
+                             None,
+                             no_digits)
             task.identifier = str(test_id)
             early_state = {
                 'name': test_id,

@@ -1,5 +1,5 @@
 from enum import Enum
-from uuid import uuid1
+from uuid import uuid4
 
 from .dispatcher import RunnerDispatcher
 from .exceptions import OptionValidationError
@@ -73,7 +73,7 @@ class TestSuite:
         except (LoaderUnhandledReferenceError, LoaderError) as details:
             raise TestSuiteError(details)
 
-        return cls(name=name or str(uuid1),
+        return cls(name=name or str(uuid4()),
                    config=config,
                    tests=tests)
 
@@ -84,7 +84,7 @@ class TestSuite:
         resolutions = resolve(references, ignore_missing=ignore_missing)
         tasks = resolutions_to_tasks(resolutions, config)
 
-        return cls(name=name or str(uuid1),
+        return cls(name=name or str(uuid4()),
                    config=config,
                    tests=tasks)
 
