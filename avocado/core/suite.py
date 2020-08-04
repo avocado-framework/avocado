@@ -159,6 +159,26 @@ class TestSuite:
 
     @classmethod
     def from_config(cls, config, name=None, job_config=None):
+        """Helper method to create a TestSuite from config dicts.
+
+        This is different from the TestSuite() initialization because here we
+        are assuming that you need some help to build the test suite. Avocado
+        will try to resolve tests based on the configuration information insead
+        of assuming pre populated tests.
+
+        If you need to create a custom TestSuite, please use the TestSuite()
+        constructor instead of this method.
+
+        :param config: A config dict to be used on the desired test suite.
+        :type config: dict
+        :param name: The name of the test suite. This is optional and default
+                     is a random uuid.
+        :type name: str
+        :param job_config: The job config dict (a global config). Use this to
+                           avoid huge configs per test suite. This is also
+                           optional.
+        :type job_config: dict
+        """
         if job_config:
             config.update(job_config)
         runner = config.get('run.test_runner') or 'runner'

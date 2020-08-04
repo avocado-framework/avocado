@@ -72,17 +72,40 @@ register_job_options()
 
 
 class Job:
-
-    """
-    A Job is a set of operations performed on a test machine.
+    """A Job is a set of operations performed on a test machine.
 
     Most of the time, we are interested in simply running tests,
     along with setup operations and event recording.
+
+    A job has multiple test suites attached to it. Please keep in mind that
+    when creating jobs from the constructor (`Job()`), we are assuming that you
+    would like to have control of the test suites and you are going to build
+    your own TestSuites.
+
+    If you would like any help to create the job's test_suites from the config
+    provided, please use `Job.from_config()` method and we are going to do our
+    best to create the test suites.
+
+    So, basically, as described we have two "main ways" to create a job:
+
+    1. Automatic discovery, using `from_config()` method::
+
+        job = Job.from_config(job_config=job_config,
+                              suites_configs=[suite_cfg1, suite_cfg2])
+
+    2. Manual or Custom discovery, using the constructor::
+
+        job = Job(config=config,
+                  test_suites=[suite1, suite2, suite3])
     """
 
     def __init__(self, config=None, test_suites=None):
-        """
-        Creates an instance of Job class.
+        """Creates an instance of Job class.
+
+        Note that `config` and `test_suites` are optional, if not passed you
+        need to change this before running your tests. Otherwise nothing will
+        run. If you need any help to create the test_suites from the config,
+        then use the `Job.from_config()` method.
 
         :param config: the job configuration, usually set by command
                        line options and argument parsing
@@ -370,6 +393,29 @@ class Job:
 
     @classmethod
     def from_config(cls, job_config, suites_configs=None):
+        """Helper method to create a job from config dicts.
+
+        This is different from the Job() initialization because here we are
+        assuming that you need some help to build the test suites. Avocado will
+        try to resolve tests based on the configuration information insead of
+        assuming pre populated test suites.
+
+        Keep in mind that here we are going to replace the suite.name with a
+        counter.
+
+        If you need create a custom Job with your own TestSuites, please use
+        the Job() constructor instead of this method.
+
+        :param job_config: A config dict to be used on this job and also as a
+                           'global' config for each test suite.
+        :type job_config: dict
+        :param suites_configs: A list of specific config dict to be used on
+                               each test suite. Each suite config will be
+                               merged with the job_config dict. If None is
+                               passed then this job will have only one
+                               test_suite with the same config as job_config.
+        :type suites_configs: list
+        """
         suites_configs = suites_configs or [deepcopy(job_config)]
         suites = []
         for index, config in enumerate(suites_configs, start=1):
@@ -394,7 +440,7 @@ class Job:
 
     @test_suite.setter
     def test_suite(self, var):
-        """Temporary setter. Suites should be setter from test_suites."""
+        """Temporary setter. Suites should be set from test_suites."""
         if self.test_suites:
             self.test_suites[0] = var
         else:
