@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-
 import sys
 
 from avocado.core.job import Job
-from avocado.core.suite import TestSuite
 
-config = {'run.references': ['examples/tests/passtest.py:PassTest.test']}
+job_config = {'run.test_runner': 'nrunner',
+              'run.references': ['examples/tests/passtest.py:PassTest.test']}
 
-suite = TestSuite.from_config(config)
-with Job(config, [suite]) as j:
-    sys.exit(j.run())
+# Automatic helper method (Avocado will try to discovery things from config
+# dicts. Since there is magic here, we dont need to pass suite names or suites,
+# and test/task id will be prepend with the suite index (in this case 1 and 2)
+
+job = Job.from_config(job_config=job_config)
+job.setup()
+sys.exit(job.run())
