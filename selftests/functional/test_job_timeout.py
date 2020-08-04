@@ -6,7 +6,7 @@ import xml.dom.minidom
 from avocado.core import exit_codes
 from avocado.utils import genio, process, script
 
-from .. import AVOCADO, BASEDIR, TestCaseTmpDir
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
 
 SCRIPT_CONTENT = """#!/bin/bash
 sleep 2
@@ -99,7 +99,9 @@ class JobTimeOutTest(TestCaseTmpDir):
                       "Traceback not present in the %sst test's debug.log:\n%s"
                       % (idx, debug_log))
 
+    @skipOnLevelsInferiorThan(1)
     def test_sleep_longer_timeout(self):
+        """:avocado: tags=parallel:1"""
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=5 %s examples/tests/passtest.py' %
                     (AVOCADO, self.tmpdir.name, self.script.path))
