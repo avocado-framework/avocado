@@ -167,10 +167,7 @@ class Job:
 
         # TODO: Fix this, this is one of the few cases where using the config
         # generated from the new settings with a hardcoded 'default' value
-        try:
-            store_logging_stream = self.config.get('run.store_logging_stream', [])
-        except AttributeError:
-            store_logging_stream = []
+        store_logging_stream = self.config.get('run.store_logging_stream', [])
 
         for name in store_logging_stream:
             name = re.split(r'(?<!\\):', name, maxsplit=1)
