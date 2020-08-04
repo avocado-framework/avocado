@@ -390,10 +390,38 @@ def early_start():
     logging.root.level = logging.DEBUG
 
 
+CONFIG = []
+
+
+def del_last_configuration():
+    if len(CONFIG) == 1:
+        return
+    configuration = CONFIG.pop()
+    for logger_name in configuration:
+        disable_log_handler(logger_name)
+    configuration = CONFIG[-1]
+    for logger_name, handlers in configuration.items():
+        logger = logging.getLogger(logger_name)
+        for handler in handlers:
+            logger.addHandler(handler)
+
+
 def reconfigure(args):
     """
     Adjust logging handlers accordingly to app args and re-log messages.
     """
+    def save_handler(logger_name, handler, configuration):
+        if logger_name not in configuration:
+            configuration[logger_name] = []
+        configuration[logger_name].append(handler)
+
+    # Delete last configuration
+    if len(CONFIG) != 0:
+        last_configuration = CONFIG[-1]
+        for logger_name in last_configuration:
+            disable_log_handler(logger_name)
+
+    configuration = {}
     # Reconfigure stream loggers
     enabled = args.get("core.show")
     if not isinstance(enabled, list):
@@ -424,6 +452,7 @@ def reconfigure(args):
         LOG_UI.addHandler(app_handler)
         LOG_UI.propagate = False
         LOG_UI.level = logging.DEBUG
+        save_handler(LOG_UI.name, app_handler, configuration)
     else:
         disable_log_handler(LOG_UI)
     app_err_handler = ProgressStreamHandler()
@@ -432,20 +461,25 @@ def reconfigure(args):
     app_err_handler.stream = STD_OUTPUT.stderr
     LOG_UI.addHandler(app_err_handler)
     LOG_UI.propagate = False
+    save_handler(LOG_UI.name, app_err_handler, configuration)
     if not os.environ.get("AVOCADO_LOG_EARLY"):
         LOG_JOB.getChild("stdout").propagate = False
         LOG_JOB.getChild("stderr").propagate = False
         if "early" in enabled:
-            add_log_handler("", logging.StreamHandler, STD_OUTPUT.stdout,
-                            logging.DEBUG)
-            add_log_handler(LOG_JOB, logging.StreamHandler,
-                            STD_OUTPUT.stdout, logging.DEBUG)
+            handler = add_log_handler("", logging.StreamHandler,
+                                      STD_OUTPUT.stdout, logging.DEBUG)
+            save_handler("", handler, configuration)
+            handler = add_log_handler(LOG_JOB, logging.StreamHandler,
+                                      STD_OUTPUT.stdout, logging.DEBUG)
+            save_handler(LOG_JOB.name, handler, configuration)
         else:
             disable_log_handler("")
     # Not enabled by env
     if not os.environ.get('AVOCADO_LOG_DEBUG'):
         if "debug" in enabled:
-            add_log_handler(LOG_UI.getChild("debug"), stream=STD_OUTPUT.stdout)
+            handler = add_log_handler(LOG_UI.getChild("debug"),
+                                      stream=STD_OUTPUT.stdout)
+            save_handler(LOG_UI.getChild("debug").name, handler, configuration)
         else:
             disable_log_handler(LOG_UI.getChild("debug"))
 
@@ -459,8 +493,9 @@ def reconfigure(args):
             level = (int(stream_level[1]) if stream_level[1].isdigit()
                      else logging.getLevelName(stream_level[1].upper()))
         try:
-            add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stdout,
-                            level)
+            handler = add_log_handler(name, logging.StreamHandler,
+                                      STD_OUTPUT.stdout, level)
+            save_handler(name, handler, configuration)
         except ValueError as details:
             LOG_UI.error("Failed to set logger for --show %s:%s: %s.",
                          name, level, details)
@@ -473,6 +508,8 @@ def reconfigure(args):
     # Log early_messages
     for record in MemStreamHandler.log:
         logging.getLogger(record.name).handle(record)
+
+    CONFIG.append(configuration)
 
 
 class FilterWarnAndMore(logging.Filter):

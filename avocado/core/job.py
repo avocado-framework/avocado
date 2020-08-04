@@ -139,11 +139,11 @@ class Job:
 
     def __enter__(self):
         self.setup()
-        if not output.STD_OUTPUT.configured:
-            output.reconfigure(self.config)
+        output.reconfigure(self.config)
         return self
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
+        output.del_last_configuration()
         self.cleanup()
 
     def __start_job_logging(self):
