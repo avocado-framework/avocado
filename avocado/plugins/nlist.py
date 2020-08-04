@@ -98,13 +98,13 @@ class List(CLICmd):
             if result.resolutions:
                 for runnable in result.resolutions:
 
-                    filter_by_tags = config.get('nlist.filter_by_tags')
+                    filter_by_tags = config.get('filter.by_tags.tags')
                     if filter_by_tags:
                         if not filter_test_tags_runnable(
                                 runnable,
                                 filter_by_tags,
-                                config.get('nlist.filter_by_tags_include_empty'),
-                                config.get('nlist.filter_by_tags_include_empty_key')):
+                                config.get('filter.by_tags.include_empty'),
+                                config.get('filter.by_tags.include_empty_key')):
                             continue
 
                     type_label = runnable.kind
