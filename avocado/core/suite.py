@@ -39,6 +39,7 @@ class TestSuite:
         self._variants = None
         self._references = None
         self._runner = None
+        self._test_parameters = None
 
         if (config.get('run.dry_run.enabled') and
                 self.config.get('run.test_runner') == 'runner'):
@@ -121,6 +122,19 @@ class TestSuite:
             return TestSuiteStatus.TESTS_FOUND
         else:
             return TestSuiteStatus.UNKNOWN
+
+    @property
+    def test_parameters(self):
+        """Placeholder for test parameters.
+
+        This is related to --test-parameters command line option or
+        (run.test_parameters).
+        """
+        if self._test_parameters is None:
+            self._test_parameters = {name: value for name, value
+                                     in self.config.get('run.test_parameters',
+                                                        [])}
+        return self._test_parameters
 
     @property
     def variants(self):

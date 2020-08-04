@@ -117,7 +117,6 @@ class Job:
         self.result = None
         self.interrupted_reason = None
 
-        self._test_parameters = None
         self._timeout = None
         self._unique_id = None
 
@@ -383,20 +382,6 @@ class Job:
     def size(self):
         """Job size is the sum of all test suites sizes."""
         return sum([suite.size for suite in self.test_suites])
-
-    @property
-    def test_parameters(self):
-        """Placeholder for test parameters.
-
-        This is related to --test-parameters command line option. They're kept
-        in the job because they will be prepared only once, since they are read
-        only and will be shared across all tests of a job.
-        """
-        if self._test_parameters is None:
-            self._test_parameters = {name: value for name, value
-                                     in self.config.get('run.test_parameters',
-                                                        [])}
-        return self._test_parameters
 
     @property
     def test_suite(self):
