@@ -289,6 +289,31 @@ class JobTest(unittest.TestCase):
         self.assertEqual(os.path.dirname(self.job.logdir), self.tmpdir.name)
         self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))
 
+    def test_job_suite_parent_config(self):
+        """This will test if test suites are inheriting configs from job."""
+        config = {'core.show': ['none'],
+                  'run.results_dir': self.tmpdir.name}
+
+        suite_config = {'run.references': ['/bin/true']}
+
+        # Manual/Custom method
+        suite = TestSuite('foo-test', config=suite_config, job_config=config)
+        self.job = job.Job(config, [suite])
+        self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+                         self.tmpdir.name)
+
+        # Automatic method passing suites
+        self.job = job.Job.from_config(job_config=config,
+                                       suites_configs=[suite_config])
+        self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+                         self.tmpdir.name)
+
+        # Automatic method passing only one config
+        config.update({'run.references': ['/bin/true']})
+        self.job = job.Job.from_config(job_config=config)
+        self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+                         self.tmpdir.name)
+
     def test_job_dryrun_no_base_logdir(self):
         config = {'core.show': ['none'],
                   'run.store_logging_stream': [],

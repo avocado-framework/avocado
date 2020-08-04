@@ -375,7 +375,8 @@ class Job:
     @classmethod
     def from_config(cls, job_config, suites_configs=None):
         suites_configs = suites_configs or [deepcopy(job_config)]
-        suites = [TestSuite.from_config(config) for config in suites_configs]
+        suites = [TestSuite.from_config(config, job_config=job_config)
+                  for config in suites_configs]
         return cls(job_config, suites)
 
     @property

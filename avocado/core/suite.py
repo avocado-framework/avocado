@@ -24,13 +24,15 @@ class TestSuiteStatus(Enum):
 
 
 class TestSuite:
-    def __init__(self, name, config, tests=None):
+    def __init__(self, name, config, tests=None, job_config=None):
         self.name = name
         self.tests = tests
 
         # Create a complete config dict with all registered options + custom
         # config
         self.config = settings.as_dict()
+        if job_config:
+            self.config.update(job_config)
         if config:
             self.config.update(config)
 
@@ -142,7 +144,9 @@ class TestSuite:
         return self.runner.run_suite(job, self)
 
     @classmethod
-    def from_config(cls, config, name=None):
+    def from_config(cls, config, name=None, job_config=None):
+        if job_config:
+            config.update(job_config)
         runner = config.get('run.test_runner') or 'runner'
         if runner == 'nrunner':
             suite = cls._from_config_with_resolver(config, name)
