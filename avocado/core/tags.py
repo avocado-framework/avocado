@@ -156,24 +156,25 @@ def filter_test_tags_runnable(runnable, filter_by_tags, include_empty=False,
     :type include_empty_key: bool
     """
     must_must_nots = _parse_filter_by_tags(filter_by_tags)
+    runnable_tags = runnable.tags or {}
 
-    if not runnable.tags:
+    if not runnable_tags:
         if include_empty:
             return True
 
     for must, must_not in must_must_nots:
-        if must_not.intersection(runnable.tags):
+        if must_not.intersection(runnable_tags):
             continue
 
         must_flat, must_key_val = _must_split_flat_key_val(must)
         if must_key_val:
             if not _must_key_val_matches(must_key_val,
-                                         runnable.tags,
+                                         runnable_tags,
                                          include_empty_key):
                 continue
 
         if must_flat:
-            if not must_flat.issubset(runnable.tags):
+            if not must_flat.issubset(runnable_tags):
                 continue
 
         return True

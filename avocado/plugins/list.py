@@ -121,12 +121,12 @@ class TestLister:
     def _list(self):
         self._extra_listing()
         test_suite = self._get_test_suite(self.config.get('list.references'))
-        if self.config.get('list.filter_by_tags'):
+        if self.config.get('filter.by_tags.tags'):
             test_suite = tags.filter_test_tags(
                 test_suite,
-                self.config.get('list.filter_by_tags'),
-                self.config.get('list.filter_by_tags_include_empty'),
-                self.config.get('list.filter_by_tags_include_empty_key'))
+                self.config.get('filter.by_tags.tags'),
+                self.config.get('filter_by_tags.include_empty'),
+                self.config.get('filter_by_tags.include_empty_key'))
         test_matrix, stats, tag_stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats, tag_stats)
 
