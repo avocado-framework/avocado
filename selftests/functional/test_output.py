@@ -12,7 +12,7 @@ from avocado.utils import genio
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
 
-from .. import AVOCADO, TestCaseTmpDir
+from .. import AVOCADO, TestCaseTmpDir, skipUnlessPathExists
 
 # AVOCADO may contain more than a single command, as it can be
 # prefixed by the Python interpreter
@@ -121,6 +121,41 @@ class OutputCheckOnOff(Test):
         process.run(cmd % ('stderr', '__STDERR_DO_RECORD_CONTENT__'))
 """
 
+OUTPUT_SHOW_TEST = """
+#!/usr/bin/env python3
+
+import sys
+
+from avocado import Test
+from avocado.core.job import Job
+
+
+class PassTest(Test):
+    def test1(self):
+        config = {'core.show': ['none'],
+                  'run.references': ['/bin/true']}
+        with Job(config) as j:
+            j.run()
+
+    def test2(self):
+        config = {'core.show': ['app'],
+                  'run.references': ['/bin/true']}
+        with Job(config) as j:
+            j.run()
+
+    def test3(self):
+        config = {'core.show': ['none'],
+                  'run.references': ['/bin/true']}
+        with Job(config) as j:
+            j.run()
+
+
+if __name__ == '__main__':
+    config = {'run.references': [__file__],
+              'core.show': ['app']}
+    with Job(config) as j:
+        sys.exit(j.run())
+"""
 
 def perl_tap_parser_uncapable():
     return os.system("perl -e 'use TAP::Parser;'") != 0
@@ -262,6 +297,22 @@ class OutputTest(TestCaseTmpDir):
             with open(stderr_path, 'r') as stderr:
                 self.assertEqual(stderr.read(),
                                  '__STDERR_CONTENT____STDERR_DO_RECORD_CONTENT__')
+
+    @skipUnlessPathExists('/bin/true')
+    def test_show(self):
+        """
+        Checks if `core.show` is respected in different configurations.
+        """
+        with script.Script(os.path.join(self.tmpdir.name, "test_show.py"),
+                           OUTPUT_SHOW_TEST, script.READ_ONLY_MODE) as test:
+            cmd = "%s run %s" % (AVOCADO, test.path)
+            result = process.run(cmd)
+            expected_job_id_number = 2
+            expected_bin_true_number = 1
+            job_id_number = result.stdout_text.count('JOB ID')
+            bin_true_number = result.stdout_text.count('/bin/true')
+            self.assertEqual(expected_job_id_number, job_id_number)
+            self.assertEqual(expected_bin_true_number, bin_true_number)
 
     def tearDown(self):
         self.tmpdir.cleanup()
