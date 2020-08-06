@@ -348,7 +348,8 @@ class PMem:
         :param namespace: Write the infoblock to given namespace
         :param stdout: Write the infoblock to stdout if True
         :param output: Write the infoblock to the file path specified
-        :param **kwargs:
+        :param kwargs:
+
         Example:
            pmem.write_infoblock(namespace=ns_name, align=align,
                                 size=size, mode='devdax')
@@ -394,7 +395,8 @@ class PMem:
 
         :param namespace: Read the infoblock from given namespace
         :param inp_file: Input file to read the infoblock from
-        :param **kwargs:
+        :param kwargs:
+
         Example:
            self.plib.read_infoblock(namespace=ns_name, json_form=True)
 
