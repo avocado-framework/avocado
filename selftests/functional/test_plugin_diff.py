@@ -16,7 +16,7 @@ class DiffTests(TestCaseTmpDir):
         test = script.make_script(os.path.join(self.tmpdir.name, 'test'), 'exit 0')
         cmd_line = ('%s run %s '
                     '--external-runner /bin/bash '
-                    '--job-results-dir %s --sysinfo=off --json -' %
+                    '--job-results-dir %s --disable-sysinfo --json -' %
                     (AVOCADO, test, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -25,7 +25,7 @@ class DiffTests(TestCaseTmpDir):
         self.tmpdir2 = tempfile.TemporaryDirectory(prefix=self.tmpdir.name)
         cmd_line = ('%s run %s '
                     '--external-runner /bin/bash '
-                    '--job-results-dir %s --sysinfo=off --json -' %
+                    '--job-results-dir %s --disable-sysinfo --json -' %
                     (AVOCADO, test, self.tmpdir2.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)

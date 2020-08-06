@@ -87,8 +87,8 @@ Options for subcommand `run` (`avocado run --help`)::
                             test.
       --keep-tmp {on,off}   Keep job temporary files (useful for avocado
                             debugging). Defaults to off.
-      --sysinfo {on,off}    Enable or disable system information (hardware
-                            details, profilers, etc.). Current: on
+      --disable-sysinfo     Enable or disable sysinfo information. Like hardware
+                            details, profiles, etc.
       --execution-order {tests-per-variant,variants-per-test}
                             How to iterate through test suite and variants
 

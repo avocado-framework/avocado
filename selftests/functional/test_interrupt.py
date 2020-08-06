@@ -112,7 +112,7 @@ class InterruptTest(TestCaseTmpDir):
         bad_test.save()
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -160,7 +160,7 @@ class InterruptTest(TestCaseTmpDir):
         bad_test.save()
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -200,7 +200,7 @@ class InterruptTest(TestCaseTmpDir):
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -244,7 +244,7 @@ class InterruptTest(TestCaseTmpDir):
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,

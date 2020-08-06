@@ -200,9 +200,8 @@ class Run(CLICmd):
 
         settings.add_argparser_to_option(namespace='sysinfo.collect.enabled',
                                          parser=parser,
-                                         choices=('on', 'off'),
-                                         short_arg='-S',
-                                         long_arg='--sysinfo')
+                                         action='store_false',
+                                         long_arg='--disable-sysinfo')
 
         settings.add_argparser_to_option('run.execution_order',
                                          parser=parser,
@@ -286,7 +285,7 @@ class Run(CLICmd):
             process.OUTPUT_CHECK_RECORD_MODE = check_record
 
         warnings.warn("The following arguments will be changed to boolean soon: "
-                      "sysinfo, output-check, failfast and keep-tmp. ",
+                      "output-check, failfast and keep-tmp. ",
                       FutureWarning)
 
         unique_job_id = config.get('run.unique_job_id')

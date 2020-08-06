@@ -32,7 +32,7 @@ class YamlLoaderTests(unittest.TestCase):
         tests = [b"PASSTEST.PY PREFIX: passtest.py:PassTest.test",
                  b"passtest.sh", b"executes bin true"]
         not_tests = [b"failtest.py"]
-        cmd = ('%s run --sysinfo=off --job-results-dir %s -- '
+        cmd = ('%s run --disable-sysinfo --job-results-dir %s -- '
                'optional_plugins/loader_yaml/tests/.data/two_tests.yaml'
                % (AVOCADO, self.tmpdir.name))
         res = self.run_and_check(cmd, exit_codes.AVOCADO_ALL_OK, tests,
@@ -45,7 +45,7 @@ class YamlLoaderTests(unittest.TestCase):
                 break
         else:
             self.fail("Unable to find 'JOB LOG' in:\n%s" % res)
-        cmd = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd = ('%s run --disable-sysinfo --job-results-dir %s '
                '--replay %s' % (AVOCADO, self.tmpdir.name, srcjob.decode('utf-8')))
         self.run_and_check(cmd, exit_codes.AVOCADO_ALL_OK, tests, not_tests)
 
