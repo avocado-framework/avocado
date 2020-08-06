@@ -210,19 +210,19 @@ class Replay(CLI):
             config['replay_sourcejob'] = id_file.read().strip()
 
         replay_config = jobdata.retrieve_job_config(resultsdir)
-        whitelist = ['loaders',
-                     'external_runner',
-                     'external_runner_testdir',
-                     'external_runner_chdir',
-                     'failfast',
-                     'ignore_missing_references',
-                     'execution_order']
+        overridables = ['loaders',
+                        'external_runner',
+                        'external_runner_testdir',
+                        'external_runner_chdir',
+                        'failfast',
+                        'ignore_missing_references',
+                        'execution_order']
         if replay_config is None:
             LOG_UI.warn('Source job config data not found. These options will '
                         'not be loaded in this replay job: %s',
-                        ', '.join(whitelist))
+                        ', '.join(overridables))
         else:
-            for option in whitelist:
+            for option in overridables:
                 optvalue = config.get(option, None)
                 # Temporary, this will be removed soon
                 if option in ['failfast',
