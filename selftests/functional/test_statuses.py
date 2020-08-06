@@ -132,7 +132,7 @@ class TestStatuses(TestCaseTmpDir):
                                                  ".data",
                                                  'test_statuses.py'))
 
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s --json -' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s --json -' %
                (AVOCADO, test_file, self.tmpdir.name))
 
         results = process.run(cmd, ignore_status=True)

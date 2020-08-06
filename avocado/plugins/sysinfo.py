@@ -33,10 +33,9 @@ class SysinfoInit(Init):
                     'details, profiles, etc.')
         settings.register_option(section='sysinfo.collect',
                                  key='enabled',
-                                 default='on',
-                                 key_type=str,
-                                 help_msg=help_msg,
-                                 choices=('on', 'off'))
+                                 default=True,
+                                 key_type=bool,
+                                 help_msg=help_msg)
 
         help_msg = 'Enable sysinfo collection per-test'
         settings.register_option(section='sysinfo.collect',
@@ -134,7 +133,7 @@ class SysInfoJob(JobPreTests, JobPostTests):
 
     def __init__(self, config):
         self.sysinfo = None
-        self.sysinfo_enabled = config.get('sysinfo.collect.enabled') == 'on'
+        self.sysinfo_enabled = config.get('sysinfo.collect.enabled')
 
     def _init_sysinfo(self, job_logdir):
         if self.sysinfo is None:

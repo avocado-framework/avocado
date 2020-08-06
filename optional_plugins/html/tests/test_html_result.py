@@ -33,7 +33,7 @@ class HtmlResultTest(unittest.TestCase):
         self.assertIn("\n# debug.log of ", tap)
 
     def test_output_incompatible_setup(self):
-        cmd_line = ('avocado run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('avocado run --job-results-dir %s --disable-sysinfo '
                     '--html - passtest.py' % self.tmpdir.name)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
@@ -51,7 +51,7 @@ class HtmlResultTest(unittest.TestCase):
         tmpfile2 = tempfile.mktemp(prefix=prefix, dir=self.tmpdir.name)
         tmpdir = tempfile.mkdtemp(prefix=prefix, dir=self.tmpdir.name)
         tmpfile3 = os.path.join(tmpdir, "result.html")
-        cmd_line = ('avocado run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('avocado run --job-results-dir %s --disable-sysinfo '
                     '--xunit %s --json %s --html %s --tap-include-logs '
                     'passtest.py' % (self.tmpdir.name, tmpfile, tmpfile2, tmpfile3))
         result = process.run(cmd_line, ignore_status=True)

@@ -239,7 +239,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
         self.assertIn(b'SIMPLE: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' -- '%s'"
                     % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
@@ -255,13 +255,13 @@ class LoaderTestFunctional(TestCaseTmpDir):
         os.chdir(BASEDIR)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' -- '%s'"
                     % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
     def test_python_unittest(self):
         test_path = os.path.join(BASEDIR, "selftests", ".data", "unittests.py")
-        cmd = ("%s run --sysinfo=off --job-results-dir %s --json - -- %s"
+        cmd = ("%s run --disable-sysinfo --job-results-dir %s --json - -- %s"
                % (AVOCADO, self.tmpdir.name, test_path))
         result = process.run(cmd, ignore_status=True)
         jres = json.loads(result.stdout_text)
