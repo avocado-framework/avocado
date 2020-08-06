@@ -502,8 +502,11 @@ class Settings:
             What is the key name of your option inside that section.
 
         default : typeof(key_type)
-            What is the default value of your option if the key is not present
-            inside the section on all configuration files.
+            The default value of an option. It sets the option value when the
+            key is not defined in any configuration files or via command-line.
+            The default value should be "processed". It means the value should
+            match the type of key_type. Due to some internal limitations, the
+            Settings module will not apply key_type to the default value.
 
         help_msg : str
             The help message that will be displayed at command-line (-h) and
