@@ -236,7 +236,6 @@ def _mapping_to_tree_loader(loader, node, looks_like_node=False):
         return collections.OrderedDict(_value)
 
     objects = ListOfNodeObjects()
-    looks_like_node = False
     for name, values in _value:
         if isinstance(values, ListOfNodeObjects):   # New node from list
             objects.append(_tree_node_from_values(loader.path, name,
