@@ -85,8 +85,8 @@ Options for subcommand `run` (`avocado run --help`)::
                             (seconds), m (minutes), h (hours).
       --failfast {on,off}   Enable or disable the job interruption on first failed
                             test.
-      --keep-tmp {on,off}   Keep job temporary files (useful for avocado
-                            debugging). Defaults to off.
+      --keep-tmp            Keep job temporary files (useful for avocado
+                            debugging).
       --disable-sysinfo     Enable or disable sysinfo information. Like hardware
                             details, profiles, etc.
       --execution-order {tests-per-variant,variants-per-test}

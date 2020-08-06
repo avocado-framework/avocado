@@ -177,12 +177,12 @@ class Run(CLICmd):
                                  parser=parser,
                                  long_arg='--failfast')
 
-        help_msg = ('Keep job temporary files (useful for avocado debugging). '
-                    '"on" and "off" will be deprecated soon.')
+        help_msg = 'Keep job temporary files (useful for avocado debugging).'
         settings.register_option(section='run',
                                  key='keep_tmp',
-                                 choices=('on', 'off'),
-                                 default='off',
+                                 default=False,
+                                 key_type=bool,
+                                 action='store_true',
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--keep-tmp')
@@ -285,7 +285,7 @@ class Run(CLICmd):
             process.OUTPUT_CHECK_RECORD_MODE = check_record
 
         warnings.warn("The following arguments will be changed to boolean soon: "
-                      "output-check, failfast and keep-tmp. ",
+                      "output-check and failfast.",
                       FutureWarning)
 
         unique_job_id = config.get('run.unique_job_id')

@@ -576,7 +576,7 @@ class Job:
         self.__start_job_logging()
         self._setup_job_category()
         # Use "logdir" in case "keep_tmp" is enabled
-        if self.config.get('run.keep_tmp') == 'on':
+        if self.config.get('run.keep_tmp'):
             base_tmpdir = self.logdir
         else:
             base_tmpdir = data_dir.get_tmp_dir()
