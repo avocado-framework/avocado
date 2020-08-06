@@ -86,7 +86,7 @@ if __name__ == '__main__':
                   'xunit = avocado.plugins.xunit:XUnitCLI',
                   'json = avocado.plugins.jsonresult:JSONCLI',
                   'journal = avocado.plugins.journal:Journal',
-                  'replay = avocado.plugins.replay:Replay',
+                  'replay_legacy = avocado.plugins.legacy.replay:Replay',
                   'tap = avocado.plugins.tap:TAP',
                   'zip_archive = avocado.plugins.archive:ArchiveCLI',
                   'json_variants = avocado.plugins.json_variants:JsonVariantsCLI',
