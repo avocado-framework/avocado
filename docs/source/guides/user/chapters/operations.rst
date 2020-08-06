@@ -4,6 +4,63 @@ Basic Operations
 Job Replay
 ----------
 
+The process of replaying an Avocado Job is simply about loading the
+source Job's configuration and running a new Job based on that
+configuration.
+
+For users, this is available as the ``avocado replay`` command.  Its
+usage is straightforward.  Suppose you've just run a simple job, also
+from the command line, such as::
+
+  $ avocado run /bin/true /bin/false
+  JOB ID     : 42c60bea72e6d55756bfc784eb2b354f788541cf
+  JOB LOG    : $HOME/avocado/job-results/job-2020-08-13T11.23-42c60be/job.log
+   (1/2) /bin/true: PASS (0.01 s)
+   (2/2) /bin/false: FAIL: Exited with status: '1', stdout: '' stderr: '' (0.08 s)
+  RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+  JOB HTML   : $HOME/avocado/job-results/job-2020-08-13T11.23-42c60be/results.html
+  JOB TIME   : 0.41 s
+
+To run a new job with the configuration used by the previously executed job,
+it's possible to simply execute::
+
+  $ avocado replay
+
+Resulting in::
+
+  JOB ID     : f3139826f1b169a0b456e0e880ffb83ed26d9858
+  SRC JOB ID : latest
+  JOB LOG    : /home/cleber/avocado/job-results/job-2020-08-13T11.24-f313982/job.log
+   (1/2) /bin/true: PASS (0.01 s)
+   (2/2) /bin/false: FAIL: Exited with status: '1', stdout: '' stderr: '' (0.07 s)
+  RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+  JOB HTML   : /home/cleber/avocado/job-results/job-2020-08-13T11.24-f313982/results.html
+  JOB TIME   : 0.39 s
+
+It's also possible to use the other types of references to jobs, like
+the full directory path of the job results, or the Job IDs.  That is,
+you can use the same references used in other commands such as
+``avocado jobs show``.
+
+Legacy Job Replay
+~~~~~~~~~~~~~~~~~
+
+.. warn:: This legacy version is expected to be removed in future versions.
+
+Avocado's first, and now legacy, job replay version is based on the
+``run`` command.  It supports more command line options and use cases
+than the newer implementation discussed earlier, but it has some cons:
+
+* It's not clear if options given to ``avocado run --replay`` are about
+  the replayed job or if overriding aspects of the source job
+
+* The implementation has to account for each of the options capable of
+  being overriden
+
+It's expected that more complex use cases for Jobs, including replays,
+should instead use the Job API directly.  Regardless, the remainder of
+this section documents its behavior.
+
 In order to reproduce a given job using the same data, one can use the
 ``--replay`` option for the ``run`` command, informing the hash id from the
 original job to be replayed. The hash id can be partial, as long as the
