@@ -1,11 +1,12 @@
+*************************
 Writing an Avocado plugin
--------------------------
+*************************
 
 What better way to understand how an Avocado plugin works than creating one?
 Let's use another old time favorite for that, the "Print hello world" theme.
 
 Code example
-~~~~~~~~~~~~
+============
 
 Let's say you want to write a plugin that adds a new subcommand to the test
 runner, ``hello``. This is how you'd do it:
@@ -28,7 +29,7 @@ world output in the console.
           output to job log files when running a job.
 
 Registering Plugins
-~~~~~~~~~~~~~~~~~~~
+===================
 
 Avocado makes use of the `setuptools` and its `entry points` to register and
 find Python objects. So, to make your new plugin visible to Avocado, you need
@@ -40,7 +41,7 @@ Then, by running either ``$ python setup.py install`` or ``$ python setup.py
 develop`` your plugin should be visible to Avocado.
 
 Namespace
-~~~~~~~~~
+=========
 
 The plugin registry mentioned earlier, (`setuptools` and its `entry points`) is
 global to a given Python installation.  Avocado uses the namespace prefix
@@ -66,7 +67,7 @@ name is going to be ``job.prepost.jobscripts``.
 
 
 Plugin config files
-~~~~~~~~~~~~~~~~~~~
+===================
 
 Plugins can extend the list of config files parsed by ``Settings`` objects by
 dropping the individual config files into ``/etc/avocado/conf.d``
