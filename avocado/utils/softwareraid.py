@@ -72,7 +72,7 @@ class SoftwareRaid:
         :type disk: str
 
         :return: True if add is successful, False otherwise.
-        rtype: bool
+        :rtype: bool
         """
         cmd = "mdadm %s --add %s" % (self.name, disk)
         return self._run_command(cmd)
@@ -151,7 +151,7 @@ class SoftwareRaid:
         :type disk: str
 
         :return: True if remove is successful, False otherwise.
-        rtype: bool
+        :rtype: bool
         """
         cmd = "mdadm %s --fail %s --remove %s" % (self.name, disk, disk)
         return self._run_command(cmd)
