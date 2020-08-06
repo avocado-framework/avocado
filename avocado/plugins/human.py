@@ -38,6 +38,8 @@ class Human(ResultEvents):
         if not self.owns_stdout:
             return
         LOG_UI.info("JOB ID     : %s", job.unique_id)
+        # TODO: this is part of the legacy implementation of the
+        # replay plugin and should be removed soon.
         replay_source_job = job.config.get("replay_sourcejob", False)
         if replay_source_job:
             LOG_UI.info("SRC JOB ID : %s", replay_source_job)
