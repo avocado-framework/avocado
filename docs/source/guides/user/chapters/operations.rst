@@ -82,8 +82,9 @@ Of which one special example is ``--replay-test-status INTERRUPTED`` or simply
 which were CANCELED or not executed after a CANCELED test. This feature should
 work even on hard interruptions like system crash.
 
-When replaying jobs that were executed with the ``--failfast on`` option, you
-can disable the ``failfast`` option using ``--failfast off`` in the replay job.
+.. note:: Avocado versions 80.0 and earlier allowed replayed jobs to override
+          the failfast configuration by setting ``--failfast=off`` in a
+          ``avocado run --replay ..`` command line.  This is no longer possible.
 
 To be able to replay a job, Avocado records the job data in the same job
 results directory, inside a subdirectory named ``replay``. If a given job has a
