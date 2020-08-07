@@ -102,13 +102,13 @@ class JobTimeOutTest(TestCaseTmpDir):
     @skipOnLevelsInferiorThan(1)
     def test_sleep_longer_timeout(self):
         """:avocado: tags=parallel:1"""
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--xunit - --job-timeout=5 %s examples/tests/passtest.py' %
                     (AVOCADO, self.tmpdir.name, self.script.path))
         self.run_and_check(cmd_line, 0, 2, 0, 0, 0)
 
     def test_sleep_short_timeout(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--xunit - --job-timeout=1 %s examples/tests/passtest.py' %
                     (AVOCADO, self.tmpdir.name, self.script.path))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED,
@@ -116,7 +116,7 @@ class JobTimeOutTest(TestCaseTmpDir):
         self._check_timeout_msg(1)
 
     def test_sleep_short_timeout_with_test_methods(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--xunit - --job-timeout=1 %s' %
                     (AVOCADO, self.tmpdir.name, self.py.path))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED,
@@ -124,13 +124,13 @@ class JobTimeOutTest(TestCaseTmpDir):
         self._check_timeout_msg(1)
 
     def test_invalid_values(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--job-timeout=1,5 examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
         self.assertIn(b'invalid time_to_seconds value', result.stderr)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--job-timeout=123x examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
@@ -138,22 +138,22 @@ class JobTimeOutTest(TestCaseTmpDir):
         self.assertIn(b'invalid time_to_seconds', result.stderr)
 
     def test_valid_values(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--job-timeout=123 examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--job-timeout=123s examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--job-timeout=123m examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--job-timeout=123h examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)

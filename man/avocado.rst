@@ -83,12 +83,12 @@ Options for subcommand `run` (`avocado run --help`)::
                             are allowed to execute. Values <= zero means "no
                             timeout". You can also use suffixes, like: s
                             (seconds), m (minutes), h (hours).
-      --failfast {on,off}   Enable or disable the job interruption on first failed
+      --failfast            Enable the job interruption on first failed test.
                             test.
-      --keep-tmp {on,off}   Keep job temporary files (useful for avocado
-                            debugging). Defaults to off.
-      --sysinfo {on,off}    Enable or disable system information (hardware
-                            details, profilers, etc.). Current: on
+      --keep-tmp            Keep job temporary files (useful for avocado
+                            debugging).
+      --disable-sysinfo     Enable or disable sysinfo information. Like hardware
+                            details, profiles, etc.
       --execution-order {tests-per-variant,variants-per-test}
                             How to iterate through test suite and variants
 
@@ -145,11 +145,10 @@ Options for subcommand `run` (`avocado run --help`)::
                             all (record both stdout and stderr), stdout (record
                             only stderr), stderr (record only stderr). Current:
                             none
-      --output-check {on,off}
-                            Enable or disable test output (stdout/stderr) check.
-                            If this option is off, no output will be checked, even
-                            if there are reference files present for the test.
-                            Current: on (output check enabled)
+      --disable-output-check
+                            Disables test output (stdout/stderr) check. If this
+                            option is given, no output will be checked, even if
+                            there are reference files present for the test.
 
     loader options:
       --loaders [LOADERS [LOADERS ...]]

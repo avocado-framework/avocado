@@ -263,7 +263,7 @@ class TestRunner(Runner):
         elif not mapping[test_state['status']]:
             summary.add("FAIL")
 
-            if job.config.get('run.failfast') == 'on':
+            if job.config.get('run.failfast'):
                 summary.add("INTERRUPTED")
                 job.interrupted_reason = "Interrupting job (failfast)."
                 return False

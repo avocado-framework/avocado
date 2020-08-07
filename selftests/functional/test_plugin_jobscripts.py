@@ -65,7 +65,7 @@ class JobScriptsTest(TestCaseTmpDir):
                                                                self.post_dir))
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
-                   '--sysinfo=off %s'
+                   '--disable-sysinfo %s'
                    % (AVOCADO, config, self.tmpdir.name, test_check_touch))
             result = process.run(cmd)
 
@@ -88,7 +88,7 @@ class JobScriptsTest(TestCaseTmpDir):
                                         SCRIPT_NON_ZERO_CFG % self.pre_dir)
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
-                   '--sysinfo=off passtest.py' % (AVOCADO, config,
+                   '--disable-sysinfo passtest.py' % (AVOCADO, config,
                                                   self.tmpdir.name))
             result = process.run(cmd)
 
@@ -111,7 +111,7 @@ class JobScriptsTest(TestCaseTmpDir):
                                         SCRIPT_NON_EXISTING_DIR_CFG % self.pre_dir)
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
-                   '--sysinfo=off passtest.py' % (AVOCADO, config,
+                   '--disable-sysinfo passtest.py' % (AVOCADO, config,
                                                   self.tmpdir.name))
             result = process.run(cmd)
 

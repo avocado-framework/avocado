@@ -227,7 +227,7 @@ class TestSkipDecorators(TestCaseTmpDir):
     def test_skip_decorators(self):
         cmd_line = [AVOCADO,
                     'run',
-                    '--sysinfo=off',
+                    '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
                     '%s' % self.test_module,
@@ -246,7 +246,7 @@ class TestSkipDecorators(TestCaseTmpDir):
     def test_skip_class_decorators(self):
         cmd_line = [AVOCADO,
                     'run',
-                    '--sysinfo=off',
+                    '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
                     '%s' % self.class_module,
@@ -265,7 +265,7 @@ class TestSkipDecorators(TestCaseTmpDir):
     def test_skipIf_class_decorators(self):
         cmd_line = [AVOCADO,
                     'run',
-                    '--sysinfo=off',
+                    '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
                     '%s' % self.class_if_module,
@@ -280,7 +280,7 @@ class TestSkipDecorators(TestCaseTmpDir):
     def test_skipUnless_class_decorators(self):
         cmd_line = [AVOCADO,
                     'run',
-                    '--sysinfo=off',
+                    '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
                     '%s' % self.class_unless_module,
@@ -295,7 +295,7 @@ class TestSkipDecorators(TestCaseTmpDir):
     def test_skip_setup(self):
         cmd_line = [AVOCADO,
                     'run',
-                    '--sysinfo=off',
+                    '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
                     '%s' % self.skip_setup,
@@ -308,7 +308,7 @@ class TestSkipDecorators(TestCaseTmpDir):
     def test_skip_teardown(self):
         cmd_line = [AVOCADO,
                     'run',
-                    '--sysinfo=off',
+                    '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
                     '%s' % self.bad_teardown,

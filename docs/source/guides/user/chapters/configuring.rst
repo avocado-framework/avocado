@@ -64,11 +64,8 @@ configuration files, you can disable sysinfo logging by running:
 
 .. code-block:: shell
 
-   $ avocado run --sysinfo off /bin/true
+   $ avocado run --disable-sysinfo /bin/true
 
-
-.. note:: Please keep in mind that sysinfo option will be a boolean
-  command-line option soon.
 
 So, command-line options always will have the highest precedence during the
 configuration parsing. Use this if you would like to change some behavior on
@@ -233,8 +230,8 @@ Example using the command-line:
   $ avocado run --verbose /bin/true
 
 .. note:: Currently we still have some "old style boolean" options where you
-  should pass "on" or "off" on the command-line. i.e: ``--sysinfo=off``. Those
-  options are going to be replaced soon.
+  should pass "on" or "off" on the command-line. i.e: ``--json-job-result=off``.
+  Those options are going to be replaced soon.
 
 Lists
 ~~~~~

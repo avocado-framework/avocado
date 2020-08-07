@@ -32,7 +32,7 @@ class Run(TestCaseTmpDir):
         test_path = os.path.join(BASEDIR, 'examples',
                                  'tests', 'cit_parameters.py')
         cmd_line = (
-            '{0} --show=test run --sysinfo=off --job-results-dir={1} '
+            '{0} --show=test run --disable-sysinfo --job-results-dir={1} '
             '--cit-order-of-combinations=1 '
             '--cit-parameter-file={2} '
             '-- {3}'

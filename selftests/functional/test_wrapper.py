@@ -46,7 +46,7 @@ class WrapperTest(TestCaseTmpDir):
                      "C compiler is required by the underlying datadir.py test")
     def test_global_wrapper(self):
         os.chdir(BASEDIR)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --wrapper %s '
                     'examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir.name, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -63,7 +63,7 @@ class WrapperTest(TestCaseTmpDir):
                      "C compiler is required by the underlying datadir.py test")
     def test_process_wrapper(self):
         os.chdir(BASEDIR)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir.name, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -80,7 +80,7 @@ class WrapperTest(TestCaseTmpDir):
                      "C compiler is required by the underlying datadir.py test")
     def test_both_wrappers(self):
         os.chdir(BASEDIR)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --wrapper %s '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir.name, self.dummy.path,
                        self.script.path))

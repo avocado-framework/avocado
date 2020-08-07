@@ -57,7 +57,7 @@ class TestsTmpDirTests(TestCaseTmpDir):
         Tests whether automatically created teststmpdir is shared across
         all tests.
         """
-        cmd_line = ("%s run --sysinfo=off "
+        cmd_line = ("%s run --disable-sysinfo "
                     "--job-results-dir %s %s %s"
                     % (AVOCADO, self.tmpdir.name, self.simple_test,
                        self.instrumented_test))
@@ -69,7 +69,7 @@ class TestsTmpDirTests(TestCaseTmpDir):
         avocado
         """
         with tempfile.TemporaryDirectory(dir=self.tmpdir.name) as shared_tmp:
-            cmd = ("%s run --sysinfo=off --job-results-dir %s %%s"
+            cmd = ("%s run --disable-sysinfo --job-results-dir %s %%s"
                    % (AVOCADO, self.tmpdir.name))
             self.run_and_check(cmd % self.simple_test, exit_codes.AVOCADO_ALL_OK,
                                {test.COMMON_TMPDIR_NAME: shared_tmp})

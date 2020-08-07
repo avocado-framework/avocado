@@ -18,7 +18,6 @@ Base Test Runner Plugins.
 
 import argparse
 import sys
-import warnings
 
 from avocado.core import exit_codes, job, loader, output, parser_common_args
 from avocado.core.dispatcher import JobPrePostDispatcher
@@ -167,22 +166,22 @@ class Run(CLICmd):
                                          parser=parser,
                                          long_arg='--job-timeout')
 
-        help_msg = ('Enable or disable the job interruption on first failed '
-                    'test. "on" and "off" will be deprecated soon.')
+        help_msg = 'Enable the job interruption on first failed test.'
         settings.register_option(section='run',
                                  key='failfast',
-                                 choices=('on', 'off'),
-                                 default='off',
+                                 default=False,
+                                 key_type=bool,
+                                 action='store_true',
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--failfast')
 
-        help_msg = ('Keep job temporary files (useful for avocado debugging). '
-                    '"on" and "off" will be deprecated soon.')
+        help_msg = 'Keep job temporary files (useful for avocado debugging).'
         settings.register_option(section='run',
                                  key='keep_tmp',
-                                 choices=('on', 'off'),
-                                 default='off',
+                                 default=False,
+                                 key_type=bool,
+                                 action='store_true',
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--keep-tmp')
@@ -200,9 +199,8 @@ class Run(CLICmd):
 
         settings.add_argparser_to_option(namespace='sysinfo.collect.enabled',
                                          parser=parser,
-                                         choices=('on', 'off'),
-                                         short_arg='-S',
-                                         long_arg='--sysinfo')
+                                         action='store_false',
+                                         long_arg='--disable-sysinfo')
 
         settings.add_argparser_to_option('run.execution_order',
                                          parser=parser,
@@ -258,17 +256,17 @@ class Run(CLICmd):
                                  default=None,
                                  long_arg='--output-check-record')
 
-        help_msg = ('Enable or disable test output (stdout/stderr) check. If '
-                    'this option is off, no output will be checked, even if '
-                    'there are reference files present for the test. "on" '
-                    'and "off" will be deprecated soon.')
+        help_msg = ('Disables test output (stdout/stderr) check. If this '
+                    'option is given, no output will be checked, even if '
+                    'there are reference files present for the test.')
         settings.register_option(section='run',
                                  key='output_check',
-                                 default='on',
-                                 choices=('on', 'off'),
+                                 default=True,
+                                 key_type=bool,
+                                 action='store_false',
                                  help_msg=help_msg,
                                  parser=out_check,
-                                 long_arg='--output-check')
+                                 long_arg='--disable-output-check')
 
         loader.add_loader_options(parser, 'run')
         parser_common_args.add_tag_filter_args(parser)
@@ -284,10 +282,6 @@ class Run(CLICmd):
         if 'run.output_check_record' in config:
             check_record = config.get('run.output_check_record')
             process.OUTPUT_CHECK_RECORD_MODE = check_record
-
-        warnings.warn("The following arguments will be changed to boolean soon: "
-                      "sysinfo, output-check, failfast and keep-tmp. ",
-                      FutureWarning)
 
         unique_job_id = config.get('run.unique_job_id')
         if unique_job_id is not None:

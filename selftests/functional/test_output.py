@@ -20,7 +20,7 @@ AVOCADO_QUOTED = "', '".join(shlex.split(AVOCADO))
 PERL_TAP_PARSER_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--sysinfo', 'off', '--job-results-dir', '%%s'] } );
+my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--disable-sysinfo', '--job-results-dir', '%%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
@@ -34,7 +34,7 @@ $parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
 PERL_TAP_PARSER_FAILFAST_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'failtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--failfast', 'on', '--sysinfo', 'off', '--job-results-dir', '%%s'] } );
+my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'failtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--failfast', '--disable-sysinfo', '--job-results-dir', '%%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
@@ -174,7 +174,7 @@ class OutputTest(TestCaseTmpDir):
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying doublefree.py test")
     def test_output_doublefree(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     'doublefree.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -208,7 +208,7 @@ class OutputTest(TestCaseTmpDir):
         test = script.Script(os.path.join(self.tmpdir.name, "output_test.py"),
                              OUTPUT_TEST_CONTENT)
         test.save()
-        result = process.run("%s run --job-results-dir %s --sysinfo=off "
+        result = process.run("%s run --job-results-dir %s --disable-sysinfo "
                              "--json - -- %s" % (AVOCADO, self.tmpdir.name, test))
         res = json.loads(result.stdout_text)
         joblog = res["debuglog"]
@@ -233,7 +233,7 @@ class OutputTest(TestCaseTmpDir):
         # the correct fix is to run the entire test process with redirected
         # stdout and stderr, and *not* play with sys.stdout and sys.stderr.
         # But this change will come later
-        result = process.run("%s run --job-results-dir %s --sysinfo=off "
+        result = process.run("%s run --job-results-dir %s --disable-sysinfo "
                              "--output-check-record=combined "
                              "--json - -- %s" % (AVOCADO, self.tmpdir.name, test))
         res = json.loads(result.stdout_text)
@@ -258,7 +258,7 @@ class OutputTest(TestCaseTmpDir):
         with script.Script(os.path.join(self.tmpdir.name, "output_mode_none.py"),
                            OUTPUT_MODE_NONE_CONTENT,
                            script.READ_ONLY_MODE) as test:
-            command = ("%s run --job-results-dir %s --sysinfo=off "
+            command = ("%s run --job-results-dir %s --disable-sysinfo "
                        "--json - --output-check-record none -- %s") % (AVOCADO,
                                                                        self.tmpdir.name,
                                                                        test.path)
@@ -282,7 +282,7 @@ class OutputTest(TestCaseTmpDir):
         with script.Script(os.path.join(self.tmpdir.name, "test_check_on_off.py"),
                            OUTPUT_CHECK_ON_OFF_CONTENT,
                            script.READ_ONLY_MODE) as test:
-            command = ("%s run --job-results-dir %s --sysinfo=off "
+            command = ("%s run --job-results-dir %s --disable-sysinfo "
                        "--json - -- %s") % (AVOCADO, self.tmpdir.name, test.path)
             result = process.run(command)
             res = json.loads(result.stdout_text)
@@ -341,7 +341,7 @@ class OutputPluginTest(TestCaseTmpDir):
         self.assertIn("\n# debug.log of ", tap)
 
     def test_output_incompatible_setup(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--xunit - --json - passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
@@ -358,7 +358,7 @@ class OutputPluginTest(TestCaseTmpDir):
 
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--journal --xunit %s --json - passtest.py' %
                     (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
@@ -372,7 +372,7 @@ class OutputPluginTest(TestCaseTmpDir):
 
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--xunit - --json %s --tap-include-logs passtest.py'
                     % (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
@@ -392,7 +392,7 @@ class OutputPluginTest(TestCaseTmpDir):
         tmpfile2 = tempfile.mktemp(dir=self.tmpdir.name)
         # Verify --show=none can be supplied as app argument
         cmd_line = ('%s --show=none run --job-results-dir %s '
-                    '--sysinfo=off --xunit %s --json %s --tap-include-logs '
+                    '--disable-sysinfo --xunit %s --json %s --tap-include-logs '
                     'passtest.py' % (AVOCADO, self.tmpdir.name, tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -411,7 +411,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_nonprintable_chars(self):
         cmd_line = ("%s run --external-runner /bin/ls "
                     "'NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
-                    "--job-results-dir %s --sysinfo=off --tap-include-logs"
+                    "--job-results-dir %s --disable-sysinfo --tap-include-logs"
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout_text + result.stderr_text
@@ -429,7 +429,7 @@ class OutputPluginTest(TestCaseTmpDir):
         self.check_output_files(debug_log)
 
     def test_show_test(self):
-        cmd_line = ('%s --show=test run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s --show=test run --job-results-dir %s --disable-sysinfo '
                     'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -446,7 +446,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_silent_trumps_test(self):
         # Also verify --show=none can be supplied as run option
         cmd_line = ('%s --show=test --show=none run --job-results-dir %s '
-                    '--sysinfo=off passtest.py'
+                    '--disable-sysinfo passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -456,7 +456,7 @@ class OutputPluginTest(TestCaseTmpDir):
         self.assertEqual(result.stdout, b"")
 
     def test_default_enabled_plugins(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--tap-include-logs passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
@@ -482,7 +482,7 @@ class OutputPluginTest(TestCaseTmpDir):
                    % os.path.relpath(self.tmpdir.name, "."))
         script.Script(config, content).save()
         cmd_line = ('%s --config %s --show all run '
-                    '--job-results-dir %s --sysinfo=off whiteboard.py '
+                    '--job-results-dir %s --disable-sysinfo whiteboard.py '
                     '--json %s' % (AVOCADO, config, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -500,7 +500,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_gendata(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = ("%s run --job-results-dir %s "
-                    "--sysinfo=off gendata.py --json %s" %
+                    "--disable-sysinfo gendata.py --json %s" %
                     (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -524,7 +524,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_redirect_output(self):
         redirected_output_path = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = ('%s run --job-results-dir %s '
-                    '--sysinfo=off passtest.py > %s'
+                    '--disable-sysinfo passtest.py > %s'
                     % (AVOCADO, self.tmpdir.name, redirected_output_path))
         result = process.run(cmd_line, ignore_status=True, shell=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
