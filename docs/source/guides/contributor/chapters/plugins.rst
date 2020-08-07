@@ -1,11 +1,12 @@
+*************************
 Writing an Avocado plugin
--------------------------
+*************************
 
 What better way to understand how an Avocado plugin works than creating one?
 Let's use another old time favorite for that, the "Print hello world" theme.
 
 Code example
-~~~~~~~~~~~~
+============
 
 Let's say you want to write a plugin that adds a new subcommand to the test
 runner, ``hello``. This is how you'd do it:
@@ -27,8 +28,64 @@ world output in the console.
           :py:data:`avocado.core.output.LOG_JOB`, which can be used to
           output to job log files when running a job.
 
+Registering configuration options (settings)
+============================================
+
+It is usual for a plugin to allow users to do  some degree of configuration
+based on command-line options and/or configuration options. A plugin might
+change its behavior depending on a specific configuration option.
+
+Frequently, those configurations come from configuration files and, sometimes,
+from the command-line argument. Like in most UNIX-like tools, command-line
+options will override values defined inside the configuration files.
+
+You, as a plugin writer, don’t need to handle this configuration by yourself.
+Avocado provides a common API that can be used by plugins in order to register
+options and get values.
+
+If your plugin has options available to the users, it can register it using the
+:meth:`.Settings.register_option()` method during your plugin configuration
+stage. The options are parsed and provided to the plugin as a config dictionary.
+
+Let’s take our Hello World example and change the message based on a “message”
+option:
+
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello_option/hello_option.py
+
+This registration will register a “configuration namespace" (“hello.message”)
+inside the configuration file. A namespace is a “section” (“hello”) followed by
+a “key” (“message”). In other words, the following entry in your configuration
+file is valid and will be parsed::
+
+  [hello]
+  message = My custom message
+
+As you can see in the example above, you need to set a “default” value and this
+value will be used if the option is not present in the configuration file. This
+means that you can have a very small configuration file or even an empty one.
+
+This is a very basic use of how to configure options inside your plugin.
+
+Adding command-line options
+---------------------------
+
+Now, let’s say you would like to also allow this change via the command-line
+option of your plugin (if your plugin is a command-line plugin). You need to
+register in any case and use the same method to connect your “option namespace”
+with your command-line option.
+
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello_parser/hello_parser.py
+
+.. note:: Keep in mind that not all options should have a “command-line”
+  option. Try to keep the command-line as clean as possible. We use command-line
+  only for options that need constantly change and when editing the
+  configuration file is not handy.
+
+For more information about how this registration process works, visit the
+:meth:`.Settings.register_option()` method documentation.
+
 Registering Plugins
-~~~~~~~~~~~~~~~~~~~
+===================
 
 Avocado makes use of the `setuptools` and its `entry points` to register and
 find Python objects. So, to make your new plugin visible to Avocado, you need
@@ -40,7 +97,7 @@ Then, by running either ``$ python setup.py install`` or ``$ python setup.py
 develop`` your plugin should be visible to Avocado.
 
 Namespace
-~~~~~~~~~
+=========
 
 The plugin registry mentioned earlier, (`setuptools` and its `entry points`) is
 global to a given Python installation.  Avocado uses the namespace prefix
@@ -66,7 +123,7 @@ name is going to be ``job.prepost.jobscripts``.
 
 
 Plugin config files
-~~~~~~~~~~~~~~~~~~~
+===================
 
 Plugins can extend the list of config files parsed by ``Settings`` objects by
 dropping the individual config files into ``/etc/avocado/conf.d``
