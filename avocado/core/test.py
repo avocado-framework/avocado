@@ -814,7 +814,7 @@ class Test(unittest.TestCase, TestData):
                                            "stderr.expected")
 
             # check the output and produce test failures
-            if output_check_record != 'none' and output_check == 'on':
+            if output_check_record != 'none' and output_check:
                 output_checked = False
                 try:
                     output_checked = self._check_reference(
