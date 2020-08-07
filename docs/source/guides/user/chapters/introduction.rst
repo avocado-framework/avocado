@@ -75,10 +75,10 @@ test timeout) are still running while the test's process is stopped.
 Interrupting the job on first fail (failfast)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Avocado ``run`` command has the option ``--failfast on`` to exit the job on
+The Avocado ``run`` command has the option ``--failfast`` to exit the job on
 first failed test::
 
-    $ avocado run --failfast on /bin/true /bin/false /bin/true /bin/true
+    $ avocado run --failfast /bin/true /bin/false /bin/true /bin/true
     JOB ID     : eaf51b8c7d6be966bdf5562c9611b1ec2db3f68a
     JOB LOG    : $HOME/avocado/job-results/job-2016-07-19T09.43-eaf51b8/job.log
      (1/4) /bin/true: PASS (0.01 s)
@@ -87,8 +87,12 @@ first failed test::
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0
     JOB TIME   : 0.12 s
 
-One can also use ``--failfast off`` in order to force-disable failfast mode
-when replaying a job executed with ``--failfast on``.
+The default behavior, that is, when ``--failfast`` is **not** set, is
+to try to execute all tests in a job, regardless individual of test failures.
+
+.. note:: Avocado versions 80.0 and earlier allowed replayed jobs to override
+          the failfast configuration by setting ``--failfast=off`` in a
+          ``avocado run --replay ..`` command line.  This is no longer possible.
 
 .. _the_hint_files:
 

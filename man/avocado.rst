@@ -83,7 +83,7 @@ Options for subcommand `run` (`avocado run --help`)::
                             are allowed to execute. Values <= zero means "no
                             timeout". You can also use suffixes, like: s
                             (seconds), m (minutes), h (hours).
-      --failfast {on,off}   Enable or disable the job interruption on first failed
+      --failfast            Enable the job interruption on first failed test.
                             test.
       --keep-tmp            Keep job temporary files (useful for avocado
                             debugging).

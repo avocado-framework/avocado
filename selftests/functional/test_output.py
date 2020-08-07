@@ -34,7 +34,7 @@ $parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
 PERL_TAP_PARSER_FAILFAST_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'failtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--failfast', 'on', '--disable-sysinfo', '--job-results-dir', '%%s'] } );
+my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'failtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--failfast', '--disable-sysinfo', '--job-results-dir', '%%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
