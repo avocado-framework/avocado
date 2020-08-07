@@ -312,7 +312,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         with open(stdout_file, 'wb') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check=off --xunit -'
+                    '--disable-output-check --xunit -'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK

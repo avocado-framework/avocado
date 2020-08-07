@@ -788,7 +788,7 @@ generated match the reference(s) file(s) content.  If they don't
 match, the test will finish with a ``FAIL`` status.
 
 You can disable this automatic check when a reference file exists by
-passing ``--output-check=off`` to the test runner.
+passing ``--disable-output-check`` to the test runner.
 
 .. tip:: The :mod:`avocado.utils.process` APIs have a parameter called
          ``allow_output_check`` that let you individually select the

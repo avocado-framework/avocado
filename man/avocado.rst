@@ -145,11 +145,10 @@ Options for subcommand `run` (`avocado run --help`)::
                             all (record both stdout and stderr), stdout (record
                             only stderr), stderr (record only stderr). Current:
                             none
-      --output-check {on,off}
-                            Enable or disable test output (stdout/stderr) check.
-                            If this option is off, no output will be checked, even
-                            if there are reference files present for the test.
-                            Current: on (output check enabled)
+      --disable-output-check
+                            Disables test output (stdout/stderr) check. If this
+                            option is given, no output will be checked, even if
+                            there are reference files present for the test.
 
     loader options:
       --loaders [LOADERS [LOADERS ...]]
