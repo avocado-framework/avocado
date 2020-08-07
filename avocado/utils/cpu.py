@@ -118,8 +118,8 @@ def get_version():
     for line in cpu_info:
         version_out = re.findall(version_pattern[arch], line)
         if version_out:
-            break
-    return version_out[0].decode('utf-8') if version_out[0] else ""
+            return version_out[0].decode('utf-8')
+    return ''
 
 
 def get_vendor():
