@@ -85,6 +85,17 @@ distro: !mux
       42.3:
         !filter-out : /run/architectures/aarch64
         version: 42.3
+  openeuler:
+    name: openeuler
+    !filter-out : /run/architectures/arm
+    !filter-out : /run/architectures/i386
+    !filter-out : /run/architectures/ppc
+    !filter-out : /run/architectures/ppc64
+    !filter-out : /run/architectures/ppc64le
+    !filter-out : /run/architectures/s390x
+    version:
+      20.03-LTS:
+        version: 20.03-LTS
 
 architectures: !mux
   arm:

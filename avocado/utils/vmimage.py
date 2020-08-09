@@ -395,6 +395,32 @@ class CirrOSImageProvider(ImageProviderBase):
         self.image_pattern = 'cirros-{version}-{arch}-disk.img$'
 
 
+class OpenEulerImageProvider(ImageProviderBase):
+    """OpenEuler Image Provider."""
+
+    name = 'openEuler'
+
+    def __init__(self, version=r'[0-9]+\.[0-9]+(\-LTS)?',
+                 build=None, arch=DEFAULT_ARCH):
+        super(OpenEulerImageProvider, self).__init__(version=version, build=build, arch=arch)
+        self.url_versions = 'https://repo.openeuler.org/'
+        self.url_images = self.url_versions + 'openEuler-{version}/virtual_machine_img/{arch}/'
+        self.image_pattern = 'openEuler-(?P<version>{version}).(?P<arch>{arch}).qcow2.xz$'
+
+    @property
+    def version_pattern(self):
+        return '^openEuler-%s' % self._version
+
+    def get_versions(self):
+        parser = VMImageHtmlParser(self.version_pattern)
+        self._feed_html_parser(self.url_versions, parser)
+        result = []
+        for version in parser.items:
+            if version.startswith('openEuler-'):
+                result.append(version[10:])
+        return result
+
+
 class Image:
     def __init__(self, name, url, version, arch, build, checksum, algorithm,
                  cache_dir, snapshot_dir=None):
