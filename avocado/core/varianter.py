@@ -333,14 +333,20 @@ class Varianter:
     @classmethod
     def from_resultsdir(cls, resultsdir):
         """
-        Retrieves the job variants object from the results directory.
+        Retrieves the job variants objects from the results directory.
+
+        This will return a list of variants since a Job can have multiple
+        suites and the variants is per suite.
         """
         path = os.path.join(resultsdir, 'jobdata', VARIANTS_FILENAME)
         if not os.path.exists(path):
             return None
 
+        variants = []
         with open(path, 'r') as variants_file:
-            return cls(state=json.load(variants_file))
+            for variant in json.load(variants_file):
+                variants.append(cls(state=variant))
+        return variants
 
     def __len__(self):
         return self._no_variants

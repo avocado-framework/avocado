@@ -176,6 +176,7 @@ class ReplayTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
 
+    @unittest.skip("Waiting for #4062 be closed")
     def test_run_replay_and_mux(self):
         """
         Runs a replay job and specifies multiplex file (which should be

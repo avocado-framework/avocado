@@ -24,6 +24,7 @@ from avocado.core.dispatcher import JobPrePostDispatcher
 from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, Init
+from avocado.core.suite import TestSuite, TestSuiteError
 from avocado.utils import process
 
 
@@ -293,7 +294,14 @@ class Run(CLICmd):
                 LOG_UI.error('Unique Job ID needs to be a 40 digit hex number')
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-        with job.Job(config) as job_instance:
+        try:
+            suite = TestSuite.from_config(config, name='suite01')
+            if suite.size == 0:
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+        except TestSuiteError as err:
+            LOG_UI.error(err)
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+        with job.Job(config, [suite]) as job_instance:
             pre_post_dispatcher = JobPrePostDispatcher()
             try:
                 # Run JobPre plugins

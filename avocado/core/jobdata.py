@@ -33,7 +33,7 @@ JOB_CONFIG_FILENAME = 'args.json'
 CMDLINE_FILENAME = 'cmdline'
 
 
-def record(config, logdir, variants, cmdline=None):
+def record(job, cmdline=None):
     """
     Records all required job information.
     """
@@ -41,7 +41,7 @@ def record(config, logdir, variants, cmdline=None):
         for log in [LOG_UI, LOG_JOB]:
             log.warning("jobdata.variants: Unable to serialize '%s'", item)
         return str(item)
-    base_dir = init_dir(logdir, JOB_DATA_DIR)
+    base_dir = init_dir(job.logdir, JOB_DATA_DIR)
     path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
     path_variants = os.path.join(base_dir, VARIANTS_FILENAME)
@@ -49,7 +49,7 @@ def record(config, logdir, variants, cmdline=None):
     path_job_config = os.path.join(base_dir, JOB_CONFIG_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
-    references = config.get('run.references')
+    references = job.config.get('run.references')
     if references:
         with open(path_references, 'w') as references_file:
             references_file.write('%s' % references)
@@ -62,7 +62,10 @@ def record(config, logdir, variants, cmdline=None):
         os.fsync(config_file)
 
     with open(path_variants, 'w') as variants_file:
-        json.dump(variants.dump(), variants_file, default=json_bad_variants_obj)
+        variants = []
+        for suite in job.test_suites:
+            variants.append(suite.variants.dump())
+        json.dump(variants, variants_file, default=json_bad_variants_obj)
         variants_file.flush()
         os.fsync(variants_file)
 
@@ -72,7 +75,7 @@ def record(config, logdir, variants, cmdline=None):
         os.fsync(pwd_file)
 
     with open(path_job_config, 'w') as job_config_file:
-        json.dump(config, job_config_file, default=lambda x: None)
+        json.dump(job.config, job_config_file, default=lambda x: None)
         job_config_file.flush()
         os.fsync(job_config_file)
 

@@ -1,5 +1,5 @@
 from enum import Enum
-from uuid import uuid1
+from uuid import uuid4
 
 from .dispatcher import RunnerDispatcher
 from .exceptions import OptionValidationError
@@ -24,19 +24,22 @@ class TestSuiteStatus(Enum):
 
 
 class TestSuite:
-    def __init__(self, name, config, tests=None):
+    def __init__(self, name, config, tests=None, job_config=None):
         self.name = name
         self.tests = tests
 
         # Create a complete config dict with all registered options + custom
         # config
         self.config = settings.as_dict()
+        if job_config:
+            self.config.update(job_config)
         if config:
             self.config.update(config)
 
         self._variants = None
         self._references = None
         self._runner = None
+        self._test_parameters = None
 
         if (config.get('run.dry_run.enabled') and
                 self.config.get('run.test_runner') == 'runner'):
@@ -70,7 +73,7 @@ class TestSuite:
         except (LoaderUnhandledReferenceError, LoaderError) as details:
             raise TestSuiteError(details)
 
-        return cls(name=name or str(uuid1),
+        return cls(name=name or str(uuid4()),
                    config=config,
                    tests=tests)
 
@@ -81,7 +84,7 @@ class TestSuite:
         resolutions = resolve(references, ignore_missing=ignore_missing)
         tasks = resolutions_to_tasks(resolutions, config)
 
-        return cls(name=name or str(uuid1),
+        return cls(name=name or str(uuid4()),
                    config=config,
                    tests=tasks)
 
@@ -121,6 +124,19 @@ class TestSuite:
             return TestSuiteStatus.UNKNOWN
 
     @property
+    def test_parameters(self):
+        """Placeholder for test parameters.
+
+        This is related to --test-parameters command line option or
+        (run.test_parameters).
+        """
+        if self._test_parameters is None:
+            self._test_parameters = {name: value for name, value
+                                     in self.config.get('run.test_parameters',
+                                                        [])}
+        return self._test_parameters
+
+    @property
     def variants(self):
         if self._variants is None:
             variants = Varianter()
@@ -142,7 +158,29 @@ class TestSuite:
         return self.runner.run_suite(job, self)
 
     @classmethod
-    def from_config(cls, config, name=None):
+    def from_config(cls, config, name=None, job_config=None):
+        """Helper method to create a TestSuite from config dicts.
+
+        This is different from the TestSuite() initialization because here we
+        are assuming that you need some help to build the test suite. Avocado
+        will try to resolve tests based on the configuration information insead
+        of assuming pre populated tests.
+
+        If you need to create a custom TestSuite, please use the TestSuite()
+        constructor instead of this method.
+
+        :param config: A config dict to be used on the desired test suite.
+        :type config: dict
+        :param name: The name of the test suite. This is optional and default
+                     is a random uuid.
+        :type name: str
+        :param job_config: The job config dict (a global config). Use this to
+                           avoid huge configs per test suite. This is also
+                           optional.
+        :type job_config: dict
+        """
+        if job_config:
+            config.update(job_config)
         runner = config.get('run.test_runner') or 'runner'
         if runner == 'nrunner':
             suite = cls._from_config_with_resolver(config, name)

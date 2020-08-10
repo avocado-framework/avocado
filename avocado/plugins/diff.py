@@ -390,7 +390,8 @@ class Diff(CLICmd):
         results = []
         variants = Varianter.from_resultsdir(resultsdir)
         if variants is not None:
-            results.extend(variants.to_str(variants=2).splitlines())
+            for variant in variants:
+                results.extend(variant.to_str(variants=2).splitlines())
         else:
             results.append('Not found\n')
 
