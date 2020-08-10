@@ -373,6 +373,18 @@ class SUSEProbe(Probe):
         return distro
 
 
+class OpenEulerProbe(Probe):
+
+    """
+    Simple probe for openEuler systems in general
+    """
+
+    CHECK_FILE = '/etc/openEuler-release'
+    CHECK_FILE_CONTAINS = 'openEuler release'
+    CHECK_FILE_DISTRO_NAME = 'openEuler'
+    CHECK_VERSION_REGEX = re.compile(r'openEuler release (\d+)\.(\d+).*')
+
+
 #: the complete list of probes that have been registered
 REGISTERED_PROBES = []
 
@@ -392,6 +404,7 @@ register_probe(AmazonLinuxProbe)
 register_probe(DebianProbe)
 register_probe(SUSEProbe)
 register_probe(UbuntuProbe)
+register_probe(OpenEulerProbe)
 
 
 def detect():
