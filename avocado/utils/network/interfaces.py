@@ -311,7 +311,7 @@ class NetworkInterface:
             msg = 'Failed to remove ipaddr. {}'.format(ex)
             raise NWException(msg)
 
-    def restore_from_backup(self):
+    def restore_from_backup(self, ignore_missing=True):
         """Revert interface file from backup.
 
         This method checks if a backup version  is available for given interface
@@ -332,5 +332,6 @@ class NetworkInterface:
         if os.path.exists(backup_file):
             shutil.move(backup_file, filename)
         else:
-            raise NWException(
-                "Backup file not available, could not restore file.")
+            if not ignore_missing:
+                raise NWException(
+                    "Backup file not available, could not restore file.")
