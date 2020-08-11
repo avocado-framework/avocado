@@ -25,6 +25,13 @@ __all__ = ['Test',
            'TestCancel']
 
 
+from avocado.core import register_core_options, initialize_plugins
+from avocado.core.future.settings import settings
+
+register_core_options()
+settings.merge_with_configs()
+initialize_plugins()
+
 from avocado.core.decorators import (cancel_on, fail_on, skip, skipIf,
                                      skipUnless)
 from avocado.core.exceptions import TestCancel, TestError, TestFail

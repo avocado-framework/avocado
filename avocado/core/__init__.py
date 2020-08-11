@@ -190,7 +190,3 @@ def initialize_plugin_infrastructure():
 def initialize_plugins():
     initialize_plugin_infrastructure()
     InitDispatcher().map_method('initialize')
-
-
-register_core_options()
-initialize_plugins()
