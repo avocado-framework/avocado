@@ -157,12 +157,20 @@ class Job:
         self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
 
+        self._result_events_dispatcher = None
+
+    @property
+    def result_events_dispatcher(self):
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
-        # freely, let's get the result events dispatcher ready early.
+        # freely, let's get the result events dispatcher on first usage.
         # A future optimization may load it on demand.
-        self.result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.config)
-        output.log_plugin_failures(self.result_events_dispatcher.load_failures)
+        if self._result_events_dispatcher is None:
+            self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(
+                self.config)
+            output.log_plugin_failures(self._result_events_dispatcher
+                                       .load_failures)
+        return self._result_events_dispatcher
 
     def __enter__(self):
         self.setup()
