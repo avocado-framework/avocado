@@ -35,9 +35,9 @@ It is usual for a plugin to allow users to do  some degree of configuration
 based on command-line options and/or configuration options. A plugin might
 change its behavior depending on a specific configuration option.
 
-Frequently, those configurations come from configuration files and, sometimes,
-from the command-line argument. Like in most UNIX-like tools, command-line
-options will override values defined inside the configuration files.
+Frequently, those settings come from configuration files and, sometimes, from
+the command-line arguments. Like in most UNIX-like tools, command-line options
+will override values defined inside the configuration files.
 
 You, as a plugin writer, don’t need to handle this configuration by yourself.
 Avocado provides a common API that can be used by plugins in order to register
@@ -53,9 +53,9 @@ option:
 .. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello_option/hello_option.py
 
 This registration will register a “configuration namespace" (“hello.message”)
-inside the configuration file. A namespace is a “section” (“hello”) followed by
-a “key” (“message”). In other words, the following entry in your configuration
-file is valid and will be parsed::
+inside the configuration file only. A namespace is a “section” (“hello”)
+followed by a “key” (“message”). In other words, the following entry in your
+configuration file is valid and will be parsed::
 
   [hello]
   message = My custom message
@@ -64,7 +64,7 @@ As you can see in the example above, you need to set a “default” value and t
 value will be used if the option is not present in the configuration file. This
 means that you can have a very small configuration file or even an empty one.
 
-This is a very basic use of how to configure options inside your plugin.
+This is a very basic example of how to configure options inside your plugin.
 
 Adding command-line options
 ---------------------------
@@ -78,13 +78,13 @@ with your command-line option.
 
 .. note:: Keep in mind that not all options should have a “command-line”
   option. Try to keep the command-line as clean as possible. We use command-line
-  only for options that need constantly change and when editing the
+  only for options that constantly need to change and when editing the
   configuration file is not handy.
 
 For more information about how this registration process works, visit the
 :meth:`.Settings.register_option()` method documentation.
 
-Registering Plugins
+Registering plugins
 ===================
 
 Avocado makes use of the `setuptools` and its `entry points` to register and
