@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 
 from avocado import Test
@@ -129,6 +130,13 @@ class JobAPIFeaturesTest(Test):
         self.check_file_exists(self.workdir_file_path)
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f',
+                        '--features',
+                        help='show the features tested by this test.',
+                        action='store_true')
+    args = parser.parse_args()
 
     test_class = 'JobAPIFeaturesTest'
     suites = []
@@ -307,6 +315,20 @@ if __name__ == '__main__':
          ]})
 
     suites.append(TestSuite.from_config(config_check_output_file))
+
+    # ========================================================================
+    # Print features covered in this test
+    # ========================================================================
+    if args.features:
+        features = []
+        for suite in suites:
+            for variants in suite.config['run.dict_variants']:
+                features.append(variants['namespace'])
+
+        unique_features = sorted(set(features))
+        print('Features covered (%i):' %len(unique_features))
+        print('\n'.join(unique_features))
+        exit(0)
 
     # ========================================================================
     # Job execution
