@@ -102,3 +102,14 @@ with::
 
         def test(self):
             ...
+
+Supported images
+----------------
+The vmimage library has no hardcoded limitations of versions or architectures
+that can be supported. You can use it as you wish. This is the list of images
+that we tested and they work with vmimage:
+
+
+.. csv-table::
+    :file: ./vmimage.rst.data/supported_images.csv
+    :header-rows: 1
