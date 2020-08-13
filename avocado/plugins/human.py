@@ -38,8 +38,14 @@ class Human(ResultEvents):
         if not self.owns_stdout:
             return
         LOG_UI.info("JOB ID     : %s", job.unique_id)
-        replay_source_job = job.config.get("replay_sourcejob", False)
-        if replay_source_job:
+        # TODO: this is part of the legacy implementation of the
+        # replay plugin and should be removed soon.
+        replay_enabled = replay_source_job = job.config.get("replay_sourcejob", False)
+        # The "avocado replay" plugin sets a different namespace
+        if not replay_source_job:
+            replay_enabled = job.config.get("job.replay.enabled")
+            replay_source_job = job.config.get("job.replay.source_job_id")
+        if replay_enabled and replay_source_job:
             LOG_UI.info("SRC JOB ID : %s", replay_source_job)
         LOG_UI.info("JOB LOG    : %s", job.logfile)
 
