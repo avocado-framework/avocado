@@ -17,9 +17,9 @@ import os
 import sys
 
 from avocado.core import exit_codes, varianter
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
+from avocado.core.settings import settings
 from avocado.core.tree import TreeNode
 from avocado_varianter_cit.Cit import LOG, Cit
 from avocado_varianter_cit.Parser import Parser

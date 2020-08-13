@@ -104,7 +104,6 @@ these days a framework) to perform automated testing.
 sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
 %if 0%{?rhel}
-%{__rm} -f avocado/etc/avocado/conf.d/resultsdb.conf
 %endif
 %py3_build
 pushd optional_plugins/html
@@ -146,7 +145,6 @@ popd
 %install
 %py3_install
 %{__mv} %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
-%{__sed} -e 's/ etc\/avocado\/sysinfo\// \/etc\/avocado\/sysinfo\//' -i %{buildroot}/etc/avocado/avocado.conf
 pushd optional_plugins/html
 %py3_install
 popd
@@ -274,17 +272,12 @@ Common files (such as configuration) for the Avocado Testing Framework.
 %files -n python3-%{srcname}-common
 %{_mandir}/man1/avocado.1.gz
 %dir %{_sysconfdir}/avocado
-%dir %{_sysconfdir}/avocado/conf.d
 %dir %{_sysconfdir}/avocado/sysinfo
 %dir %{_sysconfdir}/avocado/scripts
 %dir %{_sysconfdir}/avocado/scripts/job
 %dir %{_sysconfdir}/avocado/scripts/job/pre.d
 %dir %{_sysconfdir}/avocado/scripts/job/post.d
 %dir %{_sharedstatedir}/avocado
-%config(noreplace)%{_sysconfdir}/avocado/avocado.conf
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/README
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/gdb.conf
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/jobscripts.conf
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
@@ -317,7 +310,6 @@ server.
 %files -n python3-%{srcname}-plugins-resultsdb
 %{python3_sitelib}/avocado_resultsdb*
 %{python3_sitelib}/avocado_framework_plugin_resultsdb*
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
 %endif
 
 %package -n python3-%{srcname}-plugins-varianter-yaml-to-mux
@@ -394,7 +386,6 @@ a dedicated sever.
 %files -n python3-%{srcname}-plugins-result-upload
 %{python3_sitelib}/avocado_result_upload*
 %{python3_sitelib}/avocado_framework_plugin_result_upload*
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/result_upload.conf
 
 %package -n python3-%{srcname}-plugins-glib
 Summary: Avocado Plugin for Execution of GLib Test Framework tests
@@ -407,7 +398,6 @@ GLib Test Framework.
 %files -n python3-%{srcname}-plugins-glib
 %{python3_sitelib}/avocado_glib*
 %{python3_sitelib}/avocado_framework_plugin_glib*
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/glib.conf
 
 %package -n python3-%{srcname}-examples
 Summary: Avocado Test Framework Example Tests

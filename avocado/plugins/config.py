@@ -16,9 +16,9 @@
 import textwrap
 
 from avocado.core import data_dir
-from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.settings import settings
 
 
 class Config(CLICmd):
@@ -34,13 +34,13 @@ class Config(CLICmd):
         parser = super(Config, self).configure(parser)
         help_msg = ('Shows the data directories currently being used by '
                     'Avocado')
-        future_settings.register_option(section='config',
-                                        key='datadir',
-                                        key_type=bool,
-                                        default=False,
-                                        help_msg=help_msg,
-                                        parser=parser,
-                                        long_arg='--datadir')
+        settings.register_option(section='config',
+                                 key='datadir',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--datadir')
 
         subcommands = parser.add_subparsers(dest='config_subcommand',
                                             metavar='sub-command')
@@ -56,7 +56,7 @@ class Config(CLICmd):
 
     @staticmethod
     def handle_reference(print_function):
-        full = future_settings.as_full_dict()
+        full = settings.as_full_dict()
         for namespace, option in full.items():
             print_function(namespace)
             print_function("~" * len(namespace))
@@ -72,8 +72,8 @@ class Config(CLICmd):
         LOG_UI.info("Config files read (in order, '*' means the file exists "
                     "and had been read):")
 
-        for cfg_path in future_settings.all_config_paths:
-            if cfg_path in future_settings.config_paths:
+        for cfg_path in settings.all_config_paths:
+            if cfg_path in settings.config_paths:
                 LOG_UI.debug('    * %s', cfg_path)
             else:
                 LOG_UI.debug('      %s', cfg_path)

@@ -6,10 +6,10 @@ import sys
 
 from avocado.core import (exit_codes, nrunner, parser_common_args, resolver,
                           status_server)
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.settings import settings
 from avocado.core.spawners.podman import PodmanSpawner
 from avocado.core.spawners.process import ProcessSpawner
 from avocado.core.test_id import TestID

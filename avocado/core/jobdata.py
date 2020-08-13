@@ -21,8 +21,8 @@ import json
 import os
 
 from ..utils.path import init_dir
-from .future.settings import settings
 from .output import LOG_JOB, LOG_UI
+from .settings import settings
 from .varianter import VARIANTS_FILENAME
 
 JOB_DATA_DIR = 'jobdata'

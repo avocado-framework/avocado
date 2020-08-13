@@ -16,9 +16,9 @@ import sys
 
 from avocado.core import (exit_codes, loader, output, parser_common_args, tags,
                           test)
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.settings import settings
 from avocado.utils import astring
 
 

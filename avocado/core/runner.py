@@ -23,8 +23,8 @@ import time
 
 from ..utils import wait
 from . import exceptions
-from .future.settings import settings
 from .output import LOG_JOB as TEST_LOG
+from .settings import settings
 
 
 def add_runner_failure(test_state, new_status, message):

@@ -23,9 +23,9 @@ import sys
 from ..utils import process
 from . import output
 from .dispatcher import CLICmdDispatcher, CLIDispatcher
-from .future.settings import settings
 from .output import STD_OUTPUT
 from .parser import Parser
+from .settings import settings
 
 
 class AvocadoApp:
