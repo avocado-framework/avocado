@@ -468,6 +468,7 @@ class PythonUnittestRunner(BaseRunner):
 
     @staticmethod
     def _run_unittest(uri, queue):
+        sys.path.insert(0, ".")
         stream = io.StringIO()
         unittest_name = PythonUnittestRunner._uri_to_unittest_name(uri)
         suite = unittest.TestLoader().loadTestsFromName(unittest_name)
