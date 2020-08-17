@@ -6,6 +6,8 @@ import importlib
 import os
 import sys
 
+from avocado.core import parameters
+from avocado.core.varianter import Varianter
 from avocado.utils import genio  # pylint: disable=C0413
 from avocado.utils import path  # pylint: disable=C0413
 from avocado.utils import process  # pylint: disable=C0413
@@ -42,7 +44,40 @@ def generate_reference():
         reference.write(result.stdout_text)
 
 
+def generate_vmimage_distro():
+    yaml_path = [os.path.join(ROOT_PATH, 'selftests', 'pre_release', 'tests',
+                              'vmimage.py.data', 'variants.yml')]
+    reference_dir_path = os.path.join(ROOT_PATH, 'docs', 'source', 'guides',
+                                      'writer', 'libs', 'data', 'vmimage')
+    reference_path = os.path.join(reference_dir_path, 'supported_images.csv')
+
+    config = {'yaml_to_mux.files': yaml_path, 'yaml_to_mux.inject': []}
+    varianter = Varianter()
+    varianter.parse(config)
+
+    try:
+        os.makedirs(reference_dir_path)
+    except FileExistsError:
+        pass
+
+    with open(reference_path, 'w') as reference:
+        reference.write("Provider, Version, Architecture\n")
+        for v in varianter.itertests():
+            vmimage_params = parameters.AvocadoParams(v['variant'], ['/run/*'])
+            vmimage_name = vmimage_params.get('name')
+            vmimage_version = vmimage_params.get('version')
+            vmimage_arch = vmimage_params.get('arch', path='*/architectures/*')
+            distro_arch_path = '/run/distro/%s/%s/*' % (vmimage_name,
+                                                        vmimage_arch)
+            vmimage_arch = vmimage_params.get('arch', path=distro_arch_path,
+                                              default=vmimage_arch)
+            reference.write("%s,%s,%s\n" % (str(vmimage_name),
+                                            str(vmimage_version),
+                                            str(vmimage_arch)))
+
+
 generate_reference()
+generate_vmimage_distro()
 
 # Documentation sections. Key is the name of the section, followed by:
 # Second level module name (after avocado), Module description,
