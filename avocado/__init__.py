@@ -31,6 +31,7 @@ from avocado.core.settings import settings
 register_core_options()
 settings.merge_with_configs()
 initialize_plugins()
+settings.merge_with_configs()
 
 from avocado.core.decorators import (cancel_on, fail_on, skip, skipIf,
                                      skipUnless)
