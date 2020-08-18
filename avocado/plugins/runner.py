@@ -25,15 +25,15 @@ import sys
 import time
 from queue import Full as queueFullException
 
-from avocado.core import output, status, tree, varianter
+from avocado.core import output, tree, varianter
 from avocado.core.loader import loader
 from avocado.core.output import LOG_JOB as TEST_LOG
 from avocado.core.output import LOG_UI as APP_LOG
 from avocado.core.plugin_interfaces import Runner
 from avocado.core.runner import TestStatus, add_runner_failure
-from avocado.core.status import mapping
 from avocado.core.test import TimeOutSkipTest
 from avocado.core.test_id import TestID
+from avocado.core.teststatus import mapping, user_facing_status
 from avocado.utils import process, stacktrace, wait
 
 
@@ -252,7 +252,7 @@ class TestRunner(Runner):
             job.log.debug('')
 
         # Make sure the test status is correct
-        if test_state.get('status') not in status.user_facing_status:
+        if test_state.get('status') not in user_facing_status:
             test_state = add_runner_failure(test_state, "ERROR", "Test reports"
                                             " unsupported test status.")
 
