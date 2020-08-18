@@ -18,7 +18,7 @@ import os
 import re
 import sys
 
-from avocado.core import data_dir, exit_codes, jobdata, status
+from avocado.core import data_dir, exit_codes, jobdata, teststatus
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.settings import settings
@@ -83,10 +83,11 @@ class Replay(CLI):
             return []
         status_list = string.split(',')
         for item in status_list:
-            if item not in status.user_facing_status:
+            if item not in teststatus.user_facing_status:
                 msg = ('Invalid --replay-test-status option. Valid '
                        'options are (more than one allowed): %s' %
-                       ','.join([item for item in status.user_facing_status]))
+                       ','.join([item for item
+                                 in teststatus.user_facing_status]))
                 raise argparse.ArgumentTypeError(msg)
 
         return status_list
