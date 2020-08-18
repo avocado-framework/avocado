@@ -176,18 +176,6 @@ class ReplayTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
 
-    @unittest.skip("Waiting for #4062 be closed")
-    def test_run_replay_and_mux(self):
-        """
-        Runs a replay job and specifies multiplex file (which should be
-        ignored)
-        """
-        cmdline = ("%s run --replay %s --job-results-dir %s "
-                   "--disable-sysinfo -m optional_plugins/varianter_yaml_to_mux"
-                   "/tests/.data/mux-selftest.yaml"
-                   % (AVOCADO, self.jobid, self.tmpdir.name))
-        self.run_and_check(cmdline, exit_codes.AVOCADO_ALL_OK)
-
     def tearDown(self):
         self.tmpdir.cleanup()
 
