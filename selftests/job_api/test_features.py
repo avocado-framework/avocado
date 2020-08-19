@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 
 from avocado import Test
@@ -13,9 +14,13 @@ BOOLEAN_DISABLED = [False, 'false', 'off', 0]
 
 class JobAPIFeaturesTest(Test):
 
-    def check_directory_exists(self, path):
+    def check_directory_exists(self, path=None):
         """Check if a directory exists"""
-        self.assertTrue(os.path.isdir(path))
+        if path is None:
+            path = os.path.join(self.latest_workdir,
+                                self.params.get('directory'))
+        assert_func = self.get_assert_function()
+        assert_func(os.path.isdir(path))
 
     def check_exit_code(self, exit_code):
         """Check if job ended with success."""
@@ -34,8 +39,10 @@ class JobAPIFeaturesTest(Test):
         assert_func = self.get_assert_function()
         assert_func(self.file_has_content(file_path, content))
 
-    def create_config(self, value):
+    def create_config(self, value=None):
         """Creates the Job config."""
+        if value is None:
+            value = self.params.get('value')
         reference = self.params.get('reference', default=['/bin/true'])
         config = {'core.show': ['none'],
                   'run.results_dir': self.workdir,
@@ -68,7 +75,7 @@ class JobAPIFeaturesTest(Test):
 
     def run_job(self):
         """Run a Job"""
-        config = self.create_config(self.params.get('value'))
+        config = self.create_config()
 
         suite = TestSuite.from_config(config)
 
@@ -83,20 +90,35 @@ class JobAPIFeaturesTest(Test):
         file_name = self.params.get('file')
         return os.path.join(self.latest_workdir, file_name)
 
-    def test_check_directory_exists(self):
-        """Test to check if a directory was created."""
-        config = self.create_config(self.params.get('value'))
+    def test_check_archive_file_exists(self):
+        """Test to check the archive file was created."""
+        config = self.create_config()
 
         suite = TestSuite.from_config(config)
 
         # run the job
         with Job(config, [suite]) as j:
             result = j.run()
-            tmpdir = os.path.basename(j.tmpdir)
+            logdir = j.logdir
 
         # Asserts
         self.check_exit_code(result)
-        self.check_directory_exists(os.path.join(self.latest_workdir, tmpdir))
+        archive_path = '%s.zip' % logdir
+        self.check_file_exists(archive_path)
+
+    def test_check_directory_exists(self):
+        """Test to check if a directory was created."""
+        config = self.create_config()
+
+        suite = TestSuite.from_config(config)
+
+        # run the job
+        with Job(config, [suite]) as j:
+            result = j.run()
+
+        # Asserts
+        self.check_exit_code(result)
+        self.check_directory_exists()
 
     def test_check_file_content(self):
         """Test to check if a file has the desired content."""
@@ -128,10 +150,49 @@ class JobAPIFeaturesTest(Test):
         self.check_exit_code(result)
         self.check_file_exists(self.workdir_file_path)
 
+    def test_check_tmp_directory_exists(self):
+        """Test to check if the temporary directory was created."""
+        config = self.create_config()
+
+        suite = TestSuite.from_config(config)
+
+        # run the job
+        with Job(config, [suite]) as j:
+            result = j.run()
+            tmpdir = os.path.basename(j.tmpdir)
+
+        # Asserts
+        self.check_exit_code(result)
+        self.check_directory_exists(os.path.join(self.latest_workdir, tmpdir))
+
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f',
+                        '--features',
+                        help='show the features tested by this test.',
+                        action='store_true')
+    args = parser.parse_args()
 
     test_class = 'JobAPIFeaturesTest'
     suites = []
+
+    # ========================================================================
+    # Test if the archive file was created
+    # ========================================================================
+    check_archive_file_exists = ('%s:%s.test_check_archive_file_exists'
+                         % (__file__, test_class))
+    config_check_archive_file_exists = (
+        {'run.references': [check_archive_file_exists],
+         'run.dict_variants': [
+
+             {'namespace': 'run.results.archive',
+              'value': True,
+              'assert': True},
+
+         ]})
+
+    suites.append(TestSuite.from_config(config_check_archive_file_exists))
 
     # ========================================================================
     # Test if a directory was created
@@ -142,8 +203,15 @@ if __name__ == '__main__':
         {'run.references': [check_directory_exists],
          'run.dict_variants': [
 
-             {'namespace': 'run.keep_tmp',
-              'value': True},
+             {'namespace': 'sysinfo.collect.enabled',
+              'value': True,
+              'directory': 'sysinfo',
+              'assert': True},
+
+             {'namespace': 'sysinfo.collect.enabled',
+              'value': False,
+              'directory': 'sysinfo',
+              'assert': False},
 
          ]})
 
@@ -208,8 +276,13 @@ if __name__ == '__main__':
               'file': 'results.json',
               'content': '"pass": 1',
               'assert': True,
-              'reference': ['/bin/true', 'foo'],
-              'exit_code': 0},
+              'reference': ['/bin/true', 'foo']},
+
+             {'namespace': 'run.unique_job_id',
+              'value': 'abcdefghi',
+              'file': 'job.log',
+              'content': 'Job ID: abcdefghi',
+              'assert': True},
 
          ]})
 
@@ -274,6 +347,11 @@ if __name__ == '__main__':
               'file': 'job.log',
               'assert': True},
 
+             {'namespace': 'plugins.disable',
+              'value': ['result.xunit'],
+              'file': 'result.xml',
+              'assert': False},
+
          ]})
 
     suites.append(TestSuite.from_config(config_check_file_exists))
@@ -307,6 +385,37 @@ if __name__ == '__main__':
          ]})
 
     suites.append(TestSuite.from_config(config_check_output_file))
+
+    # ========================================================================
+    # Test if the temporary directory was created
+    # ========================================================================
+    check_tmp_directory_exists = ('%s:%s.test_check_tmp_directory_exists'
+                              % (__file__, test_class))
+    config_check_tmp_directory_exists = (
+        {'run.references': [check_tmp_directory_exists],
+         'run.dict_variants': [
+
+             {'namespace': 'run.keep_tmp',
+              'value': True,
+              'assert': True},
+
+         ]})
+
+    suites.append(TestSuite.from_config(config_check_tmp_directory_exists))
+
+    # ========================================================================
+    # Print features covered in this test
+    # ========================================================================
+    if args.features:
+        features = []
+        for suite in suites:
+            for variants in suite.config['run.dict_variants']:
+                features.append(variants['namespace'])
+
+        unique_features = sorted(set(features))
+        print('Features covered (%i):' %len(unique_features))
+        print('\n'.join(unique_features))
+        exit(0)
 
     # ========================================================================
     # Job execution
