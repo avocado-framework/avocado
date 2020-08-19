@@ -96,11 +96,7 @@ class TestSuite:
     def _get_stats_from_nrunner(self):
         stats = {}
         for test in self.tests:
-            type_label = test.runnable.kind.lower()
-            try:
-                stats[type_label] += 1
-            except KeyError:
-                stats[type_label] = 1
+            stats = self._increment_dict_key_counter(stats, test.runnable.kind)
         return stats
 
     def _get_stats_from_runner(self):
@@ -110,12 +106,34 @@ class TestSuite:
         for cls, _ in self.tests:
             if isinstance(cls, str):
                 cls = Test
-            type_label = mapping[cls].lower()
-            try:
-                stats[type_label] += 1
-            except KeyError:
-                stats[type_label] = 1
+            stats = self._increment_dict_key_counter(stats, mapping[cls])
         return stats
+
+    def _get_tags_stats_from_nrunner(self):
+        stats = {}
+        for test in self.tests:
+            if test.runnable is None:
+                continue
+            tags = test.runnable.tags or {}
+            for tag in tags:
+                stats = self._increment_dict_key_counter(stats, tag)
+        return stats
+
+    def _get_tags_stats_from_runner(self):
+        stats = {}
+        for test in self.tests:
+            params = test[1]
+            for tag in params.get('tags', {}):
+                stats = self._increment_dict_key_counter(stats, tag)
+        return stats
+
+    @staticmethod
+    def _increment_dict_key_counter(dict_object, key):
+        try:
+            dict_object[key.lower()] += 1
+        except KeyError:
+            dict_object[key.lower()] = 1
+        return dict_object
 
     @property
     def references(self):
@@ -161,6 +179,16 @@ class TestSuite:
             return TestSuiteStatus.TESTS_FOUND
         else:
             return TestSuiteStatus.UNKNOWN
+
+    @property
+    def tags_stats(self):
+        """Return a statistics dict with the current tests tags."""
+        runner_name = self.config.get('run.test_runner') or 'runner'
+        if runner_name == 'runner':
+            return self._get_tags_stats_from_runner()
+        elif runner_name == 'nrunner':
+            return self._get_tags_stats_from_nrunner()
+        return {}
 
     @property
     def test_parameters(self):
