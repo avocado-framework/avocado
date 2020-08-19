@@ -476,7 +476,7 @@ class Settings:
 
         For instance:
 
-            settings.reigster_option(section='foo', key='bar', default='hello',
+            settings.register_option(section='foo', key='bar', default='hello',
                                      help_msg='this is just a test')
 
         This will register a 'foo.bar' namespace inside Avocado internals
