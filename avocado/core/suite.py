@@ -2,7 +2,8 @@ from enum import Enum
 from uuid import uuid4
 
 from .dispatcher import RunnerDispatcher
-from .exceptions import OptionValidationError
+from .exceptions import (JobTestSuiteReferenceResolutionError,
+                         OptionValidationError)
 from .loader import LoaderError, LoaderUnhandledReferenceError, loader
 from .resolver import resolve
 from .settings import settings
@@ -81,7 +82,11 @@ class TestSuite:
     def _from_config_with_resolver(cls, config, name=None):
         ignore_missing = config.get('run.ignore_missing_references')
         references = config.get('run.references')
-        resolutions = resolve(references, ignore_missing=ignore_missing)
+        try:
+            resolutions = resolve(references, ignore_missing=ignore_missing)
+        except JobTestSuiteReferenceResolutionError as details:
+            raise TestSuiteError(details)
+
         tasks = resolutions_to_tasks(resolutions, config)
 
         return cls(name=name or str(uuid4()),
