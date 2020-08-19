@@ -14,12 +14,24 @@
 
 import sys
 
-from avocado.core import (exit_codes, loader, output, parser_common_args, tags,
-                          test)
+from avocado.core import exit_codes, loader, output, parser_common_args, tags
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
+from avocado.core.test import Test
 from avocado.utils import astring
+
+
+def _get_test_tags(test):
+    """Return a list of all tags of a test as string."""
+    params = test[1]
+    tags_repr = []
+    for tag, values in params.get('tags', {}).items():
+        if values:
+            tags_repr.append("%s(%s)" % (tag, ",".join(values)))
+        else:
+            tags_repr.append(tag)
+    return ",".join(tags_repr)
 
 
 class TestLister:
@@ -65,28 +77,19 @@ class TestLister:
 
         for cls, params in test_suite:
             if isinstance(cls, str):
-                cls = test.Test
+                cls = Test
             type_label = type_label_mapping[cls]
             decorator = decorator_mapping[cls]
             stats[type_label.lower()] += 1
             type_label = decorator(type_label)
 
             if self.config.get('core.verbose'):
-                if 'tags' in params:
-                    tgs = params['tags']
-                else:
-                    tgs = {}
-                tags_repr = []
-                for tag, vals in tgs.items():
-                    if tag not in tag_stats:
-                        tag_stats[tag] = 1
-                    else:
+                for tag in params.get('tags', {}):
+                    try:
                         tag_stats[tag] += 1
-                    if vals:
-                        tags_repr.append("%s(%s)" % (tag, ",".join(vals)))
-                    else:
-                        tags_repr.append(tag)
-                tags_repr = ",".join(tags_repr)
+                    except KeyError:
+                        tag_stats[tag] = 1
+                tags_repr = _get_test_tags((cls, params))
                 test_matrix.append((type_label, params['name'], tags_repr))
             else:
                 test_matrix.append((type_label, params['name']))
