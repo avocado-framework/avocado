@@ -8,7 +8,7 @@ from .loader import LoaderError, LoaderUnhandledReferenceError, loader
 from .resolver import resolve
 from .settings import settings
 from .tags import filter_test_tags
-from .test import DryRunTest
+from .test import DryRunTest, Test
 from .utils import resolutions_to_tasks
 from .varianter import Varianter
 
@@ -93,6 +93,30 @@ class TestSuite:
                    config=config,
                    tests=tasks)
 
+    def _get_stats_from_nrunner(self):
+        stats = {}
+        for test in self.tests:
+            type_label = test.runnable.kind.lower()
+            try:
+                stats[type_label] += 1
+            except KeyError:
+                stats[type_label] = 1
+        return stats
+
+    def _get_stats_from_runner(self):
+        stats = {}
+        mapping = loader.get_type_label_mapping()
+
+        for cls, _ in self.tests:
+            if isinstance(cls, str):
+                cls = Test
+            type_label = mapping[cls].lower()
+            try:
+                stats[type_label] += 1
+            except KeyError:
+                stats[type_label] = 1
+        return stats
+
     @property
     def references(self):
         if self._references is None:
@@ -116,6 +140,16 @@ class TestSuite:
         if self.tests is None:
             return 0
         return len(self.tests)
+
+    @property
+    def stats(self):
+        """Return a statistics dict with the current tests."""
+        runner_name = self.config.get('run.test_runner') or 'runner'
+        if runner_name == 'runner':
+            return self._get_stats_from_runner()
+        elif runner_name == 'nrunner':
+            return self._get_stats_from_nrunner()
+        return {}
 
     @property
     def status(self):
