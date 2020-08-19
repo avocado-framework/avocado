@@ -198,6 +198,10 @@ def resolve(references, hint=None, ignore_missing=True):
                        res.reference == reference]
             if ReferenceResolutionResult.SUCCESS not in results:
                 missing.append(reference)
+        # directories are automatically expanded, and thus they can
+        # not be considered a reference that needs to exist after the
+        # resolution process
+        missing = [_ for _ in missing if not os.path.isdir(_)]
         if missing:
             msg = "Could not resolve references: %s" % ",".join(missing)
             raise JobTestSuiteReferenceResolutionError(msg)
