@@ -4,7 +4,8 @@ from uuid import uuid4
 from .dispatcher import RunnerDispatcher
 from .exceptions import (JobTestSuiteReferenceResolutionError,
                          OptionValidationError)
-from .loader import LoaderError, LoaderUnhandledReferenceError, loader
+from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
+                     loader)
 from .resolver import resolve
 from .settings import settings
 from .tags import filter_test_tags
@@ -62,9 +63,24 @@ class TestSuite:
     def _from_config_with_loader(cls, config, name=None):
         references = config.get('run.references')
         ignore_missing = config.get('run.ignore_missing_references')
+        verbose = config.get('core.verbose')
+        subcommand = config.get('subcommand')
+
+        # To-be-removed: For some reason, avocado list will display more tests
+        # if in verbose mode. IMO, this is a little inconsistent with the 'run'
+        # command.  This hack was needed to make one specific test happy.
+        tests_mode = DiscoverMode.DEFAULT
+        if subcommand == 'list':
+            if verbose:
+                tests_mode = DiscoverMode.ALL
+            else:
+                tests_mode = DiscoverMode.AVAILABLE
+
         try:
             loader.load_plugins(config)
-            tests = loader.discover(references, force=ignore_missing)
+            tests = loader.discover(references,
+                                    force=ignore_missing,
+                                    which_tests=tests_mode)
             if config.get("filter.by_tags.tags"):
                 tests = filter_test_tags(
                     tests,
