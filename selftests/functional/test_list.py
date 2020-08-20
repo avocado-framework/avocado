@@ -10,7 +10,6 @@ from .. import AVOCADO, BASEDIR
 class List(unittest.TestCase):
 
     list_command = 'list'
-    instrumented = 'INSTRUMENTED'
 
     def test_list_filter_by_tags(self):
         examples_dir = os.path.join(BASEDIR, 'examples', 'tests')
@@ -23,12 +22,6 @@ class List(unittest.TestCase):
                          % (exit_codes.AVOCADO_ALL_OK, result))
         stdout_lines = result.stdout_text.splitlines()
         self.assertIn("TEST TYPES SUMMARY", stdout_lines)
-        self.assertIn("%s: 2" % self.instrumented, stdout_lines)
+        self.assertIn("instrumented: 2", stdout_lines)
         self.assertIn("TEST TAGS SUMMARY", stdout_lines)
         self.assertIn("fast: 2", stdout_lines)
-
-
-class NList(List):
-
-    list_command = 'nlist'
-    instrumented = 'avocado-instrumented'

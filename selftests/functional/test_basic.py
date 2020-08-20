@@ -1049,10 +1049,6 @@ class PluginsTest(TestCaseTmpDir):
     def test_list_error_output(self):
         cmd_line = '%s list sbrubles' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_FAIL
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
         self.assertIn(b"Unable to resolve reference", result.stderr)
 
     def test_list_no_file_loader(self):
@@ -1066,8 +1062,7 @@ class PluginsTest(TestCaseTmpDir):
                b"MISSING this-wont-be-matched\n\n"
                b"TEST TYPES SUMMARY\n"
                b"==================\n"
-               b"EXTERNAL: 0\n"
-               b"MISSING: 1\n")
+               b"missing: 1\n")
         self.assertEqual(exp, result.stdout, "Stdout mismatch:\n%s\n\n%s"
                          % (exp, result))
 
@@ -1089,9 +1084,9 @@ class PluginsTest(TestCaseTmpDir):
         self.assertEqual("INSTRUMENTED %s BIG_TAG_NAME" % full_test_name,
                          stdout_lines[1])
         self.assertIn("TEST TYPES SUMMARY", stdout_lines)
-        self.assertIn("INSTRUMENTED: 1", stdout_lines)
+        self.assertIn("instrumented: 1", stdout_lines)
         self.assertIn("TEST TAGS SUMMARY", stdout_lines)
-        self.assertEqual("BIG_TAG_NAME: 1", stdout_lines[-1])
+        self.assertEqual("big_tag_name: 1", stdout_lines[-1])
 
     def test_plugin_list(self):
         cmd_line = '%s plugins' % AVOCADO

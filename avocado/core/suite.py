@@ -4,11 +4,12 @@ from uuid import uuid4
 from .dispatcher import RunnerDispatcher
 from .exceptions import (JobTestSuiteReferenceResolutionError,
                          OptionValidationError)
-from .loader import LoaderError, LoaderUnhandledReferenceError, loader
+from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
+                     loader)
 from .resolver import resolve
 from .settings import settings
 from .tags import filter_test_tags
-from .test import DryRunTest
+from .test import DryRunTest, Test
 from .utils import resolutions_to_tasks
 from .varianter import Varianter
 
@@ -25,9 +26,11 @@ class TestSuiteStatus(Enum):
 
 
 class TestSuite:
-    def __init__(self, name, config, tests=None, job_config=None):
+    def __init__(self, name, config, tests=None, job_config=None,
+                 resolutions=None):
         self.name = name
         self.tests = tests
+        self.resolutions = resolutions
 
         # Create a complete config dict with all registered options + custom
         # config
@@ -62,9 +65,24 @@ class TestSuite:
     def _from_config_with_loader(cls, config, name=None):
         references = config.get('run.references')
         ignore_missing = config.get('run.ignore_missing_references')
+        verbose = config.get('core.verbose')
+        subcommand = config.get('subcommand')
+
+        # To-be-removed: For some reason, avocado list will display more tests
+        # if in verbose mode. IMO, this is a little inconsistent with the 'run'
+        # command.  This hack was needed to make one specific test happy.
+        tests_mode = DiscoverMode.DEFAULT
+        if subcommand == 'list':
+            if verbose:
+                tests_mode = DiscoverMode.ALL
+            else:
+                tests_mode = DiscoverMode.AVAILABLE
+
         try:
             loader.load_plugins(config)
-            tests = loader.discover(references, force=ignore_missing)
+            tests = loader.discover(references,
+                                    force=ignore_missing,
+                                    which_tests=tests_mode)
             if config.get("filter.by_tags.tags"):
                 tests = filter_test_tags(
                     tests,
@@ -86,12 +104,54 @@ class TestSuite:
             resolutions = resolve(references, ignore_missing=ignore_missing)
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
-
         tasks = resolutions_to_tasks(resolutions, config)
 
         return cls(name=name or str(uuid4()),
                    config=config,
-                   tests=tasks)
+                   tests=tasks,
+                   resolutions=resolutions)
+
+    def _get_stats_from_nrunner(self):
+        stats = {}
+        for test in self.tests:
+            stats = self._increment_dict_key_counter(stats, test.runnable.kind)
+        return stats
+
+    def _get_stats_from_runner(self):
+        stats = {}
+        mapping = loader.get_type_label_mapping()
+
+        for cls, _ in self.tests:
+            if isinstance(cls, str):
+                cls = Test
+            stats = self._increment_dict_key_counter(stats, mapping[cls])
+        return stats
+
+    def _get_tags_stats_from_nrunner(self):
+        stats = {}
+        for test in self.tests:
+            if test.runnable is None:
+                continue
+            tags = test.runnable.tags or {}
+            for tag in tags:
+                stats = self._increment_dict_key_counter(stats, tag)
+        return stats
+
+    def _get_tags_stats_from_runner(self):
+        stats = {}
+        for test in self.tests:
+            params = test[1]
+            for tag in params.get('tags', {}):
+                stats = self._increment_dict_key_counter(stats, tag)
+        return stats
+
+    @staticmethod
+    def _increment_dict_key_counter(dict_object, key):
+        try:
+            dict_object[key.lower()] += 1
+        except KeyError:
+            dict_object[key.lower()] = 1
+        return dict_object
 
     @property
     def references(self):
@@ -118,6 +178,16 @@ class TestSuite:
         return len(self.tests)
 
     @property
+    def stats(self):
+        """Return a statistics dict with the current tests."""
+        runner_name = self.config.get('run.test_runner') or 'runner'
+        if runner_name == 'runner':
+            return self._get_stats_from_runner()
+        elif runner_name == 'nrunner':
+            return self._get_stats_from_nrunner()
+        return {}
+
+    @property
     def status(self):
         if self.tests is None:
             return TestSuiteStatus.RESOLUTION_NOT_STARTED
@@ -127,6 +197,16 @@ class TestSuite:
             return TestSuiteStatus.TESTS_FOUND
         else:
             return TestSuiteStatus.UNKNOWN
+
+    @property
+    def tags_stats(self):
+        """Return a statistics dict with the current tests tags."""
+        runner_name = self.config.get('run.test_runner') or 'runner'
+        if runner_name == 'runner':
+            return self._get_tags_stats_from_runner()
+        elif runner_name == 'nrunner':
+            return self._get_tags_stats_from_nrunner()
+        return {}
 
     @property
     def test_parameters(self):
