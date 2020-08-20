@@ -26,9 +26,11 @@ class TestSuiteStatus(Enum):
 
 
 class TestSuite:
-    def __init__(self, name, config, tests=None, job_config=None):
+    def __init__(self, name, config, tests=None, job_config=None,
+                 resolutions=None):
         self.name = name
         self.tests = tests
+        self.resolutions = resolutions
 
         # Create a complete config dict with all registered options + custom
         # config
@@ -102,12 +104,12 @@ class TestSuite:
             resolutions = resolve(references, ignore_missing=ignore_missing)
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
-
         tasks = resolutions_to_tasks(resolutions, config)
 
         return cls(name=name or str(uuid4()),
                    config=config,
-                   tests=tasks)
+                   tests=tasks,
+                   resolutions=resolutions)
 
     def _get_stats_from_nrunner(self):
         stats = {}
