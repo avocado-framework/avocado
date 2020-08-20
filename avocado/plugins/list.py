@@ -12,12 +12,11 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import sys
-
-from avocado.core import exit_codes, loader, output, parser_common_args, tags
+from avocado.core import exit_codes, loader, output, parser_common_args
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
+from avocado.core.suite import TestSuite
 from avocado.core.test import Test
 from avocado.utils import astring
 
@@ -34,113 +33,6 @@ def _get_test_tags(test):
     return ",".join(tags_repr)
 
 
-class TestLister:
-
-    """
-    Lists available test modules
-    """
-
-    def __init__(self, config):
-        try:
-            loader.loader.load_plugins(config)
-        except loader.LoaderError as details:
-            sys.stderr.write(str(details))
-            sys.stderr.write('\n')
-            sys.exit(exit_codes.AVOCADO_FAIL)
-        self.config = config
-
-    def _extra_listing(self):
-        loader.loader.get_extra_listing()
-
-    def _get_test_suite(self, paths):
-        if self.config.get('core.verbose'):
-            which_tests = loader.DiscoverMode.ALL
-        else:
-            which_tests = loader.DiscoverMode.AVAILABLE
-        try:
-            return loader.loader.discover(paths,
-                                          which_tests=which_tests)
-        except loader.LoaderUnhandledReferenceError as details:
-            LOG_UI.error(str(details))
-            sys.exit(exit_codes.AVOCADO_FAIL)
-
-    def _get_test_matrix(self, test_suite):
-        test_matrix = []
-
-        type_label_mapping = loader.loader.get_type_label_mapping()
-        decorator_mapping = loader.loader.get_decorator_mapping()
-
-        stats = {}
-        tag_stats = {}
-        for value in type_label_mapping.values():
-            stats[value.lower()] = 0
-
-        for cls, params in test_suite:
-            if isinstance(cls, str):
-                cls = Test
-            type_label = type_label_mapping[cls]
-            decorator = decorator_mapping[cls]
-            stats[type_label.lower()] += 1
-            type_label = decorator(type_label)
-
-            if self.config.get('core.verbose'):
-                for tag in params.get('tags', {}):
-                    try:
-                        tag_stats[tag] += 1
-                    except KeyError:
-                        tag_stats[tag] = 1
-                tags_repr = _get_test_tags((cls, params))
-                test_matrix.append((type_label, params['name'], tags_repr))
-            else:
-                test_matrix.append((type_label, params['name']))
-
-        return test_matrix, stats, tag_stats
-
-    def _display(self, test_matrix, stats, tag_stats):
-        header = None
-        if self.config.get('core.verbose'):
-            header = (output.TERM_SUPPORT.header_str('Type'),
-                      output.TERM_SUPPORT.header_str('Test'),
-                      output.TERM_SUPPORT.header_str('Tag(s)'))
-
-        for line in astring.iter_tabular_output(test_matrix, header=header,
-                                                strip=True):
-            LOG_UI.debug(line)
-
-        if self.config.get('core.verbose'):
-            LOG_UI.info("")
-            LOG_UI.info("TEST TYPES SUMMARY")
-            LOG_UI.info("==================")
-            for key in sorted(stats):
-                LOG_UI.info("%s: %s", key.upper(), stats[key])
-
-            if tag_stats:
-                LOG_UI.info("")
-                LOG_UI.info("TEST TAGS SUMMARY")
-                LOG_UI.info("=================")
-                for key in sorted(tag_stats):
-                    LOG_UI.info("%s: %s", key, tag_stats[key])
-
-    def _list(self):
-        self._extra_listing()
-        test_suite = self._get_test_suite(self.config.get('list.references'))
-        if self.config.get('filter.by_tags.tags'):
-            test_suite = tags.filter_test_tags(
-                test_suite,
-                self.config.get('filter.by_tags.tags'),
-                self.config.get('filter_by_tags.include_empty'),
-                self.config.get('filter_by_tags.include_empty_key'))
-        test_matrix, stats, tag_stats = self._get_test_matrix(test_suite)
-        self._display(test_matrix, stats, tag_stats)
-
-    def list(self):
-        try:
-            self._list()
-        except KeyboardInterrupt:
-            LOG_UI.error('Command interrupted by user...')
-            return exit_codes.AVOCADO_FAIL
-
-
 class List(CLICmd):
 
     """
@@ -149,6 +41,53 @@ class List(CLICmd):
 
     name = 'list'
     description = 'List available tests'
+
+    def _display(self, test_matrix, suite, verbose=False):
+        header = None
+        if verbose:
+            header = (output.TERM_SUPPORT.header_str('Type'),
+                      output.TERM_SUPPORT.header_str('Test'),
+                      output.TERM_SUPPORT.header_str('Tag(s)'))
+
+        for line in astring.iter_tabular_output(test_matrix, header=header,
+                                                strip=True):
+            LOG_UI.debug(line)
+
+        if verbose:
+            LOG_UI.info("")
+            LOG_UI.info("TEST TYPES SUMMARY")
+            LOG_UI.info("==================")
+            for key in sorted(suite.stats):
+                LOG_UI.info("%s: %s", key.upper(), suite.stats[key])
+
+            if suite.tags_stats:
+                LOG_UI.info("")
+                LOG_UI.info("TEST TAGS SUMMARY")
+                LOG_UI.info("=================")
+                for key in sorted(suite.tags_stats):
+                    LOG_UI.info("%s: %s", key, suite.tags_stats[key])
+
+    def _get_test_matrix(self, test_suite, verbose=False):
+        test_matrix = []
+
+        type_label_mapping = loader.loader.get_type_label_mapping()
+        decorator_mapping = loader.loader.get_decorator_mapping()
+
+        for cls, params in test_suite:
+            if isinstance(cls, str):
+                cls = Test
+            type_label = type_label_mapping[cls]
+            decorator = decorator_mapping[cls]
+            type_label = decorator(type_label)
+
+            if verbose:
+                test_matrix.append((type_label,
+                                    params['name'],
+                                    _get_test_tags((cls, params))))
+            else:
+                test_matrix.append((type_label, params['name']))
+
+        return test_matrix
 
     def configure(self, parser):
         """
@@ -176,5 +115,14 @@ class List(CLICmd):
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
-        test_lister = TestLister(config)
-        return test_lister.list()
+        # Current Runner
+        verbose = config.get('core.verbose')
+        config['run.references'] = config.get('list.references')
+        config['run.test_runner'] = config.get('run.test_runner')
+        try:
+            suite = TestSuite.from_config(config)
+            test_matrix = self._get_test_matrix(suite.tests, verbose)
+            return self._display(test_matrix, suite, verbose)
+        except KeyboardInterrupt:
+            LOG_UI.error('Command interrupted by user...')
+            return exit_codes.AVOCADO_FAIL
