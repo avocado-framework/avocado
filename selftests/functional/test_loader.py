@@ -166,18 +166,18 @@ class LoaderTestFunctional(TestCaseTmpDir):
         self.assertEqual(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
 
     def test_simple(self):
-        self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', self.MODE_0775)
+        self._test('simpletest.sh', SIMPLE_TEST, 'simple', self.MODE_0775)
 
     def test_simple_not_exec(self):
         # 2 because both FileLoader and the TAP loader cannot recognize the test
-        self._test('simpletest.sh', SIMPLE_TEST, 'NOT_A_TEST', count=2)
+        self._test('simpletest.sh', SIMPLE_TEST, 'not_a_test', count=2)
 
     def test_pass(self):
-        self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
+        self._test('passtest.py', AVOCADO_TEST_OK, 'instrumented')
 
     def test_not_python_module(self):
         # 2 because both FileLoader and the TAP loader cannot recognize the test
-        self._test('passtest', AVOCADO_TEST_OK, 'NOT_A_TEST', count=2)
+        self._test('passtest', AVOCADO_TEST_OK, 'not_a_test', count=2)
 
     @skipOnLevelsInferiorThan(2)
     def test_sleep_a_lot(self):
@@ -201,22 +201,22 @@ class LoaderTestFunctional(TestCaseTmpDir):
                         ("Took more than 3 seconds to list tests. Loader "
                          "probably loaded/executed Python code and slept for "
                          "eleven seconds."))
-        self.assertIn(b'INSTRUMENTED: 2', result.stdout)
+        self.assertIn(b'instrumented: 2', result.stdout)
 
     def test_multiple_class(self):
         self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
-                   'INSTRUMENTED', self.MODE_0664, 2)
+                   'instrumented', self.MODE_0664, 2)
 
     def test_multiple_methods_same_name(self):
         self._test('multiplemethods.py', AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME,
-                   'INSTRUMENTED', self.MODE_0664, 1)
+                   'instrumented', self.MODE_0664, 1)
 
     def test_load_not_a_test(self):
-        self._test('notatest.py', NOT_A_TEST, 'SIMPLE', self.MODE_0775)
+        self._test('notatest.py', NOT_A_TEST, 'simple', self.MODE_0775)
 
     def test_load_not_a_test_not_exec(self):
         # 2 because both FileLoader and the TAP loader cannot recognize the test
-        self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST', count=2)
+        self._test('notatest.py', NOT_A_TEST, 'not_a_test', count=2)
 
     @skipOnLevelsInferiorThan(2)
     def test_runner_simple_python_like_multiple_files(self):
@@ -236,7 +236,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
         mytest.save()
         cmd_line = "%s -V list %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
-        self.assertIn(b'SIMPLE: 1', result.stdout)
+        self.assertIn(b'simple: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
         cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' -- '%s'"

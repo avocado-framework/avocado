@@ -38,7 +38,7 @@ if __name__ == "__main__":
 GOOD_TEST = """#!/usr/bin/env python
 import time
 from avocado import Test
-from avocado import main
+from avocado.core import main
 
 class GoodTest(Test):
     def test(self):
