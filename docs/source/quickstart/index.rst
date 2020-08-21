@@ -93,15 +93,15 @@ Job Replay and Job Diff
 -----------------------
 
 In order to reproduce a given job using the same data, one can use the
-``--replay`` option for the ``run`` command, informing the hash id from the
-original job to be replayed. The hash id can be partial, as long as the
-provided part corresponds to the initial characters of the original job id and
-it is also unique enough.  Or, instead of the job id, you can use the string
-latest and Avocado will replay the latest job executed.
+``replay`` subcommand, informing the hash id from the original job to be
+replayed. The hash id can be partial, as long as the provided part corresponds
+to the initial characters of the original job id and it is also unique enough.
+Or, instead of the job id, you can use the string latest and Avocado will
+replay the latest job executed.
 
 Example::
 
-     $ avocado run --replay 825b86
+     $ avocado replay 825b86
      JOB ID     : 55a0d10132c02b8cc87deb2b480bfd8abbd956c3
      SRC JOB ID : 825b860b0c2f6ec48953c638432e3e323f8d7cad
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/job.log
@@ -175,6 +175,23 @@ Bellow a small subset of our utility modules:
 * **utils.software_manager**: Software package management library.
 * **utils.download**: Methods to download URLs and regular files.
 * **utils.archive**: Module to help extract and create compressed archives.
+
+Avocado Python API
+==================
+
+If the command-line is limiting you, then you can use our new API and
+create custom jobs and test suites:
+
+.. code-block:: python
+
+  import sys
+
+  from avocado.core.job import Job
+  from avocado.core.suite import TestSuite
+
+  suite = TestSuite(name='CustomSuite', config=suite_config, tests=tests)
+  with Job(config=job_config, test_suites=[suite]) as job:
+      sys.exit(job.run())
 
 How to install
 ==============
