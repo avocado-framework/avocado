@@ -1,9 +1,10 @@
 import random
 
-from .common import BaseSpawner, SpawnMethod
+from ...core.plugin_interfaces import Spawner
+from .common import SpawnMethod
 
 
-class MockSpawner(BaseSpawner):
+class MockSpawner(Spawner):
     """A mocking spawner that performs no real operation.
 
     Tasks asked to be spawned by this spawner will initially reported to

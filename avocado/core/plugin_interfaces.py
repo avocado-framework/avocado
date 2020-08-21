@@ -252,3 +252,23 @@ class Runner(Plugin):
         :param test_suite: an instance of TestSuite with some tests to run.
         :return: a set with types of test failures.
         """
+
+
+class Spawner(Plugin):
+    """Base plugin interface spawners of tasks.
+
+    A spawner implementation will spawn a runner in its intended
+    location, and isolation model.  It's supposed to be generic enough
+    that it can peform that in the local machine using a process as an
+    isolation model, or in a virtual machine, using the virtual
+    machine itself as the isolation model.
+    """
+
+    @staticmethod
+    @abc.abstractmethod
+    def is_task_alive(task):
+        """Determines if a task is alive or not."""
+
+    @abc.abstractmethod
+    async def spawn_task(self, task):
+        """Spawns a task return whether the spawning was successful."""

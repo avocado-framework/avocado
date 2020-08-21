@@ -3,7 +3,7 @@ import unittest
 
 from avocado.core import nrunner
 from avocado.core.spawners.mock import MockRandomAliveSpawner, MockSpawner
-from avocado.core.spawners.process import ProcessSpawner
+from avocado.plugins.spawner_process import ProcessSpawner
 
 
 class Process(unittest.TestCase):

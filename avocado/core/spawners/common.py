@@ -21,8 +21,8 @@ class SpawnMethod(enum.Enum):
     ANY = object()
 
 
-class BaseSpawner:
-    """Defines an interface to be followed by all implementations."""
+class SpawnerMixin:
+    """Common utilities for Spawner implementations."""
 
     METHODS = []
 
@@ -59,14 +59,7 @@ class BaseSpawner:
         try:
             for path in Path(src).expanduser().iterdir():
                 if path.is_file() and path.stat().st_size != 0:
-                    for stream in BaseSpawner.bytes_from_file(str(path)):
+                    for stream in SpawnerMixin.bytes_from_file(str(path)):
                         yield (path.name, stream)
         except FileNotFoundError as e:
             raise SpawnerException("Task not found: {}".format(e))
-
-    @staticmethod
-    def is_task_alive(task):
-        raise NotImplementedError("You need to implement this method.")
-
-    def spawn_task(self, task):
-        raise NotImplementedError("You need to implement this method.")

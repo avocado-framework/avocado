@@ -122,3 +122,9 @@ class InitDispatcher(EnabledExtensionManager):
 
     def __init__(self):
         super(InitDispatcher, self).__init__('avocado.plugins.init')
+
+
+class SpawnerDispatcher(EnabledExtensionManager):
+
+    def __init__(self):
+        super(SpawnerDispatcher, self).__init__('avocado.plugins.spawner')
