@@ -21,6 +21,9 @@ Avocado is composed of:
 * :mod:`Plugins <avocado.plugins>` that can extend and add new functionality
   to the Avocado Framework.
 
+* A Python API for creating custom jobs and test suites for more advanced
+  users.
+
 Avocado is built on the experience accumulated with `Autotest
 <http://autotest.github.io/>`__, while improving on its weaknesses and
 shortcomings.
