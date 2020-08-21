@@ -134,6 +134,7 @@ endif
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
 	PYTHON=$(PYTHON) $(PYTHON) -m avocado nrun selftests/*.sh selftests/unit/ selftests/functional/ selftests/jobs/ $(AVOCADO_OPTIONAL_PLUGINS_TESTS)
+	PYTHON=$(PYTHON) $(PYTHON) selftests/job_api/test_features.py
 	selftests/check_tmp_dirs
 
 develop:
