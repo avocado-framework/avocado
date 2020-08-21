@@ -176,6 +176,24 @@ Bellow a small subset of our utility modules:
 * **utils.download**: Methods to download URLs and regular files.
 * **utils.archive**: Module to help extract and create compressed archives.
 
+Avocado Python API
+==================
+
+If the command-line is limiting you, then you can use our new API and
+create custom jobs and test suites:
+
+.. code-block:: python
+
+  import sys
+
+  from avocado.core.job import Job
+  from avocado.core.suite import TestSuite
+
+  suite = TestSuite(name='CustomSuite', config=suite_config, tests=tests)
+  with Job(config=job_config, test_suites=[suite]) as job:
+      sys.exit(job.run())
+
+
 How to install
 ==============
 
