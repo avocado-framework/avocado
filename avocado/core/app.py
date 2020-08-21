@@ -20,6 +20,8 @@ import os
 import signal
 import sys
 
+import pkg_resources
+
 from ..utils import process
 from . import output
 from .dispatcher import CLICmdDispatcher, CLIDispatcher
@@ -102,14 +104,15 @@ class AvocadoApp:
             signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
 
     def run(self):
+        subcmd = self.parser.config.get('subcommand')
         try:
             try:
-                subcmd = self.parser.config.get('subcommand')
-                extension = self._cli_cmd_dispatcher[subcmd]
-            except KeyError:
+                plugin = pkg_resources.load_entry_point('avocado-framework',
+                                                        'avocado.plugins.cli.cmd',
+                                                        subcmd)
+            except ImportError:
                 return
-            method = extension.obj.run
-            return method(self.parser.config)
+            return plugin().run(self.parser.config)
         finally:
             # This makes sure we cleanup the console (stty echo). The only way
             # to avoid cleaning it is to kill the less (paginator) directly
