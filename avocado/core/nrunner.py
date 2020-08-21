@@ -269,13 +269,14 @@ class Runnable:
         """
         if not PKG_RESOURCES_AVAILABLE:
             return
-        try:
-            return pkg_resources.load_entry_point(
-                'avocado-framework',
-                'avocado.plugins.runnable.runner',
-                self.kind)
-        except ImportError:
-            return
+        namespace = 'avocado.plugins.runnable.runner'
+        for ep in pkg_resources.iter_entry_points(namespace):
+            if ep.name == self.kind:
+                try:
+                    obj = ep.load()
+                    return obj
+                except ImportError:
+                    return
 
     def pick_runner_class(self, runners_registry=None):
         """Selects a runner class from the registry based on kind.
