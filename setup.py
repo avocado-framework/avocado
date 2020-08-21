@@ -144,6 +144,10 @@ if __name__ == '__main__':
                    'nrunner_avocado_instrumented:AvocadoInstrumentedTestRunner'),
                   'tap = avocado.core.nrunner_tap:TAPRunner',
                   ],
+              'avocado.plugins.spawner': [
+                  'process = avocado.plugins.spawners.process:ProcessSpawner',
+                  'podman = avocado.plugins.spawners.podman:PodmanSpawner',
+                  ],
               },
           zip_safe=False,
           test_suite='selftests',

@@ -1,10 +1,12 @@
 import asyncio
 
-from .common import BaseSpawner, SpawnMethod
+from avocado.core.plugin_interfaces import Spawner
+from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 
 
-class ProcessSpawner(BaseSpawner):
+class ProcessSpawner(Spawner, SpawnerMixin):
 
+    description = 'Process based spawner'
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
     async def _collect_task(self, task_handle):

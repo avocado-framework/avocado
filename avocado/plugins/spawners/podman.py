@@ -3,11 +3,13 @@ import json
 import os
 import subprocess
 
-from .common import BaseSpawner, SpawnMethod
+from avocado.core.plugin_interfaces import Spawner
+from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 
 
-class PodmanSpawner(BaseSpawner):
+class PodmanSpawner(Spawner, SpawnerMixin):
 
+    description = 'Podman (container) based spawner'
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
     IMAGE = 'fedora:31'
     PODMAN_BIN = "/usr/bin/podman"
@@ -60,8 +62,8 @@ class PodmanSpawner(BaseSpawner):
         # Currently limited to avocado-runner, we'll expand on that
         # when the runner requirements system is in place
         this_path = os.path.abspath(__file__)
-        common_path = os.path.dirname(os.path.dirname(this_path))
-        avocado_runner_path = os.path.join(common_path, 'nrunner.py')
+        base_path = os.path.dirname(os.path.dirname(this_path))
+        avocado_runner_path = os.path.join(base_path, 'core', 'nrunner.py')
         try:
             # pylint: disable=E1133
             proc = await asyncio.create_subprocess_exec(

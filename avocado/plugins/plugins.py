@@ -52,6 +52,8 @@ class Plugins(CLICmd):
              'Plugins that resolve test references (resolver): '),
             (dispatcher.RunnerDispatcher(),
              'Plugins that run test suites on a job (runners): '),
+            (dispatcher.SpawnerDispatcher(),
+             'Plugins that spawn tasks and know about their status (spawner): '),
         ]
         for plugins_active, msg in plugin_types:
             LOG_UI.info(msg)
