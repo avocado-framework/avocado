@@ -2,8 +2,7 @@ import os
 import shutil
 
 from avocado import Test
-from avocado.utils import build
-from avocado.utils import process
+from avocado.utils import build, process
 
 
 class CAbort(Test):

@@ -13,8 +13,7 @@
 # Copyright: Virtuozzo Inc. 2017
 # Authors: Dmitry Monakhov <dmonakhov@openvz.org>
 
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 VERSION = open("VERSION", "r").read().strip()
 

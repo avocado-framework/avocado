@@ -21,12 +21,9 @@ to configure operating system images via the cloudinit tooling.
 :see: http://cloudinit.readthedocs.io.
 """
 
-from http.server import HTTPServer
-from http.server import BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from . import astring
-from . import iso9660
-
+from . import astring, iso9660
 
 #: The meta-data file template
 #:

@@ -1,15 +1,12 @@
+import http.client
 import os
 import tempfile
 import threading
 import unittest.mock
-import http.client
 
-from avocado.utils import cloudinit
-from avocado.utils import iso9660
-from avocado.utils import data_factory
+from avocado.utils import cloudinit, data_factory, iso9660
 
 from .. import setup_avocado_loggers, temp_dir_prefix
-
 
 setup_avocado_loggers()
 

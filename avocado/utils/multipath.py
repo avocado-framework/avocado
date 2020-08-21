@@ -17,13 +17,11 @@ Module with multipath related utility functions.
 It needs root access.
 """
 
-import time
-import logging
 import ast
-from . import distro
-from . import process
-from . import service
-from . import wait
+import logging
+import time
+
+from . import distro, process, service, wait
 
 
 class MPException(Exception):

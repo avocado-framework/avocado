@@ -21,9 +21,9 @@
 # client/shared/service.py
 # Original author: Ross Brattain <ross.b.brattain@intel.com>
 
+import logging
 import os
 import re
-import logging
 from tempfile import mkstemp
 
 from . import process
@@ -677,7 +677,7 @@ def service_manager(run=process.run):
 
     Example of use:
 
-    .. code-block::
+    .. code-block:: python
 
       # Get the system service manager
       service_manager = ServiceManager()
@@ -753,7 +753,7 @@ def specific_service_manager(service_name, run=process.run):
 
     Example of use:
 
-    .. code-block::
+    .. code-block:: python
 
       # Get the specific service manager for sshd
       sshd = SpecificServiceManager("sshd")

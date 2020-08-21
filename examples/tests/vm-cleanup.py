@@ -3,8 +3,7 @@ import shutil
 import tempfile
 
 from avocado import Test
-from avocado.utils import script
-from avocado.utils import process
+from avocado.utils import process, script
 
 CLEAN_TEST = """import os
 from avocado import Test

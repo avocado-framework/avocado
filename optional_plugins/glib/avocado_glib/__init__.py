@@ -19,18 +19,13 @@ Plugin to run GLib Test Framework tests in Avocado
 import os
 import re
 
-from avocado.utils import path
-from avocado.utils import process
-
-from avocado.core import loader
-from avocado.core import output
-from avocado.core import test
-from avocado.core.plugin_interfaces import CLI
-from avocado.core.plugin_interfaces import Resolver
-from avocado.core.future.settings import settings
-from avocado.core.resolver import ReferenceResolution
-from avocado.core.resolver import ReferenceResolutionResult
+from avocado.core import loader, output, test
 from avocado.core.nrunner import Runnable
+from avocado.core.plugin_interfaces import CLI, Resolver
+from avocado.core.resolver import (ReferenceResolution,
+                                   ReferenceResolutionResult)
+from avocado.core.settings import settings
+from avocado.utils import path, process
 
 
 class GLibTest(test.SimpleTest):

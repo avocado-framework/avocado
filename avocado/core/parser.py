@@ -17,20 +17,14 @@ Avocado application command line parsing.
 """
 
 import argparse
-
-from configparser import ConfigParser
-from configparser import NoOptionError
+from configparser import ConfigParser, NoOptionError
 from glob import glob
 
 from . import exit_codes
-from . import varianter
-from . import settings
-from .future.settings import settings as future_settings
-from .future.settings import ConfigFileNotFound, SettingsError
 from .nrunner import Runnable
 from .output import LOG_UI
-from .resolver import ReferenceResolution
-from .resolver import ReferenceResolutionResult
+from .resolver import ReferenceResolution, ReferenceResolutionResult
+from .settings import ConfigFileNotFound, SettingsError, settings
 from .version import VERSION
 
 PROG = 'avocado'
@@ -95,28 +89,28 @@ class Parser:
 
         help_msg = ('Turn the paginator on/off. Useful when outputs are too'
                     'long. This will be a boolean soon.')
-        future_settings.register_option(section='core',
-                                        key='paginator',
-                                        help_msg=help_msg,
-                                        default='off',
-                                        choices=('on', 'off'),
-                                        parser=self.application,
-                                        long_arg='--paginator')
+        settings.register_option(section='core',
+                                 key='paginator',
+                                 help_msg=help_msg,
+                                 default='off',
+                                 choices=('on', 'off'),
+                                 parser=self.application,
+                                 long_arg='--paginator')
 
         help_msg = ('Some commands can produce more information. This option '
                     'will enable the verbosity when applicable.')
-        future_settings.register_option(section='core',
-                                        key='verbose',
-                                        help_msg=help_msg,
-                                        default=False,
-                                        key_type=bool,
-                                        parser=self.application,
-                                        long_arg='--verbose',
-                                        short_arg='-V')
+        settings.register_option(section='core',
+                                 key='verbose',
+                                 help_msg=help_msg,
+                                 default=False,
+                                 key_type=bool,
+                                 parser=self.application,
+                                 long_arg='--verbose',
+                                 short_arg='-V')
 
-        future_settings.add_argparser_to_option(namespace='core.show',
-                                                parser=self.application,
-                                                long_arg='--show')
+        settings.add_argparser_to_option(namespace='core.show',
+                                         parser=self.application,
+                                         long_arg='--show')
 
     def start(self):
         """
@@ -129,8 +123,7 @@ class Parser:
 
         # Load settings from file, if user provides one
         if self.args.config is not None:
-            settings.settings.process_config_path(self.args.config)
-            future_settings.process_config_path(self.args.config)
+            settings.process_config_path(self.args.config)
 
         # Use parent parsing to avoid breaking the output of --help option
         self.application = ArgumentParser(prog=PROG,
@@ -151,10 +144,6 @@ class Parser:
         # constructing the sub parsers, but it is possible to set that
         # option afterwards.
         self.subcommands.required = True
-
-        # Allow overriding default params by plugins
-        variants = varianter.Varianter(getattr(self.args, "variants.debug", False))
-        self.args.avocado_variants = variants
 
     def finish(self):
         """

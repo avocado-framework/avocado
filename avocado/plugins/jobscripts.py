@@ -1,8 +1,8 @@
 import os
 
-from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import JobPre, JobPost, Init
+from avocado.core.plugin_interfaces import Init, JobPost, JobPre
+from avocado.core.settings import settings
 from avocado.core.utils import prepend_base_path
 from avocado.utils import process
 
@@ -13,34 +13,34 @@ class JobScriptsInit(Init):
 
     def initialize(self):
         help_msg = 'Warn if configured (or default) directory does not exist'
-        future_settings.register_option(section='plugins.jobscripts',
-                                        key='warn_non_existing_dir',
-                                        key_type=bool,
-                                        default=False,
-                                        help_msg=help_msg)
+        settings.register_option(section='plugins.jobscripts',
+                                 key='warn_non_existing_dir',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg)
 
         help_msg = 'Warn if any script run return non-zero status'
-        future_settings.register_option(section='plugins.jobscripts',
-                                        key='warn_non_zero_status',
-                                        key_type=bool,
-                                        default=True,
-                                        help_msg=help_msg)
+        settings.register_option(section='plugins.jobscripts',
+                                 key='warn_non_zero_status',
+                                 key_type=bool,
+                                 default=True,
+                                 help_msg=help_msg)
 
         help_msg = 'Directory with scripts to be executed before a job is run'
         default = '/etc/avocado/scripts/job/pre.d/'
-        future_settings.register_option(section='plugins.jobscripts',
-                                        key='pre',
-                                        key_type=prepend_base_path,
-                                        help_msg=help_msg,
-                                        default=default)
+        settings.register_option(section='plugins.jobscripts',
+                                 key='pre',
+                                 key_type=prepend_base_path,
+                                 help_msg=help_msg,
+                                 default=default)
 
         help_msg = 'Directory with scripts to be executed after a job is run'
         default = '/etc/avocado/scripts/job/post.d/'
-        future_settings.register_option(section='plugins.jobscripts',
-                                        key='post',
-                                        key_type=prepend_base_path,
-                                        help_msg=help_msg,
-                                        default=default)
+        settings.register_option(section='plugins.jobscripts',
+                                 key='post',
+                                 key_type=prepend_base_path,
+                                 help_msg=help_msg,
+                                 default=default)
 
 
 class JobScripts(JobPre, JobPost):

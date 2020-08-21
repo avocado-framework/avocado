@@ -15,12 +15,10 @@
 System information plugin
 """
 
-from avocado.core.future.settings import settings
-from avocado.core.plugin_interfaces import Init
-from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.plugin_interfaces import JobPreTests
-from avocado.core.plugin_interfaces import JobPostTests
 from avocado.core import sysinfo
+from avocado.core.plugin_interfaces import (CLICmd, Init, JobPostTests,
+                                            JobPreTests)
+from avocado.core.settings import settings
 from avocado.core.utils import prepend_base_path
 from avocado.utils import path
 
@@ -35,10 +33,9 @@ class SysinfoInit(Init):
                     'details, profiles, etc.')
         settings.register_option(section='sysinfo.collect',
                                  key='enabled',
-                                 default='on',
-                                 key_type=str,
-                                 help_msg=help_msg,
-                                 choices=('on', 'off'))
+                                 default=True,
+                                 key_type=bool,
+                                 help_msg=help_msg)
 
         help_msg = 'Enable sysinfo collection per-test'
         settings.register_option(section='sysinfo.collect',
@@ -136,7 +133,7 @@ class SysInfoJob(JobPreTests, JobPostTests):
 
     def __init__(self, config):
         self.sysinfo = None
-        self.sysinfo_enabled = config.get('sysinfo.collect.enabled') == 'on'
+        self.sysinfo_enabled = config.get('sysinfo.collect.enabled')
 
     def _init_sysinfo(self, job_logdir):
         if self.sysinfo is None:

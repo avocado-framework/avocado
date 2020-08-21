@@ -1,9 +1,8 @@
 import os
 import unittest.mock
 
-from avocado.core.resolver import ReferenceResolutionResult
 import avocado_golang
-
+from avocado.core.resolver import ReferenceResolutionResult
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 

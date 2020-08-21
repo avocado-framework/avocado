@@ -1,14 +1,13 @@
 import ast
-import sys
 import os
 import re
+import sys
 import unittest
 
 from avocado.core import safeloader
 from avocado.utils import script
 
 from .. import BASEDIR, setup_avocado_loggers
-
 
 setup_avocado_loggers()
 
@@ -318,7 +317,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                  'test_is_not_avocado_test',
                                  'test_is_not_avocado_tests'],
             'PythonModule': ['test_is_avocado_test',
-                             'test_import_of_all_module_level'],
+                             'test_import_of_all_module_level',
+                             'test_import_relative'],
             'ModuleImportedAs': ['_test',
                                  'test_foo',
                                  'test_foo_as_bar',
@@ -366,7 +366,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                  'test_is_not_avocado_test',
                                  'test_is_not_avocado_tests'],
             'PythonModule': ['test_is_avocado_test',
-                             'test_import_of_all_module_level'],
+                             'test_import_of_all_module_level',
+                             'test_import_relative'],
             'ModuleImportedAs': ['test_foo',
                                  'test_foo_as_bar',
                                  'test_foo_as_foo',
@@ -559,6 +560,14 @@ class PythonModule(unittest.TestCase):
         for _ in module.iter_classes():
             pass
         self.assertIn('unittest', module.mod_imports)
+
+    def test_import_relative(self):
+        """Tests if relative imports are tracked on the module object."""
+        path = os.path.join(BASEDIR, 'selftests', 'functional', 'test_basic.py')
+        module = safeloader.PythonModule(path)
+        for _ in module.iter_classes():
+            pass
+        self.assertIn('TestCaseTmpDir', module.imported_objects)
 
 
 if __name__ == '__main__':

@@ -22,8 +22,8 @@ avocado core code or plugins.
 """
 
 
-import sys
 import math
+import sys
 
 
 class InvalidDataSize(ValueError):

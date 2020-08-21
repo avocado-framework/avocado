@@ -1,8 +1,6 @@
 import unittest.mock
 
-from avocado.utils import disk
-from avocado.utils import process
-
+from avocado.utils import disk, process
 
 LSBLK_OUTPUT = b'''
 {

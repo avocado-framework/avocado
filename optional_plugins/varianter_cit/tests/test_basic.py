@@ -1,10 +1,8 @@
 import os
-import tempfile
 import unittest
 
 from avocado.utils import process
-
-from selftests import AVOCADO, BASEDIR, temp_dir_prefix
+from selftests import AVOCADO, BASEDIR, TestCaseTmpDir
 
 
 class Basic(unittest.TestCase):
@@ -26,20 +24,15 @@ class Basic(unittest.TestCase):
                 self.assertIn(b"green", lines[i])
 
 
-class Run(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+class Run(TestCaseTmpDir):
 
     def test(self):
-        os.chdir(BASEDIR)
         params_path = os.path.join(BASEDIR, 'examples',
                                    'varianter_cit', 'test_params.cit')
         test_path = os.path.join(BASEDIR, 'examples',
                                  'tests', 'cit_parameters.py')
         cmd_line = (
-            '{0} --show=test run --sysinfo=off --job-results-dir={1} '
+            '{0} --show=test run --disable-sysinfo --job-results-dir={1} '
             '--cit-order-of-combinations=1 '
             '--cit-parameter-file={2} '
             '-- {3}'
@@ -74,9 +67,6 @@ class Run(unittest.TestCase):
                       result.stdout)
         self.assertIn(b"PARAMS (key=coating, path=*, default=None) => 'cathodic'",
                       result.stdout)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

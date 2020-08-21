@@ -19,13 +19,12 @@ NRunner based implementation of job compliant runner
 import json
 import os
 import time
-
 from copy import copy
 
-from avocado.core.plugin_interfaces import Runner as RunnerInterface
-from avocado.core.test_id import TestID
-
 from avocado.core import nrunner
+from avocado.core.plugin_interfaces import Runner as RunnerInterface
+from avocado.core.status.repo import StatusRepo
+from avocado.core.test_id import TestID
 
 
 class Runner(RunnerInterface):
@@ -79,18 +78,22 @@ class Runner(RunnerInterface):
         else:
             deadline = None
 
-        test_suite, _ = nrunner.check_tasks_requirements(test_suite)
-        job.result.tests_total = len(test_suite)  # no support for variants yet
+        test_suite.tests, _ = nrunner.check_tasks_requirements(test_suite.tests)
+        job.result.tests_total = test_suite.size  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
         no_digits = len(str(len(test_suite)))
+        status_repo = StatusRepo()
 
-        for index, task in enumerate(test_suite, start=1):
+        for index, task in enumerate(test_suite.tests, start=1):
             if deadline is not None and time.time() > deadline:
                 break
 
             task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
             # this is all rubbish data
-            test_id = TestID(index, task.runnable.uri, None, no_digits)
+            test_id = TestID("{}-{}".format(test_suite.name, index),
+                             task.runnable.uri,
+                             None,
+                             no_digits)
             task.identifier = str(test_id)
             early_state = {
                 'name': test_id,
@@ -102,11 +105,11 @@ class Runner(RunnerInterface):
                                                     job.result,
                                                     early_state)
 
-            statuses = []
             task.status_services = []
             for status in task.run():
+                status_repo.process_message(status)
                 result_dispatcher.map_method('test_progress', False)
-                statuses.append(status)
+
                 if status['status'] not in ["started", "running"]:
                     break
 
@@ -114,11 +117,12 @@ class Runner(RunnerInterface):
             # since 358e800e81 all runners all produce the result in a key called
             # 'result', instead of 'status'.  But the Avocado result plugins rely
             # on the current runner approach
-            test_state = {'status': statuses[-1]['result'].upper()}
+            this_task_data = status_repo.get_task_data(task.identifier)
+            test_state = {'status': this_task_data[-1]['result'].upper()}
             test_state.update(early_state)
 
-            time_start = statuses[0]['time']
-            time_end = statuses[-1]['time']
+            time_start = this_task_data[0]['time']
+            time_end = this_task_data[-1]['time']
             time_elapsed = time_end - time_start
             test_state['time_start'] = time_start
             test_state['time_end'] = time_end
@@ -131,7 +135,7 @@ class Runner(RunnerInterface):
             base_path = os.path.join(job.logdir, 'test-results')
             self._populate_task_logdir(base_path,
                                        task,
-                                       statuses,
+                                       this_task_data,
                                        job.config.get('core.debug'))
 
             job.result.check_test(test_state)

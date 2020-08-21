@@ -2,10 +2,9 @@ import logging
 import os
 import re
 
-from .base import BaseBackend
 from ... import path as utils_path
 from ... import process
-
+from .base import BaseBackend
 
 log = logging.getLogger('avocado.utils.software_manager')
 

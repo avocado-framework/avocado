@@ -15,9 +15,11 @@
 
 import os
 import sys
+
+from setuptools import find_packages, setup
+
 # pylint: disable=E0611
 
-from setuptools import setup, find_packages
 
 BASE_PATH = os.path.dirname(__file__)
 with open(os.path.join(BASE_PATH, 'VERSION'), 'r') as version_file:
@@ -76,13 +78,15 @@ if __name__ == '__main__':
                   "sysinfo = avocado.plugins.sysinfo:SysinfoInit",
                   "tap = avocado.plugins.tap:TAPInit",
                   "jobscripts = avocado.plugins.jobscripts:JobScriptsInit",
+                  "json_variants = avocado.plugins.json_variants:JsonVariantsInit",
+                  "run = avocado.plugins.run:RunInit",
               ],
               'avocado.plugins.cli': [
                   'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnitCLI',
                   'json = avocado.plugins.jsonresult:JSONCLI',
                   'journal = avocado.plugins.journal:Journal',
-                  'replay = avocado.plugins.replay:Replay',
+                  'replay_legacy = avocado.plugins.legacy.replay:Replay',
                   'tap = avocado.plugins.tap:TAP',
                   'zip_archive = avocado.plugins.archive:ArchiveCLI',
                   'json_variants = avocado.plugins.json_variants:JsonVariantsCLI',
@@ -99,9 +103,9 @@ if __name__ == '__main__':
                   'diff = avocado.plugins.diff:Diff',
                   'nrun = avocado.plugins.nrun:NRun',
                   'vmimage = avocado.plugins.vmimage:VMimage',
-                  'nlist = avocado.plugins.nlist:List',
                   'assets = avocado.plugins.assets:Assets',
                   'jobs = avocado.plugins.jobs:Jobs',
+                  'replay = avocado.plugins.replay:Replay',
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
@@ -123,6 +127,7 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.varianter': [
                   'json_variants = avocado.plugins.json_variants:JsonVariants',
+                  'dict_variants = avocado.plugins.dict_variants:DictVariants',
                   ],
               'avocado.plugins.resolver': [
                   'exec-test = avocado.plugins.resolvers:ExecTestResolver',

@@ -3,16 +3,14 @@ import os
 import random
 import stat
 import sys
-import tempfile
 import time
 import unittest
 
+from avocado.utils import process
 from avocado.utils.filelock import FileLock
 from avocado.utils.stacktrace import prepare_exc_info
-from avocado.utils import process
 
-from .. import temp_dir_prefix, skipOnLevelsInferiorThan
-
+from .. import TestCaseTmpDir, skipOnLevelsInferiorThan
 
 # What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
@@ -124,17 +122,16 @@ if __name__ == '__main__':
 """.format(python=sys.executable)
 
 
-class ProcessTest(unittest.TestCase):
+class ProcessTest(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.base_logdir = tempfile.TemporaryDirectory(prefix=prefix)
-        self.fake_vmstat = os.path.join(self.base_logdir.name, 'vmstat')
+        super(ProcessTest, self).setUp()
+        self.fake_vmstat = os.path.join(self.tmpdir.name, 'vmstat')
         with open(self.fake_vmstat, 'w') as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)
         os.chmod(self.fake_vmstat, DEFAULT_MODE)
 
-        self.fake_uptime = os.path.join(self.base_logdir.name, 'uptime')
+        self.fake_uptime = os.path.join(self.tmpdir.name, 'uptime')
         with open(self.fake_uptime, 'w') as fake_uptime_obj:
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
         os.chmod(self.fake_uptime, DEFAULT_MODE)
@@ -183,9 +180,6 @@ class ProcessTest(unittest.TestCase):
         self.assertEqual(result.exit_status, 0, 'result: %s' % result)
         self.assertIn(b'load average', result.stdout)
 
-    def tearDown(self):
-        self.base_logdir.cleanup()
-
 
 def file_lock_action(args):
     path, players, max_individual_timeout = args
@@ -195,11 +189,7 @@ def file_lock_action(args):
         time.sleep(sleeptime)
 
 
-class FileLockTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+class FileLockTest(TestCaseTmpDir):
 
     @skipOnLevelsInferiorThan(3)
     def test_filelock(self):
@@ -221,9 +211,6 @@ class FileLockTest(unittest.TestCase):
             msg = 'Failed to run FileLock with %s players:\n%s'
             msg %= (players, prepare_exc_info(sys.exc_info()))
             self.fail(msg)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

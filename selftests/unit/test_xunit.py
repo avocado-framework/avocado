@@ -3,18 +3,20 @@ import tempfile
 import unittest
 from xml.dom import minidom
 
-try:
-    import xmlschema
-    SCHEMA_CAPABLE = True
-except ImportError:
-    SCHEMA_CAPABLE = False
-
 from avocado import Test
 from avocado.core import job
 from avocado.core.result import Result
 from avocado.plugins import xunit
 
 from .. import setup_avocado_loggers, temp_dir_prefix
+
+try:
+    import xmlschema
+    SCHEMA_CAPABLE = True
+except ImportError:
+    SCHEMA_CAPABLE = False
+
+
 
 
 setup_avocado_loggers()
@@ -113,15 +115,19 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result.end_test(self.test1.get_state())
         self.test_result.end_tests()
         xunit_result = xunit.XUnitResult()
+        # setting the default value
+        self.job.config['job.run.result.xunit.max_test_log_chars'] = 100000
         xunit_result.render(self.test_result, self.job)
         xunit_output = self.job.config.get('job.run.result.xunit.output')
         with open(xunit_output, 'rb') as fp:
             unlimited = fp.read()
-        self.job.config['xunit.max_test_log_chars'] = 10
+        # setting a small value
+        self.job.config['job.run.result.xunit.max_test_log_chars'] = 10
         xunit_result.render(self.test_result, self.job)
         with open(xunit_output, 'rb') as fp:
             limited = fp.read()
-        self.job.config['xunit.max_test_log_chars'] = 100000
+        # back to the default value
+        self.job.config['job.run.result.xunit.max_test_log_chars'] = 100000
         xunit_result.render(self.test_result, self.job)
         with open(xunit_output, 'rb') as fp:
             limited_but_fits = fp.read()

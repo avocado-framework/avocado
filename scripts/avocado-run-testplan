@@ -14,14 +14,13 @@
 # Author: Cleber Rosa <cleber@redhat.com>
 
 
+import argparse
 import datetime
 import getpass
 import json
 import os
 import subprocess
 import sys
-
-import argparse
 
 
 class Parser(argparse.ArgumentParser):

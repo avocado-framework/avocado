@@ -40,8 +40,8 @@ If test fails due to invalid change on the system:
 
 """
 
-import os
 import difflib
+import os
 import shutil
 
 

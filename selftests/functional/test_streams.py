@@ -1,19 +1,13 @@
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir
 
 
-class StreamsTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class StreamsTest(TestCaseTmpDir):
 
     def test_app_info_stdout(self):
         """
@@ -45,10 +39,10 @@ class StreamsTest(unittest.TestCase):
         Also checks the symmetry between `--show early` and the environment
         variable `AVOCADO_LOG_EARLY` being set.
         """
-        cmds = (('%s --show early run --sysinfo=off '
+        cmds = (('%s --show early run --disable-sysinfo '
                  '--job-results-dir %s passtest.py' % (AVOCADO, self.tmpdir.name),
                  {}),
-                ('%s run --sysinfo=off --job-results-dir'
+                ('%s run --disable-sysinfo --job-results-dir'
                  ' %s passtest.py' % (AVOCADO, self.tmpdir.name),
                  {'AVOCADO_LOG_EARLY': 'y'}))
         for cmd, env in cmds:
@@ -63,7 +57,7 @@ class StreamsTest(unittest.TestCase):
         """
         Checks that the test stream (early in this case) goes to stdout
         """
-        cmd = ('%s --show=test run --sysinfo=off --job-results-dir %s '
+        cmd = ('%s --show=test run --disable-sysinfo --job-results-dir %s '
                'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -79,7 +73,7 @@ class StreamsTest(unittest.TestCase):
         """
         Checks that only errors are output, and that they go to stderr
         """
-        cmd = ('%s --show none run --sysinfo=off --job-results-dir %s '
+        cmd = ('%s --show none run --disable-sysinfo --job-results-dir %s '
                'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -117,9 +111,6 @@ class StreamsTest(unittest.TestCase):
         run("avocado.app:20", 1)
         run("avocado.app:wARn", 0)
         run("avocado.app:30", 0)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

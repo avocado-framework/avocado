@@ -11,134 +11,30 @@
 #
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# Author: Beraldo Leal <bleal@redhat.com>
 
-import sys
+import os
 
-from avocado.core import exit_codes, output
-from avocado.core import loader
-from avocado.core import test
-from avocado.core import tags
-from avocado.core import parser_common_args
-from avocado.core.output import LOG_UI
-from avocado.core.future.settings import settings
+from avocado.core import exit_codes, loader, parser_common_args
+from avocado.core.output import LOG_UI, TERM_SUPPORT
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.utils import astring
+from avocado.core.resolver import ReferenceResolutionResult
+from avocado.core.settings import settings
+from avocado.core.suite import TestSuite
+from avocado.core.test import Test
+from avocado.utils.astring import iter_tabular_output
 
 
-class TestLister:
-
-    """
-    Lists available test modules
-    """
-
-    def __init__(self, config):
-        try:
-            loader.loader.load_plugins(config)
-        except loader.LoaderError as details:
-            sys.stderr.write(str(details))
-            sys.stderr.write('\n')
-            sys.exit(exit_codes.AVOCADO_FAIL)
-        self.config = config
-
-    def _extra_listing(self):
-        loader.loader.get_extra_listing()
-
-    def _get_test_suite(self, paths):
-        if self.config.get('core.verbose'):
-            which_tests = loader.DiscoverMode.ALL
+def _get_test_tags(test):
+    """Return a list of all tags of a test as string."""
+    params = test[1]
+    tags_repr = []
+    for tag, values in params.get('tags', {}).items():
+        if values:
+            tags_repr.append("%s(%s)" % (tag, ",".join(values)))
         else:
-            which_tests = loader.DiscoverMode.AVAILABLE
-        try:
-            return loader.loader.discover(paths,
-                                          which_tests=which_tests)
-        except loader.LoaderUnhandledReferenceError as details:
-            LOG_UI.error(str(details))
-            sys.exit(exit_codes.AVOCADO_FAIL)
-
-    def _get_test_matrix(self, test_suite):
-        test_matrix = []
-
-        type_label_mapping = loader.loader.get_type_label_mapping()
-        decorator_mapping = loader.loader.get_decorator_mapping()
-
-        stats = {}
-        tag_stats = {}
-        for value in type_label_mapping.values():
-            stats[value.lower()] = 0
-
-        for cls, params in test_suite:
-            if isinstance(cls, str):
-                cls = test.Test
-            type_label = type_label_mapping[cls]
-            decorator = decorator_mapping[cls]
-            stats[type_label.lower()] += 1
-            type_label = decorator(type_label)
-
-            if self.config.get('core.verbose'):
-                if 'tags' in params:
-                    tgs = params['tags']
-                else:
-                    tgs = {}
-                tags_repr = []
-                for tag, vals in tgs.items():
-                    if tag not in tag_stats:
-                        tag_stats[tag] = 1
-                    else:
-                        tag_stats[tag] += 1
-                    if vals:
-                        tags_repr.append("%s(%s)" % (tag, ",".join(vals)))
-                    else:
-                        tags_repr.append(tag)
-                tags_repr = ",".join(tags_repr)
-                test_matrix.append((type_label, params['name'], tags_repr))
-            else:
-                test_matrix.append((type_label, params['name']))
-
-        return test_matrix, stats, tag_stats
-
-    def _display(self, test_matrix, stats, tag_stats):
-        header = None
-        if self.config.get('core.verbose'):
-            header = (output.TERM_SUPPORT.header_str('Type'),
-                      output.TERM_SUPPORT.header_str('Test'),
-                      output.TERM_SUPPORT.header_str('Tag(s)'))
-
-        for line in astring.iter_tabular_output(test_matrix, header=header,
-                                                strip=True):
-            LOG_UI.debug(line)
-
-        if self.config.get('core.verbose'):
-            LOG_UI.info("")
-            LOG_UI.info("TEST TYPES SUMMARY")
-            LOG_UI.info("==================")
-            for key in sorted(stats):
-                LOG_UI.info("%s: %s", key.upper(), stats[key])
-
-            if tag_stats:
-                LOG_UI.info("")
-                LOG_UI.info("TEST TAGS SUMMARY")
-                LOG_UI.info("=================")
-                for key in sorted(tag_stats):
-                    LOG_UI.info("%s: %s", key, tag_stats[key])
-
-    def _list(self):
-        self._extra_listing()
-        test_suite = self._get_test_suite(self.config.get('list.references'))
-        if self.config.get('list.filter_by_tags'):
-            test_suite = tags.filter_test_tags(
-                test_suite,
-                self.config.get('list.filter_by_tags'),
-                self.config.get('list.filter_by_tags_include_empty'),
-                self.config.get('list.filter_by_tags_include_empty_key'))
-        test_matrix, stats, tag_stats = self._get_test_matrix(test_suite)
-        self._display(test_matrix, stats, tag_stats)
-
-    def list(self):
-        try:
-            self._list()
-        except KeyboardInterrupt:
-            LOG_UI.error('Command interrupted by user...')
-            return exit_codes.AVOCADO_FAIL
+            tags_repr.append(tag)
+    return ",".join(tags_repr)
 
 
 class List(CLICmd):
@@ -149,6 +45,126 @@ class List(CLICmd):
 
     name = 'list'
     description = 'List available tests'
+
+    def _display(self, suite, matrix, resolution=None):
+        header = None
+        verbose = suite.config.get('core.verbose')
+        if verbose:
+            header = (TERM_SUPPORT.header_str('Type'),
+                      TERM_SUPPORT.header_str('Test'),
+                      TERM_SUPPORT.header_str('Tag(s)'))
+
+        for line in iter_tabular_output(matrix,
+                                        header=header,
+                                        strip=True):
+            LOG_UI.debug(line)
+
+        if verbose:
+            LOG_UI.info("")
+            LOG_UI.info("TEST TYPES SUMMARY")
+            LOG_UI.info("==================")
+            for key in sorted(suite.stats):
+                LOG_UI.info("%s: %s", key, suite.stats[key])
+
+            if suite.tags_stats:
+                LOG_UI.info("")
+                LOG_UI.info("TEST TAGS SUMMARY")
+                LOG_UI.info("=================")
+                for key in sorted(suite.tags_stats):
+                    LOG_UI.info("%s: %s", key, suite.tags_stats[key])
+
+            if resolution:
+                resolution_header = (TERM_SUPPORT.header_str('Resolver'),
+                                     TERM_SUPPORT.header_str('Reference'),
+                                     TERM_SUPPORT.header_str('Info'))
+                LOG_UI.info("")
+                for line in iter_tabular_output(resolution,
+                                                header=resolution_header,
+                                                strip=True):
+                    LOG_UI.info(line)
+
+    @staticmethod
+    def _get_test_matrix(suite):
+        """Used for loader."""
+        test_matrix = []
+
+        type_label_mapping = loader.loader.get_type_label_mapping()
+        decorator_mapping = loader.loader.get_decorator_mapping()
+
+        verbose = suite.config.get('core.verbose')
+        for cls, params in suite.tests:
+            if isinstance(cls, str):
+                cls = Test
+            type_label = type_label_mapping[cls]
+            decorator = decorator_mapping[cls]
+            type_label = decorator(type_label)
+
+            if verbose:
+                test_matrix.append((type_label,
+                                    params['name'],
+                                    _get_test_tags((cls, params))))
+            else:
+                test_matrix.append((type_label, params['name']))
+
+        return test_matrix
+
+    @staticmethod
+    def _get_resolution_matrix(suite):
+        """Used for resolver."""
+        test_matrix = []
+        resolution_matrix = []
+        decorator_mapping = {
+            ReferenceResolutionResult.SUCCESS: TERM_SUPPORT.healthy_str,
+            ReferenceResolutionResult.NOTFOUND: TERM_SUPPORT.fail_header_str,
+            ReferenceResolutionResult.ERROR: TERM_SUPPORT.fail_header_str
+            }
+        verbose = suite.config.get('core.verbose')
+        for result in suite.resolutions:
+            decorator = decorator_mapping.get(result.result,
+                                              TERM_SUPPORT.warn_header_str)
+            if result.resolutions:
+                for runnable in result.resolutions:
+                    type_label = runnable.kind
+                    type_label = decorator(type_label)
+
+                    if verbose:
+                        tags_repr = []
+                        tags = runnable.tags or {}
+                        for tag, vals in tags.items():
+                            if vals:
+                                tags_repr.append("%s(%s)" % (tag,
+                                                             ",".join(vals)))
+                            else:
+                                tags_repr.append(tag)
+                        tags_repr = ",".join(tags_repr)
+                        test_matrix.append((type_label, runnable.uri,
+                                            tags_repr))
+                    else:
+                        test_matrix.append((type_label, runnable.uri))
+            else:
+                # assuming that empty resolutions mean a NOTFOUND, ERROR, etc
+                if result.info is None:
+                    result_info = ''
+                else:
+                    result_info = result.info
+                if result.result == ReferenceResolutionResult.SUCCESS:
+                    if not result_info:
+                        size = len(result.resolutions)
+                        result_info = "%i resolutions" % size
+                resolution_matrix.append((decorator(result.origin),
+                                          result.reference,
+                                          result_info))
+        return test_matrix, resolution_matrix
+
+    @staticmethod
+    def save_recipes(suite, directory, matrix_len):
+        fmt = '%%0%uu.json' % len(str(matrix_len))
+        index = 1
+        for resolution in suite.resolutions:
+            if resolution.result == ReferenceResolutionResult.SUCCESS:
+                for res in resolution.resolutions:
+                    res.write_json(os.path.join(directory, fmt % index))
+                    index += 1
 
     def configure(self, parser):
         """
@@ -173,8 +189,47 @@ class List(CLICmd):
                                  parser=parser,
                                  positional_arg=True)
         loader.add_loader_options(parser, 'list')
+
+        help_msg = ('What is the method used to detect tests? If --resolver '
+                    'used, Avocado will use the Next Runner Resolver method. '
+                    'If not the legacy one will be used.')
+        settings.register_option(section='list',
+                                 key='resolver',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--resolver')
+
+        help_msg = ('Writes runnable recipe files to a directory. Valid only '
+                    'when using --resolver.')
+        settings.register_option(section='list.recipes',
+                                 key='write_to_directory',
+                                 default=None,
+                                 metavar='DIRECTORY',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--write-recipes-to-directory')
+
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
-        test_lister = TestLister(config)
-        return test_lister.list()
+        runner = 'nrunner' if config.get('list.resolver') else 'runner'
+        config['run.references'] = config.get('list.references')
+        config['run.ignore_missing_references'] = True
+        config['run.test_runner'] = runner
+        try:
+            suite = TestSuite.from_config(config)
+            if runner == 'nrunner':
+                matrix, resolution = self._get_resolution_matrix(suite)
+                self._display(suite, matrix, resolution)
+
+                directory = config.get('list.recipes.write_to_directory')
+                if directory is not None:
+                    self.save_recipes(suite, directory, len(matrix))
+            else:
+                matrix = self._get_test_matrix(suite)
+                self._display(suite, matrix)
+        except KeyboardInterrupt:
+            LOG_UI.error('Command interrupted by user...')
+            return exit_codes.AVOCADO_FAIL

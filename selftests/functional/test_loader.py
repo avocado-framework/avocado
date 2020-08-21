@@ -1,18 +1,16 @@
-import os
 import json
+import os
+import signal
+import stat
 import subprocess
 import time
-import stat
-import tempfile
-import signal
 import unittest
 
 from avocado.core import exit_codes
-from avocado.utils import script
-from avocado.utils import process
+from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipOnLevelsInferiorThan
-
+from .. import (AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan,
+                skipUnlessPathExists)
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
 from avocado import Test
@@ -134,7 +132,7 @@ if __name__ == "__main__":
 """
 
 
-class LoaderTestFunctional(unittest.TestCase):
+class LoaderTestFunctional(TestCaseTmpDir):
 
     MODE_0664 = (stat.S_IRUSR | stat.S_IWUSR |
                  stat.S_IRGRP | stat.S_IWGRP |
@@ -143,11 +141,6 @@ class LoaderTestFunctional(unittest.TestCase):
     MODE_0775 = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
                  stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
                  stat.S_IROTH | stat.S_IXOTH)
-
-    def setUp(self):
-        os.chdir(BASEDIR)
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def _test(self, name, content, exp_str, mode=MODE_0664, count=1):
         test_script = script.TemporaryScript(name, content,
@@ -173,18 +166,18 @@ class LoaderTestFunctional(unittest.TestCase):
         self.assertEqual(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
 
     def test_simple(self):
-        self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', self.MODE_0775)
+        self._test('simpletest.sh', SIMPLE_TEST, 'simple', self.MODE_0775)
 
     def test_simple_not_exec(self):
         # 2 because both FileLoader and the TAP loader cannot recognize the test
-        self._test('simpletest.sh', SIMPLE_TEST, 'NOT_A_TEST', count=2)
+        self._test('simpletest.sh', SIMPLE_TEST, 'not_a_test', count=2)
 
     def test_pass(self):
-        self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
+        self._test('passtest.py', AVOCADO_TEST_OK, 'instrumented')
 
     def test_not_python_module(self):
         # 2 because both FileLoader and the TAP loader cannot recognize the test
-        self._test('passtest', AVOCADO_TEST_OK, 'NOT_A_TEST', count=2)
+        self._test('passtest', AVOCADO_TEST_OK, 'not_a_test', count=2)
 
     @skipOnLevelsInferiorThan(2)
     def test_sleep_a_lot(self):
@@ -208,22 +201,22 @@ class LoaderTestFunctional(unittest.TestCase):
                         ("Took more than 3 seconds to list tests. Loader "
                          "probably loaded/executed Python code and slept for "
                          "eleven seconds."))
-        self.assertIn(b'INSTRUMENTED: 2', result.stdout)
+        self.assertIn(b'instrumented: 2', result.stdout)
 
     def test_multiple_class(self):
         self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
-                   'INSTRUMENTED', self.MODE_0664, 2)
+                   'instrumented', self.MODE_0664, 2)
 
     def test_multiple_methods_same_name(self):
         self._test('multiplemethods.py', AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME,
-                   'INSTRUMENTED', self.MODE_0664, 1)
+                   'instrumented', self.MODE_0664, 1)
 
     def test_load_not_a_test(self):
-        self._test('notatest.py', NOT_A_TEST, 'SIMPLE', self.MODE_0775)
+        self._test('notatest.py', NOT_A_TEST, 'simple', self.MODE_0775)
 
     def test_load_not_a_test_not_exec(self):
         # 2 because both FileLoader and the TAP loader cannot recognize the test
-        self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST', count=2)
+        self._test('notatest.py', NOT_A_TEST, 'not_a_test', count=2)
 
     @skipOnLevelsInferiorThan(2)
     def test_runner_simple_python_like_multiple_files(self):
@@ -243,10 +236,10 @@ class LoaderTestFunctional(unittest.TestCase):
         mytest.save()
         cmd_line = "%s -V list %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
-        self.assertIn(b'SIMPLE: 1', result.stdout)
+        self.assertIn(b'simple: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' -- '%s'"
                     % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
@@ -262,13 +255,13 @@ class LoaderTestFunctional(unittest.TestCase):
         os.chdir(BASEDIR)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' -- '%s'"
                     % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
     def test_python_unittest(self):
         test_path = os.path.join(BASEDIR, "selftests", ".data", "unittests.py")
-        cmd = ("%s run --sysinfo=off --job-results-dir %s --json - -- %s"
+        cmd = ("%s run --disable-sysinfo --job-results-dir %s --json - -- %s"
                % (AVOCADO, self.tmpdir.name, test_path))
         result = process.run(cmd, ignore_status=True)
         jres = json.loads(result.stdout_text)
@@ -304,9 +297,30 @@ class LoaderTestFunctional(unittest.TestCase):
                     b"SIMPLE       examples/tests/failtest.sh\n")
         self.assertEqual(expected, result.stdout)
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
+    @skipUnlessPathExists('/bin/sh')
+    def test_loader_and_external_runner_incompatibility(self):
+        """
+        Check if the user is inform about incompatibility between loader and
+        external_runner.
+        """
+        test_script = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
+                                             'avocado_loader_test',
+                                             mode=self.MODE_0775)
+        test_script.save()
 
+        cmd = ("%s run --loaders=FOO "
+               "--external-runner=/bin/sh %s") % (AVOCADO, test_script.path)
+        result = process.run(cmd)
+        expected_warning = ("The loaders and external-runner are incompatible."
+                            "The values in loaders will be ignored.")
+        self.assertIn(expected_warning, result.stderr_text)
+
+        cmd = "%s run --external-runner=/bin/sh %s" % (AVOCADO,
+                                                       test_script.path)
+        result = process.run(cmd)
+        self.assertNotIn(expected_warning, result.stderr_text)
+
+        test_script.remove()
 
 if __name__ == '__main__':
     unittest.main()

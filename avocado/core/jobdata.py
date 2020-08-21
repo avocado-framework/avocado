@@ -20,22 +20,20 @@ import ast
 import json
 import os
 
-from . import varianter
-from .future.settings import settings
-from .output import LOG_UI, LOG_JOB
 from ..utils.path import init_dir
-
+from .output import LOG_JOB, LOG_UI
+from .settings import settings
+from .varianter import VARIANTS_FILENAME
 
 JOB_DATA_DIR = 'jobdata'
 CONFIG_FILENAME = 'config'
 TEST_REFERENCES_FILENAME = 'test_references'
-VARIANTS_FILENAME = 'variants.json'
 PWD_FILENAME = 'pwd'
 JOB_CONFIG_FILENAME = 'args.json'
 CMDLINE_FILENAME = 'cmdline'
 
 
-def record(config, logdir, variants, cmdline=None):
+def record(job, cmdline=None):
     """
     Records all required job information.
     """
@@ -43,7 +41,7 @@ def record(config, logdir, variants, cmdline=None):
         for log in [LOG_UI, LOG_JOB]:
             log.warning("jobdata.variants: Unable to serialize '%s'", item)
         return str(item)
-    base_dir = init_dir(logdir, JOB_DATA_DIR)
+    base_dir = init_dir(job.logdir, JOB_DATA_DIR)
     path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
     path_variants = os.path.join(base_dir, VARIANTS_FILENAME)
@@ -51,7 +49,7 @@ def record(config, logdir, variants, cmdline=None):
     path_job_config = os.path.join(base_dir, JOB_CONFIG_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
-    references = config.get('run.references')
+    references = job.config.get('run.references')
     if references:
         with open(path_references, 'w') as references_file:
             references_file.write('%s' % references)
@@ -64,7 +62,10 @@ def record(config, logdir, variants, cmdline=None):
         os.fsync(config_file)
 
     with open(path_variants, 'w') as variants_file:
-        json.dump(variants.dump(), variants_file, default=json_bad_variants_obj)
+        variants = []
+        for suite in job.test_suites:
+            variants.append(suite.variants.dump())
+        json.dump(variants, variants_file, default=json_bad_variants_obj)
         variants_file.flush()
         os.fsync(variants_file)
 
@@ -74,7 +75,7 @@ def record(config, logdir, variants, cmdline=None):
         os.fsync(pwd_file)
 
     with open(path_job_config, 'w') as job_config_file:
-        json.dump(config, job_config_file, default=lambda x: None)
+        json.dump(job.config, job_config_file, default=lambda x: None)
         job_config_file.flush()
         os.fsync(job_config_file)
 
@@ -113,14 +114,11 @@ def retrieve_references(resultsdir):
         return ast.literal_eval(references_file.read())
 
 
-def retrieve_variants(resultsdir):
+def get_variants_path(resultsdir):
     """
-    Retrieves the job variants object from the results directory.
+    Retrieves the variants path from the results directory.
     """
-    recorded_variants = _retrieve(resultsdir, VARIANTS_FILENAME)
-    if recorded_variants:
-        with open(recorded_variants, 'r') as variants_file:
-            return varianter.Varianter(state=json.load(variants_file))
+    return _retrieve(resultsdir, VARIANTS_FILENAME)
 
 
 def retrieve_job_config(resultsdir):

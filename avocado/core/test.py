@@ -29,28 +29,17 @@ import sys
 import tempfile
 import time
 import unittest
-
 from difflib import unified_diff
 
-from . import data_dir
-from . import exceptions
-from . import output
-from . import parameters
-from . import sysinfo
-from . import tapparser
-from ..utils import asset
-from ..utils import astring
-from ..utils import data_structures
-from ..utils import genio
+from ..utils import asset, astring, data_structures, genio
 from ..utils import path as utils_path
-from ..utils import process
-from ..utils import stacktrace
+from ..utils import process, stacktrace
+from . import data_dir, exceptions, output, parameters, sysinfo, tapparser
 from .decorators import skip
-from .future.settings import settings
+from .output import LOG_JOB
+from .settings import settings
 from .test_id import TestID
 from .version import VERSION
-from .output import LOG_JOB
-
 
 #: Environment variable used to store the location of a temporary
 #: directory which is preserved across all tests execution (usually in
@@ -825,7 +814,7 @@ class Test(unittest.TestCase, TestData):
                                            "stderr.expected")
 
             # check the output and produce test failures
-            if output_check_record != 'none' and output_check == 'on':
+            if output_check_record != 'none' and output_check:
                 output_checked = False
                 try:
                     output_checked = self._check_reference(
@@ -1101,6 +1090,13 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
+    @staticmethod
+    def _cmd_error_to_test_failure(cmd_error):
+        return ("Exited with status: '%u', stdout: %r stderr: %r" %
+                (cmd_error.result.exit_status, cmd_error.result.stdout_text,
+                 cmd_error.result.stderr_text))
+
+
     def _execute_cmd(self):
         """
         Run the executable, and log its detailed execution.
@@ -1118,7 +1114,8 @@ class SimpleTest(Test):
             self._log_detailed_cmd_info(result)
         except process.CmdError as details:
             self._log_detailed_cmd_info(details.result)
-            raise exceptions.TestFail(details)
+            test_failure = self._cmd_error_to_test_failure(details)
+            raise exceptions.TestFail(test_failure)
 
         warn_regex = self._config.get('simpletests.status.warn_regex')
         warn_location = self._config.get('simpletests.status.warn_location')

@@ -29,7 +29,6 @@ import itertools
 import locale
 import re
 
-
 #: On import evaluated value representing the system encoding
 #: based on system locales using :func:`locale.getpreferredencoding`.
 #: Use this value wisely as some files are dumped in different

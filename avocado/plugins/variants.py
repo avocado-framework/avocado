@@ -17,10 +17,10 @@ import json
 import sys
 
 from avocado.core import exit_codes
-from avocado.core.future.settings import settings as future_settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-
+from avocado.core.settings import settings
+from avocado.core.varianter import Varianter
 
 _VERBOSITY_LEVELS = {"none": 0, "brief": 1, "normal": 2, "verbose": 3,
                      "full": 4, "max": 99}
@@ -52,76 +52,76 @@ class Variants(CLICmd):
                                                key=lambda _: _VERBOSITY_LEVELS[_])))
 
         help_msg = 'Verbosity of the variants summary. ' + verbosity_levels
-        future_settings.register_option(section='variants',
-                                        key='summary',
-                                        key_type=map_verbosity_level,
-                                        default=0,
-                                        help_msg=help_msg,
-                                        parser=parser,
-                                        long_arg='--summary')
+        settings.register_option(section='variants',
+                                 key='summary',
+                                 key_type=map_verbosity_level,
+                                 default=0,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--summary')
 
         help_msg = 'Verbosity of the list of variants. ' + verbosity_levels
-        future_settings.register_option(section='variants',
-                                        key='variants',
-                                        key_type=map_verbosity_level,
-                                        default=1,
-                                        help_msg=help_msg,
-                                        parser=parser,
-                                        long_arg='--variants')
+        settings.register_option(section='variants',
+                                 key='variants',
+                                 key_type=map_verbosity_level,
+                                 default=1,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--variants')
 
         help_msg = ('[obsoleted by --variants] Shows the node content '
                     '(variables)')
-        future_settings.register_option(section='variants',
-                                        key='contents',
-                                        key_type=bool,
-                                        default=False,
-                                        parser=parser,
-                                        help_msg=help_msg,
-                                        short_arg='-c',
-                                        long_arg='--contents')
+        settings.register_option(section='variants',
+                                 key='contents',
+                                 key_type=bool,
+                                 default=False,
+                                 parser=parser,
+                                 help_msg=help_msg,
+                                 short_arg='-c',
+                                 long_arg='--contents')
 
         help_msg = 'Dump the Variants to a JSON serialized file'
-        future_settings.register_option(section='variants',
-                                        key='json_variants_dump',
-                                        help_msg=help_msg,
-                                        default=None,
-                                        parser=parser,
-                                        long_arg='--json-variants-dump')
+        settings.register_option(section='variants',
+                                 key='json_variants_dump',
+                                 help_msg=help_msg,
+                                 default=None,
+                                 parser=parser,
+                                 long_arg='--json-variants-dump')
 
         env_parser = parser.add_argument_group("environment view options")
 
         help_msg = 'Use debug implementation to gather more information.'
-        future_settings.register_option(section='variants',
-                                        key='debug',
-                                        help_msg=help_msg,
-                                        parser=env_parser,
-                                        key_type=bool,
-                                        default=False,
-                                        long_arg='--debug',
-                                        short_arg='-d')
+        settings.register_option(section='variants',
+                                 key='debug',
+                                 help_msg=help_msg,
+                                 parser=env_parser,
+                                 key_type=bool,
+                                 default=False,
+                                 long_arg='--debug',
+                                 short_arg='-d')
 
         tree_parser = parser.add_argument_group("tree view options")
 
         help_msg = ('[obsoleted by --summary] Shows the multiplex tree '
                     'structure')
-        future_settings.register_option(section='variants',
-                                        key='tree',
-                                        key_type=bool,
-                                        default=False,
-                                        help_msg=help_msg,
-                                        parser=tree_parser,
-                                        long_arg='--tree',
-                                        short_arg='-t')
+        settings.register_option(section='variants',
+                                 key='tree',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg,
+                                 parser=tree_parser,
+                                 long_arg='--tree',
+                                 short_arg='-t')
 
         help_msg = '[obsoleted by --summary] Show the inherited values'
-        future_settings.register_option(section='variants',
-                                        key='inherit',
-                                        key_type=bool,
-                                        help_msg=help_msg,
-                                        parser=tree_parser,
-                                        default=False,
-                                        short_arg='-i',
-                                        long_arg='--inherit')
+        settings.register_option(section='variants',
+                                 key='inherit',
+                                 key_type=bool,
+                                 help_msg=help_msg,
+                                 parser=tree_parser,
+                                 default=False,
+                                 short_arg='-i',
+                                 long_arg='--inherit')
 
     def run(self, config):
         tree = config.get('variants.tree')
@@ -138,7 +138,7 @@ class Variants(CLICmd):
         if err:
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        varianter = config.get('avocado_variants')
+        varianter = Varianter()
         try:
             varianter.parse(config)
         except (IOError, ValueError) as details:
@@ -158,19 +158,19 @@ class Variants(CLICmd):
                 variants += 2
 
         json_variants_dump = config.get('variants.json_variants_dump')
-        # Export the serialized avocado_variants
+        # Export the serialized variants
         if json_variants_dump is not None:
             try:
                 with open(json_variants_dump, 'w') as variants_file:
-                    json.dump(config.get('avocado_variants').dump(), variants_file)
+                    json.dump(varianter.dump(), variants_file)
             except IOError:
                 LOG_UI.error("Cannot write %s", json_variants_dump)
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Produce the output
-        lines = config.get('avocado_variants').to_str(summary=summary,
-                                                      variants=variants,
-                                                      use_utf8=use_utf8)
+        lines = varianter.to_str(summary=summary,
+                                 variants=variants,
+                                 use_utf8=use_utf8)
         for line in lines.splitlines():
             LOG_UI.debug(line)
 

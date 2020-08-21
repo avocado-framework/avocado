@@ -20,16 +20,13 @@ import ast
 import os
 import urllib.parse
 
-from avocado.core import data_dir
-from avocado.core import exit_codes
-from avocado.core import safeloader
-from avocado.core.future.settings import settings
+from avocado.core import data_dir, exit_codes, safeloader
 from avocado.core.nrunner import Task
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.plugin_interfaces import JobPreTests
-from avocado.utils.asset import Asset
+from avocado.core.plugin_interfaces import CLICmd, JobPreTests
+from avocado.core.settings import settings
 from avocado.utils import data_structures
+from avocado.utils.asset import Asset
 
 
 class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
@@ -261,18 +258,19 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
             logger = job.log
         else:
             logger = None
-        for test in job.test_suite.tests:
-            # ignore nrunner/resolver based test suites that contain
-            # task, because the requirements resolution planned is
-            # completely different from the traditional job runner
-            if isinstance(test, Task):
-                continue
-            # fetch assets only on instrumented tests
-            if isinstance(test[0], str):
-                fetch_assets(test[1]['modulePath'],
-                             test[0],
-                             test[1]['methodName'],
-                             logger)
+        for suite in job.test_suites:
+            for test in suite.tests:
+                # ignore nrunner/resolver based test suites that contain
+                # task, because the requirements resolution planned is
+                # completely different from the traditional job runner
+                if isinstance(test, Task):
+                    continue
+                # fetch assets only on instrumented tests
+                if isinstance(test[0], str):
+                    fetch_assets(test[1]['modulePath'],
+                                 test[0],
+                                 test[1]['methodName'],
+                                 logger)
 
 
 class Assets(CLICmd):

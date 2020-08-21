@@ -1,6 +1,7 @@
-from avocado.utils.ssh import Session
-from avocado.utils.process import SubProcess
 import time
+
+from avocado.utils.process import SubProcess
+from avocado.utils.ssh import Session
 
 with Session('host', user='root', key='/path/to/key') as s:
     print('connected')

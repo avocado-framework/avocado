@@ -1,10 +1,8 @@
-import os
 import glob
+import os
 import unittest
 
-from avocado.core import data_dir
-from avocado.core import job_id
-from avocado.core import exit_codes
+from avocado.core import data_dir, exit_codes, job_id
 from avocado.utils import process
 
 from .. import AVOCADO, BASEDIR
@@ -22,7 +20,7 @@ class ArgumentParsingTest(unittest.TestCase):
 
     def test_known_command_bad_choice(self):
         os.chdir(BASEDIR)
-        cmd_line = '%s run --sysinfo=foo passtest' % AVOCADO
+        cmd_line = '%s run --disable-sysinfo=foo passtest' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -30,7 +28,7 @@ class ArgumentParsingTest(unittest.TestCase):
 
     def test_known_command_bad_argument(self):
         os.chdir(BASEDIR)
-        cmd_line = '%s run --sysinfo=off --whacky-argument passtest' % AVOCADO
+        cmd_line = '%s run --disable-sysinfo --whacky-argument passtest' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -54,7 +52,7 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
         log_dir = data_dir.get_logs_dir()
         self.assertIsNotNone(log_dir)
         job = job_id.create_unique_job_id()
-        cmd_line = '%s run --sysinfo=off --force-job-id=%%s %%s' % AVOCADO
+        cmd_line = '%s run --disable-sysinfo --force-job-id=%%s %%s' % AVOCADO
         cmd_line %= (job, complement_args)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,

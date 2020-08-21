@@ -21,12 +21,17 @@ import tempfile
 from . import path as path_utils
 from . import process
 
-
 try:
     #: The SSH client binary to use, if one is found in the system
     SSH_CLIENT_BINARY = path_utils.find_command('ssh')
 except path_utils.CmdNotFoundError:
     SSH_CLIENT_BINARY = None
+
+
+class NWException(Exception):
+    """
+    Base Exception Class for all exceptions
+    """
 
 
 class Session:
@@ -214,3 +219,32 @@ class Session:
         :rtype: bool
         """
         return self._master_command('exit')
+
+    def copy_files(self, source, destination, recursive=False):
+        """
+        Copy Files to and from remote through scp session.
+
+        :param source: Source file
+        :type: str
+        :param destination: Destination file location
+        :type: str
+        :param recursive: Scp option for copy file. if set to True
+                          copy files inside directory recursively.
+        :type: bool
+        :returns: True if success and an exception if not.
+        :rtype: bool
+        """
+        try:
+            cmd = path_utils.find_command('scp')
+        except path_utils.CmdNotFoundError as exc:
+            raise exc
+        options = self._dash_o_opts_to_str(self.DEFAULT_OPTIONS)
+        if recursive:
+            options += ' -r'
+        options += " {} {}".format(source, destination)
+        try:
+            result = process.run("{} {}".format(cmd, options),
+                                 ignore_status=True)
+            return result.exit_status == 0
+        except process.CmdError as exc:
+            raise NWException("failed to copy file {}".format(exc))

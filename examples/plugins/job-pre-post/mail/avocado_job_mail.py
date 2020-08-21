@@ -2,8 +2,8 @@ import smtplib
 from email.mime.text import MIMEText
 
 from avocado.core.output import LOG_UI
-from avocado.core.future.settings import settings as future_settings
-from avocado.core.plugin_interfaces import JobPre, JobPost, Init
+from avocado.core.plugin_interfaces import Init, JobPost, JobPre
+from avocado.core.settings import settings
 
 
 class MailInit(Init):
@@ -12,28 +12,28 @@ class MailInit(Init):
 
     def initialize(self):
         help_msg = 'Mail recipient.'
-        future_settings.register_option(section='plugins.job.mail',
-                                        key='recipient',
-                                        default='root@localhost.localdomain',
-                                        help_msg=help_msg)
+        settings.register_option(section='plugins.job.mail',
+                                 key='recipient',
+                                 default='root@localhost.localdomain',
+                                 help_msg=help_msg)
 
         help_msg = 'Mail header.'
-        future_settings.register_option(section='plugins.job.mail',
-                                        key='header',
-                                        default='[AVOCADO JOB NOTIFICATION]',
-                                        help_msg=help_msg)
+        settings.register_option(section='plugins.job.mail',
+                                 key='header',
+                                 default='[AVOCADO JOB NOTIFICATION]',
+                                 help_msg=help_msg)
 
         help_msg = 'Mail sender.'
-        future_settings.register_option(section='plugins.job.mail',
-                                        key='sender',
-                                        default='avocado@localhost.localdomain',
-                                        help_msg=help_msg)
+        settings.register_option(section='plugins.job.mail',
+                                 key='sender',
+                                 default='avocado@localhost.localdomain',
+                                 help_msg=help_msg)
 
         help_msg = 'Mail server.'
-        future_settings.register_option(section='plugins.job.mail',
-                                        key='server',
-                                        default='localhost',
-                                        help_msg=help_msg)
+        settings.register_option(section='plugins.job.mail',
+                                 key='server',
+                                 default='localhost',
+                                 help_msg=help_msg)
 
 
 class Mail(JobPre, JobPost):

@@ -3,7 +3,6 @@ Please don't get inspired by this ugly code
 """
 import sys
 
-
 sys.stdout.write("Direct output to stdout\n")
 sys.stderr.write("Direct output to stderr\n")
 input("I really want some input on each import")

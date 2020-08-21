@@ -3,10 +3,9 @@ import sys
 import tempfile
 import unittest.mock
 
-from avocado.core import nrunner
-from avocado.core import nrunner_tap
+from avocado.core import nrunner, nrunner_tap
 
-from .. import temp_dir_prefix, skipUnlessPathExists
+from .. import skipUnlessPathExists, temp_dir_prefix
 
 
 class Runnable(unittest.TestCase):

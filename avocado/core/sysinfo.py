@@ -21,13 +21,11 @@ import shutil
 import subprocess
 import time
 
-from . import output
-from .future.settings import settings as future_settings
-from ..utils import astring
-from ..utils import genio
-from ..utils import process
-from ..utils import software_manager
+from ..utils import astring, genio
 from ..utils import path as utils_path
+from ..utils import process, software_manager
+from . import output
+from .settings import settings
 
 log = logging.getLogger("avocado.sysinfo")
 
@@ -97,7 +95,7 @@ class Logfile(Collectible):
         :param logdir: Log directory which the file is going to be copied to.
         """
         if os.path.exists(self.path):
-            config = future_settings.as_dict()
+            config = settings.as_dict()
             if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
                 pre_file = os.path.join(os.path.dirname(logdir), 'pre',
                                         self.logf)
@@ -160,7 +158,7 @@ class Command(Collectible):
         :param logdir: Path to a log directory.
         """
         env = os.environ.copy()
-        config = future_settings.as_dict()
+        config = settings.as_dict()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
         locale = config.get("sysinfo.collect.locale")
@@ -224,7 +222,7 @@ class Daemon(Command):
         :param logdir: Path to a log directory.
         """
         env = os.environ.copy()
-        config = future_settings.as_dict()
+        config = settings.as_dict()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
         locale = config.get("sysinfo.collect.locale")
@@ -406,7 +404,7 @@ class SysInfo:
         :param profiler: Whether to use the profiler. If not given explicitly,
                          tries to look in the config files.
         """
-        self.config = future_settings.as_dict()
+        self.config = settings.as_dict()
 
         if basedir is None:
             basedir = utils_path.init_dir('sysinfo')

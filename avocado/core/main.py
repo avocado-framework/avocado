@@ -12,10 +12,10 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-import sys
 import os
-import time
+import sys
 import tempfile
+import time
 import traceback
 
 try:

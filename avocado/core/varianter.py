@@ -20,11 +20,13 @@ Base classes for implementing the varianter interface
 """
 
 import hashlib
+import json
+import os
 
-from . import tree
-from . import dispatcher
-from . import output
 from ..utils import astring
+from . import dispatcher, output, tree
+
+VARIANTS_FILENAME = 'variants.json'
 
 
 def is_empty_variant(variant):
@@ -45,9 +47,29 @@ def generate_variant_id(variant):
     :return: String compounded of ordered node names and a hash of all
              values.
     """
+    def get_variant_name(variant):
+        """
+        To get the variant full name string
+
+        :param variant: Avocado test variant (list of TreeNode-like objects)
+        :return: Complete variant name string
+        """
+        full_name = []
+        for node in variant:
+            var_str = []
+            while node:
+                var_str.append(node.name)
+                node = node.parent if hasattr(node, 'parent') else None
+            try:
+                # Let's drop repeated node names and empty string
+                full_name.extend([x for x in var_str[::-1][1:] if x not in full_name])
+            except IndexError:
+                pass
+        return "-".join(full_name)
+
     variant = sorted(variant, key=lambda x: x.path)
     fingerprint = "\n".join(_.fingerprint() for _ in variant)
-    return ("-".join(node.name for node in variant) + '-' +
+    return (get_variant_name(variant) + '-' +
             hashlib.sha1(fingerprint.encode(astring.ENCODING)).hexdigest()[:4])
 
 
@@ -177,8 +199,6 @@ class Varianter:
         :note: it's necessary to check whether variants debug is enable
                in order to provide the right results.
         """
-        self.default_params = {}
-        self._default_params = None
         if state is None:
             self.debug = debug
             self.node_class = tree.TreeNodeDebug if debug else tree.TreeNode
@@ -195,13 +215,7 @@ class Varianter:
                        line parser, etc.
         :type config: dict
         """
-        default_params = self.node_class()
-        for default_param in self.default_params.values():
-            default_params.merge(default_param)
-        self._default_params = default_params
-        self.default_params.clear()
         self._variant_plugins.map_method_with_return("initialize", config)
-        self._variant_plugins.map_method_with_return_copy("update_defaults", self._default_params)
         self._no_variants = sum(self._variant_plugins.map_method_with_return("__len__"))
 
     def is_parsed(self):
@@ -209,26 +223,6 @@ class Varianter:
         Reports whether the varianter was already parsed
         """
         return self._no_variants is not None
-
-    def add_default_param(self, name, key, value, path=None):   # pylint: disable=E0202
-        """
-        Stores the path/key/value into default params
-
-        This allow injecting default arguments which are mainly intended for
-        machine/os-related params. It should not affect the test results
-        and by definition it should not affect the variant id.
-
-        :param name: Name of the component which injects this param
-        :param key: Key to which we'd like to assign the value
-        :param value: The key's value
-        :param path: Optional path to the node to which we assign the value,
-                     by default '/'.
-        """
-        if path is None:
-            path = "/"
-        if name not in self.default_params:
-            self.default_params[name] = self.node_class()
-        self.default_params[name].get_node(path, True).value[key] = value
 
     def to_str(self, summary=0, variants=0, **kwargs):
         """
@@ -242,16 +236,8 @@ class Varianter:
         :param kwargs: Other free-form arguments
         :rtype: str
         """
-        if self._no_variants == 0:  # No variants, only defaults:
-            out = []
-            if summary:
-                out.append("No variants available, using defaults only")
-            if variants:
-                variant = next(self.itertests())
-                variant["variant_id"] = ""  # Don't confuse people with None
-                out.append("\n".join(variant_to_str(variant, variants - 1,
-                                                    kwargs, self.debug)))
-            return "\n\n".join(out)
+        if self._no_variants == 0:  # No variants
+            return ""
 
         out = [item for item in self._variant_plugins.map_method_with_return("to_str",
                                                                              summary,
@@ -339,10 +325,28 @@ class Varianter:
                              for variant in plugin_variants)
             for variant in iter(iter_variants):
                 yield variant
-        else:   # No variants, use template
-            yield {"variant": self._default_params.get_leaves(),
+        else:   # No real variants, but currently *something* needs to be returned
+            yield {"variant": self.node_class('').get_leaves(),
                    "variant_id": None,
                    "paths": ["/run/*"]}
+
+    @classmethod
+    def from_resultsdir(cls, resultsdir):
+        """
+        Retrieves the job variants objects from the results directory.
+
+        This will return a list of variants since a Job can have multiple
+        suites and the variants is per suite.
+        """
+        path = os.path.join(resultsdir, 'jobdata', VARIANTS_FILENAME)
+        if not os.path.exists(path):
+            return None
+
+        variants = []
+        with open(path, 'r') as variants_file:
+            for variant in json.load(variants_file):
+                variants.append(cls(state=variant))
+        return variants
 
     def __len__(self):
         return self._no_variants

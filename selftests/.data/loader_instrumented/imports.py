@@ -2,14 +2,15 @@
 
 # module imports
 import parent1  # .names[0].name => parent1
+# class imports
+import parent7.Class7  # .names[0].name => parent7.Class7   # bad example pylint: disable=I,C,W,E
 import path.parent2  # .names[0].name => path.parent2
+
 from path import parent3  # .module => path; .names[0] => parent3
 import parent4 as asparent4  # .names[0].asname => asparent4; .names[0].name => parent4
 import path.parent5 as asparent5  # .names[0].asname => asparent5; .names[0].name => path.parent5
 from path import parent6 as asparent6  # .module => path; .names[0].asname => asparent6; .names[0].name => path.parent6
 
-# class imports
-import parent7.Class7  # .names[0].name => parent7.Class7   # bad example pylint: disable=I,C,W,E
 from .path.parent8 import Class8  # .module = path.parent8; name[0].name = Class8
 import parent9.Class9 as AsClass9  # .names[0].asname => AsClass9; .names[0].name => parent9.Class9   # bad example pylint: disable=I,C,W,E
 from .path.parent10 import Class10 as AsClass10  # .module => path.parent10; .names[0].asname => AsClass10; .names[0].name => Class10

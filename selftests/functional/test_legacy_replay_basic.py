@@ -1,21 +1,19 @@
 import glob
 import os
-import tempfile
 import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir
 
 
-class ReplayTests(unittest.TestCase):
+class ReplayTests(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(ReplayTests, self).setUp()
         cmd_line = ('%s run passtest.py passtest.py passtest.py passtest.py '
-                    '--job-results-dir %s --sysinfo=off --json -'
+                    '--job-results-dir %s --disable-sysinfo --json -'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -25,7 +23,6 @@ class ReplayTests(unittest.TestCase):
             self.jobid = f.read().strip('\n')
 
     def run_and_check(self, cmd_line, expected_rc):
-        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
@@ -37,7 +34,7 @@ class ReplayTests(unittest.TestCase):
         Runs a replay job with an invalid jobid.
         """
         cmd_line = ('%s run --replay %s '
-                    '--job-results-dir %s --sysinfo=off'
+                    '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, 'foo', self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         self.run_and_check(cmd_line, expected_rc)
@@ -46,7 +43,7 @@ class ReplayTests(unittest.TestCase):
         """
         Runs a replay job using the 'latest' keyword.
         """
-        cmd_line = ('%s run --replay latest --job-results-dir %s --sysinfo=off'
+        cmd_line = ('%s run --replay latest --job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -66,7 +63,7 @@ class ReplayTests(unittest.TestCase):
         Runs a replay job.
         """
         cmd_line = ('%s run --replay %s '
-                    '--job-results-dir %s --sysinfo=off'
+                    '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -77,7 +74,7 @@ class ReplayTests(unittest.TestCase):
         """
         partial_id = self.jobid[:5]
         cmd_line = ('%s run --replay %s '
-                    '--job-results-dir %s --sysinfo=off'
+                    '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, partial_id, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -87,7 +84,7 @@ class ReplayTests(unittest.TestCase):
         Runs a replay job identifying the job by its results directory.
         """
         cmd_line = ('%s run --replay %s '
-                    '--job-results-dir %s --sysinfo=off'
+                    '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobdir, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -97,7 +94,7 @@ class ReplayTests(unittest.TestCase):
         Runs a replay job with an invalid option for '--replay-ignore'
         """
         cmd_line = ('%s run --replay %s --replay-ignore foo'
-                    '--job-results-dir %s --sysinfo=off'
+                    '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
@@ -110,7 +107,7 @@ class ReplayTests(unittest.TestCase):
         Runs a replay job ignoring the variants.
         """
         cmd_line = ('%s run --replay %s --replay-ignore variants '
-                    '--job-results-dir %s --sysinfo=off'
+                    '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
@@ -122,7 +119,7 @@ class ReplayTests(unittest.TestCase):
         Runs a replay job with an invalid option for '--replay-test-status'
         """
         cmd_line = ('%s run --replay %s --replay-test-status E '
-                    '--job-results-dir %s --sysinfo=off'
+                    '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
@@ -135,7 +132,7 @@ class ReplayTests(unittest.TestCase):
         Runs a replay job only with tests that failed.
         """
         cmd_line = ('%s run --replay %s --replay-test-status '
-                    'FAIL --job-results-dir %s --sysinfo=off'
+                    'FAIL --job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
@@ -149,7 +146,7 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run --replay %s --replay-ignore variants '
                     '--replay-test-status FAIL --job-results-dir %s '
-                    '--sysinfo=off' % (AVOCADO, self.jobid, self.tmpdir.name))
+                    '--disable-sysinfo' % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = (b"Option `--replay-test-status` is incompatible with "
@@ -162,15 +159,12 @@ class ReplayTests(unittest.TestCase):
         """
         cmd_line = ('%s run sleeptest --replay %s '
                     '--replay-test-status FAIL --job-results-dir %s '
-                    '--sysinfo=off' % (AVOCADO, self.jobid, self.tmpdir.name))
+                    '--disable-sysinfo' % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = (b"Option --replay-test-status is incompatible with "
                b"test references given on the command line.")
         self.assertIn(msg, result.stderr)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

@@ -1,13 +1,10 @@
 import json
 import os
-import tempfile
 import unittest
 
-from avocado.utils import genio
-from avocado.utils import process
+from avocado.utils import genio, process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
-
+from .. import AVOCADO, TestCaseTmpDir
 
 ALL_MESSAGES = ['setup pre',
                 'setup post',
@@ -126,18 +123,16 @@ EXPECTED_RESULTS = {'SkipSetup.test': ('SKIP',
                     }
 
 
-class TestStatuses(unittest.TestCase):
+class TestStatuses(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(TestStatuses, self).setUp()
         test_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  os.path.pardir,
                                                  ".data",
                                                  'test_statuses.py'))
 
-        os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s --json -' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s --json -' %
                (AVOCADO, test_file, self.tmpdir.name))
 
         results = process.run(cmd, ignore_status=True)
@@ -179,9 +174,6 @@ class TestStatuses(unittest.TestCase):
                              "\nJSON results:\n%s"
                              "\nDebug Log:\n%s" %
                              (msg, klass_method, test, debug_log))
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

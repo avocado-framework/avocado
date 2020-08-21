@@ -1,20 +1,17 @@
 import json
 import os
-import tempfile
 import unittest
 
 from avocado.utils import process
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
+from .. import AVOCADO, TestCaseTmpDir
 
 
-class VariantsDumpLoadTests(unittest.TestCase):
+class VariantsDumpLoadTests(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(VariantsDumpLoadTests, self).setUp()
         self.variants_file = os.path.join(self.tmpdir.name, 'variants.json')
-        os.chdir(BASEDIR)
 
     def test_variants_dump(self):
         cmd_line = ('%s variants --json-variants-dump %s' %
@@ -51,9 +48,6 @@ class VariantsDumpLoadTests(unittest.TestCase):
                          "1-passtest.py:PassTest.test;foo-0ead")
         self.assertEqual(json_result["tests"][1]["id"],
                          "2-passtest.py:PassTest.test;bar-d06d")
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

@@ -2,15 +2,14 @@ import copy
 import itertools
 import os
 import pickle
-import sys
 import unittest
 
 import yaml
 
 import avocado_varianter_yaml_to_mux as yaml_to_mux
-from avocado_varianter_yaml_to_mux import mux
-from avocado.core import tree, parameters
+from avocado.core import parameters, tree
 from avocado.utils import astring
+from avocado_varianter_yaml_to_mux import mux
 
 BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 BASEDIR = os.path.abspath(BASEDIR)
@@ -228,10 +227,8 @@ class TestMuxTree(unittest.TestCase):
         tree2 = tree.TreeNode("root", children=children2)
         mux1 = mux.MuxPlugin()
         mux2 = mux.MuxPlugin()
-        mux1.initialize_mux(tree1, "", False)
-        mux2.initialize_mux(tree2, "", False)
-        mux1.update_defaults(tree.TreeNode())
-        mux2.update_defaults(tree.TreeNode())
+        mux1.initialize_mux(tree1, "")
+        mux2.initialize_mux(tree2, "")
         variant1 = next(iter(mux1))
         variant2 = next(iter(mux2))
         self.assertNotEqual(variant1, variant2)
@@ -437,20 +434,11 @@ class TestMultipleLoaders(unittest.TestCase):
         """
         yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest.yaml')
         yaml_url = '/:%s' % yaml_path
-        nondebug = yaml_to_mux.create_from_yaml([yaml_url])
-        self.assertEqual(type(nondebug), mux.MuxTreeNode)
-        self.assertEqual(type(nondebug.children[0]), mux.MuxTreeNode)
-        debug = yaml_to_mux.create_from_yaml([yaml_url], debug=True)
-        self.assertEqual(type(debug), mux.MuxTreeNodeDebug)
-        # Debug nodes are of generated "NamedTreeNodeDebug" type
-        if sys.version_info[0] == 3:
-            children_type = ("<class 'avocado_varianter_yaml_to_mux."
-                             "get_named_tree_cls.<locals>.NamedTreeNodeDebug'>")
-        else:
-            children_type = ("<class 'avocado_varianter_yaml_to_mux."
-                             "NamedTreeNodeDebug'>")
-        self.assertEqual(children_type, str(type(debug.children[0])))
-        plain = yaml.load("foo: bar", Loader=yaml.SafeLoader)
+        treenode = yaml_to_mux.create_from_yaml([yaml_url])
+        self.assertEqual(type(treenode), mux.MuxTreeNode)
+        self.assertEqual(type(treenode.children[0]), mux.MuxTreeNode)
+        # equivalent to yaml.load("...", Loader=yaml.SafeLoader)
+        plain = yaml.safe_load("foo: bar")
         self.assertEqual(type(plain), dict)
 
 
@@ -553,18 +541,17 @@ class TestCreateFromYaml(unittest.TestCase):
             # pylint: disable=W0212
             yaml_to_mux._handle_control_tag(
                 'original_fake_file.yaml',
-                mux.MuxTreeNode, mux.MuxTreeNode(),
+                mux.MuxTreeNode(),
                 (mux.Control(yaml_to_mux.YAML_INCLUDE),
                  'unexisting_include.yaml'))
 
     def test_handle_control_path_remove(self):
-        klass = mux.MuxTreeNode
-        node = klass()
+        node = mux.MuxTreeNode()
         control = mux.Control(yaml_to_mux.YAML_REMOVE_NODE)
         to_be_removed = 'node_to_be_removed'
         # pylint: disable=W0212
         yaml_to_mux._handle_control_tag('fake_path',
-                                        klass, node,
+                                        node,
                                         (control, to_be_removed))
         self.assertEqual(control.value, to_be_removed)
         self.assertIn(control, node.ctrl)
@@ -585,8 +572,7 @@ class TestCreateFromYaml(unittest.TestCase):
 
     def test_apply_using(self):
         # pylint: disable=W0212
-        node = yaml_to_mux._apply_using('bar', mux.MuxTreeNode,
-                                        'foo', mux.MuxTreeNode())
+        node = yaml_to_mux._apply_using('bar', 'foo', mux.MuxTreeNode())
         self.assertEqual(node.path, '/foo')
 
 

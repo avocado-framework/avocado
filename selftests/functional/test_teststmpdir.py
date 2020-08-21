@@ -2,13 +2,10 @@ import os
 import tempfile
 import unittest
 
-from avocado.core import exit_codes
-from avocado.core import test
-from avocado.utils import process
-from avocado.utils import script
+from avocado.core import exit_codes, test
+from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix
-
+from .. import AVOCADO, TestCaseTmpDir
 
 INSTRUMENTED_SCRIPT = """import os
 import tempfile
@@ -32,11 +29,10 @@ fi
 """.format(test.COMMON_TMPDIR_NAME)
 
 
-class TestsTmpDirTests(unittest.TestCase):
+class TestsTmpDirTests(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(TestsTmpDirTests, self).setUp()
         self.simple_test = script.TemporaryScript(
             'test_simple.sh',
             SIMPLE_SCRIPT)
@@ -47,7 +43,6 @@ class TestsTmpDirTests(unittest.TestCase):
         self.instrumented_test.save()
 
     def run_and_check(self, cmd_line, expected_rc, env=None):
-        os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True, env=env)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
@@ -62,7 +57,7 @@ class TestsTmpDirTests(unittest.TestCase):
         Tests whether automatically created teststmpdir is shared across
         all tests.
         """
-        cmd_line = ("%s run --sysinfo=off "
+        cmd_line = ("%s run --disable-sysinfo "
                     "--job-results-dir %s %s %s"
                     % (AVOCADO, self.tmpdir.name, self.simple_test,
                        self.instrumented_test))
@@ -74,7 +69,7 @@ class TestsTmpDirTests(unittest.TestCase):
         avocado
         """
         with tempfile.TemporaryDirectory(dir=self.tmpdir.name) as shared_tmp:
-            cmd = ("%s run --sysinfo=off --job-results-dir %s %%s"
+            cmd = ("%s run --disable-sysinfo --job-results-dir %s %%s"
                    % (AVOCADO, self.tmpdir.name))
             self.run_and_check(cmd % self.simple_test, exit_codes.AVOCADO_ALL_OK,
                                {test.COMMON_TMPDIR_NAME: shared_tmp})
@@ -87,9 +82,9 @@ class TestsTmpDirTests(unittest.TestCase):
                              % (len(content), content))
 
     def tearDown(self):
+        super(TestsTmpDirTests, self).tearDown()
         self.instrumented_test.remove()
         self.simple_test.remove()
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

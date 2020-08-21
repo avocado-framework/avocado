@@ -2,12 +2,11 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import test, exceptions
+from avocado.core import exceptions, test
 from avocado.core.test_id import TestID
 from avocado.utils import script
 
 from .. import setup_avocado_loggers, temp_dir_prefix
-
 
 setup_avocado_loggers()
 

@@ -1,8 +1,8 @@
 import sys
 import unittest.mock
 
-from avocado.utils import path as utils_path
 from avocado.core import output
+from avocado.utils import path as utils_path
 
 
 class TestStdOutput(unittest.TestCase):

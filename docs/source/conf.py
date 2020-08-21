@@ -6,15 +6,18 @@ import importlib
 import os
 import sys
 
+from avocado.core import parameters
+from avocado.core.varianter import Varianter
+from avocado.utils import genio  # pylint: disable=C0413
+from avocado.utils import path  # pylint: disable=C0413
+from avocado.utils import process  # pylint: disable=C0413
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 ROOT_PATH = os.path.abspath(os.path.join("..", ".."))
 sys.path.insert(0, ROOT_PATH)
 
-from avocado.utils import genio  # pylint: disable=C0413
-from avocado.utils import path  # pylint: disable=C0413
-from avocado.utils import process  # pylint: disable=C0413
 
 
 # Flag that tells if the docs are being built on readthedocs.org
@@ -41,32 +44,70 @@ def generate_reference():
         reference.write(result.stdout_text)
 
 
+def generate_vmimage_distro():
+    yaml_path = [os.path.join(ROOT_PATH, 'selftests', 'pre_release', 'tests',
+                              'vmimage.py.data', 'variants.yml')]
+    reference_dir_path = os.path.join(ROOT_PATH, 'docs', 'source', 'guides',
+                                      'writer', 'libs', 'data', 'vmimage')
+    reference_path = os.path.join(reference_dir_path, 'supported_images.csv')
+
+    config = {'yaml_to_mux.files': yaml_path, 'yaml_to_mux.inject': []}
+    varianter = Varianter()
+    varianter.parse(config)
+
+    try:
+        os.makedirs(reference_dir_path)
+    except FileExistsError:
+        pass
+
+    with open(reference_path, 'w') as reference:
+        reference.write("Provider, Version, Architecture\n")
+        for v in varianter.itertests():
+            vmimage_params = parameters.AvocadoParams(v['variant'], ['/run/*'])
+            vmimage_name = vmimage_params.get('name')
+            vmimage_version = vmimage_params.get('version')
+            vmimage_arch = vmimage_params.get('arch', path='*/architectures/*')
+            distro_arch_path = '/run/distro/%s/%s/*' % (vmimage_name,
+                                                        vmimage_arch)
+            vmimage_arch = vmimage_params.get('arch', path=distro_arch_path,
+                                              default=vmimage_arch)
+            reference.write("%s,%s,%s\n" % (str(vmimage_name),
+                                            str(vmimage_version),
+                                            str(vmimage_arch)))
+
+
 generate_reference()
+generate_vmimage_distro()
 
 # Documentation sections. Key is the name of the section, followed by:
 # Second level module name (after avocado), Module description,
 # Output directory, List of directory to exclude from API  generation,
 # list of (duplicated) generated reST files to remove (and avoid warnings)
+# References tag
 API_SECTIONS = {"Test APIs": (None,
                               genio.read_file("api/headers/test"),
                               "test",
                               ("core", "utils", "plugins"),
-                              ("modules.rst", )),
+                              ("modules.rst", ),
+                              ".. _tests-api-reference:\n"),
                 "Utilities APIs": ("utils",
                                    genio.read_file("api/headers/utils"),
                                    "utils",
                                    ("core", "plugins"),
-                                   ("avocado.rst", "modules.rst")),
+                                   ("avocado.rst", "modules.rst"),
+                                   ""),
                 "Internal (Core) APIs": ("core",
                                          genio.read_file("api/headers/core"),
                                          "core",
                                          ("utils", "plugins"),
-                                         ("avocado.rst", "modules.rst")),
+                                         ("avocado.rst", "modules.rst"),
+                                         ""),
                 "Extension (plugin) APIs": ("plugins",
                                             genio.read_file("api/headers/plugins"),
                                             "plugins",
                                             ("core", "utils"),
-                                            ("avocado.rst", "modules.rst"))}
+                                            ("avocado.rst", "modules.rst"),
+                                            "")}
 
 # clean up all previous rst files. RTD is known to keep them from previous runs
 process.run("find %s -name '*.rst' -delete" % BASE_API_OUTPUT_DIR)
@@ -105,7 +146,7 @@ for (section, params) in API_SECTIONS.items():
         with open(main_rst) as main_rst_file:
             main_rst_content = main_rst_file.readlines()
 
-    new_main_rst_content = [section, "=" * len(section), "",
+    new_main_rst_content = [params[5],section, "=" * len(section), "",
                             params[1], ""]
     with open(main_rst, "w") as new_main_rst:
         new_main_rst.write("\n".join(new_main_rst_content))

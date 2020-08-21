@@ -18,30 +18,23 @@
 Conventional Test Runner Plugin
 """
 
+import multiprocessing
 import os
-import time
 import signal
 import sys
-import multiprocessing
+import time
 from queue import Full as queueFullException
 
-
-from avocado.utils import process
-from avocado.utils import stacktrace
-from avocado.utils import wait
-from avocado.core import output
-from avocado.core import status
-from avocado.core import tree
-from avocado.core import varianter
+from avocado.core import output, tree, varianter
 from avocado.core.loader import loader
 from avocado.core.output import LOG_JOB as TEST_LOG
 from avocado.core.output import LOG_UI as APP_LOG
 from avocado.core.plugin_interfaces import Runner
-from avocado.core.runner import add_runner_failure
-from avocado.core.runner import TestStatus
-from avocado.core.status import mapping
+from avocado.core.runner import TestStatus, add_runner_failure
 from avocado.core.test import TimeOutSkipTest
 from avocado.core.test_id import TestID
+from avocado.core.teststatus import mapping, user_facing_status
+from avocado.utils import process, stacktrace, wait
 
 
 class TestRunner(Runner):
@@ -54,10 +47,6 @@ class TestRunner(Runner):
     description = 'The conventional test runner'
 
     DEFAULT_TIMEOUT = 86400
-
-    #: Mode in which this runner should iterate through tests and variants.
-    #: The allowed values are "variants-per-test" or "tests-per-variant"
-    DEFAULT_EXECUTION_ORDER = "variants-per-test"
 
     def __init__(self):
         """
@@ -263,7 +252,7 @@ class TestRunner(Runner):
             job.log.debug('')
 
         # Make sure the test status is correct
-        if test_state.get('status') not in status.user_facing_status:
+        if test_state.get('status') not in user_facing_status:
             test_state = add_runner_failure(test_state, "ERROR", "Test reports"
                                             " unsupported test status.")
 
@@ -274,7 +263,7 @@ class TestRunner(Runner):
         elif not mapping[test_state['status']]:
             summary.add("FAIL")
 
-            if job.config.get('run.failfast') == 'on':
+            if job.config.get('run.failfast'):
                 summary.add("INTERRUPTED")
                 job.interrupted_reason = "Interrupting job (failfast)."
                 return False
@@ -324,22 +313,21 @@ class TestRunner(Runner):
                           "variant_id": varianter.generate_variant_id(var),
                           "paths": paths}
 
-    def _iter_suite(self, job, test_suite, execution_order):
+    def _iter_suite(self, test_suite, execution_order):
         """
         Iterates through test_suite and variants in defined order
 
-        :param job: an instance of :class:`avocado.core.job.Job`
         :param test_suite: a TestSuite object to run
         :param execution_order: way of iterating through tests/variants
         :return: generator yielding tuple(test_factory, variant)
         """
         if execution_order == "variants-per-test":
-            return (self._template_to_factory(job.test_parameters,
+            return (self._template_to_factory(test_suite.test_parameters,
                                               template, variant)
                     for template in test_suite.tests
                     for variant in test_suite.variants.itertests())
         elif execution_order == "tests-per-variant":
-            return (self._template_to_factory(job.test_parameters,
+            return (self._template_to_factory(test_suite.test_parameters,
                                               template, variant)
                     for variant in test_suite.variants.itertests()
                     for template in test_suite.tests)
@@ -372,10 +360,7 @@ class TestRunner(Runner):
             for test_factory in test_suite.tests:
                 test_factory[1]["base_logdir"] = job.logdir
                 test_factory[1]["job"] = job
-            if execution_order is None:
-                execution_order = self.DEFAULT_EXECUTION_ORDER
-            for test_factory, variant in self._iter_suite(job,
-                                                          test_suite,
+            for test_factory, variant in self._iter_suite(test_suite,
                                                           execution_order):
                 test_parameters = test_factory[1]
                 name = test_parameters.get("name")

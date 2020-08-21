@@ -1,27 +1,13 @@
 import glob
 import json
 import os
+import shutil
 import tempfile
 import unittest
-import shutil
 
 from avocado.core import exit_codes
-from avocado.utils import process
-from avocado.utils import genio
-
+from avocado.utils import genio, process
 from selftests import AVOCADO, BASEDIR
-
-
-DEBUG_OUT = b"""
-Variant mint-debug-amd-virtio-022a:    amd@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, mint@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, debug@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml
-    /distro/mint:init         => systemv@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/distro/mint
-    /env/debug:opt_CFLAGS     => -O0 -g@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/env/debug
-    /hw/cpu/amd:cpu_CFLAGS    => -march=athlon64@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/hw/cpu/amd
-    /hw/cpu/amd:joinlist      => ['first_item']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/cpu + ['second', 'third']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/cpu/amd
-    /hw/disk/virtio:disk_type => virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/hw/disk/virtio
-    /hw/disk:corruptlist      => nonlist@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/disk
-    /hw:corruptlist           => ['upper_node_list']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw
-"""
 
 
 class MultiplexTests(unittest.TestCase):
@@ -61,26 +47,15 @@ class MultiplexTests(unittest.TestCase):
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(b' /foo/baz/bar', result.stdout)
 
-    def test_mplex_debug(self):
-        cmd_line = ('%s variants -c -d -m '
-                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml '
-                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml '
-                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml '
-                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml'
-                    % AVOCADO)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        result = self.run_and_check(cmd_line, expected_rc)
-        self.assertIn(DEBUG_OUT, result.stdout)
-
     def test_run_mplex_noid(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_passtest(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     'passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
@@ -94,7 +69,7 @@ class MultiplexTests(unittest.TestCase):
                       "jobdata does not contains [\"/run/*\"]\n%s" % variants)
 
     def test_run_mplex_doublepass(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     'passtest.py passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--mux-path /foo/\\* /bar/\\* /baz/\\*'
@@ -109,32 +84,32 @@ class MultiplexTests(unittest.TestCase):
                       "does not contains %s\n%s" % (exp, variants))
 
     def test_run_mplex_failtest(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     'passtest.py failtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn(b"(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn(b"(2/8) passtest.py:PassTest.test;medium", result.stdout)
-        self.assertIn(b"(8/8) failtest.py:FailTest.test;longest",
+        self.assertIn(b"(1/8) passtest.py:PassTest.test;run-short-beaf", result.stdout)
+        self.assertIn(b"(2/8) passtest.py:PassTest.test;run-medium-5595", result.stdout)
+        self.assertIn(b"(8/8) failtest.py:FailTest.test;run-longest-efc4",
                       result.stdout)
 
     def test_run_mplex_failtest_tests_per_variant(self):
-        cmd_line = ("%s run --job-results-dir %s --sysinfo=off "
+        cmd_line = ("%s run --job-results-dir %s --disable-sysinfo "
                     "passtest.py failtest.py -m "
                     "examples/tests/sleeptest.py.data/sleeptest.yaml "
                     "--execution-order tests-per-variant"
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn(b"(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn(b"(2/8) failtest.py:FailTest.test;short", result.stdout)
-        self.assertIn(b"(8/8) failtest.py:FailTest.test;longest",
+        self.assertIn(b"(1/8) passtest.py:PassTest.test;run-short-beaf", result.stdout)
+        self.assertIn(b"(2/8) failtest.py:FailTest.test;run-short-beaf", result.stdout)
+        self.assertIn(b"(8/8) failtest.py:FailTest.test;run-longest-efc4",
                       result.stdout)
 
     def test_run_double_mplex(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     'passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
@@ -153,7 +128,7 @@ class MultiplexTests(unittest.TestCase):
                             ('/run/medium', 'ASDFASDF'),
                             ('/run/long', 'This is very long\nmultiline\ntext.')):
             variant, msg = variant_msg
-            cmd_line = ('%s --show=test run --job-results-dir %s --sysinfo=off '
+            cmd_line = ('%s --show=test run --job-results-dir %s --disable-sysinfo '
                         'examples/tests/env_variables.sh '
                         '-m examples/tests/env_variables.sh.data/env_variables.yaml '
                         '--mux-filter-only %s'
@@ -184,7 +159,7 @@ class ReplayTests(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         cmd_line = ('%s run passtest.py '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    '--job-results-dir %s --sysinfo=off --json -'
+                    '--job-results-dir %s --disable-sysinfo --json -'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -201,16 +176,6 @@ class ReplayTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
 
-    def test_run_replay_and_mux(self):
-        """
-        Runs a replay job and specifies multiplex file (which should be
-        ignored)
-        """
-        cmdline = ("%s run --replay %s --job-results-dir %s "
-                   "--sysinfo=off -m selftests/.data/mux-selftest.yaml"
-                   % (AVOCADO, self.jobid, self.tmpdir.name))
-        self.run_and_check(cmdline, exit_codes.AVOCADO_ALL_OK)
-
     def tearDown(self):
         self.tmpdir.cleanup()
 
@@ -218,7 +183,7 @@ class ReplayTests(unittest.TestCase):
 class DryRun(unittest.TestCase):
 
     def test_dry_run(self):
-        cmd = ("%s run --sysinfo=off --dry-run --dry-run-no-cleanup --json - "
+        cmd = ("%s run --disable-sysinfo --dry-run --dry-run-no-cleanup --json - "
                "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
                "foo:bar:b foo:baz:c bar:bar:bar "
                "-- passtest.py failtest.py gendata.py " % AVOCADO)

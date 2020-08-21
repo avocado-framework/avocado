@@ -1,19 +1,15 @@
 import os
-import tempfile
-import time
 import signal
 import stat
 import subprocess
+import time
 import unittest
 
 import psutil
 
-from avocado.utils import process
-from avocado.utils import wait
-from avocado.utils import script
-from avocado.utils import data_factory
+from avocado.utils import data_factory, process, script, wait
 
-from .. import AVOCADO, BASEDIR, temp_dir_prefix, skipOnLevelsInferiorThan
+from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
@@ -42,7 +38,7 @@ if __name__ == "__main__":
 GOOD_TEST = """#!/usr/bin/env python
 import time
 from avocado import Test
-from avocado import main
+from avocado.core import main
 
 class GoodTest(Test):
     def test(self):
@@ -53,7 +49,7 @@ if __name__ == "__main__":
 """
 
 
-class InterruptTest(unittest.TestCase):
+class InterruptTest(TestCaseTmpDir):
 
     @staticmethod
     def has_children(proc):
@@ -98,8 +94,7 @@ class InterruptTest(unittest.TestCase):
         return len(test_processes) == 0
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(InterruptTest, self).setUp()
         self.test_module = None
 
     @skipOnLevelsInferiorThan(2)
@@ -117,7 +112,7 @@ class InterruptTest(unittest.TestCase):
         bad_test.save()
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -165,7 +160,7 @@ class InterruptTest(unittest.TestCase):
         bad_test.save()
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -205,7 +200,7 @@ class InterruptTest(unittest.TestCase):
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -249,7 +244,7 @@ class InterruptTest(unittest.TestCase):
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -273,9 +268,6 @@ class InterruptTest(unittest.TestCase):
 
         # Make sure the Interrupted test sentence is there
         self.assertIn(b'Terminated\n', proc.stdout.read())
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

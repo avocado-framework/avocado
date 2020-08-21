@@ -1,14 +1,16 @@
-import unittest.mock
 import os
 import tempfile
+import unittest.mock
 from urllib.error import URLError
 
 from avocado.core import data_dir
+from avocado.core.settings import Settings
 from avocado.plugins import vmimage as vmimage_plugin
 from avocado.utils import vmimage as vmimage_util
-from avocado.core.future import settings as future_settings
-from .. import temp_dir_prefix, skipOnLevelsInferiorThan
-from ..functional.test_plugin_vmimage import missing_binary, create_metadata_file
+
+from .. import skipOnLevelsInferiorThan, temp_dir_prefix
+from ..functional.test_plugin_vmimage import (create_metadata_file,
+                                              missing_binary)
 
 #: extracted from https://dl.fedoraproject.org/pub/fedora/linux/releases/
 FEDORA_PAGE = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
@@ -88,7 +90,7 @@ class VMImagePlugin(unittest.TestCase):
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
     def _create_test_files(self, urlopen_mock):
-        with unittest.mock.patch('avocado.core.data_dir.future_settings', self.stg):
+        with unittest.mock.patch('avocado.core.data_dir.settings', self.stg):
             expected_images = [{'name': 'Fedora', 'file': 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2',
                                 'url': FEDORA_PAGE},
                                {'name': 'JeOS', 'file': 'jeos-{version}-{arch}.qcow2.xz', 'url': JEOS_PAGE},
@@ -117,8 +119,8 @@ class VMImagePlugin(unittest.TestCase):
     def setUp(self):
         (self.base_dir, self.mapping,
          self.config_file_path) = self._get_temporary_dirs_mapping_and_config()
-        self.stg = future_settings.Settings()
-        with unittest.mock.patch('avocado.core.future_settings', self.stg):
+        self.stg = Settings()
+        with unittest.mock.patch('avocado.core.stgs', self.stg):
             import avocado.core
             avocado.core.register_core_options()
         self.stg.process_config_path(self.config_file_path)
@@ -126,7 +128,7 @@ class VMImagePlugin(unittest.TestCase):
         self.expected_images = self._create_test_files()
 
     def test_list_downloaded_images(self):
-        with unittest.mock.patch('avocado.core.data_dir.future_settings', self.stg):
+        with unittest.mock.patch('avocado.core.data_dir.settings', self.stg):
             with unittest.mock.patch('avocado.utils.vmimage.ImageProviderBase.get_version'):
                 images = sorted(vmimage_plugin.list_downloaded_images(), key=lambda i: i['name'])
                 for index, image in enumerate(images):
@@ -141,7 +143,7 @@ class VMImagePlugin(unittest.TestCase):
         """
         :avocado: tags=parallel:1
         """
-        with unittest.mock.patch('avocado.core.data_dir.future_settings', self.stg):
+        with unittest.mock.patch('avocado.core.data_dir.settings', self.stg):
             try:
                 expected_image_info = vmimage_util.get_best_provider(name="CirrOS")
                 image_info = vmimage_plugin.download_image(distro="CirrOS")

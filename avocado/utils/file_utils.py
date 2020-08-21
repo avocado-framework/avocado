@@ -24,12 +24,12 @@ INTERFACE
 
 """
 
-from glob import iglob
-import os
-from pwd import getpwnam, getpwuid
-from grp import getgrnam, getgrgid
-from stat import S_IMODE
 import logging
+import os
+from glob import iglob
+from grp import getgrgid, getgrnam
+from pwd import getpwnam, getpwuid
+from stat import S_IMODE
 
 
 def check_owner(owner, group, file_name_pattern, check_recursive=False):

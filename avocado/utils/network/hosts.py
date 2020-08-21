@@ -18,10 +18,9 @@ This module provides an useful API for hosts in a network.
 """
 
 from ..ssh import Session
-
 from .common import run_command
-from .interfaces import NetworkInterface
 from .exceptions import NWException
+from .interfaces import NetworkInterface
 
 
 class Host:

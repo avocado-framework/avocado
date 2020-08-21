@@ -6,10 +6,19 @@ import shutil
 import signal
 import tempfile
 import time
+import unittest
 import xml.dom.minidom
 import zipfile
-import unittest
+
 import psutil
+
+from avocado.core import exit_codes
+from avocado.utils import astring, genio
+from avocado.utils import path as utils_path
+from avocado.utils import process, script
+
+from .. import (AVOCADO, BASEDIR, TestCaseTmpDir, python_module_available,
+                skipOnLevelsInferiorThan, temp_dir_prefix)
 
 try:
     import xmlschema
@@ -23,15 +32,7 @@ try:
 except ImportError:
     AEXPECT_CAPABLE = False
 
-from avocado.core import exit_codes
-from avocado.utils import astring
-from avocado.utils import genio
-from avocado.utils import process
-from avocado.utils import script
-from avocado.utils import path as utils_path
 
-from .. import AVOCADO, BASEDIR, python_module_available, temp_dir_prefix
-from .. import skipOnLevelsInferiorThan
 
 
 UNSUPPORTED_STATUS_TEST_CONTENTS = '''
@@ -142,12 +143,7 @@ READ_BINARY = probe_binary('read')
 SLEEP_BINARY = probe_binary('sleep')
 
 
-class RunnerOperationTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class RunnerOperationTest(TestCaseTmpDir):
 
     def test_show_version(self):
         result = process.run('%s -v' % AVOCADO, ignore_status=True)
@@ -189,7 +185,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('    logs     ' + mapping['logs_dir'], result.stdout_text)
 
     def test_runner_phases(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'phases.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -197,7 +193,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def test_runner_all_ok(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'passtest.py passtest.py' % (AVOCADO, self.tmpdir.name))
         process.run(cmd_line)
         # Also check whether jobdata contains correct parameter paths
@@ -207,8 +203,8 @@ class RunnerOperationTest(unittest.TestCase):
                       "does not contains [\"/run/*\"]\n%s" % variants)
 
     def test_runner_failfast(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
-                    'passtest.py failtest.py passtest.py --failfast on'
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
+                    'passtest.py failtest.py passtest.py --failfast'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b'Interrupting job (failfast).', result.stdout)
@@ -218,7 +214,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def test_runner_ignore_missing_references_one_missing(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'passtest.py badtest.py --ignore-missing-references'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
@@ -229,7 +225,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def test_runner_ignore_missing_references_all_missing(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'badtest.py badtest2.py --ignore-missing-references'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
@@ -253,7 +249,7 @@ class RunnerOperationTest(unittest.TestCase):
                      'class LocalImportTest(Test):\n'
                      '    def test(self):\n'
                      '        self.log.info(hello())\n')) as mytest:
-                    cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
+                    cmd_line = ("%s run --disable-sysinfo --job-results-dir %s "
                                 "%s" % (AVOCADO, self.tmpdir.name, mytest))
                     process.run(cmd_line)
 
@@ -261,7 +257,7 @@ class RunnerOperationTest(unittest.TestCase):
         with script.TemporaryScript("fake_status.py",
                                     UNSUPPORTED_STATUS_TEST_CONTENTS,
                                     "avocado_unsupported_status") as tst:
-            res = process.run("%s run --sysinfo=off --job-results-dir %s %s"
+            res = process.run("%s run --disable-sysinfo --job-results-dir %s %s"
                               " --json -" % (AVOCADO, self.tmpdir.name, tst),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
@@ -281,7 +277,7 @@ class RunnerOperationTest(unittest.TestCase):
         with script.TemporaryScript("report_status_and_hang.py",
                                     REPORTS_STATUS_AND_HANG,
                                     "hanged_test_with_status") as tst:
-            res = process.run("%s run --sysinfo=off --job-results-dir %s %s "
+            res = process.run("%s run --disable-sysinfo --job-results-dir %s %s "
                               "--json - --job-timeout 1" % (AVOCADO, self.tmpdir.name, tst),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
@@ -303,7 +299,7 @@ class RunnerOperationTest(unittest.TestCase):
         with script.TemporaryScript("die_without_reporting_status.py",
                                     DIE_WITHOUT_REPORTING_STATUS,
                                     "no_status_reported") as tst:
-            res = process.run("%s run --sysinfo=off --job-results-dir %s %s "
+            res = process.run("%s run --disable-sysinfo --job-results-dir %s %s "
                               "--json -" % (AVOCADO, self.tmpdir.name, tst),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
@@ -315,7 +311,7 @@ class RunnerOperationTest(unittest.TestCase):
                           results["tests"][0]["fail_reason"])
 
     def test_runner_tests_fail(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s passtest.py '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s passtest.py '
                     'failtest.py passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -323,7 +319,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def test_runner_nonexistent_test(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir '
                     '%s bogustest' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
@@ -334,7 +330,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def test_runner_doublefail(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     '--xunit - doublefail.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -349,7 +345,7 @@ class RunnerOperationTest(unittest.TestCase):
                       "Test did not fail with action exception:\n%s" % result.stdout)
 
     def test_uncaught_exception(self):
-        cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir %s "
                     "--json - uncaught_exception.py" % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -359,7 +355,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(b'"status": "ERROR"', result.stdout)
 
     def test_fail_on_exception(self):
-        cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir %s "
                     "--json - fail_on_exception.py" % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -369,7 +365,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(b'"status": "FAIL"', result.stdout)
 
     def test_cancel_on_exception(self):
-        cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir %s "
                     "--json - cancel_on_exception.py" % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -381,7 +377,7 @@ class RunnerOperationTest(unittest.TestCase):
             self.assertEqual(test['status'], 'CANCEL')
 
     def test_assert_raises(self):
-        cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir %s "
                     "-- assert.py" % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -403,7 +399,7 @@ class RunnerOperationTest(unittest.TestCase):
         mytest = script.Script(os.path.join(self.tmpdir.name, "mytest.py"),
                                RAISE_CUSTOM_PATH_EXCEPTION_CONTENT)
         mytest.save()
-        result = process.run("%s --show test run --sysinfo=off "
+        result = process.run("%s --show test run --disable-sysinfo "
                              "--job-results-dir %s %s"
                              % (AVOCADO, self.tmpdir.name, mytest))
         self.assertIn(b"mytest.py:SharedLibTest.test -> CancelExc: This "
@@ -412,7 +408,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertNotIn(b"Failed to read queue", result.stdout)
 
     def test_runner_timeout(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     '--xunit - timeouttest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
@@ -432,7 +428,7 @@ class RunnerOperationTest(unittest.TestCase):
         """
         :avocado: tags=parallel:1
         """
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     '--xunit - abort.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         excerpt = b'Test died without reporting the status.'
@@ -445,7 +441,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(excerpt, result.stdout)
 
     def test_silent_output(self):
-        cmd_line = ('%s --show=none run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s --show=none run --disable-sysinfo --job-results-dir %s '
                     'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -459,7 +455,7 @@ class RunnerOperationTest(unittest.TestCase):
                       result.stderr)
 
     def test_empty_test_list(self):
-        cmd_line = '%s run --sysinfo=off --job-results-dir %s' % (AVOCADO,
+        cmd_line = '%s run --disable-sysinfo --job-results-dir %s' % (AVOCADO,
                                                                   self.tmpdir.name)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
@@ -467,7 +463,7 @@ class RunnerOperationTest(unittest.TestCase):
                       b'resolved into tests', result.stderr)
 
     def test_not_found(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s sbrubles'
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s sbrubles'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
@@ -475,7 +471,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertNotIn(b'Unable to resolve reference', result.stdout)
 
     def test_invalid_unique_id(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s --force-job-id '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s --force-job-id '
                     'foobar passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertNotEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -483,7 +479,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertNotIn(b'needs to be a 40 digit hex', result.stdout)
 
     def test_valid_unique_id(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 '
                     'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
@@ -492,7 +488,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(b'PASS', result.stdout)
 
     def test_automatic_unique_id(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     'passtest.py --json -' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -507,7 +503,7 @@ class RunnerOperationTest(unittest.TestCase):
 
         :avocado: tags=parallel:1
         """
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
         avocado_process = process.SubProcess(cmd_line)
         try:
@@ -524,7 +520,7 @@ class RunnerOperationTest(unittest.TestCase):
             avocado_process.wait()
 
     def test_dry_run(self):
-        cmd = ("%s run --sysinfo=off --dry-run --dry-run-no-cleanup --json - "
+        cmd = ("%s run --disable-sysinfo --dry-run --dry-run-no-cleanup --json - "
                "-- passtest.py failtest.py gendata.py " % AVOCADO)
         number_of_tests = 3
         result = json.loads(process.run(cmd).stdout_text)
@@ -543,7 +539,7 @@ class RunnerOperationTest(unittest.TestCase):
     def test_invalid_python(self):
         test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),
                                   INVALID_PYTHON_TEST)
-        cmd_line = ('%s --show test run --sysinfo=off '
+        cmd_line = ('%s --show test run --disable-sysinfo '
                     '--job-results-dir %s %s') % (AVOCADO, self.tmpdir.name, test)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -559,7 +555,7 @@ class RunnerOperationTest(unittest.TestCase):
         """
         :avocado: tags=parallel:1
         """
-        cmd = "%s run --sysinfo=off --job-results-dir %%s %%s" % AVOCADO
+        cmd = "%s run --disable-sysinfo --job-results-dir %%s %%s" % AVOCADO
         cmd %= (self.tmpdir.name, READ_BINARY)
         result = process.run(cmd, timeout=10, ignore_status=True)
         self.assertLess(result.duration, 8, "Duration longer than expected."
@@ -568,7 +564,7 @@ class RunnerOperationTest(unittest.TestCase):
                          % result)
 
     def test_runner_test_parameters(self):
-        cmd_line = ('%s --show=test run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s --show=test run --disable-sysinfo --job-results-dir %s '
                     '-p "sleep_length=0.01" -- sleeptest.py ' % (AVOCADO,
                                                                  self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
@@ -585,7 +581,7 @@ class RunnerOperationTest(unittest.TestCase):
                 TEST_OTHER_LOGGERS_CONTENT,
                 'avocado_functional_test_other_loggers') as mytest:
 
-            cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+            cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                         '-- %s' % (AVOCADO, self.tmpdir.name, mytest))
             result = process.run(cmd_line, ignore_status=True)
             expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -599,19 +595,11 @@ class RunnerOperationTest(unittest.TestCase):
             with open(test_log_path, 'rb') as test_log:
                 self.assertIn(b'SHOULD BE ON debug.log', test_log.read())
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
-
-class RunnerHumanOutputTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
+class RunnerHumanOutputTest(TestCaseTmpDir):
 
     def test_output_pass(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -621,7 +609,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn(b'passtest.py:PassTest.test:  PASS', result.stdout)
 
     def test_output_fail(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'failtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -631,7 +619,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn(b'failtest.py:FailTest.test:  FAIL', result.stdout)
 
     def test_output_error(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'errortest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -641,7 +629,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn(b'errortest.py:ErrorTest.test:  ERROR', result.stdout)
 
     def test_output_cancel(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'cancelonsetup.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -657,7 +645,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
     def test_ugly_echo_cmd(self):
         cmd_line = ('%s --show=test run --external-runner "%s -ne" '
                     '"foo\\\\\\n\\\'\\\\\\"\\\\\\nbar/baz" --job-results-dir %s'
-                    ' --sysinfo=off' %
+                    ' --disable-sysinfo' %
                     (AVOCADO, GNU_ECHO_BINARY, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -688,15 +676,11 @@ class RunnerHumanOutputTest(unittest.TestCase):
                "--replay-test-status PASS" % (AVOCADO, self.tmpdir.name, jobid))
         process.run(cmd)
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
-
-class RunnerSimpleTest(unittest.TestCase):
+class RunnerSimpleTest(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(RunnerSimpleTest, self).setUp()
         self.pass_script = script.TemporaryScript(
             u'\u00e1 \u00e9 \u00ed \u00f3 \u00fa',
             "#!/bin/sh\ntrue",
@@ -707,10 +691,9 @@ class RunnerSimpleTest(unittest.TestCase):
                                                   'avocado_simpletest_'
                                                   'functional')
         self.fail_script.save()
-        os.chdir(BASEDIR)
 
     def test_simpletest_pass(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo'
                     ' "%s"' % (AVOCADO, self.tmpdir.name, self.pass_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -719,7 +702,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
 
     def test_simpletest_fail(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo'
                     ' %s' % (AVOCADO, self.tmpdir.name, self.fail_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -739,7 +722,7 @@ class RunnerSimpleTest(unittest.TestCase):
         :avocado: tags=parallel:1
         """
         one_hundred = 'failtest.py ' * 100
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s'
                     % (AVOCADO, self.tmpdir.name, one_hundred))
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
@@ -759,7 +742,7 @@ class RunnerSimpleTest(unittest.TestCase):
         """
         sleep_fail_sleep = ('sleeptest.py ' + 'failtest.py ' * 100 +
                             'sleeptest.py')
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s'
                     % (AVOCADO, self.tmpdir.name, sleep_fail_sleep))
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
@@ -780,7 +763,7 @@ class RunnerSimpleTest(unittest.TestCase):
         # simplewarning.sh calls "avocado exec-path" which hasn't
         # access to an installed location for the libexec scripts
         os.environ['PATH'] += ":" + os.path.join(BASEDIR, 'libexec')
-        cmd_line = ('%s --show=test run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s --show=test run --job-results-dir %s --disable-sysinfo '
                     'examples/tests/simplewarning.sh'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
@@ -807,7 +790,7 @@ class RunnerSimpleTest(unittest.TestCase):
                            "[sysinfo.collectibles]\ncommands = %s"
                            % commands_path)
         cmd_line = ("%s --show all --config %s run --job-results-dir %s "
-                    "--sysinfo=on --external-runner %s -- \"'\\\"\\/|?*<>'\""
+                    "--external-runner %s -- \"'\\\"\\/|?*<>'\""
                     % (AVOCADO, config_path, self.tmpdir.name, GNU_ECHO_BINARY))
         process.run(cmd_line)
         self.assertTrue(os.path.exists(os.path.join(self.tmpdir.name, "latest",
@@ -837,7 +820,7 @@ class RunnerSimpleTest(unittest.TestCase):
         test_base_dir = os.path.dirname(self.pass_script.path)
         os.chdir(test_base_dir)
         test_file_name = os.path.basename(self.pass_script.path)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo'
                     ' "%s"' % (AVOCADO, self.tmpdir.name,
                                test_file_name))
         result = process.run(cmd_line, ignore_status=True)
@@ -854,7 +837,7 @@ class RunnerSimpleTest(unittest.TestCase):
         :avocado: tags=parallel:1
         """
         proc = aexpect.Expect("%s run 60 --job-results-dir %s "
-                              "--external-runner %s --sysinfo=off "
+                              "--external-runner %s --disable-sysinfo "
                               "--job-timeout 3"
                               % (AVOCADO, self.tmpdir.name, SLEEP_BINARY))
         proc.read_until_output_matches([r"\(1/1\)"], timeout=3,
@@ -900,22 +883,19 @@ class RunnerSimpleTest(unittest.TestCase):
     def tearDown(self):
         self.pass_script.remove()
         self.fail_script.remove()
-        self.tmpdir.cleanup()
+        super(RunnerSimpleTest, self).tearDown()
 
 
-class RunnerSimpleTestStatus(unittest.TestCase):
+class RunnerSimpleTestStatus(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-
+        super(RunnerSimpleTestStatus, self).setUp()
         self.config_file = script.TemporaryScript('avocado.conf',
                                                   "[simpletests.status]\n"
                                                   "warn_regex = ^WARN$\n"
                                                   "skip_regex = ^SKIP$\n"
                                                   "skip_location = stdout\n")
         self.config_file.save()
-        os.chdir(BASEDIR)
 
     def test_simpletest_status(self):
         # Multi-line warning in STDERR should by default be handled
@@ -925,7 +905,7 @@ class RunnerSimpleTestStatus(unittest.TestCase):
                                              'avocado_simpletest_'
                                              'functional')
         warn_script.save()
-        cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
+        cmd_line = ('%s --config %s run --job-results-dir %s --disable-sysinfo'
                     ' %s --json -' % (AVOCADO, self.config_file.path,
                                       self.tmpdir.name, warn_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -938,7 +918,7 @@ class RunnerSimpleTestStatus(unittest.TestCase):
                                              'avocado_simpletest_'
                                              'functional')
         skip_script.save()
-        cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
+        cmd_line = ('%s --config %s run --job-results-dir %s --disable-sysinfo'
                     ' %s --json -' % (AVOCADO, self.config_file.path,
                                       self.tmpdir.name, skip_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -951,7 +931,7 @@ class RunnerSimpleTestStatus(unittest.TestCase):
                                               'avocado_simpletest_'
                                               'functional')
         skip2_script.save()
-        cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
+        cmd_line = ('%s --config %s run --job-results-dir %s --disable-sysinfo'
                     ' %s --json -' % (AVOCADO, self.config_file.path,
                                       self.tmpdir.name, skip2_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -960,15 +940,15 @@ class RunnerSimpleTestStatus(unittest.TestCase):
         skip2_script.remove()
 
     def tearDown(self):
+        super(RunnerSimpleTestStatus, self).tearDown()
         self.config_file.remove()
-        self.tmpdir.cleanup()
 
 
-class ExternalRunnerTest(unittest.TestCase):
+
+class ExternalRunnerTest(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(ExternalRunnerTest, self).setUp()
         self.pass_script = script.TemporaryScript(
             'pass',
             "exit 0",
@@ -979,10 +959,9 @@ class ExternalRunnerTest(unittest.TestCase):
             "exit 1",
             'avocado_externalrunner_functional')
         self.fail_script.save()
-        os.chdir(BASEDIR)
 
     def test_externalrunner_pass(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--external-runner=/bin/sh %s'
                     % (AVOCADO, self.tmpdir.name, self.pass_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -992,7 +971,7 @@ class ExternalRunnerTest(unittest.TestCase):
                          (expected_rc, result))
 
     def test_externalrunner_fail(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--external-runner=/bin/sh %s'
                     % (AVOCADO, self.tmpdir.name, self.fail_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -1002,7 +981,7 @@ class ExternalRunnerTest(unittest.TestCase):
                          (expected_rc, result))
 
     def test_externalrunner_chdir_no_testdir(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--external-runner=/bin/sh --external-runner-chdir=test %s'
                     % (AVOCADO, self.tmpdir.name, self.pass_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -1018,7 +997,7 @@ class ExternalRunnerTest(unittest.TestCase):
     def test_externalrunner_chdir_runner_relative(self):
         pass_abs = os.path.abspath(self.pass_script.path)
         os.chdir('/')
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--external-runner=bin/sh --external-runner-chdir=runner -- %s'
                     % (AVOCADO, self.tmpdir.name, pass_abs))
         result = process.run(cmd_line, ignore_status=True)
@@ -1028,7 +1007,7 @@ class ExternalRunnerTest(unittest.TestCase):
                          (expected_rc, result))
 
     def test_externalrunner_no_url(self):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--external-runner=%s' % (AVOCADO, self.tmpdir.name, TRUE_CMD))
         result = process.run(cmd_line, ignore_status=True)
         expected_output = (b'No test references provided nor any other '
@@ -1040,32 +1019,21 @@ class ExternalRunnerTest(unittest.TestCase):
                          (expected_rc, result))
 
     def tearDown(self):
+        super(ExternalRunnerTest, self).tearDown()
         self.pass_script.remove()
         self.fail_script.remove()
-        self.tmpdir.cleanup()
 
 
-class AbsPluginsTest:
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.base_outputdir = tempfile.TemporaryDirectory(prefix=prefix)
-        os.chdir(BASEDIR)
-
-    def tearDown(self):
-        self.base_outputdir.cleanup()
-
-
-class PluginsTest(AbsPluginsTest, unittest.TestCase):
+class PluginsTest(TestCaseTmpDir):
 
     def test_sysinfo_plugin(self):
-        cmd_line = '%s sysinfo %s' % (AVOCADO, self.base_outputdir.name)
+        cmd_line = '%s sysinfo %s' % (AVOCADO, self.tmpdir.name)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        sysinfo_files = os.listdir(self.base_outputdir.name)
+        sysinfo_files = os.listdir(self.tmpdir.name)
         self.assertGreater(len(sysinfo_files), 0, "Empty sysinfo files dir")
 
     def test_list_plugin(self):
@@ -1081,10 +1049,6 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
     def test_list_error_output(self):
         cmd_line = '%s list sbrubles' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_FAIL
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
         self.assertIn(b"Unable to resolve reference", result.stderr)
 
     def test_list_no_file_loader(self):
@@ -1098,8 +1062,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                b"MISSING this-wont-be-matched\n\n"
                b"TEST TYPES SUMMARY\n"
                b"==================\n"
-               b"EXTERNAL: 0\n"
-               b"MISSING: 1\n")
+               b"missing: 1\n")
         self.assertEqual(exp, result.stdout, "Stdout mismatch:\n%s\n\n%s"
                          % (exp, result))
 
@@ -1107,7 +1070,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         """
         Runs list verbosely and check for tag related output
         """
-        test = script.make_script(os.path.join(self.base_outputdir.name, 'test.py'),
+        test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),
                                   VALID_PYTHON_TEST_WITH_TAGS)
         cmd_line = ("%s --verbose list --loaders file -- %s" % (AVOCADO,
                                                                 test))
@@ -1121,9 +1084,9 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual("INSTRUMENTED %s BIG_TAG_NAME" % full_test_name,
                          stdout_lines[1])
         self.assertIn("TEST TYPES SUMMARY", stdout_lines)
-        self.assertIn("INSTRUMENTED: 1", stdout_lines)
+        self.assertIn("instrumented: 1", stdout_lines)
         self.assertIn("TEST TAGS SUMMARY", stdout_lines)
-        self.assertEqual("BIG_TAG_NAME: 1", stdout_lines[-1])
+        self.assertEqual("big_tag_name: 1", stdout_lines[-1])
 
     def test_plugin_list(self):
         cmd_line = '%s plugins' % AVOCADO
@@ -1186,8 +1149,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         """
         def run_config(config_path):
             cmd = ('%s --config %s run passtest.py --archive '
-                   '--job-results-dir %s --sysinfo=off'
-                   % (AVOCADO, config_path, self.base_outputdir.name))
+                   '--job-results-dir %s --disable-sysinfo'
+                   % (AVOCADO, config_path, self.tmpdir.name))
             result = process.run(cmd, ignore_status=True)
             expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,
@@ -1214,7 +1177,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                                                   config_content_zip_first)
         with config_zip_first:
             run_config(config_zip_first)
-            archives = glob.glob(os.path.join(self.base_outputdir.name, '*.zip'))
+            archives = glob.glob(os.path.join(self.tmpdir.name, '*.zip'))
             self.assertEqual(len(archives), 1, "ZIP Archive not generated")
             zip_file = zipfile.ZipFile(archives[0], 'r')
             zip_file_list = zip_file.namelist()
@@ -1229,7 +1192,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                                                  config_content_zip_last)
         with config_zip_last:
             run_config(config_zip_last)
-            archives = glob.glob(os.path.join(self.base_outputdir.name, '*.zip'))
+            archives = glob.glob(os.path.join(self.tmpdir.name, '*.zip'))
             self.assertEqual(len(archives), 1, "ZIP Archive not generated")
             zip_file = zipfile.ZipFile(archives[0], 'r')
             zip_file_list = zip_file.namelist()
@@ -1250,21 +1213,19 @@ class ParseXMLError(Exception):
     pass
 
 
-class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
+class PluginsXunitTest(TestCaseTmpDir):
 
     @unittest.skipUnless(SCHEMA_CAPABLE,
                          'Unable to validate schema due to missing xmlschema library')
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(PluginsXunitTest, self).setUp()
         junit_xsd = os.path.join(os.path.dirname(__file__),
                                  os.path.pardir, ".data", 'jenkins-junit.xsd')
         self.xml_schema = xmlschema.XMLSchema(junit_xsd)
-        super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo'
                     ' --xunit - %s' % (AVOCADO, self.tmpdir.name, testname))
         result = process.run(cmd_line, ignore_status=True)
         xml_output = result.stdout
@@ -1325,25 +1286,16 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
 
-    def tearDown(self):
-        self.tmpdir.cleanup()
-        super(PluginsXunitTest, self).tearDown()
-
 
 class ParseJSONError(Exception):
     pass
 
 
-class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        super(PluginsJSONTest, self).setUp()
+class PluginsJSONTest(TestCaseTmpDir):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip, e_ncancel=0, external_runner=None):
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off --json - '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --json - '
                     '--archive %s' % (AVOCADO, self.tmpdir.name, testname))
         if external_runner is not None:
             cmd_line += " --external-runner '%s'" % external_runner
@@ -1403,10 +1355,6 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         # logdir name should escape special chars (/)
         self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
                          "1--ne foo__n_'____nbar_baz")
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
-        super(PluginsJSONTest, self).tearDown()
 
 
 if __name__ == '__main__':

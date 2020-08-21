@@ -3,17 +3,12 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import data_dir
-from avocado.core import exit_codes
-from avocado.core import job
-from avocado.core import nrunner
-from avocado.core import test
+from avocado.core import data_dir, exit_codes, job, nrunner, test
 from avocado.core.exceptions import JobBaseException
 from avocado.core.suite import TestSuite, TestSuiteStatus
 from avocado.utils import path as utils_path
 
 from .. import setup_avocado_loggers, temp_dir_prefix
-
 
 setup_avocado_loggers()
 
@@ -131,10 +126,9 @@ class JobTest(unittest.TestCase):
                   'run.results_dir': self.tmpdir.name,
                   'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
-        self.job = job.Job(config)
+        self.job = job.Job.from_config(config)
         self.job.setup()
-        self.job.create_test_suite()
-        self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
+        self.assertEqual(len(simple_tests_found), len(self.job.test_suites[0]))
 
     def test_job_pre_tests(self):
         class JobFilterTime(job.Job):
@@ -156,9 +150,8 @@ class JobTest(unittest.TestCase):
                   'run.results_dir': self.tmpdir.name,
                   'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
-        self.job = JobFilterTime(config)
+        self.job = JobFilterTime.from_config(config)
         self.job.setup()
-        self.job.create_test_suite()
         try:
             self.job.pre_tests()
         finally:
@@ -171,9 +164,8 @@ class JobTest(unittest.TestCase):
                   'run.results_dir': self.tmpdir.name,
                   'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
-        self.job = job.Job(config)
+        self.job = job.Job.from_config(config)
         self.job.setup()
-        self.job.create_test_suite()
         self.assertEqual(self.job.run_tests(),
                          exit_codes.AVOCADO_ALL_OK)
 
@@ -203,18 +195,19 @@ class JobTest(unittest.TestCase):
     def test_job_run(self):
         class JobFilterLog(job.Job):
             def pre_tests(self):
-                filtered_test_suite = []
-                for test_factory in self.test_suite.tests:
-                    if self.config.get('run.test_runner') == 'runner':
-                        if test_factory[0] is test.SimpleTest:
-                            if not test_factory[1].get('name', '').endswith('time'):
+                for suite in self.test_suites:
+                    filtered_test_suite = []
+                    for test_factory in suite.tests:
+                        if self.config.get('run.test_runner') == 'runner':
+                            if test_factory[0] is test.SimpleTest:
+                                if not test_factory[1].get('name', '').endswith('time'):
+                                    filtered_test_suite.append(test_factory)
+                        elif self.config.get('run.test_runner') == 'nrunner':
+                            task = test_factory
+                            if not task.runnable.url.endswith('time'):
                                 filtered_test_suite.append(test_factory)
-                    elif self.config.get('run.test_runner') == 'nrunner':
-                        task = test_factory
-                        if not task.runnable.url.endswith('time'):
-                            filtered_test_suite.append(test_factory)
-                self.test_suite.tests = filtered_test_suite
-                super(JobFilterLog, self).pre_tests()
+                    suite.tests = filtered_test_suite
+                    super(JobFilterLog, self).pre_tests()
 
             def post_tests(self):
                 with open(os.path.join(self.logdir, "reversed_id"), "w") as f:
@@ -225,11 +218,11 @@ class JobTest(unittest.TestCase):
                   'run.results_dir': self.tmpdir.name,
                   'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
-        self.job = JobFilterLog(config)
+        self.job = JobFilterLog.from_config(config)
         self.job.setup()
         self.assertEqual(self.job.run(),
                          exit_codes.AVOCADO_ALL_OK)
-        self.assertLessEqual(len(self.job.test_suite), 1)
+        self.assertLessEqual(len(self.job.test_suites), 1)
         with open(os.path.join(self.job.logdir, "reversed_id")) as reverse_id_file:
             self.assertEqual(self.job.unique_id[::-1],
                              reverse_id_file.read())
@@ -267,6 +260,15 @@ class JobTest(unittest.TestCase):
         self.assertEqual(self.job.time_end, 20.0)
         self.assertEqual(self.job.time_elapsed, 100.0)
 
+    def test_job_suites_config(self):
+        config = {'run.results_dir': self.tmpdir.name,
+                  'core.show': ['none'],
+                  'run.references': ['/bin/true']}
+
+        suite_config = {'run.references': ['/bin/false']}
+        self.job = job.Job.from_config(config, [suite_config])
+        self.assertEqual(self.job.config.get('run.references'), ['/bin/true'])
+
     def test_job_dryrun_no_unique_job_id(self):
         config = {'run.results_dir': self.tmpdir.name,
                   'run.store_logging_stream': [],
@@ -287,6 +289,31 @@ class JobTest(unittest.TestCase):
         self.assertEqual(os.path.dirname(self.job.logdir), self.tmpdir.name)
         self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))
 
+    def test_job_suite_parent_config(self):
+        """This will test if test suites are inheriting configs from job."""
+        config = {'core.show': ['none'],
+                  'run.results_dir': self.tmpdir.name}
+
+        suite_config = {'run.references': ['/bin/true']}
+
+        # Manual/Custom method
+        suite = TestSuite('foo-test', config=suite_config, job_config=config)
+        self.job = job.Job(config, [suite])
+        self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+                         self.tmpdir.name)
+
+        # Automatic method passing suites
+        self.job = job.Job.from_config(job_config=config,
+                                       suites_configs=[suite_config])
+        self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+                         self.tmpdir.name)
+
+        # Automatic method passing only one config
+        config.update({'run.references': ['/bin/true']})
+        self.job = job.Job.from_config(job_config=config)
+        self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+                         self.tmpdir.name)
+
     def test_job_dryrun_no_base_logdir(self):
         config = {'core.show': ['none'],
                   'run.store_logging_stream': [],
@@ -304,9 +331,8 @@ class JobTest(unittest.TestCase):
                   'run.references': simple_tests_found,
                   'run.test_runner': 'nrunner',
                   'core.show': ['none']}
-        self.job = job.Job(config)
+        self.job = job.Job.from_config(config)
         self.job.setup()
-        self.job.create_test_suite()
         self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
         if self.job.test_suite:
             self.assertIsInstance(self.job.test_suite.tests[0], nrunner.Task)

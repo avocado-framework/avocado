@@ -1,7 +1,7 @@
 pkg_install := $(shell dnf -y install git rpm-build)
 commit := $(shell git log --pretty=format:'%H' -n 1)
 commit_date := $(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
-short_commit := $(shell git log --pretty=format:'%h' -n 1)
+short_commit := $(shell git rev-parse --short=9 HEAD)
 
 srpm:
 	if test ! -d SOURCES; then mkdir SOURCES; fi

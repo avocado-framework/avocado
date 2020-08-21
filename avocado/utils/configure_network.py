@@ -17,14 +17,12 @@
 Configure network when interface name and interface IP is available.
 """
 
-import shutil
+import logging
 import os
+import shutil
 import warnings
 
-import logging
-from . import distro
-from . import process
-from . import genio
+from . import distro, genio, process
 from .ssh import Session
 
 warnings.warn(("This module will be deprecated soon. Please use "

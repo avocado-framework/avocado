@@ -17,6 +17,7 @@
 Job module - describes a sequence of automated test operations.
 """
 
+
 import logging
 import os
 import pprint
@@ -26,15 +27,18 @@ import sys
 import tempfile
 import time
 import traceback
+import warnings
+from copy import deepcopy
 
-from ..utils import astring, path, process
+from ..utils import astring
 from ..utils.data_structures import CallbackRegister, time_to_seconds
-from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata,
-               output, result, version)
+from . import (data_dir, dispatcher, exceptions, exit_codes, jobdata, output,
+               result, version)
 from .job_id import create_unique_job_id
-from .future.settings import settings
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
+from .settings import settings
 from .suite import TestSuite, TestSuiteError
+from .utils import get_avocado_git_version
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
@@ -68,21 +72,48 @@ register_job_options()
 
 
 class Job:
-
-    """
-    A Job is a set of operations performed on a test machine.
+    """A Job is a set of operations performed on a test machine.
 
     Most of the time, we are interested in simply running tests,
     along with setup operations and event recording.
+
+    A job has multiple test suites attached to it. Please keep in mind that
+    when creating jobs from the constructor (`Job()`), we are assuming that you
+    would like to have control of the test suites and you are going to build
+    your own TestSuites.
+
+    If you would like any help to create the job's test_suites from the config
+    provided, please use `Job.from_config()` method and we are going to do our
+    best to create the test suites.
+
+    So, basically, as described we have two "main ways" to create a job:
+
+    1. Automatic discovery, using `from_config()` method::
+
+        job = Job.from_config(job_config=job_config,
+                              suites_configs=[suite_cfg1, suite_cfg2])
+
+    2. Manual or Custom discovery, using the constructor::
+
+        job = Job(config=config,
+                  test_suites=[suite1, suite2, suite3])
     """
 
-    def __init__(self, config=None):
-        """
-        Creates an instance of Job class.
+    def __init__(self, config=None, test_suites=None):
+        """Creates an instance of Job class.
+
+        Note that `config` and `test_suites` are optional, if not passed you
+        need to change this before running your tests. Otherwise nothing will
+        run. If you need any help to create the test_suites from the config,
+        then use the `Job.from_config()` method.
 
         :param config: the job configuration, usually set by command
                        line options and argument parsing
         :type config: dict
+        :param test_suites: A list with TestSuite objects. If is None the job
+                            will have an empty list and you can add suites
+                            after init accessing job.test_suites.
+        :type test_suites: list
         """
         self.config = settings.as_dict()
         if config:
@@ -96,6 +127,8 @@ class Job:
                 self.config['run.unique_job_id'] = '0' * 40
             self.config['sysinfo.collect.enabled'] = 'off'
 
+        self.test_suites = test_suites or []
+
         #: The log directory for this job, also known as the job results
         #: directory.  If it's set to None, it means that the job results
         #: directory has not yet been created.
@@ -107,7 +140,6 @@ class Job:
         self.result = None
         self.interrupted_reason = None
 
-        self._test_parameters = None
         self._timeout = None
         self._unique_id = None
 
@@ -124,26 +156,29 @@ class Job:
         self._stdout_stderr = None
         self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
-        #: The list of discovered/resolved tests that will be attempted to
-        #: be run by this job.  If set to None, it means that test resolution
-        #: has not been attempted.  If set to an empty list, it means that no
-        #: test was found during resolution.
-        self.test_suite = None
 
+        self._result_events_dispatcher = None
+
+    @property
+    def result_events_dispatcher(self):
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
-        # freely, let's get the result events dispatcher ready early.
+        # freely, let's get the result events dispatcher on first usage.
         # A future optimization may load it on demand.
-        self.result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.config)
-        output.log_plugin_failures(self.result_events_dispatcher.load_failures)
+        if self._result_events_dispatcher is None:
+            self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(
+                self.config)
+            output.log_plugin_failures(self._result_events_dispatcher
+                                       .load_failures)
+        return self._result_events_dispatcher
 
     def __enter__(self):
         self.setup()
-        if not output.STD_OUTPUT.configured:
-            output.reconfigure(self.config)
+        output.reconfigure(self.config)
         return self
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
+        output.del_last_configuration()
         self.cleanup()
 
     def __start_job_logging(self):
@@ -163,10 +198,7 @@ class Job:
 
         # TODO: Fix this, this is one of the few cases where using the config
         # generated from the new settings with a hardcoded 'default' value
-        try:
-            store_logging_stream = self.config.get('run.store_logging_stream', [])
-        except AttributeError:
-            store_logging_stream = []
+        store_logging_stream = self.config.get('run.store_logging_stream', [])
 
         for name in store_logging_stream:
             name = re.split(r'(?<!\\):', name, maxsplit=1)
@@ -212,33 +244,6 @@ class Job:
             for logger in loggers:
                 logging.getLogger(logger).removeHandler(handler)
 
-    @staticmethod
-    def _get_avocado_git_version():
-        # if running from git sources, there will be a ".git" directory
-        # 3 levels up
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        git_dir = os.path.join(base_dir, '.git')
-        if not os.path.isdir(git_dir):
-            return
-        if not os.path.exists(os.path.join(base_dir, 'python-avocado.spec')):
-            return
-
-        try:
-            git = path.find_command('git')
-        except path.CmdNotFoundError:
-            return
-
-        olddir = os.getcwd()
-        try:
-            os.chdir(os.path.abspath(base_dir))
-            cmd = "%s show --summary --pretty='%%H'" % git
-            res = process.run(cmd, ignore_status=True, verbose=False)
-            if res.exit_status == 0:
-                top_commit = res.stdout_text.splitlines()[0][:8]
-                return " (GIT commit %s)" % top_commit
-        finally:
-            os.chdir(olddir)
-
     def _log_avocado_config(self):
         LOG_JOB.info('Avocado config:')
         LOG_JOB.info('')
@@ -257,7 +262,7 @@ class Job:
 
     def _log_avocado_version(self):
         version_log = version.VERSION
-        git_version = self._get_avocado_git_version()
+        git_version = get_avocado_git_version()
         if git_version is not None:
             version_log += git_version
         LOG_JOB.info('Avocado version: %s', version_log)
@@ -269,7 +274,7 @@ class Job:
         LOG_JOB.info("Command line: %s", cmdline)
         LOG_JOB.info('')
 
-    def _log_job_debug_info(self, variants):
+    def _log_job_debug_info(self):
         """
         Log relevant debug information to the job log.
         """
@@ -277,7 +282,8 @@ class Job:
         self._log_avocado_version()
         self._log_avocado_config()
         self._log_avocado_datadir()
-        self._log_variants(variants)
+        for suite in self.test_suites:
+            self._log_variants(suite.variants)
         self._log_tmp_dir()
         self._log_job_id()
 
@@ -393,19 +399,60 @@ class Job:
             if os.path.exists(proc_latest):
                 os.unlink(proc_latest)
 
-    @property
-    def test_parameters(self):
-        """Placeholder for test parameters.
+    @classmethod
+    def from_config(cls, job_config, suites_configs=None):
+        """Helper method to create a job from config dicts.
 
-        This is related to --test-parameters command line option. They're kept
-        in the job because they will be prepared only once, since they are read
-        only and will be shared across all tests of a job.
+        This is different from the Job() initialization because here we are
+        assuming that you need some help to build the test suites. Avocado will
+        try to resolve tests based on the configuration information insead of
+        assuming pre populated test suites.
+
+        Keep in mind that here we are going to replace the suite.name with a
+        counter.
+
+        If you need create a custom Job with your own TestSuites, please use
+        the Job() constructor instead of this method.
+
+        :param job_config: A config dict to be used on this job and also as a
+                           'global' config for each test suite.
+        :type job_config: dict
+        :param suites_configs: A list of specific config dict to be used on
+                               each test suite. Each suite config will be
+                               merged with the job_config dict. If None is
+                               passed then this job will have only one
+                               test_suite with the same config as job_config.
+        :type suites_configs: list
         """
-        if self._test_parameters is None:
-            self._test_parameters = {name: value for name, value
-                                     in self.config.get('run.test_parameters',
-                                                        [])}
-        return self._test_parameters
+        suites_configs = suites_configs or [deepcopy(job_config)]
+        suites = []
+        for index, config in enumerate(suites_configs, start=1):
+            suites.append(TestSuite.from_config(config,
+                                                name=index,
+                                                job_config=job_config))
+        return cls(job_config, suites)
+
+    @property
+    def size(self):
+        """Job size is the sum of all test suites sizes."""
+        return sum([suite.size for suite in self.test_suites])
+
+    @property
+    def test_suite(self):
+        """This is the first test suite of this job (deprecated).
+
+        Please, use test_suites instead.
+        """
+        if self.test_suites:
+            return self.test_suites[0]
+
+    @test_suite.setter
+    def test_suite(self, var):
+        """Temporary setter. Suites should be set from test_suites."""
+        if self.test_suites:
+            self.test_suites[0] = var
+        else:
+            self.test_suites = [var]
 
     @property
     def timeout(self):
@@ -445,16 +492,20 @@ class Job:
                     pass
 
     def create_test_suite(self):
+        msg = ("create_test_suite() is deprecated. You can also create your "
+               "own suites with TestSuite() or TestSuite.from_config().")
+        warnings.warn(msg, DeprecationWarning)
         try:
             self.test_suite = TestSuite.from_config(self.config)
-            if self.test_suite.size == 0:
+            if self.test_suite and self.test_suite.size == 0:
                 refs = self.test_suite.references
                 msg = ("No tests found for given test references, try "
                        "'avocado list -V %s' for details") % " ".join(refs)
                 raise exceptions.JobTestSuiteEmptyError(msg)
         except TestSuiteError as details:
             raise exceptions.JobBaseException(details)
-        self.result.tests_total = self.test_suite.size
+        if self.test_suite:
+            self.result.tests_total = self.test_suite.size
 
     def post_tests(self):
         """
@@ -498,7 +549,7 @@ class Job:
         if self.time_start == -1:
             self.time_start = time.time()
         try:
-            self.create_test_suite()
+            self.result.tests_total = self.size
             self.pre_tests()
             return self.run_tests()
         except exceptions.JobBaseException as details:
@@ -537,23 +588,21 @@ class Job:
         """
         The actual test execution phase
         """
-        self._log_job_debug_info(self.test_suite.variants)
-        jobdata.record(self.config,
-                       self.logdir,
-                       self.test_suite.variants,
-                       sys.argv)
+        self._log_job_debug_info()
+        jobdata.record(self, sys.argv)
 
-        # This is "almost ready" for a loop
-        summary = self.test_suite.run(self)
+        if not self.test_suites:
+            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
+            return self.exitcode
+
+        summary = set()
+        for suite in self.test_suites:
+            summary |= suite.run(self)
 
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
         LOG_JOB.info('Test results available in %s', self.logdir)
-
-        if summary is None:
-            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
-            return self.exitcode
 
         if 'INTERRUPTED' in summary:
             self.exitcode |= exit_codes.AVOCADO_JOB_INTERRUPTED
@@ -576,7 +625,7 @@ class Job:
         self.__start_job_logging()
         self._setup_job_category()
         # Use "logdir" in case "keep_tmp" is enabled
-        if self.config.get('run.keep_tmp') == 'on':
+        if self.config.get('run.keep_tmp'):
             base_tmpdir = self.logdir
         else:
             base_tmpdir = data_dir.get_tmp_dir()

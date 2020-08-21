@@ -519,7 +519,7 @@ an example that does that::
         """
         def setUp(self):
             """
-            Set default params and build the synctest suite.
+            Set attributes from params and build the synctest suite.
             """
             sync_tarball = self.params.get('sync_tarball',
                                            default='synctest.tar.bz2')
@@ -581,7 +581,7 @@ the fetched files in.
 
     ...
         def setUp(self):
-            stress = 'http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz'
+            stress = 'https://fossies.org/linux/privat/stress-1.0.4.tar.gz'
             tarball = self.fetch_asset(stress)
             archive.extract(tarball, self.workdir)
     ...
@@ -596,7 +596,7 @@ the fetched files in.
 
     ...
         def setUp(self):
-            stress = 'http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz'
+            stress = 'https://fossies.org/linux/privat/stress-1.0.4.tar.gz'
             tarball = self.fetch_asset(stress)
             archive.extract(tarball, self.workdir)
     ...
@@ -614,7 +614,7 @@ the fetched files in.
         def setUp(self):
             st_name = 'stress-1.0.4.tar.gz'
             st_hash = 'e1533bc704928ba6e26a362452e6db8fd58b1f0b'
-            st_loc = ['http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz',
+            st_loc = ['https://fossies.org/linux/privat/stress-1.0.4.tar.gz',
                       'ftp://foo.bar/stress-1.0.4.tar.gz']
             tarball = self.fetch_asset(st_name, asset_hash=st_hash,
                                        locations=st_loc)
@@ -641,7 +641,7 @@ the fetched files in.
         def setUp(self):
             st_name = 'stress-1.0.4.tar.gz'
             st_hash = 'e1533bc704928ba6e26a362452e6db8fd58b1f0b'
-            st_loc = ['http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz',
+            st_loc = ['https://fossies.org/linux/privat/stress-1.0.4.tar.gz',
                       'ftp://foo.bar/stress-1.0.4.tar.gz']
             tarball = self.fetch_asset(st_name, asset_hash=st_hash,
                                        locations=st_loc, find_only=True)
@@ -665,7 +665,7 @@ the fetched files in.
         def setUp(self):
             st_name = 'stress-1.0.4.tar.gz'
             st_hash = 'e1533bc704928ba6e26a362452e6db8fd58b1f0b'
-            st_loc = ['http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz',
+            st_loc = ['https://fossies.org/linux/privat/stress-1.0.4.tar.gz',
                       'ftp://foo.bar/stress-1.0.4.tar.gz']
             tarball = self.fetch_asset(st_name, asset_hash=st_hash,
                                        locations=st_loc, find_only=True,
@@ -788,7 +788,7 @@ generated match the reference(s) file(s) content.  If they don't
 match, the test will finish with a ``FAIL`` status.
 
 You can disable this automatic check when a reference file exists by
-passing ``--output-check=off`` to the test runner.
+passing ``--disable-output-check`` to the test runner.
 
 .. tip:: The :mod:`avocado.utils.process` APIs have a parameter called
          ``allow_output_check`` that let you individually select the

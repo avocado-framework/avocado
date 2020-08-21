@@ -1,60 +1,103 @@
+*************************
 Writing an Avocado plugin
--------------------------
+*************************
 
 What better way to understand how an Avocado plugin works than creating one?
 Let's use another old time favorite for that, the "Print hello world" theme.
 
 Code example
-~~~~~~~~~~~~
+============
 
 Let's say you want to write a plugin that adds a new subcommand to the test
-runner, ``hello``. This is how you'd do it::
+runner, ``hello``. This is how you'd do it:
 
-    from avocado.core.output import LOG_JOB
-    from avocado.core.plugin_interfaces import CLICmd
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello/hello.py
 
+This plugins inherits from
+:class:`avocado.core.plugin_interfaces.CLICmd`.  This specific base
+class allows for the creation of new commands for the Avocado CLI
+tool. The only mandatory method to be implemented is :func:`run
+<avocado.core.plugin_interfaces.CLICmd.run>` and it's the plugin main
+entry point.
 
-    class HelloWorld(CLICmd):
+This plugin uses :py:data:`avocado.core.output.LOG_UI` to produce the hello
+world output in the console.
 
-        name = 'hello'
-        description = 'The classical Hello World! plugin example.'
+.. note:: Different loggers can be used in other contexts and for
+          different purposes.  One such example is
+          :py:data:`avocado.core.output.LOG_JOB`, which can be used to
+          output to job log files when running a job.
 
-        def run(self, args):
-            LOG_JOB.info(self.description)
+Registering configuration options (settings)
+============================================
 
-As you can see, this plugins inherits from
-:class:`avocado.core.plugin_interfaces.CLICmd`.  This specific base class
-allows for the creation of new commands for the Avocado CLI tool. The only
-mandatory method to be implemented is :func:`run
-<avocado.core.plugin_interfaces.CLICmd.run>` and it's the plugin main entry
-point.
+It is usual for a plugin to allow users to do  some degree of configuration
+based on command-line options and/or configuration options. A plugin might
+change its behavior depending on a specific configuration option.
 
-This plugin uses :py:data:`avocado.core.output.LOG_JOB` to produce the hello
-world output in the Job log. One can also use
-:py:data:`avocado.core.output.LOG_UI` to produce output in the human readable
-output.
+Frequently, those settings come from configuration files and, sometimes, from
+the command-line arguments. Like in most UNIX-like tools, command-line options
+will override values defined inside the configuration files.
 
-Registering Plugins
-~~~~~~~~~~~~~~~~~~~
+You, as a plugin writer, don’t need to handle this configuration by yourself.
+Avocado provides a common API that can be used by plugins in order to register
+options and get values.
+
+If your plugin has options available to the users, it can register it using the
+:meth:`.Settings.register_option()` method during your plugin configuration
+stage. The options are parsed and provided to the plugin as a config dictionary.
+
+Let’s take our Hello World example and change the message based on a “message”
+option:
+
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello_option/hello_option.py
+
+This registration will register a “configuration namespace" (“hello.message”)
+inside the configuration file only. A namespace is a “section” (“hello”)
+followed by a “key” (“message”). In other words, the following entry in your
+configuration file is valid and will be parsed::
+
+  [hello]
+  message = My custom message
+
+As you can see in the example above, you need to set a “default” value and this
+value will be used if the option is not present in the configuration file. This
+means that you can have a very small configuration file or even an empty one.
+
+This is a very basic example of how to configure options inside your plugin.
+
+Adding command-line options
+---------------------------
+
+Now, let’s say you would like to also allow this change via the command-line
+option of your plugin (if your plugin is a command-line plugin). You need to
+register in any case and use the same method to connect your “option namespace”
+with your command-line option.
+
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello_parser/hello_parser.py
+
+.. note:: Keep in mind that not all options should have a “command-line”
+  option. Try to keep the command-line as clean as possible. We use command-line
+  only for options that constantly need to change and when editing the
+  configuration file is not handy.
+
+For more information about how this registration process works, visit the
+:meth:`.Settings.register_option()` method documentation.
+
+Registering plugins
+===================
 
 Avocado makes use of the `setuptools` and its `entry points` to register and
 find Python objects. So, to make your new plugin visible to Avocado, you need
-to add to your setuptools based `setup.py` file something like::
+to add to your setuptools based `setup.py` file something like:
 
- setup(name='mypluginpack',
- ...
- entry_points={
-    'avocado.plugins.cli': [
-       'hello = mypluginpack.hello:HelloWorld',
-    ]
- }
- ...
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello/setup.py
 
 Then, by running either ``$ python setup.py install`` or ``$ python setup.py
 develop`` your plugin should be visible to Avocado.
 
 Namespace
-~~~~~~~~~
+=========
 
 The plugin registry mentioned earlier, (`setuptools` and its `entry points`) is
 global to a given Python installation.  Avocado uses the namespace prefix
@@ -80,7 +123,7 @@ name is going to be ``job.prepost.jobscripts``.
 
 
 Plugin config files
-~~~~~~~~~~~~~~~~~~~
+===================
 
 Plugins can extend the list of config files parsed by ``Settings`` objects by
 dropping the individual config files into ``/etc/avocado/conf.d``

@@ -19,15 +19,15 @@ Module that provides communication with GDB via its GDB/MI interpreter
 __all__ = ['GDB', 'GDBServer', 'GDBRemote']
 
 
-import os
-import time
 import fcntl
+import os
 import socket
 import subprocess
 import tempfile
+import time
 
-from .network import ports
 from .external import gdbmi_parser
+from .network import ports
 
 #: Contains a list of binary names that should be run via the GNU debugger
 #: and be stopped at a given point. That means that a breakpoint will be set

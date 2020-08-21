@@ -5,17 +5,15 @@ import unittest
 from avocado.utils import asset
 from avocado.utils.filelock import FileLock
 
-from .. import setup_avocado_loggers, temp_dir_prefix
-
+from .. import TestCaseTmpDir, setup_avocado_loggers
 
 setup_avocado_loggers()
 
 
-class TestAsset(unittest.TestCase):
+class TestAsset(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(TestAsset, self).setUp()
         self.assetdir = tempfile.mkdtemp(dir=self.tmpdir.name)
         self.assetname = 'foo.tgz'
         self.assethash = '3a033a8938c1af56eeb793669db83bcbd0c17ea5'
@@ -205,9 +203,6 @@ class TestAsset(unittest.TestCase):
                         metadata=expected_metadata)
         with self.assertRaises(OSError):
             a.get_metadata()
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
 
 if __name__ == "__main__":

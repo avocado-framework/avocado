@@ -1,9 +1,7 @@
 import argparse
 import logging
 
-
 from .manager import SoftwareManager
-
 
 log = logging.getLogger('avocado.utils.software_manager')
 

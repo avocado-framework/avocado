@@ -1,10 +1,7 @@
 import os
 
-from avocado import Test
-from avocado import fail_on
-from avocado.utils import archive
-from avocado.utils import build
-from avocado.utils import process
+from avocado import Test, fail_on
+from avocado.utils import archive, build, process
 
 
 class Hello(Test):

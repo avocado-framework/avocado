@@ -3,10 +3,9 @@ import tempfile
 import unittest
 
 from avocado.core import test
-from avocado.plugins import replay
+from avocado.plugins.legacy import replay as replay_legacy
 
 from .. import setup_avocado_loggers, temp_dir_prefix
-
 
 setup_avocado_loggers()
 
@@ -31,7 +30,7 @@ class Replay(unittest.TestCase):
         with open(os.path.join(self.tmpdir.name, "results.json"), "w") as res:
             res.write('{"skip": 3, "tests": [{"test": "executed", "status":'
                       '"PASS"}], "total": 4}')
-        rep = replay.Replay()
+        rep = replay_legacy.Replay()
         act = rep._create_replay_map(self.tmpdir.name, ["PASS"])
         exp = [None, test.ReplaySkipTest, test.ReplaySkipTest,
                test.ReplaySkipTest, test.ReplaySkipTest]
@@ -47,7 +46,7 @@ class Replay(unittest.TestCase):
         """
         with open(os.path.join(self.tmpdir.name, "results.tap"), "w") as res:
             res.write("\n# 1..10\nok 3 test3\nnot ok 2 test2\n1..5")
-        rep = replay.Replay()
+        rep = replay_legacy.Replay()
         act = rep._create_replay_map(self.tmpdir.name, ["PASS"])
         exp = [test.ReplaySkipTest, test.ReplaySkipTest, None,
                test.ReplaySkipTest, test.ReplaySkipTest]
@@ -60,7 +59,7 @@ class Replay(unittest.TestCase):
         """
         Check various ugly tap results
         """
-        rep = replay.Replay()
+        rep = replay_legacy.Replay()
         res_path = os.path.join(self.tmpdir.name, "results.tap")
         self.assertEqual(rep._get_tests_from_tap(res_path), None)
         with open(res_path, "w") as res:

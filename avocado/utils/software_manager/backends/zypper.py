@@ -1,10 +1,9 @@
-import re
 import logging
+import re
 
-from .rpm import RpmBackend
 from ... import path as utils_path
 from ... import process
-
+from .rpm import RpmBackend
 
 log = logging.getLogger('avocado.utils.software_manager')
 

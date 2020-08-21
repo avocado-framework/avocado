@@ -1,10 +1,8 @@
-from avocado import Test
-from avocado import fail_on
-from avocado.utils import vmimage
-from avocado.utils import process
-
-from urllib.request import urlopen
 from urllib.error import HTTPError
+from urllib.request import urlopen
+
+from avocado import Test, fail_on
+from avocado.utils import process, vmimage
 
 
 class Base(Test):

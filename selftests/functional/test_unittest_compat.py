@@ -1,13 +1,10 @@
 import os
 import sys
-import tempfile
 import unittest
 
-from avocado.utils import script
-from avocado.utils import process
+from avocado.utils import process, script
 
-from .. import BASEDIR, temp_dir_prefix
-
+from .. import BASEDIR, TestCaseTmpDir
 
 UNITTEST_GOOD = """from avocado import Test
 from unittest import main
@@ -58,11 +55,10 @@ if __name__ == '__main__':
 """
 
 
-class UnittestCompat(unittest.TestCase):
+class UnittestCompat(TestCaseTmpDir):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        super(UnittestCompat, self).setUp()
         self.original_pypath = os.environ.get('PYTHONPATH')
         if self.original_pypath is not None:
             os.environ['PYTHONPATH'] = '%s:%s' % (
@@ -108,10 +104,10 @@ class UnittestCompat(unittest.TestCase):
         self.assertIn(b'FAILED (errors=1)', result.stderr)
 
     def tearDown(self):
+        super(UnittestCompat, self).tearDown()
         self.unittest_script_error.remove()
         self.unittest_script_fail.remove()
         self.unittest_script_good.remove()
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

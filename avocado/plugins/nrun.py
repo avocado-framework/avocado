@@ -4,18 +4,16 @@ import os
 import random
 import sys
 
-from avocado.core import exit_codes
-from avocado.core import nrunner
-from avocado.core import parser_common_args
-from avocado.core import resolver
-from avocado.core.spawners.process import ProcessSpawner
-from avocado.core.spawners.podman import PodmanSpawner
-from avocado.core.utils import resolutions_to_tasks
-from avocado.core.future.settings import settings
+from avocado.core import (exit_codes, nrunner, parser_common_args, resolver,
+                          status_server)
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
-from avocado.core.test_id import TestID
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.settings import settings
+from avocado.core.spawners.podman import PodmanSpawner
+from avocado.core.spawners.process import ProcessSpawner
+from avocado.core.test_id import TestID
+from avocado.core.utils import resolutions_to_tasks
 
 
 class NRun(CLICmd):
@@ -154,10 +152,11 @@ class NRun(CLICmd):
 
             listen = config.get('nrun.status_server.listen')
             verbose = config.get('core.verbose')
-            self.status_server = nrunner.StatusServer(listen,  # pylint: disable=W0201
-                                                      [t.identifier for t in
-                                                       self.pending_tasks],
-                                                      verbose)
+            self.status_server = status_server.StatusServer(
+                listen,  # pylint: disable=W0201
+                [t.identifier for t in
+                 self.pending_tasks],
+                verbose)
             self.status_server.start()
             parallel_tasks = config.get('nrun.parallel_tasks')
             loop = asyncio.get_event_loop()

@@ -17,22 +17,20 @@ Job Diff
 """
 
 from __future__ import absolute_import
+
 import argparse
 import json
 import os
 import subprocess
 import sys
 import tempfile
+from difflib import HtmlDiff, unified_diff
 
-from difflib import unified_diff, HtmlDiff
-
-from avocado.core import data_dir
-from avocado.core import exit_codes
-from avocado.core import jobdata
-from avocado.core import output
-from avocado.core.future.settings import settings
+from avocado.core import data_dir, exit_codes, jobdata, output
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.settings import settings
+from avocado.core.varianter import Varianter
 
 
 class Diff(CLICmd):
@@ -390,9 +388,10 @@ class Diff(CLICmd):
     @staticmethod
     def _get_variants(resultsdir):
         results = []
-        variants = jobdata.retrieve_variants(resultsdir)
+        variants = Varianter.from_resultsdir(resultsdir)
         if variants is not None:
-            results.extend(variants.to_str(variants=2).splitlines())
+            for variant in variants:
+                results.extend(variant.to_str(variants=2).splitlines())
         else:
             results.append('Not found\n')
 

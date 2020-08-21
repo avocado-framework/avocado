@@ -44,6 +44,8 @@ the "venv" itself::
 Installing from packages
 ------------------------
 
+.. _fedora-from-avocados-own-repo:
+
 Fedora
 ~~~~~~
 

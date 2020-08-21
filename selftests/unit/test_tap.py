@@ -15,8 +15,7 @@
 import io
 import unittest
 
-from avocado.core.tapparser import TestResult, TapParser
-
+from avocado.core.tapparser import TapParser, TestResult
 
 # The TapParser unit tests are based on Meson's unit tests for TAP parsing,
 # which were licensed under the MIT (X11) license and were contributed to

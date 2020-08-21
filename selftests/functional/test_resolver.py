@@ -1,15 +1,13 @@
 import stat
 import unittest
 
-from avocado.utils import script
-from avocado.utils import process
+from avocado.utils import process, script
 
 from .. import AVOCADO
-
 # Use the same definitions from loader to make sure the behavior
 # is also the same
-from .test_loader import SIMPLE_TEST as EXEC_TEST
 from .test_loader import AVOCADO_TEST_OK as AVOCADO_INSTRUMENTED_TEST
+from .test_loader import SIMPLE_TEST as EXEC_TEST
 
 
 class ResolverFunctional(unittest.TestCase):
@@ -26,7 +24,7 @@ class ResolverFunctional(unittest.TestCase):
         name = 'executable-test'
         with script.TemporaryScript(name, EXEC_TEST,
                                     name, self.MODE_0775) as test_file:
-            cmd_line = ('%s nlist -V %s' % (AVOCADO, test_file.path))
+            cmd_line = ('%s --verbose list --resolver %s' % (AVOCADO, test_file.path))
             result = process.run(cmd_line)
         self.assertIn('exec-test: 1', result.stdout_text)
 
@@ -34,7 +32,7 @@ class ResolverFunctional(unittest.TestCase):
         name = 'executable-test'
         with script.TemporaryScript(name, EXEC_TEST,
                                     name, self.MODE_0664) as test_file:
-            cmd_line = ('%s nlist %s' % (AVOCADO, test_file.path))
+            cmd_line = ('%s list --resolver %s' % (AVOCADO, test_file.path))
             result = process.run(cmd_line)
         self.assertNotIn('exec-test ', result.stdout_text)
 
@@ -42,7 +40,7 @@ class ResolverFunctional(unittest.TestCase):
         name = 'passtest.py'
         with script.TemporaryScript(name, AVOCADO_INSTRUMENTED_TEST,
                                     name, self.MODE_0664) as test_file:
-            cmd_line = ('%s nlist -V %s' % (AVOCADO, test_file.path))
+            cmd_line = ('%s --verbose list --resolver %s' % (AVOCADO, test_file.path))
             result = process.run(cmd_line)
         self.assertIn('passtest.py:PassTest.test', result.stdout_text)
         self.assertIn('avocado-instrumented: 1', result.stdout_text)

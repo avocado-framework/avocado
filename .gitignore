@@ -21,6 +21,7 @@ docs/source/api/test
 docs/source/api/utils
 docs/source/api/plugins
 docs/source/api/optional-plugins
+docs/source/guides/writer/libs/data/vmimage
 
 # This file should be generated with:
 # avocado config reference > docs/source/config/reference.rst

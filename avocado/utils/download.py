@@ -19,14 +19,11 @@ Methods to download URLs and regular files.
 
 import logging
 import os
-import socket
 import shutil
-
+import socket
 from urllib.request import urlopen
 
-from . import aurl
-from . import output
-from . import crypto
+from . import aurl, crypto, output
 
 log = logging.getLogger('avocado.test')
 

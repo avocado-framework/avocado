@@ -15,19 +15,19 @@
 HTML output module.
 """
 
+import base64
 import codecs
 import os
 import subprocess
 import sys
 import time
-import base64
 
 import jinja2 as jinja
 
 from avocado.core import exit_codes
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Result
+from avocado.core.settings import settings
 from avocado.utils import astring
 
 
@@ -218,13 +218,13 @@ class HTMLResult(Result):
             report_file.write(report_contents)
 
     def render(self, result, job):
-        if job.status in ("RUNNING", "ERROR"):
+        if job.status in ("RUNNING", "ERROR", "FAIL"):
             return  # Don't create results on unfinished or errored jobs
         if not (job.config.get('job.run.result.html.enabled') or
-                job.config.get('run.html_output')):
+                job.config.get('job.run.result.html.output')):
             return
 
-        open_browser = job.config.get('run.open_browser', False)
+        open_browser = job.config.get('job.run.result.html.open_browser', False)
         if job.config.get('job.run.result.html.enabled', 'off') == 'on':
             html_path = os.path.join(job.logdir, 'results.html')
             self._render(result, html_path)
@@ -234,7 +234,7 @@ class HTMLResult(Result):
                 self._open_browser(html_path)
                 open_browser = False
 
-        html_path = job.config.get('run.html_output', None)
+        html_path = job.config.get('job.run.result.html.output', None)
         if html_path is not None:
             self._render(result, html_path)
             if open_browser:
@@ -260,8 +260,8 @@ class HTML(CLI):
                     'supported since not all HTML resources can be embedded '
                     'into a single file (page resources will be copied to '
                     'the output file dir)')
-        settings.register_option(section='run',
-                                 key='html_output',
+        settings.register_option(section='job.run.result.html',
+                                 key='output',
                                  default=None,
                                  help_msg=help_msg,
                                  parser=run_subcommand_parser,
@@ -272,7 +272,7 @@ class HTML(CLI):
                     'This works even if --html was not explicitly passed, '
                     'since an HTML report is always generated on the job '
                     'results dir.')
-        settings.register_option(section='run',
+        settings.register_option(section='job.run.result.html',
                                  key='open_browser',
                                  key_type=bool,
                                  default=False,
@@ -291,7 +291,7 @@ class HTML(CLI):
                                  long_arg='--html-job-result')
 
     def run(self, config):
-        if config.get('run.html_output') == '-':
+        if config.get('job.run.result.html.output') == '-':
             LOG_UI.error('HTML to stdout not supported (not all HTML resources'
                          ' can be embedded on a single file)')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)

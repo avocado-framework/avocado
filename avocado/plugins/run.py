@@ -18,18 +18,30 @@ Base Test Runner Plugins.
 
 import argparse
 import sys
-import warnings
 
-from avocado.core import exit_codes
-from avocado.core import job
-from avocado.core import loader
-from avocado.core import output
-from avocado.core import parser_common_args
+from avocado.core import exit_codes, job, loader, output, parser_common_args
 from avocado.core.dispatcher import JobPrePostDispatcher
-from avocado.core.future.settings import settings
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.plugin_interfaces import CLICmd, Init
+from avocado.core.settings import settings
+from avocado.core.suite import TestSuite, TestSuiteError
 from avocado.utils import process
+
+
+class RunInit(Init):
+
+    name = 'run'
+    description = 'Initializes the run options'
+
+    def initialize(self):
+        help_msg = ('Defines the order of iterating through test suite '
+                    'and test variants')
+        settings.register_option(section='run',
+                                 key='execution_order',
+                                 choices=('tests-per-variant',
+                                          'variants-per-test'),
+                                 default='variants-per-test',
+                                 help_msg=help_msg)
 
 
 class Run(CLICmd):
@@ -155,22 +167,22 @@ class Run(CLICmd):
                                          parser=parser,
                                          long_arg='--job-timeout')
 
-        help_msg = ('Enable or disable the job interruption on first failed '
-                    'test. "on" and "off" will be deprecated soon.')
+        help_msg = 'Enable the job interruption on first failed test.'
         settings.register_option(section='run',
                                  key='failfast',
-                                 choices=('on', 'off'),
-                                 default='off',
+                                 default=False,
+                                 key_type=bool,
+                                 action='store_true',
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--failfast')
 
-        help_msg = ('Keep job temporary files (useful for avocado debugging). '
-                    '"on" and "off" will be deprecated soon.')
+        help_msg = 'Keep job temporary files (useful for avocado debugging).'
         settings.register_option(section='run',
                                  key='keep_tmp',
-                                 choices=('on', 'off'),
-                                 default='off',
+                                 default=False,
+                                 key_type=bool,
+                                 action='store_true',
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--keep-tmp')
@@ -188,20 +200,12 @@ class Run(CLICmd):
 
         settings.add_argparser_to_option(namespace='sysinfo.collect.enabled',
                                          parser=parser,
-                                         choices=('on', 'off'),
-                                         short_arg='-S',
-                                         long_arg='--sysinfo')
+                                         action='store_false',
+                                         long_arg='--disable-sysinfo')
 
-        help_msg = ('Defines the order of iterating through test suite '
-                    'and test variants')
-        settings.register_option(section='run',
-                                 key='execution_order',
-                                 choices=('tests-per-variant',
-                                          'variants-per-test'),
-                                 default=None,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--execution-order')
+        settings.add_argparser_to_option('run.execution_order',
+                                         parser=parser,
+                                         long_arg='--execution-order')
 
         parser.output = parser.add_argument_group('output and result format')
 
@@ -253,17 +257,17 @@ class Run(CLICmd):
                                  default=None,
                                  long_arg='--output-check-record')
 
-        help_msg = ('Enable or disable test output (stdout/stderr) check. If '
-                    'this option is off, no output will be checked, even if '
-                    'there are reference files present for the test. "on" '
-                    'and "off" will be deprecated soon.')
+        help_msg = ('Disables test output (stdout/stderr) check. If this '
+                    'option is given, no output will be checked, even if '
+                    'there are reference files present for the test.')
         settings.register_option(section='run',
                                  key='output_check',
-                                 default='on',
-                                 choices=('on', 'off'),
+                                 default=True,
+                                 key_type=bool,
+                                 action='store_false',
                                  help_msg=help_msg,
                                  parser=out_check,
-                                 long_arg='--output-check')
+                                 long_arg='--disable-output-check')
 
         loader.add_loader_options(parser, 'run')
         parser_common_args.add_tag_filter_args(parser)
@@ -280,10 +284,6 @@ class Run(CLICmd):
             check_record = config.get('run.output_check_record')
             process.OUTPUT_CHECK_RECORD_MODE = check_record
 
-        warnings.warn("The following arguments will be changed to boolean soon: "
-                      "sysinfo, output-check, failfast and keep-tmp. ",
-                      FutureWarning)
-
         unique_job_id = config.get('run.unique_job_id')
         if unique_job_id is not None:
             try:
@@ -294,7 +294,14 @@ class Run(CLICmd):
                 LOG_UI.error('Unique Job ID needs to be a 40 digit hex number')
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-        with job.Job(config) as job_instance:
+        try:
+            suite = TestSuite.from_config(config, name='suite01')
+            if suite.size == 0:
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+        except TestSuiteError as err:
+            LOG_UI.error(err)
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+        with job.Job(config, [suite]) as job_instance:
             pre_post_dispatcher = JobPrePostDispatcher()
             try:
                 # Run JobPre plugins

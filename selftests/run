@@ -10,9 +10,7 @@ import sys
 import unittest
 
 from avocado.core import data_dir
-
 from selftests import test_suite
-
 
 CHECK_TMP_DIRS = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                               "check_tmp_dirs"))

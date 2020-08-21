@@ -30,15 +30,14 @@ import glob
 import os
 import shutil
 import sys
-import time
 import tempfile
+import time
 
-from . import job_id
-from . import exit_codes
-from .future.settings import settings as future_settings
-from .output import LOG_JOB, LOG_UI
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
+from . import exit_codes, job_id
+from .output import LOG_JOB, LOG_UI
+from .settings import settings
 
 if 'VIRTUAL_ENV' in os.environ:
     SYSTEM_BASE_DIR = os.environ['VIRTUAL_ENV']
@@ -61,7 +60,7 @@ def _get_settings_dir(dir_name):
     Returns a given "datadir" directory as set by the configuration system
     """
     namespace = 'datadir.paths.{}'.format(dir_name)
-    path = future_settings.as_dict().get(namespace)
+    path = settings.as_dict().get(namespace)
     return os.path.abspath(path)
 
 
@@ -205,7 +204,7 @@ def get_cache_dirs():
     """
     Returns the list of cache dirs, according to configuration and convention
     """
-    cache_dirs = future_settings.as_dict().get('datadir.paths.cache_dirs')
+    cache_dirs = settings.as_dict().get('datadir.paths.cache_dirs')
     datadir_cache = os.path.join(get_data_dir(), 'cache')
     if datadir_cache not in cache_dirs:
         cache_dirs.append(datadir_cache)
