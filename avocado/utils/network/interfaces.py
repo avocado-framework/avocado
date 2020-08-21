@@ -20,6 +20,7 @@ import json
 import logging
 import os
 import shutil
+import warnings
 from ipaddress import ip_interface
 
 from ..distro import detect as distro_detect
@@ -141,15 +142,39 @@ class NetworkInterface:
         except Exception as ex:
             raise NWException("Failed to bring up: %s" % ex)
 
+    def is_admin_link_up(self):
+        """Check the admin link state is up or not.
+
+        :return: True or False, True if network interface state is 'UP'
+                 otherwise will return False.
+        """
+        try:
+            if self._get_interface_details().get('flags')[2] == 'UP':
+                return True
+        except (NWException, IndexError):
+            raise NWException("Could not get Administrative link state.")
+        return False
+
+    def is_operational_link_up(self):
+        """Check Operational link state is up or not.
+
+        :return: True or False. True if operational link state is LOWER_UP,
+                 otherwise will return False.
+        """
+        try:
+            if self._get_interface_details().get('flags')[3] == 'LOWER_UP':
+                return True
+        except (NWException, IndexError):
+            raise NWException("Could not get operational link state.")
+        return False
+
     def is_link_up(self):
         """Check if the interface is up or not.
 
-        :return: True or False. True if the current state is UP, otherwise
-                 will return False.
+        :return: True or False. True if admin link state and operational
+                 link state is up otherwise will return False.
         """
-        if self.get_link_state() == 'up':
-            return True
-        return False
+        return self.is_admin_link_up() and self.is_operational_link_up()
 
     def get_ipaddrs(self, version=4):
         """Get the IP addresses from a network interface.
@@ -193,6 +218,8 @@ class NetworkInterface:
         network interface state. Or it will raise a NWException if is
         unable to get the interface state.
         """
+        warnings.warn("deprecated, use existing methods: is_operational_link_up,\
+                       is_admin_link_up", DeprecationWarning)
         cmd = "cat /sys/class/net/{}/operstate".format(self.name)
         try:
             return run_command(cmd, self.host)
