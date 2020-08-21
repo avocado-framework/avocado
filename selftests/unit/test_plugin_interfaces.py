@@ -59,3 +59,8 @@ class Plugin(unittest.TestCase):
         with self.assertRaises(TypeError):
             # pylint: disable=E0110
             plugin_interfaces.Init()
+
+    def test_instantiate_spawner(self):
+        with self.assertRaises(TypeError):
+            # pylint: disable=E0110
+            plugin_interfaces.Spawner()
