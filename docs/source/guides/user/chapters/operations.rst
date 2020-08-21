@@ -24,7 +24,7 @@ from the command line, such as::
 To run a new job with the configuration used by the previously executed job,
 it's possible to simply execute::
 
-  $ avocado replay
+  $ avocado replay latest
 
 Resulting in::
 

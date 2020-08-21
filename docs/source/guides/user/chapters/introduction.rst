@@ -92,7 +92,7 @@ to try to execute all tests in a job, regardless individual of test failures.
 
 .. note:: Avocado versions 80.0 and earlier allowed replayed jobs to override
           the failfast configuration by setting ``--failfast=off`` in a
-          ``avocado run --replay ..`` command line.  This is no longer possible.
+          ``avocado replay ..`` command line.  This is no longer possible.
 
 .. _the_hint_files:
 
