@@ -47,6 +47,10 @@ from pkg_resources import resource_filename
 from .settings_dispatcher import SettingsDispatcher
 
 
+def sorted_dict(dict_object):
+    return sorted(dict_object.items(), key=lambda t: t[0])
+
+
 class SettingsError(Exception):
     """
     Base settings error.
@@ -399,13 +403,13 @@ class Settings:
         or via command-line).
         """
         result = {}
-        for namespace, option in self._namespaces.items():
+        for namespace, option in sorted_dict(self._namespaces):
             result[namespace] = option.value
         return result
 
     def as_full_dict(self):
         result = {}
-        for namespace, option in self._namespaces.items():
+        for namespace, option in sorted_dict(self._namespaces):
             result[namespace] = {'help': option.help_msg,
                                  'type': option.key_type,
                                  'default': option.default,

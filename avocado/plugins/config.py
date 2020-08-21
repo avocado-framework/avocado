@@ -52,7 +52,7 @@ class Config(CLICmd):
         if config.get('config_subcommand') == 'reference':
             self.handle_reference(LOG_UI.debug)
         else:
-            self.handle_default(config)
+            self.handle_default()
 
     @staticmethod
     def handle_reference(print_function):
@@ -68,10 +68,12 @@ class Config(CLICmd):
             print_function("* Type: %s" % option.get('type'))
             print_function("")
 
-    def handle_default(self, config):
+    def handle_default(self):
         LOG_UI.info("Config files read (in order, '*' means the file exists "
                     "and had been read):")
 
+        # Getting from settings because is already sorted
+        config = settings.as_dict()
         for cfg_path in settings.all_config_paths:
             if cfg_path in settings.config_paths:
                 LOG_UI.debug('    * %s', cfg_path)
