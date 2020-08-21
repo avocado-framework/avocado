@@ -173,8 +173,8 @@ class Job:
         return self._result_events_dispatcher
 
     def __enter__(self):
-        self.setup()
         output.reconfigure(self.config)
+        self.setup()
         return self
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
