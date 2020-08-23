@@ -180,7 +180,11 @@ def usable_ro_dir(directory):
 
     :param directory: Directory
     """
-    cwd = os.getcwd()
+    try:
+        cwd = os.getcwd()
+    except FileNotFoundError:
+        return False
+
     if os.path.isdir(directory):
         try:
             os.chdir(directory)
