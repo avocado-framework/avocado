@@ -15,12 +15,12 @@ class PodmanSpawner(Spawner, SpawnerMixin):
     PODMAN_BIN = "/usr/bin/podman"
 
     @staticmethod
-    def is_task_alive(task):
-        if task.spawn_handle is None:
+    def is_task_alive(runtime_task):
+        if runtime_task.spawner_handle is None:
             return False
 
         cmd = [PodmanSpawner.PODMAN_BIN, "ps", "--all", "--format={{.State}}",
-               "--filter=id=%s" % task.spawn_handle]
+               "--filter=id=%s" % runtime_task.spawner_handle]
         process = subprocess.Popen(cmd,
                                    stdin=subprocess.DEVNULL,
                                    stdout=subprocess.PIPE,
@@ -29,7 +29,8 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         # FIXME: check how podman 2.x is reporting valid "OK" states
         return out.startswith(b'Up ')
 
-    async def spawn_task(self, task):
+    async def spawn_task(self, runtime_task):
+        task = runtime_task.task
         entry_point_cmd = '/tmp/avocado-runner'
         entry_point_args = task.get_command_args()
         entry_point_args.insert(0, "task-run")
@@ -55,7 +56,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         stdout = await proc.stdout.read()
         container_id = stdout.decode().strip()
 
-        task.spawn_handle = container_id
+        runtime_task.spawner_handle = container_id
 
         # Currently limited to avocado-runner, we'll expand on that
         # when the runner requirements system is in place

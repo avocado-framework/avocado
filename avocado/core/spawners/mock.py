@@ -16,29 +16,29 @@ class MockSpawner(Spawner):
     def __init__(self):
         self._known_tasks = {}
 
-    def is_task_alive(self, task):
-        alive = self._known_tasks.get(task, None)
+    def is_task_alive(self, runtime_task):
+        alive = self._known_tasks.get(runtime_task, None)
         # task was never spawned
         if alive is None:
             return False
         # task was spawned and should signal it's alive for the first time
         if alive:
-            self._known_tasks[task] = False
+            self._known_tasks[runtime_task] = False
             return True
         else:
             # signal it's *not* alive after first check
             return False
 
-    async def spawn_task(self, task):
-        self._known_tasks[task] = True
+    async def spawn_task(self, runtime_task):
+        self._known_tasks[runtime_task] = True
         return True
 
 
 class MockRandomAliveSpawner(MockSpawner):
     """A mocking spawner that simulates randomness about tasks being alive."""
 
-    def is_task_alive(self, task):
-        alive = self._known_tasks.get(task, None)
+    def is_task_alive(self, runtime_task):
+        alive = self._known_tasks.get(runtime_task, None)
         # task was never spawned
         if alive is None:
             return False
