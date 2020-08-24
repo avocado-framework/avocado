@@ -37,6 +37,9 @@ class TestID:
     def __str__(self):
         return "%s-%s%s" % (self.str_uid, self.name, self.str_variant)
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return repr(str(self))
 
