@@ -35,3 +35,7 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             return False
         asyncio.ensure_future(self._collect_task(runtime_task.spawner_handle))
         return True
+
+    @staticmethod
+    async def wait_task(runtime_task):
+        await runtime_task.spawner_handle.wait()

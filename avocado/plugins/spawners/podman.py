@@ -90,3 +90,10 @@ class PodmanSpawner(Spawner, SpawnerMixin):
 
         await proc.wait()
         return proc.returncode == 0
+
+    @staticmethod
+    async def wait_task(runtime_task):
+        while True:
+            if not PodmanSpawner.is_task_alive(runtime_task):
+                return
+            await asyncio.sleep(0.1)
