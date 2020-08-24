@@ -6,6 +6,7 @@ import sys
 
 from avocado.core import (exit_codes, nrunner, parser_common_args, resolver,
                           status_server)
+from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
@@ -13,9 +14,6 @@ from avocado.core.settings import settings
 from avocado.core.task.info import TaskInfo
 from avocado.core.test_id import TestID
 from avocado.core.utils import resolutions_to_tasks
-
-from .spawners.podman import PodmanSpawner
-from .spawners.process import ProcessSpawner
 
 
 class NRun(CLICmd):
@@ -138,11 +136,12 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
-            if config.get('nrun.spawner') == 'podman':
-                self.spawner = PodmanSpawner()  # pylint: disable=W0201
-            elif config.get('nrun.spawner') == 'process':
-                self.spawner = ProcessSpawner()  # pylint: disable=W0201
-            else:
+            try:
+                spawner_name = config.get('nrun.spawner')
+                spawner_extension = SpawnerDispatcher()[spawner_name]
+                # pylint: disable=W0201
+                self.spawner = spawner_extension.obj
+            except KeyError:
                 LOG_UI.error("Spawner not implemented or invalid.")
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
