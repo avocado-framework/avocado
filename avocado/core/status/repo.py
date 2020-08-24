@@ -67,3 +67,7 @@ class StatusRepo:
         raw_message = raw_message.strip()
         message = json_loads(raw_message)
         self.process_message(message)
+
+    @property
+    def result_stats(self):
+        return {key: len(value) for key, value in self._by_result.items()}
