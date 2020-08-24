@@ -109,6 +109,16 @@ class NRun(CLICmd):
                 LOG_UI.error("Tasks ended with '%s': %s",
                              status, ", ".join(tasks))
 
+    def filter_requirements_on_spawner(self):
+        tasks_capable_on_spawner = []
+        for task_info in self.pending_tasks:
+            loop = asyncio.get_event_loop()
+            result = loop.run_until_complete(self.spawner.check_task_requirements(task_info))
+            if result:
+                tasks_capable_on_spawner.append(task_info)
+        # pylint: disable=W0201
+        self.pending_tasks = tasks_capable_on_spawner
+
     def run(self, config):
         hint_filepath = '.avocado.hint'
         hint = None
@@ -123,12 +133,24 @@ class NRun(CLICmd):
             LOG_UI.warning('Tasks will not be run due to missing requirements: %s',
                            missing_tasks_msg)
 
+        for index, task in enumerate(self.pending_tasks, start=1):
+            task.identifier = str(TestID(index, task.runnable.uri))
+
+        try:
+            spawner_name = config.get('nrun.spawner')
+            spawner_extension = SpawnerDispatcher()[spawner_name]
+            # pylint: disable=W0201
+            self.spawner = spawner_extension.obj
+        except KeyError:
+            LOG_UI.error("Spawner not implemented or invalid.")
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        self.pending_tasks = [TaskInfo(task) for task in self.pending_tasks]
+        self.filter_requirements_on_spawner()
+
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
-        for index, task in enumerate(self.pending_tasks, start=1):
-            task.identifier = str(TestID(index, task.runnable.uri))
 
         if not config.get('nrun.disable_task_randomization'):
             random.shuffle(self.pending_tasks)
@@ -136,16 +158,6 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
-            try:
-                spawner_name = config.get('nrun.spawner')
-                spawner_extension = SpawnerDispatcher()[spawner_name]
-                # pylint: disable=W0201
-                self.spawner = spawner_extension.obj
-            except KeyError:
-                LOG_UI.error("Spawner not implemented or invalid.")
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
-            self.pending_tasks = [TaskInfo(task) for task in self.pending_tasks]
             listen = config.get('nrun.status_server.listen')
             verbose = config.get('core.verbose')
             self.status_server = status_server.StatusServer(
