@@ -280,3 +280,11 @@ class Spawner(Plugin):
         :param task_info: wrapper for a Task with additional runtime information
         :type task_info: :class:`avocado.core.task.info.TaskInfo`
         """
+
+    @abc.abstractmethod
+    async def wait_task(self, task_info):
+        """Waits for a task to finish.
+
+        :param task_info: wrapper for a Task with additional runtime information
+        :type task_info: :class:`avocado.core.task.info.TaskInfo`
+        """
