@@ -45,6 +45,10 @@ class StatusRepo:
         """Returns all data on a given task, by its ID."""
         return self._all_data.get(task_id)
 
+    def get_latest_task_data(self, task_id):
+        """Returns the latest data on a given task, by its ID."""
+        return self._all_data.get(task_id)[-1]
+
     def process_message(self, message):
         if 'id' not in message:
             raise StatusMsgMissingDataError('id')

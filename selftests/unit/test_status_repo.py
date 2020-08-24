@@ -65,3 +65,11 @@ class StatusRepo(TestCase):
         self.status_repo.process_raw_message(msg)
         self.assertEqual(self.status_repo.get_task_data("1-foo"),
                          [{"status": "running"}])
+
+    def test_process_messages_running(self):
+        msg = {"id": "1-foo", "status": "running", "time": 1597894378.6080744}
+        self.status_repo.process_message(msg)
+        msg = {"id": "1-foo", "status": "running", "time": 1597894378.6103745}
+        self.status_repo.process_message(msg)
+        self.assertEqual(self.status_repo.get_latest_task_data("1-foo"),
+                         {"status": "running", "time": 1597894378.6103745})
