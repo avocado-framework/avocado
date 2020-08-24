@@ -20,7 +20,7 @@ class StatusRepo(TestCase):
 
     def test_set_task_data(self):
         self.status_repo._set_task_data({"id": "1-foo", "status": "started"})
-        self.assertEqual(self.status_repo._data["1-foo"],
+        self.assertEqual(self.status_repo._all_data["1-foo"],
                          [{"status": "started"}])
 
     def test_handle_task_started(self):
