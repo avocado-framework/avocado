@@ -591,6 +591,11 @@ class Job:
         self._log_job_debug_info()
         jobdata.record(self, sys.argv)
 
+        if self.size == 0:
+            msg = ("Unable to resolve any reference or 'run.references' is "
+                   "empty.")
+            LOG_UI.error(msg)
+
         if not self.test_suites:
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
             return self.exitcode
