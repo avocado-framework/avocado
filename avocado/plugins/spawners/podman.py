@@ -1,9 +1,11 @@
 import asyncio
 import json
 import os
+import re
 import subprocess
 
 from avocado.core.plugin_interfaces import Init, Spawner
+from avocado.core.requirements import cache
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 
@@ -65,7 +67,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         if not os.path.exists(podman_bin):
             msg = 'Podman binary "%s" is not available on the system'
             msg %= podman_bin
-            task_info.status = msg
+            runtime_task.status = msg
             return False
 
         image = config.get('spawner.podman.image')
@@ -129,3 +131,54 @@ class PodmanSpawner(Spawner, SpawnerMixin):
             if not PodmanSpawner.is_task_alive(runtime_task):
                 return
             await asyncio.sleep(0.1)
+
+    @staticmethod
+    async def _check_requirement_core_avocado():
+        env_type = 'podman'
+        env = settings.as_dict().get('spawner.podman.image')
+        req_type = 'core'
+        req = 'avocado'
+
+        on_cache = cache.get_requirement(env_type, env,
+                                         req_type, req)
+        if on_cache:
+            return True
+
+        podman_bin = settings.as_dict().get('spawner.podman.bin')
+        try:
+            # pylint: disable=E1133
+            proc = await asyncio.create_subprocess_exec(
+                podman_bin, "run", env,
+                "avocado", "--version",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE)
+        except (FileNotFoundError, PermissionError):
+            return False
+
+        await proc.wait()
+        if proc.returncode != 0:
+            return False
+
+        stdout = await proc.stdout.read()
+        if re.match(rb'^Avocado (\d+)\.(\d+)\r?$', stdout):
+            cache.set_requirement(env_type, env,
+                                  req_type, req)
+            return True
+        return False
+
+    @staticmethod
+    async def check_task_requirements(runtime_task):
+        runnable_requirements = runtime_task.task.runnable.requirements
+        if not runnable_requirements:
+            return True
+        for requirements in runnable_requirements:
+            for (req_type, req_value) in requirements.items():
+                # This is currently limited to one requirement type as a PoC
+                if req_type == 'core' and req_value == 'avocado':
+                    avocado_capable = await PodmanSpawner._check_requirement_core_avocado()
+                    return avocado_capable
+                else:
+                    # current implementation can not check any other type of
+                    # requirement at this moment so fail
+                    return False
+        return True
