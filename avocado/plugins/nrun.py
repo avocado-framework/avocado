@@ -10,6 +10,7 @@ from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
+from avocado.core.task.info import TaskInfo
 from avocado.core.test_id import TestID
 from avocado.core.utils import resolutions_to_tasks
 
@@ -80,20 +81,20 @@ class NRun(CLICmd):
                 await asyncio.sleep(0.1)
 
             try:
-                task = self.pending_tasks[0]
+                task_info = self.pending_tasks[0]
             except IndexError:
                 LOG_UI.info("Finished spawning tasks")
                 break
 
-            spawn_result = await self.spawner.spawn_task(task)
-            identifier = task.identifier
-            self.pending_tasks.remove(task)
+            spawn_result = await self.spawner.spawn_task(task_info)
+            identifier = task_info.task.identifier
+            self.pending_tasks.remove(task_info)
             self.spawned_tasks.append(identifier)
             if not spawn_result:
                 LOG_UI.error("ERROR: failed to spawn task: %s", identifier)
                 continue
 
-            alive = self.spawner.is_task_alive(task)
+            alive = self.spawner.is_task_alive(task_info)
             if not alive:
                 LOG_UI.warning("%s is not alive shortly after being spawned", identifier)
             else:
@@ -151,11 +152,12 @@ class NRun(CLICmd):
                 LOG_UI.error("Spawner not implemented or invalid.")
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
+            self.pending_tasks = [TaskInfo(task) for task in self.pending_tasks]
             listen = config.get('nrun.status_server.listen')
             verbose = config.get('core.verbose')
             self.status_server = status_server.StatusServer(
                 listen,  # pylint: disable=W0201
-                [t.identifier for t in
+                [t.task.identifier for t in
                  self.pending_tasks],
                 verbose)
             self.status_server.start()

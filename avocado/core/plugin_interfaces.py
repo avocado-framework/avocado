@@ -266,9 +266,17 @@ class Spawner(Plugin):
 
     @staticmethod
     @abc.abstractmethod
-    def is_task_alive(task):
-        """Determines if a task is alive or not."""
+    def is_task_alive(task_info):
+        """Determines if a task is alive or not.
+
+        :param task_info: wrapper for a Task with additional runtime information
+        :type task_info: :class:`avocado.core.task.info.TaskInfo`
+        """
 
     @abc.abstractmethod
-    async def spawn_task(self, task):
-        """Spawns a task return whether the spawning was successful."""
+    async def spawn_task(self, task_info):
+        """Spawns a task return whether the spawning was successful.
+
+        :param task_info: wrapper for a Task with additional runtime information
+        :type task_info: :class:`avocado.core.task.info.TaskInfo`
+        """
