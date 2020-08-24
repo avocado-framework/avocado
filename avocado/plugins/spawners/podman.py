@@ -62,7 +62,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         # Currently limited to avocado-runner, we'll expand on that
         # when the runner requirements system is in place
         this_path = os.path.abspath(__file__)
-        base_path = os.path.dirname(os.path.dirname(this_path))
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(this_path)))
         avocado_runner_path = os.path.join(base_path, 'core', 'nrunner.py')
         try:
             # pylint: disable=E1133
