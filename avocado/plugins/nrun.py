@@ -89,11 +89,12 @@ class NRun(CLICmd):
             spawn_result = await self.spawner.spawn_task(runtime_task)
             identifier = runtime_task.task.identifier
             self.pending_tasks.remove(runtime_task)
-            self.spawned_tasks.append(identifier)
             if not spawn_result:
-                LOG_UI.error("ERROR: failed to spawn task: %s", identifier)
+                LOG_UI.error('ERROR: failed to spawn task "%s": "%s"',
+                             identifier, runtime_task.status)
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 continue
-
+            self.spawned_tasks.append(identifier)
             alive = self.spawner.is_task_alive(runtime_task)
             if not alive:
                 LOG_UI.warning("%s is not alive shortly after being spawned", identifier)
@@ -138,14 +139,6 @@ class NRun(CLICmd):
 
         try:
             if config.get('nrun.spawner') == 'podman':
-                podman_bin = config.get('spawner.podman.bin')
-                if not os.path.exists(podman_bin):
-                    msg = ('Podman Spawner selected, but podman binary "%s" '
-                           'is not available on the system.  Please install '
-                           'podman before attempting to use this feature.')
-                    msg %= podman_bin
-                    LOG_UI.error(msg)
-                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 self.spawner = PodmanSpawner()  # pylint: disable=W0201
             elif config.get('nrun.spawner') == 'process':
                 self.spawner = ProcessSpawner()  # pylint: disable=W0201

@@ -61,6 +61,13 @@ class PodmanSpawner(Spawner, SpawnerMixin):
 
         config = settings.as_dict()
         podman_bin = config.get('spawner.podman.bin')
+
+        if not os.path.exists(podman_bin):
+            msg = 'Podman binary "%s" is not available on the system'
+            msg %= podman_bin
+            task_info.status = msg
+            return False
+
         image = config.get('spawner.podman.image')
         try:
             # pylint: disable=E1133
