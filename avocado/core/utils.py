@@ -24,16 +24,12 @@ def get_avocado_git_version():
     except path.CmdNotFoundError:
         return
 
-    olddir = os.getcwd()
-    try:
-        os.chdir(os.path.abspath(base_dir))
-        cmd = "%s show --summary --pretty='%%H'" % git
-        res = process.run(cmd, ignore_status=True, verbose=False)
-        if res.exit_status == 0:
-            top_commit = res.stdout_text.splitlines()[0][:8]
-            return " (GIT commit %s)" % top_commit
-    finally:
-        os.chdir(olddir)
+    git_dir = os.path.abspath(base_dir)
+    cmd = "%s -C %s show --summary --pretty='%%H'" % (git, git_dir)
+    res = process.run(cmd, ignore_status=True, verbose=False)
+    if res.exit_status == 0:
+        top_commit = res.stdout_text.splitlines()[0][:8]
+        return " (GIT commit %s)" % top_commit
 
 
 def prepend_base_path(value):
