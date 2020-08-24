@@ -138,11 +138,12 @@ class NRun(CLICmd):
 
         try:
             if config.get('nrun.spawner') == 'podman':
-                if not os.path.exists(PodmanSpawner.PODMAN_BIN):
+                podman_bin = config.get('spawner.podman.bin')
+                if not os.path.exists(podman_bin):
                     msg = ('Podman Spawner selected, but podman binary "%s" '
                            'is not available on the system.  Please install '
                            'podman before attempting to use this feature.')
-                    msg %= PodmanSpawner.PODMAN_BIN
+                    msg %= podman_bin
                     LOG_UI.error(msg)
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 self.spawner = PodmanSpawner()  # pylint: disable=W0201

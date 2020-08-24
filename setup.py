@@ -80,6 +80,7 @@ if __name__ == '__main__':
                   "jobscripts = avocado.plugins.jobscripts:JobScriptsInit",
                   "json_variants = avocado.plugins.json_variants:JsonVariantsInit",
                   "run = avocado.plugins.run:RunInit",
+                  "podman = avocado.plugins.spawners.podman:PodmanSpawnerInit",
               ],
               'avocado.plugins.cli': [
                   'wrapper = avocado.plugins.wrapper:Wrapper',
