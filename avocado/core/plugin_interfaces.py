@@ -288,3 +288,12 @@ class Spawner(Plugin):
         :param task_info: wrapper for a Task with additional runtime information
         :type task_info: :class:`avocado.core.task.info.TaskInfo`
         """
+
+    @staticmethod
+    @abc.abstractmethod
+    async def check_task_requirements(task_info):
+        """Checks if the requirements described within a task are available.
+
+        :param task_info: wrapper for a Task with additional runtime information
+        :type task_info: :class:`avocado.core.task.info.TaskInfo`
+        """

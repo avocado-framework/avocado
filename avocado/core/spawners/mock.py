@@ -40,6 +40,9 @@ class MockSpawner(Spawner):
                 return
             await asyncio.sleep(0.1)
 
+    @staticmethod
+    async def check_task_requirements(task_info):
+        return True
 
 
 class MockRandomAliveSpawner(MockSpawner):

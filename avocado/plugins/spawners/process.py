@@ -39,3 +39,21 @@ class ProcessSpawner(Spawner, SpawnerMixin):
     @staticmethod
     async def wait_task(task_info):
         await task_info.spawner_handle.wait()
+
+    @staticmethod
+    async def check_task_requirements(task_info):
+        runnable_requirements = task_info.task.runnable.requirements
+        if not runnable_requirements:
+            return True
+
+        for requirements in runnable_requirements:
+            for (req_type, req_value) in requirements.items():
+                # The fact that this is avocado code means this
+                # requirement is fulfilled
+                if req_type == 'core' and req_value == 'avocado':
+                    continue
+                else:
+                    # current implementation can not check any other type of
+                    # requirement at this moment so fail
+                    return False
+        return True
