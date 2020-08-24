@@ -26,7 +26,7 @@ class TestSuiteStatus(Enum):
 
 
 class TestSuite:
-    def __init__(self, name, config, tests=None, job_config=None,
+    def __init__(self, name, config=None, tests=None, job_config=None,
                  resolutions=None):
         self.name = name
         self.tests = tests
