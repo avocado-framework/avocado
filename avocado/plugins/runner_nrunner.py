@@ -50,7 +50,7 @@ class Runner(RunnerInterface):
             stderr = None
 
         # Create task dir
-        task_path = os.path.join(base_path, task.identifier.replace('/', '_'))
+        task_path = os.path.join(base_path, task.identifier.str_filesystem)
         os.makedirs(task_path, exist_ok=True)
 
         # Save stdout and stderr
@@ -94,7 +94,7 @@ class Runner(RunnerInterface):
                              task.runnable.uri,
                              None,
                              no_digits)
-            task.identifier = str(test_id)
+            task.identifier = test_id
             early_state = {
                 'name': test_id,
                 'job_logdir': job.logdir,

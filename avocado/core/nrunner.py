@@ -687,7 +687,7 @@ class Task:
         :returns: the arguments that can be used on an avocado-runner command
         :rtype: list
         """
-        args = ['-i', self.identifier]
+        args = ['-i', str(self.identifier)]
         args += self.runnable.get_command_args()
 
         for status_service in self.status_services:
