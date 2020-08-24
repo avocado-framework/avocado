@@ -3,23 +3,44 @@ import json
 import os
 import subprocess
 
-from avocado.core.plugin_interfaces import Spawner
+from avocado.core.plugin_interfaces import Init, Spawner
+from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
+
+
+class PodmanSpawnerInit(Init):
+
+    description = 'Podman (container) based spawner initialization'
+
+    def initialize(self):
+        section = 'spawner.podman'
+
+        help_msg = 'Path to the podman binary'
+        settings.register_option(
+            section=section,
+            key='podman_bin',
+            help_msg=help_msg,
+            default='/usr/bin/podman')
+
+        help_msg = 'Image name to use when creating the container'
+        settings.register_option(
+            section=section,
+            key='image',
+            help_msg=help_msg,
+            default='fedora:31')
 
 
 class PodmanSpawner(Spawner, SpawnerMixin):
 
     description = 'Podman (container) based spawner'
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
-    IMAGE = 'fedora:31'
-    PODMAN_BIN = "/usr/bin/podman"
 
     @staticmethod
     def is_task_alive(task_info):
         if task_info.spawner_handle is None:
             return False
-
-        cmd = [PodmanSpawner.PODMAN_BIN, "ps", "--all", "--format={{.State}}",
+        podman_bin = settings.as_dict().get('spawner.podman.podman_bin')
+        cmd = [podman_bin, "ps", "--all", "--format={{.State}}",
                "--filter=id=%s" % task_info.spawner_handle]
         process = subprocess.Popen(cmd,
                                    stdin=subprocess.DEVNULL,
@@ -37,13 +58,17 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         entry_point_args.insert(0, entry_point_cmd)
         entry_point = json.dumps(entry_point_args)
         entry_point_arg = "--entrypoint=" + entry_point
+
+        config = settings.as_dict()
+        podman_bin = config.get('spawner.podman.podman_bin')
+        image = config.get('spawner.podman.image')
         try:
             # pylint: disable=E1133
             proc = await asyncio.create_subprocess_exec(
-                self.PODMAN_BIN, "create",
+                podman_bin, "create",
                 "--net=host",
                 entry_point_arg,
-                self.IMAGE,
+                image,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE)
         except (FileNotFoundError, PermissionError):
@@ -66,7 +91,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         try:
             # pylint: disable=E1133
             proc = await asyncio.create_subprocess_exec(
-                self.PODMAN_BIN,
+                podman_bin,
                 "cp",
                 avocado_runner_path,
                 "%s:%s" % (container_id, entry_point_cmd))
@@ -80,7 +105,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         try:
             # pylint: disable=E1133
             proc = await asyncio.create_subprocess_exec(
-                self.PODMAN_BIN,
+                podman_bin,
                 "start",
                 container_id,
                 stdout=asyncio.subprocess.PIPE,
