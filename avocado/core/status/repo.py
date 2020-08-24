@@ -9,7 +9,9 @@ class StatusRepo:
     """Maintains tasks' status related data and provides aggregated info."""
 
     def __init__(self):
-        self._data = {}
+        #: Contains all reveived messages by a given task (by its ID)
+        self._all_data = {}
+        #: Contains the task IDs keyed by the result received
         self._by_result = {}
 
     def _handle_task_finished(self, message):
@@ -35,13 +37,13 @@ class StatusRepo:
     def _set_task_data(self, message):
         """Appends all data on message to an entry keyed by the task's ID."""
         task_id = message.pop('id')
-        if not task_id in self._data:
-            self._data[task_id] = []
-        self._data[task_id].append(message)
+        if not task_id in self._all_data:
+            self._all_data[task_id] = []
+        self._all_data[task_id].append(message)
 
     def get_task_data(self, task_id):
         """Returns all data on a given task, by its ID."""
-        return self._data.get(task_id)
+        return self._all_data.get(task_id)
 
     def process_message(self, message):
         if 'id' not in message:
