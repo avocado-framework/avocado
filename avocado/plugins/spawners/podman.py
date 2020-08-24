@@ -26,10 +26,8 @@ class PodmanSpawner(Spawner, SpawnerMixin):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.DEVNULL)
         out, _ = process.communicate()
-        # we have to be lenient and allow for the configured state to
-        # be considered "alive" because it happens before the
-        # container transitions into "running"
-        return out in [b'configured\n', b'running\n']
+        # FIXME: check how podman 2.x is reporting valid "OK" states
+        return out.startswith(b'Up ')
 
     async def spawn_task(self, task):
         entry_point_cmd = '/tmp/avocado-runner'
