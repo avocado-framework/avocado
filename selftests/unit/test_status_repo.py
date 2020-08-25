@@ -20,7 +20,7 @@ class StatusRepo(TestCase):
 
     def test_set_task_data(self):
         self.status_repo._set_task_data({"id": "1-foo", "status": "started"})
-        self.assertEqual(self.status_repo._data["1-foo"],
+        self.assertEqual(self.status_repo._all_data["1-foo"],
                          [{"status": "started"}])
 
     def test_handle_task_started(self):
@@ -65,3 +65,11 @@ class StatusRepo(TestCase):
         self.status_repo.process_raw_message(msg)
         self.assertEqual(self.status_repo.get_task_data("1-foo"),
                          [{"status": "running"}])
+
+    def test_process_messages_running(self):
+        msg = {"id": "1-foo", "status": "running", "time": 1597894378.6080744}
+        self.status_repo.process_message(msg)
+        msg = {"id": "1-foo", "status": "running", "time": 1597894378.6103745}
+        self.status_repo.process_message(msg)
+        self.assertEqual(self.status_repo.get_latest_task_data("1-foo"),
+                         {"status": "running", "time": 1597894378.6103745})

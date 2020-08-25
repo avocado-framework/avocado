@@ -24,6 +24,7 @@ from copy import copy
 from avocado.core import nrunner
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
 from avocado.core.status.repo import StatusRepo
+from avocado.core.task.runtime import RuntimeTask
 from avocado.core.test_id import TestID
 
 
@@ -50,7 +51,7 @@ class Runner(RunnerInterface):
             stderr = None
 
         # Create task dir
-        task_path = os.path.join(base_path, task.identifier.replace('/', '_'))
+        task_path = os.path.join(base_path, task.identifier.str_filesystem)
         os.makedirs(task_path, exist_ok=True)
 
         # Save stdout and stderr
@@ -71,6 +72,20 @@ class Runner(RunnerInterface):
         with open(data_file, 'w') as fp:
             fp.write("{}\n".format(task.output_dir))
 
+    def _get_all_runtime_tasks(self, test_suite):
+        result = []
+        no_digits = len(str(len(test_suite)))
+        for index, task in enumerate(test_suite.tests, start=1):
+            task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
+            # this is all rubbish data
+            test_id = TestID("{}-{}".format(test_suite.name, index),
+                             task.runnable.uri,
+                             None,
+                             no_digits)
+            task.identifier = test_id
+            result.append(RuntimeTask(task))
+        return result
+
     def run_suite(self, job, test_suite):
         summary = set()
         if job.timeout > 0:
@@ -81,22 +96,14 @@ class Runner(RunnerInterface):
         test_suite.tests, _ = nrunner.check_tasks_requirements(test_suite.tests)
         job.result.tests_total = test_suite.size  # no support for variants yet
         result_dispatcher = job.result_events_dispatcher
-        no_digits = len(str(len(test_suite)))
         status_repo = StatusRepo()
-
-        for index, task in enumerate(test_suite.tests, start=1):
+        for runtime_task in self._get_all_runtime_tasks(test_suite):
             if deadline is not None and time.time() > deadline:
                 break
+            task = runtime_task.task
 
-            task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
-            # this is all rubbish data
-            test_id = TestID("{}-{}".format(test_suite.name, index),
-                             task.runnable.uri,
-                             None,
-                             no_digits)
-            task.identifier = str(test_id)
             early_state = {
-                'name': test_id,
+                'name': task.identifier,
                 'job_logdir': job.logdir,
                 'job_unique_id': job.unique_id,
             }

@@ -9,7 +9,9 @@ class StatusRepo:
     """Maintains tasks' status related data and provides aggregated info."""
 
     def __init__(self):
-        self._data = {}
+        #: Contains all reveived messages by a given task (by its ID)
+        self._all_data = {}
+        #: Contains the task IDs keyed by the result received
         self._by_result = {}
 
     def _handle_task_finished(self, message):
@@ -30,18 +32,26 @@ class StatusRepo:
         result = message.get('result')
         if result not in self._by_result:
             self._by_result[result] = []
-        self._by_result[result].append(message['id'])
+        if message['id'] not in self._by_result[result]:
+            self._by_result[result].append(message['id'])
 
     def _set_task_data(self, message):
         """Appends all data on message to an entry keyed by the task's ID."""
         task_id = message.pop('id')
-        if not task_id in self._data:
-            self._data[task_id] = []
-        self._data[task_id].append(message)
+        if not task_id in self._all_data:
+            self._all_data[task_id] = []
+        self._all_data[task_id].append(message)
 
     def get_task_data(self, task_id):
         """Returns all data on a given task, by its ID."""
-        return self._data.get(task_id)
+        return self._all_data.get(task_id)
+
+    def get_latest_task_data(self, task_id):
+        """Returns the latest data on a given task, by its ID."""
+        task_data = self._all_data.get(task_id)
+        if task_data is None:
+            return None
+        return task_data[-1]
 
     def process_message(self, message):
         if 'id' not in message:
@@ -57,3 +67,7 @@ class StatusRepo:
         raw_message = raw_message.strip()
         message = json_loads(raw_message)
         self.process_message(message)
+
+    @property
+    def result_stats(self):
+        return {key: len(value) for key, value in self._by_result.items()}

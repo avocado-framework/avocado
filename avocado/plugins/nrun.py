@@ -6,15 +6,14 @@ import sys
 
 from avocado.core import (exit_codes, nrunner, parser_common_args, resolver,
                           status_server)
+from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.output import LOG_UI
 from avocado.core.parser import HintParser
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
+from avocado.core.task.runtime import RuntimeTask
 from avocado.core.test_id import TestID
 from avocado.core.utils import resolutions_to_tasks
-
-from .spawners.podman import PodmanSpawner
-from .spawners.process import ProcessSpawner
 
 
 class NRun(CLICmd):
@@ -80,20 +79,21 @@ class NRun(CLICmd):
                 await asyncio.sleep(0.1)
 
             try:
-                task = self.pending_tasks[0]
+                runtime_task = self.pending_tasks[0]
             except IndexError:
                 LOG_UI.info("Finished spawning tasks")
                 break
 
-            spawn_result = await self.spawner.spawn_task(task)
-            identifier = task.identifier
-            self.pending_tasks.remove(task)
-            self.spawned_tasks.append(identifier)
+            spawn_result = await self.spawner.spawn_task(runtime_task)
+            identifier = runtime_task.task.identifier
+            self.pending_tasks.remove(runtime_task)
             if not spawn_result:
-                LOG_UI.error("ERROR: failed to spawn task: %s", identifier)
+                LOG_UI.error('ERROR: failed to spawn task "%s": "%s"',
+                             identifier, runtime_task.status)
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 continue
-
-            alive = self.spawner.is_task_alive(task)
+            self.spawned_tasks.append(identifier)
+            alive = self.spawner.is_task_alive(runtime_task)
             if not alive:
                 LOG_UI.warning("%s is not alive shortly after being spawned", identifier)
             else:
@@ -109,6 +109,16 @@ class NRun(CLICmd):
                 LOG_UI.error("Tasks ended with '%s': %s",
                              status, ", ".join(tasks))
 
+    def filter_requirements_on_spawner(self):
+        tasks_capable_on_spawner = []
+        for runtime_task in self.pending_tasks:
+            loop = asyncio.get_event_loop()
+            result = loop.run_until_complete(self.spawner.check_task_requirements(runtime_task))
+            if result:
+                tasks_capable_on_spawner.append(runtime_task)
+        # pylint: disable=W0201
+        self.pending_tasks = tasks_capable_on_spawner
+
     def run(self, config):
         hint_filepath = '.avocado.hint'
         hint = None
@@ -123,12 +133,24 @@ class NRun(CLICmd):
             LOG_UI.warning('Tasks will not be run due to missing requirements: %s',
                            missing_tasks_msg)
 
+        for index, task in enumerate(self.pending_tasks, start=1):
+            task.identifier = str(TestID(index, task.runnable.uri))
+
+        try:
+            spawner_name = config.get('nrun.spawner')
+            spawner_extension = SpawnerDispatcher()[spawner_name]
+            # pylint: disable=W0201
+            self.spawner = spawner_extension.obj
+        except KeyError:
+            LOG_UI.error("Spawner not implemented or invalid.")
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        self.pending_tasks = [RuntimeTask(task) for task in self.pending_tasks]
+        self.filter_requirements_on_spawner()
+
         if not self.pending_tasks:
             LOG_UI.error('No test to be executed, exiting...')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
-        for index, task in enumerate(self.pending_tasks, start=1):
-            task.identifier = str(TestID(index, task.runnable.uri))
 
         if not config.get('nrun.disable_task_randomization'):
             random.shuffle(self.pending_tasks)
@@ -136,26 +158,11 @@ class NRun(CLICmd):
         self.spawned_tasks = []  # pylint: disable=W0201
 
         try:
-            if config.get('nrun.spawner') == 'podman':
-                if not os.path.exists(PodmanSpawner.PODMAN_BIN):
-                    msg = ('Podman Spawner selected, but podman binary "%s" '
-                           'is not available on the system.  Please install '
-                           'podman before attempting to use this feature.')
-                    msg %= PodmanSpawner.PODMAN_BIN
-                    LOG_UI.error(msg)
-                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-                self.spawner = PodmanSpawner()  # pylint: disable=W0201
-            elif config.get('nrun.spawner') == 'process':
-                self.spawner = ProcessSpawner()  # pylint: disable=W0201
-            else:
-                LOG_UI.error("Spawner not implemented or invalid.")
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
             listen = config.get('nrun.status_server.listen')
             verbose = config.get('core.verbose')
             self.status_server = status_server.StatusServer(
                 listen,  # pylint: disable=W0201
-                [t.identifier for t in
+                [t.task.identifier for t in
                  self.pending_tasks],
                 verbose)
             self.status_server.start()
