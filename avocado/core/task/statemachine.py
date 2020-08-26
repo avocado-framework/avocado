@@ -79,7 +79,7 @@ class Worker:
         except IndexError:
             return
 
-        requirements_ok = await self._spawner.spawn_task(runtime_task)
+        requirements_ok = await self._spawner.check_task_requirements(runtime_task)
         if requirements_ok:
             async with self._state_machine.lock:
                 self._state_machine.ready.append(runtime_task)
