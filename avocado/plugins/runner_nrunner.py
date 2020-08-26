@@ -17,15 +17,89 @@ NRunner based implementation of job compliant runner
 """
 
 import json
+import multiprocessing
 import os
 import time
 from copy import copy
 
 from avocado.core import nrunner
+from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
+from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
 from avocado.core.task.runtime import RuntimeTask
 from avocado.core.test_id import TestID
+
+
+class RunnerInit(Init):
+
+    name = 'nrunner'
+    description = '*EXPERIMENTAL* nrunner initialization'
+
+    def initialize(self):
+        section = 'nrunner'
+        help_msg = 'Shuffle the tasks to be executed'
+        settings.register_option(section=section,
+                                 key='shuffle',
+                                 default=False,
+                                 help_msg=help_msg,
+                                 key_type=bool)
+
+        help_msg = 'URI for the status server, usually a "HOST:PORT" string'
+        settings.register_option(section=section,
+                                 key='status_server_uri',
+                                 default='127.0.0.1:8888',
+                                 metavar="HOST:PORT",
+                                 help_msg=help_msg)
+
+        help_msg = ('Number of maximum number tasks running in parallel. You '
+                    'can disable parallel execution by setting this to 1. '
+                    'Defaults to the amount of CPUs on this machine.')
+        settings.register_option(section=section,
+                                 key='max_parallel_tasks',
+                                 default=multiprocessing.cpu_count(),
+                                 key_type=int,
+                                 help_msg=help_msg)
+
+        help_msg = ("Spawn tasks in a specific spawner. Available spawners: "
+                    "'process' and 'podman'")
+        settings.register_option(section=section,
+                                 key="spawner",
+                                 default='process',
+                                 help_msg=help_msg)
+
+
+class RunnerCLI(CLI):
+
+    name = 'nrunner'
+    description = '*EXPERIMENTAL* nrunner command line options for "run"'
+
+    def configure(self, parser):
+        super(RunnerCLI, self).configure(parser)
+        parser = parser.subcommands.choices.get('run', None)
+        if parser is None:
+            return
+
+        parser = parser.add_argument_group('nrunner specific options')
+        settings.add_argparser_to_option(namespace='nrunner.shuffle',
+                                         parser=parser,
+                                         long_arg='--nrunner-shuffle',
+                                         action='store_true')
+
+        settings.add_argparser_to_option(namespace='nrunner.status_server_uri',
+                                         parser=parser,
+                                         long_arg='--nrunner-status-server-uri')
+
+        settings.add_argparser_to_option(namespace='nrunner.max_parallel_tasks',
+                                         parser=parser,
+                                         long_arg='--nrunner-max-parallel-tasks')
+
+        settings.add_argparser_to_option(namespace='nrunner.spawner',
+                                         parser=parser,
+                                         long_arg='--nrunner-spawner')
+
+    def run(self, config):
+        pass
 
 
 class Runner(RunnerInterface):
