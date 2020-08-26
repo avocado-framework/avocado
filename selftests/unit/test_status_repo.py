@@ -73,3 +73,26 @@ class StatusRepo(TestCase):
         self.status_repo.process_message(msg)
         self.assertEqual(self.status_repo.get_latest_task_data("1-foo"),
                          {"status": "running", "time": 1597894378.6103745})
+
+    def test_task_status_time(self):
+        msg = {"id": "1-foo", "status": "running", "time": 1597894378.0000002}
+        self.status_repo.process_message(msg)
+        self.assertEqual(self.status_repo._status["1-foo"],
+                         ("running", 1597894378.0000002))
+        msg = {"id": "1-foo", "status": "started", "time": 1597894378.0000001,
+               "output_dir": "/fake/path"}
+        self.status_repo.process_message(msg)
+        self.assertEqual(self.status_repo._status["1-foo"],
+                         ("running", 1597894378.0000002))
+
+    def test_no_task_status(self):
+        self.assertIsNone(self.status_repo.get_task_status("1-no-existing-id"))
+
+    def test_get_task_status(self):
+        msg = {"id": "1-foo", "status": "running", "time": 1597894378.0000002}
+        self.status_repo.process_message(msg)
+        self.assertEqual(self.status_repo.get_task_status("1-foo"), "running")
+        msg = {"id": "1-foo", "status": "started", "time": 1597894378.0000001,
+               "output_dir": "/fake/path"}
+        self.status_repo.process_message(msg)
+        self.assertEqual(self.status_repo.get_task_status("1-foo"), "running")
