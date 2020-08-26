@@ -7,11 +7,11 @@ from avocado.core.suite import TestSuite
 
 config = {
     'run.test_runner': 'nrunner',
+    'nrunner.status_server_uri': '127.0.0.1:9999',
     'run.references': [
         'selftests/unit/test_resolver.py',
         'selftests/functional/test_argument_parsing.py',
         '/bin/true',
-        '/bin/false',
     ],
     }
 
