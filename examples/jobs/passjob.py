@@ -3,8 +3,7 @@ import sys
 
 from avocado.core.job import Job
 
-job_config = {'run.test_runner': 'nrunner',
-              'run.references': ['examples/tests/passtest.py:PassTest.test']}
+job_config = {'run.references': ['examples/tests/passtest.py:PassTest.test']}
 
 # Automatic helper method (Avocado will try to discovery things from config
 # dicts. Since there is magic here, we dont need to pass suite names or suites,
