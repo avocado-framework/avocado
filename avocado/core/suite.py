@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from uuid import uuid4
 
@@ -6,6 +7,7 @@ from .exceptions import (JobTestSuiteReferenceResolutionError,
                          OptionValidationError)
 from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
                      loader)
+from .parser import HintParser
 from .resolver import resolve
 from .settings import settings
 from .tags import filter_test_tags
@@ -101,7 +103,13 @@ class TestSuite:
         ignore_missing = config.get('run.ignore_missing_references')
         references = config.get('run.references')
         try:
-            resolutions = resolve(references, ignore_missing=ignore_missing)
+            hint = None
+            hint_filepath = '.avocado.hint'
+            if os.path.exists(hint_filepath):
+                hint = HintParser(hint_filepath)
+            resolutions = resolve(references,
+                                  hint=hint,
+                                  ignore_missing=ignore_missing)
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
         tasks = resolutions_to_tasks(resolutions, config)
