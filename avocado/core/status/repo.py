@@ -17,6 +17,10 @@ class StatusRepo:
         #: the "timestamp" in the "time" field of the message, that is,
         #: it's *not* based by the order it was received.
         self._status = {}
+        #: Contains a global journal of status updates to be picked, each
+        #: entry containing a tupple with (task_id, status, time).  It discards
+        #: status that have been superseeded by newer status.
+        self._status_journal_summary = []
         #: Contains the task IDs keyed by the result received
         self._by_result = {}
 
@@ -68,8 +72,12 @@ class StatusRepo:
             return
         if task_id not in self._status:
             self._status[task_id] = (status, time)
+            self._status_journal_summary.append((task_id, status, time))
         else:
-            current_time = self._status[task_id][1]
+            current_status, current_time = self._status[task_id]
+            # journal even with the same time, if there's a change in status
+            if (status != current_status) and (time >= current_time):
+                self._status_journal_summary.append((task_id, status, time))
             if time > current_time:
                 self._status[task_id] = (status, time)
 
@@ -95,3 +103,7 @@ class StatusRepo:
 
     def get_task_status(self, task_id):
         return self._status.get(task_id, (None, None))[0]
+
+    @property
+    def status_journal_summary(self):
+        return self._status_journal_summary
