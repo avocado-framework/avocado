@@ -11,6 +11,12 @@ class StatusRepo:
     def __init__(self):
         #: Contains all reveived messages by a given task (by its ID)
         self._all_data = {}
+        #: Contains the most up to date status of a task, and the time it
+        #: it was set in a tuple (status, time).  This is keyed
+        #: by the task ID, and the most up to date status is determined by
+        #: the "timestamp" in the "time" field of the message, that is,
+        #: it's *not* based by the order it was received.
+        self._status = {}
         #: Contains the task IDs keyed by the result received
         self._by_result = {}
 
@@ -53,10 +59,25 @@ class StatusRepo:
             return None
         return task_data[-1]
 
+    def _update_status(self, message):
+        """Update the latest status of atask (by time, not by message)."""
+        task_id = message.get('id')
+        status = message.get('status')
+        time = message.get('time')
+        if not all((task_id, status, time)):
+            return
+        if task_id not in self._status:
+            self._status[task_id] = (status, time)
+        else:
+            current_time = self._status[task_id][1]
+            if time > current_time:
+                self._status[task_id] = (status, time)
+
     def process_message(self, message):
         if 'id' not in message:
             raise StatusMsgMissingDataError('id')
 
+        self._update_status(message)
         handlers = {'started': self._handle_task_started,
                     'finished': self._handle_task_finished}
         meth = handlers.get(message.get('status'),
@@ -71,3 +92,8 @@ class StatusRepo:
     @property
     def result_stats(self):
         return {key: len(value) for key, value in self._by_result.items()}
+
+    def get_task_status(self, task_id):
+        if task_id not in self._status:
+            return None
+        return self._status.get(task_id, (None, None))[0]
