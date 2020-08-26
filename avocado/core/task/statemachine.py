@@ -64,7 +64,7 @@ class Worker:
         try:
             async with self._state_machine.lock:
                 if len(self._state_machine.triaging) < self._max_triaging:
-                    runtime_task = self._state_machine.requested.pop()
+                    runtime_task = self._state_machine.requested.pop(0)
                     self._state_machine.triaging.append(runtime_task)
                 else:
                     return
@@ -75,7 +75,7 @@ class Worker:
         """Reads from triaging, moves into either: ready or finished."""
         try:
             async with self._state_machine.lock:
-                runtime_task = self._state_machine.triaging.pop()
+                runtime_task = self._state_machine.triaging.pop(0)
         except IndexError:
             return
 
@@ -92,7 +92,7 @@ class Worker:
         """Reads from ready, moves into either: started or finished."""
         try:
             async with self._state_machine.lock:
-                runtime_task = self._state_machine.ready.pop()
+                runtime_task = self._state_machine.ready.pop(0)
         except IndexError:
             return
 
@@ -125,7 +125,7 @@ class Worker:
         """Reads from started, moves into finished."""
         try:
             async with self._state_machine.lock:
-                runtime_task = self._state_machine.started.pop()
+                runtime_task = self._state_machine.started.pop(0)
         except IndexError:
             return
 
