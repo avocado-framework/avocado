@@ -104,6 +104,7 @@ class TestSuite:
             resolutions = resolve(references, ignore_missing=ignore_missing)
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
+
         tasks = resolutions_to_tasks(resolutions, config)
 
         return cls(name=name or str(uuid4()),

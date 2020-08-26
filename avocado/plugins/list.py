@@ -112,49 +112,26 @@ class List(CLICmd):
     def _get_resolution_matrix(suite):
         """Used for resolver."""
         test_matrix = []
-        resolution_matrix = []
-        decorator_mapping = {
-            ReferenceResolutionResult.SUCCESS: TERM_SUPPORT.healthy_str,
-            ReferenceResolutionResult.NOTFOUND: TERM_SUPPORT.fail_header_str,
-            ReferenceResolutionResult.ERROR: TERM_SUPPORT.fail_header_str
-            }
         verbose = suite.config.get('core.verbose')
-        for result in suite.resolutions:
-            decorator = decorator_mapping.get(result.result,
-                                              TERM_SUPPORT.warn_header_str)
-            if result.resolutions:
-                for runnable in result.resolutions:
-                    type_label = runnable.kind
-                    type_label = decorator(type_label)
+        for test in suite.tests:
+            runnable = test.runnable
 
-                    if verbose:
-                        tags_repr = []
-                        tags = runnable.tags or {}
-                        for tag, vals in tags.items():
-                            if vals:
-                                tags_repr.append("%s(%s)" % (tag,
-                                                             ",".join(vals)))
-                            else:
-                                tags_repr.append(tag)
-                        tags_repr = ",".join(tags_repr)
-                        test_matrix.append((type_label, runnable.uri,
-                                            tags_repr))
+            type_label = TERM_SUPPORT.healthy_str(runnable.kind.upper())
+
+            if verbose:
+                tags_repr = []
+                tags = runnable.tags or {}
+                for tag, vals in tags.items():
+                    if vals:
+                        tags_repr.append("%s(%s)" % (tag,
+                                                     ",".join(vals)))
                     else:
-                        test_matrix.append((type_label, runnable.uri))
+                        tags_repr.append(tag)
+                tags_repr = ",".join(tags_repr)
+                test_matrix.append((type_label, runnable.uri, tags_repr))
             else:
-                # assuming that empty resolutions mean a NOTFOUND, ERROR, etc
-                if result.info is None:
-                    result_info = ''
-                else:
-                    result_info = result.info
-                if result.result == ReferenceResolutionResult.SUCCESS:
-                    if not result_info:
-                        size = len(result.resolutions)
-                        result_info = "%i resolutions" % size
-                resolution_matrix.append((decorator(result.origin),
-                                          result.reference,
-                                          result_info))
-        return test_matrix, resolution_matrix
+                test_matrix.append((type_label, runnable.uri))
+        return test_matrix
 
     @staticmethod
     def save_recipes(suite, directory, matrix_len):
@@ -221,8 +198,8 @@ class List(CLICmd):
         try:
             suite = TestSuite.from_config(config)
             if runner == 'nrunner':
-                matrix, resolution = self._get_resolution_matrix(suite)
-                self._display(suite, matrix, resolution)
+                matrix = self._get_resolution_matrix(suite)
+                self._display(suite, matrix)
 
                 directory = config.get('list.recipes.write_to_directory')
                 if directory is not None:
