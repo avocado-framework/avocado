@@ -16,18 +16,22 @@
 NRunner based implementation of job compliant runner
 """
 
+import asyncio
 import json
 import multiprocessing
 import os
-import time
+import random
 from copy import copy
 
 from avocado.core import nrunner
+from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
+from avocado.core.status.server import StatusServer
 from avocado.core.task.runtime import RuntimeTask
+from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
 
 
@@ -160,66 +164,88 @@ class Runner(RunnerInterface):
             result.append(RuntimeTask(task))
         return result
 
+    def _start_status_server(self, status_server_uri):
+        # pylint: disable=W0201
+        self.status_repo = StatusRepo()
+        # pylint: disable=W0201
+        self.status_server = StatusServer(status_server_uri,
+                                          self.status_repo)
+        asyncio.ensure_future(self.status_server.serve_forever())
+
+    async def _update_status(self, job):
+        tasks_by_id = {str(runtime_task.task.identifier): runtime_task.task
+                       for runtime_task in self.tasks}
+        while True:
+            try:
+                (task_id, status, _) = self.status_repo.status_journal_summary.pop()
+
+            except IndexError:
+                await asyncio.sleep(0.05)
+                continue
+
+            task = tasks_by_id.get(task_id)
+            early_state = {'name': task.identifier,
+                           'job_logdir': job.logdir,
+                           'job_unique_id': job.unique_id}
+            if status  == 'started':
+                job.result.start_test(early_state)
+                job.result_events_dispatcher.map_method('start_test',
+                                                        job.result,
+                                                        early_state)
+            elif status == 'finished':
+                this_task_data = self.status_repo.get_task_data(task_id)
+                last_task_status = this_task_data[-1]
+                test_state = {'status': last_task_status.get('result').upper()}
+                test_state.update(early_state)
+
+                time_start = this_task_data[0]['time']
+                time_end = last_task_status['time']
+                time_elapsed = time_end - time_start
+                test_state['time_start'] = time_start
+                test_state['time_end'] = time_end
+                test_state['time_elapsed'] = time_elapsed
+
+                # fake log dir, needed by some result plugins such as HTML
+                test_state['logdir'] = ''
+                job.result.check_test(test_state)
+                job.result_events_dispatcher.map_method('end_test',
+                                                        job.result,
+                                                        test_state)
+
     def run_suite(self, job, test_suite):
         summary = set()
-        if job.timeout > 0:
-            deadline = time.time() + job.timeout
-        else:
-            deadline = None
 
         test_suite.tests, _ = nrunner.check_tasks_requirements(test_suite.tests)
         job.result.tests_total = test_suite.size  # no support for variants yet
-        result_dispatcher = job.result_events_dispatcher
-        status_repo = StatusRepo()
-        for runtime_task in self._get_all_runtime_tasks(test_suite):
-            if deadline is not None and time.time() > deadline:
-                break
-            task = runtime_task.task
 
-            early_state = {
-                'name': task.identifier,
-                'job_logdir': job.logdir,
-                'job_unique_id': job.unique_id,
-            }
-            job.result.start_test(early_state)
-            job.result_events_dispatcher.map_method('start_test',
-                                                    job.result,
-                                                    early_state)
+        status_server_uri = test_suite.config.get('nrunner.status_server_uri')
+        self._start_status_server(status_server_uri)
 
-            task.status_services = []
-            for status in task.run():
-                status_repo.process_message(status)
-                result_dispatcher.map_method('test_progress', False)
+        # pylint: disable=W0201
+        self.tasks = self._get_all_runtime_tasks(test_suite)
+        if test_suite.config.get('nrunner.shuffle'):
+            random.shuffle(self.tasks)
+        tsm = TaskStateMachine(self.tasks)
+        spawner_name = test_suite.config.get('nrunner.spawner')
+        spawner = SpawnerDispatcher()[spawner_name].obj
+        max_running = test_suite.config.get('nrunner.max_parallel_tasks')
+        workers = [Worker(tsm, spawner, max_running=max_running).run()
+                   for _ in range(max_running)]
+        asyncio.ensure_future(self._update_status(job))
+        loop = asyncio.get_event_loop()
+        try:
+            loop.run_until_complete(asyncio.wait_for(asyncio.gather(*workers),
+                                                     job.timeout or None))
+        except (KeyboardInterrupt, asyncio.TimeoutError):
+            summary.add("INTERRUPTED")
 
-                if status['status'] not in ["started", "running"]:
-                    break
+        # Wait until all messages may have been processed by the
+        # status_updater. This should be replaced by a mechanism
+        # that only waits if there are missing status messages to
+        # be processed, and, only for a given amount of time.
+        # Tests with unreceived status will always show as SKIP
+        # because of result reconciliation.
+        loop.run_until_complete(asyncio.sleep(0.05))
 
-            # test execution time is currently missing
-            # since 358e800e81 all runners all produce the result in a key called
-            # 'result', instead of 'status'.  But the Avocado result plugins rely
-            # on the current runner approach
-            this_task_data = status_repo.get_task_data(task.identifier)
-            test_state = {'status': this_task_data[-1]['result'].upper()}
-            test_state.update(early_state)
-
-            time_start = this_task_data[0]['time']
-            time_end = this_task_data[-1]['time']
-            time_elapsed = time_end - time_start
-            test_state['time_start'] = time_start
-            test_state['time_end'] = time_end
-            test_state['time_elapsed'] = time_elapsed
-
-            # fake log dir, needed by some result plugins such as HTML
-            test_state['logdir'] = ''
-
-            # Populate task dir
-            base_path = os.path.join(job.logdir, 'test-results')
-            self._populate_task_logdir(base_path,
-                                       task,
-                                       this_task_data,
-                                       job.config.get('core.debug'))
-
-            job.result.check_test(test_state)
-            result_dispatcher.map_method('end_test', job.result, test_state)
         job.result.end_tests()
         return summary
