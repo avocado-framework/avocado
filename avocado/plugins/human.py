@@ -33,6 +33,7 @@ class Human(ResultEvents):
         self.__throbber = output.Throbber()
         stdout_claimed_by = config.get('stdout_claimed_by', None)
         self.owns_stdout = not stdout_claimed_by
+        self.runner = config.get('run.test_runner')
 
     def pre_tests(self, job):
         if not self.owns_stdout:
@@ -59,8 +60,11 @@ class Human(ResultEvents):
         else:
             name = "<unknown>"
             uid = '?'
-        LOG_UI.debug(' (%s/%s) %s:  ', uid, result.tests_total, name,
-                     extra={"skip_newline": True})
+        if self.runner == 'nrunner':
+            LOG_UI.debug(' (%s/%s) %s: STARTED', uid, result.tests_total, name)
+        else:
+            LOG_UI.debug(' (%s/%s) %s:  ', uid, result.tests_total, name,
+                         extra={"skip_newline": True})
 
     def test_progress(self, progress=False):
         if not self.owns_stdout:
@@ -92,7 +96,20 @@ class Human(ResultEvents):
         duration = (" (%.2f s)" % state.get('time_elapsed', -1)
                     if status != "SKIP"
                     else "")
-        msg = self.get_colored_status(status, state.get("fail_reason", None))
+        if self.runner == 'nrunner':
+            if "name" in state:
+                name = state["name"]
+                uid = name.str_uid
+                name = name.name + name.str_variant
+            else:
+                name = "<unknown>"
+                uid = '?'
+
+            msg = self.get_colored_status(status, state.get("fail_reason", None))
+            LOG_UI.debug(' (%s/%s) %s:  ', uid, result.tests_total, name,
+                         extra={"skip_newline": True})
+        else:
+            msg = self.get_colored_status(status, state.get("fail_reason", None))
         LOG_UI.debug(msg + duration)
 
     def post_tests(self, job):

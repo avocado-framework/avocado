@@ -322,7 +322,7 @@ class BaseRunner:
         :rtype: dict
         """
         status = {'status': status_type,
-                  'time': time.time()}
+                  'time': time.monotonic()}
 
         if isinstance(additional_info, dict):
             status.update(additional_info)
@@ -382,7 +382,7 @@ class ExecRunner(BaseRunner):
         most_current_execution_state_time = None
         while process.poll() is None:
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-            now = time.time()
+            now = time.monotonic()
             if most_current_execution_state_time is not None:
                 next_execution_state_mark = (most_current_execution_state_time +
                                              RUNNER_RUN_STATUS_INTERVAL)
@@ -474,7 +474,6 @@ class PythonUnittestRunner(BaseRunner):
         suite = unittest.TestLoader().loadTestsFromName(unittest_name)
         runner = unittest.TextTestRunner(stream=stream, verbosity=0)
         unittest_result = runner.run(suite)
-        time_end = time.time()
 
         if len(unittest_result.errors) > 0:
             result = 'error'
@@ -488,8 +487,7 @@ class PythonUnittestRunner(BaseRunner):
         stream.seek(0)
         output = {'status': 'finished',
                   'result': result,
-                  'output': stream.read(),
-                  'time': time_end}
+                  'output': stream.read()}
         stream.close()
         queue.put(output)
 
@@ -509,7 +507,7 @@ class PythonUnittestRunner(BaseRunner):
         most_current_execution_state_time = None
         while queue.empty():
             time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-            now = time.time()
+            now = time.monotonic()
             if most_current_execution_state_time is not None:
                 next_execution_state_mark = (most_current_execution_state_time +
                                              RUNNER_RUN_STATUS_INTERVAL)
@@ -518,7 +516,9 @@ class PythonUnittestRunner(BaseRunner):
                 most_current_execution_state_time = now
                 yield self.prepare_status('running')
 
-        yield queue.get()
+        status = queue.get()
+        status['time'] = time.monotonic()
+        yield status
 
 
 RUNNERS_REGISTRY_PYTHON_CLASS['python-unittest'] = PythonUnittestRunner

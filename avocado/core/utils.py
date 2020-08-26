@@ -69,7 +69,9 @@ def resolutions_to_tasks(resolutions, config):
     filter_by_tags = config.get("filter.by_tags.tags")
     include_empty = config.get("filter.by_tags.include_empty")
     include_empty_key = config.get('filter.by_tags.include_empty_key')
-    status_server = config.get('nrun.status_server.listen')
+    status_server = config.get('nrunner.status_server_uri')
+    if status_server is None:
+        status_server = config.get('nrun.status_server.listen')
     for resolution in resolutions:
         if resolution.result != ReferenceResolutionResult.SUCCESS:
             continue

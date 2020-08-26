@@ -96,3 +96,22 @@ class StatusRepo(TestCase):
                "output_dir": "/fake/path"}
         self.status_repo.process_message(msg)
         self.assertEqual(self.status_repo.get_task_status("1-foo"), "running")
+
+    def test_get_task_status_journal_summary(self):
+        msg = {"id": "1-foo", "status": "running", "time": 1000000003.0}
+        self.status_repo.process_message(msg)
+        msg = {"id": "1-foo", "status": "running", "time": 1000000002.0}
+        self.status_repo.process_message(msg)
+        msg = {"id": "1-foo", "status": "started", "time": 1000000001.0,
+               "output_dir": "/fake/path"}
+        self.status_repo.process_message(msg)
+        msg = {"id": "1-foo", "status": "finished", "time": 1000000004.0,
+               "result": "pass"}
+        self.status_repo.process_message(msg)
+        self.assertEqual(self.status_repo.get_task_status("1-foo"), "finished")
+        self.assertEqual(self.status_repo.status_journal_summary.pop(),
+                         ("1-foo", "finished", 1000000004.0))
+        self.assertEqual(self.status_repo.status_journal_summary.pop(),
+                         ("1-foo", "running", 1000000003.0))
+        with self.assertRaises(IndexError):
+            self.status_repo.status_journal_summary.pop()
