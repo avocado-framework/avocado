@@ -366,6 +366,7 @@ if __name__ == "__main__":
                 "json_variants = avocado.plugins.json_variants:JsonVariantsInit",
                 "run = avocado.plugins.run:RunInit",
                 "podman = avocado.plugins.spawners.podman:PodmanSpawnerInit",
+                "lxc = avocado.plugins.spawners.lxc:LXCSpawnerInit",
                 "nrunner = avocado.plugins.runner_nrunner:RunnerInit",
                 "testlogsui = avocado.plugins.testlogs:TestLogsUIInit",
                 "human = avocado.plugins.human:HumanInit",
@@ -455,6 +456,7 @@ if __name__ == "__main__":
             "avocado.plugins.spawner": [
                 "process = avocado.plugins.spawners.process:ProcessSpawner",
                 "podman = avocado.plugins.spawners.podman:PodmanSpawner",
+                "lxc = avocado.plugins.spawners.lxc:LXCSpawner",
             ],
             "avocado.plugins.cache": [
                 "requirement = avocado.plugins.requirement_cache:RequirementCache",
