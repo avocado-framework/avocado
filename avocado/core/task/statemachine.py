@@ -100,11 +100,15 @@ class Worker:
         # running) tasks.  this is a global limit, but the spawners
         # can also be queried with regards to their capacity to handle
         # new tasks
+        should_wait = False
         async with self._state_machine.lock:
             if len(self._state_machine.started) >= self._max_running:
                 self._state_machine.ready.insert(0, runtime_task)
                 runtime_task.status = 'WAITING'
-                return
+                should_wait = True
+        if should_wait:
+            await asyncio.sleep(0.1)
+            return
 
         start_ok = await self._spawner.spawn_task(runtime_task)
         if start_ok:
