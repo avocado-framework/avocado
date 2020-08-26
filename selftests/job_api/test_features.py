@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import time
 
 from avocado import Test
 from avocado.core import exit_codes
@@ -106,6 +107,24 @@ class JobAPIFeaturesTest(Test):
         archive_path = '%s.zip' % logdir
         self.check_file_exists(archive_path)
 
+    def test_check_category_directory_exists(self):
+        """Test to check if the category directory was created."""
+        config = self.create_config()
+
+        suite = TestSuite.from_config(config)
+
+        # run the job
+        with Job(config, [suite]) as j:
+            result = j.run()
+            logdir = j.logdir
+
+        # Asserts
+        self.check_exit_code(result)
+
+        value = self.params.get('value')
+        category_path = os.path.join(os.path.dirname(logdir), value)
+        self.check_directory_exists(category_path)
+
     def test_check_directory_exists(self):
         """Test to check if a directory was created."""
         config = self.create_config()
@@ -159,11 +178,11 @@ class JobAPIFeaturesTest(Test):
         # run the job
         with Job(config, [suite]) as j:
             result = j.run()
-            tmpdir = os.path.basename(j.tmpdir)
+            tmpdir = j.tmpdir
 
         # Asserts
         self.check_exit_code(result)
-        self.check_directory_exists(os.path.join(self.latest_workdir, tmpdir))
+        self.check_directory_exists(tmpdir)
 
 if __name__ == '__main__':
 
@@ -193,6 +212,24 @@ if __name__ == '__main__':
          ]})
 
     suites.append(TestSuite.from_config(config_check_archive_file_exists))
+
+    # ========================================================================
+    # Test if the category directory was created
+    # ========================================================================
+    check_category_directory_exists = (
+        '%s:%s.test_check_category_directory_exists'
+        % (__file__, test_class))
+    config_check_category_directory_exists = (
+        {'run.references': [check_category_directory_exists],
+         'run.dict_variants': [
+
+             {'namespace': 'run.job_category',
+              'value': 'foo',
+              'assert': True},
+
+         ]})
+
+    suites.append(TestSuite.from_config(config_check_category_directory_exists))
 
     # ========================================================================
     # Test if a directory was created
@@ -284,6 +321,14 @@ if __name__ == '__main__':
               'content': 'Job ID: abcdefghi',
               'assert': True},
 
+             {'namespace': 'job.run.timeout',
+              'value': 1,
+              'reference': ['examples/tests/sleeptenmin.py'],
+              'file': 'job.log',
+              'content': 'RuntimeError: Test interrupted by SIGTERM',
+              'assert': True,
+              'exit_code': 8},
+
          ]})
 
     suites.append(TestSuite.from_config(config_check_file_content))
@@ -351,6 +396,12 @@ if __name__ == '__main__':
               'value': ['result.xunit'],
               'file': 'result.xml',
               'assert': False},
+
+             # this test needs a huge improvement
+             {'namespace': 'run.journal.enabled',
+              'value': True,
+              'file': '.journal.sqlite',
+              'assert': True},
 
          ]})
 
