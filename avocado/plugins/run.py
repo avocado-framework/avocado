@@ -253,7 +253,7 @@ class Run(CLICmd):
                                  help_msg=help_msg,
                                  choices=('none', 'stdout', 'stderr',
                                           'both', 'combined', 'all'),
-                                 parser=parser,
+                                 parser=out_check,
                                  default=None,
                                  long_arg='--output-check-record')
 
