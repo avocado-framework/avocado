@@ -28,8 +28,7 @@ from avocado.core import nrunner
 
 class RobotRunner(nrunner.BaseRunner):
 
-    @staticmethod
-    def _run(uri, queue):
+    def _run(self, uri, queue):
         stdout = io.StringIO()
         stderr = io.StringIO()
         output_dir = tempfile.mkdtemp()
@@ -41,7 +40,6 @@ class RobotRunner(nrunner.BaseRunner):
                                   outputdir=output_dir,
                                   stdout=stdout,
                                   stderr=stderr)
-        time_end = time.time()
         if native_robot_result:
             result = 'fail'
         else:
@@ -49,11 +47,10 @@ class RobotRunner(nrunner.BaseRunner):
 
         stdout.seek(0)
         stderr.seek(0)
-        output = {'status': 'finished',
-                  'result': result,
-                  'stdout': stdout.read(),
-                  'stderr': stderr.read(),
-                  'time_end': time_end}
+        output = self.prepare_status('finished',
+                                     {'result': result,
+                                      'stdout': stdout.read().encode(),
+                                      'stderr': stderr.read().encode()})
         stdout.close()
         stderr.close()
         queue.put(output)
@@ -68,9 +65,8 @@ class RobotRunner(nrunner.BaseRunner):
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run,
                                           args=(self.runnable.uri, queue))
-        time_start = time.time()
-        time_start_sent = False
         process.start()
+        yield self.prepare_status('started')
 
         most_current_execution_state_time = None
         while queue.empty():
@@ -82,11 +78,7 @@ class RobotRunner(nrunner.BaseRunner):
             if (most_current_execution_state_time is None or
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
-                if not time_start_sent:
-                    time_start_sent = True
-                    yield {'status': 'running',
-                           'time_start': time_start}
-                yield {'status': 'running'}
+                yield self.prepare_status('running')
 
         yield queue.get()
 
