@@ -72,7 +72,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
         process.start()
 
-        self.prepare_status('started')
+        yield self.prepare_status('started')
         most_current_execution_state_time = None
         while queue.empty():
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)

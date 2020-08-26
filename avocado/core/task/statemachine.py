@@ -64,7 +64,7 @@ class Worker:
         try:
             async with self._state_machine.lock:
                 if len(self._state_machine.triaging) < self._max_triaging:
-                    runtime_task = self._state_machine.requested.pop()
+                    runtime_task = self._state_machine.requested.pop(0)
                     self._state_machine.triaging.append(runtime_task)
                 else:
                     return
@@ -75,11 +75,11 @@ class Worker:
         """Reads from triaging, moves into either: ready or finished."""
         try:
             async with self._state_machine.lock:
-                runtime_task = self._state_machine.triaging.pop()
+                runtime_task = self._state_machine.triaging.pop(0)
         except IndexError:
             return
 
-        requirements_ok = await self._spawner.spawn_task(runtime_task)
+        requirements_ok = await self._spawner.check_task_requirements(runtime_task)
         if requirements_ok:
             async with self._state_machine.lock:
                 self._state_machine.ready.append(runtime_task)
@@ -92,7 +92,7 @@ class Worker:
         """Reads from ready, moves into either: started or finished."""
         try:
             async with self._state_machine.lock:
-                runtime_task = self._state_machine.ready.pop()
+                runtime_task = self._state_machine.ready.pop(0)
         except IndexError:
             return
 
@@ -100,11 +100,15 @@ class Worker:
         # running) tasks.  this is a global limit, but the spawners
         # can also be queried with regards to their capacity to handle
         # new tasks
+        should_wait = False
         async with self._state_machine.lock:
             if len(self._state_machine.started) >= self._max_running:
                 self._state_machine.ready.insert(0, runtime_task)
                 runtime_task.status = 'WAITING'
-                return
+                should_wait = True
+        if should_wait:
+            await asyncio.sleep(0.1)
+            return
 
         start_ok = await self._spawner.spawn_task(runtime_task)
         if start_ok:
@@ -121,7 +125,7 @@ class Worker:
         """Reads from started, moves into finished."""
         try:
             async with self._state_machine.lock:
-                runtime_task = self._state_machine.started.pop()
+                runtime_task = self._state_machine.started.pop(0)
         except IndexError:
             return
 
