@@ -14,10 +14,7 @@ CONFIG = {
     'run.references': [os.path.join(ROOT_DIR, 'selftests', 'unit'),
                        os.path.join(ROOT_DIR, 'selftests', 'functional')],
     'filter.by_tags.tags': ['parallel:1'],
-    # These are not currently supported by plugins/runner_nrunner.py, but better
-    # be prepared
-    'nrun.parallel_tasks': 1,
-    'nrun.disable_task_randomization': True,
+    'nrunner.max_parallel_tasks': 1,
     }
 
 

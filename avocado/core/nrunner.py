@@ -924,7 +924,7 @@ class BaseRunnerApp:
 
 class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner'
-    PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner'
+    PROG_DESCRIPTION = 'nrunner base application'
     RUNNABLE_KINDS_CAPABLE = RUNNERS_REGISTRY_PYTHON_CLASS
 
 

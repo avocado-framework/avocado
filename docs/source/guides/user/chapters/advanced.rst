@@ -1,6 +1,24 @@
 Advanced usage
 ==============
 
+Test Runner Selection
+---------------------
+
+To effectively run a job with tests, Avocado makes use of a well
+described and pluggable interface.  This means that users can choose
+(and developers can write) their own runners.
+
+Runner choices can be seen by running ``avocado plugins``::
+
+  ...
+  Plugins that run test suites on a job (runners):
+  nrunner nrunner based implementation of job compliant runner
+  runner  The conventional test runner
+
+And to select a different test runner, say, ``nrunner``::
+
+  avocado run --test-runner=nrunner ...
+
 Wrap executables run by tests
 -----------------------------
 

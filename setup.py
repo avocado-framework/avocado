@@ -104,7 +104,6 @@ if __name__ == '__main__':
                   'sysinfo = avocado.plugins.sysinfo:SysInfo',
                   'plugins = avocado.plugins.plugins:Plugins',
                   'diff = avocado.plugins.diff:Diff',
-                  'nrun = avocado.plugins.nrun:NRun',
                   'vmimage = avocado.plugins.vmimage:VMimage',
                   'assets = avocado.plugins.assets:Assets',
                   'jobs = avocado.plugins.jobs:Jobs',
