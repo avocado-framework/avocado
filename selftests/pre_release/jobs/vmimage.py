@@ -4,6 +4,7 @@ import os
 import sys
 
 from avocado.core.job import Job
+from avocado.core.suite import TestSuite
 
 COMMON_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DIR = os.path.join(COMMON_DIR, 'tests')
@@ -15,5 +16,6 @@ CONFIG = {
 
 
 if __name__ == '__main__':
-    with Job(CONFIG) as j:
+    suite = TestSuite.from_config(CONFIG)
+    with Job(CONFIG, [suite]) as j:
         sys.exit(j.run())
