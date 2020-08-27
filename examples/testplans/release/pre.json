@@ -29,13 +29,7 @@
         "description": "After deploying Avocado, install and activate qemu-guest-agent by running the ansible playbook located at selftests/deployments/qemu-guest-agent.yml"},
 
 	{"name": "Avocado Test Run on RPM based installation",
-	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
-
-	{"name": "Avocado Test Run on Virtual Machine",
-	 "description": "On your development machine, execute Avocado with the Virtual Machine plugin, so that a test will be run on the machine you just installed Avocado using RPM packages. Run: `$ avocado run passtest.py --vm-domain <domain> --vm-username <user> --vm-password <pass>`. Expected results: `(1/1) /home/<user>/(...)/passtest.py: PASS (0.00 s)`"},
-
-	{"name": "Avocado Test Run on Remote Machine",
-	 "description": "On your development machine, execute Avocado with the Remote plugin, so that a test will be run on the machine you just installed Avocado using RPM packages. Run: `$ avocado run passtest.py --remote-username <user> --remote-password <pass> --remote-hostname <host> --html /tmp/report.html`. Expected results: `(1/1) /home/<user>/(...)/passtest.py: PASS (0.00 s)`"},
+	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py --html /tmp/report.html`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
 
 	{"name": "Avocado Remote Machine HTML report",
 	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-/**/avocado/tests/**/examples/tests/passtest.py:PassTest.test` (under `Test ID`) and `debug.log` point to valid locations."},
