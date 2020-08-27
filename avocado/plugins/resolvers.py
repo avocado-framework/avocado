@@ -85,7 +85,7 @@ class PythonUnittestResolver(Resolver):
 
     @staticmethod
     def _find_compat(module_path):
-        """Used as compatiblity for the :func:`python_resolver()` interface."""
+        """Used as compatibility for the :func:`python_resolver()` interface."""
         return find_python_unittests(module_path), None
 
     @staticmethod

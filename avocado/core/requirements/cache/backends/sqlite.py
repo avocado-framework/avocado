@@ -24,7 +24,7 @@ from ....data_dir import get_datafile_path
 #: The location of the requirements cache database
 CACHE_DATABASE_PATH = get_datafile_path('cache', 'requirements.sqlite')
 
-#: The definition of the databse schema
+#: The definition of the database schema
 SCHEMA = [
     'CREATE TABLE IF NOT EXISTS requirement_type (requirement_type TEXT UNIQUE)',
     'CREATE TABLE IF NOT EXISTS environment_type (environment_type TEXT UNIQUE)',

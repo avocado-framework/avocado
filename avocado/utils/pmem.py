@@ -66,7 +66,7 @@ class PMem:
         """
         Check if given sub command is supported by ndctl
 
-        :param command: sub command of ndctl to check for existance
+        :param command: sub command of ndctl to check for existence
         :return: True if sub command is available
         :rtype: bool
         """

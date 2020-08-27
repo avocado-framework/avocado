@@ -9,7 +9,7 @@ class StatusRepo:
     """Maintains tasks' status related data and provides aggregated info."""
 
     def __init__(self):
-        #: Contains all reveived messages by a given task (by its ID)
+        #: Contains all received messages by a given task (by its ID)
         self._all_data = {}
         #: Contains the most up to date status of a task, and the time
         #: it was set in a tuple (status, time).  This is keyed
@@ -18,8 +18,8 @@ class StatusRepo:
         #: it's *not* based by the order it was received.
         self._status = {}
         #: Contains a global journal of status updates to be picked, each
-        #: entry containing a tupple with (task_id, status, time).  It discards
-        #: status that have been superseeded by newer status.
+        #: entry containing a tuple with (task_id, status, time).  It discards
+        #: status that have been superseded by newer status.
         self._status_journal_summary = []
         #: Contains the task IDs keyed by the result received
         self._by_result = {}

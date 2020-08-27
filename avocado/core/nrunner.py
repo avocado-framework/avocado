@@ -261,8 +261,8 @@ class Runnable:
     def pick_runner_class_from_entry_point(self):
         """Selects a runner class from entry points based on kind.
 
-        This is related to the :data:`SpawnMethod.PYTHON_CLASS`.  This
-        completements the :data:`RUNNERS_REGISTRY_PYTHON_CLASS` on systems
+        This is related to the :data:`SpawnMethod.PYTHON_CLASS`. This
+        complements the :data:`RUNNERS_REGISTRY_PYTHON_CLASS` on systems
         that have setuptools available.
 
         :returns: a class that inherits from :class:`BaseRunner` or None
