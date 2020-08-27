@@ -29,12 +29,6 @@ Contents:
    releases/index
 
 .. toctree::
-   :caption: Future/Experimental
-   :maxdepth: 3
-
-   future/index
-
-.. toctree::
    :caption: Blueprints
    :titlesonly:
 

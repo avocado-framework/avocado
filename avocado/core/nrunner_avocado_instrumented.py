@@ -90,7 +90,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
 class RunnerApp(nrunner.BaseRunnerApp):
     PROG_NAME = 'avocado-runner-avocado-instrumented'
-    PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner for avocado-instrumented tests'
+    PROG_DESCRIPTION = 'nrunner application for avocado-instrumented tests'
     RUNNABLE_KINDS_CAPABLE = {
         'avocado-instrumented': AvocadoInstrumentedTestRunner
     }

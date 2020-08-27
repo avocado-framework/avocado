@@ -1,13 +1,16 @@
 .. _nrunner:
 
-N(ext)Runner
-============
+The "nrunner" and "runner" test runner
+======================================
 
-This section details the new Avocado architecture.  At its essence,
-this new architecture is about making Avocado more capable and
-flexible, and even though it starts with a major internal paradigm
-change within the test runner, it will also affect users and test
-writers.
+This section details a test runner called "nrunner", also known as
+N(ext) Runner, and the architecture around.  It compares it with the
+older (and default) test runner, simply called "runner".
+
+At its essence, this new architecture is about making Avocado more
+capable and flexible, and even though it starts with a major internal
+paradigm change within the test runner, it will also affect users and
+test writers.
 
 The :mod:`avocado.core.nrunner` module was initially responsible for
 most of the N(ext)Runner code, but as development continues, it's
@@ -68,8 +71,8 @@ we are talking about:
 
 Whenever we talk about the N(ext)Runner, we are talking about:
 
-* ``avocado nlist`` command
-* ``avocado nrun`` command
+* ``avocado list --resolver`` command
+* ``avocado run --test-runner=nrunner`` command
 * :mod:`avocado.core.resolver` module to resolve tests
 * :mod:`avocado.core.spawners` modules to spawn tasks
 
@@ -133,24 +136,23 @@ the tests, which we simply call a "factory"::
   ...
 
 Because the N(ext)Runner is living side by side with the current
-architecture, two **temporary** commands have been introduced,
-prefixed by an **n**, that is, ``avocado nlist`` and ``avocado nrun``.
-In the future, those commands will become ``list`` and ``run``
-reespectively.
+architecture, command line options have been introduced to distinguish
+between them: ``avocado list --resolver`` and ``avocado
+run --test-runner=nrunner``.
 
 On the N(ext)Runner architecture, a different terminology and
-foundation is used.  Each one of the test references given to
-``nlist`` or ``nrun`` will be "resolved" into zero or more tests.
-Being more precise and verbose, resolver plugins will produce
-:class:`avocado.core.resolver.ReferenceResolution`, which contain zero
-or more :class:`avocado.core.nrunner.Runnable`, which are described in
-the following section.  Overall, the process looks like::
+foundation is used.  Each one of the test references given to ``list
+--resolver`` or ``run --test-runner=runner`` will be "resolved" into
+zero or more tests.  Being more precise and verbose, resolver plugins
+will produce :class:`avocado.core.resolver.ReferenceResolution`, which
+contain zero or more :class:`avocado.core.nrunner.Runnable`, which are
+described in the following section.  Overall, the process looks like::
 
-  +----------------------+    +-----------------------+
-  | avocado nlist | nrun | -> | avocado.core.resolver | ---+
-  +----------------------+    +-----------------------+    |
-                                                           |
-    +------------------------------------------------------+
+  +-------------------------+    +-----------------------+
+  | avocado list --resolver | -> | avocado.core.resolver | ---+
+  +-------------------------+    +-----------------------+    |
+                                                              |
+    +---------------------------------------------------------+
     |
     v
   +--------------------------------------+
@@ -253,8 +255,9 @@ interfaces such scripts must implement are the ``runnable-run`` and
 ``task-run`` interfaces.
 
 Once all the ``Runnable(s)`` (within the ``ReferenceResolution(s)``)
-are created by :mod:`avocado.core.resolver`, the ``avocado nrun``
-implementation follows roughly the following steps:
+are created by :mod:`avocado.core.resolver`, the ``avocado
+run --test-runner=nrunner`` implementation follows roughly the
+following steps:
 
 1. Creates a status server that binds to a TCP port and waits for
    status messages from any number of clients

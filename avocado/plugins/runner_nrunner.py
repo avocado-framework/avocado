@@ -38,7 +38,7 @@ from avocado.core.test_id import TestID
 class RunnerInit(Init):
 
     name = 'nrunner'
-    description = '*EXPERIMENTAL* nrunner initialization'
+    description = 'nrunner initialization'
 
     def initialize(self):
         section = 'nrunner'
@@ -76,7 +76,7 @@ class RunnerInit(Init):
 class RunnerCLI(CLI):
 
     name = 'nrunner'
-    description = '*EXPERIMENTAL* nrunner command line options for "run"'
+    description = 'nrunner command line options for "run"'
 
     def configure(self, parser):
         super(RunnerCLI, self).configure(parser)
@@ -109,7 +109,7 @@ class RunnerCLI(CLI):
 class Runner(RunnerInterface):
 
     name = 'nrunner'
-    description = '*EXPERIMENTAL* nrunner based implementation of job compliant runner'
+    description = 'nrunner based implementation of job compliant runner'
 
     def _save_to_file(self, filename, buff, mode='wb'):
         with open(filename, mode) as fp:

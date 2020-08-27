@@ -85,7 +85,7 @@ class RobotRunner(nrunner.BaseRunner):
 
 class RunnerApp(nrunner.BaseRunnerApp):
     PROG_NAME = 'avocado-runner-robot'
-    PROG_DESCRIPTION = '*EXPERIMENTAL* N(ext) Runner for robot tests'
+    PROG_DESCRIPTION = '*nrunner application for robot tests'
     RUNNABLE_KINDS_CAPABLE = {'robot': RobotRunner}
 
 

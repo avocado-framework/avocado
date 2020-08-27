@@ -12,6 +12,7 @@ Useful pointers on how to participate of the Avocado community and contribute.
    chapters/environment
    chapters/styleguides
    chapters/plugins
+   chapters/runners
    chapters/results
    chapters/rfc
    chapters/releasing
