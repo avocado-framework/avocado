@@ -1,3 +1,18 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2020
+# Author: Beraldo Leal <bleal@redhat.com>
+
+import os
 from enum import Enum
 from uuid import uuid4
 
@@ -6,6 +21,7 @@ from .exceptions import (JobTestSuiteReferenceResolutionError,
                          OptionValidationError)
 from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
                      loader)
+from .parser import HintParser
 from .resolver import resolve
 from .settings import settings
 from .tags import filter_test_tags
@@ -101,7 +117,13 @@ class TestSuite:
         ignore_missing = config.get('run.ignore_missing_references')
         references = config.get('run.references')
         try:
-            resolutions = resolve(references, ignore_missing=ignore_missing)
+            hint = None
+            hint_filepath = '.avocado.hint'
+            if os.path.exists(hint_filepath):
+                hint = HintParser(hint_filepath)
+            resolutions = resolve(references,
+                                  hint=hint,
+                                  ignore_missing=ignore_missing)
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
         tasks = resolutions_to_tasks(resolutions, config)
