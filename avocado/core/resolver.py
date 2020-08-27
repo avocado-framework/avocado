@@ -190,7 +190,7 @@ def resolve(references, hint=None, ignore_missing=True):
                 resolutions.extend(resolver.resolve(reference))
 
     # This came up from a previous method and can be refactored to improve
-    # peformance since that we could merge with the loop above.
+    # performance since that we could merge with the loop above.
     if not ignore_missing:
         missing = []
         for reference in references:

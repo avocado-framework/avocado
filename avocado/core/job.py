@@ -405,7 +405,7 @@ class Job:
 
         This is different from the Job() initialization because here we are
         assuming that you need some help to build the test suites. Avocado will
-        try to resolve tests based on the configuration information insead of
+        try to resolve tests based on the configuration information instead of
         assuming pre populated test suites.
 
         Keep in mind that here we are going to replace the suite.name with a

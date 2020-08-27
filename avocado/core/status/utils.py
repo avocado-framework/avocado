@@ -17,8 +17,8 @@ def json_base64_decode(dct):
 def json_loads(data):
     """Loads and decodes JSON, with added base64 decoding.
 
-    :param data: either bytes or a string.  If bytes, will be decoded
-                 using the current default enconding.
+    :param data: either bytes or a string. If bytes, will be decoded
+                 using the current default encoding.
     :raises:
     :returns: decoded Python objects
     """

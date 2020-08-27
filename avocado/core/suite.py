@@ -271,8 +271,8 @@ class TestSuite:
 
         This is different from the TestSuite() initialization because here we
         are assuming that you need some help to build the test suite. Avocado
-        will try to resolve tests based on the configuration information insead
-        of assuming pre populated tests.
+        will try to resolve tests based on the configuration information
+        instead of assuming pre populated tests.
 
         If you need to create a custom TestSuite, please use the TestSuite()
         constructor instead of this method.

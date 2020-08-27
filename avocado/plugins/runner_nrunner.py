@@ -250,7 +250,7 @@ class Runner(RunnerInterface):
         # status_updater. This should be replaced by a mechanism
         # that only waits if there are missing status messages to
         # be processed, and, only for a given amount of time.
-        # Tests with unreceived status will always show as SKIP
+        # Tests with non received status will always show as SKIP
         # because of result reconciliation.
         loop.run_until_complete(asyncio.sleep(0.05))
 

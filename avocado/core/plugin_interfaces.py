@@ -259,7 +259,7 @@ class Spawner(Plugin):
 
     A spawner implementation will spawn a runner in its intended
     location, and isolation model.  It's supposed to be generic enough
-    that it can peform that in the local machine using a process as an
+    that it can perform that in the local machine using a process as an
     isolation model, or in a virtual machine, using the virtual
     machine itself as the isolation model.
     """

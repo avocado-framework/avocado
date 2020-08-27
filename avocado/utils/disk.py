@@ -52,7 +52,7 @@ def create_loop_device(size, blocksize=4096, directory='./'):
     Creates a loop device of size and blocksize specified.
 
     :param size: Size of loop device, in bytes
-    :type syze: int
+    :type size: int
     :param blocksize: block size of loop device, in bytes. Defaults to 4096
     :type blocksize: int
     :param directory: Directory where the backing file will be created.

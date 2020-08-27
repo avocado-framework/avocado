@@ -145,7 +145,7 @@ class Worker:
             self._state_machine.finished.append(runtime_task)
 
     async def run(self):
-        """Pushes Tasks forward and makes them do something with their lifes."""
+        """Pushes Tasks forward and makes them do something with their lives."""
         while True:
             is_complete = await self._state_machine.complete
             if is_complete:

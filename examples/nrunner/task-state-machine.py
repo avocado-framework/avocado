@@ -48,7 +48,7 @@ class Task:
 
 
 class TaskInfo(Task):
-    """Task with extra status information on its lifecycle.
+    """Task with extra status information on its life-cycle.
 
     The equivalent of a StatusServer will contain this information
     in the real implementation."""
@@ -134,7 +134,7 @@ class TaskStateMachine:
 
 async def bootstrap(lc):
     """Reads from requested, moves into triaging."""
-    # fake some rate limitting
+    # fake some rate limiting
     if true_or_false(10):
         return
     try:
@@ -234,7 +234,7 @@ def print_lc_status(lc):
 
 
 async def worker(lc):
-    """Pushes Tasks forward and makes them do something with their lifes."""
+    """Pushes Tasks forward and makes them do something with their lives."""
     while True:
         complete = await lc.complete
         debug('Complete? %s' % complete)
