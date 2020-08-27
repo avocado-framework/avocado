@@ -154,6 +154,7 @@ class BaseIso9660:
         with open(dst, 'w+b') as output:
             output.write(content)
 
+    @property
     def mnt_dir(self):
         """
         Returns a path to the browsable content of the iso
