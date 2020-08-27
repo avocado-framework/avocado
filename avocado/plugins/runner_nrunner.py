@@ -207,6 +207,13 @@ class Runner(RunnerInterface):
 
                 # fake log dir, needed by some result plugins such as HTML
                 test_state['logdir'] = ''
+
+                base_path = os.path.join(job.logdir, 'test-results')
+                self._populate_task_logdir(base_path,
+                                           task,
+                                           this_task_data,
+                                           job.config.get('core.debug'))
+
                 job.result.check_test(test_state)
                 job.result_events_dispatcher.map_method('end_test',
                                                         job.result,
