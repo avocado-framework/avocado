@@ -116,7 +116,7 @@ class List(CLICmd):
         for test in suite.tests:
             runnable = test.runnable
 
-            type_label = TERM_SUPPORT.healthy_str(runnable.kind.upper())
+            type_label = TERM_SUPPORT.healthy_str(runnable.kind)
 
             if verbose:
                 tags_repr = []
