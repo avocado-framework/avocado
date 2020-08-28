@@ -187,10 +187,8 @@ create custom jobs and test suites:
   import sys
 
   from avocado.core.job import Job
-  from avocado.core.suite import TestSuite
 
-  suite = TestSuite(name='CustomSuite', config=suite_config, tests=tests)
-  with Job(config=job_config, test_suites=[suite]) as job:
+  with Job.from_config({'run.references': ['/bin/true']}) as job:
       sys.exit(job.run())
 
 How to install
