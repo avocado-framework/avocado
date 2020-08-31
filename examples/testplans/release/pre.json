@@ -16,9 +16,6 @@
 	{"name": "Avocado vmimage tests",
 	 "description": "Run `selftests/pre_release/jobs/vmimage.py`. Expected results: all tests PASSed"},
 
-	{"name": "Avocado source does not contain spelling errors",
-	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
-
         {"name": "Check the right RPM packages are available in COPR",
          "description": "Run `selftests/pre_release/tests/check-copr-rpm-version.sh`. Expected result: last line with: python3-avocado-$VERSION-$DATE-git$COMMIT"},
 

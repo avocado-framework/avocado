@@ -31,7 +31,6 @@ all:
 	@echo "develop:     Runs 'python setup.py --develop' on this tree alone"
 	@echo "link:        Runs 'python setup.py --develop' in all subprojects and links the needed resources"
 	@echo "clean:       Get rid of scratch, byte files and removes the links to other subprojects"
-	@echo "spell:       Runs spell checker on comments and docstrings (requires python-enchant)"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements-selftests:  Install runtime and selftests requirements"
@@ -153,9 +152,6 @@ link: develop
 			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
 		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
-
-spell:
-	pylint -j 1 --errors-only --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=spell.ignore * && echo OK
 
 man: man/avocado.1
 
