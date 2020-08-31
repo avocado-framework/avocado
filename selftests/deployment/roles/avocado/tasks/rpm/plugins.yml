@@ -22,5 +22,5 @@
     state: latest
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
-    - method != "pip" 
+    - method != "pip"
     - avocado_vt|default(false)|bool == true
