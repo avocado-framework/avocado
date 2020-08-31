@@ -1,0 +1,4 @@
+---
+- name: (NOT) Installing Avocado examples using PIP
+  debug:
+    msg: "Not installing examples via PIP, as there are no packages with them"
