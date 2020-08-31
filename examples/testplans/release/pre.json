@@ -22,9 +22,6 @@
 	{"name": "Avocado deployment",
 	 "description": "Execute the ansible playbook located at selftests/deployments/deployment.yml with '-e method=copr' on one or many fresh virtual machines."},
 
-        {"name": "Install qemu-guest-agent",
-        "description": "After deploying Avocado, install and activate qemu-guest-agent by running the ansible playbook located at selftests/deployments/qemu-guest-agent.yml"},
-
 	{"name": "Avocado Test Run on RPM based installation",
 	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py --html /tmp/report.html`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
 
