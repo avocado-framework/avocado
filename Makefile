@@ -155,7 +155,7 @@ link: develop
 	done
 
 spell:
-	pylint --errors-only --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=spell.ignore * && echo OK
+	pylint -j 1 --errors-only --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=spell.ignore * && echo OK
 
 man: man/avocado.1
 
