@@ -5,4 +5,3 @@
     state: latest
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
-    - method != "pip"
