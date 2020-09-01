@@ -103,6 +103,8 @@ with::
         def test(self):
             ...
 
+.. _avocado.utils.vmimage.supported_images:
+
 Supported images
 ----------------
 The vmimage library has no hardcoded limitations of versions or architectures

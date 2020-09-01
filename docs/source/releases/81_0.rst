@@ -1,0 +1,170 @@
+===========================
+81.0 Avengers: Infinity War
+===========================
+
+The Avocado team is proud to present another release: Avocado 81.0,
+AKA "Avengers: Infinity War", is now available!
+
+This release introduces many exciting new features.  We can't even
+wait to get to the more specific sections bellow to talk about some
+of the highlights:
+
+* A new test runner architecture, previously known as the "N(ext)
+  Runner", now available as the "nrunner" plugin.  It currently allows
+  tests to be run in parallel in either processes or into Podman based
+  containers.  In the near future, it should include LXC, Kata
+  Containers, QEMU/KVM based virtual machines, etc.  It also includes
+  the foundation of a requirement resolution mechanism, in which tests
+  can declare what they need to run (specific Operating System
+  versions, architectures, packages, etc).  Expect the Avocado feature
+  set to evolve around this new architecture.
+
+* A fully usable Job API, making most of Avocado's functionalities
+  programmable and highly customizable.  Expect the Job API to be
+  declared public soon, that is, to be available as ``avocado.Job``
+  (instead of the current :class:`avocado.core.job.Job`) just like
+  the Avocado Test API is available at :class:`avocado.Test`.
+
+* A new settings API that is tightly linked to the Job API.  You can
+  see all the existing configurations at runtime by running ``avocado
+  config reference``.  To integrate Avocado to an existing project or
+  a CI environment, a custom job with a few configurations will give
+  you a lot of flexibility with very little need to write Python code.
+  Some examples are available at ``examples/jobs``.
+
+* Support for multiple test suites in a Job, so that each test suite
+  can be configured differently and independently of each other.
+  Fulfill your use case easily (or let your imagination go wild) and
+  define different runners for different test suites, different
+  parameters to different test suites, or run some test suites
+  locally, while others isolated on containers.  Anything that is
+  configurable with the new settings API should be transparently
+  configurable in the context of a test suite (provided the test suite
+  deals with that feature).
+
+This release is also a "pre-LTS release".  Development sprint #82 will
+focus on stabilization, culminating in the 82.0 LTS release.
+
+Release documentation: `Avocado 81.0
+<http://avocado-framework.readthedocs.io/en/81.0/>`_
+
+Users/Test Writers
+==================
+
+* The ``remote``, ``vm`` and ``docker`` runners (which would run jobs
+  on remote, vm and docker containers) were removed, after having being
+  deprecated on version 78.0.
+
+* The "standalone job" feature, in which a test could be run as a
+  standalone job was removed after having being deprecated on version
+  80.0.  The alternative is to use an Avocado Job (using the Job API),
+  with a test defined on the same file, as can be seen on the example
+  file ``examples/jobs/passjob_with_test.py`` in the source tree.
+
+* The ``yaml_to_mux`` varianter plugin now attempts to respect the
+  type of the value given to ``--mux-inject``.  For example, ``1`` is
+  treated as integer, a value of ``1,2`` is treated as list a value of
+  ``abc`` is treated as string, and a value of ``1,2,5-10`` is treated
+  as list of integers as ``1,2,-5`` (as it is evaluated by
+  :func:`ast.literal_eval`).
+
+* Python unittests names are now similar to Avocado's own instrumented
+  tests names, that is, they list the file name as a path, followed by
+  the class and method name.  The positive aspect of this change is
+  that that they can be reused again as a test reference (which means
+  you can copy and paste the name, and re-run it).
+
+* The ``avocado-runner-*`` standalone runners can now look for a
+  suitable Python class to handle a given test kind by using
+  ``setuptools`` entrypoints.
+
+* For users of the Job API, a "dictionary based" varianter was
+  introduced, that allows you to describe the variations of tests in a
+  test suite directly via a Python dictionary.
+
+* The output produced on the human UI for failed ``SIMPLE`` tests is
+  now much more straightforward and contains more relevant data.
+
+* Users attempting to use both the ``--loader`` and the
+  ``--external-runner`` features will be warned against it, because of
+  its inherent incompatibility with each other.
+
+* A new ``avocado replay`` command supersedes the ``avocado run
+  --replay`` command/option.
+
+* The previous experimental command ``nlist`` has been removed, and
+  its functionality can now be activated by using ``avocado list
+  --resolver``.  This is part of promotion of the N(ext) Runner
+  architecture from experimental to being integrated into Avocado.
+
+Bug Fixes
+=========
+
+* Filtering using tags while listing the tests (but not while running
+  them) was broken on the previous release, and has now been fixed.
+
+* Result event plugins were misbehaving because they were instantiated
+  too early.  Now they're loaded later and lazily.
+
+* Failure to load and run the Python unittest with the nrunner's
+  :class:`avocado.core.nrunner.PythonUnittestRunner` depending on
+  the directory it was called from is now fixed.
+
+Utility APIs
+============
+
+* The :mod:`avocado.utils.vmimage` now contains an auxiliary
+  documentation (:ref:`avocado.utils.vmimage.supported_images`) that
+  lists the exact Operating System names, versions and architectures
+  that have been tested with an Avocado release.
+
+* The :mod:`avocado.utils.pmem` library can now check if a given
+  command is supported by the underlying ``ndctl`` binary.
+
+Internal Changes
+================
+
+* Improvements to the selftests, including a collection of jobs that
+  are run as tests, and a job that tests a good number of Job API
+  features using variants.
+
+* The :mod:`avocado.core.settings` is a completely redesigned module,
+  and central to Avocado's future set and Job API.  It was present as
+  ``avocado.core.future.settings`` on previous versions. All module
+  and plugins have been migrated to the new API.
+
+* The :mod:`avocado.utils.software_manager` module has been split into
+  a finer grained directory and module structure.
+
+* Various documentation content improvements, and various build
+  warnings were addressed.
+
+* The ``avocado_variants`` attribute is no longer kept in the job
+  configuration as an instance of a
+  :class:`avocado.core.varianter.Varianter`, instead, the
+  configuration for the various variants are kept in the configuration
+  and it's instantiated when needed.
+
+* :mod:`avocado.utils.wait` now uses :func:`time.monotonic`, which
+  makes it more reliable and less susceptible to errors when the
+  system clock changes while this utility function is running.
+
+* Refactors resulting in more code being shared among Avocado
+  Instrumented and Python unittest handling on the
+  :mod:`avocado.core.safeloader` module.
+
+* The :mod:`avocado.core.safeloader` module now supports relative
+  imports when attempting to follow imports to find valid classes with
+  tests.
+
+* A new :mod:`avocado.core.suite` was introduced, which is the basis
+  of the multiple test suite support in a Job.
+
+* Codeclimate.com is now being used for code coverage services.
+
+* Codeclimate.com now has the bandit plugin enabled, which means that
+  security related alerts are also caught and shown on the analysis.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/80.0...81.0>`_.

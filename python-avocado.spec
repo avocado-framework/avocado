@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      e74adbdb9d0c8d456437969f4aeaaf4aeec7166d
+        %global commit      417f72ca33a78599628a5bedb05d3dba8a7ac230
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20200605
+        %global commit_date 20200828
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -33,8 +33,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 80.0
-Release: 2%{?gitrel}%{?dist}
+Version: 81.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -431,6 +431,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Aug 31 2020 Cleber Rosa <cleber@redhat.com> - 81.0-1
+- New release
+
 * Tue Jun 23 2020 Cleber Rosa <cleber@redhat.com> - 80.0-2
 - Add on extra character to short commit
 
