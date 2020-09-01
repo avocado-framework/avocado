@@ -62,7 +62,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             del state['name']
         if 'time_start' in state:
             del state['time_start']
-        state['time'] = time.time()
+        state['time'] = time.monotonic()
         queue.put(state)
 
     def run(self):
@@ -76,7 +76,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         most_current_execution_state_time = None
         while queue.empty():
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
-            now = time.time()
+            now = time.monotonic()
             if most_current_execution_state_time is not None:
                 next_execution_state_mark = (most_current_execution_state_time +
                                              nrunner.RUNNER_RUN_STATUS_INTERVAL)
