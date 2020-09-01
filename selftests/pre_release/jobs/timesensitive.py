@@ -11,8 +11,8 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
 CONFIG = {
     'run.test_runner': 'nrunner',
-    'run.references': [os.path.join(ROOT_DIR, 'selftests', 'unit'),
-                       os.path.join(ROOT_DIR, 'selftests', 'functional')],
+    'run.references': [os.path.join('selftests', 'unit'),
+                       os.path.join('selftests', 'functional')],
     'filter.by_tags.tags': ['parallel:1'],
     'nrunner.status_server_uri': '127.0.0.1:8888',
     'nrunner.max_parallel_tasks': 1,
@@ -20,6 +20,7 @@ CONFIG = {
 
 
 if __name__ == '__main__':
+    os.chdir(ROOT_DIR)
     with Job.from_config(CONFIG) as j:
         os.environ['AVOCADO_CHECK_LEVEL'] = '3'
         sys.exit(j.run())

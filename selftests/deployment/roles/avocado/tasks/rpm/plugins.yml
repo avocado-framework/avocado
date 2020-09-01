@@ -11,10 +11,6 @@
       - python3-avocado-plugins-varianter-pict
       - python3-avocado-plugins-varianter-yaml-to-mux
     state: latest
-  when:
-    - ansible_facts['distribution_file_variety'] == "RedHat"
-    - ansible_facts['distribution_major_version']|int >= 30
-    - method != "pip"
 
 - name: Install the Avocado VT plugin using RPM
   dnf:
@@ -22,5 +18,4 @@
     state: latest
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
-    - method != "pip" 
     - avocado_vt|default(false)|bool == true
