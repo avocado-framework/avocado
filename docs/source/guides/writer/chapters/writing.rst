@@ -695,7 +695,7 @@ Detailing the ``fetch_asset()`` parameters:
   ``file://`` Avocado creates a symbolic link in the cache directory, pointing
   to the original location of the file.
 * ``expire:`` (optional) period while a cached file is considered valid. After
-  that period, the file will be dowloaded again. The value can be an integer or
+  that period, the file will be downloaded again. The value can be an integer or
   a string containing the time and the unit. Example: '10d' (ten days). Valid
   units are ``s`` (second), ``m`` (minute), ``h`` (hour) and  ``d`` (day).
 * ``find_only:`` (optional) tries to find the asset in the cache. If the asset
@@ -813,7 +813,7 @@ Let's record the output for this one::
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB TIME   : 0.11 s
 
-After this is done, you'll notice that a the test data directory
+After this is done, you'll notice that the test data directory
 appeared in the same level of our shell script, containing 2 files::
 
     $ ls output_record.sh.data/
@@ -1068,7 +1068,7 @@ the  `setUp()` method, the test method and the `tearDown()` method.
           ``ERROR``, to use any of the skip decorators on the
           ``tearDown()`` method.
 
-Cancelling Tests
+Canceling Tests
 ----------------
 
 You can cancel a test calling `self.cancel()` at any phase of the test
@@ -1414,7 +1414,7 @@ installed by a package::
       def test(self):
           process.run("%s 1" % self.sleep)
 
-If your test setup is some kind of action that will last accross
+If your test setup is some kind of action that will last across
 processes, like the installation of a software package given in the
 previous example, you're pretty much covered here.
 
@@ -1441,7 +1441,7 @@ Here is a list of the variables that Avocado currently exports to
 tests:
 
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| Environemnt Variable        | Meaning                               | Example                                                                                             |
+| Environment Variable        | Meaning                               | Example                                                                                             |
 +=============================+=======================================+=====================================================================================================+
 | AVOCADO_VERSION             | Version of Avocado test runner        | 0.12.0                                                                                              |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
@@ -1602,7 +1602,7 @@ be a valid one:
  * It should start with ``:avocado:``, which is the docstring
    directive "marker"
 
- * At least one whitespace or tab must follow the marker and preceed
+ * At least one whitespace or tab must follow the marker and precede
    the docstring directive "content"
 
  * The "content", which follows the marker and the space, must begin
