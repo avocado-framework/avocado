@@ -10,11 +10,8 @@
 	{"name": "Avocado source is sound",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make check`. Expected result: Make command should say OK."},
 
-	{"name": "Avocado time/resource sensitive tests",
-	 "description": "With a load as light as possible on your system, run `selftests/pre_release/jobs/timesensitive.py`. Expected results: all tests PASSed"},
-
-	{"name": "Avocado vmimage tests",
-	 "description": "Run `selftests/pre_release/jobs/vmimage.py`. Expected results: all tests PASSed"},
+	{"name": "Avocado pre-release job",
+	 "description": "With a load as light as possible on your system, run `selftests/pre_release/jobs/pre_release.py`. Expected results: all tests PASSed"},
 
         {"name": "Check the right RPM packages are available in COPR",
          "description": "Run `selftests/pre_release/tests/check-copr-rpm-version.sh`. Expected result: last line with: python3-avocado-$VERSION-$DATE-git$COMMIT"},
