@@ -19,7 +19,7 @@ streams) are listed below:
 
 :app: The text based UI (avocado.app)
 :test: Output of the executed tests (avocado.test, "")
-:debug: Additional messages useful to debug Avocado (avocado.app.debug)
+:debug: Messages useful to debug the Avocado Framework (avocado.app.debug)
 :early: Early logging before the logging system is set. It includes the test
         output and lots of output produced by used libraries. ("",
         avocado.test)
