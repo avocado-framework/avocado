@@ -45,8 +45,8 @@ class TAPRunner(nrunner.BaseRunner):
             time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
             yield self.prepare_status('running')
 
-        stdout = io.TextIOWrapper(process.stdout)
-        parser = TapParser(stdout)
+        stdout = process.stdout.read()
+        parser = TapParser(io.StringIO(stdout.decode()))
         result = 'error'
         for event in parser.parse():
             if isinstance(event, TapParser.Bailout):
@@ -67,7 +67,9 @@ class TAPRunner(nrunner.BaseRunner):
 
         yield self.prepare_status('finished',
                                   {'result': result,
-                                   'returncode': process.returncode})
+                                   'returncode': process.returncode,
+                                   'stdout': stdout,
+                                   'stderr': process.stderr.read()})
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
