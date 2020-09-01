@@ -173,12 +173,10 @@ class Job:
         return self._result_events_dispatcher
 
     def __enter__(self):
-        output.reconfigure(self.config)
         self.setup()
         return self
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
-        output.del_last_configuration()
         self.cleanup()
 
     def __start_job_logging(self):
@@ -471,6 +469,7 @@ class Job:
         """
         Cleanup the temporary job handlers (dirs, global setting, ...)
         """
+        output.del_last_configuration()
         self.__stop_job_logging()
         if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
@@ -620,6 +619,7 @@ class Job:
         """
         Setup the temporary job handlers (dirs, global setting, ...)
         """
+        output.reconfigure(self.config)
         assert self.tmpdir is None, "Job.setup() already called"
         if self.config.get('run.dry_run.enabled'):  # Create the dry-run dirs
             if self.config.get('run.results_dir') is None:

@@ -73,6 +73,7 @@ class JobTest(unittest.TestCase):
         config = {'run.results_dir': self.tmpdir.name,
                   'core.show': ['none']}
         self.job = job.Job(config)
+        self.job.setup()
         self.assertIsNotNone(self.job.unique_id)
 
     def test_two_jobs(self):
@@ -94,6 +95,7 @@ class JobTest(unittest.TestCase):
         config = {'run.results_dir': self.tmpdir.name,
                   'core.show': ['none']}
         self.job = job.Job(config)
+        self.job.setup()
         self.assertIsNone(self.job.test_suite)
 
     def test_suite_not_started(self):
@@ -267,6 +269,7 @@ class JobTest(unittest.TestCase):
 
         suite_config = {'run.references': ['/bin/false']}
         self.job = job.Job.from_config(config, [suite_config])
+        self.job.setup()
         self.assertEqual(self.job.config.get('run.references'), ['/bin/true'])
 
     def test_job_dryrun_no_unique_job_id(self):
@@ -299,6 +302,7 @@ class JobTest(unittest.TestCase):
         # Manual/Custom method
         suite = TestSuite('foo-test', config=suite_config, job_config=config)
         self.job = job.Job(config, [suite])
+        self.job.setup()
         self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
                          self.tmpdir.name)
 
