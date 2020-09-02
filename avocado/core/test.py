@@ -607,15 +607,15 @@ class Test(unittest.TestCase, TestData):
         self._register_log_file_handler(log_test_stdout,
                                         stream_formatter,
                                         self._stdout_file,
-                                        raw=True)
+                                        raw=False)
         self._register_log_file_handler(log_test_stderr,
                                         stream_formatter,
                                         self._stderr_file,
-                                        raw=True)
+                                        raw=False)
         self._register_log_file_handler(log_test_output,
                                         stream_formatter,
                                         self._output_file,
-                                        raw=True)
+                                        raw=False)
 
         if isinstance(sys.stdout, output.LoggingFile):
             sys.stdout.add_logger(log_test_stdout)

@@ -226,10 +226,10 @@ class OutputTest(TestCaseTmpDir):
         _check_output(joblog, exps, "job.log")
         testdir = res["tests"][0]["logdir"]
         with open(os.path.join(testdir, "stdout"), 'rb') as stdout_file:
-            self.assertEqual(b"test_print\ntest_stdout\ntest_process__test_stdout__",
+            self.assertEqual(b"test_print\n\n\ntest_stdout\n\ntest_process\n__test_stdout__\n",
                              stdout_file.read())
         with open(os.path.join(testdir, "stderr"), 'rb') as stderr_file:
-            self.assertEqual(b"test_stderr\n__test_stderr__",
+            self.assertEqual(b"test_stderr\n\n__test_stderr__\n",
                              stderr_file.read())
 
         # Now run the same test, but with combined output
@@ -244,7 +244,7 @@ class OutputTest(TestCaseTmpDir):
         res = json.loads(result.stdout_text)
         testdir = res["tests"][0]["logdir"]
         with open(os.path.join(testdir, "output")) as output_file:
-            self.assertEqual("test_process__test_stderr____test_stdout__",
+            self.assertEqual("test_process\n__test_stderr__\n__test_stdout__\n",
                              output_file.read())
 
     def test_check_record_no_module_default(self):
@@ -296,12 +296,12 @@ class OutputTest(TestCaseTmpDir):
             self.assertTrue(os.path.exists(stdout_path))
             with open(stdout_path, 'r') as stdout:
                 self.assertEqual(stdout.read(),
-                                 '__STDOUT_CONTENT____STDOUT_DO_RECORD_CONTENT__')
+                                 '__STDOUT_CONTENT__\n__STDOUT_DO_RECORD_CONTENT__\n')
             stderr_path = os.path.join(testdir, 'stderr')
             self.assertTrue(os.path.exists(stderr_path))
             with open(stderr_path, 'r') as stderr:
                 self.assertEqual(stderr.read(),
-                                 '__STDERR_CONTENT____STDERR_DO_RECORD_CONTENT__')
+                                 '__STDERR_CONTENT__\n__STDERR_DO_RECORD_CONTENT__\n')
 
     @skipUnlessPathExists('/bin/true')
     def test_show(self):

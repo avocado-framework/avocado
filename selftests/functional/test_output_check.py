@@ -153,9 +153,9 @@ class RunnerSimpleTest(TestCaseTmpDir):
         stdout_file = "%s.data/stdout.expected" % self.output_script
         stderr_file = "%s.data/stderr.expected" % self.output_script
         with open(stdout_file, 'rb') as fd_stdout:
-            self.assertEqual(fd_stdout.read(), STDOUT)
+            self.assertEqual(fd_stdout.read(), STDOUT + b"\n")
         with open(stderr_file, 'rb') as fd_stderr:
-            self.assertEqual(fd_stderr.read(), STDERR)
+            self.assertEqual(fd_stderr.read(), STDERR + b"\n")
 
     def _check_output_record_combined(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
@@ -168,7 +168,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
                          (expected_rc, result))
         output_file = "%s.data/output.expected" % self.output_script
         with open(output_file, 'rb') as fd_output:
-            self.assertEqual(fd_output.read(), STDOUT + STDERR)
+            self.assertEqual(fd_output.read(), STDOUT + b"\n" + STDERR + b"\n")
 
     def _setup_simple_test(self, simple_test_content):
         variants_file = os.path.join(self.tmpdir.name, 'variants.json')
@@ -203,7 +203,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         stdout_file = "%s.data/stdout.expected" % self.output_script
         stderr_file = "%s.data/stderr.expected" % self.output_script
         with open(stdout_file, 'rb') as fd_stdout:
-            self.assertEqual(fd_stdout.read(), STDOUT)
+            self.assertEqual(fd_stdout.read(), STDOUT + b"\n")
         self.assertIsNotFile(stderr_file)
 
     def test_output_record_and_check(self):
