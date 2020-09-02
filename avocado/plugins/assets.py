@@ -168,7 +168,12 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
                 # variables to make dictionary assignment line shorter
                 cur_klass = self.current_klass
                 cur_method = self.current_method
-                name = node.targets[0].id
+                # if it is a class attribute, save the attribute name
+                # otherwise, save the local variable name
+                if isinstance(node.targets[0], ast.Attribute):
+                    name = node.targets[0].attr
+                else:
+                    name = node.targets[0].id
                 self.asgmts[cur_klass][cur_method][name] = node.value.s
         self.generic_visit(node)
 
