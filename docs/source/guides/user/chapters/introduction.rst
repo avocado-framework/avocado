@@ -51,6 +51,24 @@ instrumented and simple tests::
           ``avocado run``)
 
 
+Using a different runner
+------------------------
+
+Currently Avocado has two test runners: ``nrunner`` (the new runner) and
+``runner`` (legacy).  You can find a list of current runners installed with the
+``avocado plugins`` command::
+
+  $ avocado plugins
+  Plugins that run test suites on a job (runners):
+  nrunner nrunner based implementation of job compliant runner
+  runner  The conventional test runner
+
+During the test execution, you can select the runner using the option
+``--test-runner``, where the default is the legacy one::
+
+  $ avocado run --test-runner='nrunner' /bin/true
+
+
 Interrupting tests
 ------------------
 
