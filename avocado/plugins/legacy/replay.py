@@ -162,7 +162,7 @@ class Replay(CLI):
             with open(json_results, 'r') as json_file:
                 results = json.loads(json_file.read())
                 tests = results["tests"]
-                for _ in range(results["total"] + 1 - len(tests)):
+                for _ in range(results["total"] - len(tests)):
                     tests.append({"test": "UNKNOWN", "status": "INTERRUPTED"})
         else:
             # get partial results from tap
