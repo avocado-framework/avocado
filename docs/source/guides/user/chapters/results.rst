@@ -137,6 +137,10 @@ On GNU/Linux systems, a child process should be *"an exact duplicate
 of the parent process, except"* some items that are documented in
 the ``fork(2)`` man page.
 
+.. note:: The next Runner (``--test-runner='nrunner'``) has support to
+   different spawners types (podman, process, etc..).  For more information,
+   visit the ``nrunner.spawner`` configuration option.
+
 Besides those operating system exceptions, the Avocado test runner
 changes the test process in the following ways:
 
