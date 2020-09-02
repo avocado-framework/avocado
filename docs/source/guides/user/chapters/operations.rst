@@ -283,13 +283,13 @@ Avocado can list your tests without run it. This can be handy sometimes.
 You have two ways of discovering the tests. You can simulate the execution by
 using the ``--dry-run`` argument::
 
-    avocado run /bin/true --dry-run
+    $ avocado run /bin/true --dry-run
     JOB ID     : 0000000000000000000000000000000000000000
-    JOB LOG    : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/job.log
-     (1/1) /bin/true: SKIP
-    RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
-    JOB TIME   : 0.10 s
-    JOB HTML   : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/html/results.html
+    JOB LOG    : /var/tmp/avocado-dry-run-k2i_uiqx/job-2020-09-02T09.09-0000000/job.log
+     (1/1) /bin/true: CANCEL: Test cancelled due to --dry-run (0.01 s)
+    RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
+    JOB HTML   : /var/tmp/avocado-dry-run-k2i_uiqx/job-2020-09-02T09.09-0000000/results.html
+    JOB TIME   : 0.29 s
 
 which supports all ``run`` arguments, simulates the run and even lists the test
 params.
