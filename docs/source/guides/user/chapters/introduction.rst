@@ -488,16 +488,12 @@ arg2"`` but it was quite confusing and removed.  It is still possible to
 achieve that by using shell and one can even combine normal tests and the
 parametrized ones::
 
-    $ avocado run --loaders file external:/bin/sh -- existing_file.py "'/bin/echo something'" nonexisting-file
+    $ avocado run --loaders file external:/bin/sh -- existing_file.py existing-file nonexisting-file
 
 This will run 3 tests, the first one is a normal test defined by
-``existing_file.py`` (most probably an instrumented test). Then we have
-``/bin/echo`` which is going to be executed via ``/bin/sh -c '/bin/echo
-something'``. The last one would be ``nonexisting-file`` which would execute
-``/bin/sh -c nonexisting-file`` which most probably fails.
-
-Note that you are responsible for quoting the test-id (see the
-``"'/bin/echo something'"`` example).
+``existing_file.py`` (most probably an instrumented test) and will be executed
+by the "file" loader.  Then we have two script files which are going to be
+executed with ``/bin/sh``.
 
 Sysinfo collection
 ------------------
