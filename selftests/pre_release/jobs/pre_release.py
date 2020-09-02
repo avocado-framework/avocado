@@ -14,7 +14,6 @@ parallel_1 = {
     'run.references': [os.path.join('selftests', 'unit'),
                        os.path.join('selftests', 'functional')],
     'filter.by_tags.tags': ['parallel:1'],
-    'nrunner.status_server_uri': '127.0.0.1:8888',
     'nrunner.max_parallel_tasks': 1,
     }
 
