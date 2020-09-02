@@ -287,6 +287,9 @@ class TestSuite:
                            optional.
         :type job_config: dict
         """
+        suite_config = config
+        config = settings.as_dict()
+        config.update(suite_config)
         if job_config:
             config.update(job_config)
         runner = config.get('run.test_runner') or 'runner'
