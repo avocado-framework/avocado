@@ -202,13 +202,11 @@ them executable (`chmod +x /tmp/pass /tmp/fail)`, and running them as
 
 But now consider the following example::
 
-    $ avocado run --external-runner=/bin/curl http://local-avocado-server:9405/jobs/ \
-                                           http://remote-avocado-server:9405/jobs/
+    $ avocado run --external-runner=/bin/curl https://google.com/
     JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
-    (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    (1/1) https://google.com/: PASS (0.02 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB TIME   : 3.14 s
     JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
