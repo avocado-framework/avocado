@@ -140,7 +140,7 @@ which were CANCELED or not executed after a CANCELED test. This feature should
 work even on hard interruptions like system crash.
 
 .. note:: Avocado versions 80.0 and earlier allowed replayed jobs to override
-          the failfast configuration by setting ``--failfast=off`` in a
+          the failfast configuration by setting ``--failfast`` in a
           ``avocado run --replay ..`` command line.  This is no longer possible.
 
 To be able to replay a job, Avocado records the job data in the same job
