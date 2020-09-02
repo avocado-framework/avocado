@@ -189,7 +189,7 @@ Example::
 
     $ avocado run 20
     Unable to resolve reference(s) '20' with plugins(s) 'file', 'robot',
-    'vt', 'external', try running 'avocado list -V 20' to see the details.
+    'vt', 'external', try running 'avocado -V list 20' to see the details.
 
 In the command above, no loaders can resolve ``20`` as a test. But running
 the command above with the External Runner ``/bin/sleep`` will make Avocado

@@ -499,7 +499,7 @@ class Job:
             if self.test_suite and self.test_suite.size == 0:
                 refs = self.test_suite.references
                 msg = ("No tests found for given test references, try "
-                       "'avocado list -V %s' for details") % " ".join(refs)
+                       "'avocado -V list %s' for details") % " ".join(refs)
                 raise exceptions.JobTestSuiteEmptyError(msg)
         except TestSuiteError as details:
             raise exceptions.JobBaseException(details)
