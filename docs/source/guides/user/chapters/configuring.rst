@@ -260,3 +260,7 @@ Complete Configuration Reference
 For a complete configuration reference, please visit :ref:`config-reference`.
 
 .. _INI: http://en.wikipedia.org/wiki/INI_file
+
+Or you can see in your terminal, typing::
+
+    $ avocado config reference
