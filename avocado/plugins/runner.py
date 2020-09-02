@@ -377,9 +377,7 @@ class TestRunner(Runner):
                 else:
                     if (replay_map is not None and
                             replay_map[index - 1] is not None):
-                        test_parameters["methodName"] = "test"
-                        test_factory = (replay_map[index], test_parameters)
-
+                        test_factory = (replay_map[index - 1], test_parameters)
                     if not self.run_test(job, test_factory, queue, summary,
                                          deadline):
                         break

@@ -33,10 +33,10 @@ class Replay(unittest.TestCase):
         rep = replay_legacy.Replay()
         act = rep._create_replay_map(self.tmpdir.name, ["PASS"])
         exp = [None, test.ReplaySkipTest, test.ReplaySkipTest,
-               test.ReplaySkipTest, test.ReplaySkipTest]
+               test.ReplaySkipTest]
         self.assertEqual(act, exp)
         act = rep._create_replay_map(self.tmpdir.name, ["INTERRUPTED"])
-        exp = [test.ReplaySkipTest, None, None, None, None]
+        exp = [test.ReplaySkipTest, None, None, None]
         self.assertEqual(act, exp)
 
     def test_replay_map_after_crash(self):
