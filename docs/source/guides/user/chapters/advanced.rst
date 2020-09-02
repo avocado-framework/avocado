@@ -47,6 +47,8 @@ Example of a transparent way of running strace as a wrapper::
     #!/bin/sh
     exec strace -ff -o $AVOCADO_TEST_LOGDIR/strace.log -- $@
 
+This example file is available at ``examples/wrappers/strace.sh``.
+
 To have all programs started by ``test.py`` wrapped with ``~/bin/my-wrapper.sh``::
 
     $ avocado run --wrapper ~/bin/my-wrapper.sh tests/test.py
@@ -54,6 +56,13 @@ To have all programs started by ``test.py`` wrapped with ``~/bin/my-wrapper.sh``
 To have only ``my-binary`` wrapped with ``~/bin/my-wrapper.sh``::
 
     $ avocado run --wrapper ~/bin/my-wrapper.sh:*my-binary tests/test.py
+
+The following is a working example::
+
+    $ avocado run --wrapper examples/wrappers/strace.sh /bin/true
+
+The strace file will be located at Avocado log directory, on
+``test-results/1-_bin_true/`` subdirectory.
 
 Caveats
 ~~~~~~~
