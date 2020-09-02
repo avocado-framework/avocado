@@ -530,8 +530,8 @@ if available.
 By default these are collected per-job but you can also run them per-test by
 setting ``per_test = True`` in the ``sysinfo.collect`` section.
 
-The sysinfo can also be enabled/disabled on the cmdline if needed by
-``--sysinfo on|off``.
+The sysinfo is enabled by default and can also be disabled on the cmdline if
+needed by ``--disable-sysinfo``.
 
 After the job execution you can find the collected information in
 ``$RESULTS/sysinfo`` of ``$RESULTS/test-results/$TEST/sysinfo``. They
