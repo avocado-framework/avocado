@@ -140,7 +140,7 @@ which were CANCELED or not executed after a CANCELED test. This feature should
 work even on hard interruptions like system crash.
 
 .. note:: Avocado versions 80.0 and earlier allowed replayed jobs to override
-          the failfast configuration by setting ``--failfast=off`` in a
+          the failfast configuration by setting ``--failfast`` in a
           ``avocado run --replay ..`` command line.  This is no longer possible.
 
 To be able to replay a job, Avocado records the job data in the same job
@@ -283,13 +283,13 @@ Avocado can list your tests without run it. This can be handy sometimes.
 You have two ways of discovering the tests. You can simulate the execution by
 using the ``--dry-run`` argument::
 
-    avocado run /bin/true --dry-run
+    $ avocado run /bin/true --dry-run
     JOB ID     : 0000000000000000000000000000000000000000
-    JOB LOG    : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/job.log
-     (1/1) /bin/true: SKIP
-    RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
-    JOB TIME   : 0.10 s
-    JOB HTML   : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/html/results.html
+    JOB LOG    : /var/tmp/avocado-dry-run-k2i_uiqx/job-2020-09-02T09.09-0000000/job.log
+     (1/1) /bin/true: CANCEL: Test cancelled due to --dry-run (0.01 s)
+    RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
+    JOB HTML   : /var/tmp/avocado-dry-run-k2i_uiqx/job-2020-09-02T09.09-0000000/results.html
+    JOB TIME   : 0.29 s
 
 which supports all ``run`` arguments, simulates the run and even lists the test
 params.
@@ -335,17 +335,22 @@ treated as simple tests. You can also give the ``--verbose`` or ``-V`` flag to
 display files that were found by Avocado, but are not considered Avocado
 tests::
 
-    $ avocado list examples/gdb-prerun-scripts/ -V
+    $ avocado --verbose list examples/gdb-prerun-scripts/
     Type       Test                                     Tag(s)
-    NOT_A_TEST examples/gdb-prerun-scripts/README
-    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
+    NOT_A_TEST examples/gdb-prerun-scripts/README: Not an INSTRUMENTED (avocado.Test based), PyUNITTEST (unittest.TestCase based) or SIMPLE (executable) test
+    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1: Not an INSTRUMENTED (avocado.Test based), PyUNITTEST (unittest.TestCase based) or SIMPLE (executable) test
+    !GLIB      examples/gdb-prerun-scripts/: No GLib-like tests found
+    !GOLANG    examples/gdb-prerun-scripts/: No test matching this reference.
+    !ROBOT     examples/gdb-prerun-scripts/: No robot-like tests found
+    NOT_A_TEST examples/gdb-prerun-scripts/README: Not a supported test
+    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1: Not a supported test
 
     TEST TYPES SUMMARY
     ==================
-    SIMPLE: 0
-    INSTRUMENTED: 0
-    MISSING: 0
-    NOT_A_TEST: 2
+    !glib: 1
+    !golang: 1
+    !robot: 1
+    not_a_test: 4
 
 Notice that the verbose flag also adds summary information.
 
