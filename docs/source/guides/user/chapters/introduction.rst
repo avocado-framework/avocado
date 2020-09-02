@@ -469,8 +469,9 @@ But you won't be able to do the same without the --json flag passed to
 the program::
 
    $ avocado run sleeptest.py synctest.py --xunit - --json -
-   Options --json --xunit are trying to use stdout simultaneously
-   Please set at least one of them to a file to avoid conflicts
+   avocado run: error: argument --json: Options --xunit --json are trying to
+   use stdout simultaneously. Please set at least one of them to a file to
+   avoid conflicts
 
 That's basically the only rule, and a sane one, that you need to follow.
 

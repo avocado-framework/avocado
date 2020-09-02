@@ -59,9 +59,9 @@ class FileOrStdoutAction(argparse.Action):
         if values == '-':
             stdout_claimed_by = getattr(namespace, 'stdout_claimed_by', None)
             if stdout_claimed_by is not None:
-                msg = ('Options %s %s are trying to use stdout '
-                       'simultaneously' % (stdout_claimed_by,
-                                           option_string))
+                msg = ('Options %s %s are trying to use stdout simultaneously.'
+                       ' Please set at least one of them to a file to avoid '
+                       'conflicts' % (stdout_claimed_by, option_string))
                 raise argparse.ArgumentError(self, msg)
             else:
                 setattr(namespace, 'stdout_claimed_by', option_string)

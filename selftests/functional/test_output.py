@@ -353,10 +353,9 @@ class OutputPluginTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        error_regex = re.compile(r'avocado run: error: argument ((--json)|'
-                                 '(--xunit)): Options ((--xunit --json)|'
+        error_regex = re.compile(r'.*Options ((--xunit --json)|'
                                  '(--json --xunit)) are trying to use stdout '
-                                 'simultaneously\n')
+                                 'simultaneously.')
         self.assertIsNotNone(error_regex.match(result.stderr_text),
                              "Missing error message from output:\n%s" %
                              result.stderr)
