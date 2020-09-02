@@ -67,7 +67,7 @@ class LoaderUnhandledReferenceError(LoaderError):
 
     def __str__(self):
         return ("Unable to resolve reference(s) '%s' with plugins(s) '%s', "
-                "try running 'avocado list -V %s' to see the details."
+                "try running 'avocado -V list %s' to see the details."
                 % ("', '" .join(self.unhandled_references),
                    "', '".join(self.plugins),
                    " ".join(self.unhandled_references)))
