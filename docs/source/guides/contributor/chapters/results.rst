@@ -12,7 +12,7 @@ complete job outcome, you should create a new class that inherits from
 
 But, if your result implementation is something that outputs
 information live before/during/after tests, then the
-:class:`avocado.core.plugin_interfaces.ResultEvents` interface is to
+:class:`avocado.core.plugin_interfaces.ResultEvents` interface is the
 one to look at.  It will require you to implement the methods that
 will perform actions (write to a file/stream) for each of the defined
 events on a Job and test execution.
