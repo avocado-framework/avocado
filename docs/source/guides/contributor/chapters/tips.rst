@@ -25,6 +25,14 @@ During the execution look for::
     PERF: <function your_function at 0x29b17d0>: (0.1s, 11.3s)
     PERF: <function your_function at 0x29b17d0>: (0.2s, 11.5s)
 
+
+.. note::
+   If you are running a test with Avocado, and want to measure the duration
+   of a method/function, make sure to enable the `debug` logging stream.
+   Example::
+
+    avocado --show avocado.app.debug run examples/tests/assets.py
+
 Line-profiler
 -------------
 
