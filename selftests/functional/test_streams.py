@@ -65,9 +65,9 @@ class StreamsTest(TestCaseTmpDir):
         cmd_in_log = os.path.join(BASEDIR, 'avocado', '__main__.py')
         self.assertIn("Command line: %s" % cmd_in_log,
                       result.stdout_text)
-        self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
+        self.assertIn(b"\nSTART suite01-1-passtest.py:PassTest.test",
                       result.stdout)
-        self.assertIn(b"PASS 1-passtest.py:PassTest.test", result.stdout)
+        self.assertIn(b"PASS suite01-1-passtest.py:PassTest.test", result.stdout)
 
     def test_none_success(self):
         """

@@ -45,9 +45,9 @@ class VariantsDumpLoadTests(TestCaseTmpDir):
         json_result = json.loads(result.stdout_text)
         self.assertEqual(json_result["pass"], 2)
         self.assertEqual(json_result["tests"][0]["id"],
-                         "1-passtest.py:PassTest.test;foo-0ead")
+                         "suite01-1-passtest.py:PassTest.test;foo-0ead")
         self.assertEqual(json_result["tests"][1]["id"],
-                         "2-passtest.py:PassTest.test;bar-d06d")
+                         "suite01-2-passtest.py:PassTest.test;bar-d06d")
 
 
 if __name__ == '__main__':

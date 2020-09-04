@@ -590,7 +590,7 @@ class RunnerOperationTest(TestCaseTmpDir):
                              (expected_rc, result))
 
             test_log_dir = glob.glob(os.path.join(self.tmpdir.name, 'job-*',
-                                                  'test-results', '1-*'))[0]
+                                                  'test-results', 'suite01-1-*'))[0]
             test_log_path = os.path.join(test_log_dir, 'debug.log')
             with open(test_log_path, 'rb') as test_log:
                 self.assertIn(b'SHOULD BE ON debug.log', test_log.read())
@@ -655,7 +655,7 @@ class RunnerHumanOutputTest(TestCaseTmpDir):
         self.assertIn(b'[stdout] foo', result.stdout, result)
         self.assertIn(b'[stdout] \'"', result.stdout, result)
         self.assertIn(b'[stdout] bar/baz', result.stdout, result)
-        self.assertIn(b'PASS 1-foo\\\\n\\\'\\"\\\\nbar/baz',
+        self.assertIn(b'PASS suite01-1-foo\\\\n\\\'\\"\\\\nbar/baz',
                       result.stdout, result)
         # logdir name should escape special chars (/)
         test_dirs = glob.glob(os.path.join(self.tmpdir.name, 'latest',
@@ -664,7 +664,7 @@ class RunnerHumanOutputTest(TestCaseTmpDir):
                          " test-results dir, but only one test was executed: "
                          "%s" % (test_dirs))
         self.assertEqual(os.path.basename(test_dirs[0]),
-                         "1-foo__n_'____nbar_baz")
+                         "suite01-1-foo__n_'____nbar_baz")
 
     def test_replay_skip_skipped(self):
         cmd = ("%s run --job-results-dir %s --json - "
@@ -795,7 +795,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         process.run(cmd_line)
         self.assertTrue(os.path.exists(os.path.join(self.tmpdir.name, "latest",
                                                     "test-results",
-                                                    "1-\'________\'/")))
+                                                    "suite01-1-\'________\'/")))
         self.assertTrue(os.path.exists(os.path.join(self.tmpdir.name, "latest",
                                                     "sysinfo", "pre",
                                                     "echo \'________\'")))
@@ -807,9 +807,9 @@ class RunnerSimpleTest(TestCaseTmpDir):
             # test results should replace odd chars with "_"
             # HTML could contain either the literal char, or an entity reference
             test1_href = (os.path.join("test-results",
-                                       "1-'________'") in html_results or
+                                       "suite01-1-'________'") in html_results or
                           os.path.join("test-results",
-                                       "1-&#39;________&#39;") in html_results)
+                                       "suite01-1-&#39;________&#39;") in html_results)
             self.assertTrue(test1_href)
             # sysinfo replaces "_" with " "
             sysinfo = ("echo '________'" in html_results or
@@ -1351,10 +1351,10 @@ class PluginsJSONTest(TestCaseTmpDir):
                                   0, 0, external_runner=GNU_ECHO_BINARY)
         # The executed test should be this
         self.assertEqual(data['tests'][0]['id'],
-                         '1--ne foo\\\\n\\\'\\"\\\\nbar/baz')
+                         'suite01-1--ne foo\\\\n\\\'\\"\\\\nbar/baz')
         # logdir name should escape special chars (/)
         self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
-                         "1--ne foo__n_'____nbar_baz")
+                         "suite01-1--ne foo__n_'____nbar_baz")
 
 
 if __name__ == '__main__':

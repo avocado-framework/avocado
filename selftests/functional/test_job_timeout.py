@@ -89,7 +89,8 @@ class JobTimeOutTest(TestCaseTmpDir):
 
     def _check_timeout_msg(self, idx):
         res_dir = os.path.join(self.tmpdir.name, "latest", "test-results")
-        debug_log_paths = glob.glob(os.path.join(res_dir, "%s-*" % idx, "debug.log"))
+        debug_log_paths = glob.glob(os.path.join(res_dir, "suite01-%s-*" % idx,
+                                                 "debug.log"))
         debug_log = genio.read_file(debug_log_paths[0])
         self.assertIn("Runner error occurred: Timeout reached", debug_log,
                       "Runner error occurred: Timeout reached message not "
