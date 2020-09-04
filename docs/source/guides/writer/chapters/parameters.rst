@@ -11,7 +11,9 @@ Test parameters
 Avocado allows passing parameters to tests, which effectively results in
 several different variants of each test. These parameters are available in
 (test's) ``self.params`` and are of
-:class:`avocado.core.varianter.AvocadoParams` type.
+:class:`avocado.core.varianter.AvocadoParams` type. You can also access
+these parameters via the configuration dict at `run.test_parameters`
+namespace.
 
 The data for ``self.params`` are supplied by
 :class:`avocado.core.varianter.Varianter` which asks all registered plugins
