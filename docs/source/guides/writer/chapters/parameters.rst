@@ -1,11 +1,11 @@
-.. _test-parameters:
+.. _test-parameter:
 
 Test parameters
 ===============
 
 .. note:: This section describes in detail what test parameters are and how
    the whole variants mechanism works in Avocado. If you're interested in the
-   basics, see :ref:`accessing-test-parameters` or practical view by examples
+   basics, see :ref:`accessing-test-parameter` or practical view by examples
    in :ref:`yaml-to-mux-plugin`.
 
 Avocado allows passing parameters to tests, which effectively results in
@@ -27,7 +27,7 @@ Overall picture of how the params handling works is:
        +-----------+
        |           |  // Test uses AvocadoParams, with content either from
        |   Test    |  // a variant or from the test parameters given by
-       |           |  // "--test-parameters"
+       |           |  // "--test-parameter"
        +-----^-----+
              |
              |
@@ -35,7 +35,7 @@ Overall picture of how the params handling works is:
        |  Runner   |  // iterates through tests and variants to run all
        +-----^-----+  // desired combinations specified by "--execution-order".
              |        // if no variants are produced by varianter plugins,
-             |        // use the test parameters given by "--test-parameters"
+             |        // use the test parameters given by "--test-parameter"
              |
    +-------------------+ provide variants +-----------------------+
    |                   |<-----------------|                       |
@@ -254,7 +254,7 @@ is used and produces a valid variant.
 
 Avocado will use those simple parameters, and will pass them to all
 tests in a job execution.  This is done on the command line via
-``--test-parameters``, or simply, ``-p``.  It can be given multiple
+``--test-parameter``, or simply, ``-p``.  It can be given multiple
 times for multiple parameters.
 
 Because Avocado parameters do not have a mechanism to define their
