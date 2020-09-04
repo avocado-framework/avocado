@@ -156,7 +156,11 @@ class Runner(RunnerInterface):
         for index, task in enumerate(test_suite.tests, start=1):
             task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
             # this is all rubbish data
-            test_id = TestID("{}-{}".format(test_suite.name, index),
+            if test_suite.name:
+                prefix = "{}-{}".format(test_suite.name, index)
+            else:
+                prefix = index
+            test_id = TestID(prefix,
                              task.runnable.uri,
                              None,
                              no_digits)

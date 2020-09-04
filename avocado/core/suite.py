@@ -108,9 +108,9 @@ class TestSuite:
         except (LoaderUnhandledReferenceError, LoaderError) as details:
             raise TestSuiteError(details)
 
-        return cls(name=name or str(uuid4()),
-                   config=config,
-                   tests=tests)
+        if name is None:
+            name = str(uuid4())
+        return cls(name=name, config=config, tests=tests)
 
     @classmethod
     def _from_config_with_resolver(cls, config, name=None):
@@ -129,9 +129,9 @@ class TestSuite:
 
         tasks = resolutions_to_tasks(resolutions, config)
 
-        return cls(name=name or str(uuid4()),
-                   config=config,
-                   tests=tasks,
+        if name is None:
+            name = str(uuid4())
+        return cls(name=name, config=config, tests=tasks,
                    resolutions=resolutions)
 
     def _get_stats_from_nrunner(self):
