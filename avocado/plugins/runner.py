@@ -364,7 +364,12 @@ class TestRunner(Runner):
                                                           execution_order):
                 test_parameters = test_factory[1]
                 name = test_parameters.get("name")
-                test_parameters["name"] = TestID(index, name,
+                if test_suite.name is None:
+                    suite_prefix = "{}-{}".format(test_suite.name, index)
+                else:
+                    suite_prefix = index
+                test_parameters["name"] = TestID(suite_prefix,
+                                                 name,
                                                  variant,
                                                  no_digits)
                 if deadline is not None and time.time() > deadline:
