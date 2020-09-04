@@ -18,7 +18,7 @@ clear stages on a single test::
     class Plant(Test):
 
         def test_plant_organic(self):
-            rows = self.params.get("rows", default=3)
+            rows = int(self.params.get("rows", default=3))
 
             # Preparing soil
             for row in range(rows):
