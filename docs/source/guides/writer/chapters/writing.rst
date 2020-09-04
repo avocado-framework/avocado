@@ -49,7 +49,7 @@ Note that the test class provides you with a number of convenience attributes:
   of ``self.log``. It lets you log debug, info, error and warning messages.
 * A parameter passing system (and fetching system) that can be accessed by
   means of ``self.params``. This is hooked to the Varianter, about which
-  you can find that more information at :ref:`test-parameters`.
+  you can find that more information at :ref:`test-parameter`.
 * And many more (see `avocado.core.test.Test`)
 
 To minimize the accidental clashes we define the public ones as properties
@@ -243,7 +243,7 @@ you intend to create it.
           location only, you can use
           ``get_data(filename='', source='file', must_exist=False)`` instead.
 
-.. _accessing-test-parameters:
+.. _accessing-test-parameter:
 
 Accessing test parameters
 -------------------------
@@ -257,7 +257,7 @@ Each test has a set of parameters that can be accessed through
 
 The path is a bit tricky. Avocado uses tree to represent parameters. In simple
 scenarios you don't need to worry and you'll find all your values in default
-path, but eventually you might want to check-out :ref:`test-parameters` to understand
+path, but eventually you might want to check-out :ref:`test-parameter` to understand
 the details.
 
 Let's say your test receives following params (you'll learn how to execute
@@ -284,7 +284,7 @@ In test you can access those params by:
           key matching the query Avocado raises an exception. As mentioned
           you can avoid those by using specific paths or by defining
           custom mux-path which allows specifying resolving hierarchy.
-          More details can be found in :ref:`test-parameters`.
+          More details can be found in :ref:`test-parameter`.
 
 
 Running multiple variants of tests
@@ -414,7 +414,7 @@ values). In total it'll produce 8 variants of each test::
       JOB TIME   : 0.16 s
 
 There are other options to influence the params so please check out
-``avocado run -h`` and for details use :ref:`test-parameters`.
+``avocado run -h`` and for details use :ref:`test-parameter`.
 
 
 :class:`unittest.TestCase` heritage
