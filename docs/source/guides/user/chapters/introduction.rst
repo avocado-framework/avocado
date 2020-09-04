@@ -51,6 +51,24 @@ instrumented and simple tests::
           ``avocado run``)
 
 
+Using a different runner
+------------------------
+
+Currently Avocado has two test runners: ``nrunner`` (the new runner) and
+``runner`` (legacy).  You can find a list of current runners installed with the
+``avocado plugins`` command::
+
+  $ avocado plugins
+  Plugins that run test suites on a job (runners):
+  nrunner nrunner based implementation of job compliant runner
+  runner  The conventional test runner
+
+During the test execution, you can select the runner using the option
+``--test-runner``, where the default is the legacy one::
+
+  $ avocado run --test-runner='nrunner' /bin/true
+
+
 Interrupting tests
 ------------------
 
@@ -141,21 +159,17 @@ Job will not be created. Example::
     Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', 'external', try running 'avocado -V list badtest.py' to see the details.
 
 But if you want to execute the Job anyway, with the tests that could be
-resolved, you can use ``--ignore-missing-references on``. The same message will
-appear in the UI, but the Job will be executed::
+resolved, you can use ``--ignore-missing-references``, a boolean command-line
+option. The same message will appear in the UI, but the Job will be executed::
 
-    $ avocado run passtest.py badtest.py --ignore-missing-references on
-    Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', 'external', try running 'avocado -V list badtest.py' to see the details.
+    $ avocado run passtest.py badtest.py --ignore-missing-references
+    Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', 'external', try running 'avocado list -V badtest.py' to see the details.
     JOB ID     : 85927c113074b9defd64ea595d6d1c3fdfc1f58f
     JOB LOG    : $HOME/avocado/job-results/job-2017-05-17T10.54-85927c1/job.log
      (1/1) passtest.py:PassTest.test: PASS (0.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 0.11 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-05-17T10.54-85927c1/html/results.html
-
-The ``--ignore-missing-references`` option accepts the argument ``off``.  Since
-it's disabled by default, the ``off`` argument only makes sense in replay jobs,
-when the original job was executed with ``--ignore-missing-references on``.
 
 .. _running-external-runner:
 
@@ -206,13 +220,11 @@ them executable (`chmod +x /tmp/pass /tmp/fail)`, and running them as
 
 But now consider the following example::
 
-    $ avocado run --external-runner=/bin/curl http://local-avocado-server:9405/jobs/ \
-                                           http://remote-avocado-server:9405/jobs/
+    $ avocado run --external-runner=/bin/curl https://google.com/
     JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
-    (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    (1/1) https://google.com/: PASS (0.02 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB TIME   : 3.14 s
     JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
@@ -475,8 +487,9 @@ But you won't be able to do the same without the --json flag passed to
 the program::
 
    $ avocado run sleeptest.py synctest.py --xunit - --json -
-   Options --json --xunit are trying to use stdout simultaneously
-   Please set at least one of them to a file to avoid conflicts
+   avocado run: error: argument --json: Options --xunit --json are trying to
+   use stdout simultaneously. Please set at least one of them to a file to
+   avoid conflicts
 
 That's basically the only rule, and a sane one, that you need to follow.
 
@@ -493,16 +506,12 @@ arg2"`` but it was quite confusing and removed.  It is still possible to
 achieve that by using shell and one can even combine normal tests and the
 parametrized ones::
 
-    $ avocado run --loaders file external:/bin/sh -- existing_file.py "'/bin/echo something'" nonexisting-file
+    $ avocado run --loaders file external:/bin/sh -- existing_file.py existing-file nonexisting-file
 
 This will run 3 tests, the first one is a normal test defined by
-``existing_file.py`` (most probably an instrumented test). Then we have
-``/bin/echo`` which is going to be executed via ``/bin/sh -c '/bin/echo
-something'``. The last one would be ``nonexisting-file`` which would execute
-``/bin/sh -c nonexisting-file`` which most probably fails.
-
-Note that you are responsible for quoting the test-id (see the
-``"'/bin/echo something'"`` example).
+``existing_file.py`` (most probably an instrumented test) and will be executed
+by the "file" loader.  Then we have two script files which are going to be
+executed with ``/bin/sh``.
 
 Sysinfo collection
 ------------------
@@ -539,8 +548,8 @@ if available.
 By default these are collected per-job but you can also run them per-test by
 setting ``per_test = True`` in the ``sysinfo.collect`` section.
 
-The sysinfo can also be enabled/disabled on the cmdline if needed by
-``--sysinfo on|off``.
+The sysinfo is enabled by default and can also be disabled on the cmdline if
+needed by ``--disable-sysinfo``.
 
 After the job execution you can find the collected information in
 ``$RESULTS/sysinfo`` of ``$RESULTS/test-results/$TEST/sysinfo``. They
