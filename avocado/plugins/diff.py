@@ -415,7 +415,13 @@ class Diff(CLICmd):
                 name_header = ['\n', '** %s **\n' % name]
                 sysinfo.extend(name_header)
                 with open(os.path.join(path, name), 'r') as sysinfo_file:
-                    sysinfo.extend(sysinfo_file.readlines())
+                    try:
+                        sysinfo.extend(sysinfo_file.readlines())
+                    except UnicodeDecodeError:
+                        msg = ("Ignoring file %s as it cannot be decoded."
+                               % name)
+                        LOG_UI.debug(msg)
+                        continue
 
         if sysinfo:
             del sysinfo[0]
