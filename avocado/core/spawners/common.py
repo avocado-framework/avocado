@@ -3,6 +3,7 @@ from mmap import ACCESS_READ, mmap
 from pathlib import Path
 
 from ...core.data_dir import get_job_results_dir
+from ...core.settings import settings
 from ...utils.astring import string_to_safe_path
 from .exceptions import SpawnerException
 
@@ -25,6 +26,11 @@ class SpawnerMixin:
     """Common utilities for Spawner implementations."""
 
     METHODS = []
+
+    def __init__(self, config=None):
+        if config is None:
+            config = settings.as_dict()
+        self.config = config
 
     @staticmethod
     def bytes_from_file(filename):

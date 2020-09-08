@@ -234,7 +234,7 @@ class Runner(RunnerInterface):
             random.shuffle(self.tasks)
         tsm = TaskStateMachine(self.tasks)
         spawner_name = test_suite.config.get('nrunner.spawner')
-        spawner = SpawnerDispatcher()[spawner_name].obj
+        spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
         max_running = test_suite.config.get('nrunner.max_parallel_tasks')
         workers = [Worker(tsm, spawner, max_running=max_running).run()
                    for _ in range(max_running)]

@@ -61,8 +61,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         entry_point = json.dumps(entry_point_args)
         entry_point_arg = "--entrypoint=" + entry_point
 
-        config = settings.as_dict()
-        podman_bin = config.get('spawner.podman.bin')
+        podman_bin = self.config.get('spawner.podman.bin')
 
         if not os.path.exists(podman_bin):
             msg = 'Podman binary "%s" is not available on the system'
@@ -70,7 +69,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
             runtime_task.status = msg
             return False
 
-        image = config.get('spawner.podman.image')
+        image = self.config.get('spawner.podman.image')
         try:
             # pylint: disable=E1133
             proc = await asyncio.create_subprocess_exec(
