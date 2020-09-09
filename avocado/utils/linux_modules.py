@@ -57,12 +57,12 @@ def load_module(module_name):
 
 def parse_lsmod_for_module(l_raw, module_name, escape=True):
     """
-    Use a regexp to parse raw lsmod output and get module information
+    Use a regex to parse raw lsmod output and get module information
     :param l_raw: raw output of lsmod
     :type l_raw:  str
     :param module_name: Name of module to search for
     :type module_name: str
-    :param escape: Escape regexp tokens in module_name, default True
+    :param escape: Escape regex tokens in module_name, default True
     :type escape: bool
     :return: Dictionary of module info, name, size, submodules if present
     :rtype: dict

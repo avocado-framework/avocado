@@ -109,18 +109,18 @@ def sys_v_init_result_parser(command):
     if command == "status":
         def method(cmd_result):
             """
-            Parse method for service XXX status.
+            Parse method for `service $name status`.
 
-            Returns True if XXX is running.
-            Returns False if XXX is stopped.
-            Returns None if XXX is unrecognized.
+            Returns True if running.
+            Returns False if stopped.
+            Returns None if unrecognized.
             """
             # If service is stopped, exit_status is also not zero.
             # So, we can't use exit_status to check result.
-            # Returns None if XXX is unrecognized.
+            # Returns None if unrecognized.
             if re.search(b"unrecognized", cmd_result.stderr.lower()):
                 return None
-            # Returns False if XXX is stopped.
+            # Returns False if stopped.
             output = cmd_result.stdout.lower()
             dead_flags = [b"stopped", b"not running", b"dead"]
             for flag in dead_flags:
@@ -132,7 +132,7 @@ def sys_v_init_result_parser(command):
     elif command == "list":
         def method(cmd_result):
             """
-            Parse method for service XXX list.
+            Parse method for `service $name list`.
 
             Return dict from service name to status.
 
@@ -198,16 +198,16 @@ def systemd_result_parser(command):
     if command == "status":
         def method(cmd_result):
             """
-            Parse method for systemctl status XXX.service.
+            Parse method for `systemctl status $name.service`.
 
-            Returns True if XXX.service is running.
-            Returns False if XXX.service is stopped.
-            Returns None if XXX.service is not loaded.
+            Returns True if running.
+            Returns False if stopped.
+            Returns None if not loaded.
             """
             # If service is stopped, exit_status is also not zero.
             # So, we can't use exit_status to check result.
             output = cmd_result.stdout
-            # Returns None if XXX is not loaded.
+            # Returns None if not loaded.
             if not re.search(b"Loaded: loaded", output):
                 return None
             # Check it with Active status.
@@ -216,7 +216,7 @@ def systemd_result_parser(command):
     elif command == "list":
         def method(cmd_result):
             """
-            Parse method for systemctl list XXX.service.
+            Parse method for `systemctl list $name.service`.
 
             Return a dict from service name to status.
 

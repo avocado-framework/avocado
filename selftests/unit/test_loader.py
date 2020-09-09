@@ -267,7 +267,7 @@ class LoaderTest(unittest.TestCase):
                                      ':MultipleMethods.testTwo', loader.DiscoverMode.ALL)
         self.assertEqual(len(suite), 1)
         self.assertEqual(suite[0][1]["methodName"], 'testTwo')
-        # Load using regexp
+        # Load using regex
         suite = self.loader.discover(avocado_multiple_tests.path +
                                      ':.*_one', loader.DiscoverMode.ALL)
         self.assertEqual(len(suite), 1)

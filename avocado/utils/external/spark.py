@@ -127,7 +127,7 @@ class GenericParser:
     def __getstate__(self):
         if self.ruleschanged:
             #
-            #  XXX - duplicated from parse()
+            #  FIX ME - duplicated from parse()
             #
             self.computeNull()
             self.newrules = {}  # pylint: disable=W0201
@@ -138,7 +138,7 @@ class GenericParser:
             self.states = {0: self.makeState0()}  # pylint: disable=W0201
             self.makeState(0, self._BOF)
         #
-        #  XXX - should find a better way to do this..
+        #  FIX ME - should find a better way to do this..
         #
         changes = 1
         while changes:
@@ -649,9 +649,9 @@ class GenericParser:
 
     def ambiguity(self, rules):
         #
-        #  XXX - problem here and in collectRules() if the same rule
-        #        appears in >1 method.  Also undefined results if rules
-        #        causing the ambiguity appear in the same method.
+        #  FIX ME - problem here and in collectRules() if the same rule
+        #           appears in >1 method.  Also undefined results if rules
+        #           causing the ambiguity appear in the same method.
         #
         sortlist = []
         name2index = {}
@@ -677,7 +677,7 @@ class GenericParser:
 #  for a given input.  The extra argument is a class (not an instance!)
 #  which supports the "__setslice__" and "__len__" methods.
 #
-#  XXX - silently overrides any user code in methods.
+#  FIX ME - silently overrides any user code in methods.
 #
 
 
@@ -779,7 +779,7 @@ class GenericASTTraversal:
 #  GenericASTMatcher.  AST nodes must have "__getitem__" and "__cmp__"
 #  implemented.
 #
-#  XXX - makes assumptions about how GenericParser walks the parse tree.
+#  FIX ME - makes assumptions about how GenericParser walks the parse tree.
 #
 
 

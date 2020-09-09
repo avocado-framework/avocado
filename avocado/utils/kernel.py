@@ -161,8 +161,8 @@ class KernelBuild:
                                   platform package is built
                                   for install() to use
         :type binary_pacakge: bool
-        :param njobs: number of jobs. It is mapped to make's -j option. If
-                      the njobs is None then do not limit the number of jobs
+        :param njobs: number of jobs. It is mapped to the -j option from make.
+                      If njobs is None then do not limit the number of jobs
                       (e.g. uses -j without value). The -j is omitted if a
                       value equal or less than zero is passed. Default value
                       is set to `multiprocessing.cpu_count()`.
