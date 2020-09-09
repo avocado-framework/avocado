@@ -295,7 +295,7 @@ class Run(CLICmd):
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
         try:
-            suite = TestSuite.from_config(config, name='suite01')
+            suite = TestSuite.from_config(config, name='')
             if suite.size == 0:
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         except TestSuiteError as err:
