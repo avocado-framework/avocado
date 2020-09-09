@@ -504,43 +504,56 @@ say you want to pick up a test suite written in C that it is in a tarball,
 uncompress it, compile the suite code, and then executing the test. Here's
 an example that does that::
 
-    import os
+        #!/usr/bin/env python
 
-    from avocado import Test
-    from avocado.utils import archive
-    from avocado.utils import build
-    from avocado.utils import process
+        import os
+
+        from avocado import Test
+        from avocado.utils import archive, build, process
 
 
-    class SyncTest(Test):
+        class SyncTest(Test):
 
-        """
-        Execute the synctest test suite.
-        """
-        def setUp(self):
             """
-            Set attributes from params and build the synctest suite.
-            """
-            sync_tarball = self.params.get('sync_tarball',
-                                           default='synctest.tar.bz2')
-            self.sync_length = self.params.get('sync_length', default=100)
-            self.sync_loop = self.params.get('sync_loop', default=10)
-            # Build the synctest suite
-            self.cwd = os.getcwd()
-            tarball_path = self.get_data(sync_tarball)
-            archive.extract(tarball_path, self.workdir)
-            self.workdir = os.path.join(self.workdir, 'synctest')
-            build.make(self.workdir)
+            Execute the synctest test suite.
 
-        def test(self):
+            :param sync_tarball: path to the tarball relative to a data directory
+            :param default_symbols: whether to build with debug symbols (bool)
+            :param sync_length: how many data should by used in sync test
+            :param sync_loop: how many writes should be executed in sync test
             """
-            Execute synctest with the appropriate params.
-            """
-            os.chdir(self.workdir)
-            cmd = ('./synctest %s %s' %
-                   (self.sync_length, self.sync_loop))
-            process.system(cmd)
-            os.chdir(self.cwd)
+
+            def setUp(self):
+                """
+                Build the synctest suite.
+                """
+                self.cwd = os.getcwd()
+                sync_tarball = self.params.get('sync_tarball', '*', 'synctest.tar.bz2')
+                tarball_path = self.get_data(sync_tarball)
+                if tarball_path is None:
+                    self.cancel('Test is missing data file %s' % tarball_path)
+                archive.extract(tarball_path, self.workdir)
+                srcdir = os.path.join(self.workdir, 'synctest')
+                os.chdir(srcdir)
+                if self.params.get('debug_symbols', default=True):
+                    build.make(srcdir,
+                               env={'CFLAGS': '-g -O0'},
+                               extra_args='synctest',
+                               allow_output_check='none')
+                else:
+                    build.make(srcdir,
+                               allow_output_check='none')
+
+            def test(self):
+                """
+                Execute synctest with the appropriate params.
+                """
+                path = os.path.join(os.getcwd(), 'synctest')
+                cmd = ('%s %s %s' %
+                       (path, self.params.get('sync_length', default=100),
+                        self.params.get('sync_loop', default=10)))
+                process.system(cmd)
+                os.chdir(self.cwd)
 
 Here we have an example of the ``setUp`` method in action: Here we get the
 location of the test suite code (tarball) through
