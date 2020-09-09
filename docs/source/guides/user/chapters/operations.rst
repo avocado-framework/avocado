@@ -210,6 +210,9 @@ Avocado Diff can compare and create an unified diff of:
 - Configuration.
 - Sysinfo pre and post.
 
+.. note:: Avocado Diff will ignore files containing non UTF-8 characters, like
+          binaries, as an example.
+
 Only sections with different content will be included in the results. You can
 also enable/disable those sections with ``--diff-filter``. Please see ``avocado
 diff --help`` for more information.
