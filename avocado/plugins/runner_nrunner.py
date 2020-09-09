@@ -177,7 +177,7 @@ class Runner(RunnerInterface):
                        for runtime_task in self.tasks}
         while True:
             try:
-                (task_id, status, _) = self.status_repo.status_journal_summary.pop()
+                (task_id, status, _) = self.status_repo.status_journal_summary.pop(0)
 
             except IndexError:
                 await asyncio.sleep(0.05)
