@@ -18,6 +18,8 @@ env:
 addons:
   apt:
     packages:
+    - enchant
+    - hunspell-en-us
     - golang
 
 install:
