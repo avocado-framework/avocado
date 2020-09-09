@@ -7,8 +7,8 @@ from avocado.utils import process, script
 
 from .. import AVOCADO, TestCaseTmpDir
 
-STDOUT = b"Hello, \xc4\x9b\xc5\xa1\xc4\x8d\xc5\x99\xc5\xbe\xc3\xbd\xc3\xa1\xc3\xad\xc3\xa9!"
-STDERR = b"Hello, stderr!"
+STDOUT = b"Hello, \xc4\x9b\xc5\xa1\xc4\x8d\xc5\x99\xc5\xbe\xc3\xbd\xc3\xa1\xc3\xad\xc3\xa9!\n"
+STDERR = b"Hello, stderr!\n"
 
 JSON_VARIANTS = """
 [{"paths": ["/run/*"],
@@ -131,9 +131,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
 
     def setUp(self):
         super(RunnerSimpleTest, self).setUp()
-        content = b"#!/bin/sh\n"
-        content += b"echo \"" + STDOUT + b"\"\n"
-        content += b"echo \"" + STDERR + b"\" >&2\n"
+        content = b"#!/bin/sh\necho -n '%s';echo -n '%s'>&2" % (STDOUT, STDERR)
         self.output_script = script.TemporaryScript(
             'output_check.sh',
             content,

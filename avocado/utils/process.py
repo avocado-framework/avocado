@@ -409,6 +409,14 @@ class FDDrainer:
         self._ignore_bg_processes = ignore_bg_processes
         self._verbose = verbose
 
+    def _log_line(self, line, newline_for_stream='\n'):
+        line = astring.to_text(line, self._result.encoding,
+                               'replace')
+        if self._logger is not None:
+            self._logger.debug(self._logger_prefix, line)
+        if self._stream_logger is not None:
+            self._stream_logger.debug(line + newline_for_stream)
+
     def _drainer(self):
         """
         Read from fd, storing and optionally logging the output
@@ -429,23 +437,14 @@ class FDDrainer:
             self.data.write(tmp)
             if self._verbose:
                 bfr += tmp
-                if tmp.endswith(b'\n'):
-                    for line in bfr.splitlines():
-                        line = astring.to_text(line, self._result.encoding,
-                                               'replace')
-                        if self._logger is not None:
-                            self._logger.debug(self._logger_prefix, line)
-                        if self._stream_logger is not None:
-                            self._stream_logger.debug(line)
-                    bfr = b''
-        # Write the rest of the bfr unfinished by \n
-        if self._verbose and bfr:
-            for line in bfr.splitlines():
-                line = astring.to_text(line, self._result.encoding, 'replace')
-                if self._logger is not None:
-                    self._logger.debug(self._logger_prefix, line)
-                if self._stream_logger is not None:
-                    self._stream_logger.debug(line)
+                lines = bfr.splitlines()
+                for line in lines[:-1]:
+                    self._log_line(line)
+                if bfr.endswith(b'\n'):
+                    self._log_line(lines[-1])
+                else:
+                    self._log_line(lines[-1], '')
+                bfr = b''
 
     def start(self):
         self._thread = threading.Thread(target=self._drainer, name=self.name)
