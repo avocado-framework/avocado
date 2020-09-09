@@ -33,6 +33,7 @@ from avocado.core.status.server import StatusServer
 from avocado.core.task.runtime import RuntimeTask
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
+from avocado.core.teststatus import mapping
 
 
 class RunnerInit(Init):
@@ -219,8 +220,12 @@ class Runner(RunnerInterface):
                                                         job.result,
                                                         test_state)
 
+                if not mapping[test_state['status']]:
+                    self.summary.add("FAIL")
+
     def run_suite(self, job, test_suite):
-        summary = set()
+        # pylint: disable=W0201
+        self.summary = set()
 
         test_suite.tests, _ = nrunner.check_tasks_requirements(test_suite.tests)
         job.result.tests_total = test_suite.size  # no support for variants yet
@@ -244,7 +249,7 @@ class Runner(RunnerInterface):
             loop.run_until_complete(asyncio.wait_for(asyncio.gather(*workers),
                                                      job.timeout or None))
         except (KeyboardInterrupt, asyncio.TimeoutError):
-            summary.add("INTERRUPTED")
+            self.summary.add("INTERRUPTED")
 
         # Wait until all messages may have been processed by the
         # status_updater. This should be replaced by a mechanism
@@ -255,4 +260,4 @@ class Runner(RunnerInterface):
         loop.run_until_complete(asyncio.sleep(0.05))
 
         job.result.end_tests()
-        return summary
+        return self.summary
