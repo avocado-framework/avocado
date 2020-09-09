@@ -46,7 +46,7 @@ class List(CLICmd):
     name = 'list'
     description = 'List available tests'
 
-    def _display(self, suite, matrix, resolution=None):
+    def _display(self, suite, matrix):
         header = None
         verbose = suite.config.get('core.verbose')
         if verbose:
@@ -60,6 +60,32 @@ class List(CLICmd):
             LOG_UI.debug(line)
 
         if verbose:
+            if suite.resolutions:
+                resolution_header = (TERM_SUPPORT.header_str('Resolver'),
+                                     TERM_SUPPORT.header_str('Reference'),
+                                     TERM_SUPPORT.header_str('Info'))
+                LOG_UI.info("")
+
+                mapping = {
+                  ReferenceResolutionResult.SUCCESS: TERM_SUPPORT.healthy_str,
+                  ReferenceResolutionResult.NOTFOUND: TERM_SUPPORT.fail_header_str,
+                  ReferenceResolutionResult.ERROR: TERM_SUPPORT.fail_header_str
+                }
+                resolution_matrix = []
+                for r in suite.resolutions:
+                    decorator = mapping.get(r.result,
+                                            TERM_SUPPORT.warn_header_str)
+                    if r.result == ReferenceResolutionResult.SUCCESS:
+                        continue
+                    resolution_matrix.append((decorator(r.origin),
+                                              r.reference,
+                                              r.info or ''))
+
+                for line in iter_tabular_output(resolution_matrix,
+                                                header=resolution_header,
+                                                strip=True):
+                    LOG_UI.info(line)
+
             LOG_UI.info("")
             LOG_UI.info("TEST TYPES SUMMARY")
             LOG_UI.info("==================")
@@ -72,16 +98,6 @@ class List(CLICmd):
                 LOG_UI.info("=================")
                 for key in sorted(suite.tags_stats):
                     LOG_UI.info("%s: %s", key, suite.tags_stats[key])
-
-            if resolution:
-                resolution_header = (TERM_SUPPORT.header_str('Resolver'),
-                                     TERM_SUPPORT.header_str('Reference'),
-                                     TERM_SUPPORT.header_str('Info'))
-                LOG_UI.info("")
-                for line in iter_tabular_output(resolution,
-                                                header=resolution_header,
-                                                strip=True):
-                    LOG_UI.info(line)
 
     @staticmethod
     def _get_test_matrix(suite):
