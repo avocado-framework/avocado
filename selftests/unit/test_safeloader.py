@@ -43,7 +43,8 @@ class Anyclass(Logger): pass
 '''
 
 RECURSIVE_DISCOVERY_TEST1 = """
-from avocado import Test
+# skip is not used, but stresses the safeloader
+from avocado import skip, Test
 
 class BaseClass(Test):
     def test_basic(self):
@@ -75,7 +76,8 @@ class ThirdChild(Test, SecondChild):
 
 
 RECURSIVE_DISCOVERY_PYTHON_UNITTEST = """
-from unittest import TestCase
+# main is not used, but stresses the safeloader
+from unittest import main, TestCase
 
 class BaseClass(TestCase):
     '''
