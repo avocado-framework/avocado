@@ -288,15 +288,13 @@ class Diff(CLICmd):
                     </table></td> </tr>
                     </table>"""
 
-                job_diff_html = html_diff.make_file((_.decode("utf-8")
-                                                     for _ in job1_results),
-                                                    (_.decode("utf-8")
-                                                     for _ in job2_results),
+                job_diff_html = html_diff.make_file((_ for _ in job1_results),
+                                                    (_ for _ in job2_results),
                                                     fromdesc=job1_id,
                                                     todesc=job2_id)
 
                 with open(html_file, 'w') as fp:
-                    fp.writelines(job_diff_html.encode("utf-8"))
+                    fp.writelines(job_diff_html)
                 LOG_UI.info(html_file)
 
             except IOError as exception:
