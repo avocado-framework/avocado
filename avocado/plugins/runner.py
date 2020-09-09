@@ -365,10 +365,10 @@ class TestRunner(Runner):
                 test_parameters = test_factory[1]
                 name = test_parameters.get("name")
                 if test_suite.name:
-                    suite_prefix = "{}-{}".format(test_suite.name, index)
+                    prefix = "{}-{}".format(test_suite.name, index)
                 else:
-                    suite_prefix = index
-                test_parameters["name"] = TestID(suite_prefix,
+                    prefix = index
+                test_parameters["name"] = TestID(prefix,
                                                  name,
                                                  variant,
                                                  no_digits)
