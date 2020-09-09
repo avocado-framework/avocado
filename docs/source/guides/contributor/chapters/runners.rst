@@ -14,10 +14,10 @@ test writers.
 
 The :mod:`avocado.core.nrunner` module was initially responsible for
 most of the N(ext)Runner code, but as development continues, it's
-spreading around in the other places in the Avocado source tree, and
-other components with different and seemingly unrelated names, say the
-"resolvers" or the "spawners" are pretty much about the N(ext)Runner
-and are not used in the current (default) architecture.
+spreading around to other places in the Avocado source tree.  Other
+components with different and seemingly unrelated names, say the
+"resolvers" or the "spawners", are also pretty much about the
+N(ext)Runner and are not used in the current (default) architecture.
 
 Motivation
 ----------
@@ -26,23 +26,22 @@ There are a number of reasons for introducing a different architecture
 and implementation.  Some of them are related to limitations found in
 the current implementation, that were found to be too hard to remove
 without major breakage.  Also, missing features that are deemed
-important were fit better in a different architecture.
+important would be a better fit wihin a different architecture.
 
 For instance, these are the current limitations of the Avocado test
 runner:
 
 * Test execution limited to the same machine, given that the
-  communication between runner and test is a Python queue (the remote
-  runner plugins actually execute an Avocado Job remotely, with all
-  the overhead and complications that it brings)
-* Test execution is limited to a single test at a time (non-parallel)
+  communication between runner and test is a Python queue
+* Test execution is limited to a single test at a time (serial
+  execution)
 * Test processes are not properly isolated and can affect the test
   runner (including the "UI")
 
 And these are some features which it's believed to be more easily
 implemented under a different architecture and implementation:
 
-* Remote execution
+* Remote test execution
 * Different test execution isolation models provided by the test runner
   (process, container, virtual machine)
 * Distributed execution of tests across a pool of any combination of
@@ -209,7 +208,7 @@ code.
 
 Once all the test factories are found by :mod:`avocado.core.loader`,
 as described in the previous section, the current architecture runs
-tests following roughly the following steps:
+tests roughly following these steps:
 
 1. Create one (and only one) queue to communicate with the test
    **processes**
@@ -225,7 +224,7 @@ tests following roughly the following steps:
   e. Monitor the queue and the test process until it finishes or needs
      to be terminated.
 
-Having to describe the "Test factory" as Python class and its
+Having to describe the "Test factory" as Python classes and its
 parameters, besides increasing the complexity for new types of tests,
 severely limits or prevents some of goals for the N(ext)Runner
 architecture listed earlier.  It should be clear that:
@@ -365,7 +364,7 @@ internal) API.  Still, it serves as an example::
   >>> from avocado.core import nrunner
   >>> runnable = nrunner.Runnable('exec', '/bin/true')
   >>> runnable
-  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
+  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">
 
 The second way is through a JSON based file, which, for the lack of a
 better term, we're calling a (Runnable) "recipe".  The recipe file
@@ -378,22 +377,22 @@ And example the code to create it::
   >>> from avocado.core import nrunner
   >>> runnable = nrunner.Runnable.from_recipe("/path/to/recipe.json")
   >>> runnable
-  >>> <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
+  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">>
 
 The third way to create a Runnable, is even more internal.  Its usage
 is **discouraged**, unless you are creating a tool that needs to
 create Runnables based on the user's input from the command line::
 
   >>> from avocado.core import nrunner
-  >>> runnable = nrunner.Runnable.from_args({kind: 'exec', uri: '/bin/true'})
+  >>> runnable = nrunner.Runnable.from_args({'kind': 'exec', 'uri': '/bin/true'})
   >>> runnable
-  >>> <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None">
+  <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">>
 
 Runner
 ~~~~~~
 
 A Runner, within the context of the N(ext)Runner architecture, is an
-active entity that acts on the information that a runnable contains,
+active entity.  It acts on the information that a runnable contains,
 and quite simply, should be able to run what the Runnable describes.
 
 A Runner will usually be tied to a specific ``kind`` of Runnable.
@@ -430,6 +429,7 @@ producing status that the process has been created and it's running as
 soon as possible, even if no other output has been produced by the
 executable itself.  These can be as simple as a sequence of::
 
+  {"status": "started"}
   {"status": "running"}
   {"status": "running"}
 
@@ -488,9 +488,9 @@ that returns, among other info, a list of runnable kinds that it
 can (to the best of its knowledge) run.  Example::
 
   python3 -m avocado.core.nrunner capabilities
-  {'runnables': ['noop', 'exec', 'exec-test', 'python-unittest'],
-   'commands': ['capabilities', 'runnable-run', 'runnable-run-recipe',
-   'task-run', 'task-run-recipe', 'status-server']}
+  {"runnables": ["noop", "exec", "exec-test", "python-unittest"],
+   "commands": ["capabilities", "runnable-run", "runnable-run-recipe",
+   "task-run", "task-run-recipe"]}
 
 Runner scripts
 --------------
@@ -528,7 +528,7 @@ You can run a "noop" runner with::
 
 You can run an "exec" runner with::
 
-  avocado-runner runnable-run -k exec -u /bin/uname --args='-a'
+  avocado-runner runnable-run -k exec -u /bin/sleep -a 3.0
 
 You can run an "exec-test" runner with::
 
