@@ -118,9 +118,9 @@ class PythonModule:
             for _ in range(level - 1):
                 path = os.path.dirname(path)
         for name in statement.names:
-            path = os.path.join(path, name.name.replace('.', os.path.sep))
+            full_path = os.path.join(path, name.name.replace('.', os.path.sep))
             final_name = self._get_name_from_alias_statement(name)
-            self.imported_objects[final_name] = path
+            self.imported_objects[final_name] = full_path
 
     @staticmethod
     def _get_name_from_alias_statement(alias):
