@@ -39,10 +39,10 @@ class Raise(Test):
         self.log.info(cmd_result)
         if signum == 0:
             expected_result = 0
-            self.assertIn("I'm alive!", cmd_result.stdout)
+            self.assertIn("I'm alive!", cmd_result.stdout_text)
         elif 0 < signum < 65:
             expected_result = -signum   # pylint: disable=E1130
         else:
             expected_result = 255
-            self.assertIn("raise: Invalid argument", cmd_result.stderr)
+            self.assertIn("raise: Invalid argument", cmd_result.stderr_text)
         self.assertEqual(cmd_result.exit_status, expected_result)
