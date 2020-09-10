@@ -39,10 +39,10 @@ distro: !mux
     x86_64:
       arch: amd64
     version: !mux
-      9.13.1:
-        version: 9.13.1-20200729
-      10.5.0:
-        version: 10.5.0
+      9.13.3:
+        version: 9.13.3-20200910
+      10.5.1:
+        version: 10.5.1-20200830
   fedora:
     name: fedora
     !filter-out : /run/architectures/arm
