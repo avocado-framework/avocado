@@ -24,6 +24,7 @@ Long Term Stability Releases
 .. toctree::
    :maxdepth: 1
 
+   lts/82_0
    lts/69_0
    lts/52_0
    lts/next
@@ -34,6 +35,7 @@ Regular Releases
 .. toctree::
    :maxdepth: 1
 
+   82_0
    81_0
    80_0
    79_0

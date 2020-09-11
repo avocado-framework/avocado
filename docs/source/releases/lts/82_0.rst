@@ -1,0 +1,432 @@
+.. _lts_82_0:
+
+========
+82.0 LTS
+========
+
+The Avocado team is proud to present another LTS (Long Term Stability)
+release: Avocado 82.0, AKA "Avengers: Endgame", is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 69.x to 82.0
+===========================
+
+Upgrading Installations
+-----------------------
+
+Avocado is available on a number of different repositories and
+installation methods. You can find the complete details in Installing
+Avocado. After looking at your installation options, please consider
+the following when planning an in-place upgrade or a deployment
+version bump:
+
+* Avocado previously also supported Python 2, but it now supports
+  Python 3 only. If your previous installation was based on Python 2,
+  please consider that the upgrade path includes moving to Python 3.
+  Dependency libraries, syntax changes, and maybe even the
+  availability of a Python 3 interpreter are examples of things to
+  consider.
+
+* No issues were observed when doing an in-place upgrade from Python 2
+  based Avocado 69.x LTS to Python 3 based Avocado 82.0 LTS.
+
+* When using Python's own package management, that is, ``pip``, simply
+  switch to a Python 3 based pip (``python3 -m pip`` is an option) and
+  install the ``avocado-framework<83.0`` package to get the latest
+  release of the current LTS version.
+
+* When using RPM packages, please notice that there's no package
+  ``python-avocado`` anymore.  Please use ``python3-avocado``
+  instead. The same is true for plugins packages, they all have the
+  ``python3-avocado-plugins`` prefix.
+
+Porting Tests (Test API compatibility)
+--------------------------------------
+
+If you're migrating from the previous LTS version, these are the
+changes on the Test API that most likely will affect your test:
+
+* The ``avocado.main`` function isn't available anymore.  If you were
+  importing it but not really executing the test script, simply remove
+  it.  If you need to execute Avocado tests as scripts, you need to
+  resort to the Job API instead. See
+  ``examples/jobs/passjob_with_test.py`` for an example.
+
+Porting Tests (Utility API compatibility)
+-----------------------------------------
+
+The changes in the utility APIs (those that live under the
+``avocado.utils`` namespace are too many to present porting
+suggestion.  Please refer to the :ref:`lts_82_0_utility_apis` section
+for a comprehensive list of changes, including new features your test
+may be able to leverage.
+
+Changes from previous LTS
+=========================
+
+.. note:: This is not a collection of all changes encompassing all releases
+          from 69.0 to 82.0.  This list contains changes that are relevant
+          to users of 69.0, when evaluating an upgrade to 82.0.
+
+When compared to the last LTS (version 69.3), the main changes
+introduced by this versions are:
+
+Users
+-----
+
+* Avocado can now run on systems with nothing but Python 3 (and
+  "quasi-standard-library" module ``setuptools``). This means that it
+  won't require extra packages, and should be easier to deploy on
+  containers, embedded systems, etc. Optional plugins may have
+  additional requirements.
+
+* Improved safeloader support for Python unit tests, including support
+  for finding test classes that use multiple inheritances. As an
+  example, Avocado's ``safeloader`` is now able to properly find all
+  of its own tests (almost 1000 of them).
+
+* Removal of old and redundant command-line options, such as
+  ``--silent`` and ``--show-job-log`` in favor of ``--show=none`` and
+  ``--show=test``, respectively.
+
+* Job result categorization support, by means of the
+  ``--job-category`` option to the run command, allows a user to
+  create an easy to find directory, within the job results directory,
+  for a given type of executed jobs.
+
+* The glib plugin got a configuration option for safe/unsafe
+  operation, that is, whether it will execute binaries in an attempt
+  to find the whole list of tests. Look for the ``glib.conf`` shipped
+  with the plugin to enable the unsafe mode.
+
+* The HTML report got upgrades as pop-up whiteboard, filtering support
+  and resizable columns.
+
+* When using the output check record features, duplicate files created
+  by different tests/variants will be consolidated into unique files.
+
+* The new ``vmimage`` command allows a user to list the virtual
+  machine images downloaded by means of :mod:`avocado.utils.vmimage`
+  or download new images via the avocado ``vmimage get`` command.
+
+* The avocado ``assets fetch`` command now accepts a
+  ``--ignore-errors`` option that returns exit code 0 even when some
+  of the assets could not be fetched.
+
+* The avocado ``sysinfo`` feature file will now work out of the box on
+  pip based installations.
+
+* The sysinfo collection now logs a much clearer message when a
+  command is not found and thus can not have its output collected.
+
+* Users can now select which runner plugin will be used to run
+  tests. To select a runner on the command line, use the
+  ``--test-runner`` option. Please refer to ``avocado plugins`` to see
+  the runner plugins available.
+
+* A new runner, called ``nrunner``, has been introduced and has
+  distinguishing features such as parallel test execution support
+  either in processes or in Podman based containers.
+
+* A massive documentation overhaul, now designed around guides to
+  different target audiences. The "User's Guide", "Test Writer's
+  Guide" and "Contributor's Guide" can be easily found as first level
+  sections containing curated content for those audiences.
+
+* It's now possible to enforce colored or non-colored output, no
+  matter if the output is a terminal or not. The configuration item
+  color was introduced in the ``runner.output`` section, and
+  recognizes the values ``auto``, ``always``, or ``never``.
+
+* The jsonresult plugin added ``warn`` and ``interrupt`` fields
+  containing counters for the tests that ended with WARN and
+  INTERRUPTED status, respectively.
+
+* Avocado's :mod:`avocado.utils.software_manager` functionality is now
+  also made available as the ``avocado-software-manager`` command-line
+  tool.
+
+* Avocado now supports "hint files" that can tweak how the Avocado
+  resolver will recognize tests. This is useful for projects making
+  use of Avocado as a test runner, and it can allow complete
+  integration with a simple configuration file in a project
+  repository. For more information check out the
+  :ref:`documentation<the_hint_files>`.
+
+* The ``--ignore-missing-references`` option now takes no
+  parameter. The feature it controls is not enabled unless you supply
+  the command line option (but no on or off is required).
+
+* A brand new command, ``jobs``, enables users to, among other things,
+  list information about previously executed jobs. A command such as
+  ``avocado jobs show`` will show the latest job information.
+
+* The remote, vm, and docker runner plugins were removed.
+
+* The ``multiplex`` command, an alias to variants, has been removed.
+
+* A new settings API that is tightly linked to the Job API. You can
+  see all the existing configurations at runtime by running avocado
+  config reference. To integrate Avocado to an existing project or a
+  CI environment, a custom job with a few configurations will give you
+  a lot of flexibility with very little need to write Python
+  code. Some examples are available at ``examples/jobs``.
+
+.. _lts_82_0_test_writers:
+
+Test Writers
+------------
+
+* Python 2 support has been removed. Support for Python versions
+  include 3.5, 3.6, 3.7 and 3.8. If you require Python 2 support, the
+  69.X LTS version should be used.
+
+* A fully usable Job API, making most of Avocado's functionalities
+  programmable and highly customizable.
+
+* Support for multiple test suites in a Job, so that each test suite
+  can be configured differently and independently from each
+  other. Fulfill your use case easily (or let your imagination go
+  wild) and define different runners, different parameters to
+  different test suites, or run some test suites locally, while others
+  run isolated on containers. Anything that is configurable with the
+  new settings API should be transparently configurable in the context
+  of a test suite (provided the test suite deals with that feature).
+
+* A completely new implementation of the CIT Varianter plugin, now
+  with support for constraints. Refer to :ref:`CIT Varianter
+  Plugin<cit-varianter-plugin>` for more information.
+
+* The new :func:`avocado.cancel_on` decorator has been added to the
+  Test APIs, allowing you to define the conditions for a test to be
+  considered canceled. See one example here.
+
+* Avocado can now use tags inside Python Unittests, and not only on
+  its own Instrumented tests.
+
+* The tags feature (see :ref:`categorizing-tests`) now supports an
+  extended character set, adding . and - to the allowed characters. A
+  tag such as ``:avocado: tags=machine:s390-ccw-virtio`` is now valid.
+
+* INSTRUMENTED tests using the
+  :meth:`avocado.Test.fetch_asset` can take advantage of
+  plugins that will attempt to download (and cache) assets before the
+  test execution. This should make the overall test execution more
+  reliable, and give better test execution times as the download time
+  will be excluded. Users can also manually execute the avocado assets
+  command to manually fetch assets from tests.
+
+* The :meth:`avocado.Test.fetch_asset` method now has two new
+  parameters: ``find_only`` and ``cancel_on_missing``. These can be
+  combined to cancel tests if the asset is missing after a download
+  attempt (``find_only=False``) or only if it's present in the local
+  system without a download having been attempted during the test
+  (``find_only=True``). This can bring better determinism for tests
+  that would download sizable assets, and/or allow test jobs to be
+  executable in offline environments.
+
+* A new test type, ``TAP`` has been introduced along with a new loader
+  and resolver. With a ``TAP`` test, it's possible to execute a binary
+  or script, similar to a ``SIMPLE`` test, and parse its Test Anything
+  Protocol output to determine the test status.
+
+* The decorators :func:`avocado.skip`, :func:`avocado.skipIf`, and
+  :func:`avocado.skipUnless` can now be used to decorate entire
+  classes, resulting in all its tests getting skipped if/when the
+  given condition is satisfied.
+
+* The "log level" of Avocado is now defined using the standard Python
+  level names. If you have a custom configuration for this setting,
+  you may need to adjust it.
+
+* The yaml_to_mux varianter plugin now attempts to respect the type of
+  the value given to ``--mux-inject``. For example, 1 is treated as an
+  integer, a value of ``1,2`` is treated as a list, a value of ``abc``
+  is treated as a string, and a value of ``1,2,5-10`` is treated as a
+  list of integers as ``1,2,-5`` (as it is evaluated by
+  :func:`ast.literal_eval`).
+
+* For users of the Job API, a "dictionary-based" varianter was
+  introduced, that allows you to describe the variations of tests in a
+  test suite directly via a Python dictionary.
+
+* The ``avocado.utils.runtime`` module has been removed.
+
+* The test runner feature that would allow binaries to be run
+  transparently inside GDB was removed. The reason for dropping such a
+  feature has to do with how it limits the test runner to run one test
+  at a time, and the use of the ``avocado.utils.runtime`` mechanism,
+  also removed.
+
+* The "standalone job" feature was removed. The alternative is to use
+  an Avocado Job (using the Job API), with a test defined on the same
+  file, as can be seen on the example file
+  ``examples/jobs/passjob_with_test.py`` in the source tree.
+
+.. _lts_82_0_utility_apis:
+
+Utility APIs
+------------
+
+* Two simple utility APIs, :func:`avocado.utils.genio.append_file` and
+  :func:`avocado.utils.genio.append_one_line` have been added.
+
+* The new :mod:`avocado.utils.datadrainer` provides an easy way to
+  read from and write to various input/output sources without blocking
+  a test (by spawning a thread for that).
+
+* The new :mod:`avocado.utils.diff_validator` can help test writers to
+  make sure that given changes have been applied to files.
+
+* :mod:`avocado.utils.partition` now allows ``mkfs`` and ``mount``
+  flags to be set.
+
+* Users of the :func:`avocado.utils.partition.mount` function can now
+  skip checking if the devices/mountpoints are mounted, which is
+  useful for bind mounts.
+
+* :func:`avocado.utils.cpu.get_cpu_vendor_name` now returns the CPU
+  vendor name for POWER9.
+
+* The :mod:`avocado.utils.cpu` changed how it identifies CPU vendors,
+  architectures, and families, making those more consistent across the
+  board.
+
+* The names of the :mod:`avocado.utils.cpu` functions changed, from
+  what's listed on left hand side (now deprecated) the ones on the
+  right hand side:
+
+ * :func:`avocado.utils.cpu.total_cpus_count` => :func:`avocado.utils.cpu.total_count`
+ * :func:`avocado.utils.cpu._get_cpu_info` => :func:`avocado.utils.cpu._get_info`
+ * :func:`avocado.utils.cpu._get_cpu_status` => :func:`avocado.utils.cpu._get_status`
+ * :func:`avocado.utils.cpu.get_cpu_vendor_name` => :func:`avocado.utils.cpu.get_vendor`
+ * :func:`avocado.utils.cpu.get_cpu_arch` => :func:`avocado.utils.cpu.get_arch`
+ * :func:`avocado.utils.cpu.cpu_online_list` => :func:`avocado.utils.cpu.online_list`
+ * :func:`avocado.utils.cpu.online_cpus_count` => :func:`avocado.utils.cpu.online_count`
+ * :func:`avocado.utils.cpu.get_cpuidle_state` => :func:`avocado.utils.cpu.get_idle_state`
+ * :func:`avocado.utils.cpu.set_cpuidle_state` => :func:`avocado.utils.cpu.set_idle_state`
+ * :func:`avocado.utils.cpu.set_cpufreq_governor` => :func:`avocado.utils.cpu.set_freq_governor`
+ * :func:`avocado.utils.cpu.get_cpufreq_governor` => :func:`avocado.utils.cpu.get_freq_governor`
+
+* Additionally, :func:`avocado.utils.cpu.get_arch` implementation for
+  powerpc has been corrected to return ``powerpc`` instead of cpu
+  family values like ``power8``, ``power9``.
+
+* New :func:`avocado.utils.cpu.get_family` is added to get the cpu family
+  values like ``power8``, ``power9``.
+
+* The :func:`avocado.utils.cpu.online` and
+  :func:`avocado.utils.cpu.offline` will now check the status of the
+  CPU before attempting to apply a possibly (unnecessary) action.
+
+* The :mod:`avocado.utils.asset` module now allows a given location,
+  as well as a list, to be given, simplifying the most common use
+  case.
+
+* :meth:`avocado.utils.process.SubProcess.stop` now supports setting a
+  timeout.
+
+* :mod:`avocado.utils.memory` now properly handles huge pages for the
+  POWER platform.
+
+* :mod:`avocado.utils.ssh` now allows password-based authentication,
+  in addition to public key-based authentication.
+
+* The new :meth:`avocado.utils.ssh.Session.get_raw_ssh_command` method
+  allows access to the generated (local) commands, which could be used
+  for advanced use cases, such as running multiple (remote) commands
+  in a test. See the ``examples/apis/utils/ssh.py`` for an example.
+
+* The :meth:`avocado.utils.ssh.Session.cmd` method now allows users to
+  ignore the exit status of the command with the `ignore_status
+  parameter`.
+
+* :func:`avocado.utils.path.usable_ro_dir` will no longer create a
+  directory, but will just check for its existence and the right level
+  of access.
+
+* :func:`avocado.utils.archive.compress` and
+  :func:`avocado.utils.archive.uncompress` and now supports LZMA
+  compressed files transparently.
+
+* The :mod:`avocado.utils.vmimage` module now has providers for the
+  CirrOS cloud images.
+
+* The :mod:`avocado.utils.vmimage` library now allows a user to define
+  the qemu-img binary that will be used for creating snapshot images
+  via the :data:`avocado.utils.vmimage.QEMU_IMG` variable.
+
+* The :mod:`avocado.utils.vmimage` module will not try to create
+  snapshot images when it's not needed, acting lazily in that
+  regard. It now provides a different method for download-only
+  operations, :meth:`avocado.utils.vmimage.Image.download` that
+  returns the base image location. The behavior of the
+  :meth:`avocado.utils.vmimage.Image.get` method is unchanged in the
+  sense that it returns the path of a snapshot image.
+
+* The :mod:`avocado.utils.configure_network` module introduced a number
+  of utilities, including MTU configuration support, a method for
+  validating network among peers, IPv6 support, etc.
+
+* The :func:`avocado.utils.configure_network.set_ip` function now
+  supports different interface types through a ``interface_type``
+  parameter, while still defaulting to Ethernet.
+
+* :func:`avocado.utils.configure_network.is_interface_link_up` is a
+  new utility function that returns, quite obviously, whether an
+  interface link is up.
+
+* The :mod:`avocado.utils.network` module received a complete overhaul
+  and provides features for getting, checking, and setting network
+  information from local and even remote hosts.
+
+* The :mod:`avocado.utils.network.interfaces` module now supports
+  different types of output produced by ``iproute``.
+
+* :mod:`avocado.utils.kernel` received a number of fixes and cleanups,
+  and also new features. It's now possible to configure the kernel for
+  multiple targets, and also set kernel configurations at
+  configuration time without manually touching the kernel
+  configuration files. It also introduced the
+  :attr:`avocado.utils.kernel.KernelBuild.vmlinux` property, allowing
+  users to access that image if it was built.
+
+* New functions such as :func:`avocado.utils.multipath.add_path`,
+  :func:`avocado.utils.multipath.remove_path`,
+  :func:`avocado.utils.multipath.get_mpath_status` and
+  :func:`avocado.utils.multipath.suspend_mpath` have been introduced
+  to the :mod:`avocado.utils.multipath` module.
+
+* The new :mod:`avocado.utils.pmem` module provides an interface to
+  manage persistent memory. It allows for creating, deleting,
+  enabling, disabling, and re-configuring both namespaces and regions
+  depending on supported hardware. It wraps the features present on
+  the ndctl and daxctl binaries.
+
+* All of the :mod:`avocado.utils.gdb` APIs are now back to a working
+  state, with many fixes related to bytes and strings, as well as
+  buffered I/O caching fixes.
+
+Contributors
+------------
+
+* The Avocado configuration that is logged during a job execution is
+  now the dictionary that is produced by the new
+  :mod:`avocado.core.settings` module, instead of the configuration
+  file(s) content. This is relevant because this configuration
+  contains the result of everything that affects a job, such as
+  defaults registered by plugins, command-line options, all in
+  addition to the configuration file. The goal is to have more
+  consistent behavior and increased job "replayability".
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (69.3) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/69.3...82.0>`_.
