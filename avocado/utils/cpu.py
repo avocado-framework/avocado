@@ -185,7 +185,9 @@ def get_family():
     arch = get_arch()
     if arch == 'x86_64' or arch == 'i386':
         if get_vendor() == 'amd':
-            raise NotImplementedError
+            # FIXME
+            logging.warning("Not implemented: Unknown cpu family for amd")
+            return family
         try:
             # refer below links for microarchitectures names
             # https://en.wikipedia.org/wiki/List_of_Intel_CPU_microarchitectures
@@ -213,7 +215,9 @@ def get_family():
         except KeyError as err:
             logging.warning("Could not find family for %s\nError: %s", get_version(), err)
     elif arch == 'arm':
-        raise NotImplementedError
+        # FIXME
+        logging.warning("Not implemented: Unknown cpu family for arm")
+        return family
     return family
 
 
