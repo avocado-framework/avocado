@@ -51,3 +51,12 @@ def set_proc_sys(key, value):
     path = os.path.join('/proc/sys/%s', key)
     genio.write_one_line(path, value)
     return get_proc_sys(key)
+
+
+def is_selinux_enforcing():
+    """
+    Returns True if SELinux is in enforcing mode, False if permissive/disabled.
+    """
+    if '1' in genio.read_one_line('/sys/fs/selinux/enforce'):
+        return True
+    return False
