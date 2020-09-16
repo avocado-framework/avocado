@@ -212,7 +212,7 @@ def get_family():
             family = zfamily_map[get_version()].lower()
         except KeyError as err:
             logging.warning("Could not find family for %s\nError: %s", get_version(), err)
-    elif arch == 'arm':
+    elif arch == 'arm' or arch == 'aarch64':
         raise NotImplementedError
     return family
 

@@ -163,6 +163,16 @@ class Cpu(Test):
                                      return_value=self._get_data_mock('power9')):
                 self.assertEqual(cpu.get_family(), "power9")
 
+    def test_arm_get_family(self):
+        with unittest.mock.patch('avocado.utils.cpu.get_arch', return_value='arm'):
+            with self.assertRaises(NotImplementedError):
+                cpu.get_family()
+
+    def test_aarch64_get_family(self):
+        with unittest.mock.patch('avocado.utils.cpu.get_arch', return_value='aarch64'):
+            with self.assertRaises(NotImplementedError):
+                cpu.get_family()
+
     def test_get_idle_state_off(self):
         retval = {0: {0: False}}
         with unittest.mock.patch('avocado.utils.cpu.online_list',
