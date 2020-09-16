@@ -129,9 +129,6 @@ popd
 pushd optional_plugins/result_upload
 %py3_build
 popd
-pushd optional_plugins/glib
-%py3_build
-popd
 # python3-docutils on Fedora 28 uses a rst2man binary with -3 prefix
 %if 0%{?fedora} == 28
 /usr/bin/rst2man-3 man/avocado.rst man/avocado.1
@@ -163,9 +160,6 @@ pushd optional_plugins/varianter_cit
 %py3_install
 popd
 pushd optional_plugins/result_upload
-%py3_install
-popd
-pushd optional_plugins/glib
 %py3_install
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -209,9 +203,6 @@ popd
 pushd optional_plugins/result_upload
 %{__python3} setup.py develop --user
 popd
-pushd optional_plugins/glib
-%{__python3} setup.py develop --user
-popd
 # LANG: to make the results predictable, we pin the language
 # that is used during test execution.
 # AVOCADO_CHECK_LEVEL: package build environments have the least
@@ -240,7 +231,6 @@ PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} 
 %exclude %{python3_sitelib}/avocado_varianter_pict*
 %exclude %{python3_sitelib}/avocado_varianter_cit*
 %exclude %{python3_sitelib}/avocado_result_upload*
-%exclude %{python3_sitelib}/avocado_glib*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
@@ -248,7 +238,6 @@ PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} 
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_cit*
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
-%exclude %{python3_sitelib}/avocado_framework_plugin_glib*
 %exclude %{python3_sitelib}/tests*
 
 %package -n python3-%{srcname}-common
@@ -363,18 +352,6 @@ a dedicated sever.
 %{python3_sitelib}/avocado_result_upload*
 %{python3_sitelib}/avocado_framework_plugin_result_upload*
 
-%package -n python3-%{srcname}-plugins-glib
-Summary: Avocado Plugin for Execution of GLib Test Framework tests
-Requires: python3-%{srcname} == %{version}
-
-%description -n python3-%{srcname}-plugins-glib
-This optional plugin is intended to list and run tests written in the
-GLib Test Framework.
-
-%files -n python3-%{srcname}-plugins-glib
-%{python3_sitelib}/avocado_glib*
-%{python3_sitelib}/avocado_framework_plugin_glib*
-
 %package -n python3-%{srcname}-examples
 Summary: Avocado Test Framework Example Tests
 Requires: python3-%{srcname} == %{version}
@@ -408,6 +385,7 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Wed Sep 16 2020 Cleber Rosa <cleber@redhat.com> - 82.0-2
 - Removed yaml to mux loader plugin
+- Removed glib plugin
 
 * Fri Sep 11 2020 Cleber Rosa <cleber@redhat.com> - 82.0-1
 - New release

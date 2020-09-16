@@ -6,7 +6,6 @@ Optional plugins
    :maxdepth: 2
 
    optional/avocado_ec2
-   optional/glib
    optional/golang
    optional/results
    optional/robot
