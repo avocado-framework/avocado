@@ -34,7 +34,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 82.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -117,9 +117,6 @@ popd
 pushd optional_plugins/varianter_yaml_to_mux
 %py3_build
 popd
-pushd optional_plugins/loader_yaml
-%py3_build
-popd
 pushd optional_plugins/golang
 %py3_build
 popd
@@ -130,9 +127,6 @@ pushd optional_plugins/varianter_cit
 %py3_build
 popd
 pushd optional_plugins/result_upload
-%py3_build
-popd
-pushd optional_plugins/glib
 %py3_build
 popd
 # python3-docutils on Fedora 28 uses a rst2man binary with -3 prefix
@@ -156,9 +150,6 @@ popd
 pushd optional_plugins/varianter_yaml_to_mux
 %py3_install
 popd
-pushd optional_plugins/loader_yaml
-%py3_install
-popd
 pushd optional_plugins/golang
 %py3_install
 popd
@@ -171,9 +162,6 @@ popd
 pushd optional_plugins/result_upload
 %py3_install
 popd
-pushd optional_plugins/glib
-%py3_install
-popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
@@ -183,7 +171,6 @@ popd
 %{__cp} -r examples/tests %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/wrappers %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/yaml_to_mux %{buildroot}%{_docdir}/avocado
-%{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
 %{__cp} -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
 find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x {} ';'
@@ -204,9 +191,6 @@ popd
 pushd optional_plugins/varianter_yaml_to_mux
 %{__python3} setup.py develop --user
 popd
-pushd optional_plugins/loader_yaml
-%{__python3} setup.py develop --user
-popd
 pushd optional_plugins/golang
 %{__python3} setup.py develop --user
 popd
@@ -217,9 +201,6 @@ pushd optional_plugins/varianter_cit
 %{__python3} setup.py develop --user
 popd
 pushd optional_plugins/result_upload
-%{__python3} setup.py develop --user
-popd
-pushd optional_plugins/glib
 %{__python3} setup.py develop --user
 popd
 # LANG: to make the results predictable, we pin the language
@@ -245,22 +226,18 @@ PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} 
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_resultsdb*
-%exclude %{python3_sitelib}/avocado_loader_yaml*
 %exclude %{python3_sitelib}/avocado_golang*
 %exclude %{python3_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_varianter_pict*
 %exclude %{python3_sitelib}/avocado_varianter_cit*
 %exclude %{python3_sitelib}/avocado_result_upload*
-%exclude %{python3_sitelib}/avocado_glib*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_cit*
-%exclude %{python3_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
-%exclude %{python3_sitelib}/avocado_framework_plugin_glib*
 %exclude %{python3_sitelib}/tests*
 
 %package -n python3-%{srcname}-common
@@ -325,18 +302,6 @@ defined in a yaml file(s).
 %{python3_sitelib}/avocado_varianter_yaml_to_mux*
 %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 
-%package -n python3-%{srcname}-plugins-loader-yaml
-Summary: Avocado Plugin that loads tests from YAML files
-Requires: python3-%{srcname}-plugins-varianter-yaml-to-mux == %{version}
-
-%description -n python3-%{srcname}-plugins-loader-yaml
-Can be used to produce a test suite from definitions in a YAML file,
-similar to the one used in the yaml_to_mux varianter plugin.
-
-%files -n python3-%{srcname}-plugins-loader-yaml
-%{python3_sitelib}/avocado_loader_yaml*
-%{python3_sitelib}/avocado_framework_plugin_loader_yaml*
-
 %package -n python3-%{srcname}-plugins-golang
 Summary: Avocado Plugin for Execution of golang tests
 Requires: python3-%{srcname} == %{version}
@@ -387,18 +352,6 @@ a dedicated sever.
 %{python3_sitelib}/avocado_result_upload*
 %{python3_sitelib}/avocado_framework_plugin_result_upload*
 
-%package -n python3-%{srcname}-plugins-glib
-Summary: Avocado Plugin for Execution of GLib Test Framework tests
-Requires: python3-%{srcname} == %{version}
-
-%description -n python3-%{srcname}-plugins-glib
-This optional plugin is intended to list and run tests written in the
-GLib Test Framework.
-
-%files -n python3-%{srcname}-plugins-glib
-%{python3_sitelib}/avocado_glib*
-%{python3_sitelib}/avocado_framework_plugin_glib*
-
 %package -n python3-%{srcname}-examples
 Summary: Avocado Test Framework Example Tests
 Requires: python3-%{srcname} == %{version}
@@ -415,7 +368,6 @@ examples of how to write tests on your own.
 %{_docdir}/avocado/tests
 %{_docdir}/avocado/wrappers
 %{_docdir}/avocado/yaml_to_mux
-%{_docdir}/avocado/yaml_to_mux_loader
 %{_docdir}/avocado/varianter_pict
 %{_docdir}/avocado/varianter_cit
 
@@ -431,6 +383,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Sep 16 2020 Cleber Rosa <cleber@redhat.com> - 82.0-2
+- Removed yaml to mux loader plugin
+- Removed glib plugin
+
 * Fri Sep 11 2020 Cleber Rosa <cleber@redhat.com> - 82.0-1
 - New release
 
