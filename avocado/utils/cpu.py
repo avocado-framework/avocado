@@ -197,7 +197,9 @@ def get_family():
             with open('/sys/devices/cpu/caps/pmu_name', 'rb') as mico_arch:
                 family = mico_arch.read().decode('utf-8').strip('\n').lower()
         except FileNotFoundError as err:
-            logging.warning("Could not find micro-architecture/family, Error: %s", err)
+            msg = "Could not find micro-architecture/family, Error: %s" % err
+            logging.warning(msg)
+            raise FamilyException(msg)
     elif arch == 'powerpc':
         res = []
         try:
@@ -207,7 +209,9 @@ def get_family():
                     break
             family = res[0].decode('utf-8').lower()
         except IndexError as err:
-            logging.warning("Unable to parse cpu family %s", err)
+            msg = "Unable to parse cpu family %s" % err
+            logging.warning(msg)
+            raise FamilyException(msg)
     elif arch == 's390':
         zfamily_map = {'2964': 'z13',
                        '3906': 'z14',
