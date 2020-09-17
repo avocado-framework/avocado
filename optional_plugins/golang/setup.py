@@ -28,10 +28,16 @@ setup(name='avocado-framework-plugin-golang',
       install_requires=['avocado-framework==%s' % VERSION],
       test_suite='tests',
       entry_points={
+          'console_scripts': [
+              'avocado-runner-golang = avocado_golang.runner:main',
+          ],
           'avocado.plugins.cli': [
               'golang = avocado_golang:GolangCLI',
           ],
           'avocado.plugins.resolver': [
               'golang = avocado_golang:GolangResolver',
+          ],
+          'avocado.plugins.runnable.runner': [
+              'golang = avocado_golang.runner:GolangRunner'
           ]}
       )

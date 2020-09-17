@@ -34,7 +34,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 82.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -314,6 +314,7 @@ also run them.
 %files -n python3-%{srcname}-plugins-golang
 %{python3_sitelib}/avocado_golang*
 %{python3_sitelib}/avocado_framework_plugin_golang*
+%{_bindir}/avocado-runner-golang
 
 %package -n python3-%{srcname}-plugins-varianter-pict
 Summary: Varianter with combinatorial capabilities by PICT
@@ -383,6 +384,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Sep 17 2020 Cleber Rosa <cleber@redhat.com> - 82.0-3
+- Added avocado-runner-golang script to golang package
+
 * Wed Sep 16 2020 Cleber Rosa <cleber@redhat.com> - 82.0-2
 - Removed yaml to mux loader plugin
 - Removed glib plugin
