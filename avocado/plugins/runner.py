@@ -161,7 +161,7 @@ class TestRunner(Runner):
         test_status = TestStatus(job, queue)
 
         cycle_timeout = 1
-        time_started = time.time()
+        time_started = time.monotonic()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         proc.start()
         signal.signal(signal.SIGTSTP, sigtstp_handler)
@@ -180,7 +180,7 @@ class TestRunner(Runner):
 
         ctrl_c_count = 0
         ignore_window = 2.0
-        ignore_time_started = time.time()
+        ignore_time_started = time.monotonic()
         stage_1_msg_displayed = False
         stage_2_msg_displayed = False
         first = 0.01
@@ -190,7 +190,7 @@ class TestRunner(Runner):
 
         while True:
             try:
-                if time.time() >= deadline:
+                if time.monotonic() >= deadline:
                     abort_reason = "Timeout reached"
                     try:
                         os.kill(proc.pid, signal.SIGTERM)
@@ -212,7 +212,7 @@ class TestRunner(Runner):
                 else:
                     break
             except KeyboardInterrupt:
-                time_elapsed = time.time() - ignore_time_started
+                time_elapsed = time.monotonic() - ignore_time_started
                 ctrl_c_count += 1
                 if ctrl_c_count == 1:
                     if not stage_1_msg_displayed:
@@ -222,7 +222,7 @@ class TestRunner(Runner):
                                       "(ignoring new Ctrl+C until then)",
                                       ignore_window)
                         stage_1_msg_displayed = True
-                    ignore_time_started = time.time()
+                    ignore_time_started = time.monotonic()
                     process.kill_process_tree(proc.pid, signal.SIGINT)
                 if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
                     if not stage_2_msg_displayed:
@@ -235,7 +235,7 @@ class TestRunner(Runner):
         # Get/update the test status (decrease timeout on abort)
         if abort_reason:
             after_interrupted = job.config.get('runner.timeout.after_interrupted')
-            finish_deadline = time.time() + after_interrupted
+            finish_deadline = time.monotonic() + after_interrupted
         else:
             finish_deadline = deadline
         test_state = test_status.finish(proc, time_started, step,
@@ -348,7 +348,7 @@ class TestRunner(Runner):
         execution_order = job.config.get('run.execution_order')
         queue = multiprocessing.SimpleQueue()
         if job.timeout > 0:
-            deadline = time.time() + job.timeout
+            deadline = time.monotonic() + job.timeout
         else:
             deadline = None
 
@@ -372,7 +372,7 @@ class TestRunner(Runner):
                                                  name,
                                                  variant,
                                                  no_digits)
-                if deadline is not None and time.time() > deadline:
+                if deadline is not None and time.monotonic() > deadline:
                     summary.add('INTERRUPTED')
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
