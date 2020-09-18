@@ -32,9 +32,9 @@ for sig in range(64):
     except:
         pass
 
-end = time.time() + 120
+end = time.monotonic() + 120
 
-while time.time() < end:
+while time.monotonic() < end:
     time.sleep(1)"""
 
 
