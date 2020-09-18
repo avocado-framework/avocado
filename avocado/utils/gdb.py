@@ -219,7 +219,7 @@ class CommandResult:
 
     def __init__(self, command):
         self.command = command
-        self.timestamp = time.time()
+        self.timestamp = time.monotonic()
         self.stream_messages = []
         self.application_output = []
         self.result = None
@@ -603,8 +603,8 @@ class GDBServer:
     def _wait_until_running(self):
         connection_ok = False
         c = GDB()
-        end_time = time.time() + self.INIT_TIMEOUT
-        while time.time() < end_time:
+        end_time = time.monotonic() + self.INIT_TIMEOUT
+        while time.monotonic() < end_time:
             try:
                 c.connect(self.port)
                 connection_ok = True
