@@ -48,7 +48,7 @@ class FileLock:
 
     def __enter__(self):
         flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_SYNC
-        timelimit = time.time() + self.timeout
+        timelimit = time.monotonic() + self.timeout
         while True:
             try:
                 fd = os.open(self.filename, flags)
@@ -82,7 +82,7 @@ class FileLock:
                 # to be released.
                 if self.timeout <= 0:
                     raise AlreadyLocked('File is already locked.')
-                elif time.time() > timelimit:
+                elif time.monotonic() > timelimit:
                     raise AlreadyLocked('Timeout waiting for the lock.')
                 else:
                     time.sleep(0.1)
