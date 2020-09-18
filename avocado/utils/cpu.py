@@ -29,6 +29,10 @@ import re
 import warnings
 
 
+class FamilyException(Exception):
+    pass
+
+
 def _list_matches(content_list, pattern):
     """
     Checks if any item in list matches the specified pattern
@@ -193,7 +197,9 @@ def get_family():
             with open('/sys/devices/cpu/caps/pmu_name', 'rb') as mico_arch:
                 family = mico_arch.read().decode('utf-8').strip('\n').lower()
         except FileNotFoundError as err:
-            logging.warning("Could not find micro-architecture/family, Error: %s", err)
+            msg = "Could not find micro-architecture/family, Error: %s" % err
+            logging.warning(msg)
+            raise FamilyException(msg)
     elif arch == 'powerpc':
         res = []
         try:
@@ -203,16 +209,21 @@ def get_family():
                     break
             family = res[0].decode('utf-8').lower()
         except IndexError as err:
-            logging.warning("Unable to parse cpu family %s", err)
+            msg = "Unable to parse cpu family %s" % err
+            logging.warning(msg)
+            raise FamilyException(msg)
     elif arch == 's390':
-        zfamily_map = {'3906': 'z14',
+        zfamily_map = {'2964': 'z13',
+                       '3906': 'z14',
                        '8561': 'z15'
                        }
         try:
             family = zfamily_map[get_version()].lower()
         except KeyError as err:
-            logging.warning("Could not find family for %s\nError: %s", get_version(), err)
-    elif arch == 'arm':
+            msg = "Could not find family for %s\nError: %s" % (get_version(), err)
+            logging.warning(msg)
+            raise FamilyException(msg)
+    else:
         raise NotImplementedError
     return family
 
