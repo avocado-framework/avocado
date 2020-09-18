@@ -197,11 +197,11 @@ class FileLockTest(TestCaseTmpDir):
         :avocado: tags=parallel:1
         """
         # Calculate the timeout based on t_100_iter + 2e-5*players
-        start = time.time()
+        start = time.monotonic()
         for _ in range(100):
             with FileLock(self.tmpdir.name):
                 pass
-        timeout = 0.02 + (time.time() - start)
+        timeout = 0.02 + (time.monotonic() - start)
         players = 1000
         pool = multiprocessing.Pool(players)
         args = [(self.tmpdir.name, players, timeout)] * players
