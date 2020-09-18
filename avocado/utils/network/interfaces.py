@@ -176,6 +176,19 @@ class NetworkInterface:
         """
         return self.is_admin_link_up() and self.is_operational_link_up()
 
+    def get_default_interface(self):
+        """Get the default interface.
+
+        :return: Default interface name.
+        """
+        output = run_command("ip route", self.host)
+        try:
+            for line in output.splitlines():
+                if "default" in line:
+                    return line.split()[4]
+        except Exception as ex:
+            raise NWException("could not get default interface: {}".format(ex))
+
     def get_ipaddrs(self, version=4):
         """Get the IP addresses from a network interface.
 
