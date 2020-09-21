@@ -17,6 +17,8 @@
 This module provides an useful API for hosts in a network.
 """
 
+import json
+
 from ..ssh import Session
 from .common import run_command
 from .exceptions import NWException
@@ -63,6 +65,19 @@ class Host:
         for interface in self.interfaces:
             if ipaddr in interface.get_ipaddrs():
                 return interface
+
+    def get_default_route_interface(self):
+        """Get a list of default routes interfaces
+
+        :return: list of interface names
+        """
+        cmd = "ip -j route list default"
+        output = run_command(cmd, self)
+        try:
+            result = json.loads(output)
+            return [str(item['dev']) for item in result]
+        except Exception as ex:
+            raise NWException("could not get default route interface name: {}".format(ex))
 
 
 class LocalHost(Host):
