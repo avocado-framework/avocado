@@ -154,3 +154,20 @@ def get_filesystem_type(mount_point='/'):
             _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
             if fs_file == mount_point:
                 return fs_vfstype
+
+
+def is_root_device(device):
+    """
+    check for root disk
+
+    :param device: device to check
+    :returns: True or False, True if given device is root disk
+              otherwise will return False.
+    """
+    cmd = "lsblk --j -o MOUNTPOINT,PKNAME"
+    output = process.run(cmd)
+    result = json.loads(output.stdout_text)
+    for item in result['blockdevices']:
+        if item['mountpoint'] == "/" and device == str(item['pkname']):
+            return True
+    return False
