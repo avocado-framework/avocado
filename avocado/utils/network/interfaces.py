@@ -338,6 +338,22 @@ class NetworkInterface:
             msg = 'Failed to remove ipaddr. {}'.format(ex)
             raise NWException(msg)
 
+    def remove_link(self):
+        """Deletes virtual interface link.
+
+        This method will try to delete the virtual device link and the
+        interface will no more be listed with 'ip a' and if fails it
+        will raise a NWException. Be careful, you can lost connection.
+
+        You must have sudo permissions to run this method on a host.
+        """
+        cmd = 'ip link del dev {}'.format(self.name)
+        try:
+            run_command(cmd, self.host, sudo=True)
+        except Exception as ex:
+            msg = 'Failed to delete link. {}'.format(ex)
+            raise NWException(msg)
+
     def restore_from_backup(self):
         """Revert interface file from backup.
 
