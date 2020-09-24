@@ -288,17 +288,19 @@ class NetworkInterface:
             msg = 'Distro not supported by API. Could not save ipaddr.'
             raise NWException(msg)
 
-        self._write_to_file("{}/{}".format(path, filename),
-                            {'TYPE': self.if_type,
-                             'BOOTPROTO': 'none',
-                             'NAME': self.name,
-                             'DEVICE': self.name,
-                             'ONBOOT': 'yes',
-                             'IPADDR': ipaddr,
-                             'NETMASK': netmask,
-                             'IPV6INIT': 'yes',
-                             'IPV6_AUTOCONF': 'yes',
-                             'IPV6_DEFROUTE': 'yes'})
+        ifcfg_dict = {'TYPE': self.if_type,
+                      'BOOTPROTO': 'none',
+                      'NAME': self.name,
+                      'DEVICE': self.name,
+                      'ONBOOT': 'yes',
+                      'IPADDR': ipaddr,
+                      'NETMASK': netmask,
+                      'IPV6INIT': 'yes',
+                      'IPV6_AUTOCONF': 'yes',
+                      'IPV6_DEFROUTE': 'yes'}
+        if current_distro.name == 'SuSE':
+            ifcfg_dict.pop('BOOTPROTO')
+        self._write_to_file("{}/{}".format(path, filename), ifcfg_dict)
 
     def set_mtu(self, mtu, timeout=30):
         """Sets a new MTU value to this interface.
