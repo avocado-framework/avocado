@@ -22,7 +22,7 @@ import multiprocessing
 import os
 import shutil
 import tempfile
-from distutils.version import LooseVersion  # pylint: disable=E0611
+from packaging import version as versobjc
 
 from . import archive, asset, build, distro, process
 
@@ -207,4 +207,4 @@ def check_version(version):
     :type version: string
     :param version: version to be compared with current kernel version
     """
-    assert LooseVersion(os.uname()[2]) > LooseVersion(version), "Old kernel"
+    assert versobjc.parse(os.uname()[2]) > versobjc.parse(version), "Old kernel"
