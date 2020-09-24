@@ -149,7 +149,7 @@ class NetworkInterface:
                  otherwise will return False.
         """
         try:
-            if self._get_interface_details().get('flags')[2] == 'UP':
+            if 'UP' in self._get_interface_details().get('flags'):
                 return True
         except (NWException, IndexError):
             raise NWException("Could not get Administrative link state.")
@@ -162,7 +162,7 @@ class NetworkInterface:
                  otherwise will return False.
         """
         try:
-            if self._get_interface_details().get('flags')[3] == 'LOWER_UP':
+            if 'LOWER_UP' in self._get_interface_details().get('flags'):
                 return True
         except (NWException, IndexError):
             raise NWException("Could not get operational link state.")
