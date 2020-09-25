@@ -302,7 +302,7 @@ class NetworkInterface:
             ifcfg_dict.pop('BOOTPROTO')
         self._write_to_file("{}/{}".format(path, filename), ifcfg_dict)
 
-    def set_mtu(self, mtu, timeout=30):
+    def set_mtu(self, mtu, timeout=120):
         """Sets a new MTU value to this interface.
 
         This method will try to set a new MTU value to this interface,
