@@ -72,6 +72,17 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
+    - name: "Smokecheck on Windows"
+      os: windows
+      language: sh
+      python: "3.9"
+      before_install:
+        - choco install python3 --version 3.9.0
+      install:
+        - /c/Python39/python setup.py develop --user
+      script:
+        - /c/Python39/python -m avocado --help
+        - /c/Python39/python -m avocado run --test-runner=nrunner examples/tests/passtest.py
     - name: "Ad hoc checks on OS X"
       os: osx
       language: c
