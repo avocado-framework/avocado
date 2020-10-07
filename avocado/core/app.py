@@ -48,7 +48,7 @@ class AvocadoApp:
         output.early_start()
 
         show = getattr(self.parser.args, 'core.show')
-        reconfigure_settings = {'core.paginator': 'off',
+        reconfigure_settings = {'core.paginator': False,
                                 'core.show': show}
         try:
             self._load_cli_plugins()

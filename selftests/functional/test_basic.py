@@ -1098,7 +1098,7 @@ class PluginsTest(TestCaseTmpDir):
         self.assertNotIn(b'Disabled', result.stdout)
 
     def test_config_plugin(self):
-        cmd_line = '%s --paginator off config ' % AVOCADO
+        cmd_line = '%s config ' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -1107,7 +1107,7 @@ class PluginsTest(TestCaseTmpDir):
         self.assertNotIn(b'Disabled', result.stdout)
 
     def test_config_plugin_datadir(self):
-        cmd_line = '%s --paginator off config --datadir ' % AVOCADO
+        cmd_line = '%s config --datadir ' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
