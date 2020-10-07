@@ -83,6 +83,21 @@ jobs:
       script:
         - /c/Python39/python -m avocado --help
         - /c/Python39/python -m avocado run --test-runner=nrunner examples/tests/passtest.py
+    - name: "Smokecheck on OS X"
+      os: osx
+      language: c
+      osx_image: xcode10.3
+      compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - python
+          update: false
+      install:
+        - python3 setup.py develop --user
+      script:
+        - python3 -m avocado --help
+        - python3 -m avocado run --test-runner=nrunner examples/tests/passtest.py
     - name: "Ad hoc checks on OS X"
       os: osx
       language: c
@@ -103,4 +118,4 @@ jobs:
 
   allow_failures:
     - python: "nightly"
-    - os: osx
+    - name: "Ad hoc checks on OS X"
