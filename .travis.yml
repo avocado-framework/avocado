@@ -72,6 +72,32 @@ jobs:
       # Disable pip cache dir temporarily
       install:
        - pip install --no-cache-dir -r requirements-selftests.txt
+    - name: "Smokecheck on Windows"
+      os: windows
+      language: sh
+      python: "3.9"
+      before_install:
+        - choco install python3 --version 3.9.0
+      install:
+        - /c/Python39/python setup.py develop --user
+      script:
+        - /c/Python39/python -m avocado --help
+        - /c/Python39/python -m avocado run --test-runner=nrunner examples/tests/passtest.py
+    - name: "Smokecheck on OS X"
+      os: osx
+      language: c
+      osx_image: xcode10.3
+      compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - python
+          update: false
+      install:
+        - python3 setup.py develop --user
+      script:
+        - python3 -m avocado --help
+        - python3 -m avocado run --test-runner=nrunner examples/tests/passtest.py
     - name: "Ad hoc checks on OS X"
       os: osx
       language: c
@@ -87,9 +113,9 @@ jobs:
         - python3 setup.py develop --user
       script:
         - python3 -m avocado --help
-        - python3 -m avocado nlist --verbose selftests/unit/* selftests/functional/* selftests/*sh
+        - python3 -m avocado --verbose list --resolver selftests/unit/* selftests/functional/* selftests/*sh
         - python3 -m unittest discover -v selftests.unit
 
   allow_failures:
     - python: "nightly"
-    - os: osx
+    - name: "Ad hoc checks on OS X"
