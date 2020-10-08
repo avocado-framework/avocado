@@ -87,15 +87,15 @@ class Parser:
                                       nargs='?',
                                       help='Use custom configuration from a file')
 
-        help_msg = ('Turn the paginator on/off. Useful when outputs are too'
-                    'long. This will be a boolean soon.')
+        help_msg = 'Turn the paginator on. Useful when output is too long.'
         settings.register_option(section='core',
                                  key='paginator',
                                  help_msg=help_msg,
-                                 default='off',
-                                 choices=('on', 'off'),
+                                 key_type=bool,
+                                 default=False,
+                                 action='store_true',
                                  parser=self.application,
-                                 long_arg='--paginator')
+                                 long_arg='--enable-paginator')
 
         help_msg = ('Some commands can produce more information. This option '
                     'will enable the verbosity when applicable.')
