@@ -565,6 +565,6 @@ The following is a complete example of a script that could be named
 ``avocado-runner-foo`` that could act as a nrunner compatible runner
 for runnables with kind ``foo``.
 
-.. literalinclude:: ../../../../examples/nrunner/runners/avocado-runner-foo
+.. literalinclude:: ../../../../../examples/nrunner/runners/avocado-runner-foo
    :language: python
    :linenos:

@@ -241,9 +241,9 @@ look like this::
      |
      + runner._iter_variants -> Varianter.itertests
 
-The `Varianter`_ itself can only produce an empty variant with the
-`Default params`_, but it invokes all `Varianter plugins`_ and if any
-of them reports variants it yields them instead of the default variant.
+The `Varianter`_ itself can only produce an empty variant, but it invokes all 
+`Varianter plugins`_ and if any of them reports variants it yields them 
+instead of the default variant.
 
 
 
