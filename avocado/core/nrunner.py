@@ -244,9 +244,9 @@ class Runnable:
         # runner convention within the avocado.core namespace dir.
         # Looking for the file only avoids an attempt to load the module
         # and should be a lot faster
-        core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        module_name = self.kind.replace('-', '_')
-        module_filename = 'nrunner_%s.py' % module_name
+        core_dir = os.path.dirname(os.path.abspath(__file__))
+        module_name = "nrunner_%s" % self.kind.replace('-', '_')
+        module_filename = '%s.py' % module_name
         if os.path.exists(os.path.join(core_dir, module_filename)):
             full_module_name = 'avocado.core.%s' % module_name
             candidate_cmd = [sys.executable, '-m', full_module_name]
