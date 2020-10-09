@@ -734,3 +734,8 @@ segfault
 unpicked
 countavocados
 ExampleContainers
+dmesg
+emerg
+alert
+crit
+err
