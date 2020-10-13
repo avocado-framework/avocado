@@ -585,7 +585,7 @@ class SubProcess:
     def _prepend_sudo(cmd, shell):
         if os.getuid() != 0:
             try:
-                sudo_cmd = '%s -n' % path.find_command('sudo')
+                sudo_cmd = '%s -n' % path.find_command('sudo', check_exec=False)
             except path.CmdNotFoundError as details:
                 log.error(details)
                 log.error('Parameter sudo=True provided, but sudo was '

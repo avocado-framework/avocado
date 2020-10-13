@@ -131,7 +131,7 @@ class TestSubProcess(unittest.TestCase):
         get_owner.assert_called_with(process_id)
 
 
-def mock_fail_find_cmd(cmd, default=None):  # pylint: disable=W0613
+def mock_fail_find_cmd(cmd, default=None, check_exec=True):  # pylint: disable=W0613
     path_paths = ["/usr/libexec", "/usr/local/sbin", "/usr/local/bin",
                   "/usr/sbin", "/usr/bin", "/sbin", "/bin"]
     raise path.CmdNotFoundError(cmd, path_paths)
@@ -160,7 +160,7 @@ class TestProcessRun(unittest.TestCase):
     def test_subprocess_sudo(self):
         expected_command = '/bin/sudo -n ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
-        path.find_command.assert_called_once_with('sudo')
+        path.find_command.assert_called_once_with('sudo', check_exec=False)
         self.assertEqual(p.cmd, expected_command)
 
     @unittest.mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -185,7 +185,7 @@ class TestProcessRun(unittest.TestCase):
     def test_subprocess_sudo_shell(self):
         expected_command = '/bin/sudo -n -s ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
-        path.find_command.assert_called_once_with('sudo')
+        path.find_command.assert_called_once_with('sudo', check_exec=False)
         self.assertEqual(p.cmd, expected_command)
 
     @unittest.mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -225,7 +225,7 @@ class TestProcessRun(unittest.TestCase):
     def test_run_sudo(self):
         expected_command = '/bin/sudo -n ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
-        path.find_command.assert_called_once_with('sudo')
+        path.find_command.assert_called_once_with('sudo', check_exec=False)
         self.assertEqual(p.command, expected_command)
 
     @unittest.mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -250,7 +250,7 @@ class TestProcessRun(unittest.TestCase):
     def test_run_sudo_shell(self):
         expected_command = '/bin/sudo -n -s ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
-        path.find_command.assert_called_once_with('sudo')
+        path.find_command.assert_called_once_with('sudo', check_exec=False)
         self.assertEqual(p.command, expected_command)
 
     @unittest.mock.patch.object(path, 'find_command', mock_fail_find_cmd)
