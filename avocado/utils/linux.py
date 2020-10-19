@@ -60,3 +60,15 @@ def is_selinux_enforcing():
     if '1' in genio.read_one_line('/sys/fs/selinux/enforce'):
         return True
     return False
+
+
+def enable_selinux_enforcing():
+    """
+    Enable  SELinux Enforcing in system
+
+    :return: True if SELinux enable in enforcing mode, False if not enabled
+    """
+    genio.write_one_line('/sys/fs/selinux/enforce', '1')
+    if is_selinux_enforcing():
+        return True
+    return False
