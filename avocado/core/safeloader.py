@@ -19,11 +19,11 @@ Safe (AST based) test loader module utilities
 
 import ast
 import collections
-import importlib
 import json
 import os
 import re
 import sys
+from importlib.machinery import PathFinder
 
 from ..utils import data_structures
 
@@ -497,8 +497,8 @@ def _examine_class(path, class_name, match, target_module, target_class,
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
-            found_ppath = importlib.machinery.PathFinder.find_spec(
-                parent_module, modules_paths).origin
+            found_ppath = PathFinder.find_spec(parent_module,
+                                               modules_paths).origin
             _info, _disabled, _match = _examine_class(found_ppath,
                                                       parent_class,
                                                       match,
@@ -630,8 +630,8 @@ def find_python_tests(module_name, class_name, determine_match, path):
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
-            found_ppath = importlib.machinery.PathFinder.find_spec(
-                parent_module, modules_paths).origin
+            found_ppath = PathFinder.find_spec(parent_module,
+                                               modules_paths).origin
             if found_ppath is None:
                 continue
             _info, _dis, _python_test = _examine_class(found_ppath,
