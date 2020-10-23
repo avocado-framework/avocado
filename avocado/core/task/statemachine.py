@@ -2,6 +2,8 @@ import asyncio
 import multiprocessing
 import time
 
+from ..requirements.resolver import check_task_requirements
+
 
 class TaskStateMachine:
     """Represents all phases that a task can go through its life."""
@@ -79,7 +81,8 @@ class Worker:
         except IndexError:
             return
 
-        requirements_ok = await self._spawner.check_task_requirements(runtime_task)
+        requirements_ok = await check_task_requirements(self._spawner,
+                                                        runtime_task)
         if requirements_ok:
             async with self._state_machine.lock:
                 self._state_machine.ready.append(runtime_task)
