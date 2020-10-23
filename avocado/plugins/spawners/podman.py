@@ -29,13 +29,34 @@ class PodmanSpawnerInit(Init):
             section=section,
             key='image',
             help_msg=help_msg,
-            default='fedora:31')
+            # quay.io/willianr/avocado-82lts
+            default='avocado-82lts')
 
 
 class PodmanSpawner(Spawner, SpawnerMixin):
 
     description = 'Podman (container) based spawner'
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
+
+    @property
+    def podman_bin(self):
+        return self.config.get('spawner.podman.bin')
+
+    async def _copy_to_image(self, source, target, container_id):
+        try:
+            # pylint: disable=E1133
+            proc = await asyncio.create_subprocess_exec(
+                self.podman_bin,
+                "cp",
+                source,
+                "%s:%s" % (container_id, target))
+        except (FileNotFoundError, PermissionError):
+            return False
+
+        await proc.wait()
+        if proc.returncode != 0:
+            return False
+        return True
 
     @staticmethod
     def is_task_alive(runtime_task):
@@ -58,6 +79,10 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         entry_point_args = task.get_command_args()
         entry_point_args.insert(0, "task-run")
         entry_point_args.insert(0, entry_point_cmd)
+        if task.runnable.kind == "avocado-instrumented":
+            uri_index = entry_point_args.index('-u')
+            entry_point_args[uri_index + 1] = ('/tmp/' +
+                                               entry_point_args[uri_index + 1])
         entry_point = json.dumps(entry_point_args)
         entry_point_arg = "--entrypoint=" + entry_point
 
@@ -69,6 +94,11 @@ class PodmanSpawner(Spawner, SpawnerMixin):
             runtime_task.status = msg
             return False
 
+        test_volume = "--volume=AVOCADO:/tmp"
+        if task.runnable.kind == "avocado-instrumented":
+            uri = task.runnable.uri
+            test_volume = "--volume=TEST:/tmp" + os.path.dirname(uri)
+
         image = self.config.get('spawner.podman.image')
         try:
             # pylint: disable=E1133
@@ -76,6 +106,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
                 podman_bin, "create",
                 "--net=host",
                 entry_point_arg,
+                test_volume,
                 image,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE)
@@ -96,19 +127,15 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         this_path = os.path.abspath(__file__)
         base_path = os.path.dirname(os.path.dirname(os.path.dirname(this_path)))
         avocado_runner_path = os.path.join(base_path, 'core', 'nrunner.py')
-        try:
-            # pylint: disable=E1133
-            proc = await asyncio.create_subprocess_exec(
-                podman_bin,
-                "cp",
-                avocado_runner_path,
-                "%s:%s" % (container_id, entry_point_cmd))
-        except (FileNotFoundError, PermissionError):
+        if not await self._copy_to_image(avocado_runner_path,
+                                         entry_point_cmd, container_id):
             return False
 
-        await proc.wait()
-        if proc.returncode != 0:
-            return False
+        if task.runnable.kind == "avocado-instrumented":
+            uri = task.runnable.uri.split(':')[0]
+            target = os.path.join('/tmp', uri)
+            if not await self._copy_to_image(uri, target, container_id):
+                return False
 
         try:
             # pylint: disable=E1133
