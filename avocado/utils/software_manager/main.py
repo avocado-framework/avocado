@@ -1,12 +1,14 @@
 import argparse
 import logging
 
+from .. import exit_codes
 from .manager import SoftwareManager
 
 log = logging.getLogger('avocado.utils.software_manager')
 
 
 def main():
+    exitcode = exit_codes.UTILITY_OK
     parser = argparse.ArgumentParser(
         "install|remove|check-installed|list-all|list-files|add-repo|"
         "remove-repo|upgrade|what-provides|install-what-provides arguments")
@@ -32,18 +34,21 @@ def main():
             log.info("Packages %s installed successfully", args)
         else:
             log.error("Failed to install %s", args)
+            exitcode |= exit_codes.UTILITY_MEDIUM
 
     elif action == 'remove':
         if software_manager.remove(args):
             log.info("Packages %s removed successfully", args)
         else:
             log.error("Failed to remove %s", args)
+            exitcode |= exit_codes.UTILITY_MEDIUM
 
     elif action == 'check-installed':
         if software_manager.check_installed(args):
             log.info("Package %s already installed", args)
         else:
             log.info("Package %s not installed", args)
+            exitcode |= exit_codes.UTILITY_LOW
 
     elif action == 'list-all':
         for pkg in software_manager.list_all():
@@ -58,12 +63,14 @@ def main():
             log.info("Repo %s added successfully", args)
         else:
             log.error("Failed to remove repo %s", args)
+            exitcode |= exit_codes.UTILITY_MEDIUM
 
     elif action == 'remove-repo':
         if software_manager.remove_repo(args):
             log.info("Repo %s removed successfully", args)
         else:
             log.error("Failed to remove repo %s", args)
+            exitcode |= exit_codes.UTILITY_MEDIUM
 
     elif action == 'upgrade':
         if software_manager.upgrade():
@@ -80,3 +87,5 @@ def main():
 
     elif action == 'show-help':
         parser.print_help()
+
+    return exitcode
