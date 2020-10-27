@@ -185,8 +185,7 @@ def _node_content_from_dict(path, node, values, using):
                 using = _handle_control_tag_using(path, node.name, using, value)
             else:
                 _handle_control_tag(path, node, [key, value])
-        elif (isinstance(value, collections.OrderedDict) or
-              value is None):
+        elif isinstance(value, collections.OrderedDict):
             node.add_child(_tree_node_from_values(path, key, value, using))
         else:
             node.value[key] = value
@@ -240,8 +239,6 @@ def _mapping_to_tree_loader(loader, node, looks_like_node=False):
         if isinstance(values, ListOfNodeObjects):   # New node from list
             objects.append(_tree_node_from_values(loader.path, name,
                                                   values, loader.using))
-        elif values is None:            # Empty node
-            objects.append(mux.MuxTreeNode(astring.to_text(name)))
         else:                           # Values
             objects.append((name, values))
     return objects
