@@ -10,14 +10,10 @@ results.
 
 To do so, please run ``avocado`` with the ``run`` sub-command followed by a
 test reference, which could be either a path to the file, or a recognizable
-name::
+name
 
-    $ avocado run /bin/true
-    JOB ID     : 3a5c4c51ceb5369f23702efb10b4209b111141b2
-    JOB LOG    : $HOME/avocado/job-results/job-2019-10-31T10.34-3a5c4c5/job.log
-     (1/1) /bin/true: PASS (0.04 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 0.15 s
+.. literalinclude:: ../../../../../examples/doc/output/hello_world.txt
+
 
 You probably noticed that we used ``/bin/true`` as a test, and in accordance
 with our expectations, it passed! These are known as `simple tests`, but there
@@ -29,19 +25,9 @@ Running a job with multiple tests
 ---------------------------------
 
 You can run any number of test in an arbitrary order, as well as mix and match
-instrumented and simple tests::
+instrumented and simple tests
 
-    $ avocado run failtest.py sleeptest.py synctest.py failtest.py synctest.py /tmp/simple_test.sh
-    JOB ID    : 86911e49b5f2c36caeea41307cee4fecdcdfa121
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
-     (1/6) failtest.py:FailTest.test: FAIL (0.00 s)
-     (2/6) sleeptest.py:SleepTest.test: PASS (1.00 s)
-     (3/6) synctest.py:SyncTest.test: PASS (2.43 s)
-     (4/6) failtest.py:FailTest.test: FAIL (0.00 s)
-     (5/6) synctest.py:SyncTest.test: PASS (2.44 s)
-     (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
-    RESULTS    : PASS 4 | ERROR 0 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB TIME   : 5.98 s
+.. literalinclude:: ../../../../../examples/doc/output/multiple_tests.txt
 
 .. note:: Although in most cases running ``avocado run $test1 $test3 ...`` is
           fine, it can lead to argument vs. test name clashes. The safest

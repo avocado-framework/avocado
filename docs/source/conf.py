@@ -4,6 +4,7 @@
 import errno
 import importlib
 import os
+import subprocess
 import sys
 
 from avocado.core import parameters
@@ -33,6 +34,21 @@ try:
     APIDOC_TEMPLATE = APIDOC + " -o %(output_dir)s %(API_SOURCE_DIR)s %(exclude_dirs)s"
 except path.CmdNotFoundError:
     APIDOC = False
+
+
+def generate_scripts():
+    scrips_path = os.path.join(ROOT_PATH, 'examples', 'doc')
+    for entry in os.scandir(scrips_path):
+        if entry.path.endswith(".sh"):
+            with open(entry.path) as file:
+                script = file.readlines()[1]
+            out_path = os.path.join(os.path.dirname(entry.path), 'output',
+                                    "%s.txt" % os.path.splitext(entry.name)[0])
+            with open(out_path, "w") as output_file:
+                output_file.write("%s" % script)
+                output_file.flush()
+                subprocess.run(entry.path, stdout=output_file,
+                               stderr=output_file)
 
 
 def generate_reference():
@@ -76,6 +92,7 @@ def generate_vmimage_distro():
                                             str(vmimage_arch)))
 
 
+generate_scripts()
 generate_reference()
 generate_vmimage_distro()
 
