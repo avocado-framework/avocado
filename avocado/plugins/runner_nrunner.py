@@ -50,7 +50,17 @@ class RunnerInit(Init):
                                  help_msg=help_msg,
                                  key_type=bool)
 
-        help_msg = 'URI for the status server, usually a "HOST:PORT" string'
+        help_msg = ('URI for listing the status server. Usually '
+                    'a "HOST:PORT" string')
+        settings.register_option(section=section,
+                                 key='status_server_listen',
+                                 default='127.0.0.1:8888',
+                                 metavar="HOST:PORT",
+                                 help_msg=help_msg)
+
+        help_msg = ('URI for connecting to the status server, usually '
+                    'a "HOST:PORT" string. Use this if your status server '
+                    'is in another host, or different port')
         settings.register_option(section=section,
                                  key='status_server_uri',
                                  default='127.0.0.1:8888',
@@ -91,17 +101,16 @@ class RunnerCLI(CLI):
                                          long_arg='--nrunner-shuffle',
                                          action='store_true')
 
-        settings.add_argparser_to_option(namespace='nrunner.status_server_uri',
-                                         parser=parser,
-                                         long_arg='--nrunner-status-server-uri')
+        # namespace mapping
+        ns = {'nrunner.status_server_listen': '--nrunner-status-server-listen',
+              'nrunner.status_server_uri': '--nrunner-status-server-uri',
+              'nrunner.max_parallel_tasks': '--nrunner-max-parallel-tasks',
+              'nrunner.spawner': '--nrunner-spawner'}
 
-        settings.add_argparser_to_option(namespace='nrunner.max_parallel_tasks',
-                                         parser=parser,
-                                         long_arg='--nrunner-max-parallel-tasks')
-
-        settings.add_argparser_to_option(namespace='nrunner.spawner',
-                                         parser=parser,
-                                         long_arg='--nrunner-spawner')
+        for k, v in ns.items():
+            settings.add_argparser_to_option(namespace=k,
+                                             parser=parser,
+                                             long_arg=v)
 
     def run(self, config):
         pass
@@ -169,11 +178,11 @@ class Runner(RunnerInterface):
             result.append(RuntimeTask(task))
         return result
 
-    def _start_status_server(self, status_server_uri):
+    def _start_status_server(self, status_server_listen):
         # pylint: disable=W0201
         self.status_repo = StatusRepo()
         # pylint: disable=W0201
-        self.status_server = StatusServer(status_server_uri,
+        self.status_server = StatusServer(status_server_listen,
                                           self.status_repo)
         asyncio.ensure_future(self.status_server.serve_forever())
 
@@ -234,8 +243,8 @@ class Runner(RunnerInterface):
         test_suite.tests, _ = nrunner.check_tasks_requirements(test_suite.tests)
         job.result.tests_total = test_suite.size  # no support for variants yet
 
-        status_server_uri = test_suite.config.get('nrunner.status_server_uri')
-        self._start_status_server(status_server_uri)
+        listen = test_suite.config.get('nrunner.status_server_listen')
+        self._start_status_server(listen)
 
         # pylint: disable=W0201
         self.tasks = self._get_all_runtime_tasks(test_suite)
