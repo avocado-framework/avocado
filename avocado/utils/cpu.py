@@ -205,14 +205,15 @@ def get_family():
         except IndexError as err:
             logging.warning("Unable to parse cpu family %s", err)
     elif arch == 's390':
-        zfamily_map = {'3906': 'z14',
+        zfamily_map = {'2964': 'z13',
+                       '3906': 'z14',
                        '8561': 'z15'
                        }
         try:
             family = zfamily_map[get_version()].lower()
         except KeyError as err:
             logging.warning("Could not find family for %s\nError: %s", get_version(), err)
-    elif arch == 'arm':
+    else:
         raise NotImplementedError
     return family
 
