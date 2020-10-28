@@ -62,20 +62,27 @@ class PMem:
                                 "proper daxctl binary")
         self.daxctl = abs_daxctl
 
-    def check_ndctl_subcmd(self, command):
-        """
-        Check if given sub command is supported by ndctl
+    def check_subcmd(self, binary, command):
+        """Check if given sub command is supported by binary
 
         :param command: sub command of ndctl to check for existence
         :return: True if sub command is available
         :rtype: bool
         """
-        cmd = "%s --list-cmds" % self.ndctl
+        cmd = "%s --list-cmds" % binary
         out = process.system_output(cmd).decode().splitlines()
         if command in out:
             return True
 
         return False
+
+    def check_ndctl_subcmd(self, command):
+        """Check if given sub command is supported by ndctl"""
+        return self.check_subcmd(self.ndctl, command)
+
+    def check_daxctl_subcmd(self, command):
+        """Check if given sub command is supported by daxctl"""
+        return self.check_subcmd(self.daxctl, command)
 
     def run_ndctl_list(self, option=''):
         """
@@ -117,6 +124,69 @@ class PMem:
         """
         cmd = '%s list %s' % (self.daxctl, options)
         return json.loads(process.system_output(cmd))
+
+    def set_dax_memory_online(self, device, region=None, no_movable=False):
+        """Set memory from a given devdax device online
+
+        :param device: Device from which memory is to be online
+        :param region: Optionally filter device by region
+        :param no_movable: Optionally make the memory non-movable
+
+        :return: True if command succeeds
+        :rtype: bool
+        :raise: :class:`PMemException`, if command fails.
+        """
+        cmd = '%s online-memory %s' % (self.daxctl, device)
+        if region:
+            cmd += ' -r %s' % region
+        if no_movable:
+            cmd += ' --no-movable'
+        if process.system(cmd, shell=True, ignore_status=True):
+            raise PMemException("Failed to online memory with %s" % device)
+        return True
+
+    def set_dax_memory_offline(self, device, region=None):
+        """Set memory from a given devdax device offline
+
+        :param device: Device from which memory is to be offline
+        :param region: Optionally filter device by region
+
+        :return: True if command succeeds
+        :rtype: bool
+        :raise: :class:`PMemException`, if command fails.
+        """
+        cmd = '%s offline-memory %s' % (self.daxctl, device)
+        if region:
+            cmd += ' -r %s' % region
+        if process.system(cmd, shell=True, ignore_status=True):
+            raise PMemException("Failed to offline memory with %s" % device)
+        return True
+
+    def reconfigure_dax_device(self, device, mode='devdax', region=None,
+                               no_online=False, no_movable=False):
+        """Reconfigure devdax device into devdax or system-ram mode
+
+        :param device: Device from which memory is to be online
+        :param mode: Mode with which device is to be configured, default:devdax
+        :param region: Optionally filter device by region
+        :param no_online: Optionally don't online the memory(only system-ram)
+        :param no_movable: Optionally mark memory non-movable(only system-ram)
+
+        :return: Property of configured device
+        :rtype: str
+        :raise: :class:`PMemException`, if command fails.
+        """
+        cmd = '%s reconfigure-device %s -m %s' % (self.daxctl, device, mode)
+        if region:
+            cmd += ' -r %s' % region
+        if no_online:
+            cmd += ' -N'
+        if no_movable:
+            cmd += ' --no-movable'
+        device_property = process.run(cmd, shell=True, ignore_status=True)
+        if device_property.exit_status:
+            raise PMemException("Failed to reconfigure device %s" % device)
+        return device_property.stdout_text
 
     def get_slot_count(self, region):
         """
