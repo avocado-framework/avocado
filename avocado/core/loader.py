@@ -117,14 +117,17 @@ class TestLoaderProxy:
                                        ", ".join(_good_test_types(plugin)))
             return out.rstrip('\n')
 
-        subcommand = config.get('subcommand')
+        # When running from the JobAPI there is no subcommand
+        subcommand = config.get('subcommand') or 'run'
         self.register_plugin(TapLoader)
         # Register external runner when --external-runner is used
         external_runner = config.get("{}.external_runner".format(subcommand))
         if external_runner:
             self.register_plugin(ExternalLoader)
             key = "{}.loaders".format(subcommand)
-            if set(config[key]) != {'file', '@DEFAULT'}:
+            default_loaders = {'file', '@DEFAULT'}
+            loaders = config.get(key) or default_loaders
+            if set(loaders) != default_loaders:
                 warnings.warn("The loaders and external-runner are incompatible."
                               "The values in loaders will be ignored.",
                               RuntimeWarning)
