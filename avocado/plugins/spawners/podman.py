@@ -4,7 +4,7 @@ import os
 import re
 import subprocess
 
-from avocado.core.plugin_interfaces import Init, Spawner
+from avocado.core.plugin_interfaces import CLI, Init, Spawner
 from avocado.core.requirements import cache
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
@@ -30,6 +30,30 @@ class PodmanSpawnerInit(Init):
             key='image',
             help_msg=help_msg,
             default='fedora:31')
+
+
+class PodmanCLI(CLI):
+
+    name = 'podman'
+    description = 'podman spawner command line options for "run"'
+
+    def configure(self, parser):
+        super(PodmanCLI, self).configure(parser)
+        parser = parser.subcommands.choices.get('run', None)
+        if parser is None:
+            return
+
+        parser = parser.add_argument_group('podman spawner specific options')
+        settings.add_argparser_to_option(namespace='spawner.podman.bin',
+                                         parser=parser,
+                                         long_arg='--spawner-podman-bin')
+
+        settings.add_argparser_to_option(namespace='spawner.podman.image',
+                                         parser=parser,
+                                         long_arg='--spawner-podman-image')
+
+    def run(self, config):
+        pass
 
 
 class PodmanSpawner(Spawner, SpawnerMixin):
