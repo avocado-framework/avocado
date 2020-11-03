@@ -355,7 +355,7 @@ class OutputPluginTest(TestCaseTmpDir):
                          (expected_rc, result))
         error_regex = re.compile(r'.*Options ((--xunit --json)|'
                                  '(--json --xunit)) are trying to use stdout '
-                                 'simultaneously.')
+                                 'simultaneously.', re.MULTILINE | re.DOTALL)
         self.assertIsNotNone(error_regex.match(result.stderr_text),
                              "Missing error message from output:\n%s" %
                              result.stderr)

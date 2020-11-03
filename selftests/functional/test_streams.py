@@ -16,7 +16,6 @@ class StreamsTest(TestCaseTmpDir):
         result = process.run('%s distro' % AVOCADO)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertIn(b'Detected distribution', result.stdout)
-        self.assertEqual(b'', result.stderr)
 
     def test_app_error_stderr(self):
         """
@@ -95,7 +94,7 @@ class StreamsTest(TestCaseTmpDir):
         """
         def run(show, no_lines):
             result = process.run("%s --show %s config" % (AVOCADO, show))
-            out = (result.stdout + result.stderr).splitlines()
+            out = result.stdout.splitlines()
             if no_lines == "more_than_one":
                 self.assertGreater(len(out), 1, "Output of %s should contain "
                                    "more than 1 line, contains only %s\n%s"
