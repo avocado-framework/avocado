@@ -93,6 +93,7 @@ if __name__ == '__main__':
                   'zip_archive = avocado.plugins.archive:ArchiveCLI',
                   'json_variants = avocado.plugins.json_variants:JsonVariantsCLI',
                   'nrunner = avocado.plugins.runner_nrunner:RunnerCLI',
+                  'podman = avocado.plugins.spawners.podman:PodmanCLI',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
