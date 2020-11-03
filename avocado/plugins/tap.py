@@ -16,6 +16,7 @@ TAP output module.
 """
 
 import os
+import warnings
 
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
@@ -193,6 +194,11 @@ class TAP(CLI):
         cmd_parser = parser.subcommands.choices.get('run', None)
         if cmd_parser is None:
             return
+        warning_msg = ("--tap-job-result as string will be deprecated soon. "
+                       "This will be a bool option. On, Off will not be "
+                       "necessary in future releases")
+        warnings.warn(warning_msg)
+
         settings.add_argparser_to_option(
             namespace='job.run.result.tap.output',
             metavar='FILE',
