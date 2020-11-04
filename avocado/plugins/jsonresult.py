@@ -19,6 +19,7 @@ JSON output module.
 
 import json
 import os
+import warnings
 
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
@@ -67,6 +68,10 @@ class JSONResult(Result):
                           separators=(',', ': '))
 
     def render(self, result, job):
+        warning_msg = ("--json-job-result as string will be deprecated soon. "
+                       "This will be a bool option. On, Off will not be "
+                       "necessary in future releases")
+        warnings.warn(warning_msg)
         json_output = job.config.get('job.run.result.json.output')
         json_enabled = job.config.get('job.run.result.json.enabled')
 

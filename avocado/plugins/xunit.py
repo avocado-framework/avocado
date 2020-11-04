@@ -18,6 +18,7 @@
 import datetime
 import os
 import string
+import warnings
 from xml.dom.minidom import Document
 
 from avocado.core.output import LOG_UI
@@ -209,6 +210,11 @@ class XUnitCLI(CLI):
     description = 'xUnit output options'
 
     def configure(self, parser):
+        warning_msg = ("--xunit-job-result as string will be deprecated soon. "
+                       "This will be a bool option. On, Off will not be "
+                       "necessary in future releases")
+        warnings.warn(warning_msg)
+
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
         if run_subcommand_parser is None:
             return

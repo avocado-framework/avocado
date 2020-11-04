@@ -21,6 +21,7 @@ import os
 import subprocess
 import sys
 import time
+import warnings
 
 import jinja2 as jinja
 
@@ -254,6 +255,11 @@ class HTML(CLI):
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
         if run_subcommand_parser is None:
             return
+
+        warning_msg = ("--html-job-result as string will be deprecated soon. "
+                       "This will be a bool option. On, Off will not be "
+                       "necessary in future releases")
+        warnings.warn(warning_msg)
 
         help_msg = ('Enable HTML output to the FILE where the result should '
                     'be written. The value - (output to stdout) is not '
