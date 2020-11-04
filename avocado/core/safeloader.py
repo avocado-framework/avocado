@@ -19,11 +19,11 @@ Safe (AST based) test loader module utilities
 
 import ast
 import collections
-import imp
 import json
 import os
 import re
 import sys
+from importlib.machinery import PathFinder
 
 from ..utils import data_structures
 
@@ -497,14 +497,14 @@ def _examine_class(path, class_name, match, target_module, target_class,
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
-            _, found_ppath, _ = imp.find_module(parent_module,
-                                                modules_paths)
-            _info, _disabled, _match = _examine_class(found_ppath,
-                                                      parent_class,
-                                                      match,
-                                                      target_module,
-                                                      target_class,
-                                                      _determine_match_avocado)
+            found_spec = PathFinder.find_spec(parent_module, modules_paths)
+            if found_spec is not None:
+                _info, _disabled, _match = _examine_class(found_spec.origin,
+                                                          parent_class,
+                                                          match,
+                                                          target_module,
+                                                          target_class,
+                                                          _determine_match_avocado)
             if _info:
                 _extend_test_list(info, _info)
                 disabled.update(_disabled)
@@ -630,11 +630,10 @@ def find_python_tests(module_name, class_name, determine_match, path):
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
-            try:
-                _, found_ppath, _ = imp.find_module(parent_module, modules_paths)
-            except ImportError:
+            found_spec = PathFinder.find_spec(parent_module, modules_paths)
+            if found_spec is None:
                 continue
-            _info, _dis, _python_test = _examine_class(found_ppath,
+            _info, _dis, _python_test = _examine_class(found_spec.origin,
                                                        parent_class,
                                                        is_valid_test,
                                                        module_name,
