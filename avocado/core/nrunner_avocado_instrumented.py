@@ -20,6 +20,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
      * args: not used
     """
+    DEFAULT_TIMEOUT = 86400
 
     @staticmethod
     def _run_avocado(runnable, queue):
@@ -45,6 +46,8 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                          }]
 
         instance = loader.loader.load_test(test_factory)
+        early_state = instance.get_state()
+        queue.put(early_state)
         instance.run_avocado()
         state = instance.get_state()
         # This should probably be done in a translator
@@ -71,7 +74,16 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
         process.start()
 
+        time_started = time.monotonic()
         yield self.prepare_status('started')
+
+        # Waiting for early status
+        while queue.empty():
+            time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
+
+        early_status = queue.get()
+        timeout = float(early_status.get('timeout', self.DEFAULT_TIMEOUT))
+        interrupted = False
         most_current_execution_state_time = None
         while queue.empty():
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
@@ -83,8 +95,20 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
                 yield self.prepare_status('running')
-
-        status = queue.get()
+            if (now - time_started) > timeout:
+                process.terminate()
+                interrupted = True
+                break
+        if interrupted:
+            status = early_status
+            status['result'] = 'interrupted'
+            status['status'] = 'finished'
+            if 'name' in status:
+                del status['name']
+            if 'time_start' in status:
+                del status['time_start']
+        else:
+            status = queue.get()
         status['time'] = time.monotonic()
         yield status
 
