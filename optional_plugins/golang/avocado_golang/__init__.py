@@ -57,7 +57,7 @@ def find_files(path, recursive=True):
                 matches.append(os.path.join(root, filename))
         return matches
 
-    if path != '.':
+    if path != os.path.curdir:
         pattern = os.path.join(path, pattern)
     return glob.iglob(pattern)
 

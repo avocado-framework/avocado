@@ -7,7 +7,8 @@ import unittest
 import pkg_resources
 
 #: The base directory for the avocado source tree
-BASEDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
+BASEDIR = os.path.abspath(os.path.join(BASEDIR, os.path.pardir))
 
 #: The name of the avocado test runner entry point
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",

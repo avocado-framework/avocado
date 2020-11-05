@@ -11,8 +11,8 @@ from avocado.core import parameters, tree
 from avocado.utils import astring
 from avocado_varianter_yaml_to_mux import mux
 
-BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-BASEDIR = os.path.abspath(BASEDIR)
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
+BASEDIR = os.path.abspath(os.path.join(BASEDIR, os.path.pardir))
 
 
 def combine(leaves_pools):
