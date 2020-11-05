@@ -68,10 +68,6 @@ class JSONResult(Result):
                           separators=(',', ': '))
 
     def render(self, result, job):
-        warning_msg = ("--json-job-result as string will be deprecated soon. "
-                       "This will be a bool option. On, Off will not be "
-                       "necessary in future releases")
-        warnings.warn(warning_msg)
         json_output = job.config.get('job.run.result.json.output')
         json_enabled = job.config.get('job.run.result.json.enabled')
 
@@ -130,6 +126,11 @@ class JSONCLI(CLI):
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
         if run_subcommand_parser is None:
             return
+
+        warning_msg = ("--json-job-result as string will be deprecated soon. "
+                       "This will be a bool option. On, Off will not be "
+                       "necessary in future releases")
+        warnings.warn(warning_msg)
 
         settings.add_argparser_to_option(
             namespace='job.run.result.json.output',
