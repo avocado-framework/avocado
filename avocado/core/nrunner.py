@@ -8,6 +8,7 @@ import io
 import json
 import multiprocessing
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -711,6 +712,19 @@ class Task:
             yield status
 
 
+def _get_kind_options_from_executable_name():
+    executable_name = os.path.basename(sys.argv[0])
+    match = re.match(r'^avocado\-runner\-(.+)$', executable_name)
+    options = {'type': str, 'help': 'Kind of runnable'}
+    if match:
+        options['required'] = False
+        options['default'] = match.group(1)
+        options['help'] += ', defaults to "%(default)s"'
+    else:
+        options['required'] = True
+    return options
+
+
 class BaseRunnerApp:
     '''
     Helper base class for common runner application behavior
@@ -731,7 +745,7 @@ class BaseRunnerApp:
     #: The command line arguments to the "runnable-run" command
     CMD_RUNNABLE_RUN_ARGS = (
         (('-k', '--kind'),
-         {'type': str, 'required': True, 'help': 'Kind of runnable'}),
+         _get_kind_options_from_executable_name()),
 
         (('-u', '--uri'),
          {'type': str, 'default': None, 'help': 'URI of runnable'}),
