@@ -106,6 +106,7 @@ def find_command(cmd, default=None, check_exec=True):
     if default is not None:
         return default
     else:
+        path_paths.sort()
         raise CmdNotFoundError(cmd, path_paths)
 
 
