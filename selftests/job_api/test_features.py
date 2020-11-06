@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import sys
 import time
 
 from avocado import Test
@@ -465,7 +466,7 @@ def create_suites():
     return suites
 
 
-if __name__ == '__main__':
+def main():
     suites = create_suites()
     # ========================================================================
     # Print features covered in this test
@@ -487,4 +488,8 @@ if __name__ == '__main__':
     # ========================================================================
     config = {'core.show': ['app']}
     with Job(config, suites) as j:
-        j.run()
+        return j.run()
+
+
+if __name__ == '__main__':
+    sys.exit(main())
