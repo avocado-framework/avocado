@@ -31,6 +31,9 @@ setup(name='avocado-framework-plugin-result-html',
           'avocado.plugins.cli': [
               'html = avocado_result_html:HTML',
           ],
+          'avocado.plugins.init': [
+              'html = avocado_result_html:HTMLInit',
+          ],
           'avocado.plugins.result': [
               'html = avocado_result_html:HTMLResult',
           ]}
