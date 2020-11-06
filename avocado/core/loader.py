@@ -75,23 +75,42 @@ class LoaderUnhandledReferenceError(LoaderError):
 
 class TestLoaderProxy:
 
+    class PluginsRegister:
+
+        def __init__(self):
+            self.registered_plugins = []
+
+        def register_plugin(self, plugin):
+            try:
+                if issubclass(plugin, TestLoader):
+                    if plugin not in self.registered_plugins:
+                        self.registered_plugins.append(plugin)
+                else:
+                    raise ValueError
+            except ValueError:
+                raise InvalidLoaderPlugin("Object %s is not an instance of "
+                                          "TestLoader" % plugin)
+
+        def clear_plugins(self):
+            self.registered_plugins = []
+
     def __init__(self):
         self._initialized_plugins = []
-        self.registered_plugins = []
         self.reference_plugin_mapping = {}
         self._label_mapping = None
         self._decorator_mapping = None
 
-    def register_plugin(self, plugin):
-        try:
-            if issubclass(plugin, TestLoader):
-                if plugin not in self.registered_plugins:
-                    self.registered_plugins.append(plugin)
-            else:
-                raise ValueError
-        except ValueError:
-            raise InvalidLoaderPlugin("Object %s is not an instance of "
-                                      "TestLoader" % plugin)
+    @property
+    def registered_plugins(self):
+        return register.registered_plugins
+
+    @staticmethod
+    def register_plugin(plugin):
+        register.register_plugin(plugin)
+
+    @staticmethod
+    def clear_plugins():
+        register.clear_plugins()
 
     def load_plugins(self, config):
         def _good_test_types(plugin):
@@ -261,7 +280,8 @@ class TestLoaderProxy:
         self._update_mappings()
         return tests
 
-    def load_test(self, test_factory):
+    @staticmethod
+    def load_test(test_factory):
         """
         Load test from the test factory.
 
@@ -305,9 +325,6 @@ class TestLoaderProxy:
         test_instance = test_class(**test_parameters)
 
         return test_instance
-
-    def clear_plugins(self):
-        self.registered_plugins = []
 
 
 class TestLoader:
@@ -912,4 +929,4 @@ class TapLoader(SimpleFileLoader):
                                executable=test_path)
 
 
-loader = TestLoaderProxy()
+register = TestLoaderProxy.PluginsRegister()

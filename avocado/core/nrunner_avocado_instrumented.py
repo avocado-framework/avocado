@@ -2,7 +2,8 @@ import multiprocessing
 import tempfile
 import time
 
-from . import job, loader, nrunner
+from . import job, nrunner
+from .loader import TestLoaderProxy
 from .test import TestID
 from .tree import TreeNode
 
@@ -44,7 +45,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                          'run.results_dir': tempfile.mkdtemp(),
                          }]
 
-        instance = loader.loader.load_test(test_factory)
+        instance = TestLoaderProxy.load_test(test_factory)
         instance.run_avocado()
         state = instance.get_state()
         # This should probably be done in a translator

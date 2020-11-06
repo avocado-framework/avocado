@@ -181,4 +181,4 @@ class RobotCLI(CLI):
         pass
 
     def run(self, config):
-        loader.loader.register_plugin(RobotLoader)
+        loader.TestLoaderProxy.register_plugin(RobotLoader)

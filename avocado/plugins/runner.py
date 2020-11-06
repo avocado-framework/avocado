@@ -26,7 +26,6 @@ import time
 from queue import Full as queueFullException
 
 from avocado.core import output, tree, varianter
-from avocado.core.loader import loader
 from avocado.core.output import LOG_JOB as TEST_LOG
 from avocado.core.output import LOG_UI as APP_LOG
 from avocado.core.plugin_interfaces import Runner
@@ -87,7 +86,7 @@ class TestRunner(Runner):
         # `multiprocessing.Process()`
         os.dup2(sys.stdin.fileno(), 0)
 
-        instance = loader.load_test(test_factory)
+        instance = job.test_suite.loader.load_test(test_factory)
         if instance.runner_queue is None:
             instance.set_runner_queue(queue)
         early_state = instance.get_state()

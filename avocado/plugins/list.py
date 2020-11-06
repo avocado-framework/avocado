@@ -104,8 +104,8 @@ class List(CLICmd):
         """Used for loader."""
         test_matrix = []
 
-        type_label_mapping = loader.loader.get_type_label_mapping()
-        decorator_mapping = loader.loader.get_decorator_mapping()
+        type_label_mapping = suite.loader.get_type_label_mapping()
+        decorator_mapping = suite.loader.get_decorator_mapping()
 
         verbose = suite.config.get('core.verbose')
         for cls, params in suite.tests:

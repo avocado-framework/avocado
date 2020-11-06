@@ -281,4 +281,4 @@ class GolangCLI(CLI):
         pass
 
     def run(self, config):
-        loader.loader.register_plugin(GolangLoader)
+        loader.TestLoaderProxy.register_plugin(GolangLoader)

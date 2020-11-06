@@ -20,7 +20,7 @@ from .dispatcher import RunnerDispatcher
 from .exceptions import (JobTestSuiteReferenceResolutionError,
                          OptionValidationError)
 from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
-                     loader)
+                     TestLoaderProxy)
 from .parser import HintParser
 from .resolver import resolve
 from .settings import settings
@@ -43,10 +43,11 @@ class TestSuiteStatus(Enum):
 
 class TestSuite:
     def __init__(self, name, config=None, tests=None, job_config=None,
-                 resolutions=None):
+                 resolutions=None, loader=TestLoaderProxy()):
         self.name = name
         self.tests = tests
         self.resolutions = resolutions
+        self.loader = loader
 
         # Create a complete config dict with all registered options + custom
         # config
@@ -79,6 +80,7 @@ class TestSuite:
 
     @classmethod
     def _from_config_with_loader(cls, config, name=None):
+        loader = TestLoaderProxy()
         references = config.get('run.references')
         ignore_missing = config.get('run.ignore_missing_references')
         verbose = config.get('core.verbose')
@@ -110,7 +112,7 @@ class TestSuite:
 
         if name is None:
             name = str(uuid4())
-        return cls(name=name, config=config, tests=tests)
+        return cls(name=name, config=config, tests=tests, loader=loader)
 
     @classmethod
     def _from_config_with_resolver(cls, config, name=None):
@@ -142,7 +144,7 @@ class TestSuite:
 
     def _get_stats_from_runner(self):
         stats = {}
-        mapping = loader.get_type_label_mapping()
+        mapping = self.loader.get_type_label_mapping()
 
         for cls, _ in self.tests:
             if isinstance(cls, str):
