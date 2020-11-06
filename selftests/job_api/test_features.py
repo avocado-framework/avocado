@@ -213,7 +213,8 @@ def create_suites():
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_archive_file_exists))
+    suites.append(TestSuite.from_config(config_check_archive_file_exists,
+                                        "%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the category directory was created
@@ -231,7 +232,8 @@ def create_suites():
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_category_directory_exists))
+    suites.append(TestSuite.from_config(config_check_category_directory_exists,
+                                        "%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if a directory was created
@@ -254,7 +256,8 @@ def create_suites():
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_directory_exists))
+    suites.append(TestSuite.from_config(config_check_directory_exists,
+                                        "%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test the content of a file
@@ -333,7 +336,8 @@ def create_suites():
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_file_content))
+    suites.append(TestSuite.from_config(config_check_file_content,
+                                        "%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the result file was created
@@ -407,7 +411,8 @@ def create_suites():
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_file_exists))
+    suites.append(TestSuite.from_config(config_check_file_exists,
+                                        "%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if a file was created
@@ -437,7 +442,8 @@ def create_suites():
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_output_file))
+    suites.append(TestSuite.from_config(config_check_output_file,
+                                        "%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the temporary directory was created
@@ -454,7 +460,8 @@ def create_suites():
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_tmp_directory_exists))
+    suites.append(TestSuite.from_config(config_check_tmp_directory_exists,
+                                        "%s" % (len(suites) + 1)))
     return suites
 
 
