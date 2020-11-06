@@ -194,8 +194,7 @@ def parse_args():
     return parser.parse_args()
 
 
-if __name__ == '__main__':
-
+def create_suites():
     test_class = 'JobAPIFeaturesTest'
     suites = []
 
@@ -456,7 +455,11 @@ if __name__ == '__main__':
          ]})
 
     suites.append(TestSuite.from_config(config_check_tmp_directory_exists))
+    return suites
 
+
+if __name__ == '__main__':
+    suites = create_suites()
     # ========================================================================
     # Print features covered in this test
     # ========================================================================
