@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import glob
 import os
 import sys
-import time
 
 from avocado import Test
 from avocado.core import exit_codes
@@ -206,6 +206,7 @@ def create_suites():
                          % (__file__, test_class))
     config_check_archive_file_exists = (
         {'run.references': [check_archive_file_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'run.results.archive',
@@ -215,7 +216,7 @@ def create_suites():
          ]})
 
     suites.append(TestSuite.from_config(config_check_archive_file_exists,
-                                        "%s" % (len(suites) + 1)))
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the category directory was created
@@ -225,6 +226,7 @@ def create_suites():
         % (__file__, test_class))
     config_check_category_directory_exists = (
         {'run.references': [check_category_directory_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'run.job_category',
@@ -234,7 +236,7 @@ def create_suites():
          ]})
 
     suites.append(TestSuite.from_config(config_check_category_directory_exists,
-                                        "%s" % (len(suites) + 1)))
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if a directory was created
@@ -243,6 +245,7 @@ def create_suites():
                               % (__file__, test_class))
     config_check_directory_exists = (
         {'run.references': [check_directory_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'sysinfo.collect.enabled',
@@ -258,7 +261,7 @@ def create_suites():
          ]})
 
     suites.append(TestSuite.from_config(config_check_directory_exists,
-                                        "%s" % (len(suites) + 1)))
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test the content of a file
@@ -267,6 +270,7 @@ def create_suites():
                           % (__file__, test_class))
     config_check_file_content = (
         {'run.references': [check_file_content],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              # finding the correct 'content' here is trick because any
@@ -338,7 +342,7 @@ def create_suites():
          ]})
 
     suites.append(TestSuite.from_config(config_check_file_content,
-                                        "%s" % (len(suites) + 1)))
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the result file was created
@@ -347,6 +351,7 @@ def create_suites():
                          % (__file__, test_class))
     config_check_file_exists = (
         {'run.references': [check_file_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'job.run.result.html.enabled',
@@ -413,7 +418,7 @@ def create_suites():
          ]})
 
     suites.append(TestSuite.from_config(config_check_file_exists,
-                                        "%s" % (len(suites) + 1)))
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if a file was created
@@ -422,6 +427,7 @@ def create_suites():
                          % (__file__, test_class))
     config_check_output_file = (
         {'run.references': [check_output_file],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'job.run.result.html.output',
@@ -444,7 +450,7 @@ def create_suites():
          ]})
 
     suites.append(TestSuite.from_config(config_check_output_file,
-                                        "%s" % (len(suites) + 1)))
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the temporary directory was created
@@ -453,6 +459,7 @@ def create_suites():
                               % (__file__, test_class))
     config_check_tmp_directory_exists = (
         {'run.references': [check_tmp_directory_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'run.keep_tmp',
@@ -462,7 +469,21 @@ def create_suites():
          ]})
 
     suites.append(TestSuite.from_config(config_check_tmp_directory_exists,
-                                        "%s" % (len(suites) + 1)))
+                                        "job-api-%s" % (len(suites) + 1)))
+
+    # ========================================================================
+    # Run all static checks, unit and functional tests
+    # ========================================================================
+    config_check = (
+        {'run.references': (glob.glob('selftests/*.sh') +
+                            glob.glob('selftests/jobs/*') +
+                            glob.glob('selftests/unit/*.py') +
+                            glob.glob('selftests/functional/*.py') +
+                            glob.glob('optional_plugins/*/tests/*.py')),
+         'run.test_runner': 'nrunner',
+         'run.ignore_missing_references': True}
+        )
+    suites.append(TestSuite.from_config(config_check, "check"))
     return suites
 
 
@@ -486,7 +507,8 @@ def main():
     # ========================================================================
     # Job execution
     # ========================================================================
-    config = {'core.show': ['app']}
+    config = {'core.show': ['app'],
+              'run.test_runner': 'nrunner'}
     with Job(config, suites) as j:
         return j.run()
 
