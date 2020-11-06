@@ -47,7 +47,7 @@ class JournalPluginTests(TestCaseTmpDir):
 
     def tearDown(self):
         self.db.close()
-        super(JournalPluginTests, self).setUp()
+        super(JournalPluginTests, self).tearDown()
 
 
 if __name__ == '__main__':
