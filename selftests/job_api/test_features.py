@@ -184,14 +184,17 @@ class JobAPIFeaturesTest(Test):
         self.check_exit_code(result)
         self.check_directory_exists(tmpdir)
 
-if __name__ == '__main__':
 
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f',
                         '--features',
                         help='show the features tested by this test.',
                         action='store_true')
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
 
     test_class = 'JobAPIFeaturesTest'
     suites = []
@@ -457,6 +460,7 @@ if __name__ == '__main__':
     # ========================================================================
     # Print features covered in this test
     # ========================================================================
+    args = parse_args()
     if args.features:
         features = []
         for suite in suites:
