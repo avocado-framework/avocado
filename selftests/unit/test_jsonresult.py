@@ -80,7 +80,8 @@ class JSONResultTest(TestCaseTmpDir):
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
         output = self.job.config.get('job.run.result.json.output')
-        res = json.loads(open(output).read())
+        with open(output) as json_output:
+            res = json.loads(json_output.read())
         check_item("[pass]", res["pass"], 2)
         check_item("[errors]", res["errors"], 4)
         check_item("[failures]", res["failures"], 1)
@@ -99,7 +100,8 @@ class JSONResultTest(TestCaseTmpDir):
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
         output = self.job.config.get('job.run.result.json.output')
-        res = json.loads(open(output).read())
+        with open(output) as json_output:
+            res = json.loads(json_output.read())
         check_item("[total]", res["total"], 1)
         check_item("[skip]", res["skip"], 0)
         check_item("[pass]", res["pass"], 1)
