@@ -1,6 +1,5 @@
 import json
 import os
-import tempfile
 import unittest
 
 from avocado import Test
@@ -8,7 +7,7 @@ from avocado.core import job
 from avocado.core.result import Result
 from avocado.plugins import jsonresult
 
-from .. import setup_avocado_loggers, temp_dir_prefix
+from .. import TestCaseTmpDir, setup_avocado_loggers
 
 setup_avocado_loggers()
 
@@ -17,34 +16,27 @@ UNIQUE_ID = '0000000000000000000000000000000000000000'
 LOGFILE = None
 
 
-class JSONResultTest(unittest.TestCase):
+class JSONResultTest(TestCaseTmpDir):
 
     def setUp(self):
+        super(JSONResultTest, self).setUp()
 
         class SimpleTest(Test):
 
             def test(self):
                 pass
 
-        self.tmpfile = tempfile.mkstemp()
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
+        json_output_path = os.path.join(self.tmpdir.name, 'results.json')
         config = {'run.results_dir': self.tmpdir.name,
-                  'job.run.result.json.output': self.tmpfile[1]}
+                  'job.run.result.json.output': json_output_path}
         self.job = job.Job(config)
         self.job.setup()
         self.test_result = Result(UNIQUE_ID, LOGFILE)
-        self.test_result.filename = self.tmpfile[1]
+        self.test_result.filename = json_output_path
         self.test_result.tests_total = 1
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir.name)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
-
-    def tearDown(self):
-        self.job.cleanup()
-        os.close(self.tmpfile[0])
-        os.remove(self.tmpfile[1])
-        self.tmpdir.cleanup()
 
     def test_add_success(self):
         self.test_result.start_test(self.test1)
@@ -111,6 +103,10 @@ class JSONResultTest(unittest.TestCase):
         check_item("[total]", res["total"], 1)
         check_item("[skip]", res["skip"], 0)
         check_item("[pass]", res["pass"], 1)
+
+    def tearDown(self):
+        self.job.cleanup()
+        super(JSONResultTest, self).tearDown()
 
 
 if __name__ == '__main__':
