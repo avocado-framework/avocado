@@ -27,7 +27,7 @@ import jinja2 as jinja
 
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLI, Result
+from avocado.core.plugin_interfaces import CLI, Init, Result
 from avocado.core.settings import settings
 from avocado.utils import astring
 
@@ -242,6 +242,41 @@ class HTMLResult(Result):
                 self._open_browser(html_path)
 
 
+class HTMLInit(Init):
+
+    name = 'htmlresult'
+    description = "HTML job report options initialization"
+
+    def initialize(self):
+        section = 'job.run.result.html'
+        help_msg = ('Enable HTML output to the FILE where the result should '
+                    'be written. The value - (output to stdout) is not '
+                    'supported since not all HTML resources can be embedded '
+                    'into a single file (page resources will be copied to '
+                    'the output file dir)')
+        settings.register_option(section=section,
+                                 key='output',
+                                 default=None,
+                                 help_msg=help_msg)
+
+        help_msg = ('Open the generated report on your preferred browser. '
+                    'This works even if --html was not explicitly passed, '
+                    'since an HTML report is always generated on the job '
+                    'results dir.')
+        settings.register_option(section=section,
+                                 key='open_browser',
+                                 key_type=bool,
+                                 default=False,
+                                 help_msg=help_msg)
+
+        help_msg = ('Enables default HTML result in the job results '
+                    'directory. File will be named "results.html".')
+        settings.register_option(section=section,
+                                 key='enabled',
+                                 default='on',
+                                 help_msg=help_msg)
+
+
 class HTML(CLI):
 
     """
@@ -261,40 +296,22 @@ class HTML(CLI):
                        "necessary in future releases")
         warnings.warn(warning_msg)
 
-        help_msg = ('Enable HTML output to the FILE where the result should '
-                    'be written. The value - (output to stdout) is not '
-                    'supported since not all HTML resources can be embedded '
-                    'into a single file (page resources will be copied to '
-                    'the output file dir)')
-        settings.register_option(section='job.run.result.html',
-                                 key='output',
-                                 default=None,
-                                 help_msg=help_msg,
-                                 parser=run_subcommand_parser,
-                                 metavar='FILE',
-                                 long_arg='--html')
+        settings.add_argparser_to_option(
+            namespace='job.run.result.html.output',
+            parser=run_subcommand_parser,
+            metavar='FILE',
+            long_arg='--html')
 
-        help_msg = ('Open the generated report on your preferred browser. '
-                    'This works even if --html was not explicitly passed, '
-                    'since an HTML report is always generated on the job '
-                    'results dir.')
-        settings.register_option(section='job.run.result.html',
-                                 key='open_browser',
-                                 key_type=bool,
-                                 default=False,
-                                 help_msg=help_msg,
-                                 parser=run_subcommand_parser,
-                                 long_arg='--open-browser')
+        settings.add_argparser_to_option(
+            namespace='job.run.result.html.open_browser',
+            parser=run_subcommand_parser,
+            long_arg='--open-browser')
 
-        help_msg = ('Enables default HTML result in the job results '
-                    'directory. File will be named "results.html".')
-        settings.register_option(section='job.run.result.html',
-                                 key='enabled',
-                                 default='on',
-                                 choices=('on', 'off'),
-                                 parser=run_subcommand_parser,
-                                 help_msg=help_msg,
-                                 long_arg='--html-job-result')
+        settings.add_argparser_to_option(
+            namespace='job.run.result.html.enabled',
+            choices=('on', 'off'),
+            parser=run_subcommand_parser,
+            long_arg='--html-job-result')
 
     def run(self, config):
         if config.get('job.run.result.html.output') == '-':

@@ -7,7 +7,7 @@ from avocado.core.suite import TestSuite
 
 config = {'run.references': ['examples/tests/passtest.py:PassTest.test'],
           'job.run.result.html.enabled': 'on',
-          'run.open_browser': True}
+          'job.run.result.html.open_browser': True}
 
 suite = TestSuite.from_config(config)
 with Job(config, [suite]) as j:
