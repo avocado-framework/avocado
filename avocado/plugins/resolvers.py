@@ -25,6 +25,7 @@ from avocado.core.references import reference_split
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult, check_file)
 from avocado.core.safeloader import find_avocado_tests, find_python_unittests
+from avocado.core.settings import settings
 
 
 class ExecTestResolver(Resolver):
@@ -44,7 +45,8 @@ class ExecTestResolver(Resolver):
 
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
-                                   [Runnable('exec-test', reference)])
+                                   [Runnable('exec-test', reference,
+                                             settings.as_dict('^runner'))])
 
 
 def python_resolver(name, reference, find_tests):
@@ -67,6 +69,7 @@ def python_resolver(name, reference, find_tests):
             uri = "%s:%s" % (module_path, klass_method)
             runnables.append(Runnable(name,
                                       uri=uri,
+                                      config=settings.as_dict('^runner'),
                                       tags=tags,
                                       requirements=reqs))
     if runnables:
@@ -124,4 +127,5 @@ class TapResolver(Resolver):
 
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
-                                   [Runnable('tap', reference)])
+                                   [Runnable('tap', reference,
+                                             settings.as_dict('^runner'))])

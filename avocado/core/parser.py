@@ -209,7 +209,7 @@ class HintParser:
             if '$testpath' in kwargs.values():
                 kwargs = {k: v.replace('$testpath', path)
                           for k, v in kwargs.items()}
-            runnable = Runnable(kind, uri, *args, **kwargs)
+            runnable = Runnable(kind, uri, {}, *args, **kwargs)
             resolutions.append(ReferenceResolution(reference=path,
                                                    result=success,
                                                    resolutions=[runnable],

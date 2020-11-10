@@ -310,5 +310,5 @@ class ParseFilterByTags(unittest.TestCase):
 class FilterRunnable(unittest.TestCase):
 
     def test_no_tags(self):
-        runnable = Runnable('noop', None)
+        runnable = Runnable('noop', None, {})
         self.assertFalse(tags.filter_test_tags_runnable(runnable, []))

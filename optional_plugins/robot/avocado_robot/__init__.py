@@ -157,7 +157,9 @@ class RobotResolver(Resolver):
                                     item,
                                     robot_test['test_name'])
 
-                runnables.append(Runnable('robot', uri=uri))
+                runnables.append(Runnable(kind='robot',
+                                          uri=uri,
+                                          config={}))
 
         if runnables:
             return ReferenceResolution(reference,

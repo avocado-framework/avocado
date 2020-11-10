@@ -11,17 +11,17 @@ from .. import skipUnlessPathExists, temp_dir_prefix
 class Runnable(unittest.TestCase):
 
     def test_runnable_args(self):
-        runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2')
+        runnable = nrunner.Runnable('noop', 'uri', {}, 'arg1', 'arg2')
         self.assertIn('arg1', runnable.args)
         self.assertIn('arg2', runnable.args)
 
     def test_runnable_kwargs(self):
-        runnable = nrunner.Runnable('noop', 'uri', key1='val1', key2='val2')
+        runnable = nrunner.Runnable('noop', 'uri', {}, key1='val1', key2='val2')
         self.assertEqual(runnable.kwargs.get('key1'), 'val1')
         self.assertEqual(runnable.kwargs.get('key2'), 'val2')
 
     def test_runnable_args_kwargs(self):
-        runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2',
+        runnable = nrunner.Runnable('noop', 'uri', {}, 'arg1', 'arg2',
                                     key1='val1', key2='val2')
         self.assertIn('arg1', runnable.args)
         self.assertIn('arg2', runnable.args)
@@ -29,13 +29,13 @@ class Runnable(unittest.TestCase):
         self.assertEqual(runnable.kwargs.get('key2'), 'val2')
 
     def test_runnable_tags(self):
-        runnable = nrunner.Runnable('noop', 'uri',
+        runnable = nrunner.Runnable('noop', 'uri', {},
                                     tags={'arch': set(['x86_64', 'ppc64'])})
         self.assertIn('x86_64', runnable.tags.get('arch'))
         self.assertIn('ppc64', runnable.tags.get('arch'))
 
     def test_runnable_args_kwargs_tags(self):
-        runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2',
+        runnable = nrunner.Runnable('noop', 'uri', {}, 'arg1', 'arg2',
                                     tags={'arch': set(['x86_64', 'ppc64'])},
                                     non_standard_option='non_standard_value')
         self.assertIn('arg1', runnable.args)
@@ -49,7 +49,7 @@ class Runnable(unittest.TestCase):
         self.assertRaises(TypeError, nrunner.Runnable)
 
     def test_kind_noop(self):
-        runnable = nrunner.Runnable('noop', None)
+        runnable = nrunner.Runnable('noop', None, {})
         self.assertEqual(runnable.kind, 'noop')
 
     def test_recipe_noop(self):
@@ -71,24 +71,25 @@ class Runnable(unittest.TestCase):
         self.assertEqual(runnable.kwargs, {"TERM": "vt3270"})
 
     def test_runnable_command_args(self):
-        runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2')
+        runnable = nrunner.Runnable('noop', 'uri', {}, 'arg1', 'arg2')
         actual_args = runnable.get_command_args()
-        exp_args = ['-k', 'noop', '-u', 'uri', '-a', 'arg1', '-a', 'arg2']
+        exp_args = ['-k', 'noop', '-u', 'uri', '-c', '{}', '-a', 'arg1', '-a', 'arg2']
         self.assertEqual(actual_args, exp_args)
 
     def test_get_dict(self):
-        runnable = nrunner.Runnable('noop', '_uri_', 'arg1', 'arg2')
+        runnable = nrunner.Runnable('noop', '_uri_', {}, 'arg1', 'arg2')
         self.assertEqual(runnable.get_dict(),
                          {'kind': 'noop', 'uri': '_uri_',
+                          'config': {},
                           'args': ('arg1', 'arg2')})
 
     def test_get_json(self):
-        runnable = nrunner.Runnable('noop', '_uri_', 'arg1', 'arg2')
-        expected = '{"kind": "noop", "uri": "_uri_", "args": ["arg1", "arg2"]}'
+        runnable = nrunner.Runnable('noop', '_uri_', {}, 'arg1', 'arg2')
+        expected = '{"kind": "noop", "uri": "_uri_", "config": {}, "args": ["arg1", "arg2"]}'
         self.assertEqual(runnable.get_json(), expected)
 
     def test_runner_from_runnable_error(self):
-        runnable = nrunner.Runnable('unsupported_kind', '')
+        runnable = nrunner.Runnable('unsupported_kind', '', {})
         try:
             runnable.pick_runner_class()
         except ValueError as e:
@@ -98,14 +99,14 @@ class Runnable(unittest.TestCase):
 class RunnableFromCommandLineArgs(unittest.TestCase):
 
     def test_noop(self):
-        parsed_args = {'kind': 'noop', 'uri': None}
+        parsed_args = {'kind': 'noop', 'uri': None, 'config': '{}'}
         runnable = nrunner.Runnable.from_args(parsed_args)
         self.assertEqual(runnable.kind, 'noop')
         self.assertIsNone(runnable.uri)
 
     def test_exec_args(self):
         parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
-                       'arg': ['-a', '-b', '-c']}
+                       'config': '{}', 'arg': ['-a', '-b', '-c']}
         runnable = nrunner.Runnable.from_args(parsed_args)
         self.assertEqual(runnable.kind, 'exec')
         self.assertEqual(runnable.uri, '/path/to/executable')
@@ -114,6 +115,7 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
 
     def test_exec_args_kwargs(self):
         parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
+                       'config': '{}',
                        'arg': ['-a', '-b', '-c'],
                        'kwargs': [('DEBUG', '1'), ('LC_ALL', 'C')]}
         runnable = nrunner.Runnable.from_args(parsed_args)
@@ -124,7 +126,7 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
         self.assertEqual(runnable.kwargs.get('LC_ALL'), 'C')
 
     def test_kwargs_json_empty_dict(self):
-        parsed_args = {'kind': 'noop', 'uri': None,
+        parsed_args = {'kind': 'noop', 'uri': None, 'config': '{}',
                        'kwargs': [('empty', 'json:{}')]}
         runnable = nrunner.Runnable.from_args(parsed_args)
         self.assertEqual(runnable.kind, 'noop')
@@ -134,6 +136,7 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
     def test_kwargs_json_dict(self):
         parsed_args = {
             'kind': 'noop', 'uri': None,
+            'config': '{}',
             'kwargs': [('tags', 'json:{"arch": ["x86_64", "ppc64"]}'),
                        ('hi', 'json:"hello"')]
         }
@@ -151,7 +154,7 @@ class RunnableToRecipe(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_runnable_to_recipe_noop(self):
-        runnable = nrunner.Runnable('noop', None)
+        runnable = nrunner.Runnable('noop', None, {})
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
@@ -159,7 +162,7 @@ class RunnableToRecipe(unittest.TestCase):
         self.assertEqual(loaded_runnable.kind, 'noop')
 
     def test_runnable_to_recipe_uri(self):
-        runnable = nrunner.Runnable('exec', '/bin/true')
+        runnable = nrunner.Runnable('exec', '/bin/true', {})
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
@@ -168,7 +171,7 @@ class RunnableToRecipe(unittest.TestCase):
         self.assertEqual(loaded_runnable.uri, '/bin/true')
 
     def test_runnable_to_recipe_args(self):
-        runnable = nrunner.Runnable('exec', '/bin/sleep', '0.01')
+        runnable = nrunner.Runnable('exec', '/bin/sleep', {}, '0.01')
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
@@ -184,7 +187,7 @@ class RunnableToRecipe(unittest.TestCase):
 class Runner(unittest.TestCase):
 
     def test_runner_noop(self):
-        runnable = nrunner.Runnable('noop', None)
+        runnable = nrunner.Runnable('noop', None, {})
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
@@ -193,7 +196,7 @@ class Runner(unittest.TestCase):
         self.assertIn('time', last_result)
 
     def test_runner_exec(self):
-        runnable = nrunner.Runnable('exec', sys.executable,
+        runnable = nrunner.Runnable('exec', sys.executable, {},
                                     '-c', 'import time; time.sleep(0.01)')
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
@@ -206,7 +209,7 @@ class Runner(unittest.TestCase):
         self.assertIn('time', last_result)
 
     def test_runner_exec_test_ok(self):
-        runnable = nrunner.Runnable('exec-test', sys.executable,
+        runnable = nrunner.Runnable('exec-test', sys.executable, {},
                                     '-c', 'import time; time.sleep(0.01)')
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
@@ -221,7 +224,7 @@ class Runner(unittest.TestCase):
 
     @skipUnlessPathExists('/bin/false')
     def test_runner_exec_test_fail(self):
-        runnable = nrunner.Runnable('exec-test', '/bin/false')
+        runnable = nrunner.Runnable('exec-test', '/bin/false', {})
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
@@ -234,7 +237,7 @@ class Runner(unittest.TestCase):
         self.assertIn('time', last_result)
 
     def test_runner_python_unittest_ok(self):
-        runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase')
+        runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase', {})
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
@@ -248,7 +251,7 @@ class Runner(unittest.TestCase):
         self.assertTrue(result['output'].endswith(output2))
 
     def test_runner_python_unittest_fail(self):
-        runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase.fail')
+        runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase.fail', {})
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
@@ -265,7 +268,7 @@ class Runner(unittest.TestCase):
     def test_runner_python_unittest_skip(self):
         runnable = nrunner.Runnable(
             'python-unittest',
-            'selftests.unit.test_test.TestClassTestUnit.DummyTest.skip')
+            'selftests.unit.test_test.TestClassTestUnit.DummyTest.skip', {})
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
@@ -279,7 +282,7 @@ class Runner(unittest.TestCase):
         self.assertTrue(result['output'].endswith(output2))
 
     def test_runner_python_unittest_error(self):
-        runnable = nrunner.Runnable('python-unittest', 'error')
+        runnable = nrunner.Runnable('python-unittest', 'error', {})
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
@@ -293,7 +296,7 @@ class Runner(unittest.TestCase):
         self.assertTrue(result['output'].endswith(output2))
 
     def test_runner_python_unittest_empty_uri_error(self):
-        runnable = nrunner.Runnable('python-unittest', '')
+        runnable = nrunner.Runnable('python-unittest', '', {})
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
@@ -322,7 +325,7 @@ echo 'not ok 2 - description 2'"""
         with open(tap_path, 'w') as fp:
             fp.write(tap_script)
 
-        runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
+        runnable = nrunner.Runnable('tap', '/bin/sh', {}, tap_path)
         runner = nrunner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
@@ -342,7 +345,7 @@ echo 'ok 2 - description 2'"""
         with open(tap_path, 'w') as fp:
             fp.write(tap_script)
 
-        runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
+        runnable = nrunner.Runnable('tap', '/bin/sh', {}, tap_path)
         runner = nrunner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
@@ -362,7 +365,7 @@ echo 'ok 2 - description 2'"""
         with open(tap_path, 'w') as fp:
             fp.write(tap_script)
 
-        runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
+        runnable = nrunner.Runnable('tap', '/bin/sh', {}, tap_path)
         runner = nrunner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
@@ -382,7 +385,7 @@ echo 'ok 2 - description 2'"""
         with open(tap_path, 'w') as fp:
             fp.write(tap_script)
 
-        runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
+        runnable = nrunner.Runnable('tap', '/bin/sh', {}, tap_path)
         runner = nrunner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
@@ -402,7 +405,7 @@ echo 'ok 2 - description 2'"""
         with open(tap_path, 'w') as fp:
             fp.write(tap_script)
 
-        runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
+        runnable = nrunner.Runnable('tap', '/bin/sh', {}, tap_path)
         runner = nrunner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
@@ -419,7 +422,7 @@ class RunnerCommandSelection(unittest.TestCase):
 
     def setUp(self):
         self.runnable = nrunner.Runnable('mykind',
-                                         'test_runner_command_selection')
+                                         'test_runner_command_selection', {})
 
     def test_is_task_kind_supported(self):
         cmd = ['sh', '-c',
@@ -442,7 +445,7 @@ class PickRunner(unittest.TestCase):
 
     def setUp(self):
         self.runnable = nrunner.Runnable('lets-image-a-kind',
-                                         'test_pick_runner_command')
+                                         'test_pick_runner_command', {})
 
     def test_pick_runner_command(self):
         runner = ['avocado-runner-lets-image-a-kind']

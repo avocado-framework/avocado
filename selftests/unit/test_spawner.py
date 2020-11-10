@@ -9,7 +9,7 @@ from avocado.plugins.spawners.process import ProcessSpawner
 
 class Process(unittest.TestCase):
     def setUp(self):
-        runnable = nrunner.Runnable('noop', 'uri')
+        runnable = nrunner.Runnable('noop', 'uri', {})
         task = nrunner.Task('1', runnable)
         self.runtime_task = RuntimeTask(task)
         self.spawner = ProcessSpawner()
@@ -27,7 +27,7 @@ class Process(unittest.TestCase):
 class Mock(Process):
 
     def setUp(self):
-        runnable = nrunner.Runnable('noop', 'uri')
+        runnable = nrunner.Runnable('noop', 'uri', {})
         task = nrunner.Task('1', runnable)
         self.runtime_task = RuntimeTask(task)
         self.spawner = MockSpawner()
@@ -42,7 +42,7 @@ class Mock(Process):
 class RandomMock(Mock):
 
     def setUp(self):
-        runnable = nrunner.Runnable('noop', 'uri')
+        runnable = nrunner.Runnable('noop', 'uri', {})
         task = nrunner.Task('1', runnable)
         self.runtime_task = RuntimeTask(task)
         self.spawner = MockRandomAliveSpawner()

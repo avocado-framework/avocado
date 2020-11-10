@@ -21,7 +21,8 @@ class GolangRunner(nrunner.BaseRunner):
     Example:
 
        runnable = Runnable(kind='golang',
-                           uri='countavocados:ExampleContainers')
+                           uri='countavocados:ExampleContainers',
+                           config={})
     """
     def run(self):
         module, test = self.runnable.uri.split(':', 1)

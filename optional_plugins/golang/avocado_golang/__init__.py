@@ -257,7 +257,9 @@ class GolangResolver(Resolver):
                     match_package = os.path.relpath(test_file, common_prefix)
                     test_name = "%s:%s" % (os.path.dirname(match_package),
                                            item)
-                    runnables.append(Runnable('golang', uri=test_name))
+                    runnables.append(Runnable(kind='golang',
+                                              uri=test_name,
+                                              config={}))
 
         if runnables:
             return ReferenceResolution(reference,
