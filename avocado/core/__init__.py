@@ -166,6 +166,16 @@ def register_core_options():
                          default='utf-8',
                          help_msg=help_msg)
 
+    # All settings starting with 'runner.' will be passed to runner
+    # exec-test runner config
+    help_msg = ('Use a custom exit code list to consider a test as skipped. '
+                'This is only used by exec-test runners. Default is [130].')
+    stgs.register_option(section='runner.exectest.exitcodes',
+                         key='skip',
+                         default=[130],
+                         key_type=list,
+                         help_msg=help_msg)
+
 
 def initialize_plugin_infrastructure():
     help_msg = 'Plugins that will not be loaded and executed'

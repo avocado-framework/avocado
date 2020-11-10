@@ -427,12 +427,19 @@ class ExecTestRunner(ExecRunner):
     Runnable attributes usage is identical to :class:`ExecRunner`
     """
     def run(self):
+        # Since Runners are standalone, and could be executed on a remote
+        # machine in an "isolated" way, there is no way to assume a default
+        # value, at this moment.
+        skip_codes = self.runnable.config.get('runner.exectest.exitcodes.skip',
+                                              [])
         for most_current_execution_state in super(ExecTestRunner, self).run():
-            if 'returncode' in most_current_execution_state:
-                if most_current_execution_state['returncode'] == 0:
-                    most_current_execution_state['result'] = 'pass'
-                else:
-                    most_current_execution_state['result'] = 'fail'
+            returncode = most_current_execution_state.get('returncode')
+            if returncode in skip_codes:
+                most_current_execution_state['result'] = 'skip'
+            elif returncode == 0:
+                most_current_execution_state['result'] = 'pass'
+            else:
+                most_current_execution_state['result'] = 'fail'
             yield most_current_execution_state
 
 

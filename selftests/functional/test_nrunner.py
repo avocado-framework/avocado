@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 
+from avocado.core.job import Job
 from avocado.utils import process
 
 from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipUnlessPathExists
@@ -143,6 +144,14 @@ class TaskRun(unittest.TestCase):
         self.assertIn("'id': 3", first_status)
         self.assertIn("'status': 'finished'", final_status)
         self.assertEqual(res.exit_status, 0)
+
+    @skipUnlessPathExists('/bin/false')
+    def test_custom_exit_codes(self):
+        config = {'run.references': ['/bin/false'],
+                  'run.test_runner': 'nrunner',
+                  'runner.exectest.exitcodes.skip': [1]}
+        with Job.from_config(job_config=config) as job:
+            self.assertEqual(job.run(), 0)
 
 
 class ResolveSerializeRun(TestCaseTmpDir):
