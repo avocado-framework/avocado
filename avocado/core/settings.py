@@ -41,6 +41,7 @@ import configparser
 import glob
 import json
 import os
+import re
 
 from pkg_resources import resource_filename
 
@@ -396,16 +397,20 @@ class Settings:
         option.add_argparser(parser, short_arg, long_arg, positional_arg,
                              choices, nargs, metavar, required, action)
 
-    def as_dict(self):
+    def as_dict(self, regex=None):
         """Return an dictionary with the current active settings.
 
         This will return a dict with all parsed options (either via config file
-        or via command-line).
+        or via command-line). If regex is not None, this method will filter the
+        current config matching regex with the namespaces.
+
+        :param regex: A regular expression to be used on the filter.
         """
         result = {}
         for namespace, option in sorted_dict(self._namespaces):
             result[namespace] = option.value
-        return result
+
+        return self.filter_config(result, regex) if regex else result
 
     def as_full_dict(self):
         result = {}
@@ -417,13 +422,29 @@ class Settings:
                                  'key': option.key}
         return result
 
-    def as_json(self):
+    def as_json(self, regex=None):
         """Return a JSON with the current active settings.
 
         This will return a JSON with all parsed options (either via config file
-        or via command-line).
+        or via command-line). If regex is not None, it will be used to filter
+        namespaces.
+
+        :param regex: A regular expression to be used on the filter.
         """
-        return json.dumps(self.as_dict(), indent=4)
+        return json.dumps(self.as_dict(regex), indent=4)
+
+    @staticmethod
+    def filter_config(config, regex):
+        """Utility to filter a config by namespaces based on a regex.
+
+        :param config: dict object with namespaces and values
+        :param regex: regular expression to use against the namespace
+        """
+        result = {}
+        for namespace, option in sorted_dict(config):
+            if re.match(regex, namespace):
+                result[namespace] = option
+        return result
 
     def merge_with_arguments(self, arg_parse_config):
         """Merge the current settings with the command-line args.

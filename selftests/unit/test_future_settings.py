@@ -7,6 +7,7 @@ from avocado.core import settings
 
 example = """[foo]
 bar = default from file
+baz = other default from file
 non_registered = this should be ignored
 """
 
@@ -111,6 +112,20 @@ class SettingsTest(unittest.TestCase):
                              parser=parser2, long_arg='--other-option',
                              allow_multiple=True)
         self.assertIs(stgs._namespaces['section.key'].parser, parser2)
+
+    def test_filter(self):
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
+        stgs.register_option(section='foo',
+                             key='bar',
+                             default='default from file',
+                             help_msg='just a test')
+        stgs.register_option(section='foo',
+                             key='baz',
+                             default='other default from file',
+                             help_msg='just a test')
+        self.assertEqual(stgs.as_dict(r'foo.bar$'),
+                         {'foo.bar': 'default from file'})
 
     def tearDown(self):
         os.unlink(self.config_file.name)
