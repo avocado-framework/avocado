@@ -65,6 +65,19 @@ class TestSuite:
                 self.config.get('run.test_runner') == 'runner'):
             self._convert_to_dry_run()
 
+        if self.size == 0:
+            return
+
+        # This will update all runnables with only the configs starting with
+        # 'runner'
+        runner_config = settings.filter_config(self.config, r'^runner\.')
+        for test in self.tests:
+            try:
+                test.runnable.config = runner_config
+            except AttributeError:
+                # This is not a Task or don't have a 'runnable' attribute
+                continue
+
     def __len__(self):
         """This is a convenient method to run `len()` over this object.
 

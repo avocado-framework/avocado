@@ -76,19 +76,20 @@ class Runnable:
     A instance of :class:`BaseRunner` is the entity that will actually
     execute a runnable.
     """
-    def __init__(self, kind, uri, *args, **kwargs):
+    def __init__(self, kind, uri, *args, config=None, **kwargs):
         self.kind = kind
         self.uri = uri
+        self.config = config or {}
         self.args = args
         self.tags = kwargs.pop('tags', None)
         self.requirements = kwargs.pop('requirements', None)
         self.kwargs = kwargs
 
     def __repr__(self):
-        fmt = ('<Runnable kind="{}" uri="{}" args="{}" kwargs="{}" tags="{}" '
-               'requirements="{}">')
-        return fmt.format(self.kind, self.uri, self.args, self.kwargs,
-                          self.tags, self.requirements)
+        fmt = ('<Runnable kind="{}" uri="{}" config="{}" args="{}" '
+               'kwargs="{}" tags="{}" requirements="{}">')
+        return fmt.format(self.kind, self.uri, self.config, self.args,
+                          self.kwargs, self.tags, self.requirements)
 
     @classmethod
     def from_args(cls, args):
@@ -97,6 +98,7 @@ class Runnable:
         return cls(args.get('kind'),
                    args.get('uri'),
                    *decoded_args,
+                   config=json.loads(args.get('config', '{}')),
                    **_key_val_args_to_kwargs(args.get('kwargs', [])))
 
     @classmethod
@@ -113,6 +115,7 @@ class Runnable:
         return cls(recipe.get('kind'),
                    recipe.get('uri'),
                    *recipe.get('args', ()),
+                   config=recipe.get('config', {}),
                    **recipe.get('kwargs', {}))
 
     def get_command_args(self):
@@ -129,6 +132,10 @@ class Runnable:
         if self.uri is not None:
             args.append('-u')
             args.append(self.uri)
+
+        if self.config is not None:
+            args.append('-c')
+            args.append(json.dumps(self.config))
 
         for arg in self.args:
             args.append('-a')
@@ -158,6 +165,7 @@ class Runnable:
         recipe = collections.OrderedDict(kind=self.kind)
         if self.uri is not None:
             recipe['uri'] = self.uri
+        recipe['config'] = self.config
         if self.args is not None:
             recipe['args'] = self.args
         kwargs = self.kwargs.copy()
@@ -676,7 +684,8 @@ class Task:
         runnable_recipe = recipe.get('runnable')
         runnable = Runnable(runnable_recipe.get('kind'),
                             runnable_recipe.get('uri'),
-                            *runnable_recipe.get('args', ()))
+                            *runnable_recipe.get('args', ()),
+                            config=runnable_recipe.get('config'))
         status_uris = recipe.get('status_uris')
         return cls(identifier, runnable, status_uris, known_runners)
 
@@ -749,6 +758,9 @@ class BaseRunnerApp:
 
         (('-u', '--uri'),
          {'type': str, 'default': None, 'help': 'URI of runnable'}),
+
+        (('-c', '--config'),
+         {'type': str, 'default': '{}', 'help': 'A config JSON data'}),
 
         (('-a', '--arg'),
          {'action': 'append', 'default': [],
