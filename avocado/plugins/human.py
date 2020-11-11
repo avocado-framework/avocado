@@ -73,8 +73,9 @@ class Human(ResultEvents):
             color = output.TERM_SUPPORT.PASS
         else:
             color = output.TERM_SUPPORT.PARTIAL
-        LOG_UI.debug('%s%s%s', color, self.__throbber.render(),
-                     output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
+        if self.runner == 'runner':
+            LOG_UI.debug('%s%s%s', color, self.__throbber.render(),
+                         output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
 
     def get_colored_status(self, status, extra=None):
         out = (output.TERM_SUPPORT.MOVE_BACK + output.TEST_STATUS_MAPPING[status] +

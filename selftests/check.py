@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import glob
 import os
-import time
+import sys
 
 from avocado import Test
 from avocado.core import exit_codes
@@ -184,15 +185,17 @@ class JobAPIFeaturesTest(Test):
         self.check_exit_code(result)
         self.check_directory_exists(tmpdir)
 
-if __name__ == '__main__':
 
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f',
                         '--features',
                         help='show the features tested by this test.',
                         action='store_true')
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def create_suites():
     test_class = 'JobAPIFeaturesTest'
     suites = []
 
@@ -203,6 +206,7 @@ if __name__ == '__main__':
                          % (__file__, test_class))
     config_check_archive_file_exists = (
         {'run.references': [check_archive_file_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'run.results.archive',
@@ -211,7 +215,8 @@ if __name__ == '__main__':
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_archive_file_exists))
+    suites.append(TestSuite.from_config(config_check_archive_file_exists,
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the category directory was created
@@ -221,6 +226,7 @@ if __name__ == '__main__':
         % (__file__, test_class))
     config_check_category_directory_exists = (
         {'run.references': [check_category_directory_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'run.job_category',
@@ -229,7 +235,8 @@ if __name__ == '__main__':
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_category_directory_exists))
+    suites.append(TestSuite.from_config(config_check_category_directory_exists,
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if a directory was created
@@ -238,6 +245,7 @@ if __name__ == '__main__':
                               % (__file__, test_class))
     config_check_directory_exists = (
         {'run.references': [check_directory_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'sysinfo.collect.enabled',
@@ -252,7 +260,8 @@ if __name__ == '__main__':
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_directory_exists))
+    suites.append(TestSuite.from_config(config_check_directory_exists,
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test the content of a file
@@ -261,6 +270,7 @@ if __name__ == '__main__':
                           % (__file__, test_class))
     config_check_file_content = (
         {'run.references': [check_file_content],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              # finding the correct 'content' here is trick because any
@@ -331,7 +341,8 @@ if __name__ == '__main__':
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_file_content))
+    suites.append(TestSuite.from_config(config_check_file_content,
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the result file was created
@@ -340,6 +351,7 @@ if __name__ == '__main__':
                          % (__file__, test_class))
     config_check_file_exists = (
         {'run.references': [check_file_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'job.run.result.html.enabled',
@@ -405,7 +417,8 @@ if __name__ == '__main__':
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_file_exists))
+    suites.append(TestSuite.from_config(config_check_file_exists,
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if a file was created
@@ -414,6 +427,7 @@ if __name__ == '__main__':
                          % (__file__, test_class))
     config_check_output_file = (
         {'run.references': [check_output_file],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'job.run.result.html.output',
@@ -435,7 +449,8 @@ if __name__ == '__main__':
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_output_file))
+    suites.append(TestSuite.from_config(config_check_output_file,
+                                        "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
     # Test if the temporary directory was created
@@ -444,6 +459,7 @@ if __name__ == '__main__':
                               % (__file__, test_class))
     config_check_tmp_directory_exists = (
         {'run.references': [check_tmp_directory_exists],
+         'run.test_runner': 'runner',
          'run.dict_variants': [
 
              {'namespace': 'run.keep_tmp',
@@ -452,11 +468,31 @@ if __name__ == '__main__':
 
          ]})
 
-    suites.append(TestSuite.from_config(config_check_tmp_directory_exists))
+    suites.append(TestSuite.from_config(config_check_tmp_directory_exists,
+                                        "job-api-%s" % (len(suites) + 1)))
 
+    # ========================================================================
+    # Run all static checks, unit and functional tests
+    # ========================================================================
+    config_check = (
+        {'run.references': (glob.glob('selftests/*.sh') +
+                            glob.glob('selftests/jobs/*') +
+                            glob.glob('selftests/unit/*.py') +
+                            glob.glob('selftests/functional/*.py') +
+                            glob.glob('optional_plugins/*/tests/*.py')),
+         'run.test_runner': 'nrunner',
+         'run.ignore_missing_references': True}
+        )
+    suites.append(TestSuite.from_config(config_check, "check"))
+    return suites
+
+
+def main():
+    suites = create_suites()
     # ========================================================================
     # Print features covered in this test
     # ========================================================================
+    args = parse_args()
     if args.features:
         features = []
         for suite in suites:
@@ -471,6 +507,11 @@ if __name__ == '__main__':
     # ========================================================================
     # Job execution
     # ========================================================================
-    config = {'core.show': ['app']}
+    config = {'core.show': ['app'],
+              'run.test_runner': 'nrunner'}
     with Job(config, suites) as j:
-        j.run()
+        return j.run()
+
+
+if __name__ == '__main__':
+    sys.exit(main())

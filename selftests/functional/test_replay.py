@@ -21,6 +21,14 @@ class ReplayTests(TestCaseTmpDir):
         idfile = ''.join(os.path.join(self.jobdir, 'id'))
         with open(idfile, 'r') as f:
             self.jobid = f.read().strip('\n')
+        self.config_path = self._create_config()
+
+    def _create_config(self):
+        config_path = os.path.join(self.tmpdir.name, 'config')
+        with open(config_path, 'w') as config:
+            config.write("[datadir.paths]\n")
+            config.write("logs_dir = %s\n" % self.tmpdir.name)
+        return config_path
 
     def run_and_check(self, cmd_line, expected_rc):
         result = process.run(cmd_line, ignore_status=True)
@@ -33,7 +41,9 @@ class ReplayTests(TestCaseTmpDir):
         """
         Runs a replay job with an invalid jobid.
         """
-        cmd_line = '%s replay %s' % (AVOCADO, 'foo')
+        cmd_line = '%s --config=%s replay %s' % (AVOCADO,
+                                                 self.config_path,
+                                                 'foo')
         expected_rc = exit_codes.AVOCADO_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
@@ -41,7 +51,8 @@ class ReplayTests(TestCaseTmpDir):
         """
         Runs a replay job using the 'latest' keyword.
         """
-        cmd_line = '%s replay latest' % AVOCADO
+        cmd_line = '%s --config=%s replay latest' % (AVOCADO,
+                                                     self.config_path)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
@@ -59,7 +70,9 @@ class ReplayTests(TestCaseTmpDir):
         """
         Runs a replay job.
         """
-        cmd_line = '%s replay %s' % (AVOCADO, self.jobdir)
+        cmd_line = '%s --config=%s replay %s' % (AVOCADO,
+                                                 self.config_path,
+                                                 self.jobdir)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
