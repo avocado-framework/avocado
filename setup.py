@@ -82,6 +82,7 @@ if __name__ == '__main__':
                   "run = avocado.plugins.run:RunInit",
                   "podman = avocado.plugins.spawners.podman:PodmanSpawnerInit",
                   "nrunner = avocado.plugins.runner_nrunner:RunnerInit",
+                  "testlogs = avocado.plugins.testlogs:TestLogsInit",
               ],
               'avocado.plugins.cli': [
                   'wrapper = avocado.plugins.wrapper:Wrapper',
@@ -115,6 +116,7 @@ if __name__ == '__main__':
                   'teststmpdir = avocado.plugins.teststmpdir:TestsTmpDir',
                   'human = avocado.plugins.human:HumanJob',
                   'merge_files = avocado.plugins.expected_files_merge:FilesMerge',
+                  'testlogs = avocado.plugins.testlogs:TestLogs',
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
