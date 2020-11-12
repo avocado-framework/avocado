@@ -82,7 +82,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
 
         early_status = queue.get()
-        timeout = float(early_status.get('timeout', self.DEFAULT_TIMEOUT))
+        timeout = float(early_status.get('timeout') or self.DEFAULT_TIMEOUT)
         interrupted = False
         most_current_execution_state_time = None
         while queue.empty():
