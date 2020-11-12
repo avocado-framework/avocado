@@ -267,3 +267,28 @@ this is not set.
 
 Finally, any failures in the Pre/Post scripts will not alter the
 status of the corresponding jobs.
+
+Tests' logs plugin
+~~~~~~~~~~~~~~~~~~
+
+It's natural that Avocado will be used in environments where access to
+the integral job results won't be easily accessible.
+
+For instance, on Continuous Integration (CI) services, one usually
+gets access to the output produced on the console, while access to
+other files produced (generally called artifacts) may or may not be
+acessible.
+
+For this reason, it may be helpful to simply output the logs for tests
+that have "interesting" outcomes, which usually means that fail and
+need to be investigated.
+
+To show the content for test that are canceled, skipped and fail, you
+can set on your configuration file::
+
+  [job.output.testlogs]
+  statuses = ["CANCEL", "SKIP", "FAIL"]
+
+At the end of the job, a header will be printed for each test that
+ended with any of the statuses given, followed by the raw content of
+its reespective log file.
