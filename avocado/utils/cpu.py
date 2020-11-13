@@ -103,7 +103,7 @@ def get_version():
               Eg.:- 'i5-5300U' for Intel and 'POWER9' for IBM machines in
               case of unknown/unsupported machines, return an empty string.
     """
-    version_pattern = {'x86_64': rb'\s([\S,\d]+)\sCPU',
+    version_pattern = {'x86_64': rb'\s([\w,\d,-.]+)\sCPU',
                        'i386': rb'\s([\S,\d]+)\sCPU',
                        'powerpc': rb'revision\s+:\s+(\S+)',
                        's390': rb'.*machine\s=\s(\d+)'
