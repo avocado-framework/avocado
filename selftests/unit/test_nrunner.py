@@ -73,18 +73,23 @@ class Runnable(unittest.TestCase):
     def test_runnable_command_args(self):
         runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2')
         actual_args = runnable.get_command_args()
-        exp_args = ['-k', 'noop', '-u', 'uri', '-a', 'arg1', '-a', 'arg2']
+        exp_args = ['-k', 'noop', '-u', 'uri', '-c', '{}', '-a', 'arg1',
+                    '-a', 'arg2']
         self.assertEqual(actual_args, exp_args)
 
     def test_get_dict(self):
         runnable = nrunner.Runnable('noop', '_uri_', 'arg1', 'arg2')
         self.assertEqual(runnable.get_dict(),
                          {'kind': 'noop', 'uri': '_uri_',
-                          'args': ('arg1', 'arg2')})
+                          'args': ('arg1', 'arg2'),
+                          'config': {}})
 
     def test_get_json(self):
         runnable = nrunner.Runnable('noop', '_uri_', 'arg1', 'arg2')
-        expected = '{"kind": "noop", "uri": "_uri_", "args": ["arg1", "arg2"]}'
+        expected = ('{"kind": "noop", '
+                    '"uri": "_uri_", '
+                    '"config": {}, '
+                    '"args": ["arg1", "arg2"]}')
         self.assertEqual(runnable.get_json(), expected)
 
     def test_runner_from_runnable_error(self):
