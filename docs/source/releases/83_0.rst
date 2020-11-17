@@ -1,0 +1,127 @@
+=========================
+83.0 Crime and Punishment
+=========================
+
+The Avocado team is proud to present another release: Avocado 83.0,
+AKA "Crime and Punishment", is now available!
+
+Release documentation: `Avocado 83.0
+<http://avocado-framework.readthedocs.io/en/83.0/>`_
+
+Users/Test Writers
+==================
+
+* All configuration whose namespace start with the ``runner.`` prefix
+  will be forwarded to runners.  This allows centrally managed
+  configuration to be sent to runners executed by different types of
+  spawners.
+
+* The ``exec-test`` runner now accepts a configuration
+  (``runner.exectest.exitcodes.skip``) that will determine valid
+  exit codes to be treated as ``SKIP`` test results.
+
+* The Loader based on the YAML Multiplexer has been removed.  Users
+  are advised to use Job API and multiple test suites to fulfill
+  similar use cases.
+
+* The GLib plugin has been removed.  Users are advised to use TAP
+  test types instead, given that GLib's GTest framework now defaults
+  to producing TAP output.
+
+* A runner for GO, aka golang, tests, compatible with the nrunner, has
+  been introduced.
+
+* The paginator feature is now a boolean style option.  To enable it,
+  use ``--enable-paginator``.
+
+* The nrunner status server now has two different options regarding its
+  URI.  The first one, ``--nrunner-status-server-listen`` determines
+  the URI in which a status server will listen to.  The second one,
+  ``--nrunner-status-server-uri`` determines where the results will
+  be sent to.  This allows status server to be on a different network
+  location than the tasks reporting to it.
+
+* The ``avocado-software-manager`` command line application now properly
+  returns exit status for failures.
+
+* The Podman spawner now exposes command line options to set the
+  container image (``--spawner-podman-image``) and the Podman binary
+  (``--spawner-podman-bin``) used on an ``avocado`` invocation.
+
+* Command line options related to results, such as
+  ``--json-job-result``, ``--tap-job-result``, ``--xunit-job-result``
+  and ``--html-job-result`` currently take a ``on`` or ``off``
+  parameter.  That is now deprecated and a warning has been added.
+  Those options will soon become "proper boolean" options (such as
+  ``--enable-$type-job-result`` and/or
+  ``--disable-$type-job-result``).
+
+Bug Fixes
+=========
+
+* :meth:`avocado.utils.network.interfaces.NetworkInterface.is_admin_link_up` and
+  :meth:`avocado.utils.network.interfaces.NetworkInterface.is_operational_link_up`
+  now behave properly on interfaces based on bonding.
+
+* The selection of an nrunner based runner, from its Python module
+  name/path has been fixed.
+
+* :mod:`avocado.utils.process` utilities that use ``sudo`` would check
+  for executable permissions on the binary.  Many systems will have
+  ``sudo`` with the executable bit set, but not the readable bit.  This
+  is now accounted for.
+
+* The "external runner" feature now works properly when used outside of
+  a ``avocado`` command line invocation, that is, when used in a script
+  based on the Job APIs.
+
+Utility APIs
+============
+
+* A new module :mod:`avocado.utils.dmesg` with utilities for interacting
+  with the kernel ring buffer messages.
+
+* A new utility :meth:`avocado.utils.linux.is_selinux_enforcing` allows
+  quick check of SELinux enforcing status.
+
+* The :mod:`avocado.utils.network.interfaces` now support configuration
+  files compatible with SuSE distros.
+
+* :meth:`avocado.utils.network.interfaces.NetworkInterface.remove_link`
+  is a new utility method that allows one to delete a virtual
+  interface link.
+
+* :meth:`avocado.utils.network.hosts.Host.get_default_route_interface`
+  is a new utility method that allows one to get a list of default
+  routes interfaces.
+
+* The :mod:`avocado.utils.cpu` library now properly handles s390x z13
+  family of CPUs.
+
+* The :mod:`avocado.utils.pmem` library introduced a number of new
+  utility methods, adding support for daxctl operations such as
+  offline-memory, online-memory and reconfigure-device.
+
+Internal Changes
+================
+
+* The safeloader has been migrated from using :mod:`imp` (deprecated)
+  to the more modern :mod:`importlib`.
+
+* Instead of using hardcoded ``..`` to refer to the parent directory,
+  portability was improved by switching to :func:`os.path.pardir`.
+
+* Runners based on the :mod:`avocado.core.nrunner` module, when called
+  on the command line, can now omit the ``--kind`` parameter, if
+  information can be gathered from the executable name.
+
+* Avocado's ``make check`` is now based on a Job API script, found at
+  ``selftests/check.py``.  It combines previously separate set of
+  tests described by multiple command line executions.
+
+* CI "smoke checks" for OS X and Windows have been introduced.  This does
+  not mean, however, that Avocado is supported on those platforms.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/82.0...83.0>`_.

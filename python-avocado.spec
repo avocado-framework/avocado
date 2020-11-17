@@ -33,8 +33,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 82.0
-Release: 3%{?gitrel}%{?dist}
+Version: 83.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -384,6 +384,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Nov 16 2020 Cleber Rosa <cleber@redhat.com> - 83.0-1
+- New release
+
 * Thu Sep 17 2020 Cleber Rosa <cleber@redhat.com> - 82.0-3
 - Added avocado-runner-golang script to golang package
 
