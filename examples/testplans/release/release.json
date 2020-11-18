@@ -41,7 +41,7 @@
 	 },
          {
 	 "name": "Update the Fedora and EPEL RPM packages and module",
-         "description": "Follow the instructions on:\n\nhttps://github.com/mmathesius/howtos/blob/master/how_to_refresh_avocado_module_for_new_upstream_release.rst\n\nand work with the package maintainer by sending a PR to update the Avocado version on the `avocado:latest` stream."
+         "description": "Follow the instructions on:\n\nhttps://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/releasing.html#how-to-refresh-fedora-epel-modules\n\nand work with the package maintainer by sending a PR to update the Avocado version on the `avocado:latest` stream."
 	 },
          {
 	 "name": "Send e-emails",
