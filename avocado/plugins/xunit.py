@@ -18,7 +18,6 @@
 import datetime
 import os
 import string
-import warnings
 from xml.dom.minidom import Document
 
 from avocado.core.output import LOG_UI
@@ -147,7 +146,7 @@ class XUnitResult(Result):
             'job.run.result.xunit.max_test_log_chars')
         job_name = job.config.get('job.run.result.xunit.job_name')
         content = self._render(result, max_test_log_size, job_name)
-        if xunit_enabled == 'on':
+        if xunit_enabled:
             xunit_path = os.path.join(job.logdir, 'results.xml')
             with open(xunit_path, 'wb') as xunit_file:
                 xunit_file.write(content)
@@ -179,8 +178,9 @@ class XUnitInit(Init):
                     'directory. File will be named "results.xml".')
         settings.register_option(section=section,
                                  key='enabled',
-                                 help_msg=help_msg,
-                                 default='on')
+                                 key_type=bool,
+                                 default=True,
+                                 help_msg=help_msg)
 
         help_msg = ('Override the reported job name. By default uses the '
                     'Avocado job name which is always unique. This is useful '
@@ -210,11 +210,6 @@ class XUnitCLI(CLI):
     description = 'xUnit output options'
 
     def configure(self, parser):
-        warning_msg = ("--xunit-job-result as string will be deprecated soon. "
-                       "This will be a bool option. On, Off will not be "
-                       "necessary in future releases")
-        warnings.warn(warning_msg)
-
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
         if run_subcommand_parser is None:
             return
@@ -227,9 +222,8 @@ class XUnitCLI(CLI):
 
         settings.add_argparser_to_option(
             namespace='job.run.result.xunit.enabled',
-            choices=('on', 'off'),
             parser=run_subcommand_parser.output,
-            long_arg='--xunit-job-result')
+            long_arg='--disable-xunit-job-result')
 
         settings.add_argparser_to_option(
             namespace='job.run.result.xunit.job_name',

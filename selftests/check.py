@@ -385,12 +385,12 @@ def create_suites():
               'assert': False},
 
              {'namespace': 'job.run.result.xunit.enabled',
-              'value': 'on',
+              'value': True,
               'file': 'results.xml',
               'assert': True},
 
              {'namespace': 'job.run.result.xunit.enabled',
-              'value': 'off',
+              'value': False,
               'file': 'results.xml',
               'assert': False},
 
