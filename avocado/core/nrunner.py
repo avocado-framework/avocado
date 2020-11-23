@@ -391,8 +391,14 @@ class ExecRunner(BaseRunner):
 
         yield self.prepare_status('started')
         most_current_execution_state_time = None
-        while process.poll() is None:
-            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+        timeout = RUNNER_RUN_CHECK_INTERVAL
+        while process.returncode is None:
+            time.sleep(timeout)
+            try:
+                stdout, stderr = process.communicate(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                # Let's just try again at the next loop
+                pass
             now = time.monotonic()
             if most_current_execution_state_time is not None:
                 next_execution_state_mark = (most_current_execution_state_time +
@@ -401,11 +407,6 @@ class ExecRunner(BaseRunner):
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
                 yield self.prepare_status('running')
-
-        stdout = process.stdout.read()
-        process.stdout.close()
-        stderr = process.stderr.read()
-        process.stderr.close()
 
         return_code = process.returncode
         yield self.prepare_status('finished', {'returncode': return_code,
