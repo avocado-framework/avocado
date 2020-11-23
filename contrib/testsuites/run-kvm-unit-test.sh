@@ -56,8 +56,8 @@ while [ true ]; do
 done
 
 # Initialize directory and download kvm-unit-test if necessary
-[ "$KVM_UNIT_TEST" ] || KVM_UNIT_TEST="$(mktemp -d)"
-[ -d "$KVM_UNIT_TEST" ] || { mkdir -p "$KVM_UNIT_TEST"; CLEAN_DIR=true; }
+[ "$KVM_UNIT_TEST" ] || { KVM_UNIT_TEST="$(mktemp -d)"; CLEAN_DIR=true; }
+[ -d "$KVM_UNIT_TEST" ] || mkdir -p "$KVM_UNIT_TEST"
 cd "$KVM_UNIT_TEST"
 [ -f "configure" ] || git clone --depth 1 -q https://gitlab.com/kvm-unit-tests/kvm-unit-tests.git .
 
