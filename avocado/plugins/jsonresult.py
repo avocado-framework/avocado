@@ -19,7 +19,6 @@ JSON output module.
 
 import json
 import os
-import warnings
 
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
@@ -78,7 +77,7 @@ class JSONResult(Result):
             return
 
         content = self._render(result)
-        if json_enabled == 'on':
+        if json_enabled:
             json_path = os.path.join(job.logdir, 'results.json')
             with open(json_path, 'w') as json_file:
                 json_file.write(content)
@@ -109,7 +108,8 @@ class JSONInit(Init):
                     'directory. File will be named "results.json".')
         settings.register_option(section='job.run.result.json',
                                  key='enabled',
-                                 default='on',
+                                 key_type=bool,
+                                 default=True,
                                  help_msg=help_msg)
 
 
@@ -127,11 +127,6 @@ class JSONCLI(CLI):
         if run_subcommand_parser is None:
             return
 
-        warning_msg = ("--json-job-result as string will be deprecated soon. "
-                       "This will be a bool option. On, Off will not be "
-                       "necessary in future releases")
-        warnings.warn(warning_msg)
-
         settings.add_argparser_to_option(
             namespace='job.run.result.json.output',
             action=FileOrStdoutAction,
@@ -141,9 +136,8 @@ class JSONCLI(CLI):
 
         settings.add_argparser_to_option(
             namespace='job.run.result.json.enabled',
-            choices=('on', 'off'),
             parser=run_subcommand_parser,
-            long_arg='--json-job-result')
+            long_arg='--disable-json-job-result')
 
     def run(self, config):
         pass

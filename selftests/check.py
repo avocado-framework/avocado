@@ -365,12 +365,12 @@ def create_suites():
               'assert': False},
 
              {'namespace': 'job.run.result.json.enabled',
-              'value': 'on',
+              'value': True,
               'file': 'results.json',
               'assert': True},
 
              {'namespace': 'job.run.result.json.enabled',
-              'value': 'off',
+              'value': False,
               'file': 'results.json',
               'assert': False},
 
