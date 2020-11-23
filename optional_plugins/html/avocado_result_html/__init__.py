@@ -21,7 +21,6 @@ import os
 import subprocess
 import sys
 import time
-import warnings
 
 import jinja2 as jinja
 
@@ -226,7 +225,7 @@ class HTMLResult(Result):
             return
 
         open_browser = job.config.get('job.run.result.html.open_browser', False)
-        if job.config.get('job.run.result.html.enabled', 'off') == 'on':
+        if job.config.get('job.run.result.html.enabled'):
             html_path = os.path.join(job.logdir, 'results.html')
             self._render(result, html_path)
             if job.config.get('stdout_claimed_by', None) is None:
@@ -273,7 +272,8 @@ class HTMLInit(Init):
                     'directory. File will be named "results.html".')
         settings.register_option(section=section,
                                  key='enabled',
-                                 default='on',
+                                 key_type=bool,
+                                 default=True,
                                  help_msg=help_msg)
 
 
@@ -291,11 +291,6 @@ class HTML(CLI):
         if run_subcommand_parser is None:
             return
 
-        warning_msg = ("--html-job-result as string will be deprecated soon. "
-                       "This will be a bool option. On, Off will not be "
-                       "necessary in future releases")
-        warnings.warn(warning_msg)
-
         settings.add_argparser_to_option(
             namespace='job.run.result.html.output',
             parser=run_subcommand_parser,
@@ -309,9 +304,8 @@ class HTML(CLI):
 
         settings.add_argparser_to_option(
             namespace='job.run.result.html.enabled',
-            choices=('on', 'off'),
             parser=run_subcommand_parser,
-            long_arg='--html-job-result')
+            long_arg='--disable-html-job-result')
 
     def run(self, config):
         if config.get('job.run.result.html.output') == '-':

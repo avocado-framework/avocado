@@ -355,12 +355,12 @@ def create_suites():
          'run.dict_variants': [
 
              {'namespace': 'job.run.result.html.enabled',
-              'value': 'on',
+              'value': True,
               'file': 'results.html',
               'assert': True},
 
              {'namespace': 'job.run.result.html.enabled',
-              'value': 'off',
+              'value': False,
               'file': 'results.html',
               'assert': False},
 
