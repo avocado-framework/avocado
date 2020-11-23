@@ -59,7 +59,7 @@ done
 [ "$KVM_UNIT_TEST" ] || { KVM_UNIT_TEST="$(mktemp -d)"; CLEAN_DIR=true; }
 [ -d "$KVM_UNIT_TEST" ] || mkdir -p "$KVM_UNIT_TEST"
 cd "$KVM_UNIT_TEST"
-[ -f "configure" ] || git clone --depth 1 -q https://gitlab.com/kvm-unit-tests/kvm-unit-tests.git .
+[ -f "configure" ] || git clone --depth 1 -q https://gitlab.com/kvm-unit-tests/kvm-unit-tests.git . || exit
 
 # Compile kvm-unit-test as standalone to get tests as separate files
 ./configure $ENDIAN $CONFIGURE_ARGS || { echo Fail to configure kvm-unit-test; exit -1; }
