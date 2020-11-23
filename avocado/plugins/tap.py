@@ -16,7 +16,6 @@ TAP output module.
 """
 
 import os
-import warnings
 
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
@@ -89,7 +88,7 @@ class TAPResult(ResultEvents):
         Log the test plan
         """
         # Should we add default results.tap?
-        if self.config.get('job.run.result.tap.enabled') == 'on':
+        if self.config.get('job.run.result.tap.enabled'):
             log = open(os.path.join(job.logdir, 'results.tap'), "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
@@ -169,8 +168,9 @@ class TAPInit(Init):
         settings.register_option(
             section=section,
             key='enabled',
-            help_msg=help_msg,
-            default='on')
+            key_type=bool,
+            default=True,
+            help_msg=help_msg)
 
         help_msg = 'Include test logs as comments in TAP output.'
         settings.register_option(
@@ -194,10 +194,6 @@ class TAP(CLI):
         cmd_parser = parser.subcommands.choices.get('run', None)
         if cmd_parser is None:
             return
-        warning_msg = ("--tap-job-result as string will be deprecated soon. "
-                       "This will be a bool option. On, Off will not be "
-                       "necessary in future releases")
-        warnings.warn(warning_msg)
 
         settings.add_argparser_to_option(
             namespace='job.run.result.tap.output',
@@ -208,9 +204,8 @@ class TAP(CLI):
 
         settings.add_argparser_to_option(
             namespace='job.run.result.tap.enabled',
-            choices=('on', 'off'),
             parser=cmd_parser,
-            long_arg='--tap-job-result')
+            long_arg='--disable-tap-job-result')
 
         settings.add_argparser_to_option(
             namespace='job.run.result.tap.include_logs',

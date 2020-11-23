@@ -375,12 +375,12 @@ def create_suites():
               'assert': False},
 
              {'namespace': 'job.run.result.tap.enabled',
-              'value': 'on',
+              'value': True,
               'file': 'results.tap',
               'assert': True},
 
              {'namespace': 'job.run.result.tap.enabled',
-              'value': 'off',
+              'value': False,
               'file': 'results.tap',
               'assert': False},
 
