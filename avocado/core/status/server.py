@@ -1,4 +1,5 @@
 import asyncio
+import struct
 
 
 class StatusServer:
@@ -40,7 +41,18 @@ class StatusServer:
 
     async def cb(self, reader, _):
         while True:
-            raw_message = await reader.readline()
-            if not raw_message:
-                return
+            # First 8 bytes are the message size
+            size = await reader.readexactly(8)
+            if not size:
+                break
+
+            size = struct.unpack('!Q', size)[0]
+            left, chunk = size, b''
+            while left > 0:
+                chunk_size = min(4096, left)
+                chunk += await reader.readexactly(chunk_size)
+                left -= chunk_size
+
+            raw_message = struct.unpack('!{}s'.format(size),
+                                        chunk)[0].decode('ascii')
             self._repo.process_raw_message(raw_message)

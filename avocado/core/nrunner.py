@@ -10,6 +10,7 @@ import multiprocessing
 import os
 import re
 import socket
+import struct
 import subprocess
 import sys
 import tempfile
@@ -621,7 +622,11 @@ class TaskStatusService:
             self.connection = socket.create_connection((host, port))
 
         data = json_dumps(status)
-        self.connection.send(data.encode('ascii') + "\n".encode('ascii'))
+        # First 8 bytes (Q) are carring the message size
+        size = len(data)
+        self.connection.send(struct.pack('!Q{}s'.format(size),
+                                         size,
+                                         data.encode('ascii')))
 
     def close(self):
         if self.connection is not None:
