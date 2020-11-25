@@ -394,7 +394,7 @@ class Settings:
             msg = "Parser already registered for this namespace"
             raise SettingsError(msg)
 
-        option.add_argparser(parser, short_arg, long_arg, positional_arg,
+        option.add_argparser(parser, long_arg, short_arg, positional_arg,
                              choices, nargs, metavar, required, action)
 
     def as_dict(self, regex=None):
