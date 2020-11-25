@@ -11,6 +11,7 @@ Example of use:
         if result.exit_status == 0:
             print(result.stdout_text)
 """
+import glob
 import os
 import shlex
 import stat
@@ -248,3 +249,23 @@ class Session:
             return result.exit_status == 0
         except process.CmdError as exc:
             raise NWException("failed to copy file {}".format(exc))
+
+    def remove_control_path_reconnect(self):
+        """
+        Establishes connection to the remote host if failed try to
+        close the session.if it failed remove control path file and
+        reconnect it.
+
+        :returns: True if success or else raise exception
+        :rtype: bool
+        """
+        if not self.connect():
+            if not self.quit():
+                full_path = os.path.expanduser('~/.ssh')
+                file_list = glob.glob("{}/avocado-master-root*".format(full_path))
+                for path in file_list:
+                    if self.host in path:
+                        os.remove(path)
+            if not self.connect():
+                raise NWException("failed to connect to {}".format(self.host))
+        return True
