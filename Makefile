@@ -4,7 +4,7 @@ endif
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 DESTDIR=/
-AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
+AVOCADO_DIRNAME=$(shell basename ${PWD})
 AVOCADO_EXTERNAL_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
 # List of optional plugins that have to be in setup in a giver order
 # because there may be depedencies between plugins
