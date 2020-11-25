@@ -24,10 +24,9 @@ Once installed it produces the results in job results dir::
     ...
 
 
-This can be disabled via --html-job-result on|off. One can also
-specify a custom location via --html . Last but not least
---open-browser can be used to start browser automatically once
-the job finishes.
+This can be disabled via --disable-html-job-result. One can also specify a
+custom location via --html . Last but not least --open-browser can be used to
+start browser automatically once the job finishes.
 
 .. _results-upload-plugin:
 

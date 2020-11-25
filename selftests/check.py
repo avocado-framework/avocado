@@ -355,42 +355,42 @@ def create_suites():
          'run.dict_variants': [
 
              {'namespace': 'job.run.result.html.enabled',
-              'value': 'on',
+              'value': True,
               'file': 'results.html',
               'assert': True},
 
              {'namespace': 'job.run.result.html.enabled',
-              'value': 'off',
+              'value': False,
               'file': 'results.html',
               'assert': False},
 
              {'namespace': 'job.run.result.json.enabled',
-              'value': 'on',
+              'value': True,
               'file': 'results.json',
               'assert': True},
 
              {'namespace': 'job.run.result.json.enabled',
-              'value': 'off',
+              'value': False,
               'file': 'results.json',
               'assert': False},
 
              {'namespace': 'job.run.result.tap.enabled',
-              'value': 'on',
+              'value': True,
               'file': 'results.tap',
               'assert': True},
 
              {'namespace': 'job.run.result.tap.enabled',
-              'value': 'off',
+              'value': False,
               'file': 'results.tap',
               'assert': False},
 
              {'namespace': 'job.run.result.xunit.enabled',
-              'value': 'on',
+              'value': True,
               'file': 'results.xml',
               'assert': True},
 
              {'namespace': 'job.run.result.xunit.enabled',
-              'value': 'off',
+              'value': False,
               'file': 'results.xml',
               'assert': False},
 

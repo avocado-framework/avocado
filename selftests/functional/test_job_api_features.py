@@ -21,7 +21,7 @@ class Test(TestCaseTmpDir):
                             'run.keep_tmp': True}
 
     def test_job_run_result_json_enabled(self):
-        self.base_config['job.run.result.json.enabled'] = 'on'
+        self.base_config['job.run.result.json.enabled'] = True
         j = Job.from_config(self.base_config)
         j.setup()
         result = j.run()
