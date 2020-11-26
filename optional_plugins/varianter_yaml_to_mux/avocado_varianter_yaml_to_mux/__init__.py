@@ -188,6 +188,8 @@ def _node_content_from_dict(path, node, values, using):
         elif (isinstance(value, collections.OrderedDict) or
               value is None):
             node.add_child(_tree_node_from_values(path, key, value, using))
+        elif value == 'null':
+            node.value[key] = None
         else:
             node.value[key] = value
     return using
@@ -242,6 +244,8 @@ def _mapping_to_tree_loader(loader, node, looks_like_node=False):
                                                   values, loader.using))
         elif values is None:            # Empty node
             objects.append(mux.MuxTreeNode(astring.to_text(name)))
+        elif values == 'null':
+            objects.append((name, None))
         else:                           # Values
             objects.append((name, values))
     return objects

@@ -141,8 +141,8 @@ The environment created for the nodes ``fedora`` and ``osx`` are:
 Note that due to different usage of key and values in environment we disabled
 the automatic value conversion for keys while keeping it enabled for values.
 This means that the key is always a string and the value can be YAML value,
-eg. bool, list, custom type, or string. Please be aware that the None type
-is unsupported and cannot be provided in yaml as null.
+eg. bool, list, custom type, or string. Please be aware that due to limitation
+None type can be provided in yaml specifically as string 'null'.
 
 Variants
 --------
