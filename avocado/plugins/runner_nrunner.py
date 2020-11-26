@@ -94,6 +94,13 @@ class RunnerInit(Init):
                                  default='process',
                                  help_msg=help_msg)
 
+        help_msg = "The amount of time a test has to complete in seconds."
+        settings.register_option(section='task.timeout',
+                                 key='running',
+                                 default=None,
+                                 key_type=int,
+                                 help_msg=help_msg)
+
 
 class RunnerCLI(CLI):
 
@@ -266,7 +273,11 @@ class Runner(RunnerInterface):
         spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
         max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
                           len(self.tasks))
-        workers = [Worker(tsm, spawner, max_running=max_running).run()
+        timeout = test_suite.config.get('task.timeout.running')
+        workers = [Worker(state_machine=tsm,
+                          spawner=spawner,
+                          max_running=max_running,
+                          task_timeout=timeout).run()
                    for _ in range(max_running)]
         asyncio.ensure_future(self._update_status(job))
         loop = asyncio.get_event_loop()
