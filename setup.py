@@ -78,6 +78,7 @@ if __name__ == '__main__':
                   "sysinfo = avocado.plugins.sysinfo:SysinfoInit",
                   "tap = avocado.plugins.tap:TAPInit",
                   "jobscripts = avocado.plugins.jobscripts:JobScriptsInit",
+                  "dict_variants = avocado.plugins.dict_variants:DictVariantsInit",
                   "json_variants = avocado.plugins.json_variants:JsonVariantsInit",
                   "run = avocado.plugins.run:RunInit",
                   "podman = avocado.plugins.spawners.podman:PodmanSpawnerInit",
