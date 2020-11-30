@@ -264,7 +264,8 @@ class Runner(RunnerInterface):
         tsm = TaskStateMachine(self.tasks)
         spawner_name = test_suite.config.get('nrunner.spawner')
         spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
-        max_running = test_suite.config.get('nrunner.max_parallel_tasks')
+        max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
+                          len(self.tasks))
         workers = [Worker(tsm, spawner, max_running=max_running).run()
                    for _ in range(max_running)]
         asyncio.ensure_future(self._update_status(job))
