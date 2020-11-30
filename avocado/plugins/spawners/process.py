@@ -29,8 +29,8 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             runtime_task.spawner_handle = await asyncio.create_subprocess_exec(
                 runner,
                 *args,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE)
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL)
         except (FileNotFoundError, PermissionError):
             return False
         asyncio.ensure_future(self._collect_task(runtime_task.spawner_handle))
