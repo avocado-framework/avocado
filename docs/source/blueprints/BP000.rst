@@ -1,0 +1,337 @@
+:Number:BP000
+:Title: Blueprint specification and requirements
+:Author: Beraldo Leal <bleal@redhat.com>
+:Reviewers: Cleber Rosa <crosa@redhat.com>, Jan Richter <jarichte@redhat.com>,
+            Plamen Dimitrov <pdimitrov@pevogam.com>, Willian Rampazzo
+            <willianr@redhat.com>
+:Created: 29-Sep-2020
+:Type: Meta Blueprint
+:Status: Approved
+
+.. contents:: Table of Contents
+
+TL;DR
+*****
+
+Having better records of architectural decisions in our repository is a good
+way to socialize our technical decisions, improve the code review process,
+avoid unnecessary code, and balance the workload among other developers. We are
+already using the “blueprint” documents for a while and still learning how to
+write them. Although we have a basic idea of what is a blueprint, some may not
+understand the concept because we are missing one meta-document that describes
+the blueprint's basic notions. This document is a blueprint to specify how we
+should write blueprints from now on.
+
+Motivation
+**********
+
+Depending on the project size, having very well defined and structured
+documents about the architecture decisions seems like an overkill, but could
+help projects of any size, including Avocado, save time, make better decisions
+and improve the way we socialize those decisions.
+
+Today in the Avocado project we have the good practice to submit an RFC to
+our mailing list or to use/open a GitHub issue when we have a new idea. RFCs are a
+widespread way to disclose the architecture decisions, but they are just one
+part of a longer process. During the RFC phase, we argue in favor of a
+proposal, and we are mostly concerned about collecting feedback. After this
+phase, we could go one step forward and consolidate the discussion in
+Blueprints (sometimes called ADRs - Architecture Decision Records). This could
+be the next step so we could better socialize our decisions for future readers.
+A very well defined and structured document has some advantages over an RFC,
+but it is not intended to replace it, just be a later stage to follow from it.
+
+With blueprints, we could not only, but mainly:
+
+  * Create better documents for future members and future reference, when we
+    are trying to answer the following questions:
+
+a) *why* are you doing this? (the “problem” or the “motivation”);
+b) *what* are you proposing to solve the problem? (your "solution")?
+c) And *how* are you going to implement the proposed solution?
+
+Depending on the type of your blueprint, the answer for the last question (c)
+could be written in pseudocode, general text or might even not be necessary
+(although desired) — more details on the section named Specification.
+
+When using RFCs as email threads, there are no sections or headers, each
+contributor will try to send the RFC without following formal sections and
+headers. RFCs, as we use them today are just thread discussions and are not
+focused on future review/reading.
+
+  * Make sure that another peer will be able to implement a feature/requirement.
+
+Blueprints are not for you; they are for the community. If you know that a
+problem exists and know how to fix it, the most natural course of action would
+be to start coding this fix and submitting a Pull Request. While this is still
+valid for most of the cases, some important architectural changes must be
+discussed first to explain the “why”, “what” and “how” to keep everyone on the
+same page, avoid unnecessary coding, and most importantly: allow others to
+implement it in case you are not available.
+
+  * Improve the code review quality and time.
+
+Having a better understanding of the problem and the big picture is better for
+code review. It is harder to capture that from the Pull Request (PR)
+description and PR changes. Developers that are aware of the problem tend to
+review your changes with the problem in mind and hence more quickly. 
+
+  * Reduce onboarding time for new members.
+
+Having a history of how we made an architectural decision and why we are
+implementing it this way will give new members reading material to understand
+our project, avoiding unnecessary discussions and meetings to explain
+something.
+
+  * Create a common standard that will make it easier for readers.
+
+With an open RFC, authors tend to organize the ideas in different ways with
+different sections. Having a very well structured document with common sections
+will make it easier for readers to understand the problem and the solution.
+
+  * Track the progress of a significant implementation.
+
+We could use the blueprints header “status” line to track the progress of some
+features. We could even have a page parsing and listing all the blueprints with
+the title, author, status, and target milestone for that feature.
+
+  * Find the middle ground between “overthinking” and “auto-pilot.”
+
+Last but not least: we are *not trying* to overthink here and/or slow down our
+development processes. The idea is to have a lightweight document, very
+objective that will save us time in the medium and long run. We don’t have to
+overthink by trying to handle any possible scenario outside of ones we actually
+have a use case for. But we should also avoid the “auto-pilot” mode in our
+contributions where we are fixing issues as quick as possible without thinking
+about the big picture, it is not healthy for the project.
+
+
+Specification
+*************
+
+One blueprint per topic
+-----------------------
+
+Try to follow the minimalist approach and be concise with content relevant to
+one particular topic. If you have a more general topic to discuss, you should
+set the type as “Epic Blueprint” (more below) but still try to be concise and
+focused on the subject.
+
+File format and location
+------------------------
+
+Our current documentation already uses ReStructuredText (.rst) format, so we
+will adopt .rst format here too. All blueprints will be located inside
+`docs/source/blueprints` with the filename `BPXXX.rst`, where XXX is the number
+of the blueprint. Just pick the next number available for your blueprint.
+
+Write for your audience
+-----------------------
+
+As mentioned before, your blueprint will be read by your peers, future members,
+and future yourself. Keep in mind that your audience is developers with a
+minimal understanding of the Avocado internals and be kind providing any
+necessary context to understand the problem.
+
+Blueprints types
+----------------
+
+Currently, we have the following blueprint types:
+
+ * Architectural Blueprint: Any blueprint changing or introducing a new core
+   feature or architectural change to Avocado.
+
+ * Process Blueprint: Any blueprint that is not implementing a new core
+   feature, but changing how the project works. This could be, for instance,
+   related to the repositories or processes.
+
+ * Meta Blueprint: A blueprint about blueprints. Like this one and any future
+   blueprint that changes our blueprint's styles and methods.
+
+ * Epic Blueprint: A blueprint that is touching on multiple areas and is too
+   big to have all the documentation in one single blueprint. We could split
+   epic blueprints into smaller blueprints or issues (if they are small and
+   easy to understand). Epic Blueprints are not a merge of all sub-blueprints.
+   Like an epic issue, epic blueprints don't need to detail "how" (or provide
+   details) that the sub-blueprints could have.
+
+ * Component Blueprint: A blueprint with the intent to describe a new utility
+   module or a new plugin.
+
+Headers
+-------
+
+Python PEPs (Python Enhancement Proposals) uses RFC822 for describing the
+headers. This could be useful here too, especially when parsing those headers
+to display our list of blueprints with the current status.
+
+The current list of items of our blueprint headers is below:
+
+ * Number: Usually, the blueprint number in the format BPXXX
+
+ * Title: A short descriptive title, limited to 80 characters
+
+ * Author: The author or authors of blueprint. Following the format: `[FIRST
+   NAME] [LAST NAME] - <email@domain>`
+
+ * Reviewers: All reviewers that approved and helped during the review process
+
+ * Created: Date string when the blueprint first draft was submitted. Please
+   use the following format: DD-MMM-YYYY.
+
+ * Type: One of the types described during the previous section
+
+ * Status: One of the types described during the next section
+
+Here is an example of a header::
+
+   :Number: BP001
+   :Title: Configuration by convention
+   :Author: Beraldo Leal <bleal@redhat.com>
+   :Reviewers: Cleber Rosa, Lukáš Doktor and Plamen Dimitrov
+   :Created: 06-Dec-2019
+   :Type: Epic Blueprint
+   :Status: WIP
+
+Blueprint statuses
+------------------
+
+ * Draft: All blueprints should be created in this state. This means the
+   blueprint is accepting comments, and probably there is a discussion
+   happening. Blueprints in draft mode can be part of our repository.
+
+ * Approved: Blueprint was approved after discussions, and all suggestions are
+   already incorporated on the document. Nobody has started working on this
+   yet.
+
+ * Assigned: This status is not about the blueprint itself, but about the proposal
+   that is the subject of the BP. This means that the blueprint was approved,
+   and someone is already working on implementing it. A BP status can change
+   from Draft to Assigned if the work has started already.
+
+ * WIP: Blueprint was approved and someone is working on it. Work in Progress.
+
+ * Implemented: This means the BP is already implemented and delivered to the
+   Avocado’s master branch.
+
+ * Rejected: Rejected status means the idea was not implemented because it
+   wasn't approved by everyone or has some technical limitations.
+
+ * Deprecated: Deprecated means it was approved, implemented, and at some
+   point, makes no more sense to have it. For example, anything related to the
+   legacy runner. Usually, Deprecated means that it was replaced by something
+   else.
+
+As you can see, there is no status to accommodate any future change in a
+blueprint. Blueprints should not be “voided.” Any improvement on an old
+blueprint should be presented as a new blueprint, changing the status of the
+original to “deprecated”.
+
+Sections
+--------
+
+In order to facilitate the reading and understanding of the problem, all
+blueprints must have the following sections:
+
+ * TL;DR
+
+ * Motivation
+
+ * Specification
+
+ * Backwards Compatibility
+
+ * Security Implications
+
+ * How to Teach This
+
+ * Related Issues
+
+ * References
+
+Below you can find a brief description of what you should write in each
+section:
+
+ * TL;DR: Should be a short description of your blueprint. Like an abstract. We
+   recommend writing this at the end of your first draft. This will give you a
+   better overview of it.
+
+ * Motivation: This should be the motivation of your proposed solution, not the
+   motivation of the blueprint itself. It describes the problem. Here, you
+   should answer "why" your solution is needed.
+
+ * Specification: In this section, you should describe how you are going to
+   solve the problem. You can create subsections here to organize your ideas
+   better. Please keep in mind that it is useful to mention the details, with
+   code snippets, examples, and/or references. This will save you time, making
+   sure that everyone is in agreement with the proposed solution.
+
+ * Backwards Compatibility: How is your proposal going to affect older versions
+   of Avocado? Should we deprecate some modules, classes, or methods? Are we
+   going to keep backwards compatibility or not?
+
+ * Security Implications: Do you have any concerns about security with your
+   proposed solution and what are they?
+
+ * How to Teach This: What is the best way to inform our devs and users about
+   your new feature/solution?
+
+ * Related Issues: Here, you should mention Github links for both: a) current
+   open issues that are blocking while waiting for your BP and b) all open
+   issues that will render this BP as “implemented” when closed.
+
+   1. Issues to address this BP
+
+      Would be nice, if possible, to open issues on GH that covers all aspects
+      of your Blueprint.
+
+   2. Issues this BP will solve
+
+      What are the issues already existent on Avocado project that your
+      proposal will solve?
+
+ * References: Any external reference for helping understand the problem and
+   your solution.
+
+Backwards Compatibility
+***********************
+
+So far, we are on our 3rth blueprint (BP003 was the last one). This BP000
+should have been released before those blueprints. So probably those three
+blueprints are not 100% compliaant with this meta blueprint, and that is fine.
+We were learning on the fly. We don’t need to change any of those blueprints
+after BP000 gets approved.
+
+Security Implications
+*********************
+
+No security implications found so far.
+
+How to Teach This
+*****************
+
+Getting used to writing blueprints is not an easy task. And probably we are
+going to find unplanned issues with this process on the way.  The general
+rule of thumb is to use common sense. To make this more public, we could
+consider the following:
+
+ * If approved, BP000 should be on top of our blueprints lists for reference.
+
+ * We could also have a template inside the `blueprints` directory to help
+   people when submitting their own blueprints.
+
+ * Also, we could include pointers and instructions in our development guide
+   for this BP.
+
+ * Another good practice would be to make comments in Avocado’s source code
+   with some pointers to specific blueprints.
+
+Related Issues
+**************
+
+None.
+
+References
+**********
+
+None.
