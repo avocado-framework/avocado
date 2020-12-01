@@ -13,9 +13,23 @@
 # Authors: Cleber Rosa <crosa@redhat.com>
 
 from avocado.core import varianter
-from avocado.core.plugin_interfaces import Varianter
+from avocado.core.plugin_interfaces import Init, Varianter
+from avocado.core.settings import settings
 from avocado.core.tree import TreeNode
 
+
+class DictVariantsInit(Init):
+
+    name = 'dict_variants'
+    description = "Python Dictionary based varianter"
+
+    def initialize(self):
+        help_msg = 'Load the Variants from Python dictionaries'
+        settings.register_option(section='run',
+                                 key='dict_variants',
+                                 default=[],
+                                 key_type=list,
+                                 help_msg=help_msg)
 
 class DictVariants(Varianter):
 
