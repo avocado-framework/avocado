@@ -67,6 +67,17 @@ class RunnerInit(Init):
                                  metavar="HOST:PORT",
                                  help_msg=help_msg)
 
+        help_msg = ('Buffer size that status server uses.  This should '
+                    'generally not be a concern to most users, but '
+                    'it can be tunned in case a runner generates very large '
+                    'status messages, which is common if a test generates a '
+                    'lot of output. Default is 33554432 (32MiB)')
+        settings.register_option(section=section,
+                                 key='status_server_buffer_size',
+                                 key_type=int,
+                                 default=2 ** 25,
+                                 help_msg=help_msg)
+
         help_msg = ('Number of maximum number tasks running in parallel. You '
                     'can disable parallel execution by setting this to 1. '
                     'Defaults to the amount of CPUs on this machine.')
@@ -253,7 +264,8 @@ class Runner(RunnerInterface):
         tsm = TaskStateMachine(self.tasks)
         spawner_name = test_suite.config.get('nrunner.spawner')
         spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
-        max_running = test_suite.config.get('nrunner.max_parallel_tasks')
+        max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
+                          len(self.tasks))
         workers = [Worker(tsm, spawner, max_running=max_running).run()
                    for _ in range(max_running)]
         asyncio.ensure_future(self._update_status(job))
