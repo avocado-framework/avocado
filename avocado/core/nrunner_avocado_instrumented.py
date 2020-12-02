@@ -2,7 +2,7 @@ import multiprocessing
 import tempfile
 import time
 
-from . import job, loader, nrunner
+from . import job, loader, nrunner, teststatus
 from .test import TestID
 from .tree import TreeNode
 
@@ -53,7 +53,8 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         # This should probably be done in a translator
         if 'status' in state:
             status = state['status'].lower()
-            if status in ['pass', 'fail', 'skip', 'error']:
+            final_status = [_.lower() for _ in teststatus.user_facing_status]
+            if status in final_status:
                 state['result'] = status
                 state['status'] = 'finished'
             else:
