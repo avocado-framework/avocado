@@ -549,6 +549,9 @@ class Job:
             self.time_start = time.time()
         try:
             self.result.tests_total = self.size
+            pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+            output.log_plugin_failures(pre_post_dispatcher.load_failures)
+            pre_post_dispatcher.map_method('pre', self)
             self.pre_tests()
             return self.run_tests()
         except exceptions.JobBaseException as details:
@@ -582,6 +585,7 @@ class Job:
                 self.time_end = time.time()
                 self.time_elapsed = self.time_end - self.time_start
             self.render_results()
+            pre_post_dispatcher.map_method('post', self)
 
     def run_tests(self):
         """

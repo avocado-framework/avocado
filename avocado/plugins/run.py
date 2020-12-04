@@ -19,8 +19,7 @@ Base Test Runner Plugins.
 import argparse
 import sys
 
-from avocado.core import exit_codes, job, loader, output, parser_common_args
-from avocado.core.dispatcher import JobPrePostDispatcher
+from avocado.core import exit_codes, job, loader, parser_common_args
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, Init
 from avocado.core.settings import settings
@@ -302,15 +301,4 @@ class Run(CLICmd):
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         with job.Job(config, [suite]) as job_instance:
-            pre_post_dispatcher = JobPrePostDispatcher()
-            try:
-                # Run JobPre plugins
-                output.log_plugin_failures(pre_post_dispatcher.load_failures)
-                pre_post_dispatcher.map_method('pre', job_instance)
-
-                job_run = job_instance.run()
-            finally:
-                # Run JobPost plugins
-                pre_post_dispatcher.map_method('post', job_instance)
-
-        return job_run
+            return job_instance.run()
