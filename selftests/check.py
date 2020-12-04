@@ -472,6 +472,26 @@ def create_suites():
                                         "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
+    # Run nrunner interface checks for all available runners
+    # ========================================================================
+    config_nrunner_interface = {
+        'run.references': ['selftests/functional/test_nrunner_interface.py'],
+        'run.dict_variants': [
+            {'runner': 'avocado-runner'},
+            {'runner': 'avocado-runner-noop'},
+            {'runner': 'avocado-runner-exec'},
+            {'runner': 'avocado-runner-exec-test'},
+            {'runner': 'avocado-runner-python-unittest'},
+            {'runner': 'avocado-runner-avocado-instrumented'},
+            {'runner': 'avocado-runner-tap'},
+            {'runner': 'avocado-runner-robot'},
+            {'runner': 'avocado-runner-golang'}
+        ]
+    }
+    suites.append(TestSuite.from_config(config_nrunner_interface,
+                                        "nrunner-interface"))
+
+    # ========================================================================
     # Run all static checks, unit and functional tests
     # ========================================================================
     config_check = (
