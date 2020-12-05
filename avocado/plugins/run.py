@@ -212,7 +212,7 @@ class Run(CLICmd):
                     '"$JOB_RESULTS_DIR/$STREAM.$LEVEL."')
         settings.register_option(section='run',
                                  key='store_logging_stream',
-                                 nargs='*',
+                                 nargs='+',
                                  help_msg=help_msg,
                                  default=[],
                                  metavar='STREAM[:LEVEL]',

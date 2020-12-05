@@ -407,7 +407,7 @@ def add_loader_options(parser, section='run'):
                 "settings->plugins.loaders.")
     settings.register_option(section=section,
                              key='loaders',
-                             nargs='*',
+                             nargs='+',
                              key_type=list,
                              default=['file', '@DEFAULT'],
                              help_msg=help_msg,
