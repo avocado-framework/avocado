@@ -184,7 +184,6 @@ class TestStatus(object):
                 self.interrupt = True
             elif "paused" in msg:
                 self.status = msg
-                self.job.result_proxy.notify_progress(False)
                 self.job._result_events_dispatcher.map_method('test_progress',
                                                               False)
                 if msg['paused']:
