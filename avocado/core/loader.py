@@ -94,6 +94,9 @@ class TestLoaderProxy:
                                       "TestLoader" % plugin)
 
     def load_plugins(self, config):
+        if self._initialized_plugins:
+            return
+
         def _good_test_types(plugin):
             """
             List all supported test types (excluding incorrect ones)
