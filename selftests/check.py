@@ -204,16 +204,15 @@ def create_suites():
     # ========================================================================
     check_archive_file_exists = ('%s:%s.test_check_archive_file_exists'
                          % (__file__, test_class))
-    config_check_archive_file_exists = (
-        {'run.references': [check_archive_file_exists],
-         'run.test_runner': 'runner',
-         'run.dict_variants': [
-
-             {'namespace': 'run.results.archive',
-              'value': True,
-              'assert': True},
-
-         ]})
+    config_check_archive_file_exists = {
+        'run.references': [check_archive_file_exists],
+        'run.test_runner': 'runner',
+        'run.dict_variants': [
+            {'namespace': 'run.results.archive',
+             'value': True,
+             'assert': True},
+        ]
+    }
 
     suites.append(TestSuite.from_config(config_check_archive_file_exists,
                                         "job-api-%s" % (len(suites) + 1)))
@@ -224,16 +223,15 @@ def create_suites():
     check_category_directory_exists = (
         '%s:%s.test_check_category_directory_exists'
         % (__file__, test_class))
-    config_check_category_directory_exists = (
-        {'run.references': [check_category_directory_exists],
-         'run.test_runner': 'runner',
-         'run.dict_variants': [
-
-             {'namespace': 'run.job_category',
-              'value': 'foo',
-              'assert': True},
-
-         ]})
+    config_check_category_directory_exists = {
+        'run.references': [check_category_directory_exists],
+        'run.test_runner': 'runner',
+        'run.dict_variants': [
+            {'namespace': 'run.job_category',
+             'value': 'foo',
+             'assert': True},
+        ]
+    }
 
     suites.append(TestSuite.from_config(config_check_category_directory_exists,
                                         "job-api-%s" % (len(suites) + 1)))
@@ -243,11 +241,10 @@ def create_suites():
     # ========================================================================
     check_directory_exists = ('%s:%s.test_check_directory_exists'
                               % (__file__, test_class))
-    config_check_directory_exists = (
-        {'run.references': [check_directory_exists],
-         'run.test_runner': 'runner',
-         'run.dict_variants': [
-
+    config_check_directory_exists = {
+        'run.references': [check_directory_exists],
+        'run.test_runner': 'runner',
+        'run.dict_variants': [
              {'namespace': 'sysinfo.collect.enabled',
               'value': True,
               'directory': 'sysinfo',
@@ -257,8 +254,8 @@ def create_suites():
               'value': False,
               'directory': 'sysinfo',
               'assert': False},
-
-         ]})
+        ]
+    }
 
     suites.append(TestSuite.from_config(config_check_directory_exists,
                                         "job-api-%s" % (len(suites) + 1)))
@@ -268,78 +265,77 @@ def create_suites():
     # ========================================================================
     check_file_content = ('%s:%s.test_check_file_content'
                           % (__file__, test_class))
-    config_check_file_content = (
-        {'run.references': [check_file_content],
-         'run.test_runner': 'runner',
-         'run.dict_variants': [
+    config_check_file_content = {
+        'run.references': [check_file_content],
+        'run.test_runner': 'runner',
+        'run.dict_variants': [
+            # finding the correct 'content' here is trick because any
+            # simple string is added to the variant file name and is
+            # found in the log file.
+            # Using DEBUG| makes the variant name have DEBUG_, working
+            # fine here.
+            {'namespace': 'job.output.loglevel',
+             'value': 'INFO',
+             'file': 'job.log',
+             'content': 'DEBUG| Test metadata',
+             'assert': False},
 
-             # finding the correct 'content' here is trick because any
-             # simple string is added to the variant file name and is
-             # found in the log file.
-             # Using DEBUG| makes the variant name have DEBUG_, working
-             # fine here.
-             {'namespace': 'job.output.loglevel',
-              'value': 'INFO',
-              'file': 'job.log',
-              'content': 'DEBUG| Test metadata',
-              'assert': False},
+            {'namespace': 'job.run.result.tap.include_logs',
+             'value': True,
+             'file': 'results.tap',
+             'content': "Command '/bin/true' finished with 0",
+             'assert': True},
 
-             {'namespace': 'job.run.result.tap.include_logs',
-              'value': True,
-              'file': 'results.tap',
-              'content': "Command '/bin/true' finished with 0",
-              'assert': True},
+            {'namespace': 'job.run.result.tap.include_logs',
+             'value': False,
+             'file': 'results.tap',
+             'content': "Command '/bin/true' finished with 0",
+             'assert': False},
 
-             {'namespace': 'job.run.result.tap.include_logs',
-              'value': False,
-              'file': 'results.tap',
-              'content': "Command '/bin/true' finished with 0",
-              'assert': False},
+            {'namespace': 'job.run.result.xunit.job_name',
+             'value': 'foo',
+             'file': 'results.xml',
+             'content': 'name="foo"',
+             'assert': True},
 
-             {'namespace': 'job.run.result.xunit.job_name',
-              'value': 'foo',
-              'file': 'results.xml',
-              'content': 'name="foo"',
-              'assert': True},
+            {'namespace': 'job.run.result.xunit.max_test_log_chars',
+             'value': 1,
+             'file': 'results.xml',
+             'content': '--[ CUT DUE TO XML PER TEST LIMIT ]--',
+             'assert': True,
+             'reference': ['/bin/false'],
+             'exit_code': 1},
 
-             {'namespace': 'job.run.result.xunit.max_test_log_chars',
-              'value': 1,
-              'file': 'results.xml',
-              'content': '--[ CUT DUE TO XML PER TEST LIMIT ]--',
-              'assert': True,
-              'reference': ['/bin/false'],
-              'exit_code': 1},
+            {'namespace': 'run.failfast',
+             'value': True,
+             'file': 'results.json',
+             'content': '"skip": 1',
+             'assert': True,
+             'reference': ['/bin/false', '/bin/true'],
+             'exit_code': 9},
 
-             {'namespace': 'run.failfast',
-              'value': True,
-              'file': 'results.json',
-              'content': '"skip": 1',
-              'assert': True,
-              'reference': ['/bin/false', '/bin/true'],
-              'exit_code': 9},
+            {'namespace': 'run.ignore_missing_references',
+             'value': 'on',
+             'file': 'results.json',
+             'content': '"pass": 1',
+             'assert': True,
+             'reference': ['/bin/true', 'foo']},
 
-             {'namespace': 'run.ignore_missing_references',
-              'value': 'on',
-              'file': 'results.json',
-              'content': '"pass": 1',
-              'assert': True,
-              'reference': ['/bin/true', 'foo']},
+            {'namespace': 'run.unique_job_id',
+             'value': 'abcdefghi',
+             'file': 'job.log',
+             'content': 'Job ID: abcdefghi',
+             'assert': True},
 
-             {'namespace': 'run.unique_job_id',
-              'value': 'abcdefghi',
-              'file': 'job.log',
-              'content': 'Job ID: abcdefghi',
-              'assert': True},
-
-             {'namespace': 'job.run.timeout',
-              'value': 1,
-              'reference': ['examples/tests/sleeptenmin.py'],
-              'file': 'job.log',
-              'content': 'RuntimeError: Test interrupted by SIGTERM',
-              'assert': True,
-              'exit_code': 8},
-
-         ]})
+            {'namespace': 'job.run.timeout',
+             'value': 1,
+             'reference': ['examples/tests/sleeptenmin.py'],
+             'file': 'job.log',
+             'content': 'RuntimeError: Test interrupted by SIGTERM',
+             'assert': True,
+             'exit_code': 8},
+        ]
+    }
 
     suites.append(TestSuite.from_config(config_check_file_content,
                                         "job-api-%s" % (len(suites) + 1)))
@@ -349,73 +345,72 @@ def create_suites():
     # ========================================================================
     check_file_exists = ('%s:%s.test_check_file_exists'
                          % (__file__, test_class))
-    config_check_file_exists = (
-        {'run.references': [check_file_exists],
-         'run.test_runner': 'runner',
-         'run.dict_variants': [
+    config_check_file_exists = {
+        'run.references': [check_file_exists],
+        'run.test_runner': 'runner',
+        'run.dict_variants': [
+            {'namespace': 'job.run.result.html.enabled',
+             'value': True,
+             'file': 'results.html',
+             'assert': True},
 
-             {'namespace': 'job.run.result.html.enabled',
-              'value': True,
-              'file': 'results.html',
-              'assert': True},
+            {'namespace': 'job.run.result.html.enabled',
+             'value': False,
+             'file': 'results.html',
+             'assert': False},
 
-             {'namespace': 'job.run.result.html.enabled',
-              'value': False,
-              'file': 'results.html',
-              'assert': False},
+            {'namespace': 'job.run.result.json.enabled',
+             'value': True,
+             'file': 'results.json',
+             'assert': True},
 
-             {'namespace': 'job.run.result.json.enabled',
-              'value': True,
-              'file': 'results.json',
-              'assert': True},
+            {'namespace': 'job.run.result.json.enabled',
+             'value': False,
+             'file': 'results.json',
+             'assert': False},
 
-             {'namespace': 'job.run.result.json.enabled',
-              'value': False,
-              'file': 'results.json',
-              'assert': False},
+            {'namespace': 'job.run.result.tap.enabled',
+             'value': True,
+             'file': 'results.tap',
+             'assert': True},
 
-             {'namespace': 'job.run.result.tap.enabled',
-              'value': True,
-              'file': 'results.tap',
-              'assert': True},
+            {'namespace': 'job.run.result.tap.enabled',
+             'value': False,
+             'file': 'results.tap',
+             'assert': False},
 
-             {'namespace': 'job.run.result.tap.enabled',
-              'value': False,
-              'file': 'results.tap',
-              'assert': False},
+            {'namespace': 'job.run.result.xunit.enabled',
+             'value': True,
+             'file': 'results.xml',
+             'assert': True},
 
-             {'namespace': 'job.run.result.xunit.enabled',
-              'value': True,
-              'file': 'results.xml',
-              'assert': True},
+            {'namespace': 'job.run.result.xunit.enabled',
+             'value': False,
+             'file': 'results.xml',
+             'assert': False},
 
-             {'namespace': 'job.run.result.xunit.enabled',
-              'value': False,
-              'file': 'results.xml',
-              'assert': False},
+            {'namespace': 'run.dry_run.enabled',
+             'value': True,
+             'file': 'job.log',
+             'assert': False},
 
-             {'namespace': 'run.dry_run.enabled',
-              'value': True,
-              'file': 'job.log',
-              'assert': False},
+            {'namespace': 'run.dry_run.no_cleanup',
+             'value': True,
+             'file': 'job.log',
+             'assert': True},
 
-             {'namespace': 'run.dry_run.no_cleanup',
-              'value': True,
-              'file': 'job.log',
-              'assert': True},
-
-             {'namespace': 'plugins.disable',
-              'value': ['result.xunit'],
-              'file': 'result.xml',
-              'assert': False},
+            {'namespace': 'plugins.disable',
+             'value': ['result.xunit'],
+             'file': 'result.xml',
+             'assert': False},
 
              # this test needs a huge improvement
-             {'namespace': 'run.journal.enabled',
-              'value': True,
-              'file': '.journal.sqlite',
-              'assert': True},
-
-         ]})
+            {'namespace': 'run.journal.enabled',
+             'value': True,
+             'file': '.journal.sqlite',
+             'assert': True},
+        ]
+    }
 
     suites.append(TestSuite.from_config(config_check_file_exists,
                                         "job-api-%s" % (len(suites) + 1)))
@@ -425,29 +420,28 @@ def create_suites():
     # ========================================================================
     check_output_file = ('%s:%s.test_check_output_file'
                          % (__file__, test_class))
-    config_check_output_file = (
-        {'run.references': [check_output_file],
-         'run.test_runner': 'runner',
-         'run.dict_variants': [
+    config_check_output_file = {
+        'run.references': [check_output_file],
+        'run.test_runner': 'runner',
+        'run.dict_variants': [
+            {'namespace': 'job.run.result.html.output',
+             'file': 'custom.html',
+             'assert': True},
 
-             {'namespace': 'job.run.result.html.output',
-              'file': 'custom.html',
-              'assert': True},
+            {'namespace': 'job.run.result.json.output',
+             'file': 'custom.json',
+             'assert': True},
 
-             {'namespace': 'job.run.result.json.output',
-              'file': 'custom.json',
-              'assert': True},
+            # https://github.com/avocado-framework/avocado/issues/4034
+            {'namespace': 'job.run.result.tap.output',
+             'file': 'custom.tap',
+             'assert': True},
 
-             # https://github.com/avocado-framework/avocado/issues/4034
-             {'namespace': 'job.run.result.tap.output',
-              'file': 'custom.tap',
-              'assert': True},
-
-             {'namespace': 'job.run.result.xunit.output',
-              'file': 'custom.xml',
-              'assert': True},
-
-         ]})
+            {'namespace': 'job.run.result.xunit.output',
+             'file': 'custom.xml',
+             'assert': True},
+        ]
+    }
 
     suites.append(TestSuite.from_config(config_check_output_file,
                                         "job-api-%s" % (len(suites) + 1)))
@@ -457,32 +451,52 @@ def create_suites():
     # ========================================================================
     check_tmp_directory_exists = ('%s:%s.test_check_tmp_directory_exists'
                               % (__file__, test_class))
-    config_check_tmp_directory_exists = (
-        {'run.references': [check_tmp_directory_exists],
-         'run.test_runner': 'runner',
-         'run.dict_variants': [
-
-             {'namespace': 'run.keep_tmp',
-              'value': True,
-              'assert': True},
-
-         ]})
+    config_check_tmp_directory_exists = {
+        'run.references': [check_tmp_directory_exists],
+        'run.test_runner': 'runner',
+        'run.dict_variants': [
+            {'namespace': 'run.keep_tmp',
+             'value': True,
+             'assert': True},
+        ]
+    }
 
     suites.append(TestSuite.from_config(config_check_tmp_directory_exists,
                                         "job-api-%s" % (len(suites) + 1)))
 
     # ========================================================================
+    # Run nrunner interface checks for all available runners
+    # ========================================================================
+    config_nrunner_interface = {
+        'run.references': ['selftests/functional/test_nrunner_interface.py'],
+        'run.dict_variants': [
+            {'runner': 'avocado-runner'},
+            {'runner': 'avocado-runner-noop'},
+            {'runner': 'avocado-runner-exec'},
+            {'runner': 'avocado-runner-exec-test'},
+            {'runner': 'avocado-runner-python-unittest'},
+            {'runner': 'avocado-runner-avocado-instrumented'},
+            {'runner': 'avocado-runner-tap'},
+            {'runner': 'avocado-runner-robot'},
+            {'runner': 'avocado-runner-golang'}
+        ]
+    }
+    suites.append(TestSuite.from_config(config_nrunner_interface,
+                                        "nrunner-interface"))
+
+    # ========================================================================
     # Run all static checks, unit and functional tests
     # ========================================================================
-    config_check = (
-        {'run.references': (glob.glob('selftests/*.sh') +
-                            glob.glob('selftests/jobs/*') +
-                            glob.glob('selftests/unit/*.py') +
-                            glob.glob('selftests/functional/*.py') +
-                            glob.glob('optional_plugins/*/tests/*.py')),
-         'run.test_runner': 'nrunner',
-         'run.ignore_missing_references': True}
-        )
+    config_check = {
+        'run.references': (glob.glob('selftests/*.sh') +
+                           glob.glob('selftests/jobs/*') +
+                           glob.glob('selftests/unit/*.py') +
+                           glob.glob('selftests/functional/*.py') +
+                           glob.glob('optional_plugins/*/tests/*.py')),
+        'run.test_runner': 'nrunner',
+        'run.ignore_missing_references': True
+    }
+
     suites.append(TestSuite.from_config(config_check, "check"))
     return suites
 
