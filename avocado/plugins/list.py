@@ -207,11 +207,15 @@ class List(CLICmd):
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
-        runner = 'nrunner' if config.get('list.resolver') else 'runner'
+        resolver = config.get('list.resolver')
+        runner = 'nrunner' if resolver else 'runner'
         config['run.references'] = config.get('list.references')
         config['run.ignore_missing_references'] = True
         config['run.test_runner'] = runner
         try:
+            if not resolver:
+                loader.loader.load_plugins(config)
+                loader.loader.get_extra_listing()
             suite = TestSuite.from_config(config)
             if runner == 'nrunner':
                 matrix = self._get_resolution_matrix(suite)
