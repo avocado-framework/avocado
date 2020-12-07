@@ -258,7 +258,8 @@ def get_supported_huge_pages_size():
     # the <size> will always start from index 10.
     output = [int(each[10:].rstrip('kB')) for each in output]
     if os.uname()[4] in ['ppc64', 'ppc64le'] and b'PowerVM'\
-            in process.system_output("pseries_platform", ignore_status=True):
+            in process.system_output("pseries_platform", ignore_status=True)\
+            and 'MMU\t\t: Hash' in genio.read_file('/proc/cpuinfo').rstrip('\t\r\n\0'):
         output.remove(16777216)
     return output
 
