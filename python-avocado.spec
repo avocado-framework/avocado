@@ -34,7 +34,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 83.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -100,7 +100,7 @@ these days a framework) to perform automated testing.
 %endif
 
 %build
-%if (0%{?fedora} && 0%{?fedora} < 29) || 0%{?rhel}
+%if 0%{?rhel}
 sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
 %if 0%{?rhel}
@@ -129,12 +129,7 @@ popd
 pushd optional_plugins/result_upload
 %py3_build
 popd
-# python3-docutils on Fedora 28 uses a rst2man binary with -3 prefix
-%if 0%{?fedora} == 28
-/usr/bin/rst2man-3 man/avocado.rst man/avocado.1
-%else
 %{__make} man
-%endif
 
 %install
 %py3_install
@@ -384,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Dec  8 2020 Cleber Rosa <cleber@redhat.com> - 83.0-2
+- Drop old Fedora conditionals
+
 * Mon Nov 16 2020 Cleber Rosa <cleber@redhat.com> - 83.0-1
 - New release
 
