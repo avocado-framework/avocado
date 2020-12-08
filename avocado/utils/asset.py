@@ -27,7 +27,7 @@ import stat
 import sys
 import tempfile
 import time
-import urllib.parse
+from urllib.parse import urlparse
 
 from . import astring, crypto
 from . import path as utils_path
@@ -66,14 +66,12 @@ class Asset:
         self.name = name
         self.asset_hash = asset_hash
 
-        self.parsed_name = urllib.parse.urlparse(self.name)
-
         # we currently support the following options for name and locations:
         # 1. name is a full URI and locations is empty;
         # 2. name is a single file name and locations is one or more entries.
         # raise an exception if we have an unsupported use of those arguments
-        if ((self.parsed_name.scheme and locations is not None) or
-                (not self.parsed_name.scheme and locations is None)):
+        if ((self.name_scheme and locations is not None) or
+                (not self.name_scheme and locations is None)):
             raise ValueError("Incorrect use of parameter name with parameter"
                              " locations.")
 
@@ -89,12 +87,6 @@ class Asset:
         self.cache_dirs = cache_dirs
         self.expire = expire
         self.metadata = metadata
-
-        # set asset_name according to parsed_name
-        self.asset_name = os.path.basename(self.parsed_name.path)
-        # set relative_dir for the asset
-        self.relative_dir = os.path.join(self._get_relative_dir(),
-                                         self.asset_name)
 
     def _create_hash_file(self, asset_path):
         """
@@ -225,7 +217,7 @@ class Asset:
         :returns: target location of asset the file.
         :rtype: str
         """
-        if (not self.parsed_name.scheme and
+        if (not self.name_scheme and
                 (self.asset_hash or len(self.locations) > 1)):
             return 'by_name'
 
@@ -307,11 +299,6 @@ class Asset:
         :returns: The path for the file on the cache directory.
         :rtype: str
         """
-        urls = []
-        # If name is actually an url, it has to be included in urls list
-        if self.parsed_name.scheme:
-            urls.append(self.parsed_name.geturl())
-
         # First let's search for the file in each one of the cache locations
         asset_file = None
         try:
@@ -329,13 +316,8 @@ class Asset:
         # writable cache directory will be used.
         cache_dir = self._get_writable_cache_dir()
         # Now we have a writable cache_dir. Let's get the asset.
-        # Adding the user defined locations to the urls list:
-        if self.locations is not None:
-            for item in self.locations:
-                urls.append(item)
-
-        for url in urls:
-            urlobj = urllib.parse.urlparse(url)
+        for url in self.urls:
+            urlobj = urlparse(url)
             if urlobj.scheme in ['http', 'https', 'ftp']:
                 fetch = self._download
             elif urlobj.scheme == 'file':
@@ -406,3 +388,47 @@ class Asset:
             with open(metadata_file, "r") as f:
                 metadata = json.load(f)
                 return metadata
+
+    @property
+    def asset_name(self):
+        return os.path.basename(self.parsed_name.path)
+
+    @property
+    def name_scheme(self):
+        """This property will return the scheme part of the name if is an URL.
+
+        Otherwise, will return None.
+        """
+        parsed = self.parsed_name
+        if parsed:
+            return parsed.scheme
+
+    @property
+    def name_url(self):
+        """This property will return the full url of the name if is an URL.
+
+        Otherwise, will return None.
+        """
+        if self.name_scheme:
+            return self.parsed_name.geturl()
+
+    @property
+    def parsed_name(self):
+        """This property will return a ParseResult object if name is an URL."""
+        return urlparse(self.name)
+
+    @property
+    def relative_dir(self):
+        return os.path.join(self._get_relative_dir(), self.asset_name)
+
+    @property
+    def urls(self):
+        """Complete list of locations including name if is an URL."""
+        urls = []
+        if self.name_scheme:
+            urls.append(self.name_url)
+
+        if self.locations is not None:
+            urls.extend(self.locations)
+
+        return urls
