@@ -203,7 +203,7 @@ popd
 # AVOCADO_CHECK_LEVEL: package build environments have the least
 # amount of resources we have observed so far.  Let's avoid tests that
 # require too much resources or are time sensitive
-PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
+PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/check.py --disable-static-checks --disable-plugin-checks=robot
 %endif
 
 %files -n python3-%{srcname}
@@ -381,6 +381,7 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Tue Dec  8 2020 Cleber Rosa <cleber@redhat.com> - 83.0-2
 - Drop old Fedora conditionals
+- Use selftests/check.py job instead of more limited selftests/run
 
 * Mon Nov 16 2020 Cleber Rosa <cleber@redhat.com> - 83.0-1
 - New release
