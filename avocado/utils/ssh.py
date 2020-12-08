@@ -127,6 +127,11 @@ class Session:
     def _check(self):
         return self._master_command('check')
 
+    def cleanup_master(self):
+        """Removes master file if exists."""
+        if self.control_master:
+            os.unlink(self.control_master)
+
     def connect(self):
         """
         Establishes the connection to the remote endpoint
@@ -167,6 +172,15 @@ class Session:
                 return False
             self._connection = master
         return self._check()
+
+    @property
+    def control_master(self):
+        control = "~/.ssh/avocado-master-{}@{}:{}".format(self.user,
+                                                          self.host,
+                                                          self.port)
+        control = os.path.expanduser(control)
+        if os.path.exists(control):
+            return control
 
     def get_raw_ssh_command(self, command):
         """
