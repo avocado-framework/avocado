@@ -97,20 +97,6 @@ class TestAsset(TestCaseTmpDir):
             content2 = f.read()
         self.assertNotEqual(content1, content2)
 
-    def test_incorrect_name_locations_parameter_case1(self):
-        # 1. name is a full URI and locations is empty
-        with self.assertRaises(ValueError):
-            asset.Asset(name='file://bar.tgz', asset_hash=None, algorithm=None,
-                        locations='file://foo', cache_dirs=[self.cache_dir],
-                        expire=None)
-
-    def test_incorrect_name_locations_parameter_case2(self):
-        # 2. name is a single file name and locations is one or more entries.
-        with self.assertRaises(ValueError):
-            asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
-                        locations=None, cache_dirs=[self.cache_dir],
-                        expire=None)
-
     def test_fetch_lockerror(self):
         dirname = os.path.join(self.cache_dir, 'by_name')
         os.makedirs(dirname)
