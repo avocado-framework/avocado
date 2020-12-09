@@ -1014,24 +1014,18 @@ class Test(unittest.TestCase, TestData):
         asset_obj = asset.Asset(name, asset_hash, algorithm, locations,
                                 self.cache_dirs, expire)
 
-        missing_asset_message = 'Missing asset %s' % name
-
-        # decide whether we need to find only or fetch
-        if find_only:
-            asset_func = asset_obj.find_asset_file
-        else:
-            asset_func = asset_obj.fetch
-
         try:
             # return the path to the asset when it was found or fetched
-            asset_path = asset_func()
-            return asset_path
+            if find_only:
+                return asset_obj.find_asset_file()
+            else:
+                return asset_obj.fetch()
         except OSError as e:
             # if asset is not in the cache or there was a problem fetching
             # the asset
             if cancel_on_missing:
                 # cancel when requested
-                self.cancel(missing_asset_message)
+                self.cancel("Missing asset {}".format(name))
             # otherwise re-throw OSError
             raise e
 
