@@ -18,7 +18,6 @@ Assets subcommand
 
 import ast
 import os
-import urllib.parse
 
 from avocado.core import data_dir, exit_codes, safeloader
 from avocado.core.nrunner import Task
@@ -200,41 +199,22 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
     :returns: list of names that were successfully fetched and list of
     fails.
     """
-    def validate_parameters(call):
-        """
-        Validate the parameters to make sure we have a supported case.
-
-        :param call: List of parameter to the Asset object.
-        :type call: dict
-        :returns: True or False
-        """
-        name = call.get('name', None)
-        locations = call.get('locations', None)
-        # probably, parameter name was defined as a class attribute
-        if ((name is None) or
-                # probably, parameter locations was defined as a class attribute
-                (not urllib.parse.urlparse(name).scheme and
-                 locations is None)):
-            return False
-        return True
-
     cache_dirs = data_dir.get_cache_dirs()
     success = []
     fail = []
     handler = FetchAssetHandler(test_file, klass, method)
     for call in handler.calls:
-        # validate the parameters
-        if not validate_parameters(call):
-            continue
         expire = call.pop('expire', None)
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
+
+        # make dictionary unpacking compatible with python 3.4 as it does
+        # not support constructions like:
+        # Asset(**call, cache_dirs=cache_dirs, expire=expire)
+        call['cache_dirs'] = cache_dirs
+        call['expire'] = expire
+
         try:
-            # make dictionary unpacking compatible with python 3.4 as it does
-            # not support constructions like:
-            # Asset(**call, cache_dirs=cache_dirs, expire=expire)
-            call['cache_dirs'] = cache_dirs
-            call['expire'] = expire
             asset_obj = Asset(**call)
             if logger is not None:
                 logger.info('Fetching asset from %s:%s.%s',

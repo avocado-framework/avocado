@@ -66,24 +66,16 @@ class Asset:
         self.name = name
         self.asset_hash = asset_hash
 
-        # we currently support the following options for name and locations:
-        # 1. name is a full URI and locations is empty;
-        # 2. name is a single file name and locations is one or more entries.
-        # raise an exception if we have an unsupported use of those arguments
-        if ((self.name_scheme and locations is not None) or
-                (not self.name_scheme and locations is None)):
-            raise ValueError("Incorrect use of parameter name with parameter"
-                             " locations.")
+        if isinstance(locations, str):
+            self.locations = [locations]
+        else:
+            self.locations = locations
 
         if algorithm is None:
             self.algorithm = DEFAULT_HASH_ALGORITHM
         else:
             self.algorithm = algorithm
 
-        if isinstance(locations, str):
-            self.locations = [locations]
-        else:
-            self.locations = locations
         self.cache_dirs = cache_dirs
         self.expire = expire
         self.metadata = metadata
