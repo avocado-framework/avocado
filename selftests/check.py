@@ -192,10 +192,16 @@ def parse_args():
                         '--features',
                         help='show the features tested by this test.',
                         action='store_true')
+    parser.add_argument('--disable-static-checks',
+                        help='Disable the static checks (isort, lint, etc)',
+                        action='store_true')
+    parser.add_argument('--disable-plugin-checks',
+                        help='Disable checks for a plugin (by directory name)',
+                        action='append', default=[])
     return parser.parse_args()
 
 
-def create_suites():
+def create_suites(args):
     test_class = 'JobAPIFeaturesTest'
     suites = []
 
@@ -477,10 +483,14 @@ def create_suites():
             {'runner': 'avocado-runner-python-unittest'},
             {'runner': 'avocado-runner-avocado-instrumented'},
             {'runner': 'avocado-runner-tap'},
-            {'runner': 'avocado-runner-robot'},
             {'runner': 'avocado-runner-golang'}
         ]
     }
+
+    if 'robot' not in args.disable_plugin_checks:
+        config_nrunner_interface['run.dict_variants'].append({
+            'runner': 'avocado-runner-robot'})
+
     suites.append(TestSuite.from_config(config_nrunner_interface,
                                         "nrunner-interface"))
 
@@ -488,25 +498,32 @@ def create_suites():
     # Run all static checks, unit and functional tests
     # ========================================================================
     config_check = {
-        'run.references': (glob.glob('selftests/*.sh') +
-                           glob.glob('selftests/jobs/*') +
+        'run.references': (glob.glob('selftests/jobs/*') +
                            glob.glob('selftests/unit/*.py') +
-                           glob.glob('selftests/functional/*.py') +
-                           glob.glob('optional_plugins/*/tests/*.py')),
+                           glob.glob('selftests/functional/*.py')),
         'run.test_runner': 'nrunner',
         'run.ignore_missing_references': True
     }
+
+    if not args.disable_static_checks:
+        config_check['run.references'] += glob.glob('selftests/*.sh')
+
+    for optional_plugin in glob.glob('optional_plugins/*'):
+        plugin_name = os.path.basename(optional_plugin)
+        if plugin_name not in args.disable_plugin_checks:
+            pattern = '%s/tests/*' % optional_plugin
+            config_check['run.references'] += glob.glob(pattern)
 
     suites.append(TestSuite.from_config(config_check, "check"))
     return suites
 
 
 def main():
-    suites = create_suites()
+    args = parse_args()
+    suites = create_suites(args)
     # ========================================================================
     # Print features covered in this test
     # ========================================================================
-    args = parse_args()
     if args.features:
         features = []
         for suite in suites:
