@@ -285,4 +285,5 @@ class Runner(RunnerInterface):
         loop.run_until_complete(asyncio.sleep(0.05))
 
         job.result.end_tests()
+        self.status_server.close()
         return self.summary
