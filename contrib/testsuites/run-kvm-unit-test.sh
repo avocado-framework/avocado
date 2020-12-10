@@ -65,16 +65,8 @@ cd "$KVM_UNIT_TEST"
 ./configure $ENDIAN $CONFIGURE_ARGS || { echo Fail to configure kvm-unit-test; exit -1; }
 make standalone >/dev/null || { echo Fail to "make standalone" kvm-unit-test; exit -1; }
 
-# Execute individual tests
-cat > avocado-external-runner << \INNER_EOF
-#!/bin/sh
-./$*
-ret=$?
-[ $ret -le 1 ] && exit 0 || exit $ret
-INNER_EOF
-chmod +x avocado-external-runner
 cd tests
-eval "avocado run --external-runner ../avocado-external-runner $WILDCARD $*"
+eval "avocado run --test-runner='nrunner' ./$WILDCARD"
 RET=$?
 
 # Cleanup and exit
