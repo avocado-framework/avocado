@@ -55,6 +55,23 @@ while [ true ]; do
     shift
 done
 
+CONF_FILE=~/.config/avocado/avocado.conf
+restore_config()
+{
+	rm $CONF_FILE 2>/dev/null
+	mv "$CONF_FILE".kvm-unit-tests "$CONF_FILE" 2>/dev/null
+}
+
+setup_skip_exitcode()
+{
+	mkdir -p $(dirname $CONF_FILE)
+	[ -f $CONF_FILE ] && cp "$CONF_FILE" "$CONF_FILE".kvm-unit-tests
+	trap restore_config EXIT
+
+	echo "[runner.exectest.exitcodes]" >>$CONF_FILE
+	echo "skip = [2, 77]" >>$CONF_FILE
+}
+
 # Initialize directory and download kvm-unit-test if necessary
 [ "$KVM_UNIT_TEST" ] || { KVM_UNIT_TEST="$(mktemp -d)"; CLEAN_DIR=true; }
 [ -d "$KVM_UNIT_TEST" ] || mkdir -p "$KVM_UNIT_TEST"
@@ -64,6 +81,8 @@ cd "$KVM_UNIT_TEST"
 # Compile kvm-unit-test as standalone to get tests as separate files
 ./configure $ENDIAN $CONFIGURE_ARGS || { echo Fail to configure kvm-unit-test; exit -1; }
 make standalone >/dev/null || { echo Fail to "make standalone" kvm-unit-test; exit -1; }
+
+setup_skip_exitcode
 
 cd tests
 eval "avocado run --test-runner='nrunner' ./$WILDCARD"
