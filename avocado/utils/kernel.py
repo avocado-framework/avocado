@@ -22,7 +22,8 @@ import multiprocessing
 import os
 import shutil
 import tempfile
-from distutils.version import LooseVersion  # pylint: disable=E0611
+
+from pkg_resources import packaging
 
 from . import archive, asset, build, distro, process
 
@@ -207,4 +208,6 @@ def check_version(version):
     :type version: string
     :param version: version to be compared with current kernel version
     """
-    assert LooseVersion(os.uname()[2]) > LooseVersion(version), "Old kernel"
+    os_version = packaging.version.parse(os.uname()[2])
+    version = packaging.version.parse(version)
+    assert os_version > version, "Old kernel"
