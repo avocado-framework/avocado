@@ -301,33 +301,92 @@ class Assets(CLICmd):
                                  parser=fetch_subcommand_parser,
                                  long_arg='--ignore-errors')
 
+        register_subcommand_parser = subcommands.add_parser(
+                'register',
+                help='Register an asset directly to the cacche')
+
+        help_msg = "Unique name to associate with this asset."
+        settings.register_option(section='assets.register',
+                                 key='name',
+                                 help_msg=help_msg,
+                                 default=None,
+                                 key_type=str,
+                                 parser=register_subcommand_parser,
+                                 positional_arg=True)
+
+        help_msg = "Path to asset that you would like to register manually."
+        settings.register_option(section='assets.register',
+                                 key='url',
+                                 help_msg=help_msg,
+                                 default=None,
+                                 key_type=str,
+                                 parser=register_subcommand_parser,
+                                 positional_arg=True)
+
+        help_msg = "SHA1 hash of this asset."
+        settings.register_option(section='assets.register',
+                                 key='sha1_hash',
+                                 help_msg=help_msg,
+                                 default=None,
+                                 key_type=str,
+                                 metavar="SHA1",
+                                 long_arg='--hash',
+                                 parser=register_subcommand_parser)
+
+    def handle_fetch(self, config):
+        exitcode = exit_codes.AVOCADO_ALL_OK
+        # fetch assets from instrumented tests
+        for test_file in config.get('assets.fetch.references'):
+            if os.path.isfile(test_file) and test_file.endswith('.py'):
+                LOG_UI.debug('Fetching assets from %s.', test_file)
+                success, fail = fetch_assets(test_file)
+
+                for asset_file in success:
+                    LOG_UI.debug('  File %s fetched or already on'
+                                 ' cache.', asset_file)
+                for asset_file in fail:
+                    LOG_UI.error(asset_file)
+
+                if fail:
+                    exitcode |= exit_codes.AVOCADO_FAIL
+            else:
+                LOG_UI.warning('No such file or file not supported: %s',
+                               test_file)
+                exitcode |= exit_codes.AVOCADO_FAIL
+
+        # check if we should ignore the errors
+        if config.get('assets.fetch.ignore_errors'):
+            return exit_codes.AVOCADO_ALL_OK
+        return exitcode
+
+    def handle_register(self, config):
+        cache_dirs = data_dir.get_cache_dirs()
+        name = config.get('assets.register.name')
+        asset_hash = config.get('assets.register.sha1_hash')
+        location = config.get('assets.register.url')
+        # Adding a twice the location is a small hack due the current logic to
+        # return "by_name". This needs to be improved soon.
+        asset = Asset(name=name,
+                      asset_hash=asset_hash,
+                      locations=[location, location],
+                      cache_dirs=cache_dirs)
+
+        try:
+            asset.find_asset_file()
+            LOG_UI.error("Asset with name %s already registered.", name)
+        except OSError:
+            try:
+                asset.fetch()
+                LOG_UI.info("Done. Now you can reference it by name %s", name)
+            except OSError as e:
+                LOG_UI.error(e)
+
     def run(self, config):
         subcommand = config.get('assets_subcommand')
-        # we want to let the command caller knows about fails
-        exitcode = exit_codes.AVOCADO_ALL_OK
 
         if subcommand == 'fetch':
-            # fetch assets from instrumented tests
-            for test_file in config.get('assets.fetch.references'):
-                if os.path.isfile(test_file) and test_file.endswith('.py'):
-                    LOG_UI.debug('Fetching assets from %s.', test_file)
-                    success, fail = fetch_assets(test_file)
-
-                    for asset_file in success:
-                        LOG_UI.debug('  File %s fetched or already on'
-                                     ' cache.', asset_file)
-                    for asset_file in fail:
-                        LOG_UI.error(asset_file)
-
-                    if fail:
-                        exitcode |= exit_codes.AVOCADO_FAIL
-                else:
-                    LOG_UI.warning('No such file or file not supported: %s',
-                                   test_file)
-                    exitcode |= exit_codes.AVOCADO_FAIL
-
-            # check if we should ignore the errors
-            if config.get('assets.fetch.ignore_errors'):
-                exitcode = exit_codes.AVOCADO_ALL_OK
-
-        return exitcode
+            return self.handle_fetch(config)
+        elif subcommand == 'register':
+            return self.handle_register(config)
+        else:
+            return exit_codes.UTILITY_FAIL
