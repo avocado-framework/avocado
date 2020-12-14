@@ -151,20 +151,33 @@ class Asset:
         :returns: the hash, if it exists.
         :rtype: str
         """
-        discovered = None
         hash_file = self._get_hash_file(asset_path)
         if not os.path.isfile(hash_file):
             self._create_hash_file(asset_path)
 
-        with open(hash_file, 'r') as hash_file:
-            for line in hash_file:
-                # md5 is 32 chars big and sha512 is 128 chars big.
-                # others supported algorithms are between those.
-                pattern = '%s [a-f0-9]{32,128}' % self.algorithm
-                if re.match(pattern, line):
-                    discovered = line.split()[1]
-                    break
-        return discovered
+        return Asset.read_hash_from_file(hash_file)[1]
+
+    @classmethod
+    def read_hash_from_file(cls, filename):
+        """Read the CHECKSUM file and return the hash.
+
+        This method raises a FileNotFoundError if file is missing and assumes
+        that filename is the CHECKSUM filename.
+
+        :rtype: list with algorithm and hash
+        """
+        try:
+            with FileLock(filename, 30):
+                with open(filename, 'r') as hash_file:
+                    for line in hash_file:
+                        # md5 is 32 chars big and sha512 is 128 chars big.
+                        # others supported algorithms are between those.
+                        if re.match('^.* [a-f0-9]{32,128}', line):
+                            return line.split()
+        except Exception:  # pylint: disable=W0703
+            exc_type, exc_value = sys.exc_info()[:2]
+            LOG.error('%s: %s', exc_type.__name__, exc_value)
+            return [None, None]
 
     def _get_local_file(self, url_obj, asset_path):
         """
