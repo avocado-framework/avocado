@@ -18,6 +18,7 @@ Assets subcommand
 
 import ast
 import os
+import re
 
 from avocado.core import data_dir, exit_codes, safeloader
 from avocado.core.nrunner import Task
@@ -33,7 +34,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
     Handles the parsing of instrumented tests for `fetch_asset` statements.
     """
 
-    PATTERN = 'fetch_asset'
+    PATTERN = 'fetch_asset$'
 
     def __init__(self, file_name, klass=None, method=None):
         self.file_name = file_name
@@ -185,7 +186,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         # make sure we are into a class method
         if self.current_klass and self.current_method:
             if isinstance(node.func, ast.Attribute):
-                if self.PATTERN in node.func.attr:
+                if re.match(self.PATTERN, node.func.attr):
                     call = self._parse_args(node)
                     if call:
                         self.calls.append(call)

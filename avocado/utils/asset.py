@@ -417,6 +417,47 @@ class Asset:
     def asset_name(self):
         return os.path.basename(self.parsed_name.path)
 
+    @classmethod
+    def get_asset_by_name(cls, name, cache_dirs, expire=None, asset_hash=None):
+        """This method will return a cached asset based on name if exists.
+
+        You don't have to instantiate an object of Asset class. Just use this
+        method.
+
+        To be improved soon: cache_dirs should be not necessary.
+
+        :param name: the asset filename used during registration.
+        :param cache_dirs: list of directories to use during the search.
+        :param expire: time in seconds for the asset to expire. Expired assets
+                       will not be returned.
+        :param asset_hash: asset hash.
+
+        :return: asset path, if it exists in the cache.
+        :rtype: str
+        :raises: OSError
+        """
+
+        for cache_dir in cache_dirs:
+            asset_file = os.path.join(os.path.expanduser(cache_dir),
+                                      'by_name',
+                                      name)
+
+            # Ignore non-files
+            if not os.path.isfile(asset_file):
+                continue
+
+            # Ignore expired asset files
+            if cls._is_expired(asset_file, expire):
+                continue
+
+            # Ignore mismatch hash
+            if not cls._has_valid_hash(asset_file, asset_hash):
+                continue
+
+            return asset_file
+
+        raise OSError("File %s not found in the cache." % name)
+
     @property
     def name_scheme(self):
         """This property will return the scheme part of the name if is an URL.

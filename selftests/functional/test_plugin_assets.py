@@ -6,6 +6,7 @@ Assets plugin functional tests
 import os
 import tempfile
 import unittest
+import uuid
 import warnings
 
 from avocado.core import exit_codes
@@ -88,6 +89,28 @@ class AssetsFetchSuccess(unittest.TestCase):
 
         self.assertEqual(expected_rc, result.exit_status)
         self.assertIn(expected_output, result.stdout_text)
+
+    def test_asset_register_by_name_fail(self):
+        """Test register command failure."""
+        url = "https://urlnotfound"
+        random = str(uuid.uuid4())
+        cmd_line = "%s assets register %s %s" % (AVOCADO, random, url)
+        result = process.run(cmd_line)
+
+        self.assertIn("Failed to fetch",
+                      result.stderr_text)
+
+    @unittest.skipIf(not os.path.isfile('/etc/hosts'),
+                     " Missing /etc/hosts")
+    def test_asset_register_by_name_success(self):
+        """Test register command success."""
+        url = "/etc/hosts"
+        random = str(uuid.uuid4())
+        cmd_line = "%s assets register %s %s" % (AVOCADO, random, url)
+        result = process.run(cmd_line)
+
+        self.assertIn("Now you can reference it by name %s" % random,
+                      result.stdout_text)
 
     def tearDown(self):
         self.base_dir.cleanup()

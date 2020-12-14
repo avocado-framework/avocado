@@ -1029,6 +1029,33 @@ class Test(unittest.TestCase, TestData):
             # otherwise re-throw OSError
             raise e
 
+    def get_asset_by_name(self, name, expire=None, asset_hash=None,
+                          cancel_on_missing=False):
+        """Same as fetch_asset, but by name. It will not download if not found.
+
+        This is used to query only on cache and with a single reference: a
+        asset name.
+
+        :param name: Name used during the registration process.
+        :param expire: Time for the asset to expire.
+        :param asset_hash: Asset hash.
+        :param cancel_on_missing: Whether the test should be canceled if the
+                                  asset was not found in the cache or if
+                                  `fetch` could not add the asset to the cache.
+                                  Defaults to `False`.
+        :raises OSError:  when it fails to fetch the asset from cache and
+                         `cancel_on_missing` is `False`.
+        """
+        try:
+            return asset.Asset.get_asset_by_name(name,
+                                                 self.cache_dirs,
+                                                 expire,
+                                                 asset_hash)
+        except OSError as e:
+            if cancel_on_missing:
+                self.cancel("Missing asset {}".format(name))
+            raise e
+
     def tearDown(self):
         if self.__base_logdir_tmp is not None:
             self.__base_logdir_tmp.cleanup()
