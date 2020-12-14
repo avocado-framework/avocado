@@ -50,10 +50,9 @@ class Asset:
     Try to fetch/verify an asset file from multiple locations.
     """
 
-    def __init__(self, name, asset_hash, algorithm, locations, cache_dirs,
-                 expire=None, metadata=None):
-        """
-        Initialize the Asset() class.
+    def __init__(self, name, asset_hash=None, algorithm=None, locations=None,
+                 cache_dirs=None, expire=None, metadata=None):
+        """Initialize the Asset() class.
 
         :param name: the asset filename. url is also supported
         :param asset_hash: asset hash
@@ -69,7 +68,7 @@ class Asset:
         if isinstance(locations, str):
             self.locations = [locations]
         else:
-            self.locations = locations
+            self.locations = locations or []
 
         if algorithm is None:
             self.algorithm = DEFAULT_HASH_ALGORITHM
@@ -229,7 +228,7 @@ class Asset:
             return 'by_name'
 
         # check if the URI is located on self.locations or self.parsed_name
-        if self.locations is not None:
+        if self.locations:
             # if it is on self.locations, we need to check if it has the
             # asset name on it or a trailing '/'
             if ((self.asset_name in self.locations[0]) or
@@ -447,7 +446,7 @@ class Asset:
         if self.name_scheme:
             urls.append(self.name_url)
 
-        if self.locations is not None:
+        if self.locations:
             urls.extend(self.locations)
 
         return urls
