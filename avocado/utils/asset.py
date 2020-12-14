@@ -282,6 +282,21 @@ class Asset:
             return True
         return False
 
+    @classmethod
+    def _has_valid_hash(cls, asset_path, asset_hash=None):
+        """Checks if a file has a valid hash based on the hash parameter.
+
+        If asset_hash is None then will consider a valid asset.
+        """
+        if asset_hash is None:
+            return True
+
+        hash_path = cls._get_hash_file(asset_path)
+        _, hash_from_file = cls.read_hash_from_file(hash_path)
+        if hash_from_file == asset_hash:
+            return True
+        return False
+
     def _verify_hash(self, asset_path):
         """
         Verify if the `asset_path` hash matches the hash in the hash file.
@@ -291,10 +306,7 @@ class Asset:
         value as the hash of the asset_file, otherwise return False.
         :rtype: bool
         """
-        if self.asset_hash is None or (
-                self._get_hash_from_file(asset_path) == self.asset_hash):
-            return True
-        return False
+        return self._has_valid_hash(asset_path, self.asset_hash)
 
     def fetch(self):
         """
