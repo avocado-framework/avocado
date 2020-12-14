@@ -372,19 +372,19 @@ class Asset:
             cache_dir = os.path.expanduser(cache_dir)
             asset_file = os.path.join(cache_dir, self.relative_dir)
 
-            # To use a cached file, it must:
-            # - Exists.
-            # - Be valid (not expired).
-            # - Be verified (hash check).
-            if (os.path.isfile(asset_file) and
-                    not self._is_expired(asset_file, self.expire)):
-                try:
-                    with FileLock(asset_file, 30):
-                        if self._verify_hash(asset_file):
-                            return asset_file
-                except Exception:  # pylint: disable=W0703
-                    exc_type, exc_value = sys.exc_info()[:2]
-                    LOG.error('%s: %s', exc_type.__name__, exc_value)
+            # Ignore non-files
+            if not os.path.isfile(asset_file):
+                continue
+
+            # Ignore expired asset files
+            if self._is_expired(asset_file, self.expire):
+                continue
+
+            # Ignore mismatch hash
+            if not self._has_valid_hash(asset_file, self.asset_hash):
+                continue
+
+            return asset_file
 
         raise OSError("File %s not found in the cache." % self.asset_name)
 
