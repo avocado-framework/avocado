@@ -214,8 +214,12 @@ class List(CLICmd):
         config['run.test_runner'] = runner
         try:
             if not resolver:
-                loader.loader.load_plugins(config)
-                loader.loader.get_extra_listing()
+                try:
+                    loader.loader.load_plugins(config)
+                    loader.loader.get_extra_listing()
+                except loader.LoaderError as error:
+                    LOG_UI.error(error)
+                    return exit_codes.AVOCADO_FAIL
             suite = TestSuite.from_config(config)
             if runner == 'nrunner':
                 matrix = self._get_resolution_matrix(suite)
