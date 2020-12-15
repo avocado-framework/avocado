@@ -215,7 +215,7 @@ class AssetsPlugin(unittest.TestCase):
         test_file.write(test_content.encode())
         test_file.close()
 
-        expected_stderr = "Failed to fetch hello-2.9.tar.gz.\n"
+        expected_stderr = "Failed to fetch hello-2.9.tar.gz"
         expected_rc = exit_codes.AVOCADO_FAIL
 
         cmd_line = "%s --config %s assets fetch %s " % (AVOCADO,
@@ -242,7 +242,7 @@ class AssetsPlugin(unittest.TestCase):
         test_file.write(test_content.encode())
         test_file.close()
 
-        expected_stderr = "Failed to fetch hello-2.9.tar.gz.\n"
+        expected_stderr = "Failed to fetch hello-2.9.tar.gz"
         expected_rc = exit_codes.AVOCADO_ALL_OK
 
         cmd_line = "%s --config %s assets fetch --ignore-errors %s " % (
