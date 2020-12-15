@@ -125,7 +125,10 @@ class Asset:
             with FileLock(asset_path, 1):
                 shutil.copy(temp, asset_path)
                 self._create_hash_file(asset_path)
-                return self._verify_hash(asset_path)
+                if not self._verify_hash(asset_path):
+                    msg = "Hash mismatch. Ignoring asset from the cache"
+                    raise OSError(msg)
+                return True
         finally:
             try:
                 os.remove(temp)
@@ -319,6 +322,7 @@ class Asset:
         """
         # First let's search for the file in each one of the cache locations
         asset_file = None
+        error = "unknown"
         try:
             asset_file = self.find_asset_file()
         except OSError:
@@ -362,8 +366,9 @@ class Asset:
             except Exception:  # pylint: disable=W0703
                 exc_type, exc_value = sys.exc_info()[:2]
                 LOG.error('%s: %s', exc_type.__name__, exc_value)
+                error = exc_value
 
-        raise OSError("Failed to fetch %s." % self.asset_name)
+        raise OSError("Failed to fetch %s (%s)." % (self.asset_name, error))
 
     def find_asset_file(self):
         """
