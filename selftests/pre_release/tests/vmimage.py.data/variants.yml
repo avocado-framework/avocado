@@ -50,8 +50,6 @@ distro: !mux
     !filter-out : /run/architectures/ppc
     !filter-out : /run/architectures/ppc64
     version: !mux
-      31:
-        version: 31
       32:
         version: 32
       33:
