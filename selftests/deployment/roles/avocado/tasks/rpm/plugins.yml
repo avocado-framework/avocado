@@ -2,9 +2,7 @@
 - name: Install Avocado plugins using RPM
   dnf:
     name:
-      - python3-avocado-plugins-glib
       - python3-avocado-plugins-golang
-      - python3-avocado-plugins-loader-yaml
       - python3-avocado-plugins-output-html
       - python3-avocado-plugins-result-upload
       - python3-avocado-plugins-varianter-cit
