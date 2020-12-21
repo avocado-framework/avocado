@@ -140,7 +140,7 @@ class Partition:
             with open(filename) as open_file:
                 for line in open_file:
                     parts = line.split()
-                    if parts[0] == self.device or parts[1] == self.mountpoint:
+                    if parts[0] == self.device and parts[1] == self.mountpoint:
                         return parts[1]    # The mountpoint where it's mounted
                 return None
 
