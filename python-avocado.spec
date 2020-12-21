@@ -33,8 +33,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 83.0
-Release: 2%{?gitrel}%{?dist}
+Version: 84.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -379,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Dec 21 2020 Cleber Rosa <cleber@redhat.com> - 84.0-1
+- New release
+
 * Tue Dec  8 2020 Cleber Rosa <cleber@redhat.com> - 83.0-2
 - Drop old Fedora conditionals
 - Use selftests/check.py job instead of more limited selftests/run

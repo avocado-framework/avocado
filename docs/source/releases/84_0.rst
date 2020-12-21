@@ -1,0 +1,94 @@
+=====================
+84.0 The Intouchables
+=====================
+
+The Avocado team is proud to present another release: Avocado 84.0,
+AKA "The Intouchables", is now available!
+
+Release documentation: `Avocado 84.0
+<http://avocado-framework.readthedocs.io/en/84.0/>`_
+
+Users/Test Writers
+==================
+
+* Yaml To Mux plugin now properly supports ``None`` values.
+
+* Command line options related to results, such as
+  ``--json-job-result``, ``--tap-job-result``, ``--xunit-job-result``
+  and ``--html-job-result`` are now "proper boolean" options (such as
+  ``--disable-json-job-result``, ``--disable-xunit-job-result``, etc).
+
+* Pre and Post (job) plugins are now respected in when used with the
+  Job API.
+
+* Support for ``avocado list`` "extra information" has been restored.
+  This is used in Avocado-VT loaders.  They will be removed (again)
+  for good after its usage is deprecated and removed in Avocado-VT.
+
+Bug Fixes
+=========
+
+* The ``run.dict_variants`` setting is now properly registered in an
+  ``Init`` plugin.
+
+* The nrunner implementation for ``exec`` and ``exec-test`` suffered
+  from a limitation to the amount of output it could collect.  It was
+  related the size of the PIPE used internally by the Python
+  :mod:`subprocess` module.  This limitation has been now lifted.
+
+* The nrunner status server can be configured with the maximum buffer
+  size that it uses.
+
+* The ``avocado-instrumented`` nrunner runner now covers all valid
+  test status.
+
+* The nrunner status server socket is now properly closed, which
+  allows multiple test suites in a job to not conflict.
+
+* The nrunner status server now properly handles the ``asyncio``
+  API under Python 3.6.
+
+Utility APIs
+============
+
+* :mod:`avocado.utils.pci` now accomodates newer slot names.
+
+* :mod:`avocado.utils.memory` now properly handles the 16GB hugepages
+  with both the HASH and Radix MMU (by removing the check in case
+  Radix is used).
+
+* :class:`avocado.utils.ssh.Session` now contains a
+  :meth:`avocado.utils.ssh.Session.cleanup_master` method and a
+  :property:`avocado.utils.ssh.Session.control_master` property.
+
+Internal Changes
+================
+
+* Yaml To Mux documentation updates regarding the data types and null
+  values.
+
+* Release documentation now include the Fedora/EPEL refresh steps.
+
+* BP000 is included and approved.
+
+* The ``Makefile`` now works on systems such as Fedora 33 because
+  a bad substitution was fixed.
+
+* Only enough ``nrunner`` workers to deal with the number of tasks
+  in a suite are created and started.
+
+* All nrunner based runners are now checked with a basic interface
+  test.
+
+* The same check script (``selftests/check.py``) is now used run under
+  RPM builds.
+
+Misc Changes
+============
+
+* The contrib scripts to run the KVM unit tests was updated and
+  supports the nrunner and skip exit codes.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/83.0...84.0>`_.
