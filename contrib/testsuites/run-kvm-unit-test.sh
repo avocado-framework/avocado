@@ -55,6 +55,23 @@ while [ true ]; do
     shift
 done
 
+CONF_FILE=~/.config/avocado/avocado.conf
+restore_config()
+{
+	rm $CONF_FILE 2>/dev/null
+	mv "$CONF_FILE".kvm-unit-tests "$CONF_FILE" 2>/dev/null
+}
+
+setup_skip_exitcode()
+{
+	mkdir -p $(dirname $CONF_FILE)
+	[ -f $CONF_FILE ] && cp "$CONF_FILE" "$CONF_FILE".kvm-unit-tests
+	trap restore_config EXIT
+
+	echo "[runner.exectest.exitcodes]" >>$CONF_FILE
+	echo "skip = [2, 77]" >>$CONF_FILE
+}
+
 # Initialize directory and download kvm-unit-test if necessary
 [ "$KVM_UNIT_TEST" ] || { KVM_UNIT_TEST="$(mktemp -d)"; CLEAN_DIR=true; }
 [ -d "$KVM_UNIT_TEST" ] || mkdir -p "$KVM_UNIT_TEST"
@@ -65,16 +82,10 @@ cd "$KVM_UNIT_TEST"
 ./configure $ENDIAN $CONFIGURE_ARGS || { echo Fail to configure kvm-unit-test; exit -1; }
 make standalone >/dev/null || { echo Fail to "make standalone" kvm-unit-test; exit -1; }
 
-# Execute individual tests
-cat > avocado-external-runner << \INNER_EOF
-#!/bin/sh
-./$*
-ret=$?
-[ $ret -le 1 ] && exit 0 || exit $ret
-INNER_EOF
-chmod +x avocado-external-runner
+setup_skip_exitcode
+
 cd tests
-eval "avocado run --external-runner ../avocado-external-runner $WILDCARD $*"
+eval "avocado run --test-runner='nrunner' ./$WILDCARD"
 RET=$?
 
 # Cleanup and exit
