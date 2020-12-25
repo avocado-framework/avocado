@@ -85,7 +85,7 @@ make standalone >/dev/null || { echo Fail to "make standalone" kvm-unit-test; ex
 setup_skip_exitcode
 
 cd tests
-eval "avocado run --test-runner='nrunner' ./$WILDCARD"
+eval "avocado run --test-runner='nrunner' ./$WILDCARD $*"
 RET=$?
 
 # Cleanup and exit
