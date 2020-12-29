@@ -136,6 +136,7 @@ if __name__ == '__main__':
                   'avocado-runner-python-unittest = avocado.core.nrunner:main',
                   'avocado-runner-avocado-instrumented = avocado.core.runners.avocado_instrumented:main',
                   'avocado-runner-tap = avocado.core.runners.tap:main',
+                  'avocado-runner-requirement-package = avocado.core.runners.requirement_package:main',
                   'avocado-software-manager = avocado.utils.software_manager.main:main',
                   ],
               "avocado.plugins.init": [
