@@ -214,6 +214,7 @@ PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} 
 %{_bindir}/avocado-runner-noop
 %{_bindir}/avocado-runner-exec
 %{_bindir}/avocado-runner-exec-test
+%{_bindir}/avocado-runner-requirement
 %{_bindir}/avocado-runner-python-unittest
 %{_bindir}/avocado-runner-avocado-instrumented
 %{_bindir}/avocado-runner-tap

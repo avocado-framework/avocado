@@ -452,6 +452,35 @@ class ExecTestRunner(ExecRunner):
 RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner
 
 
+class RequirementRunner(ExecRunner):
+    """
+    Runner for standalone executables treated as requirements
+
+    The intent of this runner is to support standalone executables or
+    executable binaries that handles some kind of requirements, like,
+    for example, the avocado-software-manager or, in the future, the
+    `avocado assets` set of commands.
+
+    This runner should have a simple return of `pass` or `fail` as
+    all the requirements should be fulfilled before a test starts.
+    The `skip` result is not desired here as it would allow one
+    requirements to be skipped and the test starts.
+
+    Runnable attributes usage is identical to :class:`ExecRunner`
+    """
+    def run(self):
+        for most_current_execution_state in super().run():
+            returncode = most_current_execution_state.get('returncode')
+            if returncode == 0:
+                most_current_execution_state['result'] = 'pass'
+            else:
+                most_current_execution_state['result'] = 'fail'
+            yield most_current_execution_state
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['requirement'] = RequirementRunner
+
+
 class PythonUnittestRunner(BaseRunner):
     """
     Runner for Python unittests
