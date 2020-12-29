@@ -448,6 +448,25 @@ class ExecTestRunner(ExecRunner):
 RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner
 
 
+class RequirementRunner(ExecRunner):
+    """
+    Runner for standalone executables treated as requirements
+
+    Runnable attributes usage is identical to :class:`ExecRunner`
+    """
+    def run(self):
+        for most_current_execution_state in super().run():
+            returncode = most_current_execution_state.get('returncode')
+            if returncode == 0:
+                most_current_execution_state['result'] = 'pass'
+            else:
+                most_current_execution_state['result'] = 'fail'
+            yield most_current_execution_state
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['requirement'] = RequirementRunner
+
+
 class PythonUnittestRunner(BaseRunner):
     """
     Runner for Python unittests

@@ -67,6 +67,7 @@ if __name__ == '__main__':
                   'avocado-runner-noop = avocado.core.nrunner:main',
                   'avocado-runner-exec = avocado.core.nrunner:main',
                   'avocado-runner-exec-test = avocado.core.nrunner:main',
+                  'avocado-runner-requirement = avocado.core.nrunner:main',
                   'avocado-runner-python-unittest = avocado.core.nrunner:main',
                   'avocado-runner-avocado-instrumented = avocado.core.nrunner_avocado_instrumented:main',
                   'avocado-runner-tap = avocado.core.nrunner_tap:main',
