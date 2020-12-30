@@ -22,6 +22,7 @@ from .exceptions import (JobTestSuiteReferenceResolutionError,
 from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
                      loader)
 from .parser import HintParser
+from .requirements.resolver import RequirementsResolver
 from .resolver import resolve
 from .settings import settings
 from .tags import filter_test_tags
@@ -140,11 +141,12 @@ class TestSuite:
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
 
-        tasks = resolutions_to_tasks(resolutions, config)
+        test_tasks = resolutions_to_tasks(resolutions, config)
+        all_tasks = RequirementsResolver.create_requirements_tasks(test_tasks)
 
         if name is None:
             name = str(uuid4())
-        return cls(name=name, config=config, tests=tasks,
+        return cls(name=name, config=config, tests=all_tasks,
                    resolutions=resolutions)
 
     def _get_stats_from_nrunner(self):
