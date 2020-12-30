@@ -196,7 +196,7 @@ class Runner(RunnerInterface):
         self.tasks = self._get_all_runtime_tasks(test_suite)
         if test_suite.config.get('nrunner.shuffle'):
             random.shuffle(self.tasks)
-        tsm = TaskStateMachine(self.tasks)
+        tsm = TaskStateMachine(self.tasks, self.status_repo)
         spawner_name = test_suite.config.get('nrunner.spawner')
         spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
         max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
