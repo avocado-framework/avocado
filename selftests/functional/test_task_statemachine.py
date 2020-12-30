@@ -2,6 +2,7 @@ import asyncio
 from unittest import TestCase
 
 from avocado.core.nrunner import Runnable, Task
+from avocado.core.status.repo import StatusRepo
 from avocado.core.task import statemachine
 from avocado.core.task.runtime import RuntimeTask
 from avocado.plugins.spawners.process import ProcessSpawner as Spawner
@@ -22,8 +23,9 @@ class StateMachine(TestCase):
         runtime_tasks = [RuntimeTask(Task(runnable, "%03i" % _))
                          for _ in range(1, number_of_tasks + 1)]
         spawner = Spawner()
+        status_repo = StatusRepo()
 
-        state_machine = statemachine.TaskStateMachine(runtime_tasks)
+        state_machine = statemachine.TaskStateMachine(runtime_tasks, status_repo)
         loop = asyncio.get_event_loop()
         workers = [statemachine.Worker(state_machine, spawner).run()
                    for _ in range(number_of_workers)]
