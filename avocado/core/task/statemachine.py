@@ -6,8 +6,9 @@ import time
 class TaskStateMachine:
     """Represents all phases that a task can go through its life."""
 
-    def __init__(self, tasks):
+    def __init__(self, tasks, status_repo):
         self._requested = tasks
+        self._status_repo = status_repo
         self._triaging = []
         self._ready = []
         self._started = []
@@ -74,20 +75,69 @@ class Worker:
 
     async def triage(self):
         """Reads from triaging, moves into either: ready or finished."""
+        def fail_on_triage(runtime_task):
+            self._state_machine.finished.append(runtime_task)
+            runtime_task.status = 'FAILED ON TRIAGE'
+
         try:
             async with self._state_machine.lock:
                 runtime_task = self._state_machine.triaging.pop(0)
         except IndexError:
             return
 
-        requirements_ok = await self._spawner.check_task_requirements(runtime_task)
-        if requirements_ok:
+        # check for requirements a task may have
+        requirements_ok = (
+                await self._spawner.check_task_requirements(runtime_task))
+        if not requirements_ok:
             async with self._state_machine.lock:
-                self._state_machine.ready.append(runtime_task)
-        else:
+                fail_on_triage(runtime_task)
+            return
+
+        # handle task dependencies
+        if runtime_task.task.dependencies:
+            # check of all the dependency tasks finished
             async with self._state_machine.lock:
-                self._state_machine.finished.append(runtime_task)
-                runtime_task.status = 'FAILED ON TRIAGE'
+                finished_tasks = [rt_task.task for rt_task
+                                  in self._state_machine.finished]
+            if not runtime_task.task.dependencies.issubset(finished_tasks):
+                async with self._state_machine.lock:
+                    self._state_machine.triaging.append(runtime_task)
+                    runtime_task.status = 'WAITING DEPENDENCIES'
+                await asyncio.sleep(0.1)
+                return
+
+            # dependencies finished, let's check if they finished
+            # successfully, so we can move on with the parent task
+            for task in runtime_task.task.dependencies:
+                # check if this dependency `task` failed on triage
+                # this is needed because this kind of task fail does not
+                # have information in the status repo
+                for finished_rt_task in self._state_machine.finished:
+                    if (finished_rt_task.task is task and
+                            finished_rt_task.status == 'FAILED ON TRIAGE'):
+                        async with self._state_machine.lock:
+                            fail_on_triage(runtime_task)
+                        return
+                # from here, this dependency `task` ran, so, let's check
+                # the latest data it has in the status repo
+                latest_task_data = \
+                    self._state_machine._status_repo.get_latest_task_data(
+                        str(task.identifier))
+                # maybe, the latest data is not available yet
+                if latest_task_data is None:
+                    async with self._state_machine.lock:
+                        self._state_machine.triaging.append(runtime_task)
+                    await asyncio.sleep(0.1)
+                    return
+                # if this dependency task failed, skip the parent task
+                if latest_task_data['result'] not in ['pass']:
+                    async with self._state_machine.lock:
+                        fail_on_triage(runtime_task)
+                    return
+
+        # the task is ready to run
+        async with self._state_machine.lock:
+            self._state_machine.ready.append(runtime_task)
 
     async def start(self):
         """Reads from ready, moves into either: started or finished."""
