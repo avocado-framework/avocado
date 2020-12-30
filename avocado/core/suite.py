@@ -22,6 +22,7 @@ from .exceptions import (JobTestSuiteReferenceResolutionError,
 from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
                      loader)
 from .parser import HintParser
+from .requirements.resolver import create_requirements_tasks
 from .resolver import resolve
 from .settings import settings
 from .tags import filter_test_tags
@@ -141,6 +142,7 @@ class TestSuite:
             raise TestSuiteError(details)
 
         tasks = resolutions_to_tasks(resolutions, config)
+        tasks = create_requirements_tasks(tasks)
 
         if name is None:
             name = str(uuid4())
