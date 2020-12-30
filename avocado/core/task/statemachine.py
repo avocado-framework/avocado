@@ -79,14 +79,23 @@ class Worker:
         except IndexError:
             return
 
-        requirements_ok = await self._spawner.check_task_requirements(runtime_task)
-        if requirements_ok:
-            async with self._state_machine.lock:
-                self._state_machine.ready.append(runtime_task)
-        else:
-            async with self._state_machine.lock:
-                self._state_machine.finished.append(runtime_task)
-                runtime_task.status = 'FAILED ON TRIAGE'
+        # right now, support triage based on requirements only
+        if runtime_task.task.prereqs:
+            finished_tasks_uid = [runtime_task.task.uid for runtime_task
+                                  in self._state_machine.finished]
+            for prereq in runtime_task.task.prereqs:
+                if prereq in finished_tasks_uid:
+                    runtime_task.task.prereqs.remove(prereq)
+            # check if the last task was removed
+            if runtime_task.task.prereqs:
+                async with self._state_machine.lock:
+                    self._state_machine.triaging.append(runtime_task)
+                    runtime_task.status = 'WAITING PRE-REQS'
+                await asyncio.sleep(0.1)
+                return
+
+        async with self._state_machine.lock:
+            self._state_machine.ready.append(runtime_task)
 
     async def start(self):
         """Reads from ready, moves into either: started or finished."""
