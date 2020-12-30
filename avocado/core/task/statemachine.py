@@ -80,14 +80,19 @@ class Worker:
         except IndexError:
             return
 
-        requirements_ok = await self._spawner.check_task_requirements(runtime_task)
-        if requirements_ok:
+        # right now, support triage based on requirements only
+        if runtime_task.task.dependencies:
             async with self._state_machine.lock:
-                self._state_machine.ready.append(runtime_task)
-        else:
-            async with self._state_machine.lock:
-                self._state_machine.finished.append(runtime_task)
-                runtime_task.status = 'FAILED ON TRIAGE'
+                finished_tasks = [rt_task.task for rt_task
+                                  in self._state_machine.finished]
+                if not runtime_task.task.dependencies.issubset(finished_tasks):
+                    self._state_machine.triaging.append(runtime_task)
+                    runtime_task.status = 'WAITING PRE-REQS'
+                    await asyncio.sleep(0.1)
+                    return
+
+        async with self._state_machine.lock:
+            self._state_machine.ready.append(runtime_task)
 
     async def start(self):
         """Reads from ready, moves into either: started or finished."""
