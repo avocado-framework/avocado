@@ -7,6 +7,7 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import genio, process
+
 from selftests import AVOCADO, BASEDIR
 
 

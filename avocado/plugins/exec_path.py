@@ -16,10 +16,9 @@ Libexec PATHs modifier
 
 import os
 
-from pkg_resources import resource_filename
-
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
+from pkg_resources import resource_filename
 
 
 class ExecPath(CLICmd):

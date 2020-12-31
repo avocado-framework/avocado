@@ -23,7 +23,6 @@ import sys
 import time
 
 import jinja2 as jinja
-
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Init, Result

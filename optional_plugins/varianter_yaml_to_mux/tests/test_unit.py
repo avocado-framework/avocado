@@ -4,9 +4,8 @@ import os
 import pickle
 import unittest
 
-import yaml
-
 import avocado_varianter_yaml_to_mux as yaml_to_mux
+import yaml
 from avocado.core import parameters, tree
 from avocado.utils import astring
 from avocado_varianter_yaml_to_mux import mux

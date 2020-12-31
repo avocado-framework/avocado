@@ -86,8 +86,7 @@ class DataDirTest(Base):
             self.assertTrue(os.path.exists(path))
 
     def test_get_job_results_dir(self):
-        from avocado.core import data_dir
-        from avocado.core import job_id
+        from avocado.core import data_dir, job_id
 
         # First let's mock a jobs results directory
         #

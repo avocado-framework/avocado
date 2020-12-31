@@ -11,7 +11,6 @@ import xml.dom.minidom
 import zipfile
 
 import psutil
-
 from avocado.core import exit_codes
 from avocado.utils import astring, genio
 from avocado.utils import path as utils_path

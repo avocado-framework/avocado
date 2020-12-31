@@ -1,8 +1,7 @@
-import avocado as foo
-import avocado as bar   # pylint: disable=W0404
-
+import avocado as foo  # pylint: disable=W0404
+import avocado as bar  # pylint: disable=W0404
+from avocado import Test as Bar  # pylint: disable=W0404
 from avocado import Test as Foo
-from avocado import Test as Bar     # pylint: disable=W0404
 
 
 class Test1(foo.Test):

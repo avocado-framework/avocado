@@ -21,9 +21,8 @@ import multiprocessing
 import tempfile
 import time
 
-from robot import run
-
 from avocado.core import nrunner
+from robot import run
 
 
 class RobotRunner(nrunner.BaseRunner):
