@@ -148,7 +148,7 @@ class TestLoaderProxy:
 
         # Here is one of the few exceptions that has a hardcoded default
         loaders = config.get("{}.loaders".format(subcommand)) or ['file',
-                                                                '@DEFAULT']
+                                                                  '@DEFAULT']
         if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders

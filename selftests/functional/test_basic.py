@@ -453,8 +453,8 @@ class RunnerOperationTest(TestCaseTmpDir):
                       result.stderr)
 
     def test_empty_test_list(self):
-        cmd_line = '%s run --disable-sysinfo --job-results-dir %s' % (AVOCADO,
-                                                                  self.tmpdir.name)
+        cmd_line = '%s run --disable-sysinfo --job-results-dir %s' \
+                   % (AVOCADO, self.tmpdir.name)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
         self.assertIn(b'No test references provided nor any other arguments '
