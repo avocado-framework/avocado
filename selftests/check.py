@@ -410,7 +410,7 @@ def create_suites(args):
              'file': 'result.xml',
              'assert': False},
 
-             # this test needs a huge improvement
+            # this test needs a huge improvement
             {'namespace': 'run.journal.enabled',
              'value': True,
              'file': '.journal.sqlite',
