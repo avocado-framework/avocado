@@ -145,7 +145,7 @@ for (section, params) in API_SECTIONS.items():
         with open(main_rst) as main_rst_file:
             main_rst_content = main_rst_file.readlines()
 
-    new_main_rst_content = [params[5],section, "=" * len(section), "",
+    new_main_rst_content = [params[5], section, "=" * len(section), "",
                             params[1], ""]
     with open(main_rst, "w") as new_main_rst:
         new_main_rst.write("\n".join(new_main_rst_content))
