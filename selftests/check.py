@@ -531,7 +531,7 @@ def main():
                 features.append(variants['namespace'])
 
         unique_features = sorted(set(features))
-        print('Features covered (%i):' %len(unique_features))
+        print('Features covered (%i):' % len(unique_features))
         print('\n'.join(unique_features))
         exit(0)
 
