@@ -17,8 +17,6 @@ except ImportError:
     SCHEMA_CAPABLE = False
 
 
-
-
 setup_avocado_loggers()
 
 

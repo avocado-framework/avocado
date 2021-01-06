@@ -1096,7 +1096,6 @@ class SimpleTest(Test):
                 (cmd_error.result.exit_status, cmd_error.result.stdout_text,
                  cmd_error.result.stderr_text))
 
-
     def _execute_cmd(self):
         """
         Run the executable, and log its detailed execution.

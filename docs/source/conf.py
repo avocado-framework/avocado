@@ -19,7 +19,6 @@ ROOT_PATH = os.path.abspath(os.path.join("..", ".."))
 sys.path.insert(0, ROOT_PATH)
 
 
-
 # Flag that tells if the docs are being built on readthedocs.org
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 

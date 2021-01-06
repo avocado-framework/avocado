@@ -10,7 +10,6 @@ except ImportError:
     HAS_NETIFACES = False
 
 
-
 class PortTrackerTest(unittest.TestCase):
 
     def test_register_port(self):

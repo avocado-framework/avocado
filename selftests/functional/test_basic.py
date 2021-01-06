@@ -33,8 +33,6 @@ except ImportError:
     AEXPECT_CAPABLE = False
 
 
-
-
 UNSUPPORTED_STATUS_TEST_CONTENTS = '''
 from avocado import Test
 
@@ -942,7 +940,6 @@ class RunnerSimpleTestStatus(TestCaseTmpDir):
     def tearDown(self):
         super(RunnerSimpleTestStatus, self).tearDown()
         self.config_file.remove()
-
 
 
 class ExternalRunnerTest(TestCaseTmpDir):
