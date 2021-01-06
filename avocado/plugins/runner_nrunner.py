@@ -212,7 +212,7 @@ class Runner(RunnerInterface):
             early_state = {'name': task.identifier,
                            'job_logdir': job.logdir,
                            'job_unique_id': job.unique_id}
-            if status  == 'started':
+            if status == 'started':
                 job.result.start_test(early_state)
                 job.result_events_dispatcher.map_method('start_test',
                                                         job.result,
