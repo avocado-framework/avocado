@@ -48,7 +48,7 @@ class StatusRepo:
     def _set_task_data(self, message):
         """Appends all data on message to an entry keyed by the task's ID."""
         task_id = message.pop('id')
-        if not task_id in self._all_data:
+        if task_id not in self._all_data:
             self._all_data[task_id] = []
         self._all_data[task_id].append(message)
 

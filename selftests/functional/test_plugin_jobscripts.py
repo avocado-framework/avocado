@@ -89,7 +89,7 @@ class JobScriptsTest(TestCaseTmpDir):
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
                    '--disable-sysinfo passtest.py' % (AVOCADO, config,
-                                                  self.tmpdir.name))
+                                                      self.tmpdir.name))
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
@@ -112,7 +112,7 @@ class JobScriptsTest(TestCaseTmpDir):
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
                    '--disable-sysinfo passtest.py' % (AVOCADO, config,
-                                                  self.tmpdir.name))
+                                                      self.tmpdir.name))
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status

@@ -209,7 +209,7 @@ def create_suites(args):
     # Test if the archive file was created
     # ========================================================================
     check_archive_file_exists = ('%s:%s.test_check_archive_file_exists'
-                         % (__file__, test_class))
+                                 % (__file__, test_class))
     config_check_archive_file_exists = {
         'run.references': [check_archive_file_exists],
         'run.test_runner': 'runner',
@@ -410,7 +410,7 @@ def create_suites(args):
              'file': 'result.xml',
              'assert': False},
 
-             # this test needs a huge improvement
+            # this test needs a huge improvement
             {'namespace': 'run.journal.enabled',
              'value': True,
              'file': '.journal.sqlite',
@@ -456,7 +456,7 @@ def create_suites(args):
     # Test if the temporary directory was created
     # ========================================================================
     check_tmp_directory_exists = ('%s:%s.test_check_tmp_directory_exists'
-                              % (__file__, test_class))
+                                  % (__file__, test_class))
     config_check_tmp_directory_exists = {
         'run.references': [check_tmp_directory_exists],
         'run.test_runner': 'runner',
@@ -531,7 +531,7 @@ def main():
                 features.append(variants['namespace'])
 
         unique_features = sorted(set(features))
-        print('Features covered (%i):' %len(unique_features))
+        print('Features covered (%i):' % len(unique_features))
         print('\n'.join(unique_features))
         exit(0)
 

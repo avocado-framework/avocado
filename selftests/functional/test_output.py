@@ -162,6 +162,7 @@ if __name__ == '__main__':
         sys.exit(j.run())
 """
 
+
 def perl_tap_parser_uncapable():
     return os.system("perl -e 'use TAP::Parser;'") != 0
 

@@ -322,5 +322,6 @@ class LoaderTestFunctional(TestCaseTmpDir):
 
         test_script.remove()
 
+
 if __name__ == '__main__':
     unittest.main()

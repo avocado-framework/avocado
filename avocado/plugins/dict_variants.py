@@ -31,6 +31,7 @@ class DictVariantsInit(Init):
                                  key_type=list,
                                  help_msg=help_msg)
 
+
 class DictVariants(Varianter):
 
     """
