@@ -18,6 +18,9 @@ cloudinit configuration support
 This module can be easily used with :mod:`avocado.utils.vmimage`,
 to configure operating system images via the cloudinit tooling.
 
+Please, keep in mind that if you would like to create/write in ISO images, you
+need pycdlib module installed in your environment.
+
 :see: http://cloudinit.readthedocs.io.
 """
 
@@ -104,9 +107,12 @@ def iso(output_path, instance_id, username=None, password=None,
              a case, user is expected to install supporting packages, such as
              pycdlib.
     """
+    # The only supported method to create/write in an ISO today is via pycdlib
     out = iso9660.iso9660(output_path, ["create", "write"])
     if out is None:
-        raise RuntimeError("The system lacks support for creating ISO images")
+        msg = ("The system lacks support for creating ISO images. ",
+               "Please install pycdlib dependency and run again.")
+        raise RuntimeError(msg)
     out.create(flags={"interchange_level": 3, "joliet": 3, "vol_ident": 'cidata'})
     metadata = METADATA_TEMPLATE.format(instance_id,
                                         instance_id).encode(astring.ENCODING)
