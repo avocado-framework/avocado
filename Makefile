@@ -89,15 +89,6 @@ pypi: wheel source-pypi develop
 	@echo
 
 clean:
-	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py clean --all; cd -; echo ">> UNLINK $$PLUGIN";\
-		else echo ">> SKIP $$PLUGIN"; fi;\
-	done
-	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES PYPI_UPLOAD
-	rm -f man/avocado.1
-	rm -rf docs/build
-	find docs/source/api/ -name '*.rst' -delete
 	$(PYTHON) setup.py clean --all
 
 uninstall:
@@ -108,11 +99,6 @@ uninstall:
 		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
-	rm -rf avocado_framework.egg-info
-	rm -rf /var/tmp/avocado*
-	rm -rf /tmp/avocado*
-	find . -name '*.pyc' -delete
-	find $(AVOCADO_OPTIONAL_PLUGINS) -name '*.egg-info' -exec rm -r {} +
 
 requirements-plugins:
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS);do\
