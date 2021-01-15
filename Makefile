@@ -23,15 +23,16 @@ all:
 	@echo "check:       Runs tree static check, unittests and fast functional tests"
 	@echo "develop:     Runs 'python setup.py --develop' on this tree alone"
 	@echo "link:        Runs 'python setup.py --develop' in all subprojects and links the needed resources"
-	@echo "clean:       Get rid of scratch, byte files and removes the links to other subprojects"
+	@echo "clean:       Get rid of build scratch from this project and subprojects"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements-selftests:  Install runtime and selftests requirements"
 	@echo "requirements-plugins:    Install plugins requirements"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
-	@echo "source:   Create source package"
-	@echo "install:  Install on local system"
+	@echo "source:    Create source package"
+	@echo "install:   Install on local system"
+	@echo "uninstall: Uninstall Avocado and also subprojects"
 	@echo "man:      Generate the avocado man page"
 	@echo
 	@echo "RPM related targets:"
@@ -88,15 +89,22 @@ pypi: wheel source-pypi develop
 	@echo
 
 clean:
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
+		if test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py clean --all; cd -; echo ">> UNLINK $$PLUGIN";\
+		else echo ">> SKIP $$PLUGIN"; fi;\
+	done
 	$(PYTHON) setup.py clean
 	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES PYPI_UPLOAD
 	rm -f man/avocado.1
 	rm -rf docs/build
 	find docs/source/api/ -name '*.rst' -delete
+	$(PYTHON) setup.py clean --all
+
+uninstall:
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> UNLINK $$PLUGIN";\
 			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN unlink &>/dev/null || echo ">> FAIL $$PLUGIN";\
-			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); $(PYTHON) setup.py clean; rm -fr build; cd -; fi;\
+			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); cd -; fi;\
 		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
@@ -117,10 +125,10 @@ requirements-plugins:
 requirements-selftests: pip
 	- $(PYTHON) -m pip install -r requirements-selftests.txt
 
-smokecheck: clean develop
+smokecheck: clean uninstall develop
 	PYTHON=$(PYTHON) $(PYTHON) -m avocado run passtest.py
 
-check: clean develop
+check: clean uninstall develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
 	PYTHON=$(PYTHON) $(PYTHON) selftests/check.py
 	selftests/check_tmp_dirs
