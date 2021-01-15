@@ -5,9 +5,7 @@ VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell basename ${PWD})
-AVOCADO_EXTERNAL_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
 AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
-AVOCADO_PLUGINS=$(AVOCADO_OPTIONAL_PLUGINS) $(AVOCADO_EXTERNAL_PLUGINS)
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
 RELEASE_SHORT_COMMIT=$(shell git rev-parse --short=9 $(VERSION))
 COMMIT=$(shell git log --pretty=format:'%H' -n 1)
@@ -95,7 +93,7 @@ clean:
 	rm -f man/avocado.1
 	rm -rf docs/build
 	find docs/source/api/ -name '*.rst' -delete
-	for PLUGIN in $(AVOCADO_PLUGINS); do\
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> UNLINK $$PLUGIN";\
 			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN unlink &>/dev/null || echo ">> FAIL $$PLUGIN";\
 			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); $(PYTHON) setup.py clean; rm -fr build; cd -; fi;\
@@ -109,7 +107,7 @@ clean:
 	find $(AVOCADO_OPTIONAL_PLUGINS) -name '*.egg-info' -exec rm -r {} +
 
 requirements-plugins:
-	for PLUGIN in $(AVOCADO_PLUGINS);do\
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS);do\
 		if test -f $$PLUGIN/Makefile; then echo ">> REQUIREMENTS (Makefile) $$PLUGIN"; AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN requirements &>/dev/null;\
 		elif test -f $$PLUGIN/requirements.txt; then echo ">> REQUIREMENTS (requirements.txt) $$PLUGIN"; pip install $(PYTHON_DEVELOP_ARGS) -r $$PLUGIN/requirements.txt;\
 		else echo ">> SKIP $$PLUGIN";\
@@ -137,7 +135,7 @@ develop:
 	done
 
 link: develop
-	for PLUGIN in $(AVOCADO_EXTERNAL_PLUGINS); do\
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
 			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN PYTHON="$(PYTHON)" link &>/dev/null || echo ">> FAIL $$PLUGIN";\
 			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
@@ -152,9 +150,7 @@ variables:
 	@echo "PYTHON_DEVELOP_ARGS: $(PYTHON_DEVELOP_ARGS)"
 	@echo "DESTDIR: $(DESTDIR)"
 	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
-	@echo "AVOCADO_EXTERNAL_PLUGINS: $(AVOCADO_EXTERNAL_PLUGINS)"
 	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
-	@echo "AVOCADO_PLUGINS: $(AVOCADO_PLUGINS)"
 	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
 	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
 	@echo "COMMIT: $(COMMIT)"
@@ -166,7 +162,7 @@ variables:
 	@echo "RPM_BASE_NAME: $(RPM_BASE_NAME)"
 
 propagate-version:
-	for DIR in $(AVOCADO_PLUGINS); do\
+	for DIR in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f "$$DIR/VERSION"; then\
 			echo ">> Updating $$DIR"; echo "$(VERSION)" > "$$DIR/VERSION";\
 		else echo ">> Skipping $$DIR"; fi;\
