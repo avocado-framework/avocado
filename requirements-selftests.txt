@@ -15,7 +15,7 @@ psutil==5.6.6
 
 # pycdlib is an optional requirement in production
 # but is necessary for selftests
-pycdlib==1.6.0
+pycdlib==1.11.0
 
 # For avocado.utils.network selftests
 netifaces
