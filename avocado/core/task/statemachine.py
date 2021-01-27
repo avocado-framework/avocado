@@ -134,7 +134,7 @@ class Worker:
                 if runtime_task.execution_timeout is None:
                     remaining = None
                 else:
-                    remaining = runtime_task.timeout - time.monotonic()
+                    remaining = runtime_task.execution_timeout - time.monotonic()
                 await asyncio.wait_for(self._spawner.wait_task(runtime_task),
                                        remaining)
                 runtime_task.status = 'FINISHED'
