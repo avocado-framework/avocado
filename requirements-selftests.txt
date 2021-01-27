@@ -6,6 +6,7 @@ pyenchant==2.0.0
 pylint==2.5.0
 astroid==2.4.0
 inspektor==0.5.2
+autopep8==1.5.4
 
 coverage==5.1
 

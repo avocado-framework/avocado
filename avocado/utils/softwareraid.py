@@ -41,6 +41,7 @@ class SoftwareRaid:
     :param spare_disks: List of spare disks for software raid
     :type spare_disks: list
     """
+
     def __init__(self, name, level, disks, metadata, spare_disks=None):
         self.name = name
         self.level = level

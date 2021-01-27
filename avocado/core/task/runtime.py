@@ -7,6 +7,7 @@ class RuntimeTask:
     This class wraps a :class:`avocado.core.nrunner.Task`, with extra
     information about its execution by a spawner within a state machine.
     """
+
     def __init__(self, task):
         """Instantiates a new RuntimeTask.
 

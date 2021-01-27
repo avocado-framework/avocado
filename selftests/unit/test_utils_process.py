@@ -574,6 +574,7 @@ class FDDrainerTests(unittest.TestCase):
             """
             Handler used just to confirm that a logging event happened
             """
+
             def __init__(self, *args, **kwargs):
                 super(CatchHandler, self).__init__(*args, **kwargs)
                 self.caught_record = False

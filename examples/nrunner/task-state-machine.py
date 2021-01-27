@@ -43,6 +43,7 @@ def mock_monitor_task_finished():
 
 class Task:
     """Used here as a placeholder for an avocado.core.nrunner.Task."""
+
     def __init__(self, identification):
         self._identification = identification
 
@@ -52,6 +53,7 @@ class TaskInfo(Task):
 
     The equivalent of a StatusServer will contain this information
     in the real implementation."""
+
     def __init__(self, identification):
         super(TaskInfo, self).__init__(identification)
         self._status = None
@@ -83,6 +85,7 @@ class TaskInfo(Task):
 
 class TaskStateMachine:
     """Represents all phases that a task can go through its life."""
+
     def __init__(self, tasks):
         self._requested = tasks
         self._triaging = []

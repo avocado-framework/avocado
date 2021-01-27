@@ -5,6 +5,7 @@ import time
 
 class TaskStateMachine:
     """Represents all phases that a task can go through its life."""
+
     def __init__(self, tasks):
         self._requested = tasks
         self._triaging = []

@@ -76,6 +76,7 @@ class Runnable:
     A instance of :class:`BaseRunner` is the entity that will actually
     execute a runnable.
     """
+
     def __init__(self, kind, uri, *args, config=None, **kwargs):
         self.kind = kind
         self.uri = uri
@@ -351,6 +352,7 @@ class NoOpRunner(BaseRunner):
 
      * args: not used
     """
+
     def run(self):
         yield self.prepare_status('started')
         yield self.prepare_status('finished', {'result': 'pass'})
@@ -373,6 +375,7 @@ class ExecRunner(BaseRunner):
      * kwargs: key=val to be set as environment variables to the
        process
     """
+
     def run(self):
         env = None
         if self.runnable.kwargs:
@@ -427,6 +430,7 @@ class ExecTestRunner(ExecRunner):
 
     Runnable attributes usage is identical to :class:`ExecRunner`
     """
+
     def run(self):
         # Since Runners are standalone, and could be executed on a remote
         # machine in an "isolated" way, there is no way to assume a default
@@ -610,6 +614,7 @@ class TaskStatusService:
 
     TODO: make the interface generic and this just one of the implementations
     """
+
     def __init__(self, uri):
         self.uri = uri
         self.connection = None
@@ -642,6 +647,7 @@ class Task:
     :param identifier:
     :param runnable:
     """
+
     def __init__(self, identifier, runnable, status_uris=None,
                  known_runners=None):
         self.identifier = identifier

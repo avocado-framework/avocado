@@ -154,7 +154,7 @@ def memtotal_sys():
                 no_memblocks += 1
     path = os.path.join(sys_mempath, 'block_size_bytes')
     block_size = int(genio.read_file(path).strip(), 16)
-    return (no_memblocks * block_size)/1024.0
+    return (no_memblocks * block_size) / 1024.0
 
 
 def freememtotal():
@@ -470,6 +470,7 @@ class _MemInfoItem:
     """
     Representation of one item from /proc/meminfo
     """
+
     def __init__(self, name):
         self.name = name
 
