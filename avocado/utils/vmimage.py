@@ -199,13 +199,19 @@ class FedoraImageProviderBase(ImageProviderBase):
     """
 
     HTML_ENCODING = 'iso-8859-1'
+    url_old_images = None
 
     def get_image_url(self):
         if int(self.version) >= 28:
             cloud = 'Cloud'
         else:
             cloud = 'CloudImages'
-        self.url_images = self.url_images % cloud
+
+        if self.url_old_images and int(self.version) <= 31:
+            self.url_versions = self.url_old_images
+
+        self.url_images = self.url_versions + '{version}/' \
+            + cloud + '/{arch}/images/'
         return super(FedoraImageProviderBase, self).get_image_url()
 
 
@@ -220,7 +226,7 @@ class FedoraImageProvider(FedoraImageProviderBase):
                  arch=DEFAULT_ARCH):
         super(FedoraImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora/linux/releases/'
-        self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
+        self.url_old_images = 'https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/'
         self.image_pattern = 'Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
 
 
@@ -236,7 +242,7 @@ class FedoraSecondaryImageProvider(FedoraImageProviderBase):
         super(FedoraSecondaryImageProvider, self).__init__(version, build,
                                                            arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora-secondary/releases/'
-        self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
+        self.url_old_images = 'https://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/'
         self.image_pattern = 'Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
 
 
