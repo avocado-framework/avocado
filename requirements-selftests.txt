@@ -10,16 +10,13 @@ autopep8==1.5.4
 
 coverage==5.1
 
-# funcsigs
-funcsigs>=0.4
-
 # To run make check
 aexpect==1.5.1
 psutil==5.6.6
 
 # pycdlib is an optional requirement in production
 # but is necessary for selftests
-pycdlib==1.6.0
+pycdlib==1.11.0
 
 # For avocado.utils.network selftests
 netifaces
