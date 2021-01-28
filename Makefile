@@ -20,10 +20,10 @@ RPM_BASE_NAME=python-avocado
 all:
 	@echo
 	@echo "Development related targets:"
-	@echo "check:       Runs tree static check, unittests and fast functional tests"
-	@echo "develop:     Runs 'python setup.py --develop' on this tree alone"
-	@echo "link:        Runs 'python setup.py --develop' in all subprojects and links the needed resources"
-	@echo "clean:       Get rid of build scratch from this project and subprojects"
+	@echo "check:             Runs tree static check, unittests and fast functional tests"
+	@echo "develop:           Runs 'python setup.py --develop' on this tree alone"
+	@echo "develop-external:  Install Avocado's external plugins in develop mode. You need to set AVOCADO_EXTERNAL_PLUGINS_PATH"
+	@echo "clean:             Get rid of build scratch from this project and subprojects"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements-selftests:  Install runtime and selftests requirements"
@@ -128,8 +128,11 @@ develop:
 		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
 
-link: develop
-	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
+develop-external:
+ifndef AVOCADO_EXTERNAL_PLUGINS_PATH
+	$(error AVOCADO_EXTERNAL_PLUGINS_PATH is not defined)
+endif
+	for PLUGIN in $(shell find $(AVOCADO_EXTERNAL_PLUGINS_PATH) -maxdepth 1 -mindepth 1 -type d); do\
 		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
 			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN PYTHON="$(PYTHON)" link &>/dev/null || echo ">> FAIL $$PLUGIN";\
 			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
@@ -162,7 +165,7 @@ propagate-version:
 		else echo ">> Skipping $$DIR"; fi;\
 	done
 
-.PHONY: source install clean check link variables
+.PHONY: source install clean check variables
 
 # implicit rule/recipe for man page creation
 %.1: %.rst
