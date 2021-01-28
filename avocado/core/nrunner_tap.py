@@ -30,6 +30,7 @@ class TAPRunner(nrunner.BaseRunner):
                            'bar', # arg 1
                            DEBUG='false') # kwargs 1 (environment)
     """
+
     def run(self):
         env = self.runnable.kwargs or None
         if env and 'PATH' not in env:

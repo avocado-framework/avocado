@@ -29,6 +29,7 @@ class PMemException(Exception):
     """
     Error raised for all PMem failures
     """
+
     def __init__(self, additional_text=None):  # pylint: disable=W0231
         self.additional_text = additional_text
 

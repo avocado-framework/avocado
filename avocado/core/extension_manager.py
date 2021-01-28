@@ -37,6 +37,7 @@ class Extension:
     This is a verbatim copy from the stevedore.extension class with the
     same name
     """
+
     def __init__(self, name, entry_point, plugin, obj):
         self.name = name
         self.entry_point = entry_point

@@ -23,6 +23,7 @@ class GolangRunner(nrunner.BaseRunner):
        runnable = Runnable(kind='golang',
                            uri='countavocados:ExampleContainers')
     """
+
     def run(self):
         module, test = self.runnable.uri.split(':', 1)
 

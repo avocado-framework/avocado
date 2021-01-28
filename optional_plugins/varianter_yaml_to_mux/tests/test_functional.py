@@ -63,7 +63,7 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, (4, 0))
         # Also check whether jobdata contains correct parameter paths
         with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                  "variants.json")) as variants_file:
+                               "variants.json")) as variants_file:
             variants = variants_file.read()
         self.assertIn('["/run/*"]', variants, "parameter paths stored in "
                       "jobdata does not contains [\"/run/*\"]\n%s" % variants)
@@ -77,7 +77,7 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (8, 0))
         # Also check whether jobdata contains correct parameter paths
         with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                  "variants.json")) as variants_file:
+                               "variants.json")) as variants_file:
             variants = variants_file.read()
         exp = '["/foo/*", "/bar/*", "/baz/*"]'
         self.assertIn(exp, variants, "parameter paths stored in jobdata "

@@ -302,7 +302,7 @@ class ParseFilterByTags(unittest.TestCase):
 
     def test_musts_must_nots(self):
         self.assertEqual(tags._parse_filter_by_tags(['foo,bar,baz',
-                                                    '-FOO,-BAR,-BAZ']),
+                                                     '-FOO,-BAR,-BAZ']),
                          [(set(['foo', 'bar', 'baz']), set([])),
                           (set([]), set(['FOO', 'BAR', 'BAZ']))])
 

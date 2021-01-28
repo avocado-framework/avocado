@@ -1159,6 +1159,7 @@ class ExternalRunnerSpec:
     """
     Defines the basic options used by ExternalRunner
     """
+
     def __init__(self, runner, chdir=None, test_dir=None):
         self.runner = runner
         self.chdir = chdir
@@ -1215,6 +1216,7 @@ class PythonUnittest(ExternalRunnerTest):
     """
     Python unittest test
     """
+
     def __init__(self, name, params=None, base_logdir=None, job=None,
                  test_dir=None, python_unittest_module=None,
                  tags=None):    # pylint: disable=W0613

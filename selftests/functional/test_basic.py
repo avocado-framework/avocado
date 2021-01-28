@@ -196,7 +196,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         process.run(cmd_line)
         # Also check whether jobdata contains correct parameter paths
         variants = open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                        "variants.json")).read()
+                                     "variants.json")).read()
         self.assertIn('["/run/*"]', variants, "paths stored in jobdata "
                       "does not contains [\"/run/*\"]\n%s" % variants)
 

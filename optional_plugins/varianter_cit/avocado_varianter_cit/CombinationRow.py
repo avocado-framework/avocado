@@ -11,7 +11,6 @@ class CombinationRow:
     """
 
     def __init__(self, input_data, t_value, parameters):
-
         """
         :param input_data: list of data from user
         :param t_value: t number from user
@@ -30,7 +29,6 @@ class CombinationRow:
             self.hash_table[i] = 0
 
     def cover_cell(self, key):
-
         """
         Cover one combination inside Row
 
@@ -51,7 +49,6 @@ class CombinationRow:
         return self.uncovered - old_uncovered, self.covered_more_than_ones - old_covered_more_than_ones
 
     def uncover_cell(self, key):
-
         """
         Uncover one combination inside Row
 
@@ -72,7 +69,6 @@ class CombinationRow:
         return self.uncovered - old_uncovered, self.covered_more_than_ones - old_covered_more_than_ones
 
     def completely_uncover(self):
-
         """
         Uncover all combinations inside Row
         """
@@ -85,7 +81,6 @@ class CombinationRow:
                 self.uncovered += 1
 
     def del_cell(self, key):
-
         """
         Disable one combination. If combination is disabled it means that
         the combination does not match the constraints
@@ -103,7 +98,6 @@ class CombinationRow:
             return 0
 
     def is_valid(self, key):
-
         """
         Is the combination match the constraints.
 
@@ -117,7 +111,6 @@ class CombinationRow:
             return True
 
     def get_all_uncovered_combinations(self):
-
         """
         :return: list of all uncovered combination
         """

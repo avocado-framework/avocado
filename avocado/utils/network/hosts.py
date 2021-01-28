@@ -45,6 +45,7 @@ class Host:
         for i in remote.interfaces:
             print(i.name, i.is_link_up())
     """
+
     def __init__(self, host):
         if type(self) == Host:
             raise TypeError("Host class should not be instantiated")
@@ -91,6 +92,7 @@ class LocalHost(Host):
 
         local = LocalHost()
     """
+
     def __init__(self, host='localhost'):
         super().__init__(host)
 
@@ -110,6 +112,7 @@ class RemoteHost(Host):
 
     You can also provide a key instead of a password.
     """
+
     def __init__(self, host, username, port=22, key=None, password=None):
         super().__init__(host)
         self.port = port

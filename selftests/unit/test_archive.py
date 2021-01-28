@@ -147,7 +147,7 @@ class ArchiveTest(unittest.TestCase):
 
     def test_empty_tbz2(self):
         ret = archive.uncompress(os.path.join(BASEDIR, 'selftests', '.data',
-                                 'empty.tar.bz2'), self.decompressdir)
+                                              'empty.tar.bz2'), self.decompressdir)
         self.assertEqual(ret, None, "Empty archive should return None (%s)"
                          % ret)
 
