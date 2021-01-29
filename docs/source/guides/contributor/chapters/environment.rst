@@ -32,11 +32,19 @@ available).
 
 Avocado supports various plugins, which are distributed as separate projects,
 for example "avocado-vt" and "avocado-virt". These also need to be
-deployed and linked in order to work properly with the Avocado from
-sources (installed version works out of the box). To simplify this you can
-use `make requirements-plugins` from the main Avocado project to install
-requirements of the plugins and `make link` to link and develop the
-plugins. The workflow could be::
+deployed and "linked" in order to work properly with the Avocado from
+sources (installed version works out of the box).
+
+You can install external plugins as you wish, and/or according to the
+specific plugin's maintainer recommendations.
+
+Plugins that are developed by the Avocado team, will try to follow the
+same Setuptools standard for distributing the packages. Because of that,
+as a facility, you can use `make requirements-plugins` from the main
+Avocado project to install requirements of the plugins and `make
+develop-external` to install plugins in develop mode to. You just need
+to set where your plugins are installed, by using the environment
+variable `$AVOCADO_EXTERNAL_PLUGINS_PATH`. The workflow could be::
 
     $ cd $AVOCADO_PROJECTS_DIR
     $ git clone $AVOCADO_GIT
@@ -44,6 +52,7 @@ plugins. The workflow could be::
     $ # Add more projects
     $ cd avocado    # go into the main Avocado project dir
     $ make requirements-plugins
-    $ make link
+    $ export AVOCADO_EXTERNAL_PLUGINS_PATH=$AVOCADO_PROJECTS_DIR
+    $ make develop-external
 
 You should see the process and status of each directory.

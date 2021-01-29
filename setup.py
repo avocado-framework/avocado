@@ -13,8 +13,11 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import glob
 import os
 import sys
+from distutils.command.clean import clean
+from subprocess import call
 
 from setuptools import find_packages, setup
 
@@ -30,6 +33,34 @@ def get_long_description():
     with open(os.path.join(BASE_PATH, 'README.rst'), 'r') as readme:
         readme_contents = readme.read()
     return readme_contents
+
+
+class Clean(clean):
+    """Our custom command to get rid of junk files after build."""
+
+    description = "Get rid of scratch, byte files and build stuff."
+
+    def run(self):
+        super().run()
+        call(('rm -rf MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES',
+              'PYPI_UPLOAD ./build ./dist'), shell=True)
+        call('rm -rf ./man/avocado.1 ./docs/build', shell=True)
+        call('rm -rf /var/tmp/avocado* /tmp/avaocado*', shell=True)
+        call('find . -name "*.egg-info" -exec rm -rv {} +', shell=True)
+        call('find . -name "*.pyc" -exec rm -rv {} +', shell=True)
+        call('find . -name __pycache__ -type d -exec rm -rv {} +', shell=True)
+        call('find ./docs/source/api/ -name "*.rst" -exec rm -rv {} +',
+             shell=True)
+        self.clean_optional_plugins()
+
+    def clean_optional_plugins(self):
+        root_dir = os.getcwd()
+        for plugin in map(os.path.dirname,
+                          glob.glob('./optional_plugins/*/setup.py')):
+            print(">> CLEANING {}".format(plugin))
+            os.chdir(plugin)
+            call('{} setup.py clean --all'.format(sys.executable), shell=True)
+            os.chdir(root_dir)
 
 
 if __name__ == '__main__':
@@ -158,4 +189,5 @@ if __name__ == '__main__':
           zip_safe=False,
           test_suite='selftests',
           python_requires='>=3.4',
+          cmdclass={'clean': Clean},
           install_requires=['setuptools'])
