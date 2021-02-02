@@ -88,8 +88,10 @@ class Asset:
         :param asset_path: full path of the asset file.
         """
         result = crypto.hash_file(asset_path, algorithm=self.algorithm)
-        with open(self._get_hash_file(asset_path), 'w') as hash_file:
-            hash_file.write('%s %s\n' % (self.algorithm, result))
+        hash_file = self._get_hash_file(asset_path)
+        with FileLock(hash_file, 30):
+            with open(hash_file, 'w') as fp:
+                fp.write('%s %s\n' % (self.algorithm, result))
 
     def _create_metadata_file(self, asset_file):
         """
