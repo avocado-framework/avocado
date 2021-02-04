@@ -1,3 +1,5 @@
+import os
+import shutil
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -69,4 +71,6 @@ class ImageFunctional(Base):
     def test_get(self):
         cmd = 'avocado vmimage get --distro=%s --distro-version=%s --arch=%s'
         cmd %= (self.vmimage_name, self.vmimage_version, self.vmimage_arch)
-        process.run(cmd)
+        out = process.run(cmd)
+        image_path = out.stdout_text.split()[-1]
+        shutil.rmtree(os.path.dirname(image_path))
