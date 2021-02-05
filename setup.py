@@ -188,6 +188,6 @@ if __name__ == '__main__':
               },
           zip_safe=False,
           test_suite='selftests',
-          python_requires='>=3.4',
+          python_requires='>=3.5',
           cmdclass={'clean': Clean},
           install_requires=['setuptools'])
