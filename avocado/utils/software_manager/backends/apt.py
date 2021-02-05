@@ -185,8 +185,8 @@ class AptBackend(DpkgBackend):
             log.error("Apt file cache update failed")
         fu_cmd = command + ' search ' + name
         try:
-            paths = filter(None, os.environ['PATH'].split(':'))
-            provides = filter(None, process.run(fu_cmd).stdout_text.split('\n'))
+            paths = list(filter(None, os.environ['PATH'].split(':')))
+            provides = list(filter(None, process.run(fu_cmd).stdout_text.split('\n')))
             list_provides = []
             for each_path in paths:
                 for line in provides:
