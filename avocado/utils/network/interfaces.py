@@ -230,6 +230,7 @@ class NetworkInterface:
 
     def get_mtu(self):
         """Return the current MTU value of this interface.
+
         This method will try to get the current MTU value, if fails will
         raise a NWException.
         """
@@ -289,7 +290,7 @@ class NetworkInterface:
             raise NWException(msg)
 
         ifcfg_dict = {'TYPE': self.if_type,
-                      'BOOTPROTO': 'none',
+                      'BOOTPROTO': 'static',
                       'NAME': self.name,
                       'DEVICE': self.name,
                       'ONBOOT': 'yes',
@@ -359,8 +360,8 @@ class NetworkInterface:
     def restore_from_backup(self):
         """Revert interface file from backup.
 
-        This method checks if a backup version  is available for given interface
-        then it copies backup file to interface file in /sysfs path
+        This method checks if a backup version  is available for given
+        interface then it copies backup file to interface file in /sysfs path.
         """
 
         current_distro = distro_detect()
