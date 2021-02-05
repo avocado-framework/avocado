@@ -443,7 +443,7 @@ class Asset:
 
     @property
     def parsed_name(self):
-        """This property will return a ParseResult object if name is an URL."""
+        """Returns a ParseResult object for the currently set name."""
         return urlparse(self.name)
 
     @property
