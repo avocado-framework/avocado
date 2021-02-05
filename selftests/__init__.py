@@ -77,6 +77,7 @@ def get_temporary_config(module_name, klass, method):
                      'base_dir = %(base_dir)s\n'
                      'test_dir = %(test_dir)s\n'
                      'data_dir = %(data_dir)s\n'
+                     'cache_dirs = ["%(cache_dir)s"]\n'
                      'logs_dir = %(logs_dir)s\n') % mapping
     config_file = tempfile.NamedTemporaryFile('w', delete=False)
     config_file.write(temp_settings)
