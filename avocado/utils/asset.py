@@ -441,10 +441,15 @@ class Asset:
         if self.name_scheme:
             return self.parsed_name.geturl()
 
+    @staticmethod
+    def parse_name(name):
+        """Returns a ParseResult object for the given name."""
+        return urlparse(name)
+
     @property
     def parsed_name(self):
         """Returns a ParseResult object for the currently set name."""
-        return urlparse(self.name)
+        return self.parse_name(self.name)
 
     @property
     def relative_dir(self):
