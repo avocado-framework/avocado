@@ -1011,27 +1011,38 @@ class Test(unittest.TestCase, TestData):
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
 
+        # If name has no protocol or network locations, attempt to find
+        # the asset "by name" first. This is valid use case when the
+        # asset has been previously put into any of the cache
+        # directories, either manually or by the caching process
+        # itself.
+        parsed_name = asset.Asset.parse_name(name)
+        if not (parsed_name.scheme or locations):
+            try:
+                return asset.Asset.get_asset_by_name(name,
+                                                     self.cache_dirs,
+                                                     expire,
+                                                     asset_hash)
+            except OSError as e:
+                if cancel_on_missing:
+                    self.cancel("Missing asset {}".format(name))
+                raise e
+
         asset_obj = asset.Asset(name, asset_hash, algorithm, locations,
                                 self.cache_dirs, expire)
 
-        missing_asset_message = 'Missing asset %s' % name
-
-        # decide whether we need to find only or fetch
-        if find_only:
-            asset_func = asset_obj.find_asset_file
-        else:
-            asset_func = asset_obj.fetch
-
         try:
             # return the path to the asset when it was found or fetched
-            asset_path = asset_func()
-            return asset_path
+            if find_only:
+                return asset_obj.find_asset_file()
+            else:
+                return asset_obj.fetch()
         except OSError as e:
             # if asset is not in the cache or there was a problem fetching
             # the asset
             if cancel_on_missing:
                 # cancel when requested
-                self.cancel(missing_asset_message)
+                self.cancel("Missing asset {}".format(name))
             # otherwise re-throw OSError
             raise e
 

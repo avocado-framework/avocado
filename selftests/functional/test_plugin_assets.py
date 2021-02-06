@@ -11,7 +11,8 @@ import warnings
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, get_temporary_config
+from .. import (AVOCADO, TestCaseTmpDir, get_temporary_config,
+                skipUnlessPathExists)
 
 TEST_TEMPLATE = r"""
 from avocado import Test
@@ -43,7 +44,7 @@ class FetchAssets:
 """
 
 
-class AssetsFetchSuccess(unittest.TestCase):
+class AssetsFetchSuccess(TestCaseTmpDir):
     """
     Assets fetch with success functional test class
     """
@@ -88,6 +89,31 @@ class AssetsFetchSuccess(unittest.TestCase):
 
         self.assertEqual(expected_rc, result.exit_status)
         self.assertIn(expected_output, result.stdout_text)
+
+    def test_asset_register_by_name_fail(self):
+        """Test register command failure."""
+        url = "https://urlnotfound"
+        config = self.config_file.name
+        cmd_line = "%s --config %s assets register foo %s" % (AVOCADO,
+                                                              config,
+                                                              url)
+        result = process.run(cmd_line)
+
+        self.assertIn("Failed to fetch",
+                      result.stderr_text)
+
+    @skipUnlessPathExists('/etc/hosts')
+    def test_asset_register_by_name_success(self):
+        """Test register command success."""
+        url = "/etc/hosts"
+        config = self.config_file.name
+        cmd_line = "%s --config %s assets register hosts %s" % (AVOCADO,
+                                                                config,
+                                                                url)
+        result = process.run(cmd_line)
+
+        self.assertIn("Now you can reference it by name hosts",
+                      result.stdout_text)
 
     def tearDown(self):
         self.base_dir.cleanup()
@@ -192,7 +218,7 @@ class AssetsPlugin(unittest.TestCase):
         test_file.write(test_content.encode())
         test_file.close()
 
-        expected_stderr = "Failed to fetch hello-2.9.tar.gz.\n"
+        expected_stderr = "Failed to fetch hello-2.9.tar.gz"
         expected_rc = exit_codes.AVOCADO_FAIL
 
         cmd_line = "%s --config %s assets fetch %s " % (AVOCADO,
@@ -219,7 +245,7 @@ class AssetsPlugin(unittest.TestCase):
         test_file.write(test_content.encode())
         test_file.close()
 
-        expected_stderr = "Failed to fetch hello-2.9.tar.gz.\n"
+        expected_stderr = "Failed to fetch hello-2.9.tar.gz"
         expected_rc = exit_codes.AVOCADO_ALL_OK
 
         cmd_line = "%s --config %s assets fetch --ignore-errors %s " % (

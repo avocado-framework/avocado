@@ -27,7 +27,7 @@ import stat
 import sys
 import tempfile
 import time
-import urllib.parse
+from urllib.parse import urlparse
 
 from . import astring, crypto
 from . import path as utils_path
@@ -50,10 +50,9 @@ class Asset:
     Try to fetch/verify an asset file from multiple locations.
     """
 
-    def __init__(self, name, asset_hash, algorithm, locations, cache_dirs,
-                 expire=None, metadata=None):
-        """
-        Initialize the Asset() class.
+    def __init__(self, name, asset_hash=None, algorithm=None, locations=None,
+                 cache_dirs=None, expire=None, metadata=None):
+        """Initialize the Asset() class.
 
         :param name: the asset filename. url is also supported
         :param asset_hash: asset hash
@@ -66,35 +65,19 @@ class Asset:
         self.name = name
         self.asset_hash = asset_hash
 
-        self.parsed_name = urllib.parse.urlparse(self.name)
-
-        # we currently support the following options for name and locations:
-        # 1. name is a full URI and locations is empty;
-        # 2. name is a single file name and locations is one or more entries.
-        # raise an exception if we have an unsupported use of those arguments
-        if ((self.parsed_name.scheme and locations is not None) or
-                (not self.parsed_name.scheme and locations is None)):
-            raise ValueError("Incorrect use of parameter name with parameter"
-                             " locations.")
+        if isinstance(locations, str):
+            self.locations = [locations]
+        else:
+            self.locations = locations or []
 
         if algorithm is None:
             self.algorithm = DEFAULT_HASH_ALGORITHM
         else:
             self.algorithm = algorithm
 
-        if isinstance(locations, str):
-            self.locations = [locations]
-        else:
-            self.locations = locations
         self.cache_dirs = cache_dirs
         self.expire = expire
         self.metadata = metadata
-
-        # set asset_name according to parsed_name
-        self.asset_name = os.path.basename(self.parsed_name.path)
-        # set relative_dir for the asset
-        self.relative_dir = os.path.join(self._get_relative_dir(),
-                                         self.asset_name)
 
     def _create_hash_file(self, asset_path):
         """
@@ -104,8 +87,10 @@ class Asset:
         :param asset_path: full path of the asset file.
         """
         result = crypto.hash_file(asset_path, algorithm=self.algorithm)
-        with open(self._get_hash_file(asset_path), 'w') as hash_file:
-            hash_file.write('%s %s\n' % (self.algorithm, result))
+        hash_file = self._get_hash_file(asset_path)
+        with FileLock(hash_file, 30):
+            with open(hash_file, 'w') as fp:
+                fp.write('%s %s\n' % (self.algorithm, result))
 
     def _create_metadata_file(self, asset_file):
         """
@@ -140,7 +125,10 @@ class Asset:
             with FileLock(asset_path, 1):
                 shutil.copy(temp, asset_path)
                 self._create_hash_file(asset_path)
-                return self._verify_hash(asset_path)
+                if not self._verify_hash(asset_path):
+                    msg = "Hash mismatch. Ignoring asset from the cache"
+                    raise OSError(msg)
+                return True
         finally:
             try:
                 os.remove(temp)
@@ -167,20 +155,33 @@ class Asset:
         :returns: the hash, if it exists.
         :rtype: str
         """
-        discovered = None
         hash_file = self._get_hash_file(asset_path)
         if not os.path.isfile(hash_file):
             self._create_hash_file(asset_path)
 
-        with open(hash_file, 'r') as hash_file:
-            for line in hash_file:
-                # md5 is 32 chars big and sha512 is 128 chars big.
-                # others supported algorithms are between those.
-                pattern = '%s [a-f0-9]{32,128}' % self.algorithm
-                if re.match(pattern, line):
-                    discovered = line.split()[1]
-                    break
-        return discovered
+        return Asset.read_hash_from_file(hash_file)[1]
+
+    @classmethod
+    def read_hash_from_file(cls, filename):
+        """Read the CHECKSUM file and return the hash.
+
+        This method raises a FileNotFoundError if file is missing and assumes
+        that filename is the CHECKSUM filename.
+
+        :rtype: list with algorithm and hash
+        """
+        try:
+            with FileLock(filename, 30):
+                with open(filename, 'r') as hash_file:
+                    for line in hash_file:
+                        # md5 is 32 chars big and sha512 is 128 chars big.
+                        # others supported algorithms are between those.
+                        if re.match('^.* [a-f0-9]{32,128}', line):
+                            return line.split()
+        except Exception:  # pylint: disable=W0703
+            exc_type, exc_value = sys.exc_info()[:2]
+            LOG.error('%s: %s', exc_type.__name__, exc_value)
+            return [None, None]
 
     def _get_local_file(self, url_obj, asset_path):
         """
@@ -225,12 +226,12 @@ class Asset:
         :returns: target location of asset the file.
         :rtype: str
         """
-        if (not self.parsed_name.scheme and
+        if (not self.name_scheme and
                 (self.asset_hash or len(self.locations) > 1)):
             return 'by_name'
 
         # check if the URI is located on self.locations or self.parsed_name
-        if self.locations is not None:
+        if self.locations:
             # if it is on self.locations, we need to check if it has the
             # asset name on it or a trailing '/'
             if ((self.asset_name in self.locations[0]) or
@@ -283,6 +284,21 @@ class Asset:
             return True
         return False
 
+    @classmethod
+    def _has_valid_hash(cls, asset_path, asset_hash=None):
+        """Checks if a file has a valid hash based on the hash parameter.
+
+        If asset_hash is None then will consider a valid asset.
+        """
+        if asset_hash is None:
+            return True
+
+        hash_path = cls._get_hash_file(asset_path)
+        _, hash_from_file = cls.read_hash_from_file(hash_path)
+        if hash_from_file == asset_hash:
+            return True
+        return False
+
     def _verify_hash(self, asset_path):
         """
         Verify if the `asset_path` hash matches the hash in the hash file.
@@ -292,10 +308,7 @@ class Asset:
         value as the hash of the asset_file, otherwise return False.
         :rtype: bool
         """
-        if self.asset_hash is None or (
-                self._get_hash_from_file(asset_path) == self.asset_hash):
-            return True
-        return False
+        return self._has_valid_hash(asset_path, self.asset_hash)
 
     def fetch(self):
         """
@@ -307,13 +320,9 @@ class Asset:
         :returns: The path for the file on the cache directory.
         :rtype: str
         """
-        urls = []
-        # If name is actually an url, it has to be included in urls list
-        if self.parsed_name.scheme:
-            urls.append(self.parsed_name.geturl())
-
         # First let's search for the file in each one of the cache locations
         asset_file = None
+        error = "unknown"
         try:
             asset_file = self.find_asset_file()
         except OSError:
@@ -329,16 +338,17 @@ class Asset:
         # writable cache directory will be used.
         cache_dir = self._get_writable_cache_dir()
         # Now we have a writable cache_dir. Let's get the asset.
-        # Adding the user defined locations to the urls list:
-        if self.locations is not None:
-            for item in self.locations:
-                urls.append(item)
-
-        for url in urls:
-            urlobj = urllib.parse.urlparse(url)
+        for url in self.urls:
+            if url is None:
+                continue
+            urlobj = urlparse(url)
             if urlobj.scheme in ['http', 'https', 'ftp']:
                 fetch = self._download
             elif urlobj.scheme == 'file':
+                fetch = self._get_local_file
+            # We are assuming that everything starting with './' or '/' are a
+            # file too.
+            elif url.startswith(('/', './')):
                 fetch = self._get_local_file
             else:
                 raise UnsupportedProtocolError("Unsupported protocol"
@@ -356,8 +366,9 @@ class Asset:
             except Exception:  # pylint: disable=W0703
                 exc_type, exc_value = sys.exc_info()[:2]
                 LOG.error('%s: %s', exc_type.__name__, exc_value)
+                error = exc_value
 
-        raise OSError("Failed to fetch %s." % self.asset_name)
+        raise OSError("Failed to fetch %s (%s)." % (self.asset_name, error))
 
     def find_asset_file(self):
         """
@@ -372,19 +383,19 @@ class Asset:
             cache_dir = os.path.expanduser(cache_dir)
             asset_file = os.path.join(cache_dir, self.relative_dir)
 
-            # To use a cached file, it must:
-            # - Exists.
-            # - Be valid (not expired).
-            # - Be verified (hash check).
-            if (os.path.isfile(asset_file) and
-                    not self._is_expired(asset_file, self.expire)):
-                try:
-                    with FileLock(asset_file, 30):
-                        if self._verify_hash(asset_file):
-                            return asset_file
-                except Exception:  # pylint: disable=W0703
-                    exc_type, exc_value = sys.exc_info()[:2]
-                    LOG.error('%s: %s', exc_type.__name__, exc_value)
+            # Ignore non-files
+            if not os.path.isfile(asset_file):
+                continue
+
+            # Ignore expired asset files
+            if self._is_expired(asset_file, self.expire):
+                continue
+
+            # Ignore mismatch hash
+            if not self._has_valid_hash(asset_file, self.asset_hash):
+                continue
+
+            return asset_file
 
         raise OSError("File %s not found in the cache." % self.asset_name)
 
@@ -406,3 +417,93 @@ class Asset:
             with open(metadata_file, "r") as f:
                 metadata = json.load(f)
                 return metadata
+
+    @property
+    def asset_name(self):
+        return os.path.basename(self.parsed_name.path)
+
+    @classmethod
+    def get_asset_by_name(cls, name, cache_dirs, expire=None, asset_hash=None):
+        """This method will return a cached asset based on name if exists.
+
+        You don't have to instantiate an object of Asset class. Just use this
+        method.
+
+        To be improved soon: cache_dirs should be not necessary.
+
+        :param name: the asset filename used during registration.
+        :param cache_dirs: list of directories to use during the search.
+        :param expire: time in seconds for the asset to expire. Expired assets
+                       will not be returned.
+        :param asset_hash: asset hash.
+
+        :return: asset path, if it exists in the cache.
+        :rtype: str
+        :raises: OSError
+        """
+
+        for cache_dir in cache_dirs:
+            asset_file = os.path.join(os.path.expanduser(cache_dir),
+                                      'by_name',
+                                      name)
+
+            # Ignore non-files
+            if not os.path.isfile(asset_file):
+                continue
+
+            # Ignore expired asset files
+            if cls._is_expired(asset_file, expire):
+                continue
+
+            # Ignore mismatch hash
+            if not cls._has_valid_hash(asset_file, asset_hash):
+                continue
+
+            return asset_file
+
+        raise OSError("File %s not found in the cache." % name)
+
+    @property
+    def name_scheme(self):
+        """This property will return the scheme part of the name if is an URL.
+
+        Otherwise, will return None.
+        """
+        parsed = self.parsed_name
+        if parsed:
+            return parsed.scheme
+
+    @property
+    def name_url(self):
+        """This property will return the full url of the name if is an URL.
+
+        Otherwise, will return None.
+        """
+        if self.name_scheme:
+            return self.parsed_name.geturl()
+
+    @staticmethod
+    def parse_name(name):
+        """Returns a ParseResult object for the given name."""
+        return urlparse(name)
+
+    @property
+    def parsed_name(self):
+        """Returns a ParseResult object for the currently set name."""
+        return self.parse_name(self.name)
+
+    @property
+    def relative_dir(self):
+        return os.path.join(self._get_relative_dir(), self.asset_name)
+
+    @property
+    def urls(self):
+        """Complete list of locations including name if is an URL."""
+        urls = []
+        if self.name_scheme:
+            urls.append(self.name_url)
+
+        if self.locations:
+            urls.extend(self.locations)
+
+        return urls
