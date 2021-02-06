@@ -79,7 +79,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
 
     for line1, line2 in zip(matrix1, matrix2):
         new_line = []
-        elements = zip(line1, line2)
+        elements = iter(zip(line1, line2))
         try:
             element1, element2 = next(elements)
         except StopIteration:             # no data in this row
