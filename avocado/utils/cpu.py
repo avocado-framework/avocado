@@ -291,11 +291,11 @@ def get_idle_state():
     :rtype: Dict of dicts
     """
     cpus_list = online_list()
-    states = range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
+    states = len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*"))
     cpu_idlestate = {}
     for cpu in cpus_list:
         cpu_idlestate[cpu] = {}
-        for state_no in states:
+        for state_no in range(states):
             state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
             try:
                 cpu_idlestate[cpu][state_no] = bool(int(open(state_file, 'rb').read()))
@@ -332,7 +332,7 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
     if not setstate:
         states = []
         if state_number == 'all':
-            states = range(0, len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
+            states = list(range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*"))))
         else:
             states.append(state_number)
         disable = _bool_to_binary(disable)
@@ -372,7 +372,7 @@ def set_freq_governor(governor="random"):
         logging.error("Could not locate frequency governor sysfs entries or\n"
                       " No proper permissions to read/write sysfs entries")
         return False
-    cpus_list = range(total_count())
+    cpus_list = total_count()
     with open(avl_gov_file, 'r') as fl:
         avl_govs = fl.read().strip().split(' ')
     if governor == "random":
@@ -384,7 +384,7 @@ def set_freq_governor(governor="random"):
     if governor not in avl_govs:
         logging.warning("Trying to change unknown frequency "
                         "governor: %s", governor)
-    for cpu in cpus_list:
+    for cpu in range(cpus_list):
         cur_gov_file = "/sys/devices/system/cpu/cpu%s/cpufreq/scaling_governor" % cpu
         try:
             with open(cur_gov_file, 'w') as fl:
