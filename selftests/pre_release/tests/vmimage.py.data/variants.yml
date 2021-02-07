@@ -41,8 +41,8 @@ distro: !mux
     version: !mux
       9.13.14:
         version: 9.13.14-20210127
-      10.7.5:
-        version: 10.7.5-20210127
+      10.8.0:
+        version: 10.8.0
   fedora:
     name: fedora
     !filter-out : /run/architectures/arm
