@@ -10,6 +10,6 @@ git fetch $ORIGIN
 ORIGIN_MASTER_COMMIT=$(git log --pretty=format:'%h' -n 1 $ORIGIN/master)
 
 PODMAN=$(which podman)
-PODMAN_IMAGE=fedora:31
+PODMAN_IMAGE=fedora:33
 
 $PODMAN run --rm -ti $PODMAN_IMAGE /bin/bash -c "dnf -y module disable avocado && dnf -y install 'dnf-command(copr)' && dnf -y copr enable @avocado/avocado-latest && dnf -y install python3-avocado && (rpm -q python3-avocado | grep $ORIGIN_MASTER_COMMIT)"
