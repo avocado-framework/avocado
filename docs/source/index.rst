@@ -32,6 +32,7 @@ Contents:
    :caption: Blueprints
    :titlesonly:
 
+   blueprints/BP000
    blueprints/BP001
    blueprints/BP002
    blueprints/BP003
