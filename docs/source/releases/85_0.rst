@@ -1,0 +1,61 @@
+============
+85.0 Bacurau
+============
+
+The Avocado team is proud to present another release: Avocado 85.0,
+AKA "Bacurau", is now available!
+
+Release documentation: `Avocado 85.0
+<http://avocado-framework.readthedocs.io/en/85.0/>`_
+
+Users/Test Writers
+==================
+
+* It's now possible to set a timeout (via the ``task.timeout.running``
+  configuration option) for nrunner tasks.  Effectively this works
+  as an execution timeout for tests run with ``--test-runner=nrunner``.
+
+* Users of the asset feature can now register their own assets with a
+  ``avocado assets register`` command.  Then, the registered asset can
+  be used transparently with the
+  :meth:`avocado.core.test.Test.fetch_asset` by its name.  This
+  feature helps with tests that need to use assets that can not
+  be downloaded by Avocado itself.
+
+Utility APIs
+============
+
+* The :mod:`avocado.utils.cloudinit` module will give a better error
+  message when the system is not capable of creating ISO images, with
+  a solution for resolution.
+
+* The :mod:`avocado.utils.vmimage` can now access both current and
+  non-current Fedora versions (which are hosted at different
+  locations).
+
+* The :mod:`avocado.utils.network.interfaces` now supports setting
+  configuration for SuSE based systems.
+
+Internal Changes
+================
+
+* The ``make link``, useful for developing Avocado with external
+  plugins (say Avocado-VT), became ``make develop-external``, and
+  it requires the ``AVOCADO_EXTERNAL_PLUGINS_PATH`` variable to
+  now be set.
+
+* Various cleanups to the ``Makefile`` and consolidation into the
+  ``setup.py`` file.
+
+* A large number additional lint and style checks and fixes were
+  added.
+
+* The "SoB" check (``selftests/signedoff-check.sh``) is now case
+  insensitive.
+
+Misc Changes
+============
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/84.0...85.0>`_.

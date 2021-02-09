@@ -33,7 +33,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 84.0
+Version: 85.0
 Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -379,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Feb  9 2021 Cleber Rosa <cleber@redhat.com> - 85.0-1
+- New release
+
 * Mon Dec 21 2020 Cleber Rosa <cleber@redhat.com> - 84.0-1
 - New release
 
