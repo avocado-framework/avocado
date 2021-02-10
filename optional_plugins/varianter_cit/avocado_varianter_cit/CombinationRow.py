@@ -23,7 +23,7 @@ class CombinationRow:
         array = []
         "Creation of combinations"
         for i in range(t_value):
-            array.append(range(input_data[parameters[i]]))
+            array.append(list(range(input_data[parameters[i]])))
         for i in itertools.product(*array):
             self.uncovered += 1
             self.hash_table[i] = 0

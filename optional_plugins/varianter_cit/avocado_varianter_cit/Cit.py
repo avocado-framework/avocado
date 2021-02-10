@@ -311,7 +311,7 @@ class Cit:
         data_size = len(self.data)
         row = [-1]*data_size
 
-        for parameter in random.sample(range(data_size), data_size):
+        for parameter in random.sample(range(data_size), data_size):  # pylint: disable=W1638
             possible_values = self.solver.get_possible_values(row, parameter)
             value_choice = random.choice(possible_values)
             row[parameter] = value_choice

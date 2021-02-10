@@ -94,9 +94,8 @@ def find_free_ports(start_port, end_port, count, address="localhost", sequent=Fa
     """
     ports = []
 
-    port_range = range(start_port, end_port)
+    port_range = list(range(start_port, end_port))
     if not sequent:
-        port_range = list(port_range)
         random.shuffle(port_range)
     for i in port_range:
         if is_port_free(i, address):

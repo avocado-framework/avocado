@@ -88,7 +88,7 @@ class Solver:
     def read_constraints(self):
         # creates new parameters with their names
         for i, values_size in enumerate(self.data):
-            self.parameters.append(Parameter(i, range(values_size)))
+            self.parameters.append(Parameter(i, list(range(values_size))))
         for constraint in self.constraints:
             for index, pair in enumerate(constraint):
                 self.parameters[pair[self.CON_NAME]].add_constraint(

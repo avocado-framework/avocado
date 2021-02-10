@@ -101,7 +101,7 @@ def collect_errors_by_level(output_file=None, level_check=5):
     if not isinstance(level_check, int):
         raise DmesgError("level_check param should be integer")
     cmd = "dmesg -T -l %s|grep ." % ",".join(
-        map(str, range(0, int(level_check))))
+        map(str, range(0, int(level_check))))  # pylint: disable=W1638
     out = process.run(cmd, timeout=30, ignore_status=True,
                       verbose=False, shell=True)
     if out.exit_status == 0:

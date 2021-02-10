@@ -116,7 +116,7 @@ def test_suite(base_selftests=True, plugin_selftests=None):
             suite.addTests(loader.discover(start_dir=start_dir,
                                            top_level_dir=basedir))
     if plugin_selftests is None:
-        plugin_selftests = PLUGINS.keys()
+        plugin_selftests = list(PLUGINS.keys())
     for plugin_dir in plugin_selftests:
         plugin_name = PLUGINS.get(plugin_dir, None)
         if python_module_available(plugin_name):

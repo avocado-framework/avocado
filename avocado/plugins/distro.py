@@ -353,7 +353,7 @@ class Distro(CLICmd):
                                  parser=parser,
                                  long_arg='--distro-def-path')
 
-        type_choices = DISTRO_PKG_INFO_LOADERS.keys()
+        type_choices = tuple(DISTRO_PKG_INFO_LOADERS.keys())
         type_choices_hlp = ', '.join(type_choices)
         help_msg = 'Distro type (one of: %s)' % type_choices_hlp
         settings.register_option(section='distro',

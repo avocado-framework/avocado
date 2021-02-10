@@ -420,8 +420,8 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     buddy_list = re.findall(re_buddyinfo, buddy_info_content)
 
     if re.findall("[<>=]", chunk_sizes) and buddy_list:
-        size_list = range(len(buddy_list[-1][-1].strip().split()))
-        chunk_sizes = [str(_) for _ in size_list
+        size_list = len(buddy_list[-1][-1].strip().split())
+        chunk_sizes = [str(_) for _ in range(size_list)
                        if eval("%s %s" % (_, chunk_sizes))]  # pylint: disable=W0123
 
         chunk_sizes = ' '.join(chunk_sizes)

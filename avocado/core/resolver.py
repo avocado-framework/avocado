@@ -171,7 +171,7 @@ def resolve(references, hint=None, ignore_missing=True):
         hint_references = {r.reference: r for r in hint_resolutions}
 
     if not references and hint_references:
-        references = hint_references.keys()
+        references = list(hint_references.keys())
 
     if references:
         # should be initialized with args, to define the behavior
