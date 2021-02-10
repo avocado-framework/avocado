@@ -332,11 +332,11 @@ class TestLoader:
                        "'allowed_test_types' in the plugin."
                        % (self.name, self.name, self.name, types))
                 raise LoaderError(msg)
-            elif next(mapping.itervalues()) != types:
+            elif next(iter(mapping.values())) != types:
                 raise LoaderError("Loader '%s' doesn't support test type '%s',"
                                   " it supports only '%s'"
                                   % (self.name, types,
-                                     next(mapping.itervalues())))
+                                     next(iter(mapping.values()))))
         if "loader_options" in extra_params:
             raise LoaderError("Loader '%s' doesn't support 'loader_options', "
                               "please don't use --loader %s:%s"

@@ -184,11 +184,11 @@ class AvocadoParams:
         """
         env = []
         for param in self._rel_paths:
-            for path, key, value in param.iteritems():
+            for path, key, value in param.iteritems():  # pylint: disable=W1620
                 if (path, key) not in env:
                     env.append((path, key))
                     yield (path, key, value)
-        for path, key, value in self._abs_path.iteritems():
+        for path, key, value in self._abs_path.iteritems():  # pylint: disable=W1620
             if (path, key) not in env:
                 env.append((path, key))
                 yield (path, key, value)
