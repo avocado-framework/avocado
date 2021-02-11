@@ -37,7 +37,7 @@
 	 },
          {
 	 "name": "Configure Read The Docs",
-         "description": "Visit the link below:\n\nhttps://readthedocs.org/dashboard/avocado-framework/edit/\n\n 1) Click in *Versions*. In *Choose Active Versions*, find the version you're releasing and check the *Active* option. *Submit*;\n 2) Click in *Versions* again. In *Default Version*, select the new version you're releasing. *Submit*."
+         "description": "Visit the link below:\n\nhttps://readthedocs.org/dashboard/avocado-framework/edit/\n\n 1) Click in *Versions*. Under *Activate a Version*, find the version you're releasing and click the *Activate* button;\n 2) Click in *Admin*. Under *Advanced Settings*/*Global settings*/*Default Version*, select the new version you're releasing. Click the *Save* button at the bottom of the page."
 	 },
          {
 	 "name": "Update the Fedora and EPEL RPM packages and module",
