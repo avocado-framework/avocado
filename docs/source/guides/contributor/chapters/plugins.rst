@@ -84,6 +84,8 @@ with your command-line option.
 For more information about how this registration process works, visit the
 :meth:`.Settings.register_option()` method documentation.
 
+.. _registering-plugins:
+
 Registering plugins
 ===================
 
@@ -179,3 +181,140 @@ Which extends the list of files to be parsed by settings object. Note this
 has to be executed early in the code so try to keep the required deps
 minimal (for example the `avocado.core.settings.settings` is not yet
 available).
+
+New test type plugin example
+============================
+
+For a new test type to be recognized and executed by Avocado's "nrunner"
+architecture, there needs to be two types of plugins:
+
+ * resolvers: they resolve references into proper test descriptions
+   that Avocado can run
+
+ * runners: these make use of the resolutions made by resolvers and
+   actually execute the tests, reporting the results back to Avocado
+
+The following example shows real code for a resolver and a runner for
+a "magic" test type.  This "magic" test simply passes or fails
+depending on the test reference.
+
+Resolver example
+----------------
+
+The resolver implementation will simply set the test type ("magic")
+and transform the reference given into its "url":
+
+.. literalinclude:: ../../../../../examples/plugins/tests/magic/avocado_magic/resolver.py
+
+Runner example
+--------------
+
+The runner will receive the ``Runnable`` information created by the
+resolver plugin.   Runners can be written in any language, but this
+implementation reuses some base Python classes.
+
+First, :class:`avocado.core.nrunner.BaseRunner` is used to write the
+runner **class**.  And second, the
+:class:`avocado.core.nrunner.BaseRunner` is used to create the command
+line application, which uses the previously implemented runner class
+for ``magic`` test types.
+
+.. literalinclude:: ../../../../../examples/plugins/tests/magic/avocado_magic/runner.py
+
+Activating the new test type plugins
+------------------------------------
+
+The plugins need to be registered so that Avocado knows about it.  See
+:ref:`registering-plugins` for more information.  This is the code
+that can be used to register these plugins:
+
+.. literalinclude:: ../../../../../examples/plugins/tests/magic/setup.py
+
+With that, you need to either run ``python setup.py install`` or
+``python setup.py develop``.
+
+.. note:: The last entry, registering a ``console_script``, is
+          recommended because it allows one to experiment with the
+          runner as a command line application
+          (``avocado-runner-magic`` in this case).  Also, depending on
+          the spawner implementation used to run the tests, having a
+          runner that can be executed as an application (and not a
+          Python class) is a requirement.
+
+Listing the new test type plugins
+---------------------------------
+
+With the plugins activated, you should be able to run ``avocado plugins`` and
+find (among other output)::
+
+  Plugins that resolve test references (resolver):
+  ...
+  magic                Test resolver for magic words
+  ...
+
+Resolving magic tests
+---------------------
+
+Resolving the "pass" and "fail" references that the magic plugin knows about
+can be seen by running ``avocado list --resolver pass fail``::
+
+  magic pass
+  magic fail
+
+And you may get more insight into the resolution results, by adding a
+verbose parameter and another reference.  Try running ``avocado -V
+list --resolver pass fail something-else``::
+
+  Type  Test Tag(s)
+  magic pass
+  magic fail
+
+  Resolver             Reference      Info
+  avocado-instrumented pass           File "pass" does not end with ".py"
+  exec-test            pass           File "pass" does not exist or is not a executable file
+  golang               pass
+  avocado-instrumented fail           File "fail" does not end with ".py"
+  exec-test            fail           File "fail" does not exist or is not a executable file
+  golang               fail
+  avocado-instrumented something-else File "something-else" does not end with ".py"
+  exec-test            something-else File "something-else" does not exist or is not a executable file
+  golang               something-else
+  magic                something-else Word "something-else" is not a valid magic word
+  python-unittest      something-else File "something-else" does not end with ".py"
+  robot                something-else File "something-else" does not end with ".robot"
+  tap                  something-else File "something-else" does not exist or is not a executable file
+
+  TEST TYPES SUMMARY
+  ==================
+  magic: 2
+
+It's worth realizing that magic (and other plugins) were asked to
+resolve the ``something-else`` reference, but couldn't::
+
+  Resolver             Reference      Info
+  ...
+  magic                something-else Word "something-else" is not a valid magic word
+  ...
+
+Running magic tests
+-------------------
+
+The common way of running Avocado tests is to run them through
+``avocado run``.  In this case, we're discussing tests for the
+"nrunner" architecture, so the common way of running these "magic"
+tests is through a command starting with ``avocado
+run --test-runner=nrunner``.
+
+To run both the ``pass`` and ``fail`` magic tests, you'd run
+``avocado run --test-runner=nrunner -- pass fail``::
+
+  $ avocado run --test-runner=nrunner -- pass fail
+  JOB ID     : 86fd45f8c1f2fe766c252eefbcac2704c2106db9
+  JOB LOG    : $HOME/avocado/job-results/job-2021-02-05T12.43-86fd45f/job.log
+   (1/2) pass: STARTED
+   (1/2) pass: PASS (0.00 s)
+   (2/2) fail: STARTED
+   (2/2) fail: FAIL (0.00 s)
+  RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+  JOB HTML   : $HOME/avocado/job-results/job-2021-02-05T12.43-86fd45f/results.html
+  JOB TIME   : 1.83 s
