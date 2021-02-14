@@ -1,3 +1,10 @@
+avocado (85.0) buster; urgency=medium
+
+  * Non-maintainer upload.
+  * Update version.
+
+ -- Baurzhan Ismagulov <ibr@radix50.net>  Sun, 14 Feb 2021 15:54:38 +0100
+
 avocado (0.29.0) vivid; urgency=medium
 
   * Automated (make builddeb) build.
