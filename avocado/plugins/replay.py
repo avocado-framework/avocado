@@ -20,7 +20,6 @@ import sys
 
 from avocado.core import exit_codes, job, output
 from avocado.core.data_dir import get_job_results_dir
-from avocado.core.dispatcher import JobPrePostDispatcher
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
 
@@ -78,12 +77,5 @@ class Replay(CLICmd):
         # has a default value of 'latest' for convenience reasons
         source_job_config['job.replay.enabled'] = True
         with job.Job.from_config(source_job_config) as job_instance:
-            pre_post_dispatcher = JobPrePostDispatcher()
-            try:
-                output.log_plugin_failures(pre_post_dispatcher.load_failures)
-                pre_post_dispatcher.map_method('pre', job_instance)
-                job_run = job_instance.run()
-            finally:
-                pre_post_dispatcher.map_method('post', job_instance)
-
+            job_run = job_instance.run()
         return job_run
