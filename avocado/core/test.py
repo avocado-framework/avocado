@@ -591,6 +591,7 @@ class Test(unittest.TestCase, TestData):
 
         self._file_handler.setFormatter(formatter)
         self.log.addHandler(self._file_handler)
+        self.log.propagate = False
 
         # add the test log handler to the root logger so that
         # everything logged while the test is running, for every
