@@ -34,7 +34,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 82.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -139,7 +139,7 @@ popd
 %if 0%{?fedora} == 28
 /usr/bin/rst2man-3 man/avocado.rst man/avocado.1
 %else
-%{__make} man
+rst2man man/avocado.rst man/avocado.1
 %endif
 
 %install
@@ -431,6 +431,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon May 24 2021 Cleber Rosa <cleber@redhat.com> - 82.0-2
+- Do not depend on make to build man page
+
 * Fri Sep 11 2020 Cleber Rosa <cleber@redhat.com> - 82.0-1
 - New release
 
