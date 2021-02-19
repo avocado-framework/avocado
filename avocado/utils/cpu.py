@@ -28,6 +28,13 @@ import random
 import re
 import warnings
 
+#: Map vendor's name with expected string in /proc/cpuinfo.
+VENDORS_MAP = {
+    'intel': (b"GenuineIntel", ),
+    'amd': (b"AMD", ),
+    'ibm': (rb"POWER\d", rb"IBM/S390", ),
+}
+
 
 class FamilyException(Exception):
     pass
@@ -130,18 +137,13 @@ def get_vendor():
     """
     Get the current cpu vendor name
 
-    :returns: string 'intel' or 'amd' or 'ibm' depending on the
-         current CPU architecture.
-    :rtype: `string`
+    :returns: a key of :data:`VENDORS_MAP` (e.g. 'intel') depending on the
+              current CPU architecture. Return None if it was unable to
+              determine the vendor name.
+    :rtype: str or None
     """
-    vendors_map = {
-        'intel': (b"GenuineIntel", ),
-        'amd': (b"AMD", ),
-        'ibm': (rb"POWER\d", rb"IBM/S390", ),
-    }
-
     cpu_info = _get_info()
-    for vendor, identifiers in vendors_map.items():
+    for vendor, identifiers in VENDORS_MAP.items():
         for identifier in identifiers:
             if _list_matches(cpu_info, identifier):
                 return vendor
