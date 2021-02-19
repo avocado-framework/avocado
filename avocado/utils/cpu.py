@@ -28,6 +28,13 @@ import random
 import re
 import warnings
 
+#: Map vendor's name with expected string in /proc/cpuinfo.
+VENDORS_MAP = {
+    'intel': (b"GenuineIntel", ),
+    'amd': (b"AMD", ),
+    'ibm': (rb"POWER\d", rb"IBM/S390", ),
+}
+
 
 class FamilyException(Exception):
     pass
@@ -35,11 +42,14 @@ class FamilyException(Exception):
 
 def _list_matches(content_list, pattern):
     """
-    Checks if any item in list matches the specified pattern
+    Checks if any item in list matches the specified pattern.
 
-    :param content_list: list of item to match
-    :param pattern: pattern string to match from list
-    :rtype: `bool`
+    :param content_list: items to match
+    :type content_list: list
+    :param pattern: pattern to match from content_list
+    :type pattern: str
+    :return: if the pattern was found or not
+    :rtype: bool
     """
     for content in content_list:
         match = re.search(pattern, content)
@@ -50,10 +60,10 @@ def _list_matches(content_list, pattern):
 
 def _get_info():
     """
-    Returns info on the 1st CPU entry from /proc/cpuinfo as a list of lines
+    Returns info on the 1st CPU entry from /proc/cpuinfo as a list of lines.
 
-    :returns: `list` of lines 1st CPU entry from /proc/cpuinfo file
-    :rtype: `list`
+    :return: `list` of lines 1st CPU entry from /proc/cpuinfo file
+    :rtype: list
     """
     cpuinfo = []
     with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:
@@ -66,12 +76,12 @@ def _get_info():
 
 def _get_status(cpu):
     """
-    Check if a CPU is online or offline
+    Check if a CPU is online or offline.
 
-    :pram cpu: CPU number 1 or 2 or 39
-    :type cpu: integer
-    :returns: `bool` True if online or False if not
-    :rtype: 'bool'
+    :param cpu: CPU number (e.g. 1, 2 or 39)
+    :type cpu: int
+    :return: `bool` True if online or False if not
+    :rtype: bool
     """
     with open('/sys/devices/system/cpu/cpu%s/online' % cpu, 'rb') as cpu_online:
         if b'1' in cpu_online.read():
@@ -81,12 +91,12 @@ def _get_status(cpu):
 
 def cpu_has_flags(flags):
     """
-    Check if a list of flags are available on current CPU info
+    Check if a list of flags are available on current CPU info.
 
     :param flags: A `list` of cpu flags that must exists on the current CPU.
-    :type flags: `list` of str
-    :returns: `bool` True if all the flags were found or False if not
-    :rtype: `list`
+    :type flags: list of str
+    :return: True if all the flags were found or False if not
+    :rtype: bool
     """
     cpu_info = _get_info()
 
@@ -101,11 +111,12 @@ def cpu_has_flags(flags):
 
 def get_version():
     """
-    Get cpu version
+    Get cpu version.
 
-    :returns: string cpu version of given machine
-              Eg.:- 'i5-5300U' for Intel and 'POWER9' for IBM machines in
-              case of unknown/unsupported machines, return an empty string.
+    :return: cpu version of given machine
+             e.g.:- 'i5-5300U' for Intel and 'POWER9' for IBM machines in
+             case of unknown/unsupported machines, return an empty string.
+    :rtype: str
     """
     version_pattern = {'x86_64': rb'\s([\S,\d]+)\sCPU',
                        'i386': rb'\s([\S,\d]+)\sCPU',
@@ -128,20 +139,15 @@ def get_version():
 
 def get_vendor():
     """
-    Get the current cpu vendor name
+    Get the current cpu vendor name.
 
-    :returns: string 'intel' or 'amd' or 'ibm' depending on the
-         current CPU architecture.
-    :rtype: `string`
+    :return: a key of :data:`VENDORS_MAP` (e.g. 'intel') depending on the
+             current CPU architecture. Return None if it was unable to
+             determine the vendor name.
+    :rtype: str or None
     """
-    vendors_map = {
-        'intel': (b"GenuineIntel", ),
-        'amd': (b"AMD", ),
-        'ibm': (rb"POWER\d", rb"IBM/S390", ),
-    }
-
     cpu_info = _get_info()
-    for vendor, identifiers in vendors_map.items():
+    for vendor, identifiers in VENDORS_MAP.items():
         for identifier in identifiers:
             if _list_matches(cpu_info, identifier):
                 return vendor
@@ -149,9 +155,7 @@ def get_vendor():
 
 
 def get_arch():
-    """
-    Work out which CPU architecture we're running on
-    """
+    """Work out which CPU architecture we're running on."""
     cpu_table = [(b'^cpu.*(RS64|Broadband Engine)', 'powerpc'),
                  (rb'^cpu.*POWER\d+', 'powerpc'),
                  (b'^cpu.*PPC970', 'powerpc'),
@@ -182,9 +186,7 @@ def get_arch():
 
 
 def get_family():
-    """
-    to get family name of the cpu like Broadwell, Haswell, power8, power9
-    """
+    """Get family name of the cpu like Broadwell, Haswell, power8, power9."""
     family = None
     arch = get_arch()
     if arch == 'x86_64' or arch == 'i386':
@@ -229,9 +231,7 @@ def get_family():
 
 
 def online_list():
-    """
-    Reports a list of indexes of the online cpus
-    """
+    """Reports a list of indexes of the online cpus."""
     cpus = []
     search_str = b'processor'
     index = 2
@@ -246,23 +246,17 @@ def online_list():
 
 
 def total_count():
-    """
-    Return Number of Total cpus in the system including offline cpus
-    """
+    """Return Number of Total cpus in the system including offline cpus."""
     return os.sysconf('SC_NPROCESSORS_CONF')
 
 
 def online_count():
-    """
-    Return Number of Online cpus in the system
-    """
+    """Return Number of Online cpus in the system."""
     return os.sysconf('SC_NPROCESSORS_ONLN')
 
 
 def online(cpu):
-    """
-    Online given CPU
-    """
+    """Online given CPU."""
     if _get_status(cpu) is False:
         with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
             fd.write(b'1')
@@ -272,9 +266,7 @@ def online(cpu):
 
 
 def offline(cpu):
-    """
-    Offline given CPU
-    """
+    """Offline given CPU."""
     if _get_status(cpu):
         with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
             fd.write(b'0')
@@ -285,10 +277,10 @@ def offline(cpu):
 
 def get_idle_state():
     """
-    Get current cpu idle values
+    Get current cpu idle values.
 
     :return: Dict of cpuidle states values for all cpus
-    :rtype: Dict of dicts
+    :rtype: dict
     """
     cpus_list = online_list()
     states = len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*"))
@@ -320,13 +312,15 @@ def _bool_to_binary(value):
 
 def set_idle_state(state_number="all", disable=True, setstate=None):
     """
-    Set/Reset cpu idle states for all cpus
+    Set/Reset cpu idle states for all cpus.
 
     :param state_number: cpuidle state number, default: `all` all states
+    :type state_number: str
     :param disable: whether to disable/enable given cpu idle state,
-                    default is to disable (True). Must be a boolean value.
+                    default is to disable.
     :type disable: bool
     :param setstate: cpuidle state value, output of `get_idle_state()`
+    :type setstate: dict
     """
     cpus_list = online_list()
     if not setstate:
@@ -358,10 +352,11 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
 
 def set_freq_governor(governor="random"):
     """
-    To change the given cpu frequency governor
+    To change the given cpu frequency governor.
 
     :param governor: frequency governor profile name whereas `random` is default
                      option to choose random profile among available ones.
+    :type governor: str
     """
     avl_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"
     cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
@@ -397,9 +392,7 @@ def set_freq_governor(governor="random"):
 
 
 def get_freq_governor():
-    """
-    Get current cpu frequency governor
-    """
+    """Get current cpu frequency governor."""
     cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
     try:
         with open(cur_gov_file, 'r') as fl:
@@ -411,10 +404,10 @@ def get_freq_governor():
 
 def get_pid_cpus(pid):
     """
-    Get all the cpus being used by the process according to pid informed
+    Get all the cpus being used by the process according to pid informed.
 
     :param pid: process id
-    :type pid: string
+    :type pid: str
     :return: A list include all cpus the process is using
     :rtype: list
     """
@@ -438,7 +431,7 @@ def get_pid_cpus(pid):
 
 def _deprecated(newfunc, oldfuncname):
     """
-    Print a warning to user and return the new function
+    Print a warning to user and return the new function.
 
     :param newfunc: new function to be assigned
     :param oldfunctionname: Old function name string
