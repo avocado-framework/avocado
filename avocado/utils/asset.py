@@ -62,7 +62,7 @@ class Asset:
         :param expire: time in seconds for the asset to expire
         :param metadata: metadata which will be saved inside metadata file
         """
-        self.name = name
+        self.name = name or ''
         self.asset_hash = asset_hash
 
         if isinstance(locations, str):
