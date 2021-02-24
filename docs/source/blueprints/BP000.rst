@@ -1,4 +1,7 @@
-:Number:BP000
+BP000
+#####
+
+:Number: BP000
 :Title: Blueprint specification and requirements
 :Author: Beraldo Leal <bleal@redhat.com>
 :Reviewers: Cleber Rosa <crosa@redhat.com>, Jan Richter <jarichte@redhat.com>,
