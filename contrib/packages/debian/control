@@ -9,5 +9,5 @@ Package: avocado
 Architecture: all
 Homepage: http://avocado-framework.github.io/
 XB-Python-Version: ${python:Versions}
-Depends: ${misc:Depends}, ${python:Depends}, python-yaml, python-lzma, python-pystache, gdebi-core, fabric
+Depends: ${misc:Depends}, python-yaml, python-lzma, python-pystache, gdebi-core, fabric
 Description: Avocado is a framework for fully automated testing.
