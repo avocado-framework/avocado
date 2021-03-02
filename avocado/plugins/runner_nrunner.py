@@ -227,7 +227,8 @@ class Runner(RunnerInterface):
             elif status == 'finished':
                 this_task_data = self.status_repo.get_task_data(task_id)
                 last_task_status = this_task_data[-1]
-                test_state = {'status': last_task_status.get('result').upper()}
+                test_state = last_task_status.copy()
+                test_state['status'] = last_task_status.get('result').upper()
                 test_state.update(early_state)
 
                 time_start = this_task_data[0]['time']
@@ -238,7 +239,8 @@ class Runner(RunnerInterface):
                 test_state['time_elapsed'] = time_elapsed
 
                 # fake log dir, needed by some result plugins such as HTML
-                test_state['logdir'] = ''
+                if 'logdir' not in test_state:
+                    test_state['logdir'] = ''
 
                 base_path = os.path.join(job.logdir, 'test-results')
                 self._populate_task_logdir(base_path,
