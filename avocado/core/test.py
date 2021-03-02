@@ -1034,7 +1034,7 @@ class Test(unittest.TestCase, TestData):
             # otherwise re-throw OSError
             raise e
 
-    def tearDown(self):
+    def _cleanup(self):
         if self.__base_logdir_tmp is not None:
             self.__base_logdir_tmp.cleanup()
             self.__base_logdir_tmp = None
@@ -1042,13 +1042,11 @@ class Test(unittest.TestCase, TestData):
                 self.__base_tmpdir):
             shutil.rmtree(self.__base_tmpdir)
 
+    def tearDown(self):
+        self._cleanup()
+
     def __del__(self):
-        if self.__base_logdir_tmp is not None:
-            self.__base_logdir_tmp.cleanup()
-            self.__base_logdir_tmp = None
-        if not self.__config.get('run.keep_tmp') and os.path.exists(
-                self.__base_tmpdir):
-            shutil.rmtree(self.__base_tmpdir)
+        self._cleanup()
 
 
 class SimpleTest(Test):
