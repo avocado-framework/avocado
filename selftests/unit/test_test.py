@@ -270,7 +270,7 @@ class MockingTest(unittest.TestCase):
         tst = test.MockingTest(methodName="test",
                                name=TestID(1, "my_name2"),
                                params={}, base_logdir=self.tmpdir.name,
-                               tag="a", job=None, runner_queue=None,
+                               tag="a", config=None, runner_queue=None,
                                extra1="extra_param1",
                                extra2="extra_param2")
         self.assertEqual(tst.name, "1-my_name2")
@@ -288,7 +288,7 @@ class MockingTest(unittest.TestCase):
                                methodName="test",
                                name=TestID(1, "my_name3"),
                                params={}, base_logdir=self.tmpdir.name,
-                               tag="3", job=None, runner_queue=None,
+                               tag="3", config=None, runner_queue=None,
                                extra1="extra_param3",
                                extra2="extra_param4")
         self.assertEqual(tst.name, "1-my_name3")

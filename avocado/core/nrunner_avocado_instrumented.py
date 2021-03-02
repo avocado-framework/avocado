@@ -2,7 +2,7 @@ import multiprocessing
 import tempfile
 import time
 
-from . import job, loader, nrunner, teststatus
+from . import loader, nrunner, teststatus
 from .test import TestID
 from .tree import TreeNode
 
@@ -38,7 +38,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         test_factory = [klass,
                         {'name': TestID(1, klass_method),
                          'methodName': method,
-                         'job': job.Job(),
+                         'config': runnable.config,
                          'modulePath': module_path,
                          'params': (TreeNode(), []),
                          'tags': runnable.tags,

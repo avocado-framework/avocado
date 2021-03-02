@@ -92,6 +92,8 @@ class TestRunner(Runner):
             instance.set_runner_queue(queue)
         early_state = instance.get_state()
         early_state['early_status'] = True
+        early_state['job_logdir'] = job.logdir
+        early_state['job_unique_id'] = job.unique_id
         try:
             queue.put(early_state)
         except queueFullException:
@@ -118,6 +120,8 @@ class TestRunner(Runner):
         finally:
             try:
                 state = instance.get_state()
+                state['job_logdir'] = job.logdir
+                state['job_unique_id'] = job.unique_id
                 queue.put(state)
             except queueFullException:
                 instance.error(stacktrace.str_unpickable_object(state))
@@ -359,7 +363,7 @@ class TestRunner(Runner):
         try:
             for test_factory in test_suite.tests:
                 test_factory[1]["base_logdir"] = job.logdir
-                test_factory[1]["job"] = job
+                test_factory[1]["config"] = job.config
             for test_factory, variant in self._iter_suite(test_suite,
                                                           execution_order):
                 test_parameters = test_factory[1]
