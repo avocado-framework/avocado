@@ -69,10 +69,7 @@ def analyze_unpickable_item(path_prefix, obj):
     """
     _path_prefix = path_prefix
     try:
-        if hasattr(obj, "iteritems"):
-            subitems = obj.iteritems()
-            path_prefix += "[%s]"
-        elif hasattr(obj, "items"):
+        if hasattr(obj, "items"):
             subitems = obj.items()
             path_prefix += "[%s]"
         elif isinstance(obj, list):

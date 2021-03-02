@@ -294,7 +294,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
 
     def items(self):
         """ Slower implementation with the use of __getitem__ """
-        return self.iteritems()
+        return self.iteritems()  # pylint: disable=W1620
 
 
 class Control:  # Few methods pylint: disable=R0903
