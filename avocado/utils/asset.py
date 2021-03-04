@@ -50,11 +50,11 @@ class Asset:
     Try to fetch/verify an asset file from multiple locations.
     """
 
-    def __init__(self, name, asset_hash=None, algorithm=None, locations=None,
-                 cache_dirs=None, expire=None, metadata=None):
+    def __init__(self, name=None, asset_hash=None, algorithm=None,
+                 locations=None, cache_dirs=None, expire=None, metadata=None):
         """Initialize the Asset() class.
 
-        :param name: the asset filename. url is also supported
+        :param name: the asset filename. url is also supported. Default is ''.
         :param asset_hash: asset hash
         :param algorithm: hash algorithm
         :param locations: location(s) where the asset can be fetched from
