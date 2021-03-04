@@ -128,6 +128,9 @@ will adopt .rst format here too. All blueprints will be located inside
 `docs/source/blueprints` with the filename `BPXXX.rst`, where XXX is the number
 of the blueprint. Just pick the next number available for your blueprint.
 
+It's recomended that you use ``docs/source/blueprints/template.rst``
+as a starting point.
+
 Write for your audience
 -----------------------
 
@@ -273,11 +276,15 @@ section:
    of Avocado? Should we deprecate some modules, classes, or methods? Are we
    going to keep backwards compatibility or not?
 
- * Security Implications: Do you have any concerns about security with your
-   proposed solution and what are they?
+ * Security Implications: Do you have any concerns about security with
+   your proposed solution and what are they?  If there's functionality
+   that is insecure but highly convenient, consider how to make it
+   "opt-in", disabled by default.
 
  * How to Teach This: What is the best way to inform our devs and users about
-   your new feature/solution?
+   your new feature/solution?  Consider both "how-to" and reference
+   style documentation, and if appropriate, examples (under ``examples/``)
+   using the feature.
 
  * Related Issues: Here, you should mention Github links for both: a) current
    open issues that are blocking while waiting for your BP and b) all open
