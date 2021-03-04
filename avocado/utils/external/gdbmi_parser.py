@@ -30,7 +30,7 @@ import re
 from . import spark
 
 
-class Token(object):
+class Token:
     def __init__(self, token_type, value=None):
         self.type = token_type
         self.value = value
@@ -57,7 +57,7 @@ class Token(object):
         return self.value or self.type
 
 
-class AST(object):
+class AST:
     def __init__(self, ast_type):
         self.type = ast_type
         self._kids = []
@@ -333,7 +333,7 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
         # print 'default: ' + node.type
 
 
-class GdbDynamicObject(object):
+class GdbDynamicObject:
     def __init__(self, dict_):
         self.graft(dict_)
 
@@ -388,7 +388,7 @@ class GdbMiRecord:
         return pprint.pformat(self.__dict__)
 
 
-class session(object):
+class session:
     def __init__(self):
         self.the_scanner = GdbMiScanner()
         self.the_parser = GdbMiParser()
