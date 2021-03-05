@@ -40,11 +40,13 @@ class JSONResult(Result):
             fail_reason = test.get('fail_reason', UNKNOWN)
             if fail_reason is not None:
                 fail_reason = astring.to_text(fail_reason)
+            tags = test.get('tags') or {}
             tests.append({'id': str(test.get('name', UNKNOWN)),
                           'start': test.get('time_start', -1),
                           'end': test.get('time_end', -1),
                           'time': test.get('time_elapsed', -1),
                           'status': test.get('status', {}),
+                          'tags': {k: list(v or {}) for k, v in tags.items()},
                           'whiteboard': test.get('whiteboard', UNKNOWN),
                           'logdir': test.get('logdir', UNKNOWN),
                           'logfile': test.get('logfile', UNKNOWN),
