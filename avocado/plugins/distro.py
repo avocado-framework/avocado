@@ -364,7 +364,8 @@ class Distro(CLICmd):
                                  parser=parser,
                                  long_arg='--distro-def-type')
 
-    def _get_output_file_name(self, name, version, arch, release=None):
+    @staticmethod
+    def _get_output_file_name(name, version, arch, release=None):
         """
         Adapt the output file name based on given args
 

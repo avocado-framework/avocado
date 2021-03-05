@@ -183,7 +183,8 @@ class ConfigOption:
 
         return args
 
-    def _as_list(self, value):
+    @staticmethod
+    def _as_list(value):
         if value == '':
             return []
 

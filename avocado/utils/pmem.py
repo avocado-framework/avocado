@@ -63,7 +63,8 @@ class PMem:
                                 "proper daxctl binary")
         self.daxctl = abs_daxctl
 
-    def check_subcmd(self, binary, command):
+    @staticmethod
+    def check_subcmd(binary, command):
         """Check if given sub command is supported by binary
 
         :param command: sub command of ndctl to check for existence

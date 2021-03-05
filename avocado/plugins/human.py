@@ -77,7 +77,8 @@ class Human(ResultEvents):
             LOG_UI.debug('%s%s%s', color, self.__throbber.render(),
                          output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
 
-    def get_colored_status(self, status, extra=None):
+    @staticmethod
+    def get_colored_status(status, extra=None):
         out = (output.TERM_SUPPORT.MOVE_BACK + output.TEST_STATUS_MAPPING[status] +
                status)
         if extra:

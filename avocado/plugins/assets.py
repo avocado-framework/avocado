@@ -371,7 +371,8 @@ class Assets(CLICmd):
                 help=help_msg)
         register_filter_options(list_subcommand_parser, 'assets.list')
 
-    def handle_purge(self, config):
+    @staticmethod
+    def handle_purge(config):
         days = config.get('assets.purge.days')
         size_filter = config.get('assets.purge.size_filter')
         if (days is None and size_filter is None) \
@@ -390,7 +391,8 @@ class Assets(CLICmd):
         except (FileNotFoundError, OSError) as e:
             LOG_UI.error("Could not remove asset: %s", e)
 
-    def handle_list(self, config):
+    @staticmethod
+    def handle_list(config):
         days = config.get('assets.list.days')
         size_filter = config.get('assets.list.size_filter')
         if (days is not None and size_filter is not None):
@@ -432,7 +434,8 @@ class Assets(CLICmd):
             for line in output:
                 LOG_UI.info(line)
 
-    def handle_fetch(self, config):
+    @staticmethod
+    def handle_fetch(config):
         exitcode = exit_codes.AVOCADO_ALL_OK
         # fetch assets from instrumented tests
         for test_file in config.get('assets.fetch.references'):
@@ -458,7 +461,8 @@ class Assets(CLICmd):
             return exit_codes.AVOCADO_ALL_OK
         return exitcode
 
-    def handle_register(self, config):
+    @staticmethod
+    def handle_register(config):
         cache_dirs = data_dir.get_cache_dirs()
         name = config.get('assets.register.name')
         asset_hash = config.get('assets.register.sha1_hash')

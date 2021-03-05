@@ -21,7 +21,8 @@ class Sleep(JobPre, JobPost):
     name = 'sleep'
     description = 'Sleeps for a number of seconds'
 
-    def sleep(self, job):  # pylint: disable=W0613
+    @staticmethod
+    def sleep(job):  # pylint: disable=W0613
         seconds = job.config.get('plugins.job.sleep.seconds')
         for i in range(1, seconds + 1):
             LOG_UI.info("Sleeping %2i/%s", i, seconds)

@@ -20,7 +20,8 @@ class FailTest(Test):
     :avocado: tags=failure_expected
     """
 
-    def test(self):
+    @staticmethod
+    def test():
         """
         Avocado should report this as TestError.
         """

@@ -68,7 +68,8 @@ class Config(CLICmd):
             print_function("* Type: %s" % option.get('type'))
             print_function("")
 
-    def handle_default(self):
+    @staticmethod
+    def handle_default():
         LOG_UI.info("Config files read (in order, '*' means the file exists "
                     "and had been read):")
 

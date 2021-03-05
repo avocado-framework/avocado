@@ -53,7 +53,8 @@ class Clean(clean):
              shell=True)
         self.clean_optional_plugins()
 
-    def clean_optional_plugins(self):
+    @staticmethod
+    def clean_optional_plugins():
         root_dir = os.getcwd()
         for plugin in map(os.path.dirname,
                           glob.glob('./optional_plugins/*/setup.py')):

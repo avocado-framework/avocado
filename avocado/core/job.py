@@ -258,7 +258,8 @@ class Job:
         LOG_JOB.info('logs     %s', self.logdir)
         LOG_JOB.info('')
 
-    def _log_avocado_version(self):
+    @staticmethod
+    def _log_avocado_version():
         version_log = version.VERSION
         git_version = get_avocado_git_version()
         if git_version is not None:

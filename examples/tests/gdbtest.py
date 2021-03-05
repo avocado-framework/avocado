@@ -336,7 +336,8 @@ class GdbTest(Test):
         stdout_lines = genio.read_all_lines(s.stdout_path)
         self.assertIn("return 99", stdout_lines)
 
-    def test_remote(self):
+    @staticmethod
+    def test_remote():
         """
         Tests GDBRemote interaction with a GDBServer
         """

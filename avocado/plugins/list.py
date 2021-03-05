@@ -46,7 +46,8 @@ class List(CLICmd):
     name = 'list'
     description = 'List available tests'
 
-    def _display(self, suite, matrix):
+    @staticmethod
+    def _display(suite, matrix):
         header = None
         verbose = suite.config.get('core.verbose')
         if verbose:

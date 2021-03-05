@@ -271,7 +271,8 @@ class JournalctlWatcher(Collectible):
         super(JournalctlWatcher, self).__init__(logf)
         self.cursor = self._get_cursor()
 
-    def _get_cursor(self):
+    @staticmethod
+    def _get_cursor():
         try:
             cmd = 'journalctl --quiet --lines 1 --output json'
             result = process.system_output(cmd, verbose=False)
@@ -474,7 +475,8 @@ class SysInfo:
             log.debug('File %s does not exist.', profiler_file)
             self.sysinfo_files["profilers"] = []
 
-    def _get_syslog_watcher(self):
+    @staticmethod
+    def _get_syslog_watcher():
         logpaths = ["/var/log/messages",
                     "/var/log/syslog",
                     "/var/log/system.log"]

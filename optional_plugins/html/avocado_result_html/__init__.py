@@ -206,7 +206,8 @@ class HTMLResult(Result):
                          stdout=inout, stderr=inout,
                          preexec_fn=setsid)
 
-    def _render(self, result, output_path):
+    @staticmethod
+    def _render(result, output_path):
         env = jinja.Environment(
             loader=jinja.PackageLoader('avocado_result_html'),
             autoescape=True,
