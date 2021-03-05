@@ -97,6 +97,8 @@ def get_disks_in_pci_address(pci_address):
     """
     disks_path = "/dev/disk/by-path/"
     disk_list = []
+    if not os.path.exists(disks_path):
+        return disk_list
     for dev in os.listdir(disks_path):
         if pci_address in dev:
             link = os.readlink(os.path.join(disks_path, dev))
