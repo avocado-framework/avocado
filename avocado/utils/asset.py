@@ -423,6 +423,19 @@ class Asset:
         return os.path.basename(self.parsed_name.path)
 
     @classmethod
+    def get_all_assets(cls, cache_dirs):
+        """Returns all assets stored in all cache dirs."""
+        assets = []
+        for cache_dir in cache_dirs:
+            expanded = os.path.expanduser(cache_dir)
+            for root, _, files in os.walk(expanded):
+                for f in files:
+                    if not f.endswith('-CHECKSUM') and \
+                       not f.endswith('_metadata.json'):
+                        assets.append(os.path.join(root, f))
+        return assets
+
+    @classmethod
     def get_asset_by_name(cls, name, cache_dirs, expire=None, asset_hash=None):
         """This method will return a cached asset based on name if exists.
 

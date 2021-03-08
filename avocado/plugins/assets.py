@@ -18,6 +18,7 @@ Assets subcommand
 
 import ast
 import os
+from datetime import datetime
 
 from avocado.core import data_dir, exit_codes, safeloader
 from avocado.core.nrunner import Task
@@ -26,6 +27,7 @@ from avocado.core.plugin_interfaces import CLICmd, JobPreTests
 from avocado.core.settings import settings
 from avocado.utils import data_structures
 from avocado.utils.asset import Asset
+from avocado.utils.output import display_data_size
 
 
 class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
@@ -333,6 +335,26 @@ class Assets(CLICmd):
                                  long_arg='--hash',
                                  parser=register_subcommand_parser)
 
+        help_msg = 'List all cached assets.'
+        subcommands.add_parser('list', help=help_msg)
+
+    def handle_list(self, _):
+        table_fmt = "{:<45} {:<10} {:<19} {}"
+        LOG_UI.info(table_fmt.format("asset", "checksum", "atime", "size"))
+
+        # IMO, this should get data from config instead. See #4443
+        cache_dirs = data_dir.get_cache_dirs()
+        for asset in Asset.get_all_assets(cache_dirs):
+            stat = os.stat(asset)
+            basename = os.path.basename(asset)
+            hash_path = "{}-CHECKSUM".format(asset)
+            atime = datetime.fromtimestamp(stat.st_atime)
+            _, checksum = Asset.read_hash_from_file(hash_path)
+            LOG_UI.info(table_fmt.format(basename[:45],
+                                         str(checksum or "unknown")[:10],
+                                         atime.strftime('%Y-%m-%d %H:%M:%S'),
+                                         display_data_size(stat.st_size)))
+
     def handle_fetch(self, config):
         exitcode = exit_codes.AVOCADO_ALL_OK
         # fetch assets from instrumented tests
@@ -388,5 +410,7 @@ class Assets(CLICmd):
             return self.handle_fetch(config)
         elif subcommand == 'register':
             return self.handle_register(config)
+        elif subcommand == 'list':
+            return self.handle_list(config)
         else:
             return exit_codes.UTILITY_FAIL
