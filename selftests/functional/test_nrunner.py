@@ -3,12 +3,28 @@ import sys
 import unittest
 
 from avocado.core.job import Job
-from avocado.utils import process
+from avocado.utils import process, script
 from avocado.utils.network.ports import find_free_port
 
 from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipUnlessPathExists
 
 RUNNER = "%s -m avocado.core.nrunner" % sys.executable
+
+JOB_TEST = """#!/usr/bin/env python3
+
+from avocado import Test
+from avocado.core.job import Job
+
+
+class ExitCode(Test):
+    def test_custom_exit_code(self):
+        config = {'run.references': ['/bin/false'],
+                  'run.test_runner': 'nrunner',
+                  'run.keep_tmp': True}
+        with Job.from_config(job_config=config) as job:
+            self.assertEqual(job.run(), 0)
+
+"""
 
 
 class NRunnerFeatures(unittest.TestCase):
@@ -23,6 +39,15 @@ class NRunnerFeatures(unittest.TestCase):
                   'run.keep_tmp': True}
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 0)
+
+    @skipUnlessPathExists('/bin/false')
+    def test_recursive_job_run(self):
+        with script.TemporaryScript('exit_code_test.py',
+                                    JOB_TEST) as test_script:
+            res = process.run("%s run --test-runner=nrunner %s" %
+                              (AVOCADO, test_script.path), ignore_status=True)
+            self.assertIn(b"ExitCode.test_custom_exit_code:  FAIL: 1 != 0",
+                          res.stdout)
 
 
 class RunnableRun(unittest.TestCase):
