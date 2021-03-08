@@ -34,6 +34,7 @@ from avocado.core.task.runtime import RuntimeTask
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
 from avocado.core.teststatus import mapping
+from avocado.utils import network
 
 
 class RunnerInit(Init):
@@ -50,11 +51,16 @@ class RunnerInit(Init):
                                  help_msg=help_msg,
                                  key_type=bool)
 
+        status_server_default = '127.0.0.1:8888'
+        address, port = status_server_default.split(':')
+        if not network.is_port_free(int(port), address):
+            status_server_default = "%s:%s" % (address,
+                                               network.find_free_port())
         help_msg = ('URI for listing the status server. Usually '
                     'a "HOST:PORT" string')
         settings.register_option(section=section,
                                  key='status_server_listen',
-                                 default='127.0.0.1:8888',
+                                 default=status_server_default,
                                  metavar="HOST:PORT",
                                  help_msg=help_msg)
 
@@ -63,7 +69,7 @@ class RunnerInit(Init):
                     'is in another host, or different port')
         settings.register_option(section=section,
                                  key='status_server_uri',
-                                 default='127.0.0.1:8888',
+                                 default=status_server_default,
                                  metavar="HOST:PORT",
                                  help_msg=help_msg)
 
