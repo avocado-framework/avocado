@@ -96,7 +96,7 @@ class JournalResult(ResultEvents):
             status = None
 
         self.journal_cursor.execute(sql,
-                                    (repr(state['name']),
+                                    (str(state['name']),
                                      datetime.datetime(1, 1, 1).now().isoformat(),
                                      action,
                                      status))
