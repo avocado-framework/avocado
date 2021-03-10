@@ -28,6 +28,7 @@ import stat
 import sys
 import tempfile
 import time
+from datetime import datetime
 from urllib.parse import urlparse
 
 from . import astring, crypto
@@ -484,6 +485,26 @@ class Asset:
         raise OSError("File %s not found in the cache." % name)
 
     @classmethod
+    def get_assets_unused_for_days(cls, days, cache_dirs):
+        """Return a list of all assets in cache based on the access time.
+
+        This will check if the file's data wasn't modified N days ago.
+
+        :param days: how many days ago will be the threshold. Ex: "10" will
+        return the assets files that *was not* accessed during the last 10
+        days.
+        :param cache_dirs: list of directories to use during the search.
+        """
+        result = []
+        for file_path in cls.get_all_assets(cache_dirs):
+            stats = os.stat(file_path)
+            diff = datetime.now() - datetime.fromtimestamp(stats.st_atime)
+            if diff.days >= days:
+                result.append(file_path)
+        return result
+
+
+    @classmethod
     def get_assets_by_size(cls, size_filter, cache_dirs):
         """Return a list of all assets in cache based on its size in MB.
 
@@ -515,8 +536,12 @@ class Asset:
 
     @classmethod
     def remove_assets_by_size(cls, size_filter, cache_dirs):
-
         for file_path in cls.get_assets_by_size(size_filter, cache_dirs):
+            cls.remove_asset_by_path(file_path)
+
+    @classmethod
+    def remove_assets_by_unused_for_days(cls, days, cache_dirs):
+        for file_path in cls.get_assets_unused_for_days(days, cache_dirs):
             cls.remove_asset_by_path(file_path)
 
     @property
