@@ -3,6 +3,7 @@
 import argparse
 import glob
 import os
+import sqlite3
 import sys
 
 from avocado import Test
@@ -518,6 +519,19 @@ def create_suites(args):
     return suites
 
 
+def print_failed_tests(job_log_dir):
+    jfile = os.path.join(job_log_dir, '.journal.sqlite')
+    db = sqlite3.connect(jfile)
+    cur = db.cursor()
+    cur.execute("SELECT * FROM test_journal WHERE status='FAIL' OR"
+                " status='ERROR';")
+    fail_tests = cur.fetchall()
+    if fail_tests:
+        print("Failed tests:")
+        for status in fail_tests:
+            print("%s  %s" % (status[0], status[3]))
+
+
 def main():
     args = parse_args()
     suites = create_suites(args)
@@ -539,9 +553,12 @@ def main():
     # Job execution
     # ========================================================================
     config = {'core.show': ['app'],
-              'run.test_runner': 'nrunner'}
+              'run.test_runner': 'nrunner',
+              'run.journal.enabled': True}
     with Job(config, suites) as j:
-        return j.run()
+        exit_code = j.run()
+    print_failed_tests(j.logdir)
+    return exit_code
 
 
 if __name__ == '__main__':
