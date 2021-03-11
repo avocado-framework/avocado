@@ -140,6 +140,24 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         result = process.run(cmd_line)
         self.assertNotIn(name, result.stdout_text)
 
+    @skipUnlessPathExists('/etc/hosts')
+    def test_asset_list(self):
+        """Make sure that we have a list working properly."""
+        url = "/etc/hosts"
+        config = self.config_file.name
+        name = "should-be-part-of-list"
+        cmd_line = "%s --config %s assets register %s %s" % (AVOCADO,
+                                                             config,
+                                                             name,
+                                                             url)
+        result = process.run(cmd_line)
+        self.assertIn("Now you can reference it by name {}".format(name),
+                      result.stdout_text)
+        cmd_line = "%s --config %s assets list" % (AVOCADO,
+                                                   config)
+        result = process.run(cmd_line)
+        self.assertIn(name, result.stdout_text)
+
     def tearDown(self):
         self.base_dir.cleanup()
 

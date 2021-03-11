@@ -18,6 +18,7 @@ Assets subcommand
 
 import ast
 import os
+from datetime import datetime
 
 from avocado.core import data_dir, exit_codes, safeloader
 from avocado.core.nrunner import Task
@@ -26,6 +27,8 @@ from avocado.core.plugin_interfaces import CLICmd, JobPreTests
 from avocado.core.settings import settings
 from avocado.utils import data_structures
 from avocado.utils.asset import SUPPORTED_OPERATORS, Asset
+from avocado.utils.astring import iter_tabular_output
+from avocado.utils.output import display_data_size
 
 
 class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
@@ -360,8 +363,13 @@ class Assets(CLICmd):
         purge_subcommand_parser = subcommands.add_parser(
                 'purge',
                 help='Removes assets cached locally.')
-
         register_filter_options(purge_subcommand_parser, 'assets.purge')
+
+        help_msg = 'List all cached assets.'
+        list_subcommand_parser = subcommands.add_parser(
+                'list',
+                help=help_msg)
+        register_filter_options(list_subcommand_parser, 'assets.list')
 
     def handle_purge(self, config):
         days = config.get('assets.purge.days')
@@ -381,6 +389,48 @@ class Assets(CLICmd):
                 Asset.remove_assets_by_size(size_filter, cache_dirs)
         except (FileNotFoundError, OSError) as e:
             LOG_UI.error("Could not remove asset: %s", e)
+
+    def handle_list(self, config):
+        days = config.get('assets.list.days')
+        size_filter = config.get('assets.list.size_filter')
+        if (days is not None and size_filter is not None):
+            msg = ("You should choose --by-size-filter or --by-days. "
+                   "For help, run: avocado assets list --help")
+            LOG_UI.error(msg)
+            return
+
+        # IMO, this should get data from config instead. See #4443
+        cache_dirs = data_dir.get_cache_dirs()
+        try:
+            assets = None
+            if days is not None:
+                assets = Asset.get_assets_by_unused_for_days(days, cache_dirs)
+            elif size_filter is not None:
+                assets = Asset.get_assets_by_size(size_filter, cache_dirs)
+            elif assets is None:
+                assets = Asset.get_all_assets(cache_dirs)
+        except (FileNotFoundError, OSError) as e:
+            LOG_UI.error("Could get assets: %s", e)
+            return
+
+        matrix = []
+        for asset in assets:
+            stat = os.stat(asset)
+            basename = os.path.basename(asset)
+            hash_path = "{}-CHECKSUM".format(asset)
+            atime = datetime.fromtimestamp(stat.st_atime)
+            _, checksum = Asset.read_hash_from_file(hash_path)
+            matrix.append((basename,
+                           str(checksum or "unknown")[:10],
+                           atime.strftime('%Y-%m-%d %H:%M:%S'),
+                           display_data_size(stat.st_size)))
+        header = ("asset", "checksum", "atime", "size")
+        output = list(iter_tabular_output(matrix, header))
+        if len(output) == 1:
+            LOG_UI.info("No asset found in your cache system.")
+        else:
+            for line in output:
+                LOG_UI.info(line)
 
     def handle_fetch(self, config):
         exitcode = exit_codes.AVOCADO_ALL_OK
@@ -439,5 +489,7 @@ class Assets(CLICmd):
             return self.handle_register(config)
         elif subcommand == 'purge':
             return self.handle_purge(config)
+        elif subcommand == 'list':
+            return self.handle_list(config)
         else:
             return exit_codes.UTILITY_FAIL
