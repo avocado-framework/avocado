@@ -228,7 +228,7 @@ class Test(unittest.TestCase, TestData):
     timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, job=None, runner_queue=None, tags=None):
+                 base_logdir=None, config=None, runner_queue=None, tags=None):
         """
         Initializes the test.
 
@@ -242,7 +242,9 @@ class Test(unittest.TestCase, TestData):
         :type name: :class:`avocado.core.test.TestID`
         :param base_logdir: Directory where test logs should go. If None
                             provided a temporary directory will be created.
-        :param job: The job that this test is part of.
+        :param config: the job configuration, usually set by command
+                       line options and argument parsing
+        :type config: dict
         """
         self.__phase = 'INIT'
 
@@ -257,8 +259,9 @@ class Test(unittest.TestCase, TestData):
         else:
             self.__name = TestID(0, self.__class__.__name__)
 
-        self.__job = job
         self.__tags = tags
+
+        self.__config = config or settings.as_dict()
 
         self.__base_logdir_tmp = None
         if base_logdir is None:
@@ -282,12 +285,8 @@ class Test(unittest.TestCase, TestData):
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
 
-        # For some reason, sometimes, job.config if None here.
-        # This is the only place that we create a "default" in code.
-        try:
-            self.__sysinfo_enabled = job.config.get('sysinfo.collect.per_test')
-        except AttributeError:
-            self.__sysinfo_enabled = False
+        self.__sysinfo_enabled = self.__config.get('sysinfo.collect.per_test',
+                                                   False)
 
         if self.__sysinfo_enabled:
             self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
@@ -325,11 +324,9 @@ class Test(unittest.TestCase, TestData):
 
         self.__runner_queue = runner_queue
 
-        base_tmpdir = getattr(job, "tmpdir", None)
-        # When tmpdir not specified by job, use logdir to preserve all data
-        if base_tmpdir is None:
-            base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir", dir=self.logdir)
-        self.__workdir = os.path.join(base_tmpdir,
+        self.__base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir",
+                                              dir=base_logdir)
+        self.__workdir = os.path.join(self.__base_tmpdir,
                                       self.name.str_filesystem)
         utils_path.init_dir(self.__workdir)
 
@@ -355,13 +352,6 @@ class Test(unittest.TestCase, TestData):
         :rtype: TestID
         """
         return self.__name
-
-    @property
-    def job(self):
-        """
-        The job this test is associated with
-        """
-        return self.__job
 
     @property
     def tags(self):
@@ -560,8 +550,6 @@ class Test(unittest.TestCase, TestData):
             self._update_time_elapsed()
         state = {key: getattr(self, key, None) for (key) in TEST_STATE_ATTRIBUTES}
         state['class_name'] = self.__class__.__name__
-        state['job_logdir'] = self.job.logdir
-        state['job_unique_id'] = self.job.unique_id
         state['params'] = [(path, key, value)
                            for path, key, value
                            in self.__params.iteritems()]  # pylint: disable=W1620
@@ -798,59 +786,58 @@ class Test(unittest.TestCase, TestData):
         whiteboard_file = os.path.join(self.logdir, 'whiteboard')
         genio.write_file(whiteboard_file, self.whiteboard)
 
-        if self.job is not None:
-            output_check_record = self.job.config.get('run.output_check_record')
-            output_check = self.job.config.get('run.output_check')
+        output_check_record = self.__config.get('run.output_check_record')
+        output_check = self.__config.get('run.output_check')
 
-            # record the output if the modes are valid
-            if output_check_record == 'combined':
-                self._record_reference(self._output_file,
-                                       "output.expected")
-            else:
-                if output_check_record in ['all', 'both', 'stdout']:
-                    self._record_reference(self._stdout_file,
-                                           "stdout.expected")
-                if output_check_record in ['all', 'both', 'stderr']:
-                    self._record_reference(self._stderr_file,
-                                           "stderr.expected")
+        # record the output if the modes are valid
+        if output_check_record == 'combined':
+            self._record_reference(self._output_file,
+                                   "output.expected")
+        else:
+            if output_check_record in ['all', 'both', 'stdout']:
+                self._record_reference(self._stdout_file,
+                                       "stdout.expected")
+            if output_check_record in ['all', 'both', 'stderr']:
+                self._record_reference(self._stderr_file,
+                                       "stderr.expected")
 
-            # check the output and produce test failures
-            if output_check_record != 'none' and output_check:
-                output_checked = False
+        # check the output and produce test failures
+        if output_check_record != 'none' and output_check:
+            output_checked = False
+            try:
+                output_checked = self._check_reference(
+                    self._output_file,
+                    'output.expected',
+                    'output.diff',
+                    'output_diff',
+                    'Output')
+            except exceptions.TestFail as details:
+                stacktrace.log_exc_info(sys.exc_info(),
+                                        logger=LOG_JOB)
+                output_check_exception = details
+            if not output_checked:
                 try:
-                    output_checked = self._check_reference(
-                        self._output_file,
-                        'output.expected',
-                        'output.diff',
-                        'output_diff',
-                        'Output')
+                    self._check_reference(self._stdout_file,
+                                          'stdout.expected',
+                                          'stdout.diff',
+                                          'stdout_diff',
+                                          'Stdout')
+                except exceptions.TestFail as details:
+                    # output check was performed (and failed)
+                    output_checked = True
+                    stacktrace.log_exc_info(sys.exc_info(),
+                                            logger=LOG_JOB)
+                    stdout_check_exception = details
+                try:
+                    self._check_reference(self._stderr_file,
+                                          'stderr.expected',
+                                          'stderr.diff',
+                                          'stderr_diff',
+                                          'Stderr')
                 except exceptions.TestFail as details:
                     stacktrace.log_exc_info(sys.exc_info(),
                                             logger=LOG_JOB)
-                    output_check_exception = details
-                if not output_checked:
-                    try:
-                        self._check_reference(self._stdout_file,
-                                              'stdout.expected',
-                                              'stdout.diff',
-                                              'stdout_diff',
-                                              'Stdout')
-                    except exceptions.TestFail as details:
-                        # output check was performed (and failed)
-                        output_checked = True
-                        stacktrace.log_exc_info(sys.exc_info(),
-                                                logger=LOG_JOB)
-                        stdout_check_exception = details
-                    try:
-                        self._check_reference(self._stderr_file,
-                                              'stderr.expected',
-                                              'stderr.diff',
-                                              'stderr_diff',
-                                              'Stderr')
-                    except exceptions.TestFail as details:
-                        stacktrace.log_exc_info(sys.exc_info(),
-                                                logger=LOG_JOB)
-                        stderr_check_exception = details
+                    stderr_check_exception = details
 
         # pylint: disable=E0702
         if test_exception is not None:
@@ -1047,15 +1034,19 @@ class Test(unittest.TestCase, TestData):
             # otherwise re-throw OSError
             raise e
 
-    def tearDown(self):
+    def _cleanup(self):
         if self.__base_logdir_tmp is not None:
             self.__base_logdir_tmp.cleanup()
             self.__base_logdir_tmp = None
+        if not self.__config.get('run.keep_tmp') and os.path.exists(
+                self.__base_tmpdir):
+            shutil.rmtree(self.__base_tmpdir)
+
+    def tearDown(self):
+        self._cleanup()
 
     def __del__(self):
-        if self.__base_logdir_tmp is not None:
-            self.__base_logdir_tmp.cleanup()
-            self.__base_logdir_tmp = None
+        self._cleanup()
 
 
 class SimpleTest(Test):
@@ -1066,13 +1057,14 @@ class SimpleTest(Test):
 
     DATA_SOURCES = ["variant", "file"]
 
-    def __init__(self, name, params=None, base_logdir=None, job=None,
+    def __init__(self, name, params=None, base_logdir=None, config=None,
                  executable=None):
         if executable is None:
             executable = name.name
         self._filename = executable
         super(SimpleTest, self).__init__(name=name, params=params,
-                                         base_logdir=base_logdir, job=job)
+                                         base_logdir=base_logdir,
+                                         config=config)
         # Maximal allowed file name length is 255
         file_datadir = None
         if (self.filename is not None and
@@ -1180,7 +1172,7 @@ class ExternalRunnerSpec:
 
 class ExternalRunnerTest(SimpleTest):
 
-    def __init__(self, name, params=None, base_logdir=None, job=None,
+    def __init__(self, name, params=None, base_logdir=None, config=None,
                  external_runner=None, external_runner_argument=None):
         if external_runner_argument is None:
             external_runner_argument = name.name
@@ -1189,7 +1181,7 @@ class ExternalRunnerTest(SimpleTest):
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
-                                                 job)
+                                                 config)
         self._command = "%s %s" % (external_runner.runner,
                                    external_runner_argument)
 
@@ -1229,12 +1221,12 @@ class PythonUnittest(ExternalRunnerTest):
     Python unittest test
     """
 
-    def __init__(self, name, params=None, base_logdir=None, job=None,
+    def __init__(self, name, params=None, base_logdir=None, config=None,
                  test_dir=None, python_unittest_module=None,
                  tags=None):    # pylint: disable=W0613
         runner = "%s -m unittest -q -c" % sys.executable
         external_runner = ExternalRunnerSpec(runner, "test", test_dir)
-        super(PythonUnittest, self).__init__(name, params, base_logdir, job,
+        super(PythonUnittest, self).__init__(name, params, base_logdir, config,
                                              external_runner=external_runner,
                                              external_runner_argument=python_unittest_module)
 
@@ -1338,7 +1330,7 @@ class MockingTest(Test):
         """
         super_kwargs = dict()
         args = list(reversed(args))
-        for arg in ["methodName", "name", "params", "base_logdir", "job",
+        for arg in ["methodName", "name", "params", "base_logdir", "config",
                     "runner_queue"]:
             if arg in kwargs:
                 super_kwargs[arg] = kwargs[arg]

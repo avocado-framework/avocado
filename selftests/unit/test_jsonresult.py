@@ -35,7 +35,7 @@ class JSONResultTest(TestCaseTmpDir):
         self.test_result = Result(UNIQUE_ID, LOGFILE)
         self.test_result.filename = json_output_path
         self.test_result.tests_total = 1
-        self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir.name)
+        self.test1 = SimpleTest(config=self.job.config, base_logdir=self.tmpdir.name)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
 

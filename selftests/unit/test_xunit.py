@@ -49,7 +49,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result.tests_total = 1
         self.test_result.logfile = ("/.../avocado/job-results/"
                                     "job-2018-11-28T16.27-8fef221/job.log")
-        self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir.name)
+        self.test1 = SimpleTest(config=self.job.config, base_logdir=self.tmpdir.name)
         self.test1._Test__status = 'PASS'
         self.test1._Test__logfile = ''
         self.test1.time_elapsed = 678.23689
