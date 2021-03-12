@@ -25,7 +25,7 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, JobPreTests
 from avocado.core.settings import settings
 from avocado.utils import data_structures
-from avocado.utils.asset import Asset
+from avocado.utils.asset import SUPPORTED_OPERATORS, Asset
 
 
 class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
@@ -272,6 +272,30 @@ class Assets(CLICmd):
         :param parser: The Avocado command line application parser
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
+        def register_filter_options(subparser, section):
+            help_msg = ("Apply action based on a size filter (comparison "
+                        "operator + value) in bytes. Ex '>20', '<=200'. "
+                        "Supported operators: " +
+                        ", ".join(SUPPORTED_OPERATORS))
+            settings.register_option(section=section,
+                                     key='size_filter',
+                                     help_msg=help_msg,
+                                     default=None,
+                                     metavar="FILTER",
+                                     key_type=str,
+                                     long_arg='--by-size-filter',
+                                     parser=subparser)
+
+            help_msg = "How old (in days) should Avocado look for assets?"
+            settings.register_option(section=section,
+                                     key='days',
+                                     help_msg=help_msg,
+                                     default=None,
+                                     key_type=int,
+                                     metavar="DAYS",
+                                     long_arg='--by-days',
+                                     parser=subparser)
+
         parser = super(Assets, self).configure(parser)
 
         subcommands = parser.add_subparsers(dest='assets_subcommand')
@@ -333,6 +357,31 @@ class Assets(CLICmd):
                                  long_arg='--hash',
                                  parser=register_subcommand_parser)
 
+        purge_subcommand_parser = subcommands.add_parser(
+                'purge',
+                help='Removes assets cached locally.')
+
+        register_filter_options(purge_subcommand_parser, 'assets.purge')
+
+    def handle_purge(self, config):
+        days = config.get('assets.purge.days')
+        size_filter = config.get('assets.purge.size_filter')
+        if (days is None and size_filter is None) \
+                or (days is not None and size_filter is not None):
+            msg = ("You should choose --by-size-filter or --by-days. "
+                   "For help, run: avocado assets purge --help")
+            LOG_UI.error(msg)
+            return
+
+        cache_dirs = data_dir.get_cache_dirs()
+        try:
+            if days is not None:
+                Asset.remove_assets_by_unused_for_days(days, cache_dirs)
+            elif size_filter is not None:
+                Asset.remove_assets_by_size(size_filter, cache_dirs)
+        except (FileNotFoundError, OSError) as e:
+            LOG_UI.error("Could not remove asset: %s", e)
+
     def handle_fetch(self, config):
         exitcode = exit_codes.AVOCADO_ALL_OK
         # fetch assets from instrumented tests
@@ -388,5 +437,7 @@ class Assets(CLICmd):
             return self.handle_fetch(config)
         elif subcommand == 'register':
             return self.handle_register(config)
+        elif subcommand == 'purge':
+            return self.handle_purge(config)
         else:
             return exit_codes.UTILITY_FAIL
