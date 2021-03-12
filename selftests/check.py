@@ -518,6 +518,13 @@ def create_suites(args):
     return suites
 
 
+def print_failed_tests(tests):
+    if tests:
+        print("Failed tests:")
+        for test in tests:
+            print(test.get('name'), test.get('status'))
+
+
 def main():
     args = parse_args()
     suites = create_suites(args)
@@ -541,7 +548,9 @@ def main():
     config = {'core.show': ['app'],
               'run.test_runner': 'nrunner'}
     with Job(config, suites) as j:
-        return j.run()
+        exit_code = j.run()
+    print_failed_tests(j.get_failed_tests())
+    return exit_code
 
 
 if __name__ == '__main__':
