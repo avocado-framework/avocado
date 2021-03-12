@@ -534,6 +534,18 @@ class Job:
         if result_dispatcher.extensions:
             result_dispatcher.map_method('render', self.result, self)
 
+    def get_failed_tests(self):
+        """Gets the tests with status 'FAIL' and 'ERROR' after the Job ended.
+
+        :return: List of failed tests
+        """
+        tests = []
+        if self.result:
+            for test in self.result.tests:
+                if test.get('status') in ['FAIL', 'ERROR']:
+                    tests.append(test)
+        return tests
+
     def run(self):
         """
         Runs all job phases, returning the test execution results.
