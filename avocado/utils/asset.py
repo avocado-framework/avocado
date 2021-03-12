@@ -503,7 +503,6 @@ class Asset:
                 result.append(file_path)
         return result
 
-
     @classmethod
     def get_assets_by_size(cls, size_filter, cache_dirs):
         """Return a list of all assets in cache based on its size in MB.
