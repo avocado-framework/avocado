@@ -20,6 +20,7 @@ import errno
 import hashlib
 import json
 import logging
+import operator
 import os
 import re
 import shutil
@@ -27,6 +28,7 @@ import stat
 import sys
 import tempfile
 import time
+from datetime import datetime
 from urllib.parse import urlparse
 
 from . import astring, crypto
@@ -37,6 +39,12 @@ from .filelock import FileLock
 LOG = logging.getLogger('avocado.test')
 #: The default hash algorithm to use on asset cache operations
 DEFAULT_HASH_ALGORITHM = 'sha1'
+
+SUPPORTED_OPERATORS = {'==': operator.eq,
+                       '<': operator.lt,
+                       '>': operator.gt,
+                       '<=': operator.le,
+                       '>=': operator.ge}
 
 
 class UnsupportedProtocolError(OSError):
@@ -423,6 +431,19 @@ class Asset:
         return os.path.basename(self.parsed_name.path)
 
     @classmethod
+    def get_all_assets(cls, cache_dirs):
+        """Returns all assets stored in all cache dirs."""
+        assets = []
+        for cache_dir in cache_dirs:
+            expanded = os.path.expanduser(cache_dir)
+            for root, _, files in os.walk(expanded):
+                for f in files:
+                    if not f.endswith('-CHECKSUM') and \
+                       not f.endswith('_metadata.json'):
+                        assets.append(os.path.join(root, f))
+        return assets
+
+    @classmethod
     def get_asset_by_name(cls, name, cache_dirs, expire=None, asset_hash=None):
         """This method will return a cached asset based on name if exists.
 
@@ -463,6 +484,65 @@ class Asset:
 
         raise OSError("File %s not found in the cache." % name)
 
+    @classmethod
+    def get_assets_unused_for_days(cls, days, cache_dirs):
+        """Return a list of all assets in cache based on the access time.
+
+        This will check if the file's data wasn't modified N days ago.
+
+        :param days: how many days ago will be the threshold. Ex: "10" will
+        return the assets files that *was not* accessed during the last 10
+        days.
+        :param cache_dirs: list of directories to use during the search.
+        """
+        result = []
+        for file_path in cls.get_all_assets(cache_dirs):
+            stats = os.stat(file_path)
+            diff = datetime.now() - datetime.fromtimestamp(stats.st_atime)
+            if diff.days >= days:
+                result.append(file_path)
+        return result
+
+    @classmethod
+    def get_assets_by_size(cls, size_filter, cache_dirs):
+        """Return a list of all assets in cache based on its size in MB.
+
+        :param size_filter: a string with a filter (comparison operator +
+        value). Ex ">20", "<=200". Supported operators: ==, <, >, <=, >=.
+        :param cache_dirs: list of directories to use during the search.
+        """
+        try:
+            op = re.match('^(\\D+)(\\d+)$', size_filter).group(1)
+            value = int(re.match('^(\\D+)(\\d+)$', size_filter).group(2))
+        except (AttributeError, ValueError):
+            msg = ("Invalid syntax. You need to pass an comparison operatator",
+                   " and a value. Ex: '>=200'")
+            raise OSError(msg)
+
+        try:
+            method = SUPPORTED_OPERATORS[op]
+        except KeyError:
+            msg = ("Operator not supported. Currented valid values are: ",
+                   ", ".join(SUPPORTED_OPERATORS))
+            raise OSError(msg)
+
+        result = []
+        for file_path in cls.get_all_assets(cache_dirs):
+            file_size = os.path.getsize(file_path)
+            if method(file_size, value):
+                result.append(file_path)
+        return result
+
+    @classmethod
+    def remove_assets_by_size(cls, size_filter, cache_dirs):
+        for file_path in cls.get_assets_by_size(size_filter, cache_dirs):
+            cls.remove_asset_by_path(file_path)
+
+    @classmethod
+    def remove_assets_by_unused_for_days(cls, days, cache_dirs):
+        for file_path in cls.get_assets_unused_for_days(days, cache_dirs):
+            cls.remove_asset_by_path(file_path)
+
     @property
     def name_scheme(self):
         """This property will return the scheme part of the name if is an URL.
@@ -495,6 +575,19 @@ class Asset:
     @property
     def relative_dir(self):
         return os.path.join(self._get_relative_dir(), self.asset_name)
+
+    @classmethod
+    def remove_asset_by_path(cls, asset_path):
+        """Remove an asset and its checksum.
+
+        To be fixed: Due the current implementation limitation, this method
+        will not remove the metadata to avoid removing other asset metadata.
+
+        :param asset_path: full path of the asset file.
+        """
+        os.remove(asset_path)
+        filename = "{}-CHECKSUM".format(asset_path)
+        os.remove(filename)
 
     @property
     def urls(self):
