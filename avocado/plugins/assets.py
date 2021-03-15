@@ -404,7 +404,7 @@ class Assets(CLICmd):
         try:
             assets = None
             if days is not None:
-                assets = Asset.get_assets_by_unused_for_days(days, cache_dirs)
+                assets = Asset.get_assets_unused_for_days(days, cache_dirs)
             elif size_filter is not None:
                 assets = Asset.get_assets_by_size(size_filter, cache_dirs)
             elif assets is None:
