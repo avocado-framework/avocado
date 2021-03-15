@@ -33,8 +33,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 85.0
-Release: 2%{?gitrel}%{?dist}
+Version: 86.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -379,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Mar 15 2021 Cleber Rosa <cleber@redhat.com> - 86.0-1
+- New release
+
 * Thu Feb 18 2021 Cleber Rosa <cleber@redhat.com> - 85.0-2
 - Do not depend on make to build man page
 

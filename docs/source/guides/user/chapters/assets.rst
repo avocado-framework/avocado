@@ -1,3 +1,5 @@
+.. _managing-assets:
+
 Managing Assets
 ===============
 

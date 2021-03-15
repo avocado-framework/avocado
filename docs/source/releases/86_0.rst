@@ -1,0 +1,65 @@
+============
+86.0 The Dig
+============
+
+The Avocado team is proud to present another release: Avocado 86.0,
+AKA "The Dig", is now available!
+
+Release documentation: `Avocado 86.0
+<http://avocado-framework.readthedocs.io/en/86.0/>`_
+
+Users/Test Writers
+==================
+
+* The ``avocado assets`` command now introduces two new different
+  subcommands: ``list`` and ``purge``.  Both allow listing and
+  purging of assets based on their sizes or the number of days
+  since they have been last accessed.  For more information
+  please refer to :ref:`managing-assets`.
+
+Bug Fixes
+=========
+
+* The ``avocado replay`` command was calling pre/post plugins twice
+  after a change delegated that responsibility to
+  :meth:`avocado.core.job.Job.run`.
+
+* The ``testlog`` plugin wasn't able to show the log location for
+  tests executed via the ``avocado-runner-avocado-instrumented``
+  runner (for the nrunner architecture`) and this is now fixed.
+
+* The ``avocado-runner-avocado-instrumented`` was producing duplicate
+  log entries because of Avocado's log handler for the
+  :class:`avocado.core.test.Test` was previously configured to
+  propagate the logged messages.
+
+Utility APIs
+============
+
+* The :mod:`avocado.utils.cpu` now makes available a mapping of
+  vendor names to the data that matches in ``/proc/cpuinfo`` on
+  that vendor's CPUs (:data:`avocado.utils.cpu.VENDORS_MAP`).
+  This allows users to have visibility about the logic used to
+  determine the vendor's name, and  overwrite it if needed.
+
+* Various documentation improvements for the
+  :mod:`avocado.core.multipath` module.
+
+Internal Changes
+================
+
+* The :class:`avocado.core.test.Test` class no longers require to
+  be given an :class:`avocado.core.job.Job` as an argument.  This
+  breaks (in a good way) the circular relationship between those,
+  and opens up the possiblity for deprecation of legacy code.
+
+* A number of lint checks were added.
+
+* Remove unnecessary compatibility code for Python 3.4 and earlier.
+
+Misc Changes
+============
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/85.0...86.0>`_.
