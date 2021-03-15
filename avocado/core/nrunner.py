@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 import unittest
+from uuid import uuid1
 
 try:
     import pkg_resources
@@ -653,7 +654,9 @@ class Task:
                            within the context of a Job. A recommended value
                            is a :class:`avocado.core.test_id.TestID` instance
                            when a task represents a test, because besides the
-                           uniqueness aspect, it's also descriptive.
+                           uniqueness aspect, it's also descriptive.  If an
+                           identifier is not given, an automatically generated
+                           one will be set.
         :param runnable: the "description" of what the task should run.
         :type runnable: :class:`avocado.core.nrunner.Runnable`
         :param status_uri: the URIs for the status servers that this task
@@ -662,7 +665,7 @@ class Task:
         :param known_runners: a mapping of runnable kinds to runners.
         :type known_runners: dict
         """
-        self.identifier = identifier
+        self.identifier = identifier or str(uuid1())
         self.runnable = runnable
         self.status_services = []
         if status_uris is not None:

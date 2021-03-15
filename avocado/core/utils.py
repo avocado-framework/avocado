@@ -1,5 +1,4 @@
 import os
-from uuid import uuid1
 
 from pkg_resources import get_distribution
 
@@ -80,5 +79,5 @@ def resolutions_to_tasks(resolutions, config):
                                                  include_empty,
                                                  include_empty_key):
                     continue
-            tasks.append(Task(str(uuid1()), runnable, [status_server]))
+            tasks.append(Task(None, runnable, [status_server]))
     return tasks
