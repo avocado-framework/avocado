@@ -643,13 +643,25 @@ class Task:
     While a runnable describes what to be run, and gets run by a
     runner, a task should be a unique entity to track its state,
     that is, whether it is pending, is running or has finished.
-
-    :param identifier:
-    :param runnable:
     """
 
     def __init__(self, identifier, runnable, status_uris=None,
                  known_runners=None):
+        """Instantiates a new Task.
+
+        :param identifier: any identifier that is guaranteed to be unique
+                           within the context of a Job. A recommended value
+                           is a :class:`avocado.core.test_id.TestID` instance
+                           when a task represents a test, because besides the
+                           uniqueness aspect, it's also descriptive.
+        :param runnable: the "description" of what the task should run.
+        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param status_uri: the URIs for the status servers that this task
+                           should send updates to.
+        :type status_uri: list
+        :param known_runners: a mapping of runnable kinds to runners.
+        :type known_runners: dict
+        """
         self.identifier = identifier
         self.runnable = runnable
         self.status_services = []
