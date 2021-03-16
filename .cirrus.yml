@@ -8,3 +8,16 @@ redhat_version_task:
           - image: fedora:32
           - image: fedora:33
           - image: registry.access.redhat.com/ubi8/ubi
+
+debian_version_task:
+    version_script:
+       - python3 --version || (apt update && apt -y install python3 python3-setuptools)
+       - python3 setup.py develop --user
+       - python3 -m avocado --version
+
+    container:
+        matrix:
+          - image: debian:9.13
+          - image: debian:10.8
+          - image: ubuntu:18.04
+          - image: ubuntu:20.04
