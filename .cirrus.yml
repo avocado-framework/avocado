@@ -1,6 +1,6 @@
 redhat_version_task:
     version_script:
-       - python3 --version || dnf -y install python3
+       - python3 -c 'import setuptools' || dnf -y install python3 python3-setuptools
        - python3 setup.py develop --user
        - python3 -m avocado --version
     container:
