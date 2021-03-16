@@ -1,4 +1,4 @@
-version_task:
+redhat_version_task:
     version_script:
        - python3 --version || dnf -y install python3
        - python3 setup.py develop --user
