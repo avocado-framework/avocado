@@ -1,0 +1,6 @@
+FROM fedora:33
+LABEL description "Fedora image used on integration checks, such as cirrus-ci"
+RUN dnf -y module enable avocado:latest
+RUN dnf -y install dnf-plugins-core git findutils make which
+RUN dnf -y builddep python-avocado
+RUN dnf -y clean all

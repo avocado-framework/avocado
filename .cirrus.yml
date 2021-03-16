@@ -30,3 +30,12 @@ windows_version_task:
        - C:\Python39\python -m avocado run --test-runner=nrunner examples\tests\passtest.py
     windows_container:
        image: cirrusci/windowsservercore:2019
+
+fedora_selftests_task:
+    selftests_script:
+       - make develop
+       - PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 python3 selftests/check.py --disable-static-checks
+    container:
+        matrix:
+          - image: quay.io/avocado-framework/avocado-ci-fedora-32
+          - image: quay.io/avocado-framework/avocado-ci-fedora-33
