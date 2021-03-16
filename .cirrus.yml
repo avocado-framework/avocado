@@ -21,3 +21,12 @@ debian_version_task:
           - image: debian:10.8
           - image: ubuntu:18.04
           - image: ubuntu:20.04
+
+windows_version_task:
+    version_script:
+       - choco install -y python3 --version 3.9.0
+       - C:\Python39\python setup.py develop --user
+       - C:\Python39\python -m avocado --help
+       - C:\Python39\python -m avocado run --test-runner=nrunner examples\tests\passtest.py
+    windows_container:
+       image: cirrusci/windowsservercore:2019
