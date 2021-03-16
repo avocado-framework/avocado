@@ -140,7 +140,7 @@ class Partition:
             with open(filename) as open_file:
                 for line in open_file:
                     parts = line.split()
-                    if parts[0] == self.device or parts[1] == self.mountpoint:
+                    if parts[0] == self.device and parts[1] == self.mountpoint:
                         return parts[1]    # The mountpoint where it's mounted
                 return None
 
@@ -224,8 +224,6 @@ class Partition:
             args += ' -o ' + self.mount_options
         if fstype:
             args += ' -t ' + fstype
-        if self.loop:
-            args += ' -o loop'
         args = args.lstrip()
 
         with MtabLock():
@@ -237,6 +235,10 @@ class Partition:
             if not os.path.isdir(mountpoint):
                 os.makedirs(mountpoint)
             try:
+                if self.loop:
+                    losetup_cmd = "losetup --find --show -f %s" % self.device
+                    self.device = process.run(losetup_cmd,
+                                              sudo=True).stdout_text.strip()
                 process.system("mount %s %s %s"
                                % (args, self.device, mountpoint), sudo=True)
             except process.CmdError as details:
@@ -298,18 +300,27 @@ class Partition:
         """
         with MtabLock():
             mountpoint = self.get_mountpoint()
+            result = 1
             if not mountpoint:
                 LOG.debug('%s not mounted', self.device)
-                return 1
+                return result
             try:
                 process.run("umount " + mountpoint, sudo=True)
-                return 1
+                result = 1
             except process.CmdError as details:
                 if force:
                     LOG.debug("Standard umount failed on %s, forcing",
                               mountpoint)
                     self._unmount_force(mountpoint)
-                    return 2
+                    result = 2
                 else:
                     raise PartitionError(self, "Unable to unmount gracefully",
                                          details)
+        if self.loop:
+            try:
+                process.run("losetup -d %s" % self.device, sudo=True)
+            except process.CmdError as details:
+                raise PartitionError(self, "Unable to cleanup loop device",
+                                     details)
+
+        return result
