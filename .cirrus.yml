@@ -5,6 +5,6 @@ version_task:
        - python3 -m avocado --version
     container:
         matrix:
-          - image: fedora:30
-          - image: fedora:29
+          - image: fedora:32
+          - image: fedora:33
           - image: registry.access.redhat.com/ubi8/ubi
