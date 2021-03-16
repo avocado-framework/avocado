@@ -8,7 +8,7 @@ class Runtime(TestCase):
 
     def setUp(self):
         runnable = Runnable('noop', 'noop')
-        task = Task('1-noop', runnable)
+        task = Task(runnable, '1-noop')
         self.runtime_task = RuntimeTask(task)
 
     def test_empty(self):

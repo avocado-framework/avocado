@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 import unittest
+from uuid import uuid1
 
 try:
     import pkg_resources
@@ -643,15 +644,29 @@ class Task:
     While a runnable describes what to be run, and gets run by a
     runner, a task should be a unique entity to track its state,
     that is, whether it is pending, is running or has finished.
-
-    :param identifier:
-    :param runnable:
     """
 
-    def __init__(self, identifier, runnable, status_uris=None,
+    def __init__(self, runnable, identifier=None, status_uris=None,
                  known_runners=None):
-        self.identifier = identifier
+        """Instantiates a new Task.
+
+        :param runnable: the "description" of what the task should run.
+        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param identifier: any identifier that is guaranteed to be unique
+                           within the context of a Job. A recommended value
+                           is a :class:`avocado.core.test_id.TestID` instance
+                           when a task represents a test, because besides the
+                           uniqueness aspect, it's also descriptive.  If an
+                           identifier is not given, an automatically generated
+                           one will be set.
+        :param status_uri: the URIs for the status servers that this task
+                           should send updates to.
+        :type status_uri: list
+        :param known_runners: a mapping of runnable kinds to runners.
+        :type known_runners: dict
+        """
         self.runnable = runnable
+        self.identifier = identifier or str(uuid1())
         self.status_services = []
         if status_uris is not None:
             for status_uri in status_uris:
@@ -702,7 +717,7 @@ class Task:
                             *runnable_recipe.get('args', ()),
                             config=runnable_recipe.get('config'))
         status_uris = recipe.get('status_uris')
-        return cls(identifier, runnable, status_uris, known_runners)
+        return cls(runnable, identifier, status_uris, known_runners)
 
     def get_command_args(self):
         """
@@ -944,7 +959,7 @@ class BaseRunnerApp:
         :type args: dict
         """
         runnable = Runnable.from_args(args)
-        task = Task(args.get('identifier'), runnable,
+        task = Task(runnable, args.get('identifier'),
                     args.get('status_uri', []),
                     known_runners=self.RUNNABLE_KINDS_CAPABLE)
         for status in task.run():

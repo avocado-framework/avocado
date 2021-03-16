@@ -19,7 +19,7 @@ class StateMachine(TestCase):
         number_of_workers = 8
 
         runnable = Runnable("noop", "noop")
-        runtime_tasks = [RuntimeTask(Task("%03i" % _, runnable))
+        runtime_tasks = [RuntimeTask(Task(runnable, "%03i" % _))
                          for _ in range(1, number_of_tasks + 1)]
         spawner = Spawner()
 
