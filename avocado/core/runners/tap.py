@@ -3,8 +3,8 @@ import os
 import subprocess
 import time
 
-from . import nrunner
-from .tapparser import TapParser, TestResult
+from .. import nrunner
+from ..tapparser import TapParser, TestResult
 
 
 class TAPRunner(nrunner.BaseRunner):

@@ -3,7 +3,8 @@ import sys
 import tempfile
 import unittest.mock
 
-from avocado.core import nrunner, nrunner_tap
+from avocado.core import nrunner
+from avocado.core.runners import tap as runner_tap
 
 from .. import skipUnlessPathExists, temp_dir_prefix
 
@@ -328,7 +329,7 @@ echo 'not ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = nrunner_tap.TAPRunner(runnable)
+        runner = runner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -348,7 +349,7 @@ echo 'ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = nrunner_tap.TAPRunner(runnable)
+        runner = runner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -368,7 +369,7 @@ echo 'ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = nrunner_tap.TAPRunner(runnable)
+        runner = runner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -388,7 +389,7 @@ echo 'ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = nrunner_tap.TAPRunner(runnable)
+        runner = runner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
@@ -408,7 +409,7 @@ echo 'ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = nrunner_tap.TAPRunner(runnable)
+        runner = runner_tap.TAPRunner(runnable)
         results = [status for status in runner.run()]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
