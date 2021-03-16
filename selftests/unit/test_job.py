@@ -341,6 +341,18 @@ class JobTest(unittest.TestCase):
         if self.job.test_suite:
             self.assertIsInstance(self.job.test_suite.tests[0], nrunner.Task)
 
+    def test_job_get_failed_tests(self):
+        config = {'run.references': ['/bin/true', '/bin/false'],
+                  'run.results_dir': self.tmpdir.name,
+                  'run.store_logging_stream': [],
+                  'run.dry_run.enabled': True,
+                  'core.show': ['none']}
+        suite = TestSuite.from_config(config)
+        self.job = job.Job(config, [suite])
+        self.job.setup()
+        self.job.run()
+        self.assertEqual(len(self.job.get_failed_tests()), 1)
+
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         self.tmpdir.cleanup()
