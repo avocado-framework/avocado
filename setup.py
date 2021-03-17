@@ -99,8 +99,8 @@ if __name__ == '__main__':
                   'avocado-runner-exec = avocado.core.nrunner:main',
                   'avocado-runner-exec-test = avocado.core.nrunner:main',
                   'avocado-runner-python-unittest = avocado.core.nrunner:main',
-                  'avocado-runner-avocado-instrumented = avocado.core.nrunner_avocado_instrumented:main',
-                  'avocado-runner-tap = avocado.core.nrunner_tap:main',
+                  'avocado-runner-avocado-instrumented = avocado.core.runners.avocado_instrumented:main',
+                  'avocado-runner-tap = avocado.core.runners.tap:main',
                   'avocado-software-manager = avocado.utils.software_manager.main:main',
                   ],
               "avocado.plugins.init": [
@@ -178,8 +178,8 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.runnable.runner': [
                   ('avocado-instrumented = avocado.core.'
-                   'nrunner_avocado_instrumented:AvocadoInstrumentedTestRunner'),
-                  'tap = avocado.core.nrunner_tap:TAPRunner',
+                   'runners.avocado_instrumented:AvocadoInstrumentedTestRunner'),
+                  'tap = avocado.core.runners.tap:TAPRunner',
                   ],
               'avocado.plugins.spawner': [
                   'process = avocado.plugins.spawners.process:ProcessSpawner',

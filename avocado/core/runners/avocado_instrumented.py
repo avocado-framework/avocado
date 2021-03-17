@@ -2,9 +2,9 @@ import multiprocessing
 import tempfile
 import time
 
-from . import loader, nrunner, teststatus
-from .test import TestID
-from .tree import TreeNode
+from .. import loader, nrunner, teststatus
+from ..test import TestID
+from ..tree import TreeNode
 
 
 class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
