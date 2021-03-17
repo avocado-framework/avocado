@@ -1075,6 +1075,39 @@ the  ``setUp()`` method, the test method and the ``tearDown()`` method.
           ``ERROR``, to use any of the skip decorators on the
           ``tearDown()`` method.
 
+Advanced Conditionals
+~~~~~~~~~~~~~~~~~~~~~
+
+More advanced use cases may require to evaluate the condition for
+skipping tests later, and may also need to introspect into the
+class that contains the test method in question.
+
+It's possible to achieve both by supplying a callable to the condition
+parameters instead.  The following example does just that:
+
+.. literalinclude:: ../../../../../examples/tests/skip_conditional.py
+
+Even though the conditions for skipping tests are defined in the
+``BaseTest`` class, the conditions will be evaluated when the tests
+are actually checked for execution, in the ``BareMetal`` and
+``NonBareMetal`` classes.  The result of running that test is::
+
+    JOB ID     : 77d636c93ed3b5e6fef9c7b6c8d9fe0c84af1518
+    JOB LOG    : $HOME/avocado/job-results/job-2021-03-17T20.10-77d636c/job.log
+     (01/10) skip_conditional.py:BareMetal.test_specific: PASS (0.00 s)
+     (02/10) skip_conditional.py:BareMetal.test_bare_metal: PASS (0.00 s)
+     (03/10) skip_conditional.py:BareMetal.test_large_memory: SKIP: Not enough memory for test
+     (04/10) skip_conditional.py:BareMetal.test_nested_virtualization: SKIP: Virtual Machine environment is required
+     (05/10) skip_conditional.py:BareMetal.test_container: SKIP: Container environment is required
+     (06/10) skip_conditional.py:NonBareMetal.test_specific: PASS (0.00 s)
+     (07/10) skip_conditional.py:NonBareMetal.test_bare_metal: SKIP: Bare metal environment is required
+     (08/10) skip_conditional.py:NonBareMetal.test_large_memory: SKIP: Not enough memory for test
+     (09/10) skip_conditional.py:NonBareMetal.test_nested_virtualization: PASS (0.00 s)
+     (10/10) skip_conditional.py:NonBareMetal.test_container: PASS (0.00 s)
+    RESULTS    : PASS 5 | ERROR 0 | FAIL 0 | SKIP 5 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB HTML   : $HOME/avocado/job-results/job-2021-03-17T20.10-77d636c/results.html
+    JOB TIME   : 0.82 s
+
 Canceling Tests
 ----------------
 

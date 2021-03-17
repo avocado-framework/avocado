@@ -13,6 +13,9 @@ from lib_skip_decorators import check_condition
 
 class AvocadoSkipTests(avocado.Test):
 
+    TRUE_CONDITION = True
+    FALSE_CONDITION = False
+
     def setUp(self):
         self.log.info('setup executed')
 
@@ -28,6 +31,16 @@ class AvocadoSkipTests(avocado.Test):
     @avocado.skipUnless(check_condition(False),
                         'Skipped due to the False condition')
     def test3(self):
+        self.log.info('test executed')
+
+    @avocado.skipIf(lambda x: x.TRUE_CONDITION,
+                    'Skipped due to the True condition')
+    def test4(self):
+        self.log.info('test executed')
+
+    @avocado.skipUnless(lambda x: x.FALSE_CONDITION,
+                        'Skipped due to the False condition')
+    def test5(self):
         self.log.info('test executed')
 
     def tearDown(self):
@@ -237,7 +250,7 @@ class TestSkipDecorators(TestCaseTmpDir):
         debuglog = json_results['debuglog']
 
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual(json_results['skip'], 3)
+        self.assertEqual(json_results['skip'], 5)
         debuglog_contents = genio.read_file(debuglog)
         self.assertFalse('setup executed' in debuglog_contents)
         self.assertFalse('test executed' in debuglog_contents)
