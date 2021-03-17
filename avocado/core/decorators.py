@@ -71,10 +71,9 @@ cancel_on = deco_factory("cancel", core_exceptions.TestCancel)
 
 def _skip_method_decorator(function, message):
     """Creates a skip decorator for a method."""
-    if not isinstance(function, type):
-        @wraps(function)
-        def wrapper(*args, **kwargs):  # pylint: disable=W0613
-            raise core_exceptions.TestSkipError(message)
+    @wraps(function)
+    def wrapper(*args, **kwargs):  # pylint: disable=W0613
+        raise core_exceptions.TestSkipError(message)
         function = wrapper
     function.__skip_test_decorator__ = True
     return function
