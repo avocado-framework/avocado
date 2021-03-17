@@ -89,19 +89,25 @@ def _skip_class_decorator(cls, message):
     return cls
 
 
-def skip(message=None):
-    """
-    Decorator to skip a test.
-
-    :param message: the message given when the test is skipped
-    :type message: str
-    """
+def _get_skip_method_or_class_decorator(message):
+    """Returns a method or class decorator, according to decorated type."""
     def decorator(obj):
         if isinstance(obj, type):
             return _skip_class_decorator(obj, message)
         else:
             return _skip_method_decorator(obj, message)
     return decorator
+
+
+def skip(message=None):
+    """
+    Decorator to skip a test.
+
+    :param message: the message given when the test is skipped
+    :type message: str
+
+    """
+    return _get_skip_method_or_class_decorator(message)
 
 
 def skipIf(condition, message=None):
