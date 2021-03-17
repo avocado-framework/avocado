@@ -1030,11 +1030,9 @@ Skipping Tests
 To skip tests is in Avocado, you must use one of the Avocado skip
 decorators:
 
-- ``@avocado.skip(reason)``: Skips a test.
-- ``@avocado.skipIf(condition, reason)``: Skips a test if the condition is
-  ``True``.
-- ``@avocado.skipUnless(condition, reason)``: Skips a test if the condition is
-  ``False``
+- :func:`avocado.skip`: Skips a test.
+- :func:`avocado.skipIf`: Skips a test if the condition is ``True``.
+- :func:`avocado.skipUnless`: Skips a test if the condition is ``False``
 
 Those decorators can be used with classes and both ``setUp()`` method and/or and in the
 ``test*()`` methods. The test below::
