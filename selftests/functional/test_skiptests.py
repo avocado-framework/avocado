@@ -62,7 +62,7 @@ AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS = """
 import avocado
 from lib_skip_decorators import check_condition
 @avocado.skipIf(check_condition(True),
-                    'Skipped due to the True condition')
+                'Skipped due to the True condition')
 class AvocadoSkipTests(avocado.Test):
 
     def setUp(self):
@@ -81,7 +81,7 @@ class AvocadoSkipTests(avocado.Test):
         self.log.info('teardown executed')
 
 @avocado.skipIf(check_condition(False),
-                    'Skipped due to the True condition')
+                'Skipped due to the True condition')
 class AvocadoNoSkipTests(avocado.Test):
 
     def setUp(self):
