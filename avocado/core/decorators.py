@@ -69,6 +69,26 @@ fail_on = deco_factory("fail", core_exceptions.TestFail)
 cancel_on = deco_factory("cancel", core_exceptions.TestCancel)
 
 
+def _skip_method_decorator(function, message):
+    """Creates a skip decorator for a method."""
+    if not isinstance(function, type):
+        @wraps(function)
+        def wrapper(*args, **kwargs):  # pylint: disable=W0613
+            raise core_exceptions.TestSkipError(message)
+        function = wrapper
+    function.__skip_test_decorator__ = True
+    return function
+
+
+def _skip_class_decorator(cls, message):
+    """Creates a skip decorator for a class."""
+    for key in cls.__dict__:
+        if key.startswith('test') and callable(getattr(cls, key)):
+            wrapped = _skip_method_decorator(getattr(cls, key), message)
+            setattr(cls, key, wrapped)
+    return cls
+
+
 def skip(message=None):
     """
     Decorator to skip a test.
@@ -77,26 +97,10 @@ def skip(message=None):
     :type message: str
     """
     def decorator(obj):
-        def method_decorator(function):
-            if not isinstance(function, type):
-                @wraps(function)
-                def wrapper(*args, **kwargs):  # pylint: disable=W0613
-                    raise core_exceptions.TestSkipError(message)
-                function = wrapper
-            function.__skip_test_decorator__ = True
-            return function
-
-        def class_decorator(cls):
-            for key in cls.__dict__:
-                if key.startswith('test') and callable(getattr(cls, key)):
-                    wrapped = method_decorator(getattr(cls, key))
-                    setattr(cls, key, wrapped)
-            return cls
-
         if isinstance(obj, type):
-            return class_decorator(obj)
+            return _skip_class_decorator(obj, message)
         else:
-            return method_decorator(obj)
+            return _skip_method_decorator(obj, message)
     return decorator
 
 
