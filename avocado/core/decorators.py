@@ -88,7 +88,7 @@ def skip(message=None):
 
         def class_decorator(cls):
             for key in cls.__dict__:
-                if callable(getattr(cls, key)):
+                if key.startswith('test') and callable(getattr(cls, key)):
                     wrapped = method_decorator(getattr(cls, key))
                     setattr(cls, key, wrapped)
             return cls
