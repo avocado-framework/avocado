@@ -74,9 +74,8 @@ def _skip_method_decorator(function, message):
     @wraps(function)
     def wrapper(*args, **kwargs):  # pylint: disable=W0613
         raise core_exceptions.TestSkipError(message)
-        function = wrapper
-    function.__skip_test_decorator__ = True
-    return function
+    wrapper.__skip_test_decorator__ = True
+    return wrapper
 
 
 def _skip_class_decorator(cls, message):
