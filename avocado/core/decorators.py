@@ -72,6 +72,9 @@ cancel_on = deco_factory("cancel", core_exceptions.TestCancel)
 def skip(message=None):
     """
     Decorator to skip a test.
+
+    :param message: the message given when the test is skipped
+    :type message: str
     """
     def decorator(obj):
         def method_decorator(function):
@@ -100,6 +103,11 @@ def skip(message=None):
 def skipIf(condition, message=None):
     """
     Decorator to skip a test if a condition is True.
+
+    :param condition: a condition that will be evaluated as either True or False
+    :type condition: bool
+    :param message: the message given when the test is skipped
+    :type message: str
     """
     if condition:
         return skip(message)
@@ -109,6 +117,11 @@ def skipIf(condition, message=None):
 def skipUnless(condition, message=None):
     """
     Decorator to skip a test if a condition is False.
+
+    :param condition: a condition that will be evaluated as either True or False
+    :type condition: bool
+    :param message: the message given when the test is skipped
+    :type message: str
     """
     if not condition:
         return skip(message)
