@@ -356,7 +356,7 @@ class MiscProcessTests(unittest.TestCase):
         '''
         Gets the list of children process.  Linux only.
         '''
-        self.assertGreaterEqual(len(process.get_children_pids(1)), 1)
+        self.assertGreaterEqual(len(process.get_children_pids(os.getppid())), 1)
 
     @unittest.mock.patch('avocado.utils.process.os.kill')
     @unittest.mock.patch('avocado.utils.process.get_owner_id')
