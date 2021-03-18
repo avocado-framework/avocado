@@ -37,6 +37,8 @@ class Base(unittest.TestCase):
     @unittest.skipIf(not process.can_sudo('mkfs.ext2 -V'),
                      'current user must be allowed to run "mkfs.ext2" under '
                      'sudo')
+    @unittest.skipUnless(utils_path.find_command('mkfs.ext2', False),
+                         'mkfs.ext2 utility must be available')
     @unittest.skipIf(os.getenv('TRAVIS') and
                      os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
                      'TRAVIS Environment is unsuitable for these tests')
