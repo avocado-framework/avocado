@@ -22,7 +22,7 @@ debian_version_task:
           - image: ubuntu:18.04
           - image: ubuntu:20.04
 
-windows_version_task:
+windows_smokecheck_task:
     version_script:
        - choco install -y python3 --version 3.9.0
        - C:\Python39\python setup.py develop --user
