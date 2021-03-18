@@ -1069,7 +1069,7 @@ Notice the ``test3`` was not skipped because the provided condition was
 not ``False``.
 
 Using the skip decorators, nothing is actually executed. We will skip
-the  `setUp()` method, the test method and the `tearDown()` method.
+the  ``setUp()`` method, the test method and the ``tearDown()`` method.
 
 .. note:: It's an erroneous condition, reported with test status
           ``ERROR``, to use any of the skip decorators on the
