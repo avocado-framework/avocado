@@ -106,6 +106,51 @@ def can_sudo(cmd=None):
         return False
 
 
+def get_capabilities(pid=None):
+    """Gets a list of all capabilities for a process.
+
+    In case the getpcaps command is not available, and empty list will be
+    returned.
+
+    It supports getpcaps' two different formats, the current and the so
+    called legacy/ugly.
+
+    :param pid: the process ID (PID), if one is not given, the current
+                PID is used (given by :func:`os.getpid`)
+    :type pid: int
+    :returns: all capabilities
+    :rtype: list
+    """
+    if pid is None:
+        pid = os.getpid()
+    result = run('getpcaps %u' % pid, ignore_status=True)
+    if result.exit_status != 0:
+        return []
+    if result.stderr_text.startswith('Capabilities '):
+        info = result.stderr_text
+        separator = '='
+    else:
+        info = result.stdout_text
+        separator = ':'
+    return info.split(separator, 1)[1].strip().split(',')
+
+
+def has_capability(capability, pid=None):
+    """Checks if a process has a given capability.
+
+    This is a simple wrapper around getpcaps, part of the libcap package.
+    In case the getpcaps command is not available, the capability will be
+    considered *not* to be available.
+
+    :param capability: the name of the capability, refer to capabilities(7)
+                       man page for more information.
+    :type capability: str
+    :returns: whether the capability is available or not
+    :rtype: bool
+    """
+    return capability in get_capabilities(pid)
+
+
 def pid_exists(pid):
     """
     Return True if a given PID exists.
