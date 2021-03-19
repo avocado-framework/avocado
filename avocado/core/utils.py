@@ -47,8 +47,8 @@ def resolutions_to_tasks(resolutions, config):
     (:class:`avocado.core.resolver.ReferenceResolution`) contains
     information about the resolution process (if it was successful
     or not) and in case of successful resolutions a list of
-    resolutions.  It's expected that the resolution are
-    :class:`avocado.core.nrunner.Runnable`.
+    resolutions.  It's expected that the resolution contain one
+    or more :class:`avocado.core.nrunner.Runnable`.
 
     This method transforms those runnables into Tasks
     (:class:`avocado.core.nrunner.Task`), which will include a status
