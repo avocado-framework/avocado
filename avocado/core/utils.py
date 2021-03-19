@@ -39,6 +39,46 @@ def prepend_base_path(value):
     return expanded
 
 
+def resolution_to_filtered_runnables(resolutions, config):
+    """
+    Transforms resolver resolutions into a list of filtered runnables
+
+    A resolver resolution
+    (:class:`avocado.core.resolver.ReferenceResolution`) contains
+    information about the resolution process (if it was successful
+    or not) and in case of successful resolutions a list of
+    resolutions.  It's expected that the resolution contain one
+    or more :class:`avocado.core.nrunner.Runnable`.
+
+    This method also performs tag based filtering on the runnables for
+    possibly excluding some of the Runnables.
+
+    :param resolutions: possible multiple resolutions for multiple
+                        references
+    :type resolutions: list of :class:`avocado.core.resolver.ReferenceResolution`
+    :param config: job configuration
+    :type config: dict
+    :returns: the resolutions converted to tasks
+    :rtype: list of :class:`avocado.core.nrunner.Task`
+    """
+    result = []
+    filter_by_tags = config.get("filter.by_tags.tags")
+    include_empty = config.get("filter.by_tags.include_empty")
+    include_empty_key = config.get('filter.by_tags.include_empty_key')
+    for resolution in resolutions:
+        if resolution.result != ReferenceResolutionResult.SUCCESS:
+            continue
+        for runnable in resolution.resolutions:
+            if filter_by_tags:
+                if not filter_test_tags_runnable(runnable,
+                                                 filter_by_tags,
+                                                 include_empty,
+                                                 include_empty_key):
+                    continue
+            result.append(runnable)
+    return result
+
+
 def resolutions_to_tasks(resolutions, config):
     """
     Transforms resolver resolutions into tasks
@@ -63,21 +103,6 @@ def resolutions_to_tasks(resolutions, config):
     :returns: the resolutions converted to tasks
     :rtype: list of :class:`avocado.core.nrunner.Task`
     """
-
-    tasks = []
-    filter_by_tags = config.get("filter.by_tags.tags")
-    include_empty = config.get("filter.by_tags.include_empty")
-    include_empty_key = config.get('filter.by_tags.include_empty_key')
     status_server = config.get('nrunner.status_server_uri')
-    for resolution in resolutions:
-        if resolution.result != ReferenceResolutionResult.SUCCESS:
-            continue
-        for runnable in resolution.resolutions:
-            if filter_by_tags:
-                if not filter_test_tags_runnable(runnable,
-                                                 filter_by_tags,
-                                                 include_empty,
-                                                 include_empty_key):
-                    continue
-            tasks.append(Task(runnable, None, [status_server]))
-    return tasks
+    return [Task(runnable, status_uris=[status_server]) for runnable in
+            resolution_to_filtered_runnables(resolutions, config)]
