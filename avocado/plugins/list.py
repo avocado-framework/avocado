@@ -129,9 +129,7 @@ class List(CLICmd):
         """Used for resolver."""
         test_matrix = []
         verbose = suite.config.get('core.verbose')
-        for test in suite.tests:
-            runnable = test.runnable
-
+        for runnable in suite.tests:
             type_label = TERM_SUPPORT.healthy_str(runnable.kind)
 
             if verbose:

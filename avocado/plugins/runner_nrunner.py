@@ -181,18 +181,19 @@ class Runner(RunnerInterface):
     def _get_all_runtime_tasks(self, test_suite):
         result = []
         no_digits = len(str(len(test_suite)))
-        for index, task in enumerate(test_suite.tests, start=1):
-            task.known_runners = nrunner.RUNNERS_REGISTRY_PYTHON_CLASS
+        status_uris = [test_suite.config.get('nrunner.status_server_uri')]
+        for index, runnable in enumerate(test_suite.tests, start=1):
             # this is all rubbish data
             if test_suite.name:
                 prefix = "{}-{}".format(test_suite.name, index)
             else:
                 prefix = index
             test_id = TestID(prefix,
-                             task.runnable.uri,
+                             runnable.uri,
                              None,
                              no_digits)
-            task.identifier = test_id
+            task = nrunner.Task(runnable, test_id, status_uris,
+                                nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
             result.append(RuntimeTask(task))
         return result
 
@@ -260,7 +261,7 @@ class Runner(RunnerInterface):
         # pylint: disable=W0201
         self.summary = set()
 
-        test_suite.tests, _ = nrunner.check_tasks_requirements(test_suite.tests)
+        test_suite.tests, _ = nrunner.check_runnables_requirements(test_suite.tests)
         job.result.tests_total = test_suite.size  # no support for variants yet
 
         listen = test_suite.config.get('nrunner.status_server_listen')

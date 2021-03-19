@@ -339,7 +339,7 @@ class JobTest(unittest.TestCase):
         self.job.setup()
         self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
         if self.job.test_suite:
-            self.assertIsInstance(self.job.test_suite.tests[0], nrunner.Task)
+            self.assertIsInstance(self.job.test_suite.tests[0], nrunner.Runnable)
 
     def test_job_get_failed_tests(self):
         config = {'run.references': ['/bin/true', '/bin/false'],
