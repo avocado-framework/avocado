@@ -22,11 +22,10 @@ from .exceptions import (JobTestSuiteReferenceResolutionError,
 from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
                      loader)
 from .parser import HintParser
-from .resolver import resolve
+from .resolver import ReferenceResolutionResult, resolve
 from .settings import settings
-from .tags import filter_test_tags
+from .tags import filter_test_tags, filter_test_tags_runnable
 from .test import DryRunTest, Test
-from .utils import resolutions_to_tasks
 from .varianter import Varianter
 
 
@@ -39,6 +38,49 @@ class TestSuiteStatus(Enum):
     TESTS_NOT_FOUND = object()
     TESTS_FOUND = object()
     UNKNOWN = object()
+
+
+def resolutions_to_runnables(resolutions, config):
+    """
+    Transforms resolver resolutions into runnables suitable for a suite
+
+    A resolver resolution
+    (:class:`avocado.core.resolver.ReferenceResolution`) contains
+    information about the resolution process (if it was successful
+    or not) and in case of successful resolutions a list of
+    resolutions.  It's expected that the resolution contain one
+    or more :class:`avocado.core.nrunner.Runnable`.
+
+    This function sets the runnable specific configuration for each
+    runnable.  It also performs tag based filtering on the runnables
+    for possibly excluding some of the Runnables.
+
+    :param resolutions: possible multiple resolutions for multiple
+                        references
+    :type resolutions: list of :class:`avocado.core.resolver.ReferenceResolution`
+    :param config: job configuration
+    :type config: dict
+    :returns: the resolutions converted to tasks
+    :rtype: list of :class:`avocado.core.nrunner.Task`
+    """
+    result = []
+    filter_by_tags = config.get("filter.by_tags.tags")
+    include_empty = config.get("filter.by_tags.include_empty")
+    include_empty_key = config.get('filter.by_tags.include_empty_key')
+    runner_config = settings.filter_config(config, r'^runner\.')
+    for resolution in resolutions:
+        if resolution.result != ReferenceResolutionResult.SUCCESS:
+            continue
+        for runnable in resolution.resolutions:
+            if filter_by_tags:
+                if not filter_test_tags_runnable(runnable,
+                                                 filter_by_tags,
+                                                 include_empty,
+                                                 include_empty_key):
+                    continue
+            runnable.config = runner_config
+            result.append(runnable)
+    return result
 
 
 class TestSuite:
@@ -67,16 +109,6 @@ class TestSuite:
 
         if self.size == 0:
             return
-
-        # This will update all runnables with only the configs starting with
-        # 'runner'
-        runner_config = settings.filter_config(self.config, r'^runner\.')
-        for test in self.tests:
-            try:
-                test.runnable.config = runner_config
-            except AttributeError:
-                # This is not a Task or don't have a 'runnable' attribute
-                continue
 
     def __len__(self):
         """This is a convenient method to run `len()` over this object.
@@ -140,17 +172,17 @@ class TestSuite:
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
 
-        tasks = resolutions_to_tasks(resolutions, config)
+        runnables = resolutions_to_runnables(resolutions, config)
 
         if name is None:
             name = str(uuid4())
-        return cls(name=name, config=config, tests=tasks,
+        return cls(name=name, config=config, tests=runnables,
                    resolutions=resolutions)
 
     def _get_stats_from_nrunner(self):
         stats = {}
         for test in self.tests:
-            stats = self._increment_dict_key_counter(stats, test.runnable.kind)
+            stats = self._increment_dict_key_counter(stats, test.kind)
         return stats
 
     def _get_stats_from_runner(self):
@@ -165,10 +197,10 @@ class TestSuite:
 
     def _get_tags_stats_from_nrunner(self):
         stats = {}
-        for test in self.tests:
-            if test.runnable is None:
+        for runnable in self.tests:
+            if runnable is None:
                 continue
-            tags = test.runnable.tags or {}
+            tags = runnable.tags or {}
             for tag in tags:
                 stats = self._increment_dict_key_counter(stats, tag)
         return stats

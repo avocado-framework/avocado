@@ -42,12 +42,12 @@ RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 RUNNERS_REGISTRY_PYTHON_CLASS = {}
 
 
-def check_tasks_requirements(tasks, runners_registry=None):
+def check_runnables_requirements(runnables, runners_registry=None):
     """
-    Checks if tasks have runner requirements fulfilled
+    Checks if runnables have runner requirements fulfilled
 
-    :param tasks: the tasks whose runner requirements will be checked
-    :type tasks: list of :class:`Task`
+    :param runnables: the tasks whose runner requirements will be checked
+    :type runnable: list of :class:`Runnable`
     :param runners_registry: a registry with previously found (and not found)
                              runners keyed by a task's runnable kind. Defaults
                              to :attr:`RUNNERS_REGISTRY_STANDALONE_EXECUTABLE`
@@ -61,12 +61,13 @@ def check_tasks_requirements(tasks, runners_registry=None):
         runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
     ok = []
     missing = []
-    for task in tasks:
-        runner = task.runnable.pick_runner_command(runners_registry)
+
+    for runnable in runnables:
+        runner = runnable.pick_runner_command(runners_registry)
         if runner:
-            ok.append(task)
+            ok.append(runnable)
         else:
-            missing.append(task)
+            missing.append(runnable)
     return (ok, missing)
 
 
