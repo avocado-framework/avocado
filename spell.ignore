@@ -739,3 +739,5 @@ emerg
 alert
 crit
 err
+getpcaps
+libcap

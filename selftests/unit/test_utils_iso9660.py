@@ -73,6 +73,8 @@ class BaseIso9660:
 
     @unittest.skipIf(not process.can_sudo("mount"),
                      "This test requires mount to run under sudo or root")
+    @unittest.skipUnless(process.has_capability("cap_sys_admin"),
+                         "Capability to mount is required (cap_sys_admin)")
     @unittest.skipIf(os.getenv('TRAVIS') and
                      os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
                      'TRAVIS Environment is unsuitable for these tests')
@@ -132,6 +134,8 @@ class IsoMount(BaseIso9660, unittest.TestCase):
 
     @unittest.skipIf(not process.can_sudo("mount"),
                      "This test requires sudo or root")
+    @unittest.skipUnless(process.has_capability("cap_sys_admin"),
+                         "Capability to mount is required (cap_sys_admin)")
     @unittest.skipIf(os.getenv('TRAVIS') and
                      os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
                      'TRAVIS Environment is unsuitable for these tests')

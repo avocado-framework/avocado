@@ -47,6 +47,10 @@ def get_all_local_addrs():
                        for _ in ifaddresses.get(netifaces.AF_INET, [])]
         ipv6_addrs += [_['addr']
                        for _ in ifaddresses.get(netifaces.AF_INET6, [])]
+    if ipv4_addrs:
+        ipv4_addrs += ["localhost", ""]
+    if ipv6_addrs:
+        ipv6_addrs += ["localhost", ""]
     return ipv4_addrs, ipv6_addrs
 
 
@@ -57,9 +61,7 @@ class FreePort(unittest.TestCase):
     def test_is_port_free(self):
         port = ports.find_free_port(sequent=False)
         self.assertTrue(ports.is_port_free(port, "localhost"))
-        local_addrs = get_all_local_addrs()
-        ipv4_addrs = ["localhost", ""] + list(local_addrs[0])
-        ipv6_addrs = ["localhost", ""] + list(local_addrs[1])
+        ipv4_addrs, ipv6_addrs = get_all_local_addrs()
         good = []
         bad = []
         skip = []
