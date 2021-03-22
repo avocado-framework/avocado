@@ -1,4 +1,6 @@
 #!/bin/sh -e
+echo "** Running lint..."
+
 if [ "$AVOCADO_PARALLEL_LINT_JOBS" ]; then
     PYLINT_OPTIONS="--jobs=$AVOCADO_PARALLEL_LINT_JOBS";
 fi

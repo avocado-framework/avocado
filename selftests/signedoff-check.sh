@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+echo "** Running signedoff-check..."
+
 AUTHOR="$(git log --no-merges -1 --pretty='format:%aN <%aE>')"
 git log --no-merges -1 --pretty=format:%B | grep -i "Signed-off-by: $AUTHOR"
 if [ $? != 0 ]; then
