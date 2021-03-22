@@ -42,7 +42,7 @@ RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 RUNNERS_REGISTRY_PYTHON_CLASS = {}
 
 
-def check_runnables_requirements(runnables, runners_registry=None):
+def check_runnables_runner_requirements(runnables, runners_registry=None):
     """
     Checks if runnables have runner requirements fulfilled
 
