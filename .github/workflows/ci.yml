@@ -14,8 +14,8 @@ jobs:
       - name: Installing selftests requirements
         run: pip install -r requirements-selftests.txt
 
-      - name: Installing Avocado
-        run: python3 setup.py install --user
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user
 
       - name: Avocado version
         run: avocado --version
