@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import abc
 import argparse
 import base64
 import collections
@@ -312,7 +313,7 @@ class Runnable:
         raise ValueError('Unsupported kind of runnable: %s' % self.kind)
 
 
-class BaseRunner:
+class BaseRunner(metaclass=abc.ABCMeta):
     """
     Base interface for a Runner
     """
@@ -340,8 +341,13 @@ class BaseRunner:
             status.update(additional_info)
         return status
 
+    @abc.abstractmethod
     def run(self):
-        yield {}
+        """Runner main method
+
+        Yields dictionary as output, containing status as well as relevant
+        information concerning the results.
+        """
 
 
 class NoOpRunner(BaseRunner):
