@@ -52,6 +52,22 @@ Assets can be removed applying the same filters as described when listing them.
 You can remove assets by a size filter (`--by-size-filter`) or assets older
 than N days (`--by-days`).
 
+Removing by overall cache limit
+-------------------------------
+
+Besides the existing features, Avocado is able to set an overall limit, so that
+it matches the storage limitations of users (and CI systems).
+
+For instance it may be the case that a GitLab cache limit is 4 GiB, in that
+case we can sort by last access, and remove all that exceeds 4 GiB (that is,
+keep the last accessed 4 GiB worth of cached files). You can run the following
+command::
+
+ $ avocado assets purge --by-overall-limit=4g
+
+This would ensure that the cache is automatically being removed of files that
+were used last (and possibly not used anymore).
+
 Changing the default cache dirs
 -------------------------------
 

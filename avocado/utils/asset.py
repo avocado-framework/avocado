@@ -539,6 +539,25 @@ class Asset:
         return result
 
     @classmethod
+    def remove_assets_by_overall_limit(cls, limit, cache_dirs):
+        """This will remove assets based on overall limit.
+
+        We are going to sort the assets based on the access time first.
+        For instance it may be the case that a GitLab cache limit is 4
+        GiB, in that case we can sort by last access, and remove all
+        that exceeds 4 GiB (that is, keep the last accessed 4 GiB worth
+        of cached files).
+
+        :param limit: a integer limit in bytes.
+        :param cache_dirs: list of directories to use during the search.
+        """
+        size_sum = 0
+        for asset in cls.get_all_assets(cache_dirs):
+            size_sum += os.stat(asset).st_size
+            if size_sum >= limit:
+                cls.remove_asset_by_path(asset)
+
+    @classmethod
     def remove_assets_by_size(cls, size_filter, cache_dirs):
         for file_path in cls.get_assets_by_size(size_filter, cache_dirs):
             cls.remove_asset_by_path(file_path)
