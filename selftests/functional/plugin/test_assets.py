@@ -10,6 +10,7 @@ import warnings
 
 from avocado.core import exit_codes
 from avocado.utils import process
+from avocado.utils.asset import Asset
 
 from ... import (AVOCADO, TestCaseTmpDir, get_temporary_config,
                  skipUnlessPathExists)
@@ -157,6 +158,38 @@ class AssetsFetchSuccess(TestCaseTmpDir):
                                                    config)
         result = process.run(cmd_line)
         self.assertIn(name, result.stdout_text)
+
+    def test_asset_purge_by_overall_cache_size(self):
+        """Make sure that we can set cache limits."""
+        # creates a single byte asset
+        asset_file = tempfile.NamedTemporaryFile(delete=False)
+        asset_file.write(b'\xff')
+        asset_file.close()
+
+        config = self.config_file.name
+        url = asset_file.name
+        name = "should-be-removed"
+        cmd_line = "%s --config %s assets register %s %s" % (AVOCADO,
+                                                             config,
+                                                             name,
+                                                             url)
+        result = process.run(cmd_line)
+        self.assertIn("Now you can reference it by name {}".format(name),
+                      result.stdout_text)
+
+        cmd_line = "%s --config %s assets purge --by-overall-limit 2" % (AVOCADO,
+                                                                         config)
+        process.run(cmd_line)
+
+        cmd_line = "%s --config %s assets list" % (AVOCADO, config)
+        result = process.run(cmd_line)
+        self.assertIn(name, result.stdout_text)
+
+        # Double check that the sum of assets is not bigger than 2bytes
+        size_sum = 0
+        for asset in Asset.get_all_assets([self.mapping['cache_dir']]):
+            size_sum += os.stat(asset).st_size
+        self.assertLessEqual(size_sum, 2)
 
     def tearDown(self):
         self.base_dir.cleanup()

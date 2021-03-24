@@ -28,6 +28,7 @@ from avocado.core.settings import settings
 from avocado.utils import data_structures
 from avocado.utils.asset import SUPPORTED_OPERATORS, Asset
 from avocado.utils.astring import iter_tabular_output
+from avocado.utils.data_structures import DataSize, InvalidDataSize
 from avocado.utils.output import display_data_size
 
 
@@ -272,7 +273,8 @@ class Assets(CLICmd):
     def _count_filter_args(config):
         sub_command = config.get('assets_subcommand')
         args = [config.get("assets.{}.days".format(sub_command)),
-                config.get("assets.{}.size_filter".format(sub_command))]
+                config.get("assets.{}.size_filter".format(sub_command)),
+                config.get("assets.{}.overall_limit".format(sub_command))]
         return len([a for a in args if a is not None])
 
     def configure(self, parser):
@@ -304,6 +306,20 @@ class Assets(CLICmd):
                                      key_type=int,
                                      metavar="DAYS",
                                      long_arg='--by-days',
+                                     parser=subparser)
+
+            help_msg = ("Filter will be based on a overall system limit "
+                        "threshold in bytes (with assets orded by last "
+                        "access) or with a suffix unit. Valid suffixes are: ")
+            help_msg += ','.join(DataSize.MULTIPLIERS.keys())
+
+            settings.register_option(section=section,
+                                     key='overall_limit',
+                                     help_msg=help_msg,
+                                     default=None,
+                                     key_type=str,
+                                     metavar="LIMIT",
+                                     long_arg='--by-overall-limit',
                                      parser=subparser)
 
         parser = super(Assets, self).configure(parser)
@@ -381,6 +397,8 @@ class Assets(CLICmd):
     def handle_purge(self, config):
         days = config.get('assets.purge.days')
         size_filter = config.get('assets.purge.size_filter')
+        overall_limit = config.get('assets.purge.overall_limit')
+
         if self._count_filter_args(config) != 1:
             msg = ("You should choose --by-size-filter or --by-days. "
                    "For help, run: avocado assets purge --help")
@@ -393,6 +411,17 @@ class Assets(CLICmd):
                 Asset.remove_assets_by_unused_for_days(days, cache_dirs)
             elif size_filter is not None:
                 Asset.remove_assets_by_size(size_filter, cache_dirs)
+            elif overall_limit is not None:
+                try:
+                    size = DataSize(overall_limit).b
+                    Asset.remove_assets_by_overall_limit(size, cache_dirs)
+                except InvalidDataSize:
+                    error_msg = "You are using an invalid suffix. "
+                    error_msg += "Use one of the following values: "
+                    error_msg += ",".join(DataSize.MULTIPLIERS.keys())
+                    LOG_UI.error(error_msg)
+                    return
+
         except (FileNotFoundError, OSError) as e:
             LOG_UI.error("Could not remove asset: %s", e)
 
