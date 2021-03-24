@@ -677,6 +677,7 @@ class Task:
         self.known_runners = known_runners
         self.spawn_handle = None
         self.output_dir = None
+        self.data = {}
 
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
