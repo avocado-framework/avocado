@@ -431,7 +431,7 @@ class Asset:
         return os.path.basename(self.parsed_name.path)
 
     @classmethod
-    def get_all_assets(cls, cache_dirs):
+    def get_all_assets(cls, cache_dirs, sort=True):
         """Returns all assets stored in all cache dirs."""
         assets = []
         for cache_dir in cache_dirs:
@@ -441,6 +441,11 @@ class Asset:
                     if not f.endswith('-CHECKSUM') and \
                        not f.endswith('_metadata.json'):
                         assets.append(os.path.join(root, f))
+        if sort:
+            assets = {a: os.stat(a).st_atime for a in assets}
+            return [a[0] for a in sorted(assets.items(),
+                                         key=lambda x: x[1],
+                                         reverse=True)]
         return assets
 
     @classmethod
