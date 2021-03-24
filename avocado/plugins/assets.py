@@ -268,6 +268,13 @@ class Assets(CLICmd):
     name = 'assets'
     description = 'Manage assets'
 
+    @staticmethod
+    def _count_filter_args(config):
+        sub_command = config.get('assets_subcommand')
+        args = [config.get("assets.{}.days".format(sub_command)),
+                config.get("assets.{}.size_filter".format(sub_command))]
+        return len([a for a in args if a is not None])
+
     def configure(self, parser):
         """
         Add the subparser for the assets action.
@@ -374,8 +381,7 @@ class Assets(CLICmd):
     def handle_purge(self, config):
         days = config.get('assets.purge.days')
         size_filter = config.get('assets.purge.size_filter')
-        if (days is None and size_filter is None) \
-                or (days is not None and size_filter is not None):
+        if self._count_filter_args(config) != 1:
             msg = ("You should choose --by-size-filter or --by-days. "
                    "For help, run: avocado assets purge --help")
             LOG_UI.error(msg)
@@ -393,7 +399,7 @@ class Assets(CLICmd):
     def handle_list(self, config):
         days = config.get('assets.list.days')
         size_filter = config.get('assets.list.size_filter')
-        if (days is not None and size_filter is not None):
+        if self._count_filter_args(config) == 2:
             msg = ("You should choose --by-size-filter or --by-days. "
                    "For help, run: avocado assets list --help")
             LOG_UI.error(msg)
