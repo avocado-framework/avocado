@@ -1,3 +1,4 @@
+import logging
 import multiprocessing
 import tempfile
 import time
@@ -5,6 +6,18 @@ import time
 from .. import loader, nrunner, teststatus
 from ..test import TestID
 from ..tree import TreeNode
+
+
+class RunnerLogHandler(logging.Handler):
+
+    def __init__(self, queue):
+        logging.Handler.__init__(self)
+        self.queue = queue
+
+    def emit(self, record):
+        msg = self.format(record)
+        status = {'status': 'log', 'log': msg}
+        self.queue.put(status)
 
 
 class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
@@ -45,6 +58,13 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                          'run.results_dir': tempfile.mkdtemp(),
                          }]
 
+        queue_handler = RunnerLogHandler(queue)
+        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
+        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
+        queue_handler.setFormatter(formatter)
+        log = logging.getLogger("avocado.test")
+        log.addHandler(queue_handler)
+        log.setLevel(logging.DEBUG)
         instance = loader.loader.load_test(test_factory)
         early_state = instance.get_state()
         queue.put(early_state)
@@ -84,34 +104,40 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
         early_status = queue.get()
         timeout = float(early_status.get('timeout') or self.DEFAULT_TIMEOUT)
-        interrupted = False
         most_current_execution_state_time = None
-        while queue.empty():
+        while True:
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
             now = time.monotonic()
-            if most_current_execution_state_time is not None:
-                next_execution_state_mark = (most_current_execution_state_time +
-                                             nrunner.RUNNER_RUN_STATUS_INTERVAL)
-            if (most_current_execution_state_time is None or
-                    now > next_execution_state_mark):
-                most_current_execution_state_time = now
-                yield self.prepare_status('running')
-            if (now - time_started) > timeout:
-                process.terminate()
-                interrupted = True
-                break
-        if interrupted:
-            status = early_status
-            status['result'] = 'interrupted'
-            status['status'] = 'finished'
-            if 'name' in status:
-                del status['name']
-            if 'time_start' in status:
-                del status['time_start']
-        else:
-            status = queue.get()
-        status['time'] = time.monotonic()
-        yield status
+            if queue.empty():
+                if most_current_execution_state_time is not None:
+                    next_execution_state_mark = (most_current_execution_state_time +
+                                                 nrunner.RUNNER_RUN_STATUS_INTERVAL)
+                if (most_current_execution_state_time is None or
+                        now > next_execution_state_mark):
+                    most_current_execution_state_time = now
+                    yield self.prepare_status('running')
+                if (now - time_started) > timeout:
+                    process.terminate()
+                    status = early_status
+                    status['result'] = 'interrupted'
+                    status['status'] = 'finished'
+                    status['time'] = now
+                    if 'name' in status:
+                        del status['name']
+                    if 'time_start' in status:
+                        del status['time_start']
+                    yield status
+                    break
+            else:
+                status = queue.get()
+                status['time'] = time.monotonic()
+                if status['status'] == 'finished':
+                    yield status
+                    break
+                if status['status'] == 'log':
+                    status['status'] = 'running'
+                    status['type'] = 'log'
+                    yield status
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
