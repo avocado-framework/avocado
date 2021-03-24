@@ -25,6 +25,7 @@ from copy import copy
 
 from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
+from avocado.core.messages import MessageProcessor
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
 from avocado.core.settings import settings
@@ -33,7 +34,6 @@ from avocado.core.status.server import StatusServer
 from avocado.core.task.runtime import RuntimeTask
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
-from avocado.core.teststatus import mapping
 
 
 class RunnerInit(Init):
@@ -208,54 +208,19 @@ class Runner(RunnerInterface):
     async def _update_status(self, job):
         tasks_by_id = {str(runtime_task.task.identifier): runtime_task.task
                        for runtime_task in self.tasks}
+        message_processor = MessageProcessor()
         while True:
             try:
-                (task_id, status, _, _) = self.status_repo.status_journal_summary.pop(0)
+                (task_id, _, _, index) = \
+                    self.status_repo.status_journal_summary.pop(0)
 
             except IndexError:
                 await asyncio.sleep(0.05)
                 continue
 
+            message = self.status_repo.get_task_data(task_id, index)
             task = tasks_by_id.get(task_id)
-            early_state = {'name': task.identifier,
-                           'job_logdir': job.logdir,
-                           'job_unique_id': job.unique_id}
-            if status == 'started':
-                job.result.start_test(early_state)
-                job.result_events_dispatcher.map_method('start_test',
-                                                        job.result,
-                                                        early_state)
-            elif status == 'finished':
-                this_task_data = self.status_repo.get_all_task_data(task_id)
-                last_task_status = this_task_data[-1]
-                test_state = last_task_status.copy()
-                test_state['status'] = last_task_status.get('result').upper()
-                test_state.update(early_state)
-
-                time_start = this_task_data[0]['time']
-                time_end = last_task_status['time']
-                time_elapsed = time_end - time_start
-                test_state['time_start'] = time_start
-                test_state['time_end'] = time_end
-                test_state['time_elapsed'] = time_elapsed
-
-                # fake log dir, needed by some result plugins such as HTML
-                if 'logdir' not in test_state:
-                    test_state['logdir'] = ''
-
-                base_path = os.path.join(job.logdir, 'test-results')
-                self._populate_task_logdir(base_path,
-                                           task,
-                                           this_task_data,
-                                           job.config.get('core.debug'))
-
-                job.result.check_test(test_state)
-                job.result_events_dispatcher.map_method('end_test',
-                                                        job.result,
-                                                        test_state)
-
-                if not mapping[test_state['status']]:
-                    self.summary.add("FAIL")
+            message_processor.process_message(message, task, job)
 
     def run_suite(self, job, test_suite):
         # pylint: disable=W0201
