@@ -210,7 +210,7 @@ class Runner(RunnerInterface):
                        for runtime_task in self.tasks}
         while True:
             try:
-                (task_id, status, _) = self.status_repo.status_journal_summary.pop(0)
+                (task_id, status, _, _) = self.status_repo.status_journal_summary.pop(0)
 
             except IndexError:
                 await asyncio.sleep(0.05)
@@ -226,7 +226,7 @@ class Runner(RunnerInterface):
                                                         job.result,
                                                         early_state)
             elif status == 'finished':
-                this_task_data = self.status_repo.get_task_data(task_id)
+                this_task_data = self.status_repo.get_all_task_data(task_id)
                 last_task_status = this_task_data[-1]
                 test_state = last_task_status.copy()
                 test_state['status'] = last_task_status.get('result').upper()
