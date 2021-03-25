@@ -110,6 +110,25 @@ class AvocadoInstrumentedResolver(Resolver):
                                find_avocado_tests)
 
 
+class RequirementsResolver:
+
+    name = 'requirements'
+    description = 'Requirements resolver for tests with requirements'
+
+    @staticmethod
+    def resolve(runnable):
+        requirements_runnables = []
+        for requirement in runnable.requirements:
+            requirement_copy = requirement.copy()
+            kind = 'requirement-%s' % requirement_copy.pop('type')
+            args = requirement_copy.values()
+            requirement_runnable = Runnable(kind, None, *args)
+            # for now, ignore unsupported requirements types
+            if requirement_runnable.pick_runner_command() is not None:
+                requirements_runnables.append(requirement_runnable)
+        return requirements_runnables
+
+
 class TapResolver(Resolver):
 
     name = 'tap'
