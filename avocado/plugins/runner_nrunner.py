@@ -34,6 +34,7 @@ from avocado.core.task.runtime import RuntimeTask
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
 from avocado.core.teststatus import mapping
+from avocado.plugins.resolvers import RequirementsResolver
 
 
 class RunnerInit(Init):
@@ -183,7 +184,7 @@ class Runner(RunnerInterface):
         no_digits = len(str(len(test_suite)))
         status_uris = [test_suite.config.get('nrunner.status_server_uri')]
         for index, runnable in enumerate(test_suite.tests, start=1):
-            # this is all rubbish data
+            # test related operations
             if test_suite.name:
                 prefix = "{}-{}".format(test_suite.name, index)
             else:
@@ -192,8 +193,30 @@ class Runner(RunnerInterface):
                              runnable.uri,
                              None,
                              no_digits)
+            # handles the test task
             task = nrunner.Task(runnable, test_id, status_uris,
                                 nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
+
+            # from here, handles the requirements
+            if runnable.requirements is not None:
+                requirements_runnables = RequirementsResolver.resolve(runnable)
+                for requirement_runnable in requirements_runnables:
+                    name = '%s-%s' % (requirement_runnable.kind,
+                                      '-'.join(requirement_runnable.args))
+                    # the human UI works with TestID objects, so we need to
+                    # use it to name other tasks
+                    task_id = TestID(prefix,
+                                     name,
+                                     None,
+                                     no_digits)
+                    # creates the requirement task
+                    requirement_task = nrunner.Task(requirement_runnable,
+                                                    task_id,
+                                                    status_uris,
+                                                    None)
+                    runtime_tasks.append(RuntimeTask(requirement_task))
+                    # make sure we track the test task dependencies
+                    task.dependencies.add(requirement_task)
             runtime_tasks.append(RuntimeTask(task))
         return runtime_tasks
 
