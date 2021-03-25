@@ -84,7 +84,7 @@ def collect_errors_dmesg(patterns):
     return error
 
 
-def collect_errors_by_level(output_file=None, level_check=5):
+def collect_errors_by_level(output_file=None, level_check=5, skip_errors=None):
     """Verify dmesg having severity level of OS issue(s).
 
     :param output_file: The file used to save dmesg
@@ -97,6 +97,8 @@ def collect_errors_by_level(output_file=None, level_check=5):
                         4 - emerg,alert,crit,err
                         5 - emerg,alert,crit,err,warn
     :type level_check: int
+    :skip_errors: list of dmesg error messages which want skip
+    :type skip_errors: list
     """
     if not isinstance(level_check, int):
         raise DmesgError("level_check param should be integer")
@@ -106,7 +108,11 @@ def collect_errors_by_level(output_file=None, level_check=5):
                       verbose=False, shell=True)
     if out.exit_status == 0:
         err = "Found failures in dmesg"
-        dmsg_log = "dmesg log:\n%s" % out.stdout_text
+        if skip_errors:
+            dmsg_log = skip_dmesg_messages(out.stdout_text, skip_errors)
+        else:
+            dmsg_log = "dmesg log:\n%s" % out.stdout_text
+    if dmsg_log:
         if output_file:
             with open(output_file, "w+") as log_f:
                 log_f.write(dmsg_log)
@@ -115,3 +121,23 @@ def collect_errors_by_level(output_file=None, level_check=5):
             err += " Please check  dmesg log in debug log."
             LOGGER.debug(dmsg_log)
         raise DmesgError("Test is failed {}".format(err))
+
+
+def skip_dmesg_messages(dmesg_stdout, skip_messages):
+    """Remove some messages from a dmesg buffer.
+
+      This method will remove some lines in a dmesg buffer if some strings are
+      present. Returning the same buffer, but with less lines (in case of match).
+
+      :dmesg_stdout: dmesg messages from which filter should be applied. This
+                     must be a decoded output buffer with new lines.
+      :type dmesg_stdout: string
+      :skip_messages: list of strings to be removed
+      :type skip_messages: list
+    """
+    def filter_strings(line):
+        return not any([string in line for string in skip_messages])
+
+    return '\n'.join(filter(None,
+                            filter(filter_strings,
+                                   dmesg_stdout.splitlines())))
