@@ -25,6 +25,7 @@ from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.messages import MessageHandler
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
+from avocado.core.requirements.resolver import RequirementsResolver
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
 from avocado.core.status.server import StatusServer
@@ -137,12 +138,42 @@ class Runner(RunnerInterface):
     description = 'nrunner based implementation of job compliant runner'
 
     @staticmethod
+    def _get_requirements_runtime_tasks(runnable, prefix, status_uris):
+        if runnable.requirements is None:
+            return
+
+        # creates the runnables for the requirements
+        requirements_runnables = RequirementsResolver.resolve(runnable)
+        requirements_runtime_tasks = []
+        # creates the tasks and runtime tasks for the requirements
+        for requirement_runnable in requirements_runnables:
+            name = '%s-%s' % (requirement_runnable.kind,
+                              requirement_runnable.kwargs.get('name'))
+            # the human UI works with TestID objects, so we need to
+            # use it to name other tasks
+            task_id = TestID(prefix,
+                             name,
+                             None)
+            # creates the requirement task
+            requirement_task = nrunner.Task(requirement_runnable,
+                                            task_id,
+                                            status_uris,
+                                            None,
+                                            'requirement')
+            # make sure we track the dependencies of a task
+            # runtime_task.task.dependencies.add(requirement_task)
+            # created the requirement runtime task
+            requirements_runtime_tasks.append(RuntimeTask(requirement_task))
+
+        return requirements_runtime_tasks
+
+    @staticmethod
     def _get_all_runtime_tasks(test_suite):
         runtime_tasks = []
         no_digits = len(str(len(test_suite)))
         status_uris = [test_suite.config.get('nrunner.status_server_uri')]
         for index, runnable in enumerate(test_suite.tests, start=1):
-            # this is all rubbish data
+            # test related operations
             if test_suite.name:
                 prefix = "{}-{}".format(test_suite.name, index)
             else:
@@ -151,9 +182,25 @@ class Runner(RunnerInterface):
                              runnable.uri,
                              None,
                              no_digits)
+            # handles the test task
             task = nrunner.Task(runnable, test_id, status_uris,
                                 nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
-            runtime_tasks.append(RuntimeTask(task))
+            runtime_task = RuntimeTask(task)
+            runtime_tasks.append(runtime_task)
+
+            # handles the requirements
+            requirements_runtime_tasks = (
+                Runner._get_requirements_runtime_tasks(runnable,
+                                                       prefix,
+                                                       status_uris))
+            # extend the list of tasks with the requirements runtime tasks
+            if requirements_runtime_tasks is not None:
+                for requirement_runtime_task in requirements_runtime_tasks:
+                    # make sure we track the dependencies of a task
+                    runtime_task.task.dependencies.add(
+                        requirement_runtime_task.task)
+                runtime_tasks.extend(requirements_runtime_tasks)
+
         return runtime_tasks
 
     def _start_status_server(self, status_server_listen):
