@@ -25,6 +25,7 @@ from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.messages import MessageHandler
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
+from avocado.core.requirements.resolver import RequirementsResolver
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
 from avocado.core.status.server import StatusServer
@@ -142,7 +143,7 @@ class Runner(RunnerInterface):
         no_digits = len(str(len(test_suite)))
         status_uris = [test_suite.config.get('nrunner.status_server_uri')]
         for index, runnable in enumerate(test_suite.tests, start=1):
-            # this is all rubbish data
+            # test related operations
             if test_suite.name:
                 prefix = "{}-{}".format(test_suite.name, index)
             else:
@@ -151,9 +152,44 @@ class Runner(RunnerInterface):
                              runnable.uri,
                              None,
                              no_digits)
+            # handles the test task
             task = nrunner.Task(runnable, test_id, status_uris,
                                 nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
-            runtime_tasks.append(RuntimeTask(task))
+            runtime_task = RuntimeTask(task)
+            runtime_tasks.append(runtime_task)
+
+            # from here, handles the requirements
+            if runnable.requirements is None:
+                continue
+
+            # creates the runnables for the requirements
+            requirements_runnables = RequirementsResolver.resolve(runnable)
+            requirements_runtime_tasks = []
+            # creates the tasks and runtime tasks for the requirements
+            for requirement_runnable in requirements_runnables:
+                name = '%s-%s' % (requirement_runnable.kind,
+                                  requirement_runnable.kwargs.get('name'))
+                # the human UI works with TestID objects, so we need to
+                # use it to name other tasks
+                task_id = TestID(prefix,
+                                 name,
+                                 None,
+                                 no_digits)
+                # creates the requirement task
+                requirement_task = nrunner.Task(requirement_runnable,
+                                                task_id,
+                                                status_uris,
+                                                None,
+                                                'requirement')
+                # make sure we track the dependencies of a task
+                runtime_task.task.dependencies.add(requirement_task)
+                # created the requirement runtime task
+                requirements_runtime_tasks.append(
+                    RuntimeTask(requirement_task))
+            # extend the list of tasks with the requirements runtime tasks
+            if requirements_runtime_tasks:
+                runtime_tasks.extend(requirements_runtime_tasks)
+
         return runtime_tasks
 
     def _start_status_server(self, status_server_listen):
@@ -196,7 +232,7 @@ class Runner(RunnerInterface):
         self.tasks = self._get_all_runtime_tasks(test_suite)
         if test_suite.config.get('nrunner.shuffle'):
             random.shuffle(self.tasks)
-        tsm = TaskStateMachine(self.tasks)
+        tsm = TaskStateMachine(self.tasks, self.status_repo)
         spawner_name = test_suite.config.get('nrunner.spawner')
         spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
         max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
