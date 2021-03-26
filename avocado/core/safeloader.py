@@ -103,20 +103,28 @@ class PythonModule:
                     return True
         return False
 
+    @staticmethod
+    def _get_adjusted_path_for_level(statement, path):
+        level = getattr(statement, 'level', 0)
+        if level is None:
+            level = 0
+        for _ in range(level - 1):
+            path = os.path.dirname(path)
+        return path
+
     def add_imported_object(self, statement):
         """
         Keeps track of objects names and importable entities
         """
         path = os.path.abspath(os.path.dirname(self.path))
         if getattr(statement, 'module', None) is not None:
+            path = self._get_adjusted_path_for_level(statement, path)
             module_path = statement.module.replace('.', os.path.sep)
             path = os.path.join(path, module_path)
         else:
             # Module has no name, its path is relative to the directory
             # structure
-            level = getattr(statement, 'level', 0)
-            for _ in range(level - 1):
-                path = os.path.dirname(path)
+            path = self._get_adjusted_path_for_level(statement, path)
         for name in statement.names:
             full_path = os.path.join(path, name.name.replace('.', os.path.sep))
             final_name = self._get_name_from_alias_statement(name)

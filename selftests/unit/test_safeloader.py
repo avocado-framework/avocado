@@ -2,12 +2,12 @@ import ast
 import os
 import re
 import sys
-import unittest
+import unittest.mock
 
 from avocado.core import safeloader
 from avocado.utils import script
 
-from .. import BASEDIR, setup_avocado_loggers
+from .. import BASEDIR, TestCaseTmpDir, setup_avocado_loggers
 
 setup_avocado_loggers()
 
@@ -99,6 +99,53 @@ class Child(BaseClass):
         pass
 
     def test_child(self):
+        pass
+"""
+
+# The following definitions will be used while creating a directory
+# structure that contains a pre-defined set of modules that will be
+# used on tests bellow
+
+# A level 0 library containing a base test class
+L0_LIB = """
+from avocado import Test
+class BaseL0(Test):
+    def test_l0(self):
+        pass
+"""
+
+L1_LIB1 = """
+from ..l0lib import BaseL0
+class BaseL1(BaseL0):
+    def test_l1(self):
+        pass
+"""
+
+L1_LIB2 = """
+from .. import l0lib
+class BaseL1(l0lib.BaseL0):
+    def test_l1(self):
+        pass
+"""
+
+L2_LIB1 = """
+from ...l0lib import BaseL0
+class BaseL2(BaseL0):
+    def test_l2(self):
+        pass
+"""
+
+L2_LIB2 = """
+from ... import l0lib
+class BaseL2(l0lib.BaseL0):
+    def test_l2(self):
+        pass
+"""
+
+L2_LIB3 = """
+from l0lib import BaseL0
+class BaseL2(BaseL0):
+    def test_l3(self):
         pass
 """
 
@@ -355,7 +402,14 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_import_not_on_parent',
                                     'test_recursive_discovery',
                                     'test_recursive_discovery_python_unittest'],
-            'UnlimitedDiff': ['setUp']
+            'UnlimitedDiff': ['setUp'],
+            'MultiLevel': ['setUp',
+                           'test_base_level0',
+                           'test_relative_level0_name_from_level1',
+                           'test_relative_level0_from_level1',
+                           'test_relative_level0_name_from_level2',
+                           'test_relative_level0_from_level2',
+                           'test_non_relative_level0_from_level2'],
         }
         found = safeloader.find_class_and_methods(get_this_file())
         self.assertEqual(reference, found)
@@ -403,7 +457,13 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_import_not_on_parent',
                                     'test_recursive_discovery',
                                     'test_recursive_discovery_python_unittest'],
-            'UnlimitedDiff': []
+            'UnlimitedDiff': [],
+            'MultiLevel': ['test_base_level0',
+                           'test_relative_level0_name_from_level1',
+                           'test_relative_level0_from_level1',
+                           'test_relative_level0_name_from_level2',
+                           'test_relative_level0_from_level2',
+                           'test_non_relative_level0_from_level2'],
         }
         found = safeloader.find_class_and_methods(get_this_file(),
                                                   re.compile(r'test.*'))
@@ -570,6 +630,76 @@ class PythonModule(unittest.TestCase):
         for _ in module.iter_classes():
             pass
         self.assertIn('TestCaseTmpDir', module.imported_objects)
+
+
+class MultiLevel(TestCaseTmpDir):
+
+    def setUp(self):
+        super(MultiLevel, self).setUp()
+        init = script.Script(os.path.join(self.tmpdir.name, '__init__.py'),
+                             '', mode=script.READ_ONLY_MODE)
+        init.save()
+        l0 = script.Script(os.path.join(self.tmpdir.name, 'l0lib.py'),
+                           L0_LIB, mode=script.READ_ONLY_MODE)
+        l0.save()
+
+        l1_dir = os.path.join(self.tmpdir.name, 'l1')
+        os.mkdir(l1_dir)
+        l11 = script.Script(os.path.join(l1_dir, 'l1lib1.py'),
+                            L1_LIB1, mode=script.READ_ONLY_MODE)
+        l11.save()
+        l12 = script.Script(os.path.join(l1_dir, 'l1lib2.py'),
+                            L1_LIB2, mode=script.READ_ONLY_MODE)
+        l12.save()
+
+        l2_dir = os.path.join(l1_dir, 'l2')
+        os.mkdir(l2_dir)
+        l21 = script.Script(os.path.join(l2_dir, 'l2lib1.py'),
+                            L2_LIB1, mode=script.READ_ONLY_MODE)
+        l21.save()
+        l22 = script.Script(os.path.join(l2_dir, 'l2lib2.py'),
+                            L2_LIB2, mode=script.READ_ONLY_MODE)
+        l22.save()
+        l23 = script.Script(os.path.join(l2_dir, 'l2lib3.py'),
+                            L2_LIB3, mode=script.READ_ONLY_MODE)
+        l23.save()
+
+    def test_base_level0(self):
+        path = os.path.join(self.tmpdir.name, 'l0lib.py')
+        self.assertEqual(safeloader.find_avocado_tests(path)[0],
+                         {'BaseL0': [('test_l0', {}, [])]})
+
+    def test_relative_level0_name_from_level1(self):
+        path = os.path.join(self.tmpdir.name, 'l1', 'l1lib1.py')
+        self.assertEqual(safeloader.find_avocado_tests(path)[0],
+                         {'BaseL1': [('test_l1', {}, []),
+                                     ('test_l0', {}, [])]})
+
+    def test_relative_level0_from_level1(self):
+        path = os.path.join(self.tmpdir.name, 'l1', 'l1lib2.py')
+        self.assertEqual(safeloader.find_avocado_tests(path)[0],
+                         {'BaseL1': [('test_l1', {}, []),
+                                     ('test_l0', {}, [])]})
+
+    def test_relative_level0_name_from_level2(self):
+        path = os.path.join(self.tmpdir.name, 'l1', 'l2', 'l2lib1.py')
+        self.assertEqual(safeloader.find_avocado_tests(path)[0],
+                         {'BaseL2': [('test_l2', {}, []),
+                                     ('test_l0', {}, [])]})
+
+    def test_relative_level0_from_level2(self):
+        path = os.path.join(self.tmpdir.name, 'l1', 'l2', 'l2lib2.py')
+        self.assertEqual(safeloader.find_avocado_tests(path)[0],
+                         {'BaseL2': [('test_l2', {}, []),
+                                     ('test_l0', {}, [])]})
+
+    def test_non_relative_level0_from_level2(self):
+        path = os.path.join(self.tmpdir.name, 'l1', 'l2', 'l2lib3.py')
+        sys_path = sys.path + [self.tmpdir.name]
+        with unittest.mock.patch('sys.path', sys_path):
+            self.assertEqual(safeloader.find_avocado_tests(path)[0],
+                             {'BaseL2': [('test_l3', {}, []),
+                                         ('test_l0', {}, [])]})
 
 
 if __name__ == '__main__':
