@@ -287,14 +287,10 @@ class ValueDict(dict):  # only container pylint: disable=R0903
             value = OutputValue(value, self.node, origin)
         return value
 
-    def iteritems(self):
+    def items(self):
         """ Slower implementation with the use of __getitem__ """
         for key in self:
             yield key, self[key]
-
-    def items(self):
-        """ Slower implementation with the use of __getitem__ """
-        return self.iteritems()  # pylint: disable=W1620
 
 
 class Control:  # Few methods pylint: disable=R0903
