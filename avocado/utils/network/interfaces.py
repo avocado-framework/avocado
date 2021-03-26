@@ -380,3 +380,19 @@ class NetworkInterface:
         else:
             raise NWException(
                 "Backup file not available, could not restore file.")
+
+    def is_available(self):
+        """Check if interface is available.
+
+        This method checks if the interface is available.
+
+        rtype: bool
+        """
+        cmd = 'ip link show dev {}'.format(self.name)
+        try:
+            run_command(cmd, self.host)
+            return True
+        except Exception as ex:
+            msg = "Interface {} is not available. {}".format(self.name, ex)
+            log.debug(msg)
+            return False
