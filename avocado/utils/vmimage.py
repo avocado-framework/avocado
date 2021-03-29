@@ -495,9 +495,9 @@ class Image:
         if self.snapshot_dir is not None:
             new_image = os.path.join(self.snapshot_dir,
                                      os.path.basename(new_image))
-        cmd = '%s create -f qcow2 -b %s %s' % (qemu_img,
-                                               self.base_image,
-                                               new_image)
+        cmd = '%s create -f qcow2 -b %s -F qcow2 %s' % (qemu_img,
+                                                        self.base_image,
+                                                        new_image)
         process.run(cmd)
         return new_image
 
