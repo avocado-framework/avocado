@@ -498,9 +498,9 @@ def create_suites(args):
     # Run all static checks, unit and functional tests
     # ========================================================================
     config_check = {
-        'run.references': (glob.glob('selftests/jobs/*') +
-                           glob.glob('selftests/unit/*.py') +
-                           glob.glob('selftests/functional/*.py')),
+        'run.references': ['selftests/jobs/',
+                           'selftests/unit/',
+                           'selftests/functional/'],
         'run.test_runner': 'nrunner',
         'run.ignore_missing_references': True
     }
