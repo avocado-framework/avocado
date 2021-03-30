@@ -3,7 +3,7 @@ import unittest
 
 from avocado.utils import distro, software_manager
 
-from .. import setup_avocado_loggers
+from ... import setup_avocado_loggers
 
 setup_avocado_loggers()
 

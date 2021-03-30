@@ -20,7 +20,7 @@ import unittest.mock
 
 from avocado.utils import service
 
-from .. import setup_avocado_loggers
+from ... import setup_avocado_loggers
 
 setup_avocado_loggers()
 

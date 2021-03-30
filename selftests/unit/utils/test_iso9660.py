@@ -7,7 +7,7 @@ import unittest.mock
 
 from avocado.utils import iso9660, process
 
-from .. import setup_avocado_loggers, temp_dir_prefix
+from ... import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
 
@@ -15,9 +15,9 @@ setup_avocado_loggers()
 class Capabilities(unittest.TestCase):
 
     def setUp(self):
-        self.iso_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                     os.path.pardir, ".data",
-                                                     "sample.iso"))
+        self.iso_path = os.path.abspath(
+            os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                         os.path.pardir, ".data", "sample.iso"))
 
     @unittest.mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=True)
     def test_capabilities_pycdlib(self, has_pycdlib_mocked):
@@ -49,9 +49,9 @@ class BaseIso9660:
     """
 
     def setUp(self):
-        self.iso_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                     os.path.pardir, ".data",
-                                                     "sample.iso"))
+        self.iso_path = os.path.abspath(
+            os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                         os.path.pardir, ".data", "sample.iso"))
         self.iso = None
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)

@@ -6,7 +6,7 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import process, script
 
-from .. import AVOCADO, BASEDIR, TestCaseTmpDir
+from ... import AVOCADO, BASEDIR, TestCaseTmpDir
 
 
 class DiffTests(TestCaseTmpDir):
