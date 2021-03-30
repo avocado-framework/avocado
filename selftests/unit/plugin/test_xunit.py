@@ -8,7 +8,7 @@ from avocado.core import job
 from avocado.core.result import Result
 from avocado.plugins import xunit
 
-from .. import setup_avocado_loggers, temp_dir_prefix
+from ... import setup_avocado_loggers, temp_dir_prefix
 
 try:
     import xmlschema
@@ -93,9 +93,10 @@ class xUnitSucceedTest(unittest.TestCase):
         self.assertEqual(len(els), 1)
         self.assertEqual(els[0].attributes['time'].value, '678.237')
 
-        junit_xsd = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 os.path.pardir, ".data",
-                                                 'jenkins-junit.xsd'))
+        junit_xsd = os.path.abspath(os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            os.path.pardir, ".data",
+            'jenkins-junit.xsd'))
         xml_schema = xmlschema.XMLSchema(junit_xsd)
         self.assertTrue(xml_schema.is_valid(xunit_output))
 

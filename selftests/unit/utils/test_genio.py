@@ -6,7 +6,7 @@ import unittest
 
 from avocado.utils import genio
 
-from .. import setup_avocado_loggers, temp_dir_prefix
+from ... import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
 

@@ -13,7 +13,7 @@ config = {
     'nrunner.status_server_listen': status_server,
     'nrunner.status_server_uri': status_server,
     'run.references': [
-        'selftests/unit/test_resolver.py',
+        'selftests/unit/plugin/test_resolver.py',
         'selftests/functional/test_argument_parsing.py',
         '/bin/true',
     ],

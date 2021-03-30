@@ -6,7 +6,7 @@ from avocado.plugins.resolvers import (AvocadoInstrumentedResolver,
                                        ExecTestResolver)
 from avocado.utils import script
 
-from .. import BASEDIR
+from ... import BASEDIR
 
 
 class ReferenceResolution(unittest.TestCase):
