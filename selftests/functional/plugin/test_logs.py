@@ -3,7 +3,7 @@ import os
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import AVOCADO, TestCaseTmpDir
+from ... import AVOCADO, TestCaseTmpDir
 
 CONFIG = """[job.output.testlogs]
 statuses = ["FAIL", "CANCEL"]"""
