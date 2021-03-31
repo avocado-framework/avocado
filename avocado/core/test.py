@@ -1092,6 +1092,8 @@ class SimpleTest(Test):
         """
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
+        self.log.info("STDOUT: %s", result.stdout_text.strip())
+        self.log.info("STDERR: %s", result.stderr_text.strip())
 
     @staticmethod
     def _cmd_error_to_test_failure(cmd_error):
