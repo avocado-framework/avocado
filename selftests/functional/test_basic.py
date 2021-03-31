@@ -942,6 +942,32 @@ class RunnerSimpleTestStatus(TestCaseTmpDir):
         self.config_file.remove()
 
 
+class RunnerSimpleTestFailureFields(TestCaseTmpDir):
+
+    def setUp(self):
+        super(RunnerSimpleTestFailureFields, self).setUp()
+        self.config_file = script.TemporaryScript(
+            'avocado.conf',
+            "[simpletests.status]\n"
+            "failure_fields = ['stdout', 'stderr']\n")
+        self.config_file.save()
+
+    def test_simpletest_failure_fields(self):
+        fail_test = os.path.join(BASEDIR, 'examples', 'tests', 'failtest.sh')
+        cmd_line = ('%s --config %s run --job-results-dir %s --disable-sysinfo'
+                    ' -- %s' % (AVOCADO, self.config_file.path,
+                                self.tmpdir.name, fail_test))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        self.assertNotIn("Exited with status: '1'", result.stdout_text)
+
+    def tearDown(self):
+        super(RunnerSimpleTestFailureFields, self).tearDown()
+        self.config_file.remove()
+
+
 class ExternalRunnerTest(TestCaseTmpDir):
 
     def setUp(self):

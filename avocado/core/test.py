@@ -1096,11 +1096,16 @@ class SimpleTest(Test):
         self.log.info("  STDOUT: %s", result.stdout_text.strip())
         self.log.info("  STDERR: %s", result.stderr_text.strip())
 
-    @staticmethod
-    def _cmd_error_to_test_failure(cmd_error):
-        return ("Exited with status: '%u', stdout: %r stderr: %r" %
-                (cmd_error.result.exit_status, cmd_error.result.stdout_text,
-                 cmd_error.result.stderr_text))
+    def _cmd_error_to_test_failure(self, cmd_error):
+        failure_fields = self._config.get('simpletests.status.failure_fields')
+        msgs = []
+        if 'status' in failure_fields:
+            msgs.append("Exited with status: '%u'" % cmd_error.result.exit_status)
+        if 'stdout' in failure_fields:
+            msgs.append("stdout: %r" % cmd_error.result.stdout_text)
+        if 'stderr' in failure_fields:
+            msgs.append("stderr: %r" % cmd_error.result.stdout_text)
+        return ", ".join(msgs)
 
     def _execute_cmd(self):
         """
