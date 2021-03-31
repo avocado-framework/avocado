@@ -66,6 +66,14 @@ def register_core_options():
                          default='all',
                          help_msg=help_msg)
 
+    help_msg = ('Fields to include in the presentation of SIMPLE test '
+                'failures.  Accepted values: status, stdout, stderr.')
+    stgs.register_option(section='simpletests.status',
+                         key='failure_fields',
+                         key_type=list,
+                         default=['status', 'stdout', 'stderr'],
+                         help_msg=help_msg)
+
     help_msg = ('The amount of time to give to the test process after '
                 'it it has been interrupted (such as with CTRL+C)')
     stgs.register_option(section='runner.timeout',

@@ -261,7 +261,7 @@ class Test(unittest.TestCase, TestData):
 
         self.__tags = tags
 
-        self.__config = config or settings.as_dict()
+        self._config = config or settings.as_dict()
 
         self.__base_logdir_tmp = None
         if base_logdir is None:
@@ -285,8 +285,8 @@ class Test(unittest.TestCase, TestData):
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
 
-        self.__sysinfo_enabled = self.__config.get('sysinfo.collect.per_test',
-                                                   False)
+        self.__sysinfo_enabled = self._config.get('sysinfo.collect.per_test',
+                                                  False)
 
         if self.__sysinfo_enabled:
             self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
@@ -786,8 +786,8 @@ class Test(unittest.TestCase, TestData):
         whiteboard_file = os.path.join(self.logdir, 'whiteboard')
         genio.write_file(whiteboard_file, self.whiteboard)
 
-        output_check_record = self.__config.get('run.output_check_record')
-        output_check = self.__config.get('run.output_check')
+        output_check_record = self._config.get('run.output_check_record')
+        output_check = self._config.get('run.output_check')
 
         # record the output if the modes are valid
         if output_check_record == 'combined':
@@ -1038,7 +1038,7 @@ class Test(unittest.TestCase, TestData):
         if self.__base_logdir_tmp is not None:
             self.__base_logdir_tmp.cleanup()
             self.__base_logdir_tmp = None
-        if not self.__config.get('run.keep_tmp') and os.path.exists(
+        if not self._config.get('run.keep_tmp') and os.path.exists(
                 self.__base_tmpdir):
             shutil.rmtree(self.__base_tmpdir)
 
@@ -1076,7 +1076,6 @@ class SimpleTest(Test):
         self._command = None
         if self.filename is not None:
             self._command = pipes.quote(self.filename)
-        self._config = settings.as_dict()
 
     @property
     def filename(self):
@@ -1091,14 +1090,22 @@ class SimpleTest(Test):
 
         :param result: :class:`avocado.utils.process.CmdResult` instance.
         """
-        self.log.info("Exit status: %s", result.exit_status)
-        self.log.info("Duration: %s", result.duration)
+        self.log.info("Detailed information about the executed command:")
+        self.log.info("  Exit status: %s", result.exit_status)
+        self.log.info("  Duration: %s", result.duration)
+        self.log.info("  STDOUT: %s", result.stdout_text.strip())
+        self.log.info("  STDERR: %s", result.stderr_text.strip())
 
-    @staticmethod
-    def _cmd_error_to_test_failure(cmd_error):
-        return ("Exited with status: '%u', stdout: %r stderr: %r" %
-                (cmd_error.result.exit_status, cmd_error.result.stdout_text,
-                 cmd_error.result.stderr_text))
+    def _cmd_error_to_test_failure(self, cmd_error):
+        failure_fields = self._config.get('simpletests.status.failure_fields')
+        msgs = []
+        if 'status' in failure_fields:
+            msgs.append("Exited with status: '%u'" % cmd_error.result.exit_status)
+        if 'stdout' in failure_fields:
+            msgs.append("stdout: %r" % cmd_error.result.stdout_text)
+        if 'stderr' in failure_fields:
+            msgs.append("stderr: %r" % cmd_error.result.stdout_text)
+        return ", ".join(msgs)
 
     def _execute_cmd(self):
         """
