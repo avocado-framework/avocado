@@ -3,7 +3,7 @@ from urllib.error import HTTPError
 
 from avocado.utils import vmimage
 
-from .. import setup_avocado_loggers
+from ... import setup_avocado_loggers
 
 setup_avocado_loggers()
 

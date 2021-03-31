@@ -5,7 +5,7 @@ import unittest
 from avocado.core import test
 from avocado.plugins.legacy import replay as replay_legacy
 
-from .. import setup_avocado_loggers, temp_dir_prefix
+from ... import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
 

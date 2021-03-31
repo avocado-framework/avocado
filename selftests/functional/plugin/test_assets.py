@@ -11,8 +11,8 @@ import warnings
 from avocado.core import exit_codes
 from avocado.utils import process
 
-from .. import (AVOCADO, TestCaseTmpDir, get_temporary_config,
-                skipUnlessPathExists)
+from ... import (AVOCADO, TestCaseTmpDir, get_temporary_config,
+                 skipUnlessPathExists)
 
 TEST_TEMPLATE = r"""
 from avocado import Test

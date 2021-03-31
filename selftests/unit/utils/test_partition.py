@@ -13,7 +13,7 @@ from avocado.utils import partition
 from avocado.utils import path as utils_path
 from avocado.utils import process, wait
 
-from .. import temp_dir_prefix
+from ... import temp_dir_prefix
 
 
 def missing_binary(binary):

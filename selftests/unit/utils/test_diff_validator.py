@@ -6,7 +6,7 @@ import unittest
 
 from avocado.utils import diff_validator
 
-from .. import temp_dir_prefix
+from ... import temp_dir_prefix
 
 
 class ChangeValidationTest(unittest.TestCase):
