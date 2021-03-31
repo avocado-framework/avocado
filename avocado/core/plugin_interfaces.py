@@ -288,12 +288,3 @@ class Spawner(Plugin):
         :param runtime_task: wrapper for a Task with additional runtime information
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
         """
-
-    @staticmethod
-    @abc.abstractmethod
-    async def check_task_requirements(runtime_task):
-        """Checks if the requirements described within a task are available.
-
-        :param runtime_task: wrapper for a Task with additional runtime information
-        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
-        """
