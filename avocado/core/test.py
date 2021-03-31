@@ -1090,10 +1090,11 @@ class SimpleTest(Test):
 
         :param result: :class:`avocado.utils.process.CmdResult` instance.
         """
-        self.log.info("Exit status: %s", result.exit_status)
-        self.log.info("Duration: %s", result.duration)
-        self.log.info("STDOUT: %s", result.stdout_text.strip())
-        self.log.info("STDERR: %s", result.stderr_text.strip())
+        self.log.info("Detailed information about the executed command:")
+        self.log.info("  Exit status: %s", result.exit_status)
+        self.log.info("  Duration: %s", result.duration)
+        self.log.info("  STDOUT: %s", result.stdout_text.strip())
+        self.log.info("  STDERR: %s", result.stderr_text.strip())
 
     @staticmethod
     def _cmd_error_to_test_failure(cmd_error):
