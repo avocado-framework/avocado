@@ -21,6 +21,15 @@ class TestLogsInit(Init):
                                  default=[],
                                  help_msg=help_msg)
 
+        help_msg = ('The specific log files that will be shown for tests '
+                    'whose exit status match the ones defined in the '
+                    '"job.output.testlogs.statuses" configuration. ')
+        settings.register_option(section='job.output.testlogs',
+                                 key='logfiles',
+                                 key_type=list,
+                                 default=['debug.log'],
+                                 help_msg=help_msg)
+
 
 class TestLogs(JobPre, JobPost):
 
@@ -40,9 +49,17 @@ class TestLogs(JobPre, JobPost):
         except FileNotFoundError:
             return
 
+        logfiles = job.config.get('job.output.testlogs.logfiles')
         for test in results['tests']:
             if test['status'] not in statuses:
                 continue
-            LOG_UI.info('Log content for test "%s" (%s)', test['id'], test['status'])
-            with open(test['logfile']) as log:
-                LOG_UI.debug(log.read())
+            for logfile in logfiles:
+                path = os.path.join(test['logdir'], logfile)
+                try:
+                    with open(path) as log:
+                        LOG_UI.info('Log file "%s" content for test "%s" (%s):',
+                                    logfile, test['id'], test['status'])
+                        LOG_UI.debug(log.read())
+                except (FileNotFoundError, PermissionError) as error:
+                    LOG_UI.error('Failure to access log file "%s": %s',
+                                 path, error)
