@@ -56,6 +56,10 @@ class TAPRunner(nrunner.BaseRunner):
             elif isinstance(event, TapParser.Error):
                 result = 'error'
                 break
+            elif isinstance(event, TapParser.Plan):
+                if event.skipped:
+                    result = 'skip'
+                    break
             elif isinstance(event, TapParser.Test):
                 if event.result in (TestResult.XPASS, TestResult.FAIL):
                     result = 'fail'
