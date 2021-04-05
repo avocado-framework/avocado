@@ -41,6 +41,7 @@ class TAPRunner(nrunner.BaseRunner):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=env)
+        yield self.prepare_status('started')
 
         while process.poll() is None:
             time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
