@@ -42,18 +42,8 @@ class ProcessSpawner(Spawner, SpawnerMixin):
 
     @staticmethod
     async def check_task_requirements(runtime_task):
-        runnable_requirements = runtime_task.task.runnable.requirements
-        if not runnable_requirements:
-            return True
-
-        for requirements in runnable_requirements:
-            for (req_type, req_value) in requirements.items():
-                # The fact that this is avocado code means this
-                # requirement is fulfilled
-                if req_type == 'core' and req_value == 'avocado':
-                    continue
-                else:
-                    # current implementation can not check any other type of
-                    # requirement at this moment so fail
-                    return False
+        """Check the runtime task requirements needed to be able to run"""
+        # right now, limit the check to the runner availability.
+        if runtime_task.task.runnable.pick_runner_command() is None:
+            return False
         return True
