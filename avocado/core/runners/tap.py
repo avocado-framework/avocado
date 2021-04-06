@@ -1,13 +1,10 @@
 import io
-import os
-import subprocess
-import time
 
 from .. import nrunner
 from ..tapparser import TapParser, TestResult
 
 
-class TAPRunner(nrunner.BaseRunner):
+class TAPRunner(nrunner.ExecRunner):
     """Runner for standalone executables treated as TAP
 
     When creating the Runnable, use the following attributes:
@@ -31,22 +28,8 @@ class TAPRunner(nrunner.BaseRunner):
                            DEBUG='false') # kwargs 1 (environment)
     """
 
-    def run(self):
-        env = self.runnable.kwargs or None
-        if env and 'PATH' not in env:
-            env['PATH'] = os.environ.get('PATH')
-        process = subprocess.Popen(
-            [self.runnable.uri] + list(self.runnable.args),
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=env)
-
-        while process.poll() is None:
-            time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
-            yield self.prepare_status('running')
-
-        stdout = process.stdout.read()
+    @staticmethod
+    def _get_tap_result(stdout):
         parser = TapParser(io.StringIO(stdout.decode()))
         result = 'error'
         for event in parser.parse():
@@ -56,6 +39,10 @@ class TAPRunner(nrunner.BaseRunner):
             elif isinstance(event, TapParser.Error):
                 result = 'error'
                 break
+            elif isinstance(event, TapParser.Plan):
+                if event.skipped:
+                    result = 'skip'
+                    break
             elif isinstance(event, TapParser.Test):
                 if event.result in (TestResult.XPASS, TestResult.FAIL):
                     result = 'fail'
@@ -65,12 +52,14 @@ class TAPRunner(nrunner.BaseRunner):
                     break
                 else:
                     result = 'pass'
+        return result
 
-        yield self.prepare_status('finished',
-                                  {'result': result,
-                                   'returncode': process.returncode,
-                                   'stdout': stdout,
-                                   'stderr': process.stderr.read()})
+    def _process_final_status(self, process, stdout, stderr):
+        return self.prepare_status('finished',
+                                   {'result': self._get_tap_result(stdout),
+                                    'returncode': process.returncode,
+                                    'stdout': stdout,
+                                    'stderr': stderr})
 
 
 class RunnerApp(nrunner.BaseRunnerApp):

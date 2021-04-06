@@ -384,6 +384,12 @@ class ExecRunner(BaseRunner):
        process
     """
 
+    def _process_final_status(self, process, stdout, stderr):
+        return self.prepare_status('finished',
+                                   {'returncode': process.returncode,
+                                    'stdout': stdout,
+                                    'stderr': stderr})
+
     def run(self):
         env = None
         if self.runnable.kwargs:
@@ -418,11 +424,7 @@ class ExecRunner(BaseRunner):
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
                 yield self.prepare_status('running')
-
-        return_code = process.returncode
-        yield self.prepare_status('finished', {'returncode': return_code,
-                                               'stdout': stdout,
-                                               'stderr': stderr})
+        yield self._process_final_status(process, stdout, stderr)
 
 
 RUNNERS_REGISTRY_PYTHON_CLASS['exec'] = ExecRunner
@@ -439,22 +441,24 @@ class ExecTestRunner(ExecRunner):
     Runnable attributes usage is identical to :class:`ExecRunner`
     """
 
-    def run(self):
+    def _process_final_status(self, process, stdout, stderr):
         # Since Runners are standalone, and could be executed on a remote
         # machine in an "isolated" way, there is no way to assume a default
         # value, at this moment.
         skip_codes = self.runnable.config.get('runner.exectest.exitcodes.skip',
                                               [])
-        for most_current_execution_state in super(ExecTestRunner, self).run():
-            returncode = most_current_execution_state.get('returncode')
-            if returncode is not None:
-                if returncode in skip_codes:
-                    most_current_execution_state['result'] = 'skip'
-                elif returncode == 0:
-                    most_current_execution_state['result'] = 'pass'
-                else:
-                    most_current_execution_state['result'] = 'fail'
-            yield most_current_execution_state
+        final_status = {}
+        if process.returncode in skip_codes:
+            final_status['result'] = 'skip'
+        elif process.returncode == 0:
+            final_status['result'] = 'pass'
+        else:
+            final_status['result'] = 'fail'
+
+        final_status['returncode'] = process.returncode
+        final_status['stdout'] = stdout
+        final_status['stderr'] = stderr
+        return self.prepare_status('finished', final_status)
 
 
 RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner
