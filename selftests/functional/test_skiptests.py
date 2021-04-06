@@ -206,8 +206,8 @@ class Skip(Base):
 
     def setUp(self):
         super(Skip, self).setUp()
-        self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
-                                              AVOCADO_TEST_SKIP_LIB)
+        _ = self._create_tmp_file('lib_skip_decorators.py',
+                                  AVOCADO_TEST_SKIP_LIB)
         self.test_module = self._create_tmp_file('test_skip_decorators.py',
                                                  AVOCADO_TEST_SKIP_DECORATORS)
 
@@ -235,8 +235,8 @@ class SkipClass(Base):
 
     def setUp(self):
         super(SkipClass, self).setUp()
-        self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
-                                              AVOCADO_TEST_SKIP_LIB)
+        _ = self._create_tmp_file('lib_skip_decorators.py',
+                                  AVOCADO_TEST_SKIP_LIB)
         self.class_module = self._create_tmp_file(
             'test_skip_class_decorators.py',
             AVOCADO_TEST_SKIP_CLASS_DECORATORS)
@@ -265,8 +265,8 @@ class SkipIfClass(Base):
 
     def setUp(self):
         super(SkipIfClass, self).setUp()
-        self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
-                                              AVOCADO_TEST_SKIP_LIB)
+        _ = self._create_tmp_file('lib_skip_decorators.py',
+                                  AVOCADO_TEST_SKIP_LIB)
         self.class_if_module = self._create_tmp_file(
             'test_skip_if_class_decorators.py',
             AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS)
@@ -291,8 +291,8 @@ class SkipUnlessClass(Base):
 
     def setUp(self):
         super(SkipUnlessClass, self).setUp()
-        self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
-                                              AVOCADO_TEST_SKIP_LIB)
+        _ = self._create_tmp_file('lib_skip_decorators.py',
+                                  AVOCADO_TEST_SKIP_LIB)
         self.class_unless_module = self._create_tmp_file(
             'test_skip_unless_class_decorators.py',
             AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS)
