@@ -334,11 +334,11 @@ class BaseRunner(metaclass=abc.ABCMeta):
 
         :rtype: dict
         """
-        status = {'status': status_type,
-                  'time': time.monotonic()}
-
+        status = {}
         if isinstance(additional_info, dict):
-            status.update(additional_info)
+            status = additional_info
+        status.update({'status': status_type,
+                       'time': time.monotonic()})
         return status
 
     @abc.abstractmethod
