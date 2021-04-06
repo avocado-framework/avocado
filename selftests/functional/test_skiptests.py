@@ -201,18 +201,7 @@ class Base(TestCaseTmpDir):
         scr_obj.save()
         return scr_obj
 
-
-class Skip(Base):
-
-    def setUp(self):
-        super(Skip, self).setUp()
-        _ = self._create_tmp_file('lib_skip_decorators.py',
-                                  AVOCADO_TEST_SKIP_LIB)
-        self.script_to_exec = self._create_tmp_file(
-            'test_skip_decorators.py',
-            AVOCADO_TEST_SKIP_DECORATORS)
-
-    def test_skip_decorators(self):
+    def check_skips(self, number_of_skips):
         cmd_line = [AVOCADO,
                     'run',
                     '--disable-sysinfo',
@@ -225,11 +214,25 @@ class Skip(Base):
         debuglog = json_results['debuglog']
 
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual(json_results['skip'], 5)
+        self.assertEqual(json_results['skip'], number_of_skips)
         debuglog_contents = genio.read_file(debuglog)
         self.assertFalse('setup executed' in debuglog_contents)
         self.assertFalse('test executed' in debuglog_contents)
         self.assertFalse('teardown executed' in debuglog_contents)
+
+
+class Skip(Base):
+
+    def setUp(self):
+        super(Skip, self).setUp()
+        _ = self._create_tmp_file('lib_skip_decorators.py',
+                                  AVOCADO_TEST_SKIP_LIB)
+        self.script_to_exec = self._create_tmp_file(
+            'test_skip_decorators.py',
+            AVOCADO_TEST_SKIP_DECORATORS)
+
+    def test_skip_decorators(self):
+        self.check_skips(5)
 
 
 class SkipClass(Base):
@@ -243,23 +246,7 @@ class SkipClass(Base):
             AVOCADO_TEST_SKIP_CLASS_DECORATORS)
 
     def test_skip_class_decorators(self):
-        cmd_line = [AVOCADO,
-                    'run',
-                    '--disable-sysinfo',
-                    '--job-results-dir',
-                    '%s' % self.tmpdir.name,
-                    '%s' % self.script_to_exec,
-                    '--json -']
-        result = process.run(' '.join(cmd_line), ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-        debuglog = json_results['debuglog']
-
-        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual(json_results['skip'], 3)
-        debuglog_contents = genio.read_file(debuglog)
-        self.assertFalse('setup executed' in debuglog_contents)
-        self.assertFalse('test executed' in debuglog_contents)
-        self.assertFalse('teardown executed' in debuglog_contents)
+        self.check_skips(3)
 
 
 class SkipIfClass(Base):
