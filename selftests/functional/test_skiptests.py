@@ -196,46 +196,37 @@ class AvocadoSkipTests(avocado.Test):
 
 class TestSkipDecorators(TestCaseTmpDir):
 
+    def _create_tmp_file(self, name, content):
+        scr_obj = script.Script(os.path.join(self.tmpdir.name, name), content)
+        scr_obj.save()
+        return scr_obj
+
     def setUp(self):
         super(TestSkipDecorators, self).setUp()
-        test_path = os.path.join(self.tmpdir.name, 'test_skip_decorators.py')
-        self.test_module = script.Script(test_path,
-                                         AVOCADO_TEST_SKIP_DECORATORS)
-        self.test_module.save()
+        self.test_module = self._create_tmp_file('test_skip_decorators.py',
+                                                 AVOCADO_TEST_SKIP_DECORATORS)
 
-        class_path = os.path.join(self.tmpdir.name,
-                                  'test_skip_class_decorators.py')
-        self.class_module = script.Script(class_path,
-                                          AVOCADO_TEST_SKIP_CLASS_DECORATORS)
-        self.class_module.save()
+        self.class_module = self._create_tmp_file(
+            'test_skip_class_decorators.py',
+            AVOCADO_TEST_SKIP_CLASS_DECORATORS)
 
-        class_if_path = os.path.join(self.tmpdir.name,
-                                     'test_skip_if_class_decorators.py')
-        self.class_if_module = script.Script(class_if_path,
-                                             AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS)
-        self.class_if_module.save()
+        self.class_if_module = self._create_tmp_file(
+            'test_skip_if_class_decorators.py',
+            AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS)
 
-        class_unless_path = os.path.join(self.tmpdir.name,
-                                         'test_skip_unless_class_decorators.py')
-        self.class_unless_module = script.Script(class_unless_path,
-                                                 AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS)
-        self.class_unless_module.save()
+        self.class_unless_module = self._create_tmp_file(
+            'test_skip_unless_class_decorators.py',
+            AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS)
 
-        lib_path = os.path.join(self.tmpdir.name, 'lib_skip_decorators.py')
-        self.test_lib = script.Script(lib_path, AVOCADO_TEST_SKIP_LIB)
-        self.test_lib.save()
+        self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
+                                              AVOCADO_TEST_SKIP_LIB)
 
-        skip_setup_path = os.path.join(self.tmpdir.name,
-                                       'test_skip_decorator_setup.py')
-        self.skip_setup = script.Script(skip_setup_path,
-                                        AVOCADO_SKIP_DECORATOR_SETUP)
-        self.skip_setup.save()
+        self.skip_setup = self._create_tmp_file('test_skip_decorator_setup.py',
+                                                AVOCADO_SKIP_DECORATOR_SETUP)
 
-        bad_teardown_path = os.path.join(self.tmpdir.name,
-                                         'test_skip_decorator_teardown.py')
-        self.bad_teardown = script.Script(bad_teardown_path,
-                                          AVOCADO_SKIP_DECORATOR_TEARDOWN)
-        self.bad_teardown.save()
+        self.bad_teardown = self._create_tmp_file(
+            'test_skip_decorator_teardown.py',
+            AVOCADO_SKIP_DECORATOR_TEARDOWN)
 
     def test_skip_decorators(self):
         cmd_line = [AVOCADO,
