@@ -194,39 +194,22 @@ class AvocadoSkipTests(avocado.Test):
 """
 
 
-class TestSkipDecorators(TestCaseTmpDir):
+class Base(TestCaseTmpDir):
 
     def _create_tmp_file(self, name, content):
         scr_obj = script.Script(os.path.join(self.tmpdir.name, name), content)
         scr_obj.save()
         return scr_obj
 
+
+class Skip(Base):
+
     def setUp(self):
-        super(TestSkipDecorators, self).setUp()
-        self.test_module = self._create_tmp_file('test_skip_decorators.py',
-                                                 AVOCADO_TEST_SKIP_DECORATORS)
-
-        self.class_module = self._create_tmp_file(
-            'test_skip_class_decorators.py',
-            AVOCADO_TEST_SKIP_CLASS_DECORATORS)
-
-        self.class_if_module = self._create_tmp_file(
-            'test_skip_if_class_decorators.py',
-            AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS)
-
-        self.class_unless_module = self._create_tmp_file(
-            'test_skip_unless_class_decorators.py',
-            AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS)
-
+        super(Skip, self).setUp()
         self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
                                               AVOCADO_TEST_SKIP_LIB)
-
-        self.skip_setup = self._create_tmp_file('test_skip_decorator_setup.py',
-                                                AVOCADO_SKIP_DECORATOR_SETUP)
-
-        self.bad_teardown = self._create_tmp_file(
-            'test_skip_decorator_teardown.py',
-            AVOCADO_SKIP_DECORATOR_TEARDOWN)
+        self.test_module = self._create_tmp_file('test_skip_decorators.py',
+                                                 AVOCADO_TEST_SKIP_DECORATORS)
 
     def test_skip_decorators(self):
         cmd_line = [AVOCADO,
@@ -247,6 +230,17 @@ class TestSkipDecorators(TestCaseTmpDir):
         self.assertFalse('test executed' in debuglog_contents)
         self.assertFalse('teardown executed' in debuglog_contents)
 
+
+class SkipClass(Base):
+
+    def setUp(self):
+        super(SkipClass, self).setUp()
+        self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
+                                              AVOCADO_TEST_SKIP_LIB)
+        self.class_module = self._create_tmp_file(
+            'test_skip_class_decorators.py',
+            AVOCADO_TEST_SKIP_CLASS_DECORATORS)
+
     def test_skip_class_decorators(self):
         cmd_line = [AVOCADO,
                     'run',
@@ -266,6 +260,17 @@ class TestSkipDecorators(TestCaseTmpDir):
         self.assertFalse('test executed' in debuglog_contents)
         self.assertFalse('teardown executed' in debuglog_contents)
 
+
+class SkipIfClass(Base):
+
+    def setUp(self):
+        super(SkipIfClass, self).setUp()
+        self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
+                                              AVOCADO_TEST_SKIP_LIB)
+        self.class_if_module = self._create_tmp_file(
+            'test_skip_if_class_decorators.py',
+            AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS)
+
     def test_skipIf_class_decorators(self):
         cmd_line = [AVOCADO,
                     'run',
@@ -280,6 +285,17 @@ class TestSkipDecorators(TestCaseTmpDir):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(json_results['skip'], 3)
         self.assertEqual(json_results['pass'], 3)
+
+
+class SkipUnlessClass(Base):
+
+    def setUp(self):
+        super(SkipUnlessClass, self).setUp()
+        self.test_lib = self._create_tmp_file('lib_skip_decorators.py',
+                                              AVOCADO_TEST_SKIP_LIB)
+        self.class_unless_module = self._create_tmp_file(
+            'test_skip_unless_class_decorators.py',
+            AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS)
 
     def test_skipUnless_class_decorators(self):
         cmd_line = [AVOCADO,
@@ -296,6 +312,14 @@ class TestSkipDecorators(TestCaseTmpDir):
         self.assertEqual(json_results['skip'], 3)
         self.assertEqual(json_results['pass'], 3)
 
+
+class SkipSetup(Base):
+
+    def setUp(self):
+        super(SkipSetup, self).setUp()
+        self.skip_setup = self._create_tmp_file('test_skip_decorator_setup.py',
+                                                AVOCADO_SKIP_DECORATOR_SETUP)
+
     def test_skip_setup(self):
         cmd_line = [AVOCADO,
                     'run',
@@ -308,6 +332,15 @@ class TestSkipDecorators(TestCaseTmpDir):
         json_results = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(json_results['skip'], 1)
+
+
+class SkipTearDown(Base):
+
+    def setUp(self):
+        super(SkipTearDown, self).setUp()
+        self.bad_teardown = self._create_tmp_file(
+            'test_skip_decorator_teardown.py',
+            AVOCADO_SKIP_DECORATOR_TEARDOWN)
 
     def test_skip_teardown(self):
         cmd_line = [AVOCADO,
