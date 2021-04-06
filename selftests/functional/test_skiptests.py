@@ -208,8 +208,9 @@ class Skip(Base):
         super(Skip, self).setUp()
         _ = self._create_tmp_file('lib_skip_decorators.py',
                                   AVOCADO_TEST_SKIP_LIB)
-        self.test_module = self._create_tmp_file('test_skip_decorators.py',
-                                                 AVOCADO_TEST_SKIP_DECORATORS)
+        self.script_to_exec = self._create_tmp_file(
+            'test_skip_decorators.py',
+            AVOCADO_TEST_SKIP_DECORATORS)
 
     def test_skip_decorators(self):
         cmd_line = [AVOCADO,
@@ -217,7 +218,7 @@ class Skip(Base):
                     '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
-                    '%s' % self.test_module,
+                    '%s' % self.script_to_exec,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout_text)
@@ -237,7 +238,7 @@ class SkipClass(Base):
         super(SkipClass, self).setUp()
         _ = self._create_tmp_file('lib_skip_decorators.py',
                                   AVOCADO_TEST_SKIP_LIB)
-        self.class_module = self._create_tmp_file(
+        self.script_to_exec = self._create_tmp_file(
             'test_skip_class_decorators.py',
             AVOCADO_TEST_SKIP_CLASS_DECORATORS)
 
@@ -247,7 +248,7 @@ class SkipClass(Base):
                     '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
-                    '%s' % self.class_module,
+                    '%s' % self.script_to_exec,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout_text)
@@ -267,7 +268,7 @@ class SkipIfClass(Base):
         super(SkipIfClass, self).setUp()
         _ = self._create_tmp_file('lib_skip_decorators.py',
                                   AVOCADO_TEST_SKIP_LIB)
-        self.class_if_module = self._create_tmp_file(
+        self.script_to_exec = self._create_tmp_file(
             'test_skip_if_class_decorators.py',
             AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS)
 
@@ -277,7 +278,7 @@ class SkipIfClass(Base):
                     '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
-                    '%s' % self.class_if_module,
+                    '%s' % self.script_to_exec,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout_text)
@@ -293,7 +294,7 @@ class SkipUnlessClass(Base):
         super(SkipUnlessClass, self).setUp()
         _ = self._create_tmp_file('lib_skip_decorators.py',
                                   AVOCADO_TEST_SKIP_LIB)
-        self.class_unless_module = self._create_tmp_file(
+        self.script_to_exec = self._create_tmp_file(
             'test_skip_unless_class_decorators.py',
             AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS)
 
@@ -303,7 +304,7 @@ class SkipUnlessClass(Base):
                     '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
-                    '%s' % self.class_unless_module,
+                    '%s' % self.script_to_exec,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout_text)
@@ -317,8 +318,9 @@ class SkipSetup(Base):
 
     def setUp(self):
         super(SkipSetup, self).setUp()
-        self.skip_setup = self._create_tmp_file('test_skip_decorator_setup.py',
-                                                AVOCADO_SKIP_DECORATOR_SETUP)
+        self.script_to_exec = self._create_tmp_file(
+            'test_skip_decorator_setup.py',
+            AVOCADO_SKIP_DECORATOR_SETUP)
 
     def test_skip_setup(self):
         cmd_line = [AVOCADO,
@@ -326,7 +328,7 @@ class SkipSetup(Base):
                     '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
-                    '%s' % self.skip_setup,
+                    '%s' % self.script_to_exec,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout_text)
@@ -338,7 +340,7 @@ class SkipTearDown(Base):
 
     def setUp(self):
         super(SkipTearDown, self).setUp()
-        self.bad_teardown = self._create_tmp_file(
+        self.script_to_exec = self._create_tmp_file(
             'test_skip_decorator_teardown.py',
             AVOCADO_SKIP_DECORATOR_TEARDOWN)
 
@@ -348,7 +350,7 @@ class SkipTearDown(Base):
                     '--disable-sysinfo',
                     '--job-results-dir',
                     '%s' % self.tmpdir.name,
-                    '%s' % self.bad_teardown,
+                    '%s' % self.script_to_exec,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout_text)
