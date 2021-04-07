@@ -83,11 +83,11 @@ class Replay(CLI):
             return []
         status_list = string.split(',')
         for item in status_list:
-            if item not in teststatus.user_facing_status:
+            if item not in teststatus.STATUSES:
                 msg = ('Invalid --replay-test-status option. Valid '
                        'options are (more than one allowed): %s' %
                        ','.join([item for item
-                                 in teststatus.user_facing_status]))
+                                 in teststatus.STATUSES]))
                 raise argparse.ArgumentTypeError(msg)
 
         return status_list

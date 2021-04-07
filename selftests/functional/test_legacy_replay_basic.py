@@ -2,7 +2,7 @@ import glob
 import os
 import unittest
 
-from avocado.core import exit_codes
+from avocado.core import exit_codes, teststatus
 from avocado.utils import process
 
 from .. import AVOCADO, TestCaseTmpDir
@@ -124,8 +124,10 @@ class ReplayTests(TestCaseTmpDir):
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = (b'Invalid --replay-test-status option. Valid options are (more '
-               b'than one allowed): SKIP,ERROR,FAIL,WARN,PASS,INTERRUPTED')
+               b'than one allowed): ')
         self.assertIn(msg, result.stderr)
+        for status in teststatus.STATUSES:
+            self.assertIn(status, result.stderr_text)
 
     def test_run_replay_statusfail(self):
         """
