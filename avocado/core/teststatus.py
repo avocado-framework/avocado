@@ -17,15 +17,10 @@ a test or a job in avocado PASSed or FAILed.
 """
 
 mapping = {"SKIP": True,
-           "ABORT": False,
            "ERROR": False,
            "FAIL": False,
            "WARN": True,
            "PASS": True,
-           "START": True,
-           "ALERT": False,
-           "RUNNING": False,
-           "NOSTATUS": False,
            "INTERRUPTED": False,
            "CANCEL": True}
 
