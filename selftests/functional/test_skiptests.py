@@ -43,9 +43,67 @@ class AvocadoSkipTests(avocado.Test):
     def test5(self):
         self.log.info('test executed')
 
+    @avocado.skipIf(lambda x: x.FALSE_CONDITION,
+                    'skipIf with False condition, should not happen')
+    def test6(self):
+        self.log.info('test executed')
+
+    @avocado.skipUnless(lambda x: x.TRUE_CONDITION,
+                        'skipUnless with True condition, should not happen')
+    def test7(self):
+        self.log.info('test executed')
+
     def tearDown(self):
         self.log.info('teardown executed')
 """
+
+
+AVOCADO_TEST_NOT_SKIP_DECORATORS = """
+import avocado
+from lib_skip_decorators import check_condition
+
+class AvocadoSkipTests(avocado.Test):
+
+    TRUE_CONDITION = True
+    FALSE_CONDITION = False
+
+    def setUp(self):
+        self.log.info('setup executed')
+
+    @avocado.skipIf(False,
+                    'skipIf with False condition, should not happen')
+    def test1(self):
+        self.log.info('test executed')
+
+    @avocado.skipUnless(True,
+                        'SkipUnless with True condition, should not happen')
+    def test2(self):
+        self.log.info('test executed')
+
+    @avocado.skipIf(lambda x: x.FALSE_CONDITION,
+                    'skipIf with False condition, should not happen')
+    def test3(self):
+        self.log.info('test executed')
+
+    @avocado.skipUnless(lambda x: x.TRUE_CONDITION,
+                        'skipUnless with True condition, should not happen')
+    def test4(self):
+        self.log.info('test executed')
+
+    @avocado.skipIf(None,
+                    'skipIf with None condition, should not happen')
+    def test5(self):
+        self.log.info('test executed')
+
+    @avocado.skipIf(lambda x: None,
+                    'skipIf with None condition, should not happen')
+    def test6(self):
+        self.log.info('test executed')
+
+    def tearDown(self):
+        self.log.info('teardown executed')
+"""
+
 
 AVOCADO_TEST_SKIP_CLASS_DECORATORS = """
 import avocado
@@ -252,6 +310,17 @@ class Skip(Base):
 
     def test_skip_decorators(self):
         self.check_skips_and_content(5)
+
+
+class NotSkip(Base):
+
+    FILE_NAME_CONTENT_MAP = {
+        'lib_skip_decorators.py': AVOCADO_TEST_SKIP_LIB,
+        'script_to_exec.py': AVOCADO_TEST_NOT_SKIP_DECORATORS
+    }
+
+    def test(self):
+        self.check_status(**{'pass': 6, 'skip': 0})
 
 
 class SkipClass(Base):
