@@ -431,7 +431,7 @@ class Asset:
         return os.path.basename(self.parsed_name.path)
 
     @classmethod
-    def get_all_assets(cls, cache_dirs):
+    def get_all_assets(cls, cache_dirs, sort=True):
         """Returns all assets stored in all cache dirs."""
         assets = []
         for cache_dir in cache_dirs:
@@ -441,6 +441,11 @@ class Asset:
                     if not f.endswith('-CHECKSUM') and \
                        not f.endswith('_metadata.json'):
                         assets.append(os.path.join(root, f))
+        if sort:
+            assets = {a: os.stat(a).st_atime for a in assets}
+            return [a[0] for a in sorted(assets.items(),
+                                         key=lambda x: x[1],
+                                         reverse=True)]
         return assets
 
     @classmethod
@@ -532,6 +537,27 @@ class Asset:
             if method(file_size, value):
                 result.append(file_path)
         return result
+
+    @classmethod
+    def remove_assets_by_overall_limit(cls, limit, cache_dirs):
+        """This will remove assets based on overall limit.
+
+        We are going to sort the assets based on the access time first.
+        For instance it may be the case that a GitLab cache limit is 4
+        GiB, in that case we can sort by last access, and remove all
+        that exceeds 4 GiB (that is, keep the last accessed 4 GiB worth
+        of cached files).
+
+        Note: during the usage of this method, you should use bytes as limit.
+
+        :param limit: a integer limit in bytes.
+        :param cache_dirs: list of directories to use during the search.
+        """
+        size_sum = 0
+        for asset in cls.get_all_assets(cache_dirs):
+            size_sum += os.stat(asset).st_size
+            if size_sum >= limit:
+                cls.remove_asset_by_path(asset)
 
     @classmethod
     def remove_assets_by_size(cls, size_filter, cache_dirs):

@@ -502,7 +502,8 @@ def create_suites(args):
                            'selftests/unit/',
                            'selftests/functional/'],
         'run.test_runner': 'nrunner',
-        'run.ignore_missing_references': True
+        'run.ignore_missing_references': True,
+        'job.output.testlogs.statuses': ['FAIL']
     }
 
     if not args.disable_static_checks:
