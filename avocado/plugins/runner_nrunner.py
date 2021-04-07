@@ -33,7 +33,7 @@ from avocado.core.status.server import StatusServer
 from avocado.core.task.runtime import RuntimeTask
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
-from avocado.core.teststatus import mapping
+from avocado.core.teststatus import STATUSES_SUCCESS
 
 
 class RunnerInit(Init):
@@ -254,7 +254,7 @@ class Runner(RunnerInterface):
                                                         job.result,
                                                         test_state)
 
-                if not mapping[test_state['status']]:
+                if not STATUSES_SUCCESS[test_state['status']]:
                     self.summary.add("FAIL")
 
     def run_suite(self, job, test_suite):

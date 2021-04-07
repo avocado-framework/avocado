@@ -33,7 +33,7 @@ from avocado.core.plugin_interfaces import Runner
 from avocado.core.runner import TestStatus, add_runner_failure
 from avocado.core.test import TimeOutSkipTest
 from avocado.core.test_id import TestID
-from avocado.core.teststatus import mapping, user_facing_status
+from avocado.core.teststatus import STATUSES, STATUSES_SUCCESS
 from avocado.utils import process, stacktrace, wait
 
 
@@ -256,7 +256,7 @@ class TestRunner(Runner):
             job.log.debug('')
 
         # Make sure the test status is correct
-        if test_state.get('status') not in user_facing_status:
+        if test_state.get('status') not in STATUSES:
             test_state = add_runner_failure(test_state, "ERROR", "Test reports"
                                             " unsupported test status.")
 
@@ -264,7 +264,7 @@ class TestRunner(Runner):
         result_dispatcher.map_method('end_test', job.result, test_state)
         if test_state['status'] == "INTERRUPTED":
             summary.add("INTERRUPTED")
-        elif not mapping[test_state['status']]:
+        elif not STATUSES_SUCCESS[test_state['status']]:
             summary.add("FAIL")
 
             if job.config.get('run.failfast'):
