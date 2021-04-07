@@ -219,6 +219,10 @@ class Base(TestCaseTmpDir):
         self.check_status_occurrences(json_results, skip=number_of_skips)
         self.check_content(json_results)
 
+    def check_status(self, **kwargs):
+        json_results = self._get_json_result()
+        self.check_status_occurrences(json_results, **kwargs)
+
     def check_status_occurrences(self, json_results, **kwargs):
         for status, number_of_occurrences in kwargs.items():
             self.assertEqual(json_results[status], number_of_occurrences)
@@ -270,19 +274,7 @@ class SkipIfClass(Base):
             AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS)
 
     def test_skipIf_class_decorators(self):
-        cmd_line = [AVOCADO,
-                    'run',
-                    '--disable-sysinfo',
-                    '--job-results-dir',
-                    '%s' % self.tmpdir.name,
-                    '%s' % self.script_to_exec,
-                    '--json -']
-        result = process.run(' '.join(cmd_line), ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-
-        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual(json_results['skip'], 3)
-        self.assertEqual(json_results['pass'], 3)
+        self.check_status(**{'skip': 3, 'pass': 3})
 
 
 class SkipUnlessClass(Base):
@@ -296,19 +288,7 @@ class SkipUnlessClass(Base):
             AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS)
 
     def test_skipUnless_class_decorators(self):
-        cmd_line = [AVOCADO,
-                    'run',
-                    '--disable-sysinfo',
-                    '--job-results-dir',
-                    '%s' % self.tmpdir.name,
-                    '%s' % self.script_to_exec,
-                    '--json -']
-        result = process.run(' '.join(cmd_line), ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-
-        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual(json_results['skip'], 3)
-        self.assertEqual(json_results['pass'], 3)
+        self.check_status(**{'skip': 3, 'pass': 3})
 
 
 class SkipSetup(Base):
@@ -320,17 +300,7 @@ class SkipSetup(Base):
             AVOCADO_SKIP_DECORATOR_SETUP)
 
     def test_skip_setup(self):
-        cmd_line = [AVOCADO,
-                    'run',
-                    '--disable-sysinfo',
-                    '--job-results-dir',
-                    '%s' % self.tmpdir.name,
-                    '%s' % self.script_to_exec,
-                    '--json -']
-        result = process.run(' '.join(cmd_line), ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual(json_results['skip'], 1)
+        self.check_status(skip=1)
 
 
 class SkipTearDown(Base):
@@ -341,7 +311,7 @@ class SkipTearDown(Base):
             'test_skip_decorator_teardown.py',
             AVOCADO_SKIP_DECORATOR_TEARDOWN)
 
-    def test_skip_teardown(self):
+    def _get_json_result(self):
         cmd_line = [AVOCADO,
                     'run',
                     '--disable-sysinfo',
@@ -350,9 +320,12 @@ class SkipTearDown(Base):
                     '%s' % self.script_to_exec,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
-        json_results = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-        self.assertEqual(json_results['errors'], 1)
+        json_results = json.loads(result.stdout_text)
+        return json_results
+
+    def test_skip_teardown(self):
+        self.check_status(errors=1)
 
 
 if __name__ == '__main__':
