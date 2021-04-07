@@ -24,10 +24,4 @@ mapping = {"SKIP": True,
            "INTERRUPTED": False,
            "CANCEL": True}
 
-user_facing_status = ["SKIP",
-                      "ERROR",
-                      "FAIL",
-                      "WARN",
-                      "PASS",
-                      "INTERRUPTED",
-                      "CANCEL"]
+user_facing_status = [key for key in mapping.keys()]
