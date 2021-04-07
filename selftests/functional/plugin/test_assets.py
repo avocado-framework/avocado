@@ -301,6 +301,36 @@ class AssetsPlugin(unittest.TestCase):
         self.assertEqual(expected_rc, result.exit_status)
         self.assertIn(expected_stderr, result.stderr_text)
 
+    def test_asset_purge_by_days(self):
+        """Make sure that we can remove assets by days."""
+        # creates a single byte asset
+        asset_file = tempfile.NamedTemporaryFile(delete=False)
+        asset_file.write(b'\xff')
+        asset_file.close()
+
+        config = self.config_file.name
+        url = asset_file.name
+        name = "should-be-removed"
+        cmd_line = "%s --config %s assets register %s %s" % (AVOCADO,
+                                                             config,
+                                                             name,
+                                                             url)
+        result = process.run(cmd_line)
+        self.assertIn("Now you can reference it by name {}".format(name),
+                      result.stdout_text)
+
+        cmd_line = "%s --config %s assets list" % (AVOCADO, config)
+        result = process.run(cmd_line)
+        self.assertIn(name, result.stdout_text)
+
+        cmd_line = "%s --config %s assets purge --by-days 0" % (AVOCADO,
+                                                                config)
+        process.run(cmd_line)
+
+        cmd_line = "%s --config %s assets list" % (AVOCADO, config)
+        result = process.run(cmd_line)
+        self.assertNotIn(name, result.stdout_text)
+
     def tearDown(self):
         os.remove(self.config_file.name)
         self.base_dir.cleanup()
