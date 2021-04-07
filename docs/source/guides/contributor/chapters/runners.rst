@@ -568,3 +568,103 @@ for runnables with kind ``foo``.
 .. literalinclude:: ../../../../../examples/nrunner/runners/avocado-runner-foo
    :language: python
    :linenos:
+
+
+Runners messages
+----------------
+
+When run as part of a job, every runner has to send information
+about its execution status to the Avocado job. That information
+is sent by messages which have different types based on the
+information which they are transmitting.
+
+Avocado understands three main types of messages:
+
+* started (required)
+* running
+* finished (required)
+
+The started and finished messages are obligatory and every runner has to
+send those. The running messages can contain different information
+during runner run-time like logs, warnings, errors .etc and that
+information will be processed by the avocado core.
+
+Supported message types
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Started message
++++++++++++++
+This message has to be sent when the runner starts the test.
+
+:param status: 'started'
+:param time: start time of the test
+:type time: float
+:example: {'status': 'started', 'time': 16444.819830573}
+
+Finished message
+++++++++++++++++
+This message has to be sent when the runner finishes the test.
+
+:param status: 'finished'
+:param result: test result
+:type result: Lowercase values for the statuses defined in :data:`avocado.core.teststatus.STATUSES`
+:param time: end time of the test
+:type time: float
+:example: {'status': 'finished', 'result': 'pass', 'time': 16444.819830573}
+
+Running messages
+++++++++++++++++
+This message can be used during the run-time and has different properties
+based on the information which is being transmitted.
+
+Log message
+***********
+It will save the log to the debug.log file in the task directory.
+
+:param status: 'running'
+:param type: 'log'
+:param log: log message
+:type log: string
+:param time: Time stamp of the message
+:type time: float
+:example: {'status': 'running', 'type': 'log', 'log': 'log message',
+         'time': 18405.55351474}
+
+Stdout message
+**************
+It will save the stdout to the stdout file in the task directory.
+
+:param status: 'running'
+:param type: 'stdout'
+:param log: stdout message
+:type log: string
+:param time: Time stamp of the message
+:type time: float
+:example: {'status': 'running', 'type': 'stdout', 'log': 'stdout message',
+         'time': 18405.55351474}
+
+Stderr message
+**************
+It will save the stderr to the stderr file in the task directory.
+
+:param status: 'running'
+:param type: 'stderr'
+:param log: stderr message
+:type log: string
+:param time: Time stamp of the message
+:type time: float
+:example: {'status': 'running', 'type': 'stderr', 'log': 'stderr message',
+         'time': 18405.55351474}
+
+Whiteboard message
+******************
+It will save the stderr to the whiteboard file in the task directory.
+
+:param status: 'running'
+:param type: 'whiteboard'
+:param log: whiteboard message
+:type log: string
+:param time: Time stamp of the message
+:type time: float
+:example: {'status': 'running', 'type': 'whiteboard',
+         'log': 'whiteboard message', 'time': 18405.55351474}
