@@ -34,3 +34,11 @@ def prepend_base_path(value):
         dist = get_distribution('avocado-framework')
         return os.path.join(dist.location, 'avocado', expanded)
     return expanded
+
+
+def system_wide_or_base_path(value):
+    """Returns either a system wide absolute path, or a relative to the base."""
+    system_wide = os.path.join(os.path.sep, value)
+    if os.path.exists(system_wide):
+        return system_wide
+    return prepend_base_path(value)
