@@ -17,11 +17,8 @@ NRunner based implementation of job compliant runner
 """
 
 import asyncio
-import json
 import multiprocessing
-import os
 import random
-from copy import copy
 
 from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
@@ -138,46 +135,6 @@ class Runner(RunnerInterface):
 
     name = 'nrunner'
     description = 'nrunner based implementation of job compliant runner'
-
-    @staticmethod
-    def _save_to_file(filename, buff, mode='wb'):
-        with open(filename, mode) as fp:
-            fp.write(buff)
-
-    def _populate_task_logdir(self, base_path, task, statuses, debug=False):
-        # We are copying here to avoid printing duplicated information
-        local_statuses = copy(statuses)
-        last = local_statuses[-1]
-        try:
-            stdout = last.pop('stdout')
-        except KeyError:
-            stdout = None
-        try:
-            stderr = last.pop('stderr')
-        except KeyError:
-            stderr = None
-
-        # Create task dir
-        task_path = os.path.join(base_path, task.identifier.str_filesystem)
-        os.makedirs(task_path, exist_ok=True)
-
-        # Save stdout and stderr
-        if stdout is not None:
-            stdout_file = os.path.join(task_path, 'stdout')
-            self._save_to_file(stdout_file, stdout)
-        if stderr is not None:
-            stderr_file = os.path.join(task_path, 'stderr')
-            self._save_to_file(stderr_file, stderr)
-
-        # Save debug
-        if debug:
-            debug = os.path.join(task_path, 'debug')
-            with open(debug, 'w') as fp:
-                json.dump(local_statuses, fp)
-
-        data_file = os.path.join(task_path, 'data')
-        with open(data_file, 'w') as fp:
-            fp.write("{}\n".format(task.output_dir))
 
     @staticmethod
     def _get_all_runtime_tasks(test_suite):
