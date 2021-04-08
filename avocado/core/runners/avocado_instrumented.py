@@ -53,7 +53,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         # This should probably be done in a translator
         if 'status' in state:
             status = state['status'].lower()
-            final_status = [_.lower() for _ in teststatus.user_facing_status]
+            final_status = [_.lower() for _ in teststatus.STATUSES]
             if status in final_status:
                 state['result'] = status
                 state['status'] = 'finished'

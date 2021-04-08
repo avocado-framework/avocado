@@ -10,29 +10,18 @@
 # See LICENSE for more details.
 
 """
-Maps the different status strings in avocado to booleans.
-
-This is used by methods and functions to return a cut and dry answer to whether
-a test or a job in avocado PASSed or FAILed.
+Valid test statuses and whether they signal success (or failure).
 """
 
-mapping = {"SKIP": True,
-           "ABORT": False,
-           "ERROR": False,
-           "FAIL": False,
-           "WARN": True,
-           "PASS": True,
-           "START": True,
-           "ALERT": False,
-           "RUNNING": False,
-           "NOSTATUS": False,
-           "INTERRUPTED": False,
-           "CANCEL": True}
+#: Maps the different status strings in avocado to booleans.
+STATUSES_MAPPING = {"SKIP": True,
+                    "ERROR": False,
+                    "FAIL": False,
+                    "WARN": True,
+                    "PASS": True,
+                    "INTERRUPTED": False,
+                    "CANCEL": True}
 
-user_facing_status = ["SKIP",
-                      "ERROR",
-                      "FAIL",
-                      "WARN",
-                      "PASS",
-                      "INTERRUPTED",
-                      "CANCEL"]
+#: Valid test statuses, if a returned status is not listed here, it
+#: should be handled as error condition.
+STATUSES = [key for key in STATUSES_MAPPING.keys()]

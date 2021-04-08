@@ -4,7 +4,7 @@ import os
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import Init, JobPost, JobPre
 from avocado.core.settings import settings
-from avocado.core.teststatus import user_facing_status
+from avocado.core.teststatus import STATUSES
 
 
 class TestLogsInit(Init):
@@ -14,7 +14,7 @@ class TestLogsInit(Init):
     def initialize(self):
         help_msg = ("Status that will trigger the output of a test's logs "
                     "after the job ends. "
-                    "Valid statuses: %s" % ", ".join(user_facing_status))
+                    "Valid statuses: %s" % ", ".join(STATUSES))
         settings.register_option(section='job.output.testlogs',
                                  key='statuses',
                                  key_type=list,

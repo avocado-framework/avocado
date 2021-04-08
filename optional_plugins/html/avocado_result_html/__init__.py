@@ -85,15 +85,10 @@ class ReportModel:
     @property
     def tests(self):
         mapping = {"SKIP": "warning",
-                   "ABORT": "danger",
                    "ERROR": "danger",
                    "FAIL": "danger",
                    "WARN": "warning",
                    "PASS": "success",
-                   "START": "info",
-                   "ALERT": "danger",
-                   "RUNNING": "info",
-                   "NOSTATUS": "info",
                    "INTERRUPTED": "danger",
                    "CANCEL": "warning"}
         test_info = []
