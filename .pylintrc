@@ -51,6 +51,12 @@ unsafe-load-any-extension=no
 # all. Valid levels: HIGH, INFERENCE, INFERENCE_FAILURE, UNDEFINED.
 confidence=
 
+# Enable the message, report, category or checker with the given id(s). You can
+# either give multiple identifier separated by comma (,) or put this option
+# multiple time (only on the command line, not in the configuration file where
+# it should appear only once). See also the "--disable" option for examples.
+enable=all
+
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifiers separated by comma (,) or put this
 # option multiple times (only on the command line, not in the configuration
@@ -60,13 +66,63 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=W0212,W0511,W0703,W0707,R,C,E1101,E1120,E0401,I0011
-
-# Enable the message, report, category or checker with the given id(s). You can
-# either give multiple identifier separated by comma (,) or put this option
-# multiple time (only on the command line, not in the configuration file where
-# it should appear only once). See also the "--disable" option for examples.
-enable=R0205,R0401
+disable=W0212,
+  W0703,
+  W0707,
+  E0401,
+  I0011,
+  C0102,
+  C0103,
+  C0113,
+  C0114,
+  C0115,
+  C0116,
+  C0123,
+  C0200,
+  C0201,
+  C0301,
+  C0302,
+  C0321,
+  C0325,
+  C0326,
+  C0330,
+  C0413,
+  C0415,
+  E1101,
+  E1120,
+  I0011,
+  I0020,
+  I0021,
+  I0022,
+  I0023,
+  R0201,
+  R0901,
+  R0902,
+  R0903,
+  R0904,
+  R0911,
+  R0912,
+  R0913,
+  R0914,
+  R0915,
+  R1702,
+  R1703,
+  R1704,
+  R1705,
+  R1706,
+  R1710,
+  R1711,
+  R1714,
+  R1717,
+  R1718,
+  R1719,
+  R1720,
+  R1721,
+  R1723,
+  R1724,
+  W0511,
+  R1722,
+  E0611
 
 
 [REPORTS]
