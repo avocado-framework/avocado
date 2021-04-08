@@ -5,9 +5,8 @@ from avocado.core import nrunner
 
 class FooRunner(nrunner.BaseRunner):
     def run(self):
-        yield {'status': 'pass',
-               # some extra info that a custom runner may return
-               'foo_level': len(self.runnable.uri)}
+        yield self.prepare_status('started')
+        yield self.prepare_status('finished', {'result': 'pass'})
 
 
 class RunnerApp(nrunner.BaseRunnerApp):

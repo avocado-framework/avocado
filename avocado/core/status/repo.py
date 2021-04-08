@@ -52,9 +52,14 @@ class StatusRepo:
             self._all_data[task_id] = []
         self._all_data[task_id].append(message)
 
-    def get_task_data(self, task_id):
+    def get_all_task_data(self, task_id):
         """Returns all data on a given task, by its ID."""
         return self._all_data.get(task_id)
+
+    def get_task_data(self, task_id, index):
+        """Returns the data on the index of a given task, by its ID."""
+        task_data = self._all_data.get(task_id)
+        return task_data[index]
 
     def get_latest_task_data(self, task_id):
         """Returns the latest data on a given task, by its ID."""
@@ -72,12 +77,13 @@ class StatusRepo:
             return
         if task_id not in self._status:
             self._status[task_id] = (status, time)
-            self._status_journal_summary.append((task_id, status, time))
+            self._status_journal_summary.append((task_id, status, time, 0))
         else:
-            current_status, current_time = self._status[task_id]
-            # journal even with the same time, if there's a change in status
-            if (status != current_status) and (time >= current_time):
-                self._status_journal_summary.append((task_id, status, time))
+            _, current_time = self._status[task_id]
+            if time >= current_time:
+                index = len(self.get_all_task_data(task_id))
+                self._status_journal_summary.append((task_id, status, time,
+                                                     index))
             if time > current_time:
                 self._status[task_id] = (status, time)
 

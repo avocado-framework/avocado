@@ -172,6 +172,10 @@ class Job:
                                        .load_failures)
         return self._result_events_dispatcher
 
+    @property
+    def test_results_path(self):
+        return os.path.join(self.logdir, 'test-results')
+
     def __enter__(self):
         self.setup()
         return self
