@@ -7,11 +7,16 @@ fi
 
 PYLINT=$(which pylint-3 2>/dev/null || which pylint)
 
-MODULES="avocado contrib examples scripts docs optional_plugins selftests"
-${PYLINT} ${PYLINT_OPTIONS} --disable=W0212,W0511,W0703,W0707,R,C,E1101,E1120,E0401,I0011 --enable=R0205,R0401 ${MODULES}
-
+# Those are our main packages, we should follow the .pylintrc file with all
+# enabled by default. Some are disabled, we are working to reduce this list.
 MODULES="avocado contrib examples scripts docs optional_plugins"
-${PYLINT} ${PYLINT_OPTIONS} --enable=W0212,W0703 ${MODULES}
+${PYLINT} ${PYLINT_OPTIONS} ${MODULES}
+
+# This is a special case, so we added those two exceptions on top of all
+# disabled messages, defined at .pylintrc. Ideally we should fix those
+# warnings (if possible)
+MODULES="selftests"
+${PYLINT} ${PYLINT_OPTIONS} --disable=W0212,W0703 ${MODULES}
 
 # This is just a Python 3 porting check. We are not still ready for a full
 # --py3k, so we are enabling just a few checks at this time.
