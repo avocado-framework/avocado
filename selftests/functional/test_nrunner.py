@@ -52,7 +52,7 @@ class RunnableRun(unittest.TestCase):
                "_Avocado_Runner_" % RUNNER)
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
-        self.assertIn(b"'stdout': b'_Avocado_Runner_'", res.stdout)
+        self.assertIn(b"'log': b'_Avocado_Runner_'", res.stdout)
         self.assertIn(b"'returncode': 0", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
@@ -68,11 +68,12 @@ class RunnableRun(unittest.TestCase):
             first_status = final_status = lines[0]
         else:
             first_status = lines[0]
+            stdout_status = lines[-3]
             final_status = lines[-1]
             self.assertIn("'status': 'started'", first_status)
             self.assertIn("'time': ", first_status)
         self.assertIn("'status': 'finished'", final_status)
-        self.assertIn("'stdout': b'Hello world!\\n'", final_status)
+        self.assertIn("'log': b'Hello world!\\n'", stdout_status)
         self.assertIn("'time': ", final_status)
         self.assertEqual(res.exit_status, 0)
 
@@ -134,12 +135,13 @@ class TaskRun(unittest.TestCase):
             first_status = final_status = lines[0]
         else:
             first_status = lines[0]
+            stdout_status = lines[-3]
             final_status = lines[-1]
             self.assertIn("'status': 'started'", first_status)
             self.assertIn("'id': 2", first_status)
         self.assertIn("'id': 2", first_status)
         self.assertIn("'status': 'finished'", final_status)
-        self.assertIn("'stdout': b'avocado'", final_status)
+        self.assertIn("'log': b'avocado'", stdout_status)
         self.assertEqual(res.exit_status, 0)
 
     @skipUnlessPathExists('/bin/sleep')
