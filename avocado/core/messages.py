@@ -150,7 +150,7 @@ class BaseRunningMessageHandler(BaseMessageHandler):
     def _save_message_to_file(filename, buff, task, mode='a'):
         file = os.path.join(task.metadata['task_path'], filename)
         with open(file, mode) as fp:
-            fp.write("%s\n" % buff)
+            fp.write(buff)
 
 
 class LogMessageHandler(BaseRunningMessageHandler):
@@ -172,7 +172,7 @@ class LogMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('debug.log', message['log'], task)
+        self._save_message_to_file('debug.log', "%s\n" % message['log'], task)
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):
