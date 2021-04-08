@@ -54,12 +54,11 @@ class TAPRunner(nrunner.ExecRunner):
                     result = 'pass'
         return result
 
-    def _process_final_status(self, process, stdout, stderr):
+    def _process_final_status(self, process,
+                              stdout=None, stderr=None):  # pylint: disable=W0613
         return self.prepare_status('finished',
                                    {'result': self._get_tap_result(stdout),
-                                    'returncode': process.returncode,
-                                    'stdout': stdout,
-                                    'stderr': stderr})
+                                    'returncode': process.returncode})
 
 
 class RunnerApp(nrunner.BaseRunnerApp):

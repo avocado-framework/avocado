@@ -204,11 +204,15 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
+        stdout_result = results[-3]
+        stderr_result = results[-2]
         last_result = results[-1]
+        self.assertEqual(stdout_result['type'], 'stdout')
+        self.assertEqual(stdout_result['log'], b'')
+        self.assertEqual(stderr_result['type'], 'stderr')
+        self.assertEqual(stderr_result['log'], b'')
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['returncode'], 0)
-        self.assertEqual(last_result['stdout'], b'')
-        self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time', last_result)
 
     def test_runner_exec_test_ok(self):
@@ -217,12 +221,16 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
+        stdout_result = results[-3]
+        stderr_result = results[-2]
         last_result = results[-1]
+        self.assertEqual(stdout_result['type'], 'stdout')
+        self.assertEqual(stdout_result['log'], b'')
+        self.assertEqual(stderr_result['type'], 'stderr')
+        self.assertEqual(stderr_result['log'], b'')
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'pass')
         self.assertEqual(last_result['returncode'], 0)
-        self.assertEqual(last_result['stdout'], b'')
-        self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time', last_result)
 
     @skipUnlessPathExists('/bin/false')
@@ -231,12 +239,16 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
+        stdout_result = results[-3]
+        stderr_result = results[-2]
         last_result = results[-1]
+        self.assertEqual(stdout_result['type'], 'stdout')
+        self.assertEqual(stdout_result['log'], b'')
+        self.assertEqual(stderr_result['type'], 'stderr')
+        self.assertEqual(stderr_result['log'], b'')
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'fail')
         self.assertEqual(last_result['returncode'], 1)
-        self.assertEqual(last_result['stdout'], b'')
-        self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time', last_result)
 
     def test_runner_python_unittest_ok(self):

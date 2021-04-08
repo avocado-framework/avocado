@@ -203,7 +203,7 @@ class StdoutMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('stdout', message['log'], task)
+        self._save_message_to_file('stdout', message['log'], task, mode='ab')
 
 
 class StderrMessageHandler(BaseRunningMessageHandler):
@@ -225,7 +225,7 @@ class StderrMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('stderr', message['log'], task)
+        self._save_message_to_file('stderr', message['log'], task, mode='ab')
 
 
 class WhiteboardMessageHandler(BaseRunningMessageHandler):
