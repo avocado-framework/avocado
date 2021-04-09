@@ -8,7 +8,7 @@
          "description": "Navigate to:\n\n   https://github.com/avocado-framework/avocado#build-and-quality-status\n\nand make sure that all build and quality services report good indicators"},
 
 	{"name": "Avocado source is sound",
-	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make check`. Expected result: Make command should say OK."},
+	 "description": "On your development machine, on a fresh Avocado source to be released, run `$ make check`. Expected result: Make command should say OK."},
 
 	{"name": "Avocado pre-release job",
 	 "description": "With a load as light as possible on your system, run `selftests/pre_release/jobs/pre_release.py`. Expected results: all tests PASSed"},
