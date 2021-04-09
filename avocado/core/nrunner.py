@@ -554,6 +554,9 @@ class PythonUnittestRunner(BaseRunner):
                 yield self.prepare_status('running')
 
         status = queue.get()
+        yield self.prepare_status('running',
+                                  {'type': 'stdout',
+                                   'log': status.pop('output').encode()})
         status['time'] = time.monotonic()
         yield status
 
