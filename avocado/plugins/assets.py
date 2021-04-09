@@ -403,7 +403,7 @@ class Assets(CLICmd):
             msg = ("You should choose --by-size-filter or --by-days. "
                    "For help, run: avocado assets purge --help")
             LOG_UI.error(msg)
-            return
+            return exit_codes.AVOCADO_FAIL
 
         cache_dirs = data_dir.get_cache_dirs()
         try:
@@ -420,10 +420,12 @@ class Assets(CLICmd):
                     error_msg += "Use one of the following values: "
                     error_msg += ",".join(DataSize.MULTIPLIERS.keys())
                     LOG_UI.error(error_msg)
-                    return
+                    return exit_codes.AVOCADO_FAIL
 
         except (FileNotFoundError, OSError) as e:
             LOG_UI.error("Could not remove asset: %s", e)
+            return exit_codes.AVOCADO_FAIL
+        return exit_codes.AVOCADO_ALL_OK
 
     def handle_list(self, config):
         days = config.get('assets.list.days')
@@ -432,7 +434,7 @@ class Assets(CLICmd):
             msg = ("You should choose --by-size-filter or --by-days. "
                    "For help, run: avocado assets list --help")
             LOG_UI.error(msg)
-            return
+            return exit_codes.AVOCADO_FAIL
 
         # IMO, this should get data from config instead. See #4443
         cache_dirs = data_dir.get_cache_dirs()
@@ -446,7 +448,7 @@ class Assets(CLICmd):
                 assets = Asset.get_all_assets(cache_dirs)
         except (FileNotFoundError, OSError) as e:
             LOG_UI.error("Could get assets: %s", e)
-            return
+            return exit_codes.AVOCADO_FAIL
 
         matrix = []
         for asset in assets:
@@ -510,12 +512,15 @@ class Assets(CLICmd):
         try:
             asset.find_asset_file()
             LOG_UI.error("Asset with name %s already registered.", name)
+            return exit_codes.AVOCADO_FAIL
         except OSError:
             try:
                 asset.fetch()
                 LOG_UI.info("Done. Now you can reference it by name %s", name)
+                return exit_codes.AVOCADO_ALL_OK
             except OSError as e:
                 LOG_UI.error(e)
+                return exit_codes.AVOCADO_FAIL
 
     def run(self, config):
         subcommand = config.get('assets_subcommand')

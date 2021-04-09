@@ -98,8 +98,9 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         cmd_line = "%s --config %s assets register foo %s" % (AVOCADO,
                                                               config,
                                                               url)
-        result = process.run(cmd_line)
+        result = process.run(cmd_line, ignore_status=True)
 
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
         self.assertIn("Failed to fetch",
                       result.stderr_text)
 
