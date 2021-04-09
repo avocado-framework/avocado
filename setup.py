@@ -16,10 +16,11 @@
 import glob
 import os
 import sys
+from abc import abstractmethod
 from distutils.command.clean import clean
-from subprocess import call
+from subprocess import CalledProcessError, call, check_call
 
-from setuptools import find_packages, setup
+from setuptools import Command, find_packages, setup
 
 # pylint: disable=E0611
 
@@ -62,6 +63,39 @@ class Clean(clean):
             os.chdir(plugin)
             call('{} setup.py clean --all'.format(sys.executable), shell=True)
             os.chdir(root_dir)
+
+
+class SimpleCommand(Command):
+    """Make Command implementation simpler."""
+
+    user_options = []
+
+    @abstractmethod
+    def run(self):
+        """Run when command is invoked."""
+
+    def initialize_options(self):
+        """Set default values for options."""
+
+    def finalize_options(self):
+        """Post-process options."""
+
+
+class Linter(SimpleCommand):
+    """Lint Python source code."""
+
+    description = 'Run logical, stylistic, analytical and formatter checks.'
+
+    def run(self):
+        try:
+            check_call('selftests/signedoff-check.sh')
+            check_call('selftests/spell.sh')
+            check_call('selftests/inspekt-indent.sh')
+            check_call('selftests/inspekt-style.sh')
+            check_call('selftests/lint.sh')
+        except CalledProcessError as e:
+            print("Failed during lint checks: ", e)
+            sys.exit(128)
 
 
 if __name__ == '__main__':
@@ -190,5 +224,6 @@ if __name__ == '__main__':
           zip_safe=False,
           test_suite='selftests',
           python_requires='>=3.5',
-          cmdclass={'clean': Clean},
+          cmdclass={'clean': Clean,
+                    'lint': Linter},
           install_requires=['setuptools'])
