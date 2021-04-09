@@ -35,7 +35,8 @@ class DpkgBackend(BaseBackend):
             return True
         return False
 
-    def list_all(self):
+    @staticmethod
+    def list_all():
         """
         List all packages available in the system.
         """

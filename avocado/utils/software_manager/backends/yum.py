@@ -49,7 +49,8 @@ class YumBackend(RpmBackend):
                       "Using the basic support from rpm and %s commands", cmd,
                       cmd)
 
-    def _cleanup(self):
+    @staticmethod
+    def _cleanup():
         """
         Clean up the yum cache so new package information can be downloaded.
         """
@@ -197,7 +198,8 @@ class YumBackend(RpmBackend):
         else:
             return None
 
-    def build_dep(self, name):
+    @staticmethod
+    def build_dep(name):
         """
         Install build-dependencies for package [name]
 

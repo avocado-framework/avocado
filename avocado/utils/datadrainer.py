@@ -60,7 +60,8 @@ class BaseDrainer(metaclass=abc.ABCMeta):
         # condition that may have happened in between the loop cycles
         self._internal_quit = False
 
-    def data_available(self):
+    @staticmethod
+    def data_available():
         """
         Checks if source appears to have data to be drained
         """

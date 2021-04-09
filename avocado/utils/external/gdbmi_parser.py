@@ -128,7 +128,8 @@ class GdbMiScannerBase(spark.GenericScanner):
         r'( . | \n )+'
         raise Exception("Specification error: unmatched input for '%s'" % s)
 
-    def __unescape(self, s):
+    @staticmethod
+    def __unescape(s):
         s = re.sub(r'\\r', r'\r', s)
         s = re.sub(r'\\n', r'\n', s)
         s = re.sub(r'\\t', r'\t', s)
@@ -209,7 +210,8 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
         spark.GenericASTTraversal.__init__(self, ast)
         self.postorder()
 
-    def __translate_type(self, token_type):
+    @staticmethod
+    def __translate_type(token_type):
         table = {
             '^': 'result',
             '=': 'notify',
@@ -221,12 +223,14 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
         }
         return table[token_type]
 
-    def n_result(self, node):
+    @staticmethod
+    def n_result(node):
         # result ::= variable = value
         node.value = {node[0].value: node[2].value}
         # print 'result: %s' % node.value
 
-    def n_tuple(self, node):
+    @staticmethod
+    def n_tuple(node):
         if len(node) == 2:
             # tuple ::= {}
             node.value = {}
@@ -250,7 +254,8 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
             raise Exception('Invalid tuple')
         # print 'tuple: %s' % node.value
 
-    def n_list(self, node):
+    @staticmethod
+    def n_list(node):
         if len(node) == 2:
             # list ::= []
             node.value = []
@@ -266,7 +271,8 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
             # list ::= { value value_list }
         # print 'list %s' % node.value
 
-    def n_value_list(self, node):
+    @staticmethod
+    def n_value_list(node):
         if len(node) == 2:
             # value_list ::= , value
             node.value = [node[1].value]
@@ -274,7 +280,8 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
             # value_list ::= , value value_list
             node.value = [node[1].value] + node[2].value
 
-    def n_result_list(self, node):
+    @staticmethod
+    def n_result_list(node):
         if len(node) == 2:
             # result_list ::= , result
             node.value = [node[1].value]
@@ -283,7 +290,8 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
             node.value = [node[1].value] + node[2].value
         # print 'result_list: %s' % node.value
 
-    def n_result_record(self, node):
+    @staticmethod
+    def n_result_record(node):
         node.value = node[0].value
         if len(node) == 3:
             # result_record ::= result_header result_list nl
@@ -320,7 +328,8 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
         }
         # print 'stream_record: %s' % node.value
 
-    def n_record_list(self, node):
+    @staticmethod
+    def n_record_list(node):
         if len(node) == 1:
             # record_list ::= generic_record
             node.value = [node[0].value]

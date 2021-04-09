@@ -39,18 +39,21 @@ class Jobs(CLICmd):
     name = 'jobs'
     description = 'Manage Avocado jobs'
 
-    def _get_data_from_file(self, filename):
+    @staticmethod
+    def _get_data_from_file(filename):
         if not filename or not os.path.isfile(filename):
             raise FileNotFoundError('File not found {}'.format(filename))
 
         with open(filename, 'r') as fp:
             return json.load(fp)
 
-    def _print_job_details(self, details):
+    @staticmethod
+    def _print_job_details(details):
         for key, value in details.items():
             LOG_UI.info("%-12s: %s", key, value)
 
-    def _print_job_tests(self, tests):
+    @staticmethod
+    def _print_job_tests(tests):
         test_matrix = []
         date_fmt = "%Y/%m/%d %H:%M:%S"
         for test in tests:
@@ -70,7 +73,8 @@ class Jobs(CLICmd):
                                                 strip=True):
             LOG_UI.debug(line)
 
-    def _save_stream_to_file(self, stream, filename):
+    @staticmethod
+    def _save_stream_to_file(stream, filename):
         """Save stream to a file.
 
         Directory must exists before calling this function.
@@ -129,7 +133,8 @@ class Jobs(CLICmd):
                                  positional_arg=True,
                                  parser=output_files_parser)
 
-    def handle_list_command(self, jobs_results):
+    @staticmethod
+    def handle_list_command(jobs_results):
         """Called when 'avocado jobs list' command is executed."""
 
         for filename in jobs_results.values():

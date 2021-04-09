@@ -78,7 +78,8 @@ class Replay(CLI):
                                  parser=replay_parser,
                                  long_arg='--replay-resume')
 
-    def _valid_status(self, string):
+    @staticmethod
+    def _valid_status(string):
         if not string:
             return []
         status_list = string.split(',')
@@ -92,7 +93,8 @@ class Replay(CLI):
 
         return status_list
 
-    def _valid_ignore(self, string):
+    @staticmethod
+    def _valid_ignore(string):
         if not string:
             return []
         options = ['variants', 'config']
@@ -106,12 +108,14 @@ class Replay(CLI):
 
         return ignore_list
 
-    def load_config(self, resultsdir):
+    @staticmethod
+    def load_config(resultsdir):
         config = jobdata.retrieve_config(resultsdir)
         if config is not None:
             settings.process_config_path(config)
 
-    def _get_tests_from_tap(self, path):
+    @staticmethod
+    def _get_tests_from_tap(path):
         if not os.path.exists(path):
             return None
         re_result = re.compile(r"(not )?ok (\d+) ([^#]*)(# (\w+).*)?")

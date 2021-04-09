@@ -115,7 +115,8 @@ class ImageProviderBase:
         except HTTPError:
             raise ImageProviderError('Cannot open %s' % self.url_versions)
 
-    def get_best_version(self, versions):
+    @staticmethod
+    def get_best_version(versions):
         return max(versions)
 
     def get_versions(self):

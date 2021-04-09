@@ -264,7 +264,8 @@ class TestLoaderProxy:
         self._update_mappings()
         return tests
 
-    def load_test(self, test_factory):
+    @staticmethod
+    def load_test(test_factory):
         """
         Load test from the test factory.
 
@@ -593,7 +594,8 @@ class SimpleFileLoader(TestLoader):
                                   subtests_filter):
         return self._make_simple_or_broken_test(test_path, subtests_filter, make_broken)
 
-    def _make_nonexisting_file_tests(self, test_path, make_broken,
+    @staticmethod
+    def _make_nonexisting_file_tests(test_path, make_broken,
                                      subtests_filter, test_name):  # pylint: disable=W0613
         return make_broken(NotATest, test_name, "File not found "
                            "('%s'; '%s')" % (test_name, test_path))
@@ -690,7 +692,8 @@ class FileLoader(SimpleFileLoader):
         else:
             return not isinstance(tst, str) and issubclass(tst, test_class)
 
-    def _find_python_unittests(self, test_path, disabled, subtests_filter):
+    @staticmethod
+    def _find_python_unittests(test_path, disabled, subtests_filter):
         result = []
         class_methods = safeloader.find_python_unittests(test_path)
         for klass, methods in class_methods.items():

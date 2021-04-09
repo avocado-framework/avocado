@@ -139,7 +139,8 @@ class Runner(RunnerInterface):
     name = 'nrunner'
     description = 'nrunner based implementation of job compliant runner'
 
-    def _save_to_file(self, filename, buff, mode='wb'):
+    @staticmethod
+    def _save_to_file(filename, buff, mode='wb'):
         with open(filename, mode) as fp:
             fp.write(buff)
 
@@ -178,7 +179,8 @@ class Runner(RunnerInterface):
         with open(data_file, 'w') as fp:
             fp.write("{}\n".format(task.output_dir))
 
-    def _get_all_runtime_tasks(self, test_suite):
+    @staticmethod
+    def _get_all_runtime_tasks(test_suite):
         runtime_tasks = []
         no_digits = len(str(len(test_suite)))
         status_uris = [test_suite.config.get('nrunner.status_server_uri')]

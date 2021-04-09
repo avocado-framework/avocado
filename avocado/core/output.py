@@ -254,7 +254,8 @@ class _StdOutputFile:
     def flush(self):
         """ File-object methods """
 
-    def isatty(self):
+    @staticmethod
+    def isatty():
         """ File-object methods """
         return False
 
@@ -285,7 +286,8 @@ class StdOutput:
         self.stderr = self._stderr = sys.stderr
         self.__configured = False
 
-    def _paginator_in_use(self):
+    @staticmethod
+    def _paginator_in_use():
         """
         :return: True when we output into paginator
         """
@@ -698,7 +700,8 @@ class LoggingFile:
     def flush(self):
         pass
 
-    def isatty(self):
+    @staticmethod
+    def isatty():
         return False
 
     def add_logger(self, logger, prefix=""):

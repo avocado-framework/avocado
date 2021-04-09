@@ -13,5 +13,6 @@ class AbortTest(Test):
 
     timeout = 2.0
 
-    def test(self):
+    @staticmethod
+    def test():
         os.abort()

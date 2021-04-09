@@ -321,7 +321,8 @@ class BaseRunner(metaclass=abc.ABCMeta):
     def __init__(self, runnable):
         self.runnable = runnable
 
-    def prepare_status(self, status_type, additional_info=None):
+    @staticmethod
+    def prepare_status(status_type, additional_info=None):
         """Prepare a status dict with some basic information.
 
         This will add the keyword 'status' and 'time' to all status.
@@ -868,7 +869,8 @@ class BaseRunnerApp:
                 for c in inspect.getmembers(self, inspect.ismethod)
                 if c[0].startswith(prefix)}
 
-    def _get_command_method_help_message(self, command_method):
+    @staticmethod
+    def _get_command_method_help_message(command_method):
         help_message = ''
         docstring = command_method.__doc__
         if docstring:

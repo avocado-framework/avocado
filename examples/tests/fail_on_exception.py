@@ -9,9 +9,10 @@ class FailOnException(avocado.Test):
     :avocado: tags=failure_expected
     """
 
+    @staticmethod
     # @avocado.fail_on(ValueError) also possible
     @avocado.fail_on
-    def test(self):
+    def test():
         """
         This should end with FAIL.
 

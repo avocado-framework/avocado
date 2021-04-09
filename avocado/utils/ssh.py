@@ -78,7 +78,8 @@ class Session:
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.quit()
 
-    def _dash_o_opts_to_str(self, opts):
+    @staticmethod
+    def _dash_o_opts_to_str(opts):
         """
         Transforms tuples into options that should be given by "-o Key=Val"
         """

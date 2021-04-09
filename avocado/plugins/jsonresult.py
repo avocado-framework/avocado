@@ -34,7 +34,8 @@ class JSONResult(Result):
     name = 'json'
     description = 'JSON result support'
 
-    def _render(self, result):
+    @staticmethod
+    def _render(result):
         tests = []
         for test in result.tests:
             fail_reason = test.get('fail_reason', UNKNOWN)

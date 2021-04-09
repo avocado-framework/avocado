@@ -467,7 +467,8 @@ class Assets(CLICmd):
             for line in output:
                 LOG_UI.info(line)
 
-    def handle_fetch(self, config):
+    @staticmethod
+    def handle_fetch(config):
         exitcode = exit_codes.AVOCADO_ALL_OK
         # fetch assets from instrumented tests
         for test_file in config.get('assets.fetch.references'):
@@ -493,7 +494,8 @@ class Assets(CLICmd):
             return exit_codes.AVOCADO_ALL_OK
         return exitcode
 
-    def handle_register(self, config):
+    @staticmethod
+    def handle_register(config):
         cache_dirs = data_dir.get_cache_dirs()
         name = config.get('assets.register.name')
         asset_hash = config.get('assets.register.sha1_hash')

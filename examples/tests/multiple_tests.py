@@ -18,13 +18,15 @@ class MultipleTests(Test):
     def testIdentity(self):
         self.assertIs(1, 1)
 
-    def division_by_zero(self):
+    @staticmethod
+    def division_by_zero():
         """
         This method should never execute
         """
         return 1 / 0
 
-    def action(self):
+    @staticmethod
+    def action():
         """
         This method should never execute
         """

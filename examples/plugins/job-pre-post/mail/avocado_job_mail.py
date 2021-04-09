@@ -40,7 +40,8 @@ class Mail(JobPre, JobPost):
     name = 'mail'
     description = 'Sends mail to notify on job start/end'
 
-    def mail(self, job):
+    @staticmethod
+    def mail(job):
         rcpt = job.config.get('plugins.job.mail.recipient')
         header = job.config.get('plugins.job.mail.header')
         sender = job.config.get('plugins.job.mail.sender')

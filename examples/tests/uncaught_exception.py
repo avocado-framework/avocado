@@ -9,7 +9,8 @@ class ErrorTest(Test):
     :avocado: tags=failure_expected
     """
 
-    def test(self):
+    @staticmethod
+    def test():
         """
         This should end with ERROR.
         """

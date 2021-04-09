@@ -446,7 +446,8 @@ class TestMultipleLoaders(unittest.TestCase):
 
 class TestInternalFilters(unittest.TestCase):
 
-    def check_scenario(self, *args):
+    @staticmethod
+    def check_scenario(*args):
         """
         Turn args into scenario.
 

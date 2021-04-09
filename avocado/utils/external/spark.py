@@ -60,7 +60,8 @@ class GenericScanner:
         rv.append(self.makeRE('t_default'))
         return '|'.join(rv)
 
-    def error(self, s, pos):  # pylint: disable=W0613
+    @staticmethod
+    def error(s, pos):  # pylint: disable=W0613
         print("Lexical error at position %s" % pos)
         raise SystemExit
 
@@ -78,7 +79,8 @@ class GenericScanner:
                     self.index2func[i](groups[i])
             pos = m.end()
 
-    def t_default(self, s):  # pylint: disable=W0613
+    @staticmethod
+    def t_default(s):  # pylint: disable=W0613
         r'( . | \n )+'
         print("Specification error: unmatched input")
         raise SystemExit
@@ -173,7 +175,8 @@ class GenericParser:
     #  thee not with this; nor shall thee toucheth the _preprocess
     #  argument to addRule.
     #
-    def preprocess(self, rule, func):
+    @staticmethod
+    def preprocess(rule, func):
         return rule, func
 
     def addRule(self, doc, func, _preprocess=1):
@@ -297,10 +300,12 @@ class GenericParser:
                     self.newrules[lhs] = [rule]
                 self.new2old[rule] = oldrule
 
-    def typestring(self, token):  # pylint: disable=W0613
+    @staticmethod
+    def typestring(token):  # pylint: disable=W0613
         return None
 
-    def error(self, token):
+    @staticmethod
+    def error(token):
         print("Syntax error at or near `%s' token" % token)
         raise SystemExit
 
@@ -664,7 +669,8 @@ class GenericParser:
         result_list = [name for _, name in sortlist]
         return rules[name2index[self.resolve(result_list)]]
 
-    def resolve(self, input_list):
+    @staticmethod
+    def resolve(input_list):
         #
         #  Resolve ambiguity in favor of the shortest RHS.
         #  Since we walk the tree from the top down, this
@@ -702,7 +708,8 @@ class GenericASTBuilder(GenericParser):
                 children.append(self.terminal(arg))
         return self.nonterminal(lhs, children)
 
-    def terminal(self, token):
+    @staticmethod
+    def terminal(token):
         return token
 
     def nonterminal(self, token_type, args):
@@ -730,10 +737,12 @@ class GenericASTTraversal:
     def __init__(self, ast):
         self.ast = ast
 
-    def typestring(self, node):
+    @staticmethod
+    def typestring(node):
         return node.type
 
-    def prune(self):
+    @staticmethod
+    def prune():
         raise GenericASTTraversalPruningException
 
     def preorder(self, node=None):
@@ -799,7 +808,8 @@ class GenericASTMatcher(GenericParser):
 
         return (lhs, tuple(rhslist)), rebind(func)
 
-    def foundMatch(self, args, func):
+    @staticmethod
+    def foundMatch(args, func):
         func(args[-1])
         return args[-1]
 

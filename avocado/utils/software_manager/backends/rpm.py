@@ -91,7 +91,8 @@ class RpmBackend(BaseBackend):
         installed_packages = out.splitlines()
         return installed_packages
 
-    def list_files(self, name):
+    @staticmethod
+    def list_files(name):
         """
         List files installed on the system by package [name].
 
@@ -113,7 +114,8 @@ class RpmBackend(BaseBackend):
         except process.CmdError:
             return []
 
-    def rpm_install(self, file_path, no_dependencies=False, replace=False):
+    @staticmethod
+    def rpm_install(file_path, no_dependencies=False, replace=False):
         """
         Install the rpm file [file_path] provided.
 
@@ -138,7 +140,8 @@ class RpmBackend(BaseBackend):
             log.error(details)
             return False
 
-    def rpm_verify(self, package_name):
+    @staticmethod
+    def rpm_verify(package_name):
         """
         Verify an RPM package with an installed one.
 
@@ -161,7 +164,8 @@ class RpmBackend(BaseBackend):
             logging.info(result.stdout_text.rstrip())
             return False
 
-    def rpm_erase(self, package_name):
+    @staticmethod
+    def rpm_erase(package_name):
         """
         Erase an RPM package.
 
@@ -176,7 +180,8 @@ class RpmBackend(BaseBackend):
             return False
         return True
 
-    def prepare_source(self, spec_file, dest_path=None):
+    @staticmethod
+    def prepare_source(spec_file, dest_path=None):
         """
         Rpmbuild the spec path and return build dir
 
