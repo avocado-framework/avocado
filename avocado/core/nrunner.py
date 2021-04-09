@@ -385,11 +385,10 @@ class ExecRunner(BaseRunner):
        process
     """
 
-    def _process_final_status(self, process, stdout, stderr):
+    def _process_final_status(self, process,
+                              stdout=None, stderr=None):  # pylint: disable=W0613
         return self.prepare_status('finished',
-                                   {'returncode': process.returncode,
-                                    'stdout': stdout,
-                                    'stderr': stderr})
+                                   {'returncode': process.returncode})
 
     def run(self):
         env = None
@@ -425,6 +424,8 @@ class ExecRunner(BaseRunner):
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
                 yield self.prepare_status('running')
+        yield self.prepare_status('running', {'type': 'stdout', 'log': stdout})
+        yield self.prepare_status('running', {'type': 'stderr', 'log': stderr})
         yield self._process_final_status(process, stdout, stderr)
 
 
@@ -442,7 +443,8 @@ class ExecTestRunner(ExecRunner):
     Runnable attributes usage is identical to :class:`ExecRunner`
     """
 
-    def _process_final_status(self, process, stdout, stderr):
+    def _process_final_status(self, process,
+                              stdout=None, stderr=None):  # pylint: disable=W0613
         # Since Runners are standalone, and could be executed on a remote
         # machine in an "isolated" way, there is no way to assume a default
         # value, at this moment.
@@ -457,8 +459,6 @@ class ExecTestRunner(ExecRunner):
             final_status['result'] = 'fail'
 
         final_status['returncode'] = process.returncode
-        final_status['stdout'] = stdout
-        final_status['stderr'] = stderr
         return self.prepare_status('finished', final_status)
 
 
@@ -554,6 +554,9 @@ class PythonUnittestRunner(BaseRunner):
                 yield self.prepare_status('running')
 
         status = queue.get()
+        yield self.prepare_status('running',
+                                  {'type': 'stdout',
+                                   'log': status.pop('output').encode()})
         status['time'] = time.monotonic()
         yield status
 

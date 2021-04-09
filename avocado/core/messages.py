@@ -150,7 +150,7 @@ class BaseRunningMessageHandler(BaseMessageHandler):
     def _save_message_to_file(filename, buff, task, mode='a'):
         file = os.path.join(task.metadata['task_path'], filename)
         with open(file, mode) as fp:
-            fp.write("%s\n" % buff)
+            fp.write(buff)
 
 
 class LogMessageHandler(BaseRunningMessageHandler):
@@ -172,7 +172,16 @@ class LogMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('debug.log', message['log'], task)
+        """Logs a textual message to a file.
+
+        This assumes that the log message will not contain a newline, and thus
+        one is explicitly added here.
+
+        TODO: consider moving the responsibility of formatting to the producer
+              of all log messages to allow for transparent handling of both
+              text and binary logs.
+        """
+        self._save_message_to_file('debug.log', "%s\n" % message['log'], task)
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):
@@ -194,7 +203,7 @@ class StdoutMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('stdout', message['log'], task)
+        self._save_message_to_file('stdout', message['log'], task, mode='ab')
 
 
 class StderrMessageHandler(BaseRunningMessageHandler):
@@ -216,7 +225,7 @@ class StderrMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('stderr', message['log'], task)
+        self._save_message_to_file('stderr', message['log'], task, mode='ab')
 
 
 class WhiteboardMessageHandler(BaseRunningMessageHandler):

@@ -204,11 +204,15 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
+        stdout_result = results[-3]
+        stderr_result = results[-2]
         last_result = results[-1]
+        self.assertEqual(stdout_result['type'], 'stdout')
+        self.assertEqual(stdout_result['log'], b'')
+        self.assertEqual(stderr_result['type'], 'stderr')
+        self.assertEqual(stderr_result['log'], b'')
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['returncode'], 0)
-        self.assertEqual(last_result['stdout'], b'')
-        self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time', last_result)
 
     def test_runner_exec_test_ok(self):
@@ -217,12 +221,16 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
+        stdout_result = results[-3]
+        stderr_result = results[-2]
         last_result = results[-1]
+        self.assertEqual(stdout_result['type'], 'stdout')
+        self.assertEqual(stdout_result['log'], b'')
+        self.assertEqual(stderr_result['type'], 'stderr')
+        self.assertEqual(stderr_result['log'], b'')
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'pass')
         self.assertEqual(last_result['returncode'], 0)
-        self.assertEqual(last_result['stdout'], b'')
-        self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time', last_result)
 
     @skipUnlessPathExists('/bin/false')
@@ -231,12 +239,16 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
+        stdout_result = results[-3]
+        stderr_result = results[-2]
         last_result = results[-1]
+        self.assertEqual(stdout_result['type'], 'stdout')
+        self.assertEqual(stdout_result['log'], b'')
+        self.assertEqual(stderr_result['type'], 'stderr')
+        self.assertEqual(stderr_result['log'], b'')
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'fail')
         self.assertEqual(last_result['returncode'], 1)
-        self.assertEqual(last_result['stdout'], b'')
-        self.assertEqual(last_result['stderr'], b'')
         self.assertIn('time', last_result)
 
     def test_runner_python_unittest_ok(self):
@@ -244,29 +256,31 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
-        output1 = ('----------------------------------------------------------'
-                   '------------\nRan 0 tests in ')
-        output2 = 's\n\nOK\n'
+        output1 = (b'----------------------------------------------------------'
+                   b'------------\nRan 0 tests in ')
+        output2 = b's\n\nOK\n'
+        output = results[-2]
         result = results[-1]
         self.assertEqual(result['status'], 'finished')
         self.assertEqual(result['result'], 'pass')
-        self.assertTrue(result['output'].startswith(output1))
-        self.assertTrue(result['output'].endswith(output2))
+        self.assertTrue(output['log'].startswith(output1))
+        self.assertTrue(output['log'].endswith(output2))
 
     def test_runner_python_unittest_fail(self):
         runnable = nrunner.Runnable('python-unittest', 'unittest.TestCase.fail')
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
-        output1 = ('============================================================='
-                   '=========\nFAIL: fail (unittest.case.TestCase)'
-                   '\nFail immediately, with the given message.')
-        output2 = '\n\nFAILED (failures=1)\n'
+        output1 = (b'============================================================='
+                   b'=========\nFAIL: fail (unittest.case.TestCase)'
+                   b'\nFail immediately, with the given message.')
+        output2 = b'\n\nFAILED (failures=1)\n'
+        output = results[-2]
         result = results[-1]
         self.assertEqual(result['status'], 'finished')
         self.assertEqual(result['result'], 'fail')
-        self.assertTrue(result['output'].startswith(output1))
-        self.assertTrue(result['output'].endswith(output2))
+        self.assertTrue(output['log'].startswith(output1))
+        self.assertTrue(output['log'].endswith(output2))
 
     def test_runner_python_unittest_skip(self):
         runnable = nrunner.Runnable(
@@ -275,28 +289,30 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
-        output1 = ('----------------------------------------------------------'
-                   '------------\nRan 1 test in ')
-        output2 = 's\n\nOK (skipped=1)\n'
+        output1 = (b'----------------------------------------------------------'
+                   b'------------\nRan 1 test in ')
+        output2 = b's\n\nOK (skipped=1)\n'
+        output = results[-2]
         result = results[-1]
         self.assertEqual(result['status'], 'finished')
         self.assertEqual(result['result'], 'skip')
-        self.assertTrue(result['output'].startswith(output1))
-        self.assertTrue(result['output'].endswith(output2))
+        self.assertTrue(output['log'].startswith(output1))
+        self.assertTrue(output['log'].endswith(output2))
 
     def test_runner_python_unittest_error(self):
         runnable = nrunner.Runnable('python-unittest', 'error')
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
-        output1 = ('============================================================='
-                   '=========\nERROR: error')
-        output2 = '\n\nFAILED (errors=1)\n'
+        output1 = (b'============================================================='
+                   b'=========\nERROR: error')
+        output2 = b'\n\nFAILED (errors=1)\n'
+        output = results[-2]
         result = results[-1]
         self.assertEqual(result['status'], 'finished')
         self.assertEqual(result['result'], 'error')
-        self.assertTrue(result['output'].startswith(output1))
-        self.assertTrue(result['output'].endswith(output2))
+        self.assertTrue(output['log'].startswith(output1))
+        self.assertTrue(output['log'].endswith(output2))
 
     def test_runner_python_unittest_empty_uri_error(self):
         runnable = nrunner.Runnable('python-unittest', '')
