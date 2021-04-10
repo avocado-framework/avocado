@@ -31,9 +31,9 @@ this once (unless you add a new entry-point, then you need to re-run it to make 
 available).
 
 Avocado supports various plugins, which are distributed as separate projects,
-for example "avocado-vt" and "avocado-virt". These also need to be
-deployed and "linked" in order to work properly with the Avocado from
-sources (installed version works out of the box).
+for example "avocado-vt". These also need to be deployed and "linked" in order
+to work properly with the Avocado from sources (installed version works out of
+the box).
 
 You can install external plugins as you wish, and/or according to the
 specific plugin's maintainer recommendations.
