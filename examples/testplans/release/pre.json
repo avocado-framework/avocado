@@ -14,7 +14,7 @@
 	 "description": "With a load as light as possible on your system, run `selftests/pre_release/jobs/pre_release.py`. Expected results: all tests PASSed"},
 
         {"name": "Check the right RPM packages are available in COPR",
-         "description": "Run `selftests/pre_release/tests/check-copr-rpm-version.sh`. Expected result: last line with: python3-avocado-$VERSION-$DATE-git$COMMIT"},
+         "description": "Run `selftests/pre_release/tests/check-copr-rpm-version.sh`. Expected result: last line with: Complete!"},
 
 	{"name": "Avocado deployment",
 	 "description": "Execute the ansible playbook located at selftests/deployments/deployment.yml with '-e method=copr' on one or many fresh virtual machines."},
