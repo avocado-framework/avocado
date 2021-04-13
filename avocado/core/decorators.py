@@ -82,7 +82,7 @@ def _skip_method_decorator(function, message, condition):
     return wrapper
 
 
-def _skip_class_decorator(cls, message, condition=None):
+def _skip_class_decorator(cls, message, condition):
     """Creates a skip decorator for a class."""
     for key in cls.__dict__:
         if key.startswith('test') and callable(getattr(cls, key)):
