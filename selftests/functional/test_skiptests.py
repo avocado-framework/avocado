@@ -44,14 +44,18 @@ class AvocadoSkipTests(avocado.Test):
         self.log.info('test executed')
 
     @avocado.skipIf(lambda x: x.FALSE_CONDITION,
-                    'skipIf with False condition, should not happen')
+                    'skipIf with False condition should never happen')
     def test6(self):
-        self.log.info('test executed')
+        # test "runs", because skipIf with False condition runs a test
+        self.cancel('ran, but was canceled')
+        self.log.info('test executed')  # should never get here
 
     @avocado.skipUnless(lambda x: x.TRUE_CONDITION,
-                        'skipUnless with True condition, should not happen')
+                        'skipUnless with True condition should never happen')
     def test7(self):
-        self.log.info('test executed')
+        # test "runs", because skipUnless with True condition runs a test
+        self.cancel('ran, but was canceled')
+        self.log.info('test executed')  # should never get here
 
     def tearDown(self):
         self.log.info('teardown executed')
@@ -310,6 +314,7 @@ class Skip(Base):
 
     def test_skip_decorators(self):
         self.check_skips_and_content(5)
+        self.check_status(cancel=2)
 
 
 class NotSkip(Base):

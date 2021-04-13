@@ -78,6 +78,7 @@ def _skip_method_decorator(function, message, condition):
                 raise core_exceptions.TestSkipError(message)
         elif condition:
             raise core_exceptions.TestSkipError(message)
+        return function(obj, *args, **kwargs)
     wrapper.__skip_test_decorator__ = True
     return wrapper
 
