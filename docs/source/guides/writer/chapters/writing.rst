@@ -1075,6 +1075,8 @@ the  ``setUp()`` method, the test method and the ``tearDown()`` method.
           ``ERROR``, to use any of the skip decorators on the
           ``tearDown()`` method.
 
+.. _skip-advanced-conditionals:
+
 Advanced Conditionals
 ~~~~~~~~~~~~~~~~~~~~~
 

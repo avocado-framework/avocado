@@ -1,0 +1,103 @@
+===============
+87.0 Braveheart
+===============
+
+The Avocado team is proud to present another release: Avocado 87.0,
+AKA "Braveheart", is now available!
+
+Release documentation: `Avocado 87.0
+<http://avocado-framework.readthedocs.io/en/87.0/>`_
+
+Users/Test Writers
+==================
+
+* The ``avocado assets`` command has been expanded and now can purge
+  the cache based on its overall size.  To keep 4 GiB of the most
+  recently accessed files, you can run ``avocado assets
+  purge --by-overall-limit=4g``.  For more information, please refer
+  to the documentation: :ref:`assets-removing-by-overall-cache-limit`.
+
+* :func:`avocado.skipIf` and :func:`avocado.skipUnless` now allow the
+  condition to be a callable, to be evaluate much later, and also
+  gives them access to the test class.  For more information, please
+  refer to the documentation: :ref:`skip-advanced-conditionals`.
+
+* The presentation of SIMPLE tests have been improved in the sense
+  that they're are now much more configurable.  One can now set the
+  ``simpletests.status.failure_fields`` to configure how the status
+  line shown just after a failed test will look like, and
+  ``job.output.testlogs.logfiles`` to determine the files that will
+  be shown at the end of the job for failed tests.
+
+Bug Fixes
+=========
+
+* The :mod:`avocaod.core.safeloader` now supports relative imports
+  with names, meaning that syntax such as ``from ..upper import foo``
+  is not properly parsed.
+
+* The nrunner TAP runner now supports/parses large amounts of data,
+  where it would previously crash when buffers were overrun.
+
+* The assets plugin (``avocado assets`` command) now returns
+  meaningful exit code on some failures and success situations.
+
+Utility APIs
+============
+
+* The :mod:`avocado.utils.partition` utility module now properly keeps
+  track of loop devices and multiple mounts per device.
+
+Internal Changes
+================
+
+* The nrunner message handling code was mostly rewritten, with
+  specific handlers for specific message types.  Also, the expected
+  (mandatory and optional) is now documented.
+
+* The :class:`avocado.core.nrunner.Task` identifier is now
+  automatically assigned if one is not explicitly provided.
+
+* The ``selftests/check.py`` Job API-based script now prints a list of
+  the failed tests at the end of the job.
+
+* The nrunner standalone runners are now on their own directory on the
+  source code tree (``avocado/core/runners``).
+
+* The nrunner base class runner is now an abtract base class.
+
+* The Job's Test suite for the nrunner architecture now contains
+  Runnables instead of Tasks, which are a better fit at that stage.
+  Tasks will be created closer to the execution of the Job.  This
+  solves the dilemma of changing a Task identifier, which should be
+  avoided if possible.
+
+* The CI jobs on Cirrus have been expanded to run the selftests in a
+  Fedora based container environment, and a simple smokecheck on
+  Windows.
+
+* A GitHub actions based job was added to the overall CI systems,
+  initially doing the static style/lint checks.
+
+* The selftests have been reorganized into directories for utility
+  modules and plugins.  This should, besides making it easier to
+  find the test file for a particular featured based on its type,
+  also facilitate the repo split.
+
+* A number of test status which are not being used were removed,
+  and the current definitions now better match the general style
+  and are documented.
+
+* COPR RPM package check not attempts to install a specific package
+  NVR (name-version-release).
+
+* Many Python code lint improvements, with new checks added.
+
+Misc Changes
+============
+
+* Updated Debian packaging, now based on Pybuild build system
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/86.0...87.0>`_.

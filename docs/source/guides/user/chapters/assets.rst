@@ -52,6 +52,8 @@ Assets can be removed applying the same filters as described when listing them.
 You can remove assets by a size filter (`--by-size-filter`) or assets older
 than N days (`--by-days`).
 
+.. _assets-removing-by-overall-cache-limit:
+
 Removing by overall cache limit
 -------------------------------
 
