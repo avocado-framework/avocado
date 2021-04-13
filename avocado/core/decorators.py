@@ -69,37 +69,46 @@ fail_on = deco_factory("fail", core_exceptions.TestFail)
 cancel_on = deco_factory("cancel", core_exceptions.TestCancel)
 
 
-def _skip_method_decorator(function, message, condition):
+def _skip_method_decorator(function, message, condition, negate):
     """Creates a skip decorator for a method."""
     @wraps(function)
     def wrapper(obj, *args, **kwargs):  # pylint: disable=W0613
-        if callable(condition):
-            if condition(obj):
-                raise core_exceptions.TestSkipError(message)
-        elif condition:
-            raise core_exceptions.TestSkipError(message)
+        if negate:
+            if callable(condition):
+                if not condition(obj):
+                    raise core_exceptions.TestSkipError(message)
+            else:
+                if not condition:
+                    raise core_exceptions.TestSkipError(message)
+        else:
+            if callable(condition):
+                if condition(obj):
+                    raise core_exceptions.TestSkipError(message)
+            else:
+                if condition:
+                    raise core_exceptions.TestSkipError(message)
         return function(obj, *args, **kwargs)
     wrapper.__skip_test_decorator__ = True
     return wrapper
 
 
-def _skip_class_decorator(cls, message, condition):
+def _skip_class_decorator(cls, message, condition, negate):
     """Creates a skip decorator for a class."""
     for key in cls.__dict__:
         if key.startswith('test') and callable(getattr(cls, key)):
             wrapped = _skip_method_decorator(getattr(cls, key),
-                                             message, condition)
+                                             message, condition, negate)
             setattr(cls, key, wrapped)
     return cls
 
 
-def _get_skip_method_or_class_decorator(message, condition):
+def _get_skip_method_or_class_decorator(message, condition, negate):
     """Returns a method or class decorator, according to decorated type."""
     def decorator(obj):
         if isinstance(obj, type):
-            return _skip_class_decorator(obj, message, condition)
+            return _skip_class_decorator(obj, message, condition, negate)
         else:
-            return _skip_method_decorator(obj, message, condition)
+            return _skip_method_decorator(obj, message, condition, negate)
     return decorator
 
 
@@ -111,7 +120,7 @@ def skip(message=None):
     :type message: str
 
     """
-    return _get_skip_method_or_class_decorator(message, True)
+    return _get_skip_method_or_class_decorator(message, True, False)
 
 
 def skipIf(condition, message=None):
@@ -125,7 +134,7 @@ def skipIf(condition, message=None):
     :param message: the message given when the test is skipped
     :type message: str
     """
-    return _get_skip_method_or_class_decorator(message, condition)
+    return _get_skip_method_or_class_decorator(message, condition, False)
 
 
 def skipUnless(condition, message=None):
@@ -139,6 +148,4 @@ def skipUnless(condition, message=None):
     :param message: the message given when the test is skipped
     :type message: str
     """
-    return _get_skip_method_or_class_decorator(
-        message,
-        lambda x: not (condition(x) if callable(condition) else condition))
+    return _get_skip_method_or_class_decorator(message, condition, True)
