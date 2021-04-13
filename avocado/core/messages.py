@@ -153,10 +153,54 @@ class BaseRunningMessageHandler(BaseMessageHandler):
     """Base interface for resolving running messages."""
 
     @staticmethod
-    def _save_message_to_file(filename, buff, task, mode='a'):
+    def _message_to_line(message, encoding):
+        """
+        Converts the message to string.
+
+        When the message doesn't end with a new line, the new line is added.
+
+        :param message: message for decoding
+        :type message: bytes
+        :param encoding: encoding of the message
+        :type encoding: str
+        :return: encoded message with new line character
+        :rtype: str
+        """
+        message = message.decode(encoding)
+        if not message.endswith("\n"):
+            message = "%s\n" % message
+        return message
+
+    @staticmethod
+    def _save_message_to_file(filename, buff, task, encoding=None):
+        """
+        Method for saving messages into the file
+
+        It can decode and save messages.The message will be decoded when
+        encoding is not None. When the decoded message doesn't end with a new
+        line the new line will be added. Every message is saved in the append
+        mode.
+
+        :param filename: name of the file
+        :type filename: str
+        :param buff: message to be saved
+        :type buff: bytes
+        :param task: message related task.
+        :type task: :class:`avocado.core.nrunner.Task`
+        :param encoding: encoding of buff, default is None
+        :type encoding: str
+        """
+
+        def _save_to_file(file_name, mode):
+            with open(file_name, mode) as fp:
+                fp.write(buff)
+
         file = os.path.join(task.metadata['task_path'], filename)
-        with open(file, mode) as fp:
-            fp.write(buff)
+        if encoding:
+            buff = BaseRunningMessageHandler._message_to_line(buff, encoding)
+            _save_to_file(file, "a")
+        else:
+            _save_to_file(file, "ab")
 
 
 class LogMessageHandler(BaseRunningMessageHandler):
@@ -182,12 +226,9 @@ class LogMessageHandler(BaseRunningMessageHandler):
 
         This assumes that the log message will not contain a newline, and thus
         one is explicitly added here.
-
-        TODO: consider moving the responsibility of formatting to the producer
-              of all log messages to allow for transparent handling of both
-              text and binary logs.
         """
-        self._save_message_to_file('debug.log', "%s\n" % message['log'], task)
+        self._save_message_to_file('debug.log', message['log'], task,
+                                   message.get('encoding', None))
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):
@@ -209,7 +250,8 @@ class StdoutMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('stdout', message['log'], task, mode='ab')
+        self._save_message_to_file('stdout', message['log'], task,
+                                   message.get('encoding', None))
 
 
 class StderrMessageHandler(BaseRunningMessageHandler):
@@ -231,7 +273,8 @@ class StderrMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('stderr', message['log'], task, mode='ab')
+        self._save_message_to_file('stderr', message['log'], task,
+                                   message.get('encoding', None))
 
 
 class WhiteboardMessageHandler(BaseRunningMessageHandler):
@@ -253,4 +296,5 @@ class WhiteboardMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('whiteboard', message['log'], task)
+        self._save_message_to_file('whiteboard', message['log'], task,
+                                   message.get('encoding', None))
