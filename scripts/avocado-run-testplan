@@ -166,7 +166,7 @@ class App:
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
                                     shell=True)
-            out = proc.communicate()[0].strip()
+            out = proc.communicate()[0].strip().decode()
             if not proc.poll():
                 print("%s: %s" % (name, out))
         return 0
