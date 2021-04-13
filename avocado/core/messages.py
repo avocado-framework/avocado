@@ -147,10 +147,33 @@ class BaseRunningMessageHandler(BaseMessageHandler):
     """Base interface for resolving running messages."""
 
     @staticmethod
-    def _save_message_to_file(filename, buff, task, mode='a'):
+    def _save_message_to_file(filename, buff, task):
+        """
+        Method for saving messages into the file
+
+        It can save str or byte types of messages. When the str message doesn't
+        end with a new line the new line will be added. Every message is saved
+        in the append mode.
+
+        :param filename: name of the file
+        :type filename: str
+        :param buff: message to be saved
+        :type buff: str or bytes
+        :param task: message related task.
+        :type: :class:`avocado.core.nrunner.Task`
+        """
+
+        def _save_to_file(mode):
+            with open(file, mode) as fp:
+                fp.write(buff)
+
         file = os.path.join(task.metadata['task_path'], filename)
-        with open(file, mode) as fp:
-            fp.write(buff)
+        if type(buff) is str:
+            if not buff.endswith("\n"):
+                buff = "%s\n" % buff
+            _save_to_file("a")
+        elif type(buff) is bytes:
+            _save_to_file("ab")
 
 
 class LogMessageHandler(BaseRunningMessageHandler):
@@ -176,12 +199,8 @@ class LogMessageHandler(BaseRunningMessageHandler):
 
         This assumes that the log message will not contain a newline, and thus
         one is explicitly added here.
-
-        TODO: consider moving the responsibility of formatting to the producer
-              of all log messages to allow for transparent handling of both
-              text and binary logs.
         """
-        self._save_message_to_file('debug.log', "%s\n" % message['log'], task)
+        self._save_message_to_file('debug.log', message['log'], task)
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):
@@ -203,7 +222,7 @@ class StdoutMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('stdout', message['log'], task, mode='ab')
+        self._save_message_to_file('stdout', message['log'], task)
 
 
 class StderrMessageHandler(BaseRunningMessageHandler):
@@ -225,7 +244,7 @@ class StderrMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('stderr', message['log'], task, mode='ab')
+        self._save_message_to_file('stderr', message['log'], task)
 
 
 class WhiteboardMessageHandler(BaseRunningMessageHandler):
