@@ -729,7 +729,21 @@ class Test(unittest.TestCase, TestData):
         output_check_exception = None
         stdout_check_exception = None
         stderr_check_exception = None
-        skip_test = getattr(testMethod, '__skip_test_decorator__', False)
+        skip_test_condition = getattr(testMethod, '__skip_test_condition__', False)
+        skip_test_condition_negate = getattr(testMethod, '__skip_test_condition_negate__', False)
+        if skip_test_condition:
+            if callable(skip_test_condition):
+                if skip_test_condition_negate:
+                    skip_test = not bool(skip_test_condition(self))
+                else:
+                    skip_test = bool(skip_test_condition(self))
+            else:
+                if skip_test_condition_negate:
+                    skip_test = not bool(skip_test_condition)
+                else:
+                    skip_test = bool(skip_test_condition)
+        else:
+            skip_test = bool(skip_test_condition)
         try:
             if skip_test is False:
                 self.__phase = 'SETUP'

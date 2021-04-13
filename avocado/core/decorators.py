@@ -88,7 +88,8 @@ def _skip_method_decorator(function, message, condition, negate):
                 if condition:
                     raise core_exceptions.TestSkipError(message)
         return function(obj, *args, **kwargs)
-    wrapper.__skip_test_decorator__ = True
+    wrapper.__skip_test_condition__ = condition
+    wrapper.__skip_test_condition_negate__ = negate
     return wrapper
 
 

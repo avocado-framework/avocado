@@ -313,8 +313,7 @@ class Skip(Base):
     }
 
     def test_skip_decorators(self):
-        self.check_skips_and_content(5)
-        self.check_status(cancel=2)
+        self.check_status(skip=5, cancel=2)
 
 
 class NotSkip(Base):
