@@ -61,3 +61,17 @@ class TestLogsFilesUI(TestCaseTmpDir):
     def tearDown(self):
         super(TestLogsFilesUI, self).tearDown()
         self.config_file.remove()
+
+
+class TestLogging(TestCaseTmpDir):
+
+    def test_job_log(self):
+        pass_test = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
+        cmd_line = ('%s run --job-results-dir %s --test-runner=nrunner %s' %
+                    (AVOCADO, self.tmpdir.name, pass_test))
+        process.run(cmd_line)
+        log_file = os.path.join(self.tmpdir.name, 'latest', 'job.log')
+        with open(log_file, 'r') as fp:
+            log = fp.read()
+        self.assertIn('passtest.py:PassTest.test: STARTED', log)
+        self.assertIn('passtest.py:PassTest.test: PASS', log)

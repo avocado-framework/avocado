@@ -196,6 +196,7 @@ if __name__ == '__main__':
                   'journal = avocado.plugins.journal:JournalResult',
                   'fetchasset = avocado.plugins.assets:FetchAssetJob',
                   'sysinfo = avocado.plugins.sysinfo:SysInfoJob',
+                  'testlogging = avocado.plugins.testlogs:TestLogging',
                   ],
               'avocado.plugins.varianter': [
                   'json_variants = avocado.plugins.json_variants:JsonVariants',
