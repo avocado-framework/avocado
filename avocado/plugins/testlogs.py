@@ -7,7 +7,7 @@ from avocado.core.settings import settings
 from avocado.core.teststatus import STATUSES
 
 
-class TestLogsInit(Init):
+class TestLogsUIInit(Init):
 
     description = "Initialize testlogs plugin settings"
 
@@ -31,7 +31,7 @@ class TestLogsInit(Init):
                                  help_msg=help_msg)
 
 
-class TestLogs(JobPre, JobPost):
+class TestLogsUI(JobPre, JobPost):
 
     description = "Shows content from tests' logs"
 

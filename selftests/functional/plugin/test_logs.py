@@ -9,10 +9,10 @@ CONFIG = """[job.output.testlogs]
 statuses = ["FAIL", "CANCEL"]"""
 
 
-class TestLogs(TestCaseTmpDir):
+class TestLogsUI(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestLogs, self).setUp()
+        super(TestLogsUI, self).setUp()
         with open(os.path.join(self.tmpdir.name, 'config'), 'w') as config:
             config.write(CONFIG)
 
@@ -32,10 +32,10 @@ class TestLogs(TestCaseTmpDir):
                       ':CancelTest.test" (CANCEL):', stdout_lines)
 
 
-class TestLogsFiles(TestCaseTmpDir):
+class TestLogsFilesUI(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestLogsFiles, self).setUp()
+        super(TestLogsFilesUI, self).setUp()
         self.config_file = script.TemporaryScript(
             'avocado.conf',
             "[job.output.testlogs]\n"
@@ -59,5 +59,5 @@ class TestLogsFiles(TestCaseTmpDir):
                          r'Failure to access log file.*DOES_NOT_EXIST"')
 
     def tearDown(self):
-        super(TestLogsFiles, self).tearDown()
+        super(TestLogsFilesUI, self).tearDown()
         self.config_file.remove()
