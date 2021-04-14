@@ -9,7 +9,7 @@
 	 },
          {
 	 "name": "Version Bump: Propagate to plugins",
-         "description": "Run the command: `make propagate-version` to propagate this change to all optional and “linkabe” plugins sharing the parent dir (eg. avocado-vt)."
+         "description": "Run the command: `make propagate-version` to propagate this change to all optional and “linkable” plugins sharing the parent dir (eg. avocado-vt)."
 	 },
          {
 	 "name": "Write the release notes",
