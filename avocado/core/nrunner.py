@@ -313,7 +313,7 @@ class Runnable:
         raise ValueError('Unsupported kind of runnable: %s' % self.kind)
 
 
-class BaseRunner(metaclass=abc.ABCMeta):
+class BaseRunner(abc.ABC):
     """
     Base interface for a Runner
     """
