@@ -1,4 +1,4 @@
-# docstrings, methods, imports... pylint: disable=C0111,W0403,R0903,C0411,E0611,C0412
+# docstrings, methods, imports... pylint: disable=C0111,R0903,C0411,E0611,C0412
 
 # module imports
 import parent1  # .names[0].name => parent1
