@@ -7,7 +7,7 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import genio, process
-from selftests import AVOCADO, BASEDIR
+from selftests.utils import AVOCADO, BASEDIR
 
 
 class MultiplexTests(unittest.TestCase):

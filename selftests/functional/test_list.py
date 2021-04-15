@@ -3,8 +3,7 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
-
-from .. import AVOCADO, BASEDIR
+from selftests.utils import AVOCADO, BASEDIR
 
 
 class List(unittest.TestCase):

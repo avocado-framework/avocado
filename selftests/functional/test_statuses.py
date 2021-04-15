@@ -3,8 +3,7 @@ import os
 import unittest
 
 from avocado.utils import genio, process
-
-from .. import AVOCADO, TestCaseTmpDir
+from selftests.utils import AVOCADO, TestCaseTmpDir
 
 ALL_MESSAGES = ['setup pre',
                 'setup post',

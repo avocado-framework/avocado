@@ -5,8 +5,7 @@ import tempfile
 import unittest
 
 from avocado.utils import archive, crypto, data_factory
-
-from .. import BASEDIR, temp_dir_prefix
+from selftests.utils import BASEDIR, temp_dir_prefix
 
 
 class ArchiveTest(unittest.TestCase):

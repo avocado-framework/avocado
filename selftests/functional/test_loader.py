@@ -8,9 +8,8 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process, script
-
-from .. import (AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan,
-                skipUnlessPathExists)
+from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
+                             skipOnLevelsInferiorThan, skipUnlessPathExists)
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
 from avocado import Test

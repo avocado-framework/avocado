@@ -5,8 +5,8 @@ import xml.dom.minidom
 
 from avocado.core import exit_codes
 from avocado.utils import genio, process, script
-
-from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
+from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
+                             skipOnLevelsInferiorThan)
 
 SCRIPT_CONTENT = """#!/bin/bash
 sleep 2

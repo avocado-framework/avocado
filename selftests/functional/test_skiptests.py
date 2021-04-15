@@ -4,8 +4,7 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import genio, process, script
-
-from .. import AVOCADO, TestCaseTmpDir
+from selftests.utils import AVOCADO, TestCaseTmpDir
 
 AVOCADO_TEST_SKIP_DECORATORS = """
 import avocado

@@ -7,8 +7,7 @@ from avocado.core import data_dir, exit_codes, job, nrunner, test
 from avocado.core.exceptions import JobBaseException
 from avocado.core.suite import TestSuite, TestSuiteStatus
 from avocado.utils import path as utils_path
-
-from .. import setup_avocado_loggers, temp_dir_prefix
+from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
 

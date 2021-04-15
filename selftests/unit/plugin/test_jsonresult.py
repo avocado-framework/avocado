@@ -6,8 +6,7 @@ from avocado import Test
 from avocado.core import job
 from avocado.core.result import Result
 from avocado.plugins import jsonresult
-
-from ... import TestCaseTmpDir, setup_avocado_loggers
+from selftests.utils import TestCaseTmpDir, setup_avocado_loggers
 
 setup_avocado_loggers()
 

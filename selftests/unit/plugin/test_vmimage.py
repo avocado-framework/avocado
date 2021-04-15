@@ -7,10 +7,9 @@ from avocado.core import data_dir
 from avocado.core.settings import Settings
 from avocado.plugins import vmimage as vmimage_plugin
 from avocado.utils import vmimage as vmimage_util
-
-from ... import skipOnLevelsInferiorThan, temp_dir_prefix
-from ...functional.plugin.test_vmimage import (create_metadata_file,
-                                               missing_binary)
+from selftests.functional.plugin.test_vmimage import (create_metadata_file,
+                                                      missing_binary)
+from selftests.utils import skipOnLevelsInferiorThan, temp_dir_prefix
 
 #: extracted from https://dl.fedoraproject.org/pub/fedora/linux/releases/
 FEDORA_PAGE = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">

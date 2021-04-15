@@ -10,8 +10,7 @@ import warnings
 
 from avocado.core import exit_codes
 from avocado.utils import process
-
-from .. import AVOCADO, get_temporary_config
+from selftests.utils import AVOCADO, get_temporary_config
 
 TEST_TEMPLATE = r"""
 from avocado import Test

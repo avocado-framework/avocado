@@ -3,8 +3,7 @@ import tempfile
 import unittest.mock
 
 from avocado.core import settings
-
-from .. import temp_dir_prefix
+from selftests.utils import temp_dir_prefix
 
 
 class Base(unittest.TestCase):

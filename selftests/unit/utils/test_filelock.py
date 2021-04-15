@@ -3,8 +3,7 @@ import tempfile
 import unittest
 
 from avocado.utils.filelock import AlreadyLocked, FileLock
-
-from ... import temp_dir_prefix
+from selftests.utils import temp_dir_prefix
 
 
 class TestFileLock(unittest.TestCase):

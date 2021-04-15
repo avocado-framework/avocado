@@ -11,8 +11,7 @@ from avocado.core.output import TermSupport
 from avocado.utils import genio
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
-
-from .. import AVOCADO, TestCaseTmpDir, skipUnlessPathExists
+from selftests.utils import AVOCADO, TestCaseTmpDir, skipUnlessPathExists
 
 # AVOCADO may contain more than a single command, as it can be
 # prefixed by the Python interpreter

@@ -6,8 +6,7 @@ import unittest.mock
 
 from avocado.core import safeloader
 from avocado.utils import script
-
-from .. import BASEDIR, TestCaseTmpDir, setup_avocado_loggers
+from selftests.utils import BASEDIR, TestCaseTmpDir, setup_avocado_loggers
 
 setup_avocado_loggers()
 

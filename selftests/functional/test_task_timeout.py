@@ -3,8 +3,8 @@ import tempfile
 from avocado.core.job import Job
 from avocado.utils import script
 from avocado.utils.network.ports import find_free_port
-
-from .. import TestCaseTmpDir, skipUnlessPathExists, temp_dir_prefix
+from selftests.utils import (TestCaseTmpDir, skipUnlessPathExists,
+                             temp_dir_prefix)
 
 SCRIPT_CONTENT = """#!/bin/bash
 /bin/sleep 30

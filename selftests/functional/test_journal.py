@@ -5,8 +5,7 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
-
-from .. import AVOCADO, TestCaseTmpDir
+from selftests.utils import AVOCADO, TestCaseTmpDir
 
 
 class JournalPluginTests(TestCaseTmpDir):

@@ -5,8 +5,8 @@ import unittest
 from avocado.core.job import Job
 from avocado.utils import process
 from avocado.utils.network.ports import find_free_port
-
-from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipUnlessPathExists
+from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
+                             skipUnlessPathExists)
 
 RUNNER = "%s -m avocado.core.nrunner" % sys.executable
 

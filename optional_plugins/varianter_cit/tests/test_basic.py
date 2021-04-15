@@ -2,7 +2,7 @@ import os
 import unittest
 
 from avocado.utils import process
-from selftests import AVOCADO, BASEDIR, TestCaseTmpDir
+from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir
 
 
 class Basic(unittest.TestCase):

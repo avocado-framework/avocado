@@ -2,8 +2,7 @@ import unittest.mock
 from urllib.error import HTTPError
 
 from avocado.utils import vmimage
-
-from ... import setup_avocado_loggers
+from selftests.utils import setup_avocado_loggers
 
 setup_avocado_loggers()
 

@@ -7,8 +7,7 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.core.job import Job
-
-from .. import TestCaseTmpDir
+from selftests.utils import TestCaseTmpDir
 
 
 class Test(TestCaseTmpDir):
