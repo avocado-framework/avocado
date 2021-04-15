@@ -20,14 +20,54 @@ import logging
 import os
 import tempfile
 import time
+from functools import wraps
 
 from . import genio, process
 
 LOGGER = logging.getLogger('avocado.test')
 
 
+class TestFail(AssertionError, Exception):
+    """
+    Indicates that the test failed.
+
+    This is here, just because of an impossible circular import.
+    """
+    status = "FAIL"
+
+
 class DmesgError(Exception):
     """Base Exception Class for all dmesg  utils exceptions."""
+
+
+def fail_on_dmesg(level=5):
+    """Dmesg fail method decorator
+
+    Returns a class decorator used to signal the test when DmesgError
+    exception is raised.
+
+    :param level: Dmesg Level based on which the test failure should be raised
+    :type level: int
+    :return: Class decorator
+    :rtype: class
+    """
+    def dmesg_fail(cls):
+        def raise_dmesg_fail(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                try:
+                    data = func(*args, **kwargs)
+                    collect_errors_by_level(level_check=level)
+                    return data
+                except DmesgError as details:
+                    raise TestFail(repr(details)) from details
+            return wrapper
+
+        for key, value in list(vars(cls).items()):
+            if callable(value) and value.__name__.startswith('test'):
+                setattr(cls, key, raise_dmesg_fail(value))
+        return cls
+    return dmesg_fail
 
 
 def clear_dmesg():
