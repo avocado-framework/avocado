@@ -101,7 +101,8 @@ class StartMessageHandler(BaseMessageHandler):
                     'base_path': base_path,
                     'task_path': task_path,
                     'time_start': message['time'],
-                    'name': task.identifier}
+                    'name': task.identifier,
+                    'task_category': task.category}
         job.result.start_test(metadata)
         job.result_events_dispatcher.map_method('start_test', job.result,
                                                 metadata)
