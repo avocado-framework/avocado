@@ -662,7 +662,7 @@ class Task:
     """
 
     def __init__(self, runnable, identifier=None, status_uris=None,
-                 known_runners=None):
+                 known_runners=None, category=None):
         """Instantiates a new Task.
 
         :param runnable: the "description" of what the task should run.
@@ -679,9 +679,12 @@ class Task:
         :type status_uri: list
         :param known_runners: a mapping of runnable kinds to runners.
         :type known_runners: dict
+        :param category: category of this task. Defaults to 'test'.
+        :type category: str
         """
         self.runnable = runnable
         self.identifier = identifier or str(uuid1())
+        self.category = (category or 'test').lower()
         self.status_services = []
         if status_uris is not None:
             for status_uri in status_uris:
