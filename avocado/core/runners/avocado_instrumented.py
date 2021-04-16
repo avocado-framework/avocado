@@ -3,6 +3,7 @@ import multiprocessing
 import sys
 import tempfile
 import time
+import traceback
 
 from .. import loader, nrunner, output
 from ..test import TestID
@@ -90,81 +91,95 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
     @staticmethod
     def _run_avocado(runnable, queue):
-        # This assumes that a proper resolution (see resolver module)
-        # was performed, and that a URI contains:
-        # 1) path to python module
-        # 2) class
-        # 3) method
-        #
-        # To be defined: if the resolution uri should be composed like
-        # this, or broken down and stored into other data fields
-        module_path, klass_method = runnable.uri.split(':', 1)
+        try:
+            # This assumes that a proper resolution (see resolver module)
+            # was performed, and that a URI contains:
+            # 1) path to python module
+            # 2) class
+            # 3) method
+            #
+            # To be defined: if the resolution uri should be composed like
+            # this, or broken down and stored into other data fields
+            module_path, klass_method = runnable.uri.split(':', 1)
 
-        klass, method = klass_method.split('.', 1)
-        test_factory = [klass,
-                        {'name': TestID(1, klass_method),
-                         'methodName': method,
-                         'config': runnable.config,
-                         'modulePath': module_path,
-                         'params': (TreeNode(), []),
-                         'tags': runnable.tags,
-                         'run.results_dir': tempfile.mkdtemp(),
-                         }]
+            klass, method = klass_method.split('.', 1)
+            test_factory = [klass,
+                            {'name': TestID(1, klass_method),
+                             'methodName': method,
+                             'config': runnable.config,
+                             'modulePath': module_path,
+                             'params': (TreeNode(), []),
+                             'tags': runnable.tags,
+                             'run.results_dir': tempfile.mkdtemp(),
+                             }]
 
-        AvocadoInstrumentedTestRunner._start_logging(runnable, queue)
-        instance = loader.loader.load_test(test_factory)
-        early_state = instance.get_state()
-        early_state['type'] = "early_state"
-        queue.put(early_state)
-        instance.run_avocado()
-        state = instance.get_state()
-        _send_message(state['whiteboard'], queue, 'whiteboard')
-        queue.put({'status': 'finished', 'result': state['status'].lower()})
+            AvocadoInstrumentedTestRunner._start_logging(runnable, queue)
+            instance = loader.loader.load_test(test_factory)
+            early_state = instance.get_state()
+            early_state['type'] = "early_state"
+            queue.put(early_state)
+            instance.run_avocado()
+            state = instance.get_state()
+            _send_message(state['whiteboard'], queue, 'whiteboard')
+            queue.put({'status': 'finished',
+                       'result': state['status'].lower()})
+        except Exception:
+            _send_message(traceback.format_exc().encode('utf-8'), queue,
+                          'stderr')
+            queue.put({'status': 'finished', 'result': 'error'})
 
     def run(self):
-        queue = multiprocessing.SimpleQueue()
-        process = multiprocessing.Process(target=self._run_avocado,
-                                          args=(self.runnable, queue))
-
-        process.start()
-
-        time_started = time.monotonic()
         yield self.prepare_status('started')
-        early_status = {}
-        timeout = float(self.DEFAULT_TIMEOUT)
-        most_current_execution_state_time = None
-        while True:
-            time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
-            now = time.monotonic()
-            if queue.empty():
-                if most_current_execution_state_time is not None:
-                    next_execution_state_mark = (most_current_execution_state_time +
-                                                 nrunner.RUNNER_RUN_STATUS_INTERVAL)
-                if (most_current_execution_state_time is None or
-                        now > next_execution_state_mark):
-                    most_current_execution_state_time = now
-                    yield self.prepare_status('running')
-                if (now - time_started) > timeout:
-                    process.terminate()
-                    status = early_status
-                    status['result'] = 'interrupted'
-                    if 'name' in status:
-                        del status['name']
-                    if 'time_start' in status:
-                        del status['time_start']
-                    yield self.prepare_status('finished', status)
-                    break
-            else:
-                message = queue.get()
-                if message.get('status') == 'finished':
-                    yield self.prepare_status('finished', message)
-                    break
-                elif message.get('type') == 'early_state':
-                    early_status = message
-                    timeout = float(early_status.get('timeout') or
-                                    self.DEFAULT_TIMEOUT)
+        try:
+            queue = multiprocessing.SimpleQueue()
+            process = multiprocessing.Process(target=self._run_avocado,
+                                              args=(self.runnable, queue))
+
+            process.start()
+
+            time_started = time.monotonic()
+
+            early_status = {}
+            timeout = float(self.DEFAULT_TIMEOUT)
+            most_current_execution_state_time = None
+            while True:
+                time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
+                now = time.monotonic()
+                if queue.empty():
+                    if most_current_execution_state_time is not None:
+                        next_execution_state_mark = (most_current_execution_state_time +
+                                                     nrunner.RUNNER_RUN_STATUS_INTERVAL)
+                    if (most_current_execution_state_time is None or
+                            now > next_execution_state_mark):
+                        most_current_execution_state_time = now
+                        yield self.prepare_status('running')
+                    if (now - time_started) > timeout:
+                        process.terminate()
+                        status = early_status
+                        status['result'] = 'interrupted'
+                        if 'name' in status:
+                            del status['name']
+                        if 'time_start' in status:
+                            del status['time_start']
+                        yield self.prepare_status('finished', status)
+                        break
                 else:
-                    yield self.prepare_status('running', message)
+                    message = queue.get()
+                    if message.get('status') == 'finished':
+                        yield self.prepare_status('finished', message)
+                        break
+                    elif message.get('type') == 'early_state':
+                        early_status = message
+                        timeout = float(early_status.get('timeout') or
+                                        self.DEFAULT_TIMEOUT)
+                    else:
+                        yield self.prepare_status('running', message)
+        except Exception:
+            yield self.prepare_status('running',
+                                      {'type': 'stderr',
+                                       'log': traceback.format_exc().encode(
+                                           'utf-8')})
+            yield self.prepare_status('finished', {'result': 'error'})
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
