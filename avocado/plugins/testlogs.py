@@ -1,13 +1,13 @@
 import json
 import os
 
-from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import Init, JobPost, JobPre
+from avocado.core.output import LOG_JOB, LOG_UI
+from avocado.core.plugin_interfaces import Init, JobPost, JobPre, ResultEvents
 from avocado.core.settings import settings
 from avocado.core.teststatus import STATUSES
 
 
-class TestLogsInit(Init):
+class TestLogsUIInit(Init):
 
     description = "Initialize testlogs plugin settings"
 
@@ -31,7 +31,7 @@ class TestLogsInit(Init):
                                  help_msg=help_msg)
 
 
-class TestLogs(JobPre, JobPost):
+class TestLogsUI(JobPre, JobPost):
 
     description = "Shows content from tests' logs"
 
@@ -63,3 +63,41 @@ class TestLogs(JobPre, JobPost):
                 except (FileNotFoundError, PermissionError) as error:
                     LOG_UI.error('Failure to access log file "%s": %s',
                                  path, error)
+
+
+class TestLogging(ResultEvents):
+    """
+    TODO: The description should be changed when the legacy runner will be
+          deprecated.
+    """
+
+    description = "Nrunner specific Test logs for Job"
+
+    def __init__(self, config):
+        self.runner = config.get('run.test_runner')
+
+    @staticmethod
+    def _get_name(state):
+        name = state.get('name')
+        if name is None:
+            return "<unknown>"
+        return name.name + name.str_variant
+
+    def pre_tests(self, job):
+        pass
+
+    def post_tests(self, job):
+        pass
+
+    def start_test(self, result, state):
+        if self.runner == 'nrunner':
+            LOG_JOB.info('%s: STARTED', self._get_name(state))
+
+    def test_progress(self, progress=False):
+        pass
+
+    def end_test(self, result, state):
+        if self.runner == 'nrunner':
+            LOG_JOB.info('%s: %s', self._get_name(state),
+                         state.get("status", "ERROR"))
+            LOG_JOB.info('More information in %s', state.get('task_path', ''))

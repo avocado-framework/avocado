@@ -9,10 +9,10 @@ CONFIG = """[job.output.testlogs]
 statuses = ["FAIL", "CANCEL"]"""
 
 
-class TestLogs(TestCaseTmpDir):
+class TestLogsUI(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestLogs, self).setUp()
+        super(TestLogsUI, self).setUp()
         with open(os.path.join(self.tmpdir.name, 'config'), 'w') as config:
             config.write(CONFIG)
 
@@ -32,10 +32,10 @@ class TestLogs(TestCaseTmpDir):
                       ':CancelTest.test" (CANCEL):', stdout_lines)
 
 
-class TestLogsFiles(TestCaseTmpDir):
+class TestLogsFilesUI(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestLogsFiles, self).setUp()
+        super(TestLogsFilesUI, self).setUp()
         self.config_file = script.TemporaryScript(
             'avocado.conf',
             "[job.output.testlogs]\n"
@@ -59,5 +59,19 @@ class TestLogsFiles(TestCaseTmpDir):
                          r'Failure to access log file.*DOES_NOT_EXIST"')
 
     def tearDown(self):
-        super(TestLogsFiles, self).tearDown()
+        super(TestLogsFilesUI, self).tearDown()
         self.config_file.remove()
+
+
+class TestLogging(TestCaseTmpDir):
+
+    def test_job_log(self):
+        pass_test = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
+        cmd_line = ('%s run --job-results-dir %s --test-runner=nrunner %s' %
+                    (AVOCADO, self.tmpdir.name, pass_test))
+        process.run(cmd_line)
+        log_file = os.path.join(self.tmpdir.name, 'latest', 'job.log')
+        with open(log_file, 'r') as fp:
+            log = fp.read()
+        self.assertIn('passtest.py:PassTest.test: STARTED', log)
+        self.assertIn('passtest.py:PassTest.test: PASS', log)
