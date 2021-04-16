@@ -96,6 +96,11 @@ class Result:
 
         :param test: A dict with test internal state
         """
+        # do not account for tasks that are not tests
+        task_category = state.get('task_category')
+        if task_category is not None and task_category != 'test':
+            return
+
         status = state.get('status')
         if status == "PASS":
             self.passed += 1

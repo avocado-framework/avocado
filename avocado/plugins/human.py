@@ -61,6 +61,11 @@ class Human(ResultEvents):
             name = "<unknown>"
             uid = '?'
         if self.runner == 'nrunner':
+            # ignore tasks that are not tests
+            task_category = state.get('task_category')
+            if task_category is not None and task_category != 'test':
+                return
+
             LOG_UI.debug(' (%s/%s) %s: STARTED', uid, result.tests_total, name)
         else:
             LOG_UI.debug(' (%s/%s) %s:  ', uid, result.tests_total, name,
@@ -99,6 +104,11 @@ class Human(ResultEvents):
                     if status != "SKIP"
                     else "")
         if self.runner == 'nrunner':
+            # ignore tasks that are not tests
+            task_category = state.get('task_category')
+            if task_category is not None and task_category != 'test':
+                return
+
             if "name" in state:
                 name = state["name"]
                 uid = name.str_uid
