@@ -2,8 +2,7 @@ import os
 import unittest.mock
 
 from avocado.core.requirements import cache
-
-from .. import TestCaseTmpDir
+from selftests.utils import TestCaseTmpDir
 
 ENTRIES = [
     ('podman',

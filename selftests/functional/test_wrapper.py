@@ -5,8 +5,7 @@ import unittest
 from avocado.core import exit_codes
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
-
-from .. import AVOCADO, BASEDIR, TestCaseTmpDir
+from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir
 
 SCRIPT_CONTENT = """#!/bin/bash
 touch %s

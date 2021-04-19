@@ -3,8 +3,7 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process, script
-
-from ... import AVOCADO, TestCaseTmpDir
+from selftests.utils import AVOCADO, TestCaseTmpDir
 
 SCRIPT_PRE_TOUCH = """#!/bin/sh -e
 touch %s"""

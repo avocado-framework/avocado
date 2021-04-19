@@ -4,8 +4,7 @@ import unittest
 
 from avocado.core import exit_codes, test
 from avocado.utils import process, script
-
-from .. import AVOCADO, TestCaseTmpDir
+from selftests.utils import AVOCADO, TestCaseTmpDir
 
 INSTRUMENTED_SCRIPT = """import os
 import tempfile

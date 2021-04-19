@@ -8,8 +8,8 @@ import unittest
 import psutil
 
 from avocado.utils import data_factory, process, script, wait
-
-from .. import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
+from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
+                             skipOnLevelsInferiorThan)
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |

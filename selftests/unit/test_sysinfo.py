@@ -3,8 +3,7 @@ import tempfile
 import unittest
 
 from avocado.core import sysinfo
-
-from .. import temp_dir_prefix
+from selftests.utils import temp_dir_prefix
 
 
 class SysinfoTest(unittest.TestCase):

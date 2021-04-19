@@ -6,8 +6,7 @@ import unittest.mock
 from avocado.core import loader, test
 from avocado.core.test_id import TestID
 from avocado.utils import script
-
-from .. import setup_avocado_loggers, temp_dir_prefix
+from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
 

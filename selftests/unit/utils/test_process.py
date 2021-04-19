@@ -6,9 +6,8 @@ import time
 import unittest.mock
 
 from avocado.utils import path, process, script
-
-from ... import (setup_avocado_loggers, skipOnLevelsInferiorThan,
-                 skipUnlessPathExists)
+from selftests.utils import (setup_avocado_loggers, skipOnLevelsInferiorThan,
+                             skipUnlessPathExists)
 
 setup_avocado_loggers()
 

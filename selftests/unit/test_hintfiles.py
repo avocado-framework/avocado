@@ -5,8 +5,7 @@ from avocado.core.nrunner import Runnable
 from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolution
 from avocado.core.settings import SettingsError
-
-from .. import skipUnlessPathExists
+from selftests.utils import skipUnlessPathExists
 
 BAD = """[kinds]
 tap = ./tests/*.t

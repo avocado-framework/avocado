@@ -3,8 +3,7 @@ import os
 import unittest
 
 from avocado.utils import process
-
-from .. import AVOCADO, TestCaseTmpDir
+from selftests.utils import AVOCADO, TestCaseTmpDir
 
 
 class VariantsDumpLoadTests(TestCaseTmpDir):

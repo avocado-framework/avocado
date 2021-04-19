@@ -4,8 +4,7 @@ import unittest
 from avocado import VERSION
 from avocado.core import exit_codes
 from avocado.utils import process, script
-
-from .. import AVOCADO, BASEDIR, TestCaseTmpDir
+from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir
 
 SCRIPT_CONTENT = """#!/bin/sh
 echo "Avocado Version: $AVOCADO_VERSION"

@@ -5,8 +5,7 @@ import unittest.mock
 
 from avocado.core import nrunner
 from avocado.core.runners import tap as runner_tap
-
-from .. import skipUnlessPathExists, temp_dir_prefix
+from selftests.utils import skipUnlessPathExists, temp_dir_prefix
 
 
 class Runnable(unittest.TestCase):

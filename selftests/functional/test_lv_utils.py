@@ -11,8 +11,7 @@ import time
 import unittest
 
 from avocado.utils import linux_modules, lv_utils, process
-
-from .. import TestCaseTmpDir
+from selftests.utils import TestCaseTmpDir
 
 
 class LVUtilsTest(TestCaseTmpDir):

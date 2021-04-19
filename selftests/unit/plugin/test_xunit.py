@@ -7,8 +7,7 @@ from avocado import Test
 from avocado.core import job
 from avocado.core.result import Result
 from avocado.plugins import xunit
-
-from ... import setup_avocado_loggers, temp_dir_prefix
+from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
 try:
     import xmlschema

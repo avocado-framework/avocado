@@ -4,8 +4,7 @@ import unittest
 
 from avocado.core import data_dir, exit_codes, job_id
 from avocado.utils import process
-
-from .. import AVOCADO, BASEDIR
+from selftests.utils import AVOCADO, BASEDIR
 
 
 class ArgumentParsingTest(unittest.TestCase):

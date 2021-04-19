@@ -4,8 +4,7 @@ import unittest.mock
 from avocado.core import data_dir
 from avocado.core.suite import TestSuite
 from avocado.utils import path as utils_path
-
-from .. import setup_avocado_loggers, temp_dir_prefix
+from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
 
