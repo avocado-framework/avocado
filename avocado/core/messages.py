@@ -102,9 +102,10 @@ class StartMessageHandler(BaseMessageHandler):
                     'task_path': task_path,
                     'time_start': message['time'],
                     'name': task.identifier}
-        job.result.start_test(metadata)
-        job.result_events_dispatcher.map_method('start_test', job.result,
-                                                metadata)
+        if task.category == 'test':
+            job.result.start_test(metadata)
+            job.result_events_dispatcher.map_method('start_test', job.result,
+                                                    metadata)
         task.metadata.update(metadata)
 
 
@@ -139,8 +140,10 @@ class FinishMessageHandler(BaseMessageHandler):
 
         message['logdir'] = task.metadata['task_path']
 
-        job.result.check_test(message)
-        job.result_events_dispatcher.map_method('end_test', job.result, message)
+        if task.category == 'test':
+            job.result.check_test(message)
+            job.result_events_dispatcher.map_method('end_test', job.result,
+                                                    message)
 
 
 class BaseRunningMessageHandler(BaseMessageHandler):

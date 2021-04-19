@@ -161,6 +161,50 @@ if __name__ == '__main__':
         sys.exit(j.run())
 """
 
+AVOID_NON_TEST_TASKS = """#!/usr/bin/env python3
+
+from avocado.core import nrunner
+from avocado.core.job import Job
+from avocado.core.task.runtime import RuntimeTask
+from avocado.core.test_id import TestID
+from avocado.plugins import runner_nrunner
+from avocado.utils.network.ports import find_free_port
+
+
+class RunnerNRunnerWithFixedTasks(runner_nrunner.Runner):
+    @staticmethod
+    def _get_all_runtime_tasks(test_suite):
+        runtime_tasks = []
+        no_digits = len(str(len(test_suite)))
+        status_uris = [test_suite.config.get('nrunner.status_server_uri')]
+        for index, runnable in enumerate(test_suite.tests, start=1):
+            prefix = index
+            test_id = TestID(prefix, runnable.uri, None, no_digits)
+            if '/bin/true' in runnable.uri:
+                task = nrunner.Task(
+                    runnable, test_id, status_uris,
+                    nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
+            else:
+                task = nrunner.Task(
+                    runnable, test_id, status_uris,
+                    nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
+                    'non-test')
+            runtime_tasks.append(RuntimeTask(task))
+        return runtime_tasks
+
+
+if __name__ == '__main__':
+    status_server = '127.0.0.1:%u' % find_free_port()
+    config = {'run.test_runner': 'nrunner',
+              'nrunner.status_server_listen': status_server,
+              'nrunner.status_server_uri': status_server,
+              'run.references': ['/bin/true', '/bin/false']}
+    job = Job.from_config(config)
+    job.setup()
+    job.test_suites[0]._runner = RunnerNRunnerWithFixedTasks()
+    job.run()
+"""
+
 
 def perl_tap_parser_uncapable():
     return os.system("perl -e 'use TAP::Parser;'") != 0
@@ -318,6 +362,23 @@ class OutputTest(TestCaseTmpDir):
             bin_true_number = result.stdout_text.count('/bin/true')
             self.assertEqual(expected_job_id_number, job_id_number)
             self.assertEqual(expected_bin_true_number, bin_true_number)
+
+    @skipUnlessPathExists('/bin/true')
+    @skipUnlessPathExists('/bin/false')
+    def test_avoid_output_on_non_test_task(self):
+        """
+        Ensure that a `Task` that is not a `test` is skipped, and the output
+        is not displayed while the job runs.
+        """
+        with script.Script(os.path.join(self.tmpdir.name,
+                                        'test_avoid_output_non_test_tasks.py'),
+                           AVOID_NON_TEST_TASKS) as job:
+            result = process.run(job.path, ignore_status=True)
+            self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+            self.assertIn('/bin/true', result.stdout_text)
+            self.assertIn('PASS 1', result.stdout_text,)
+            self.assertIn('SKIP 1', result.stdout_text,)
+            self.assertNotIn('/bin/false', result.stdout_text)
 
     def tearDown(self):
         self.tmpdir.cleanup()
