@@ -108,6 +108,7 @@ class ArchiveTest(unittest.TestCase):
             return os.path.join(self.decompressdir, *args)
         # File types
         zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                os.path.pardir,
                                                 os.path.pardir, ".data",
                                                 "test_archive__symlinks.zip"))
         # TODO: Handle permission correctly for all users
