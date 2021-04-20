@@ -1,7 +1,7 @@
 import sys
 
 from avocado.core.job import Job
-from avocado.core.nrunner import Runnable, Task
+from avocado.core.nrunner import Runnable
 from avocado.core.suite import TestSuite
 
 config = {'run.test_runner': 'nrunner'}
@@ -12,9 +12,9 @@ config = {'run.test_runner': 'nrunner'}
 # creating tests suites for you).
 
 suite1 = TestSuite(config=config,
-                   tests=[Task(Runnable("noop", "noop"), "task1")], name='suite1')
+                   tests=[Runnable("noop", "noop")], name='suite1')
 suite2 = TestSuite(config=config,
-                   tests=[Task(Runnable("noop", "noop"), "task2")], name='suite2')
+                   tests=[Runnable("noop", "noop")], name='suite2')
 
 with Job(config, [suite1, suite2]) as j:
     sys.exit(j.run())
