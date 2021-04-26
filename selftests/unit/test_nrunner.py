@@ -474,5 +474,18 @@ class PickRunner(unittest.TestCase):
         self.assertFalse(self.runnable.pick_runner_command({}))
 
 
+class Task(unittest.TestCase):
+
+    def test_default_category(self):
+        runnable = nrunner.Runnable('noop', 'noop_uri')
+        task = nrunner.Task(runnable, 'task_id')
+        self.assertEqual(task.category, 'test')
+
+    def test_set_category(self):
+        runnable = nrunner.Runnable('noop', 'noop_uri')
+        task = nrunner.Task(runnable, 'task_id', category='new_category')
+        self.assertEqual(task.category, 'new_category')
+
+
 if __name__ == '__main__':
     unittest.main()
