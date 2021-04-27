@@ -49,6 +49,18 @@ class NetworkInterface:
         self.if_type = if_type
         self.host = host
 
+    @property
+    def config_filename(self):
+        current_distro = distro_detect()
+        if current_distro.name in ['rhel', 'fedora']:
+            path = "/etc/sysconfig/network-scripts"
+        elif current_distro.name == 'SuSE':
+            path = "/etc/sysconfig/network"
+        else:
+            msg = 'Distro not supported by API. Could get interface filename.'
+            raise NWException(msg)
+        return "{}/ifcfg-{}".format(path, self.name)
+
     def _get_interface_details(self, version=4):
         cmd = "ip -{} -j address show {}".format(version, self.name)
         output = run_command(cmd, self.host)
@@ -364,19 +376,9 @@ class NetworkInterface:
         interface then it copies backup file to interface file in /sysfs path.
         """
 
-        current_distro = distro_detect()
-        filename = "ifcfg-{}".format(self.name)
-        if current_distro.name in ['rhel', 'fedora']:
-            path = "/etc/sysconfig/network-scripts"
-        elif current_distro.name == 'SuSE':
-            path = "/etc/sysconfig/network"
-        else:
-            msg = 'Distro not supported by API. Could not restore the backup file.'
-            raise NWException(msg)
-        filename = "{}/{}".format(path, filename)
-        backup_file = "{}.backup".format(filename)
+        backup_file = "{}.backup".format(self.config_filename)
         if os.path.exists(backup_file):
-            shutil.move(backup_file, filename)
+            shutil.move(backup_file, self.config_filename)
         else:
             raise NWException(
                 "Backup file not available, could not restore file.")
@@ -396,3 +398,10 @@ class NetworkInterface:
             msg = "Interface {} is not available. {}".format(self.name, ex)
             log.debug(msg)
             return False
+
+    def remove_cfg_file(self):
+        """
+        Remove any config files that is created as a part of the test
+        """
+        if os.path.isfile(self.config_filename):
+            os.remove(self.config_filename)
