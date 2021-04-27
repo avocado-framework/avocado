@@ -296,7 +296,11 @@ class Run(CLICmd):
         try:
             suite = TestSuite.from_config(config, name='')
             if suite.size == 0:
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                msg = ("Suite is empty. There is no tests to run. This usually "
+                       "happens when you pass --ignore-missing-references and "
+                       "there is no more references to process.")
+                LOG_UI.warning(msg)
+                sys.exit(exit_codes.AVOCADO_FAIL)
         except TestSuiteError as err:
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
