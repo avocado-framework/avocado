@@ -18,6 +18,8 @@ import time
 import unittest
 from uuid import uuid1
 
+from .test_id import TestID
+
 try:
     import pkg_resources
     PKG_RESOURCES_AVAILABLE = True
@@ -695,6 +697,13 @@ class Task:
         self.spawn_handle = None
         self.output_dir = None
         self.metadata = {}
+
+    @property
+    def identifier_as_test_id(self):
+        if type(self.identifier) is TestID:
+            return self.identifier
+        else:
+            return TestID(str(self.identifier), "task")
 
     def __repr__(self):
         fmt = '<Task identifier="{}" runnable="{}" status_services="{}"'
