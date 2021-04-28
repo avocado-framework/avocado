@@ -229,8 +229,8 @@ class RunnerOperationTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b"Unable to resolve reference(s) 'badtest.py', 'badtest2.py'",
                       result.stderr)
-        self.assertEqual(b'', result.stdout)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        self.assertIn(b'Suite is empty. There is no tests to run.', result.stderr)
+        expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
