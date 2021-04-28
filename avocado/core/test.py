@@ -34,7 +34,7 @@ from difflib import unified_diff
 from ..utils import asset, astring, data_structures, genio
 from ..utils import path as utils_path
 from ..utils import process, stacktrace
-from . import data_dir, exceptions, output, parameters, sysinfo, tapparser
+from . import exceptions, output, parameters, sysinfo, tapparser
 from .decorators import skip
 from .output import LOG_JOB
 from .settings import settings
@@ -455,7 +455,7 @@ class Test(unittest.TestCase, TestData):
         Returns a list of cache directories as set in config file.
         """
         if self.__cache_dirs is None:
-            self.__cache_dirs = data_dir.get_cache_dirs()
+            self.__cache_dirs = self._config.get('datadir.paths.cache_dirs')
         return self.__cache_dirs
 
     @property

@@ -2,7 +2,7 @@ import json
 import os
 import re
 
-from avocado.core import data_dir, exit_codes, output
+from avocado.core import exit_codes, output
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
@@ -16,7 +16,7 @@ def list_downloaded_images():
     :rtype: list of dicts
     """
     images = []
-    for cache_dir in data_dir.get_cache_dirs():
+    for cache_dir in settings.as_dict().get('datadir.paths.cache_dirs'):
         for root, _, files in os.walk(cache_dir):
             if files:
                 metadata_files = [pos_json for pos_json in files
@@ -60,7 +60,7 @@ def download_image(distro, version=None, arch=None):
     :return: Information about downloaded image
     :rtype: dict
     """
-    cache_dir = data_dir.get_cache_dirs()[0]
+    cache_dir = settings.as_dict().get('datadir.paths.cache_dirs')[0]
     image_info = vmimage.get(name=distro, version=version, arch=arch,
                              cache_dir=cache_dir)
     file_path = image_info.base_image

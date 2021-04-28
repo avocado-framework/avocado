@@ -94,6 +94,7 @@ class Config(CLICmd):
             for namespace, value in config.items():
                 LOG_UI.debug(format_str, namespace, value)
         else:
+            cache_dirs = config.get('datadir.paths.cache_dirs')
             LOG_UI.debug("Avocado replaces config dirs that can't be accessed")
             LOG_UI.debug("with sensible defaults. Please edit your local config")
             LOG_UI.debug("file to customize values")
@@ -103,4 +104,4 @@ class Config(CLICmd):
             LOG_UI.debug('    tests    %s', data_dir.get_test_dir())
             LOG_UI.debug('    data     %s', data_dir.get_data_dir())
             LOG_UI.debug('    logs     %s', data_dir.get_logs_dir())
-            LOG_UI.debug('    cache    %s', ", ".join(data_dir.get_cache_dirs()))
+            LOG_UI.debug('    cache    %s', ", ".join(cache_dirs))
