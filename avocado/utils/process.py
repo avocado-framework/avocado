@@ -261,7 +261,7 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
         sig = signal.SIGKILL
 
     if timeout > 0:
-        start = time.time()
+        start = time.monotonic()
 
     if not safe_kill(pid, signal.SIGSTOP):
         return [pid]
@@ -275,7 +275,7 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
     if timeout == 0:
         return killed_pids
     elif timeout > 0:
-        if not wait_for(_all_pids_dead, timeout + start - time.time(),
+        if not wait_for(_all_pids_dead, timeout + start - time.monotonic(),
                         step=0.01, args=(killed_pids[::-1],)):
             raise RuntimeError("Timeout reached when waiting for pid %s "
                                "and children to die (%s)" % (pid, timeout))
@@ -665,7 +665,7 @@ class SubProcess:
                 details.strerror += " (%s)" % self.cmd
                 raise details
 
-            self.start_time = time.time()  # pylint: disable=W0201
+            self.start_time = time.monotonic()  # pylint: disable=W0201
 
             # prepare fd drainers
             if self.allow_output_check == 'combined':
@@ -725,7 +725,7 @@ class SubProcess:
         self._init_subprocess()
         self.result.exit_status = rc
         if self.result.duration == 0:
-            self.result.duration = time.time() - self.start_time
+            self.result.duration = time.monotonic() - self.start_time
         if self.verbose:
             log.info("Command '%s' finished with %s after %ss", self.cmd, rc,
                      self.result.duration)
@@ -844,7 +844,7 @@ class SubProcess:
         """
         def nuke_myself():
             self.result.interrupted = ("timeout after %ss"
-                                       % (time.time() - self.start_time))
+                                       % (time.monotonic() - self.start_time))
             try:
                 kill_process_tree(self.get_pid(), sig, timeout=1)
             except RuntimeError:
@@ -874,8 +874,8 @@ class SubProcess:
                 timer.cancel()
 
         if rc is None:
-            stop_time = time.time() + 1
-            while time.time() < stop_time:
+            stop_time = time.monotonic() + 1
+            while time.monotonic() < stop_time:
                 rc = self._popen.poll()
                 if rc is not None:
                     break
