@@ -3,7 +3,6 @@ import tempfile
 import unittest.mock
 from urllib.error import URLError
 
-from avocado.core import data_dir
 from avocado.core.settings import Settings
 from avocado.plugins import vmimage as vmimage_plugin
 from avocado.utils import vmimage as vmimage_util
@@ -75,13 +74,16 @@ class VMImagePlugin(unittest.TestCase):
         prefix = temp_dir_prefix(__name__, self, 'setUp')
         base_dir = tempfile.TemporaryDirectory(prefix=prefix)
         data_directory = os.path.join(base_dir.name, 'data')
+        cache_directory = os.path.join(data_directory, 'cache')
         os.mkdir(data_directory)
-        os.mkdir(os.path.join(data_directory, 'cache'))
+        os.mkdir(cache_directory)
         mapping = {'base_dir': base_dir.name,
-                   'data_dir': data_directory}
+                   'data_dir': data_directory,
+                   'cache_dirs': [cache_directory]}
         temp_settings = ('[datadir.paths]\n'
                          'base_dir = %(base_dir)s\n'
-                         'data_dir = %(data_dir)s\n') % mapping
+                         'data_dir = %(data_dir)s\n'
+                         'cache_dirs = %(cache_dirs)s\n') % mapping
         config_file = tempfile.NamedTemporaryFile('w', delete=False)
         config_file.write(temp_settings)
         config_file.close()
@@ -95,7 +97,7 @@ class VMImagePlugin(unittest.TestCase):
                                {'name': 'JeOS', 'file': 'jeos-{version}-{arch}.qcow2.xz', 'url': JEOS_PAGE},
                                {'name': 'CirrOS', 'file': 'cirros-{version}-{arch}-disk.img', 'url': CIRROS_PAGE}
                                ]
-            cache_dir = data_dir.get_cache_dirs()[0]
+            cache_dir = self.mapping.get('cache_dirs')[0]
             providers = [provider() for provider in vmimage_util.list_providers()]
 
             for provider in providers:

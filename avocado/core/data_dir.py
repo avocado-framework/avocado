@@ -32,6 +32,7 @@ import shutil
 import sys
 import tempfile
 import time
+import warnings
 
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
@@ -202,13 +203,13 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
 
 def get_cache_dirs():
     """
-    Returns the list of cache dirs, according to configuration and convention
+    Returns the list of cache dirs, according to configuration and convention.
+
+    This will be deprecated. Please use settings.as_dict() or self.config.
     """
-    cache_dirs = settings.as_dict().get('datadir.paths.cache_dirs')
-    datadir_cache = os.path.join(get_data_dir(), 'cache')
-    if datadir_cache not in cache_dirs:
-        cache_dirs.append(datadir_cache)
-    return cache_dirs
+    warnings.warn(("get_cache_dirs() is deprecated, get values from "
+                   "settings.as_dict() or self.config"), DeprecationWarning)
+    return settings.as_dict().get('datadir.paths.cache_dirs')
 
 
 class _TmpDirTracker(Borg):

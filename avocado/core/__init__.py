@@ -82,11 +82,15 @@ def register_core_options():
                          help_msg=help_msg,
                          default=60)
 
+    # Let's assume that by default, cache will be located under the user's
+    # umbrella. This will make it easy for our deployments and it is a common
+    # place for other applications too.
     help_msg = 'Cache directories to be used by the avocado test'
+    default = prepend_base_path('~/avocado/data/cache')
     stgs.register_option(section='datadir.paths',
                          key='cache_dirs',
                          key_type=list,
-                         default=[],
+                         default=[default],
                          help_msg=help_msg)
 
     help_msg = 'Base directory for Avocado tests and auxiliary data'
