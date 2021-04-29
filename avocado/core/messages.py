@@ -14,6 +14,23 @@
 
 import os
 
+from .test_id import TestID
+
+
+def _convert_identifier_to_test_id(identifier):
+    """
+    It converts Task identifier to TestID
+
+    :param identifier: Task identifier
+    :type: :class:`avocado.core.nrunner.Task.identifier`
+    :return: TestID
+    :rtype :class:`avocado.core.test_id.TestID
+    """
+    if type(identifier) is TestID:
+        return identifier
+    else:
+        return TestID(str(identifier), "task")
+
 
 class BaseMessageHandler:
     """
@@ -93,15 +110,16 @@ class StartMessageHandler(BaseMessageHandler):
     """
 
     def handle(self, message, task, job):
+        task_id = _convert_identifier_to_test_id(task.identifier)
         base_path = job.test_results_path
-        task_path = os.path.join(base_path, task.identifier.str_filesystem)
+        task_path = os.path.join(base_path, task_id.str_filesystem)
         os.makedirs(task_path, exist_ok=True)
         metadata = {'job_logdir': job.logdir,
                     'job_unique_id': job.unique_id,
                     'base_path': base_path,
                     'task_path': task_path,
                     'time_start': message['time'],
-                    'name': task.identifier}
+                    'name': task_id}
         if task.category == 'test':
             job.result.start_test(metadata)
             job.result_events_dispatcher.map_method('start_test', job.result,
@@ -129,7 +147,7 @@ class FinishMessageHandler(BaseMessageHandler):
 
     def handle(self, message, task, job):
         message.update(task.metadata)
-        message['name'] = task.identifier
+        message['name'] = _convert_identifier_to_test_id(task.identifier)
         message['status'] = message.get('result').upper()
 
         time_start = message['time_start']
