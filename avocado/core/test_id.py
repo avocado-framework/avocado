@@ -84,3 +84,19 @@ class TestID:
             raise RuntimeError('Test ID is too long to be stored on the '
                                'filesystem: "%s"\nFull Test ID: "%s"'
                                % (self.str_uid, str(self)))
+
+    @classmethod
+    def from_identifier(cls, identifier):
+        """
+        It wraps an identifier by the TestID class.
+
+        :param identifier: Any identifier that is guaranteed to be unique
+        within the context of an avocado Job.
+        :return: TestID with `uid` as string representation of `identifier`
+        and `name` "test".
+        :rtype :class:`avocado.core.test_id.TestID`
+        """
+        if type(identifier) is cls:
+            return identifier
+        else:
+            return cls(str(identifier), "test")
