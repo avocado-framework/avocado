@@ -36,6 +36,7 @@ class YumBackend(RpmBackend):
         Initializes the base command and the yum package repository.
         """
         super(YumBackend, self).__init__()
+        self.cmd = cmd
         self.base_command = '%s -y ' % utils_path.find_command(cmd)
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
         self.cfgparser = configparser.ConfigParser()
@@ -45,9 +46,9 @@ class YumBackend(RpmBackend):
             self.yum_base = yum.YumBase()
         else:
             self.yum_base = None
-            log.error("%s module for Python is required. "
-                      "Using the basic support from rpm and %s commands", cmd,
-                      cmd)
+            log.debug("%s module for Python is required to use the 'provides'"
+                      " command. Using the basic support from rpm and %s"
+                      " commands", cmd, cmd)
 
     @staticmethod
     def _cleanup():
@@ -181,7 +182,7 @@ class YumBackend(RpmBackend):
         """
         if self.yum_base is None:
             log.error("The method 'provides' is disabled, "
-                      "yum module is required for this operation")
+                      "%s module is required for this operation", self.cmd)
             return None
         try:
             # Python API need to be passed globs along with name for searching
