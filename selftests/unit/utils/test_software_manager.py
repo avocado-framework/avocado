@@ -19,7 +19,8 @@ class Apt(unittest.TestCase):
     def test_provides(self):
         sm = software_manager.SoftwareManager()
         self.assertEqual(sm.provides('/bin/login'), 'login')
-        self.assertTrue(isinstance(sm.backend, software_manager.AptBackend))
+        self.assertTrue(isinstance(sm.backend,
+                                   software_manager.backends.apt.AptBackend))
 
 
 if __name__ == '__main__':
