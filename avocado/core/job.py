@@ -67,6 +67,16 @@ def register_job_options():
                              key_type=time_to_seconds,
                              help_msg=help_msg)
 
+    help_msg = ('Store given logging STREAMs in '
+                '"$JOB_RESULTS_DIR/$STREAM.$LEVEL."')
+    settings.register_option(section='job.run',
+                             key='store_logging_stream',
+                             nargs='+',
+                             help_msg=help_msg,
+                             default=[],
+                             metavar='STREAM[:LEVEL]',
+                             key_type=list)
+
 
 register_job_options()
 
@@ -198,10 +208,7 @@ class Job:
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
-        # TODO: Fix this, this is one of the few cases where using the config
-        # generated from the new settings with a hardcoded 'default' value
-        store_logging_stream = self.config.get('run.store_logging_stream', [])
-
+        store_logging_stream = self.config.get('job.run.store_logging_stream')
         for name in store_logging_stream:
             name = re.split(r'(?<!\\):', name, maxsplit=1)
             if len(name) == 1:
@@ -228,7 +235,7 @@ class Job:
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
             self._stdout_stderr = sys.stdout, sys.stderr
-            # Enable std{out,err} but redirect booth to stderr
+            # Enable std{out,err} but redirect both to stdout
             sys.stdout = STD_OUTPUT.stdout
             sys.stderr = STD_OUTPUT.stdout
             test_handler = output.add_log_handler(LOG_JOB,

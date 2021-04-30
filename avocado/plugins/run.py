@@ -208,17 +208,9 @@ class Run(CLICmd):
 
         parser.output = parser.add_argument_group('output and result format')
 
-        help_msg = ('Store given logging STREAMs in '
-                    '"$JOB_RESULTS_DIR/$STREAM.$LEVEL."')
-        settings.register_option(section='run',
-                                 key='store_logging_stream',
-                                 nargs='+',
-                                 help_msg=help_msg,
-                                 default=[],
-                                 metavar='STREAM[:LEVEL]',
-                                 key_type=list,
-                                 parser=parser,
-                                 long_arg='--store-logging-stream')
+        settings.add_argparser_to_option('job.run.store_logging_stream',
+                                         parser=parser.output,
+                                         long_arg='--store-logging-stream')
 
         help_msg = ('Logs the possible data directories for each test. This '
                     'is helpful when writing new tests and not being sure '

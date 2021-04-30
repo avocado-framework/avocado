@@ -32,10 +32,10 @@ def register_core_options():
                 "streams are: %s. By default: 'app'" % streams)
     stgs.register_option(section='core',
                          key='show',
-                         key_type=lambda x: x.split(','),
+                         key_type=lambda x: set(x.split(',')),
                          metavar="STREAM[:LVL]",
                          nargs='?',
-                         default=['app'],
+                         default=set(["app"]),
                          help_msg=help_msg)
 
     help_msg = ('Python regular expression that will make the test '

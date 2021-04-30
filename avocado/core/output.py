@@ -426,17 +426,19 @@ def reconfigure(args):
     configuration = {}
     # Reconfigure stream loggers
     enabled = args.get("core.show")
-    if not isinstance(enabled, list):
-        enabled = ["app"]
+    if isinstance(enabled, list):
+        enabled = set(enabled)
+    if not isinstance(enabled, set):
+        enabled = set(["app"])
         args["core.show"] = enabled
     if "none" in enabled:
-        del enabled[:]
+        enabled = set([])
     elif "all" in enabled:
-        enabled.extend([_ for _ in BUILTIN_STREAMS if _ not in enabled])
-    if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
-        enabled.append("early")
-    if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
-        enabled.append("debug")
+        enabled.update(BUILTIN_STREAMS)
+    if os.environ.get("AVOCADO_LOG_EARLY"):
+        enabled.add("early")
+    if os.environ.get("AVOCADO_LOG_DEBUG"):
+        enabled.add("debug")
     # TODO: Avocado relies on stdout/stderr on some places, re-log them here
     # for now. This should be removed once we replace them with logging.
     if enabled:

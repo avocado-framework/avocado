@@ -35,7 +35,6 @@ class JobTest(unittest.TestCase):
     def test_job_empty_suite(self):
         config = {'job.output.loglevel': 'DEBUG',
                   'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'core.show': ['none']}
         self.job = job.Job(config)
         # Job without setup called
@@ -77,7 +76,6 @@ class JobTest(unittest.TestCase):
 
     def test_two_jobs(self):
         config = {'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'core.show': ['none']}
         with job.Job(config) as self.job, job.Job(config) as job2:
             job1 = self.job
@@ -114,7 +112,6 @@ class JobTest(unittest.TestCase):
 
     def test_job_create_test_suite_empty(self):
         config = {'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'core.show': ['none']}
         self.job = job.Job(config)
         self.job.setup()
@@ -125,7 +122,6 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
         self.job = job.Job.from_config(config)
         self.job.setup()
@@ -149,7 +145,6 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
         self.job = JobFilterTime.from_config(config)
         self.job.setup()
@@ -163,7 +158,6 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates(['true'])
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
         self.job = job.Job.from_config(config)
         self.job.setup()
@@ -179,7 +173,6 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
         self.job = JobLogPost(config)
         self.job.setup()
@@ -217,7 +210,6 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'run.references': simple_tests_found}
         self.job = JobFilterLog.from_config(config)
         self.job.setup()
@@ -230,8 +222,7 @@ class JobTest(unittest.TestCase):
 
     def test_job_run_account_time(self):
         config = {'core.show': ['none'],
-                  'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': []}
+                  'run.results_dir': self.tmpdir.name}
         self.job = job.Job(config)
         self.job.setup()
         # temporarily disable logging on console
@@ -244,8 +235,7 @@ class JobTest(unittest.TestCase):
 
     def test_job_self_account_time(self):
         config = {'core.show': ['none'],
-                  'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': []}
+                  'run.results_dir': self.tmpdir.name}
         self.job = job.Job(config)
         self.job.setup()
         self.job.time_start = 10.0
@@ -273,7 +263,6 @@ class JobTest(unittest.TestCase):
 
     def test_job_dryrun_no_unique_job_id(self):
         config = {'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'run.dry_run.enabled': True,
                   'core.show': ['none']}
         self.job = job.Job(config)
@@ -281,8 +270,7 @@ class JobTest(unittest.TestCase):
         self.assertIsNotNone(self.job.config.get('run.unique_job_id'))
 
     def test_job_no_base_logdir(self):
-        config = {'core.show': ['none'],
-                  'run.store_logging_stream': []}
+        config = {'core.show': ['none']}
         with unittest.mock.patch('avocado.core.job.data_dir.get_logs_dir',
                                  return_value=self.tmpdir.name):
             self.job = job.Job(config)
@@ -319,7 +307,6 @@ class JobTest(unittest.TestCase):
 
     def test_job_dryrun_no_base_logdir(self):
         config = {'core.show': ['none'],
-                  'run.store_logging_stream': [],
                   'run.dry_run.enabled': True}
         self.job = job.Job(config)
         with self.job:
@@ -330,7 +317,6 @@ class JobTest(unittest.TestCase):
     def test_job_make_test_suite_resolver(self):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'run.references': simple_tests_found,
                   'run.test_runner': 'nrunner',
                   'core.show': ['none']}
@@ -343,7 +329,6 @@ class JobTest(unittest.TestCase):
     def test_job_get_failed_tests(self):
         config = {'run.references': ['/bin/true', '/bin/false'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.store_logging_stream': [],
                   'run.dry_run.enabled': True,
                   'core.show': ['none']}
         suite = TestSuite.from_config(config)
