@@ -6,6 +6,36 @@ from .manager import SoftwareManager
 
 log = logging.getLogger('avocado.utils.software_manager')
 
+MESSAGES = {
+    'install': {
+        'success': 'Package(s) %s installed successfully',
+        'fail': 'Failed to install %s. Check the package(s) name and if sudo'
+        ' permission is granted.'
+    },
+    'remove': {
+        'success': 'Package(s) %s removed successfully',
+        'fail': 'Failed to remove %s. Check the package(s) name and if sudo'
+        ' permission is granted.'
+    },
+    'check-installed': {
+        'success': 'Package %s already installed',
+        'fail': 'Package %s not installed'
+    },
+    'add-repo': {
+        'success': 'Repo %s added successfully',
+        'fail': 'Failed add repo %s. Check the repo name and if sudo'
+        ' permission is granted.'
+    },
+    'remove-repo': {
+        'success': 'Repo %s removed successfully',
+        'fail': 'Failed to remove repo %s. Check the repo name and if sudo'
+        ' permission is granted.'
+    },
+    'upgrade': 'Package manager upgrade successful',
+    'what-provides': 'Package %s provides %s',
+    'install-what-provides': 'Installed successfully what provides %s',
+}
+
 
 def main():
     exitcode = exit_codes.UTILITY_OK
@@ -31,23 +61,23 @@ def main():
 
     if action == 'install':
         if software_manager.install(args):
-            log.info("Packages %s installed successfully", args)
+            log.info(MESSAGES[action]['success'], args)
         else:
-            log.error("Failed to install %s", args)
+            log.error(MESSAGES[action]['fail'], args)
             exitcode = exit_codes.UTILITY_FAIL
 
     elif action == 'remove':
         if software_manager.remove(args):
-            log.info("Packages %s removed successfully", args)
+            log.info(MESSAGES[action]['success'], args)
         else:
-            log.error("Failed to remove %s", args)
+            log.error(MESSAGES[action]['fail'], args)
             exitcode = exit_codes.UTILITY_FAIL
 
     elif action == 'check-installed':
         if software_manager.check_installed(args):
-            log.info("Package %s already installed", args)
+            log.info(MESSAGES[action]['success'], args)
         else:
-            log.info("Package %s not installed", args)
+            log.info(MESSAGES[action]['fail'], args)
             exitcode = exit_codes.UTILITY_FAIL
 
     elif action == 'list-all':
@@ -60,30 +90,30 @@ def main():
 
     elif action == 'add-repo':
         if software_manager.add_repo(args):
-            log.info("Repo %s added successfully", args)
+            log.info(MESSAGES[action]['success'], args)
         else:
-            log.error("Failed to remove repo %s", args)
+            log.error(MESSAGES[action]['fail'], args)
             exitcode = exit_codes.UTILITY_FAIL
 
     elif action == 'remove-repo':
         if software_manager.remove_repo(args):
-            log.info("Repo %s removed successfully", args)
+            log.info(MESSAGES[action]['success'], args)
         else:
-            log.error("Failed to remove repo %s", args)
+            log.error(MESSAGES[action]['fail'], args)
             exitcode = exit_codes.UTILITY_FAIL
 
     elif action == 'upgrade':
         if software_manager.upgrade():
-            log.info("Package manager upgrade successful")
+            log.info(MESSAGES[action])
 
     elif action == 'what-provides':
         provides = software_manager.provides(args)
         if provides is not None:
-            log.info("Package %s provides %s", provides, args)
+            log.info(MESSAGES[action], provides, args)
 
     elif action == 'install-what-provides':
         if software_manager.install_what_provides(args):
-            log.info("Installed successfully what provides %s", args)
+            log.info(MESSAGES[action], args)
 
     elif action == 'show-help':
         parser.print_help()
