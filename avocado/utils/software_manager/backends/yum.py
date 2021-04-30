@@ -31,6 +31,9 @@ class YumBackend(RpmBackend):
     Enterprise Linux.
     """
 
+    #: Path to the repository managed by Avocado
+    REPO_FILE_PATH = '/etc/yum.repos.d/avocado-managed.repo'
+
     def __init__(self, cmd='yum'):
         """
         Initializes the base command and the yum package repository.
@@ -38,9 +41,8 @@ class YumBackend(RpmBackend):
         super(YumBackend, self).__init__()
         self.cmd = cmd
         self.base_command = '%s -y ' % utils_path.find_command(cmd)
-        self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
         self.cfgparser = configparser.ConfigParser()
-        self.cfgparser.read(self.repo_file_path)
+        self.cfgparser.read(self.REPO_FILE_PATH)
         self._set_version(cmd)
         if HAS_YUM_MODULE:
             self.yum_base = yum.YumBase()
@@ -124,7 +126,7 @@ class YumBackend(RpmBackend):
                 self.cfgparser.write(tmp_file)
                 tmp_file.flush()    # Sync the content
                 process.system('cp %s %s'
-                               % (tmp_file.name, self.repo_file_path),
+                               % (tmp_file.name, self.REPO_FILE_PATH),
                                sudo=True)
             return True
         except (OSError, process.CmdError) as details:
@@ -147,7 +149,7 @@ class YumBackend(RpmBackend):
                 self.cfgparser.write(tmp_file.file)
                 tmp_file.flush()    # Sync the content
                 process.system('cp %s %s'
-                               % (tmp_file.name, self.repo_file_path),
+                               % (tmp_file.name, self.REPO_FILE_PATH),
                                sudo=True)
                 return True
         except (OSError, process.CmdError) as details:
