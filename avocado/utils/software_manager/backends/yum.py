@@ -41,8 +41,7 @@ class YumBackend(RpmBackend):
         super(YumBackend, self).__init__()
         self.cmd = cmd
         self.base_command = '%s -y ' % utils_path.find_command(cmd)
-        self.cfgparser = configparser.ConfigParser()
-        self.cfgparser.read(self.REPO_FILE_PATH)
+        self._cfgparser = None
         self._set_version(cmd)
         if HAS_YUM_MODULE:
             self.yum_base = yum.YumBase()
@@ -51,6 +50,13 @@ class YumBackend(RpmBackend):
             log.debug("%s module for Python is required to use the 'provides'"
                       " command. Using the basic support from rpm and %s"
                       " commands", cmd, cmd)
+
+    @property
+    def repo_config_parser(self):
+        if self._cfgparser is None:
+            self._cfgparser = configparser.ConfigParser()
+            self._cfgparser.read(self.REPO_FILE_PATH)
+        return self._cfgparser
 
     @staticmethod
     def _cleanup():
@@ -103,8 +109,8 @@ class YumBackend(RpmBackend):
         :param url: Universal Resource Locator of the repository.
         """
         # Check if we URL is already set
-        for section in self.cfgparser.sections():
-            for option, value in self.cfgparser.items(section):
+        for section in self.repo_config_parser.sections():
+            for option, value in self.repo_config_parser.items(section):
                 if option == 'url' and value == url:
                     return True
 
@@ -112,18 +118,18 @@ class YumBackend(RpmBackend):
         while True:
             section_name = 'software_manager' + '_'
             section_name += data_factory.generate_random_string(4)
-            if not self.cfgparser.has_section(section_name):
+            if not self.repo_config_parser.has_section(section_name):
                 break
         try:
-            self.cfgparser.add_section(section_name)
-            self.cfgparser.set(section_name, 'name',
-                               'Avocado managed repository')
-            self.cfgparser.set(section_name, 'url', url)
-            self.cfgparser.set(section_name, 'enabled', '1')
-            self.cfgparser.set(section_name, 'gpgcheck', '0')
+            self.repo_config_parser.add_section(section_name)
+            self.repo_config_parser.set(section_name, 'name',
+                                        'Avocado managed repository')
+            self.repo_config_parser.set(section_name, 'url', url)
+            self.repo_config_parser.set(section_name, 'enabled', '1')
+            self.repo_config_parser.set(section_name, 'gpgcheck', '0')
             prefix = 'avocado_software_manager'
             with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
-                self.cfgparser.write(tmp_file)
+                self.repo_config_parser.write(tmp_file)
                 tmp_file.flush()    # Sync the content
                 process.system('cp %s %s'
                                % (tmp_file.name, self.REPO_FILE_PATH),
@@ -142,11 +148,11 @@ class YumBackend(RpmBackend):
         try:
             prefix = 'avocado_software_manager'
             with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
-                for section in self.cfgparser.sections():
-                    for option, value in self.cfgparser.items(section):
+                for section in self.repo_config_parser.sections():
+                    for option, value in self.repo_config_parser.items(section):
                         if option == 'url' and value == url:
-                            self.cfgparser.remove_section(section)
-                self.cfgparser.write(tmp_file.file)
+                            self.repo_config_parser.remove_section(section)
+                self.repo_config_parser.write(tmp_file.file)
                 tmp_file.flush()    # Sync the content
                 process.system('cp %s %s'
                                % (tmp_file.name, self.REPO_FILE_PATH),
