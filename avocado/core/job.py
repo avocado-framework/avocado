@@ -228,7 +228,7 @@ class Job:
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
             self._stdout_stderr = sys.stdout, sys.stderr
-            # Enable std{out,err} but redirect booth to stderr
+            # Enable std{out,err} but redirect both to stdout
             sys.stdout = STD_OUTPUT.stdout
             sys.stderr = STD_OUTPUT.stdout
             test_handler = output.add_log_handler(LOG_JOB,
