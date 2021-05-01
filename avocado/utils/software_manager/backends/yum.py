@@ -43,13 +43,7 @@ class YumBackend(RpmBackend):
         self.base_command = '%s -y ' % utils_path.find_command(cmd)
         self._cfgparser = None
         self._set_version(cmd)
-        if HAS_YUM_MODULE:
-            self.yum_base = yum.YumBase()
-        else:
-            self.yum_base = None
-            log.debug("%s module for Python is required to use the 'provides'"
-                      " command. Using the basic support from rpm and %s"
-                      " commands", cmd, cmd)
+        self._yum_base = None
 
     @property
     def repo_config_parser(self):
@@ -57,6 +51,17 @@ class YumBackend(RpmBackend):
             self._cfgparser = configparser.ConfigParser()
             self._cfgparser.read(self.REPO_FILE_PATH)
         return self._cfgparser
+
+    @property
+    def yum_base(self):
+        if self._yum_base is None:
+            if HAS_YUM_MODULE:
+                self._yum_base = yum.YumBase()
+            else:
+                log.debug("%s module for Python is required to use the "
+                          "'provides' command. Using the basic support "
+                          "from rpm and %s commands", self.cmd, self.cmd)
+        return self._yum_base
 
     @staticmethod
     def _cleanup():
