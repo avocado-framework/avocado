@@ -47,13 +47,43 @@ class List(CLICmd):
     description = 'List available tests'
 
     @staticmethod
-    def _display(suite, matrix):
+    def _prepare_matrix_for_display(matrix, verbose=False):
+        try:
+            type_label_mapping = loader.loader.get_type_label_mapping()
+            decorator_mapping = loader.loader.get_decorator_mapping()
+        except RuntimeError:
+            # When running with --resolver this will fall here, and should use
+            # the default mapping
+            pass
+
+        colored_matrix = []
+        for item in matrix:
+            cls = item[0]
+            try:
+                decorator = decorator_mapping[cls]
+                type_label = decorator(type_label_mapping[cls])
+            except (KeyError, UnboundLocalError):
+                # In this case nrunner will not be available on decorator_map,
+                # so we are using the default "healthy_str"
+                type_label = TERM_SUPPORT.healthy_str(cls)
+            if verbose:
+                colored_matrix.append((type_label, item[1], item[2]))
+            else:
+                colored_matrix.append((type_label, item[1]))
+        return colored_matrix
+
+    def _display(self, suite, matrix):
         header = None
         verbose = suite.config.get('core.verbose')
         if verbose:
             header = (TERM_SUPPORT.header_str('Type'),
                       TERM_SUPPORT.header_str('Test'),
                       TERM_SUPPORT.header_str('Tag(s)'))
+
+        # Any kind of color, string format and term specific should be applied
+        # only during output/display phase. So this seems to be a better place
+        # for this:
+        matrix = self._prepare_matrix_for_display(matrix, verbose)
 
         for line in iter_tabular_output(matrix,
                                         header=header,
@@ -105,23 +135,16 @@ class List(CLICmd):
         """Used for loader."""
         test_matrix = []
 
-        type_label_mapping = loader.loader.get_type_label_mapping()
-        decorator_mapping = loader.loader.get_decorator_mapping()
-
         verbose = suite.config.get('core.verbose')
         for cls, params in suite.tests:
             if isinstance(cls, str):
                 cls = Test
-            type_label = type_label_mapping[cls]
-            decorator = decorator_mapping[cls]
-            type_label = decorator(type_label)
-
             if verbose:
-                test_matrix.append((type_label,
+                test_matrix.append((cls,
                                     params['name'],
                                     _get_test_tags((cls, params))))
             else:
-                test_matrix.append((type_label, params['name']))
+                test_matrix.append((cls, params['name']))
 
         return test_matrix
 
@@ -131,7 +154,6 @@ class List(CLICmd):
         test_matrix = []
         verbose = suite.config.get('core.verbose')
         for runnable in suite.tests:
-            type_label = TERM_SUPPORT.healthy_str(runnable.kind)
 
             if verbose:
                 tags_repr = []
@@ -143,9 +165,9 @@ class List(CLICmd):
                     else:
                         tags_repr.append(tag)
                 tags_repr = ",".join(tags_repr)
-                test_matrix.append((type_label, runnable.uri, tags_repr))
+                test_matrix.append((runnable.kind, runnable.uri, tags_repr))
             else:
-                test_matrix.append((type_label, runnable.uri))
+                test_matrix.append((runnable.kind, runnable.uri))
         return test_matrix
 
     @staticmethod
