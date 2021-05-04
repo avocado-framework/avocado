@@ -14,6 +14,7 @@
 # Author: Beraldo Leal <bleal@redhat.com>
 
 import os
+import json
 
 from avocado.core import exit_codes, loader, parser_common_args
 from avocado.core.output import LOG_UI, TERM_SUPPORT
@@ -176,6 +177,21 @@ class List(CLICmd):
         return test_matrix
 
     @staticmethod
+    def _save_to_json(matrix, filename, verbose=False):
+        result = []
+        type_label_mapping = loader.loader.get_type_label_mapping()
+        for line in matrix:
+            if verbose:
+                result.append({'Type': type_label_mapping[line[0]],
+                               'Test': line[1],
+                               'Tags': line[2]})
+            else:
+                result.append({'Type': type_label_mapping[line[0]],
+                               'Test': line[1]})
+        with open(filename, 'w') as fp:
+            json.dump(result, fp, indent=4)
+
+    @staticmethod
     def save_recipes(suite, directory, matrix_len):
         fmt = '%%0%uu.json' % len(str(matrix_len))
         index = 1
@@ -230,9 +246,20 @@ class List(CLICmd):
                                  parser=parser,
                                  long_arg='--write-recipes-to-directory')
 
+        help_msg = 'Writes output to a json file.'
+        settings.register_option(section='list',
+                                 key='write_to_json_file',
+                                 default=None,
+                                 metavar='JSON_FILE',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--write-to-json')
+
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
+        verbose = config.get('core.verbose')
+        write_to_json_file = config.get('list.write_to_json_file')
         resolver = config.get('list.resolver')
         runner = 'nrunner' if resolver else 'runner'
         config['run.references'] = config.get('list.references')
@@ -257,6 +284,8 @@ class List(CLICmd):
             else:
                 matrix = self._get_test_matrix(suite)
                 self._display(suite, matrix)
+            if write_to_json_file:
+                self._save_to_json(matrix, write_to_json_file, verbose)
         except KeyboardInterrupt:
             LOG_UI.error('Command interrupted by user...')
             return exit_codes.AVOCADO_FAIL
