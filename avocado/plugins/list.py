@@ -26,11 +26,10 @@ from avocado.core.test import Test
 from avocado.utils.astring import iter_tabular_output
 
 
-def _get_test_tags(test):
-    """Return a list of all tags of a test as string."""
-    params = test[1]
+def _get_tags_as_string(tags):
+    """Return a list of all tags but in a string format for output."""
     tags_repr = []
-    for tag, values in params.get('tags', {}).items():
+    for tag, values in tags.items():
         if values:
             tags_repr.append("%s(%s)" % (tag, ",".join(values)))
         else:
@@ -68,7 +67,8 @@ class List(CLICmd):
                 # so we are using the default "healthy_str"
                 type_label = TERM_SUPPORT.healthy_str(cls)
             if verbose:
-                colored_matrix.append((type_label, item[1], item[2]))
+                colored_matrix.append((type_label, item[1],
+                                       _get_tags_as_string(item[2] or {})))
             else:
                 colored_matrix.append((type_label, item[1]))
         return colored_matrix
@@ -150,7 +150,7 @@ class List(CLICmd):
             if verbose:
                 test_matrix.append((cls,
                                     params['name'],
-                                    _get_test_tags((cls, params))))
+                                    params.get('tags', {})))
             else:
                 test_matrix.append((cls, params['name']))
 
@@ -164,16 +164,8 @@ class List(CLICmd):
         for runnable in suite.tests:
 
             if verbose:
-                tags_repr = []
                 tags = runnable.tags or {}
-                for tag, vals in tags.items():
-                    if vals:
-                        tags_repr.append("%s(%s)" % (tag,
-                                                     ",".join(vals)))
-                    else:
-                        tags_repr.append(tag)
-                tags_repr = ",".join(tags_repr)
-                test_matrix.append((runnable.kind, runnable.uri, tags_repr))
+                test_matrix.append((runnable.kind, runnable.uri, tags))
             else:
                 test_matrix.append((runnable.kind, runnable.uri))
         return test_matrix
@@ -197,7 +189,8 @@ class List(CLICmd):
                 tags = line[2] or {}
                 result.append({'Type': test_type,
                                'Test': line[1],
-                               'Tags': line[2]})
+                               'Tags': {k: list(v or {})
+                                        for k, v in tags.items()}})
             else:
                 result.append({'Type': test_type,
                                'Test': line[1]})
