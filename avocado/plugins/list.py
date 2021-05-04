@@ -90,45 +90,52 @@ class List(CLICmd):
                                         strip=True):
             LOG_UI.debug(line)
 
-        if verbose:
-            if suite.resolutions:
-                resolution_header = (TERM_SUPPORT.header_str('Resolver'),
-                                     TERM_SUPPORT.header_str('Reference'),
-                                     TERM_SUPPORT.header_str('Info'))
-                LOG_UI.info("")
+        self._display_extra(suite, verbose)
 
-                mapping = {
-                  ReferenceResolutionResult.SUCCESS: TERM_SUPPORT.healthy_str,
-                  ReferenceResolutionResult.NOTFOUND: TERM_SUPPORT.fail_header_str,
-                  ReferenceResolutionResult.ERROR: TERM_SUPPORT.fail_header_str
-                }
-                resolution_matrix = []
-                for r in suite.resolutions:
-                    decorator = mapping.get(r.result,
-                                            TERM_SUPPORT.warn_header_str)
-                    if r.result == ReferenceResolutionResult.SUCCESS:
-                        continue
-                    resolution_matrix.append((decorator(r.origin),
-                                              r.reference,
-                                              r.info or ''))
+    @staticmethod
+    def _display_extra(suite, verbose=True):
+        """Display extra data when in verbose mode."""
+        if not verbose:
+            return
 
-                for line in iter_tabular_output(resolution_matrix,
-                                                header=resolution_header,
-                                                strip=True):
-                    LOG_UI.info(line)
-
+        if suite.resolutions:
+            resolution_header = (TERM_SUPPORT.header_str('Resolver'),
+                                 TERM_SUPPORT.header_str('Reference'),
+                                 TERM_SUPPORT.header_str('Info'))
             LOG_UI.info("")
-            LOG_UI.info("TEST TYPES SUMMARY")
-            LOG_UI.info("==================")
-            for key in sorted(suite.stats):
-                LOG_UI.info("%s: %s", key, suite.stats[key])
 
-            if suite.tags_stats:
-                LOG_UI.info("")
-                LOG_UI.info("TEST TAGS SUMMARY")
-                LOG_UI.info("=================")
-                for key in sorted(suite.tags_stats):
-                    LOG_UI.info("%s: %s", key, suite.tags_stats[key])
+            mapping = {
+              ReferenceResolutionResult.SUCCESS: TERM_SUPPORT.healthy_str,
+              ReferenceResolutionResult.NOTFOUND: TERM_SUPPORT.fail_header_str,
+              ReferenceResolutionResult.ERROR: TERM_SUPPORT.fail_header_str
+            }
+            resolution_matrix = []
+            for r in suite.resolutions:
+                decorator = mapping.get(r.result,
+                                        TERM_SUPPORT.warn_header_str)
+                if r.result == ReferenceResolutionResult.SUCCESS:
+                    continue
+                resolution_matrix.append((decorator(r.origin),
+                                          r.reference,
+                                          r.info or ''))
+
+            for line in iter_tabular_output(resolution_matrix,
+                                            header=resolution_header,
+                                            strip=True):
+                LOG_UI.info(line)
+
+        LOG_UI.info("")
+        LOG_UI.info("TEST TYPES SUMMARY")
+        LOG_UI.info("==================")
+        for key in sorted(suite.stats):
+            LOG_UI.info("%s: %s", key, suite.stats[key])
+
+        if suite.tags_stats:
+            LOG_UI.info("")
+            LOG_UI.info("TEST TAGS SUMMARY")
+            LOG_UI.info("=================")
+            for key in sorted(suite.tags_stats):
+                LOG_UI.info("%s: %s", key, suite.tags_stats[key])
 
     @staticmethod
     def _get_test_matrix(suite):
