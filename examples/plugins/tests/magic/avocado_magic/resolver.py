@@ -18,7 +18,7 @@ Test resolver for magic test words
 
 from avocado.core.nrunner import Runnable
 from avocado.core.plugin_interfaces import Resolver
-from avocado.core.resolver import (ReferenceResolution,
+from avocado.core.resolver import (EmptyReference, ReferenceResolution,
                                    ReferenceResolutionResult)
 
 VALID_MAGIC_WORDS = ['pass', 'fail']
@@ -36,6 +36,10 @@ class MagicResolver(Resolver):
                 reference,
                 ReferenceResolutionResult.NOTFOUND,
                 info='Word "%s" is not a valid magic word' % (reference))
+        if reference is EmptyReference:
+            return ReferenceResolution('pass',
+                                       ReferenceResolutionResult.SUCCESS,
+                                       [Runnable('magic', reference)])
 
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,

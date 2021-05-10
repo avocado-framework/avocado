@@ -39,6 +39,15 @@ class ReferenceResolutionAction(Enum):
     CONTINUE = object()
 
 
+class EmptyReference:
+    """Definition of the empty reference
+
+    It indicates the empty reference. It will be used when the `test.reference`
+    variable is empty, so the resolver have to use another data for resolving
+    tests.
+    """
+
+
 class ReferenceResolution:
 
     """
@@ -173,10 +182,10 @@ def resolve(references, hint=None, ignore_missing=True):
     if not references and hint_references:
         references = list(hint_references.keys())
 
+    resolver = Resolver()
     if references:
         # should be initialized with args, to define the behavior
         # of this instance as a whole
-        resolver = Resolver()
         extended_references = []
         for reference in references:
             # a reference extender is not (yet?) an extensible feature
@@ -188,6 +197,8 @@ def resolve(references, hint=None, ignore_missing=True):
                 resolutions.append(hint_references[reference])
             else:
                 resolutions.extend(resolver.resolve(reference))
+    else:
+        resolutions.extend(resolver.resolve(EmptyReference))
 
     # This came up from a previous method and can be refactored to improve
     # performance since that we could merge with the loop above.
