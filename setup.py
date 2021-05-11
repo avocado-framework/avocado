@@ -88,11 +88,12 @@ class Linter(SimpleCommand):
 
     def run(self):
         try:
-            check_call('selftests/signedoff-check.sh')
-            check_call('selftests/spell.sh')
             check_call('selftests/inspekt-indent.sh')
             check_call('selftests/inspekt-style.sh')
+            check_call('selftests/isort.sh')
             check_call('selftests/lint.sh')
+            check_call('selftests/signedoff-check.sh')
+            check_call('selftests/spell.sh')
         except CalledProcessError as e:
             print("Failed during lint checks: ", e)
             sys.exit(128)
