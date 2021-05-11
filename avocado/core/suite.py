@@ -103,7 +103,7 @@ class TestSuite:
         self._runner = None
         self._test_parameters = None
 
-        if (config.get('run.dry_run.enabled') and
+        if (self.config.get('run.dry_run.enabled') and
                 self.config.get('run.test_runner') == 'runner'):
             self._convert_to_dry_run()
 
