@@ -4,7 +4,7 @@
 Script that downloads cloud images via avocado.utils.vmimage
 """
 
-from avocado.core import data_dir
+from avocado.core.settings import settings
 from avocado.utils import vmimage
 
 KNOWN_IMAGES = (
@@ -20,9 +20,10 @@ def main():
     for image in KNOWN_IMAGES:
         name, version, arch, checksum, algorithm = image
         print("%s version %s (%s): " % (name, version, arch), end='')
+        cache_dir = settings.as_dict().get('datadir.paths.cache_dirs')[0]
         download = vmimage.get(name=name, version=version, arch=arch,
                                checksum=checksum, algorithm=algorithm,
-                               cache_dir=data_dir.get_cache_dirs()[0])
+                               cache_dir=cache_dir)
         print(download.base_image)
 
 

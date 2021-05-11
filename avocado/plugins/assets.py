@@ -20,7 +20,7 @@ import ast
 import os
 from datetime import datetime
 
-from avocado.core import data_dir, exit_codes, safeloader
+from avocado.core import exit_codes, safeloader
 from avocado.core.nrunner import Runnable
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, JobPreTests
@@ -203,7 +203,7 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
     :returns: list of names that were successfully fetched and list of
     fails.
     """
-    cache_dirs = data_dir.get_cache_dirs()
+    cache_dirs = settings.as_dict().get('datadir.paths.cache_dirs')
     success = []
     fail = []
     handler = FetchAssetHandler(test_file, klass, method)
@@ -405,7 +405,7 @@ class Assets(CLICmd):
             LOG_UI.error(msg)
             return exit_codes.AVOCADO_FAIL
 
-        cache_dirs = data_dir.get_cache_dirs()
+        cache_dirs = config.get('datadir.paths.cache_dirs')
         try:
             if days is not None:
                 Asset.remove_assets_by_unused_for_days(days, cache_dirs)
@@ -436,8 +436,7 @@ class Assets(CLICmd):
             LOG_UI.error(msg)
             return exit_codes.AVOCADO_FAIL
 
-        # IMO, this should get data from config instead. See #4443
-        cache_dirs = data_dir.get_cache_dirs()
+        cache_dirs = config.get('datadir.paths.cache_dirs')
         try:
             assets = None
             if days is not None:
@@ -498,7 +497,7 @@ class Assets(CLICmd):
 
     @staticmethod
     def handle_register(config):
-        cache_dirs = data_dir.get_cache_dirs()
+        cache_dirs = config.get('datadir.paths.cache_dirs')
         name = config.get('assets.register.name')
         asset_hash = config.get('assets.register.sha1_hash')
         location = config.get('assets.register.url')
