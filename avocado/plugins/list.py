@@ -14,6 +14,7 @@
 # Author: Beraldo Leal <bleal@redhat.com>
 
 import os
+import json
 
 from avocado.core import exit_codes, loader, parser_common_args
 from avocado.core.output import LOG_UI, TERM_SUPPORT
@@ -25,11 +26,10 @@ from avocado.core.test import Test
 from avocado.utils.astring import iter_tabular_output
 
 
-def _get_test_tags(test):
-    """Return a list of all tags of a test as string."""
-    params = test[1]
+def _get_tags_as_string(tags):
+    """Return a list of all tags but in a string format for output."""
     tags_repr = []
-    for tag, values in params.get('tags', {}).items():
+    for tag, values in tags.items():
         if values:
             tags_repr.append("%s(%s)" % (tag, ",".join(values)))
         else:
@@ -47,7 +47,33 @@ class List(CLICmd):
     description = 'List available tests'
 
     @staticmethod
-    def _display(suite, matrix):
+    def _prepare_matrix_for_display(matrix, verbose=False):
+        try:
+            type_label_mapping = loader.loader.get_type_label_mapping()
+            decorator_mapping = loader.loader.get_decorator_mapping()
+        except RuntimeError:
+            # When running with --resolver this will fall here, and should use
+            # the default mapping
+            pass
+
+        colored_matrix = []
+        for item in matrix:
+            cls = item[0]
+            try:
+                decorator = decorator_mapping[cls]
+                type_label = decorator(type_label_mapping[cls])
+            except (KeyError, UnboundLocalError):
+                # In this case nrunner will not be available on decorator_map,
+                # so we are using the default "healthy_str"
+                type_label = TERM_SUPPORT.healthy_str(cls)
+            if verbose:
+                colored_matrix.append((type_label, item[1],
+                                       _get_tags_as_string(item[2] or {})))
+            else:
+                colored_matrix.append((type_label, item[1]))
+        return colored_matrix
+
+    def _display(self, suite, matrix):
         header = None
         verbose = suite.config.get('core.verbose')
         if verbose:
@@ -55,73 +81,78 @@ class List(CLICmd):
                       TERM_SUPPORT.header_str('Test'),
                       TERM_SUPPORT.header_str('Tag(s)'))
 
+        # Any kind of color, string format and term specific should be applied
+        # only during output/display phase. So this seems to be a better place
+        # for this:
+        matrix = self._prepare_matrix_for_display(matrix, verbose)
+
         for line in iter_tabular_output(matrix,
                                         header=header,
                                         strip=True):
             LOG_UI.debug(line)
 
-        if verbose:
-            if suite.resolutions:
-                resolution_header = (TERM_SUPPORT.header_str('Resolver'),
-                                     TERM_SUPPORT.header_str('Reference'),
-                                     TERM_SUPPORT.header_str('Info'))
-                LOG_UI.info("")
+        self._display_extra(suite, verbose)
 
-                mapping = {
-                  ReferenceResolutionResult.SUCCESS: TERM_SUPPORT.healthy_str,
-                  ReferenceResolutionResult.NOTFOUND: TERM_SUPPORT.fail_header_str,
-                  ReferenceResolutionResult.ERROR: TERM_SUPPORT.fail_header_str
-                }
-                resolution_matrix = []
-                for r in suite.resolutions:
-                    decorator = mapping.get(r.result,
-                                            TERM_SUPPORT.warn_header_str)
-                    if r.result == ReferenceResolutionResult.SUCCESS:
-                        continue
-                    resolution_matrix.append((decorator(r.origin),
-                                              r.reference,
-                                              r.info or ''))
+    @staticmethod
+    def _display_extra(suite, verbose=True):
+        """Display extra data when in verbose mode."""
+        if not verbose:
+            return
 
-                for line in iter_tabular_output(resolution_matrix,
-                                                header=resolution_header,
-                                                strip=True):
-                    LOG_UI.info(line)
-
+        if suite.resolutions:
+            resolution_header = (TERM_SUPPORT.header_str('Resolver'),
+                                 TERM_SUPPORT.header_str('Reference'),
+                                 TERM_SUPPORT.header_str('Info'))
             LOG_UI.info("")
-            LOG_UI.info("TEST TYPES SUMMARY")
-            LOG_UI.info("==================")
-            for key in sorted(suite.stats):
-                LOG_UI.info("%s: %s", key, suite.stats[key])
 
-            if suite.tags_stats:
-                LOG_UI.info("")
-                LOG_UI.info("TEST TAGS SUMMARY")
-                LOG_UI.info("=================")
-                for key in sorted(suite.tags_stats):
-                    LOG_UI.info("%s: %s", key, suite.tags_stats[key])
+            mapping = {
+              ReferenceResolutionResult.SUCCESS: TERM_SUPPORT.healthy_str,
+              ReferenceResolutionResult.NOTFOUND: TERM_SUPPORT.fail_header_str,
+              ReferenceResolutionResult.ERROR: TERM_SUPPORT.fail_header_str
+            }
+            resolution_matrix = []
+            for r in suite.resolutions:
+                decorator = mapping.get(r.result,
+                                        TERM_SUPPORT.warn_header_str)
+                if r.result == ReferenceResolutionResult.SUCCESS:
+                    continue
+                resolution_matrix.append((decorator(r.origin),
+                                          r.reference,
+                                          r.info or ''))
+
+            for line in iter_tabular_output(resolution_matrix,
+                                            header=resolution_header,
+                                            strip=True):
+                LOG_UI.info(line)
+
+        LOG_UI.info("")
+        LOG_UI.info("TEST TYPES SUMMARY")
+        LOG_UI.info("==================")
+        for key in sorted(suite.stats):
+            LOG_UI.info("%s: %s", key, suite.stats[key])
+
+        if suite.tags_stats:
+            LOG_UI.info("")
+            LOG_UI.info("TEST TAGS SUMMARY")
+            LOG_UI.info("=================")
+            for key in sorted(suite.tags_stats):
+                LOG_UI.info("%s: %s", key, suite.tags_stats[key])
 
     @staticmethod
     def _get_test_matrix(suite):
         """Used for loader."""
         test_matrix = []
 
-        type_label_mapping = loader.loader.get_type_label_mapping()
-        decorator_mapping = loader.loader.get_decorator_mapping()
-
         verbose = suite.config.get('core.verbose')
         for cls, params in suite.tests:
             if isinstance(cls, str):
                 cls = Test
-            type_label = type_label_mapping[cls]
-            decorator = decorator_mapping[cls]
-            type_label = decorator(type_label)
-
             if verbose:
-                test_matrix.append((type_label,
+                test_matrix.append((cls,
                                     params['name'],
-                                    _get_test_tags((cls, params))))
+                                    params.get('tags', {})))
             else:
-                test_matrix.append((type_label, params['name']))
+                test_matrix.append((cls, params['name']))
 
         return test_matrix
 
@@ -131,22 +162,43 @@ class List(CLICmd):
         test_matrix = []
         verbose = suite.config.get('core.verbose')
         for runnable in suite.tests:
-            type_label = TERM_SUPPORT.healthy_str(runnable.kind)
 
             if verbose:
-                tags_repr = []
                 tags = runnable.tags or {}
-                for tag, vals in tags.items():
-                    if vals:
-                        tags_repr.append("%s(%s)" % (tag,
-                                                     ",".join(vals)))
-                    else:
-                        tags_repr.append(tag)
-                tags_repr = ",".join(tags_repr)
-                test_matrix.append((type_label, runnable.uri, tags_repr))
+                test_matrix.append((runnable.kind, runnable.uri, tags))
             else:
-                test_matrix.append((type_label, runnable.uri))
+                test_matrix.append((runnable.kind, runnable.uri))
         return test_matrix
+
+    @staticmethod
+    def _save_to_json(matrix, filename, verbose=False):
+        result = []
+        try:
+            type_label_mapping = loader.loader.get_type_label_mapping()
+        except RuntimeError:
+            # We are in --resolver mode here, so lets create a fake mapping and
+            # use the default
+            type_label_mapping = {}
+
+        for line in matrix:
+            try:
+                test_type = type_label_mapping[line[0]]
+            except KeyError:
+                test_type = line[0]
+            if verbose:
+                tags = line[2] or {}
+                result.append({'Type': test_type,
+                               'Test': line[1],
+                               'Tags': {k: list(v or {})
+                                        for k, v in tags.items()}})
+            else:
+                result.append({'Type': test_type,
+                               'Test': line[1]})
+        if filename == '-':
+            LOG_UI.debug(json.dumps(result, indent=4))
+        else:
+            with open(filename, 'w') as fp:
+                json.dump(result, fp, indent=4)
 
     @staticmethod
     def save_recipes(suite, directory, matrix_len):
@@ -203,9 +255,20 @@ class List(CLICmd):
                                  parser=parser,
                                  long_arg='--write-recipes-to-directory')
 
+        help_msg = 'Writes output to a json file.'
+        settings.register_option(section='list',
+                                 key='write_to_json_file',
+                                 default=None,
+                                 metavar='JSON_FILE',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--json')
+
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):
+        verbose = config.get('core.verbose')
+        write_to_json_file = config.get('list.write_to_json_file')
         resolver = config.get('list.resolver')
         runner = 'nrunner' if resolver else 'runner'
         config['run.references'] = config.get('list.references')
@@ -230,6 +293,8 @@ class List(CLICmd):
             else:
                 matrix = self._get_test_matrix(suite)
                 self._display(suite, matrix)
+            if write_to_json_file:
+                self._save_to_json(matrix, write_to_json_file, verbose)
         except KeyboardInterrupt:
             LOG_UI.error('Command interrupted by user...')
             return exit_codes.AVOCADO_FAIL
