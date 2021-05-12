@@ -3,7 +3,7 @@
 # inspektor (static and style checks)
 isort==5.8.0
 pyenchant==3.2.0
-pylint==2.5.0
+pylint==2.8.2
 astroid==2.4.0
 inspektor==0.5.2
 autopep8==1.5.4
