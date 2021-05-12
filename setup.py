@@ -120,7 +120,6 @@ if __name__ == '__main__':
               "Topic :: Software Development :: Quality Assurance",
               "Topic :: Software Development :: Testing",
               "Programming Language :: Python :: 3",
-              "Programming Language :: Python :: 3.5",
               "Programming Language :: Python :: 3.6",
               "Programming Language :: Python :: 3.7",
               "Programming Language :: Python :: 3.8",
@@ -226,7 +225,7 @@ if __name__ == '__main__':
               },
           zip_safe=False,
           test_suite='selftests',
-          python_requires='>=3.5',
+          python_requires='>=3.6',
           cmdclass={'clean': Clean,
                     'lint': Linter},
           install_requires=['setuptools'])

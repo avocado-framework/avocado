@@ -1,8 +1,9 @@
 import subprocess
 import time
 
-from avocado.core import nrunner
 from avocado_golang import GO_BIN
+
+from avocado.core import nrunner
 
 
 class GolangRunner(nrunner.BaseRunner):

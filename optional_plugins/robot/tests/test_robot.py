@@ -1,9 +1,8 @@
 import os
 import unittest
 
-import pkg_resources
-
 import avocado_robot
+import pkg_resources
 
 
 def python_module_available(module_name):

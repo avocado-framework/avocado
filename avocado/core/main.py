@@ -60,7 +60,7 @@ def handle_exception(*exc_info):
 
 def main():
     sys.excepthook = handle_exception
-    from avocado.core.app import AvocadoApp    # pylint: disable=E0611
+    from avocado.core.app import AvocadoApp  # pylint: disable=E0611
 
     # Override tmp in case it's not set in env
     for attr in ("TMP", "TEMP", "TMPDIR"):
