@@ -18,7 +18,7 @@ from avocado.utils import path as utils_path
 from avocado.utils import process, script
 from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
                              python_module_available, skipOnLevelsInferiorThan,
-                             temp_dir_prefix)
+                             skipUnlessPathExists, temp_dir_prefix)
 
 try:
     import xmlschema
@@ -939,6 +939,29 @@ class RunnerSimpleTestStatus(TestCaseTmpDir):
 
     def tearDown(self):
         super(RunnerSimpleTestStatus, self).tearDown()
+        self.config_file.remove()
+
+
+class RunnerReferenceFromConfig(TestCaseTmpDir):
+
+    def setUp(self):
+        super(RunnerReferenceFromConfig, self).setUp()
+        self.config_file = script.TemporaryScript('avocado.conf',
+                                                  "[run]\n"
+                                                  "references = ['/bin/true']\n")
+        self.config_file.save()
+
+    @skipUnlessPathExists('/bin/true')
+    def test(self):
+        cmd_line = '%s --config %s run --job-results-dir %s --disable-sysinfo'
+        cmd_line %= (AVOCADO, self.config_file.path, self.tmpdir.name)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
+    def tearDown(self):
+        super(RunnerReferenceFromConfig, self).tearDown()
         self.config_file.remove()
 
 

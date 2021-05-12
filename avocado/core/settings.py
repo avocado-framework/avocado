@@ -463,8 +463,13 @@ class Settings:
         """
         for namespace, value in arg_parse_config.items():
             # This check is important! For argparse when an option is
-            # not passed will return None. We need to update only the
+            # not passed will return None, except for positional arguments
+            # which will be an empty list.  We need to update only the
             # options that the user has specified.
+            config_option = self._namespaces.get(namespace, None)
+            positional = getattr(config_option, 'positional_arg', False)
+            if (positional and value == []):
+                continue
             if value is not None:
                 if namespace in self._namespaces:
                     self.update_option(namespace, value)
