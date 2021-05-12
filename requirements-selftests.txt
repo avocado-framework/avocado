@@ -1,7 +1,7 @@
 # Avocado test requirements
 
 # inspektor (static and style checks)
-isort==4.3.21
+isort==5.8.0
 pyenchant==3.2.0
 pylint==2.5.0
 astroid==2.4.0
