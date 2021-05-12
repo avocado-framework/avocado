@@ -524,7 +524,7 @@ RUNNING A TEST
 The most common use of the `avocado` command line tool is to run a
 test::
 
-    $ avocado run sleeptest.py
+    $ avocado run examples/tests/sleeptest.py
 
 This command will run the `sleeptest.py` test, as found on the standard
 test directories. The output should be similar to::
@@ -532,7 +532,7 @@ test directories. The output should be similar to::
     JOB ID    : <id>
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
      (1/1) sleeptest.py:SleepTest.test: PASS (1.01 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 1.11 s
 
 The test directories will vary depending on you system and installation
@@ -550,11 +550,18 @@ test runner::
     $ avocado --show=test run examples/tests/sleeptest.py
     ...
     PARAMS (key=timeout, path=*, default=None) => None
-    START 1-sleeptest.py:SleepTest.test
+    Test metadata:
+      filename: /home/<user>/avocado/examples/tests/sleeptest.py
+      teststmpdir: /var/tmp/avocado_o98elmi0
+      workdir: /var/tmp/avocado_iyzcj3hn/avocado_job_mwikfsnl/1-examples_tests_sleeptest.py_SleepTest.test
+    START 1-examples/tests/sleeptest.py:SleepTest.test
+    DATA (filename=output.expected) => NOT FOUND (data sources: variant, test, file)
     PARAMS (key=sleep_length, path=*, default=1) => 1
     Sleeping for 1.00 seconds
-    Not logging /var/log/messages (lack of permissions)
-    PASS 1-sleeptest.py:SleepTest.test
+    DATA (filename=output.expected) => NOT FOUND (data sources: variant, test, file)
+    DATA (filename=stdout.expected) => NOT FOUND (data sources: variant, test, file)
+    DATA (filename=stderr.expected) => NOT FOUND (data sources: variant, test, file)
+    PASS 1-examples/tests/sleeptest.py:SleepTest.test
     ...
 
 Let's say you are debugging a test particularly large, with lots of
@@ -565,20 +572,20 @@ amount of output.
 Edit your `~/.config/avocado/avocado.conf` file and add::
 
     [job.output]
-    loglevel = info
+    loglevel = INFO
 
 Running the same example with this option will give you::
 
-    $ avocado --show=test run sleeptest.py
+    $ avocado --show=test run examples/tests/sleeptest.py
     ...
-    START 1-sleeptest.py:SleepTest.test
-    PASS 1-sleeptest.py:SleepTest.test
+    START 1-examples/tests/sleeptest.py:SleepTest.test
+    PASS 1-examples/tests/sleeptest.py:SleepTest.test
     ...
 
 The levels you can choose are the levels available in the python logging
-system `https://docs.python.org/2/library/logging.html#logging-levels`,
-translated to lowercase strings, so 'notset', 'debug', 'info',
-'warning', 'error', 'critical', in order of severity.
+system `https://docs.python.org/3/library/logging.html#logging-levels`,
+so 'NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', in order
+of severity.
 
 As you can see, the UI output is suppressed and only the job log goes to
 stdout, making this a useful feature for test development/debugging.
@@ -593,7 +600,7 @@ job logs, those continue to be generated normally.
 SILENCING SYSINFO REPORT
 ========================
 
-You may specify `--sysinfo=off` and avocado will not collect profilers,
+You may specify `--disable-sysinfo` and avocado will not collect profilers,
 hardware details and other system information, inside the job result
 directory.
 
@@ -635,9 +642,11 @@ facilities. Let's try to list a directory with a bunch of executable
 shell scripts::
 
     $ avocado list examples/wrappers/
+    SIMPLE examples/wrappers/bind_cpu0.sh
     SIMPLE examples/wrappers/dummy.sh
     SIMPLE examples/wrappers/ltrace.sh
     SIMPLE examples/wrappers/perf.sh
+    SIMPLE examples/wrappers/rr.sh
     SIMPLE examples/wrappers/strace.sh
     SIMPLE examples/wrappers/time.sh
     SIMPLE examples/wrappers/valgrind.sh
@@ -648,17 +657,14 @@ simply execute and return PASS or FAIL depending on their return codes
 the `--verbose`, or `-V` flag to display files that were detected but
 are not avocado tests, along with summary information::
 
-    $ avocado list examples/gdb-prerun-scripts/ -V
+    $ avocado -V list examples/gdb-prerun-scripts/
     Type       Test                                     Tag(s)
     NOT_A_TEST examples/gdb-prerun-scripts/README
     NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
 
     TEST TYPES SUMMARY
     ==================
-    SIMPLE: 0
-    INSTRUMENTED: 0
-    MISSING: 0
-    NOT_A_TEST: 2
+    not_a_test: 2
 
 That summarizes the basic commands you should be using more frequently
 when you start with avocado. Let's talk now about how avocado stores
@@ -680,6 +686,7 @@ For your convenience, `avocado` maintains a link to the latest job run
     id
     jobdata
     job.log
+    results.html
     results.json
     results.tap
     results.xml
@@ -699,35 +706,15 @@ Since this is a directory, it should have content similar to::
     debug.log
     stderr
     stdout
-    sysinfo
     whiteboard
 
-MULTIPLEX
-=========
+MULTIPLEX FILE
+==============
 
 Avocado has a powerful tool that enables multiple test scenarios to be
 run using a single, unmodified test. This mechanism uses a YAML file
 called the 'multiplex file', that tells avocado how to multiply all
 possible test scenarios automatically.
-
-A command by the same name, `multiplex`, is available on the `avocado`
-command line tool, and enables you to see all the test scenarios that
-can be run::
-
-    $ avocado multiplex -m examples/tests/sleeptest.py.data/sleeptest.yaml -c
-    Variants generated:
-
-    Variant 1:    /run/short
-        /run/short:sleep_length => 0.5
-
-    Variant 2:    /run/medium
-        /run/medium:sleep_length => 1
-
-    Variant 3:    /run/long
-        /run/long:sleep_length => 5
-
-    Variant 4:    /run/longest
-        /run/longest:sleep_length => 10
 
 This is a sample that varies the parameter `sleep_length` through the
 scenarios ``/run/short`` (sleeps for 0.5 s), ``/run/medium`` (sleeps for
@@ -746,35 +733,34 @@ The YAML file (multiplex file) that produced the output above is::
 
 You can execute `sleeptest` in all variations exposed above with::
 
-    $ avocado run sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado run examples/tests/sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml
 
 And the output should look like::
 
     JOB ID    : <id>
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-     (1/4) sleeptest.py:SleepTest.test;1: PASS (0.51 s)
-     (2/4) sleeptest.py:SleepTest.test;2: PASS (1.01 s)
-     (3/4) sleeptest.py:SleepTest.test;3: PASS (5.02 s)
-     (4/4) sleeptest.py:SleepTest.test;4: PASS (10.01 s)
-    RESULTS    : PASS 4 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+     (1/4) examples/tests/sleeptest.py:SleepTest.test;run-short-beaf: PASS (0.50 s)
+     (2/4) examples/tests/sleeptest.py:SleepTest.test;run-medium-5595: PASS (1.01 s)
+     (3/4) examples/tests/sleeptest.py:SleepTest.test;run-long-f397: PASS (5.01 s)
+     (4/4) examples/tests/sleeptest.py:SleepTest.test;run-longest-efc4: PASS (10.01 s)
+    RESULTS    : PASS 4 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 16.65 s
 
-The `multiplex` plugin and the test runner supports two kinds of global
-filters, through the command line options `--mux-filter-only` and
-`--mux-filter-out`.
+The test runner supports two kinds of global filters, through the command
+line options `--mux-filter-only` and `--mux-filter-out`.
 The `mux-filter-only` exclusively includes one or more paths and the
 `mux-filter-out` removes one or more paths from being processed.
 
 From the previous example, if we are interested to use the variants
 `/run/medium` and `/run/longest`, we do the following command line::
 
-    $ avocado run sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml \
+    $ avocado run examples/tests/sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml \
           --mux-filter-only /run/medium /run/longest
 
 And if you want to remove `/small` from the variants created,
 we do the following::
 
-    $ avocado run sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml \
+    $ avocado run examples/tests/sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml \
           --mux-filter-out /run/medium
 
 Note that both `--mux-filter-only` and `--mux-filter-out` filters can be
@@ -805,73 +791,6 @@ variants. If no matches are found, then it would proceed to ``/qa/*``
 Keep in mind that only slices defined in mux-path are taken into account
 for relative paths (the ones starting with ``*``).
 
-DEBUGGING EXECUTABLES RUN AS PART OF A TEST
-===========================================
-
-One interesting avocado feature is the ability to automatically and
-transparently run executables that are used on a given test inside the
-GNU debugger.
-
-Suppose you are running a test that uses an external, compiled, image
-converter. Now suppose you're feeding it with different types of images,
-including broken image files, and it fails at a given point. You wish
-you could connect to the debugger at that given source location while
-your test is running. This is how to do just that with avocado::
-
-    $ avocado run --gdb-run-bin=convert:convert_ppm_to_raw converttest.py
-
-The job starts running just as usual, and so does your test::
-
-    JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    TESTS     : 1
-     (1/1) converttest.py:ConvertTest.test: /
-
-The `convert` executable though, automatically runs inside GDB. Avocado
-will stop when the given breakpoint is reached::
-
-    TEST PAUSED because of debugger breakpoint. To DEBUG your application run:
-    /home/<user>/avocado/job-results/job-<date>-<shortid>/test-results/converttest.py/data/convert.gdb.sh
-
-    NOTE: please use *disconnect* command in gdb before exiting, or else the debugged process will be KILLED
-
-From this point, you can run the generated script (`convert.gdb.sh`) to
-debug you application.
-
-As noted, it is strongly recommended that you *disconnect* from gdb
-while your executable is still running. That is, if the executable
-finished running while you are debugging it, avocado has no way to know
-about its status.
-
-Avocado will automatically send a `continue` command to the debugger
-when you disconnect from and exit gdb.
-
-If, for some reason you have a custom GDB, or your system does not put
-GDB on what avocado believes to be the standard location
-(`/usr/bin/gdb`), you can override that in the section `gdb.paths` of
-your documentation::
-
-    [gdb.paths]
-    gdb = /usr/bin/gdb
-    gdbserver = /usr/bin/gdbserver
-
-So running avocado after setting those will use the appropriate
-gdb/gdbserver path.
-
-If you are debugging a special application and need to setup GDB in
-custom ways by running GDB commands, you can do that with the
-`--gdb-prerun-commands` option::
-
-    $ avocado run --gdb-run-bin=foo:bar --gdb-prerun-commands=/tmp/disable-signals footest.py
-
-In this example, `/tmp/disable-signals` is a simple text file containing
-two lines::
-
-    signal SIGUSR1 pass
-    signal SIGUSR1 nostop
-
-Each line is a GDB command, so you can have from simple to very complex
-debugging environments configured like that.
 
 WRAP EXECUTABLE RUN BY TESTS
 ============================
@@ -895,20 +814,18 @@ have multiples wrappers and patterns defined.
 
 Examples::
 
-    $ avocado run datadir.py --wrapper examples/wrappers/strace.sh
+    $ avocado run examples/tests/datadir.py --wrapper examples/wrappers/strace.sh
 
 Any command created by the test datadir will be wrapped on
 ``strace.sh``. ::
 
-    $ avocado run datadir.py --wrapper examples/wrappers/ltrace.sh:*make \
-                             --wrapper examples/wrappers/perf.sh:*datadir
+    $ avocado run examples/tests/datadir.py \
+            --wrapper examples/wrappers/ltrace.sh:*make \
+            --wrapper examples/wrappers/perf.sh:*datadir
 
 Any command that matches the pattern `*make` will be wrapper on
 ``ltrace.sh`` and the pattern ``*datadir`` will trigger the execution of
 ``perf.sh``.
-
-Note that it is not possible to use ``--gdb-run-bin`` together with
-``--wrapper``, they are incompatible.
 
 RUNNING TESTS WITH AN EXTERNAL RUNNER
 =====================================
@@ -947,8 +864,8 @@ files with shell code could be considered tests::
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
     TESTS      : 2
     (1/2) /tmp/pass: PASS (0.01 s)
-    (2/2) /tmp/fail: FAIL (0.01 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    (2/2) /tmp/fail: FAIL: Exited with status: '1', stdout: '' stderr: '' (0.02 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 0.11 s
 
 This example is pretty obvious, and could be achieved by giving
@@ -965,7 +882,7 @@ But now consider the following example::
     TESTS      : 2
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 3.14 s
 
 This effectively makes `/bin/curl` an "external test runner",
@@ -1033,9 +950,9 @@ Let's record the output (both stdout and stderr) for this one::
     $ avocado run output_record.sh --output-check-record all
     JOB ID    : <id>
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    TESTS     : 1
-    (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+     (1/1) output_record.sh: PASS (0.01 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/results.html
     JOB TIME   : 0.11 s
 
 After this is done, you'll notice that a the test data directory
