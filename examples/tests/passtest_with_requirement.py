@@ -6,7 +6,7 @@ class PassTest(Test):
     """
     Example test that passes.
 
-    :avocado: requirement={"core": "avocado"}
+    :avocado: requirement={"type": "package", "name": "hello"}
     """
 
     def test(self):

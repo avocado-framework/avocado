@@ -41,3 +41,11 @@ class SoftwareManager:
     def __getattr__(self, name):
         self._init_on_demand()
         return self.backend.__getattribute__(name)
+
+    def is_capable(self):
+        """Checks if environment is capable by initializing the backend."""
+        try:
+            self._init_on_demand()
+        except NotImplementedError:
+            pass
+        return self.initialized
