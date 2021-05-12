@@ -345,7 +345,7 @@ class TestSuite:
 
         if not config.get('run.ignore_missing_references'):
             if not suite.tests:
-                msg = ("Test Suite could not be create. No test references "
+                msg = ("Test Suite could not be created. No test references "
                        "provided nor any other arguments resolved into tests")
                 raise TestSuiteError(msg)
 
