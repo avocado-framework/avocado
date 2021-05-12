@@ -98,6 +98,23 @@ class SettingsTest(unittest.TestCase):
         stgs.add_argparser_to_option('section.key', parser, '--other-arg',
                                      allow_multiple=True)
 
+    def test_argparser_long_or_short_or_positional(self):
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
+        parser = argparse.ArgumentParser(description='description')
+        stgs.register_option('section', 'key', 'default', 'help')
+        with self.assertRaises(settings.SettingsError):
+            stgs.add_argparser_to_option('section.key', parser)
+
+    def test_argparser_positional(self):
+        stgs = settings.Settings()
+        stgs.process_config_path(self.config_file.name)
+        parser = argparse.ArgumentParser(description='description')
+        stgs.register_option('section', 'key', [], 'help', list)
+        stgs.add_argparser_to_option('section.key', parser,
+                                     positional_arg=True)
+        self.assertEqual(stgs.as_dict().get('section.key'), [])
+
     def test_multiple_parsers(self):
         stgs = settings.Settings()
         stgs.process_config_path(self.config_file.name)

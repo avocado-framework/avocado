@@ -42,6 +42,13 @@ class RunInit(Init):
                                  default='variants-per-test',
                                  help_msg=help_msg)
 
+        help_msg = 'List of test references (aliases or paths)'
+        settings.register_option(section='run',
+                                 key='references',
+                                 key_type=list,
+                                 default=[],
+                                 help_msg=help_msg)
+
 
 class Run(CLICmd):
 
@@ -70,16 +77,11 @@ class Run(CLICmd):
         """
         parser = super(Run, self).configure(parser)
 
-        help_msg = 'List of test references (aliases or paths)'
-        settings.register_option(section='run',
-                                 key='references',
-                                 key_type=list,
-                                 default=[],
-                                 nargs='*',
-                                 metavar='TEST_REFERENCE',
-                                 parser=parser,
-                                 help_msg=help_msg,
-                                 positional_arg=True)
+        settings.add_argparser_to_option(namespace='run.references',
+                                         parser=parser,
+                                         positional_arg=True,
+                                         nargs='*',
+                                         metavar='TEST_REFERENCE')
 
         help_msg = ('Parameter name and value to pass to all tests. This is '
                     'only applicable when not using a varianter plugin. '
