@@ -325,7 +325,7 @@ class Settings:
         self._config_path_local = os.path.join(self._config_dir_local,
                                                config_file_name)
 
-    def add_argparser_to_option(self, namespace, parser, long_arg,
+    def add_argparser_to_option(self, namespace, parser, long_arg=None,
                                 short_arg=None, positional_arg=False,
                                 choices=None, nargs=None, metavar=None,
                                 required=None, action=None,
@@ -384,6 +384,11 @@ class Settings:
             This is useful when the same option is available on different
             commands, such as "avocado run" or "avocado list".
         """
+        if not any([long_arg, short_arg, positional_arg]):
+            raise SettingsError("To add an argument parser to an option, it "
+                                "needs to have a long argument, a short "
+                                "argument or be a positional argument")
+
         option = None
         try:
             option = self._namespaces[namespace]
