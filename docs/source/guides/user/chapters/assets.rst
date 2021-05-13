@@ -3,20 +3,18 @@
 Managing Assets
 ===============
 
-..note:: Please note that we are improve constantly how we handle assets inside
-         Avocado. Probably some changes will be delivered during the next
-         releases.
+.. note:: Please note that we are constantly improving on how we handle assets
+   inside Avocado. Probably some changes will be delivered during the next
+   releases.
 
-Assets are artifacts that can be used in your tests. Avocado can download those
-assets automatically when parsing your tests or on demand, when you register an
-asset at the command-line.
+Assets are test artifacts that Avocado can download automatically either
+during the test execution, or before the test even starts (by parsing the
+test code or on-demand, manually registering them at the command-line).
 
 Sometimes those assets, depending on your case, can be a bottleneck when it
-comes to disk space. If you are constantly using large assets in your tests, it
-is important to have a good idea on how Avocado stores and handle those
+comes to disk space. If you are constantly using large assets in your tests,
+it is important to have a good idea of how Avocado stores and handles those
 artifacts.
-
-TODO: [Improve this section describing assets in general]
 
 Listing assets
 --------------
