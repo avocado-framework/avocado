@@ -118,6 +118,36 @@ class Resolver(EnabledExtensionManager):
         return resolution
 
 
+class Discoverer(EnabledExtensionManager):
+
+    """
+    Secondary test reference resolution utility.
+
+    When the user didn't provide any test references, Discoverer will discover
+    tests from different data according to active discoverer plugins.
+    """
+
+    def __init__(self):
+        super(Discoverer, self).__init__('avocado.plugins.discoverer')
+
+    def discover(self):
+        resolutions = []
+        for ext in self.extensions:
+            try:
+                results = ext.obj.discover()
+            except Exception as exc:  # pylint: disable=W0703
+                results = [ReferenceResolution('',
+                                               ReferenceResolutionResult.ERROR,
+                                               info=exc,
+                                               origin=ext.name)]
+            for result in results:
+                if not result.origin:
+                    result.origin = ext.name
+                resolutions.append(result)
+
+        return resolutions
+
+
 def check_file(path, reference, suffix='.py',
                type_check=os.path.isfile, type_name='regular file',
                access_check=os.R_OK, access_name='readable'):
@@ -188,6 +218,9 @@ def resolve(references, hint=None, ignore_missing=True):
                 resolutions.append(hint_references[reference])
             else:
                 resolutions.extend(resolver.resolve(reference))
+    else:
+        discoverer = Discoverer()
+        resolutions.extend(discoverer.discover())
 
     # This came up from a previous method and can be refactored to improve
     # performance since that we could merge with the loop above.
