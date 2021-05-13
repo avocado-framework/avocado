@@ -13,8 +13,8 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 # Author: Beraldo Leal <bleal@redhat.com>
 
-import os
 import json
+import os
 
 from avocado.core import exit_codes, loader, parser_common_args
 from avocado.core.output import LOG_UI, TERM_SUPPORT
