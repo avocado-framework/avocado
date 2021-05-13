@@ -110,7 +110,8 @@ class Run(CLICmd):
                                  default='runner',
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--test-runner')
+                                 long_arg='--test-runner',
+                                 metavar='TEST_RUNNER')
 
         help_msg = ('Instead of running the test only list them and log '
                     'their params.')
@@ -142,7 +143,8 @@ class Run(CLICmd):
                                  default=None,
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--force-job-id')
+                                 long_arg='--force-job-id',
+                                 metavar='UNIQUE_JOB_ID')
 
         help_msg = 'Forces to use of an alternate job results directory.'
         settings.register_option(section='run',
@@ -212,7 +214,8 @@ class Run(CLICmd):
 
         settings.add_argparser_to_option('job.run.store_logging_stream',
                                          parser=parser.output,
-                                         long_arg='--store-logging-stream')
+                                         long_arg='--store-logging-stream',
+                                         metavar='LOGGING_STREAM')
 
         help_msg = ('Logs the possible data directories for each test. This '
                     'is helpful when writing new tests and not being sure '

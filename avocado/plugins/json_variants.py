@@ -57,7 +57,8 @@ class JsonVariantsCLI(CLI):
                 namespace='json.variants.load',
                 parser=sparser,
                 long_arg='--json-variants-load',
-                allow_multiple=True)
+                allow_multiple=True,
+                metavar='FILE')
 
     def run(self, config):
         pass

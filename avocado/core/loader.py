@@ -416,7 +416,8 @@ def add_loader_options(parser, section='run'):
                              default=['file', '@DEFAULT'],
                              help_msg=help_msg,
                              parser=arggrp,
-                             long_arg='--loaders')
+                             long_arg='--loaders',
+                             metavar='LOADER_NAME_OR_TEST_TYPE')
 
     help_msg = ("Path to an specific test runner that allows the use of its "
                 "own tests. This should be used for running tests that do not "
@@ -428,7 +429,8 @@ def add_loader_options(parser, section='run'):
                              default=None,
                              help_msg=help_msg,
                              parser=arggrp,
-                             long_arg='--external-runner')
+                             long_arg='--external-runner',
+                             metavar='EXTERNAL_RUNNER')
 
     help_msg = ("Change directory before executing tests. This option may be "
                 "necessary because of requirements and/or limitations of the "

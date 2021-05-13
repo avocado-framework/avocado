@@ -117,16 +117,29 @@ class RunnerCLI(CLI):
                                          long_arg='--nrunner-shuffle',
                                          action='store_true')
 
-        # namespace mapping
-        ns = {'nrunner.status_server_listen': '--nrunner-status-server-listen',
-              'nrunner.status_server_uri': '--nrunner-status-server-uri',
-              'nrunner.max_parallel_tasks': '--nrunner-max-parallel-tasks',
-              'nrunner.spawner': '--nrunner-spawner'}
+        settings.add_argparser_to_option(
+            namespace='nrunner.status_server_listen',
+            parser=parser,
+            long_arg='--nrunner-status-server-listen',
+            metavar='HOST_PORT')
 
-        for k, v in ns.items():
-            settings.add_argparser_to_option(namespace=k,
-                                             parser=parser,
-                                             long_arg=v)
+        settings.add_argparser_to_option(
+            namespace='nrunner.status_server_uri',
+            parser=parser,
+            long_arg='--nrunner-status-server-uri',
+            metavar='HOST_PORT')
+
+        settings.add_argparser_to_option(
+            namespace='nrunner.max_parallel_tasks',
+            parser=parser,
+            long_arg='--nrunner-max-parallel-tasks',
+            metavar='NUMBER_OF_TASKS')
+
+        settings.add_argparser_to_option(
+            namespace='nrunner.spawner',
+            parser=parser,
+            long_arg='--nrunner-spawner',
+            metavar='SPAWNER')
 
     def run(self, config):
         pass

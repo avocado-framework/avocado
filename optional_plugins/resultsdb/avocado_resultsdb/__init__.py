@@ -182,7 +182,8 @@ class ResultsdbCLI(CLI):
                                  default=None,
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--resultsdb-api')
+                                 long_arg='--resultsdb-api',
+                                 metavar='API_URL')
 
         help_msg = 'Specify the URL where the logs are published'
         settings.register_option(section='plugins.resultsdb',
@@ -190,7 +191,8 @@ class ResultsdbCLI(CLI):
                                  default=None,
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--resultsdb-logs')
+                                 long_arg='--resultsdb-logs',
+                                 metavar='LOGS_URL')
 
         help_msg = 'Maximum note size limit'
         settings.register_option(section='plugins.resultsdb',
@@ -199,7 +201,8 @@ class ResultsdbCLI(CLI):
                                  key_type=int,
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--resultsdb-note-limit')
+                                 long_arg='--resultsdb-note-limit',
+                                 metavar='SIZE_LIMIT')
 
     def run(self, config):
         pass
