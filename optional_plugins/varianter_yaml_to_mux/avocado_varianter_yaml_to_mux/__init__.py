@@ -436,28 +436,32 @@ class YamlToMuxCLI(CLI):
                 parser=agroup,
                 long_arg='--mux-filter-only',
                 nargs='+',
-                allow_multiple=True)
+                allow_multiple=True,
+                metavar='FILTER')
 
             settings.add_argparser_to_option(
                 namespace="%s.%s" % (self.name, 'filter_out'),
                 parser=agroup,
                 long_arg='--mux-filter-out',
                 nargs='+',
-                allow_multiple=True)
+                allow_multiple=True,
+                metavar='FILTER')
 
             settings.add_argparser_to_option(
                 namespace="%s.%s" % (self.name, 'parameter_paths'),
                 parser=agroup,
                 long_arg='--mux-path',
                 nargs='+',
-                allow_multiple=True)
+                allow_multiple=True,
+                metavar='PATH')
 
             settings.add_argparser_to_option(
                 namespace="%s.%s" % (self.name, 'inject'),
                 parser=agroup,
                 long_arg='--mux-inject',
                 nargs='+',
-                allow_multiple=True)
+                allow_multiple=True,
+                metavar='PATH_KEY_NODE')
 
     def run(self, config):
         """

@@ -49,7 +49,8 @@ class Replay(CLI):
                                  default=None,
                                  help_msg=help_msg,
                                  parser=replay_parser,
-                                 long_arg='--replay')
+                                 long_arg='--replay',
+                                 metavar='JOB_ID')
 
         help_msg = 'Filter tests to replay by test status.'
         settings.register_option(section='run.replay',
@@ -58,7 +59,8 @@ class Replay(CLI):
                                  help_msg=help_msg,
                                  key_type=self._valid_status,
                                  parser=replay_parser,
-                                 long_arg='--replay-test-status')
+                                 long_arg='--replay-test-status',
+                                 metavar='TEST_STATUS')
 
         help_msg = 'Ignore variants and/or configuration from the source job.'
         settings.register_option(section='run.replay',
@@ -67,7 +69,8 @@ class Replay(CLI):
                                  help_msg=help_msg,
                                  key_type=self._valid_ignore,
                                  parser=replay_parser,
-                                 long_arg='--replay-ignore')
+                                 long_arg='--replay-ignore',
+                                 metavar='IGNORE')
 
         help_msg = 'Resume an interrupted job'
         settings.register_option(section='run.replay',

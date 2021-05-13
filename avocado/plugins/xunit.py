@@ -228,7 +228,8 @@ class XUnitCLI(CLI):
         settings.add_argparser_to_option(
             namespace='job.run.result.xunit.job_name',
             parser=run_subcommand_parser.output,
-            long_arg='--xunit-job-name')
+            long_arg='--xunit-job-name',
+            metavar='XUNIT_JOB_NAME')
 
         settings.add_argparser_to_option(
             namespace='job.run.result.xunit.max_test_log_chars',

@@ -75,7 +75,8 @@ class ResultUploadCLI(CLI):
                                  default=None,
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--result-upload-url')
+                                 long_arg='--result-upload-url',
+                                 metavar='URL')
 
         try:
             rsync_bin = utils_path.find_command('rsync')
@@ -92,7 +93,8 @@ class ResultUploadCLI(CLI):
                                  help_msg=help_msg,
                                  default=def_upload_cmd,
                                  parser=parser,
-                                 long_arg='--result-upload-cmd')
+                                 long_arg='--result-upload-cmd',
+                                 metavar='COMMAND')
 
     def run(self, config):
         pass

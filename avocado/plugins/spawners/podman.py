@@ -44,11 +44,13 @@ class PodmanCLI(CLI):
         parser = parser.add_argument_group('podman spawner specific options')
         settings.add_argparser_to_option(namespace='spawner.podman.bin',
                                          parser=parser,
-                                         long_arg='--spawner-podman-bin')
+                                         long_arg='--spawner-podman-bin',
+                                         metavar='PODMAN_BIN')
 
         settings.add_argparser_to_option(namespace='spawner.podman.image',
                                          parser=parser,
-                                         long_arg='--spawner-podman-image')
+                                         long_arg='--spawner-podman-image',
+                                         metavar='CONTAINER_IMAGE')
 
     def run(self, config):
         pass
