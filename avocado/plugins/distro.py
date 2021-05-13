@@ -233,8 +233,9 @@ def save_distro(linux_distro, path):
     :type path: str
     :return: None
     """
-    with open(path, 'w') as output:
-        output.write(bz2.compress(linux_distro.to_json()))
+    with open(path, 'wb') as output:
+        buff = linux_distro.to_json()
+        output.write(bz2.compress(buff.encode('utf-8')))
 
 
 def load_distro(path):
