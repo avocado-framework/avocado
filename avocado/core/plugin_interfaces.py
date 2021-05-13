@@ -234,6 +234,24 @@ class Resolver(Plugin):
         """
 
 
+class Discoverer(Plugin):
+    """Base plugin interface for discovering tests without reference."""
+
+    @abc.abstractmethod
+    def discover(self):
+        """Discovers a test resolutions
+
+        It will be used when the `test.references` variable is empty, but
+        the discoverer will be able to use another data for gathering test
+        resolutions. It work same as the Resolver, but without the test
+        reference.
+        :returns: the result of the resolution process, containing the
+                  success, failure or error, along with zero or more
+                  :class:`avocado.core.nrunner.Runnable` objects
+        :rtype: :class:`avocado.core.resolver.ReferenceResolution`
+        """
+
+
 class Runner(Plugin):
     """Base plugin interface for test runners.
 
