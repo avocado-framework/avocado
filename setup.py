@@ -209,6 +209,12 @@ if __name__ == '__main__':
                   'avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedResolver',
                   'tap = avocado.plugins.resolvers:TapResolver',
                   ],
+              'avocado.plugins.discoverer': [
+                  'exec-test = avocado.plugins.resolvers:ExecTestDiscoverer',
+                  'python-unittest = avocado.plugins.resolvers:PythonUnittestDiscoverer',
+                  'avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedDiscoverer',
+                  'tap = avocado.plugins.resolvers:TapDiscoverer',
+              ],
               'avocado.plugins.runner': [
                   'runner = avocado.plugins.runner:TestRunner',
                   'nrunner = avocado.plugins.runner_nrunner:Runner',

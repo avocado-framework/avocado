@@ -173,7 +173,7 @@ def check_file(path, reference, suffix='.py',
     return True
 
 
-def _extend_directory(path):
+def extend_directory(path):
     if not os.path.isdir(path):
         return [path]
     paths = []
@@ -212,7 +212,7 @@ def resolve(references, hint=None, ignore_missing=True):
             # a reference extender is not (yet?) an extensible feature
             # here it walks directories if one is given, and extends
             # the original reference into final file paths
-            extended_references.extend(_extend_directory(reference))
+            extended_references.extend(extend_directory(reference))
         for reference in extended_references:
             if reference in hint_references:
                 resolutions.append(hint_references[reference])

@@ -20,12 +20,23 @@ import os
 import re
 
 from avocado.core.nrunner import Runnable
-from avocado.core.plugin_interfaces import Resolver
+from avocado.core.plugin_interfaces import Discoverer, Resolver
 from avocado.core.references import reference_split
 from avocado.core.resolver import (ReferenceResolution,
-                                   ReferenceResolutionResult, check_file)
+                                   ReferenceResolutionResult, check_file,
+                                   extend_directory)
 from avocado.core.safeloader import find_avocado_tests, find_python_unittests
 from avocado.core.settings import settings
+
+
+def discover(resolver):
+    resolutions = []
+    config = settings.as_dict()
+    if config.get('list.resolver'):
+        for reference in extend_directory(config.get("datadir.paths.test_dir")):
+            if not os.path.exists(reference):
+                resolutions.append(resolver.resolve(reference))
+    return resolutions
 
 
 class ExecTestResolver(Resolver):
@@ -47,6 +58,16 @@ class ExecTestResolver(Resolver):
                                    ReferenceResolutionResult.SUCCESS,
                                    [Runnable('exec-test', reference,
                                              config=settings.as_dict(r'^runner\.'))])
+
+
+class ExecTestDiscoverer(Discoverer):
+
+    name = 'exec-test-discoverer'
+    description = 'Test discoverer for executable files to be handled as tests'
+
+    @staticmethod
+    def discover():
+        return discover(ExecTestResolver)
 
 
 def python_resolver(name, reference, find_tests):
@@ -98,6 +119,16 @@ class PythonUnittestResolver(Resolver):
                                PythonUnittestResolver._find_compat)
 
 
+class PythonUnittestDiscoverer(Discoverer):
+
+    name = 'python-unittest-discoverer'
+    description = 'Test discoverer for Python Unittests'
+
+    @staticmethod
+    def discover():
+        return discover(PythonUnittestResolver)
+
+
 class AvocadoInstrumentedResolver(Resolver):
 
     name = 'avocado-instrumented'
@@ -108,6 +139,15 @@ class AvocadoInstrumentedResolver(Resolver):
         return python_resolver(AvocadoInstrumentedResolver.name,
                                reference,
                                find_avocado_tests)
+
+
+class AvocadoInstrumentedDiscoverer(Discoverer):
+    name = 'avocado-instrumented-discoverer'
+    description = 'Test discoverer for Avocado Instrumented tests'
+
+    @staticmethod
+    def discover():
+        return discover(AvocadoInstrumentedResolver)
 
 
 class TapResolver(Resolver):
@@ -129,3 +169,12 @@ class TapResolver(Resolver):
                                    ReferenceResolutionResult.SUCCESS,
                                    [Runnable('tap', reference,
                                              config=settings.as_dict(r'^runner\.'))])
+
+
+class TapResolverDiscoverer(Discoverer):
+    name = 'tap-discoverer'
+    description = 'Test discoverer for executable files to be handled as tests'
+
+    @staticmethod
+    def discover():
+        return discover(TapResolver)
