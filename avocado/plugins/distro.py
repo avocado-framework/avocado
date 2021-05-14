@@ -305,7 +305,7 @@ class Distro(CLICmd):
     def configure(self, parser):
         parser = super(Distro, self).configure(parser)
 
-        help_msg = 'Cretes a distro definition file based on the path given.'
+        help_msg = 'Creates a distro definition file based on the path given.'
         settings.register_option(section='distro',
                                  key='distro_def_create',
                                  default=False,
@@ -320,7 +320,8 @@ class Distro(CLICmd):
                                  default='',
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--distro-def-name')
+                                 long_arg='--distro-def-name',
+                                 metavar='DISTRO_DEF_NAME')
 
         help_msg = 'Distribution major version name'
         settings.register_option(section='distro',
@@ -328,7 +329,8 @@ class Distro(CLICmd):
                                  default='',
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--distro-def-version')
+                                 long_arg='--distro-def-version',
+                                 metavar='DISTRO_DEF_VERSION')
 
         help_msg = 'Distribution release version number'
         settings.register_option(section='distro',
@@ -336,7 +338,8 @@ class Distro(CLICmd):
                                  default='',
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--distro-def-release')
+                                 long_arg='--distro-def-release',
+                                 metavar='DISTRO_DEF_RELEASE')
 
         help_msg = 'Primary architecture that the distro targets'
         settings.register_option(section='distro',
@@ -344,7 +347,8 @@ class Distro(CLICmd):
                                  default='',
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--distro-def-arch')
+                                 long_arg='--distro-def-arch',
+                                 metavar='DISTRO_DEF_ARCH')
 
         help_msg = 'Top level directory of the distro installation files'
         settings.register_option(section='distro',
