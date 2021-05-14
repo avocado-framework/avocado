@@ -9,6 +9,7 @@ from avocado import Test
 from avocado.core import exit_codes
 from avocado.core.job import Job
 from avocado.core.suite import TestSuite
+from avocado.utils.network.ports import find_free_port
 
 BOOLEAN_ENABLED = [True, 'true', 'on', 1]
 BOOLEAN_DISABLED = [False, 'false', 'off', 0]
@@ -497,11 +498,14 @@ def create_suites(args):
     # ========================================================================
     # Run all static checks, unit and functional tests
     # ========================================================================
+    status_server = '127.0.0.1:%u' % find_free_port()
     config_check = {
         'run.references': ['selftests/jobs/',
                            'selftests/unit/',
                            'selftests/functional/'],
         'run.test_runner': 'nrunner',
+        'nrunner.status_server_listen': status_server,
+        'nrunner.status_server_uri': status_server,
         'run.ignore_missing_references': True,
         'job.output.testlogs.statuses': ['FAIL']
     }
