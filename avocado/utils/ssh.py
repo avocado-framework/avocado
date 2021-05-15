@@ -105,7 +105,7 @@ class Session:
         else:
             options += (('PasswordAuthentication', 'yes'),
                         ('NumberOfPasswordPrompts', '1'),)
-        return self._ssh_cmd(options, ('-n',))
+        return self._ssh_cmd(options, ('-T', '-n'))
 
     def _create_ssh_askpass(self):
         """
