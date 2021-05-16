@@ -684,6 +684,8 @@ class Task:
         """
         self.runnable = runnable
         self.identifier = identifier or str(uuid1())
+        #: Category of the task.  If the category is not "test", it
+        #: will not be accounted for on a Job's test results.
         self.category = category
         self.status_services = []
         if status_uris is not None:
