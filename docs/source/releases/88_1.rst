@@ -1,0 +1,10 @@
+================
+88.1 The Serpent
+================
+
+This is a hotfix release for 88.0, with only one change to accommodate
+a documentation build error on readthedocs.org caused by a new version
+of an external package requirement.
+
+For the other (more relevant) changes in the 88.x release, please
+refer to the :doc:`88.0 Release Notes <88_0>`.

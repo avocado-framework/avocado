@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      ff35265f889bbfca9257713ff25de0e08d776593
+        %global commit      87d40d3e84b505e8e7c56912d62910d084aa9d3d
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20200911
+        %global commit_date 20210517
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -33,7 +33,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 88.0
+Version: 88.1
 Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -380,6 +380,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon May 17 2021 Cleber Rosa <cleber@redhat.com> - 88.1-1
+- New release with readthedocs.org documentation hotfix
+
 * Fri May 14 2021 Cleber Rosa <cleber@redhat.com> - 88.0-1
 - New release
 
