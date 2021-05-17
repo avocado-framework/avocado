@@ -518,8 +518,15 @@ class RunnerOperationTest(TestCaseTmpDir):
             avocado_process.wait()
 
     def test_dry_run(self):
-        cmd = ("%s run --disable-sysinfo --dry-run --dry-run-no-cleanup --json - "
-               "-- passtest.py failtest.py gendata.py " % AVOCADO)
+        examples_path = os.path.join('examples', 'tests')
+        passtest = os.path.join(examples_path, 'passtest.py')
+        failtest = os.path.join(examples_path, 'failtest.py')
+        gendata = os.path.join(examples_path, 'gendata.py')
+        cmd = ("%s run --test-runner=nrunner --disable-sysinfo --dry-run "
+               "--dry-run-no-cleanup --json - -- %s %s %s " % (AVOCADO,
+                                                               passtest,
+                                                               failtest,
+                                                               gendata))
         number_of_tests = 3
         result = json.loads(process.run(cmd).stdout_text)
         debuglog = result['debuglog']

@@ -167,6 +167,9 @@ class Runner(RunnerInterface):
             task_id = TestID(prefix,
                              name,
                              None)
+            # with --dry-run we don't want to run requirement
+            if runnable.kind == 'dry-run':
+                requirement_runnable.kind = 'noop'
             # creates the requirement task
             requirement_task = nrunner.Task(requirement_runnable,
                                             task_id,

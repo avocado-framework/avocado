@@ -370,6 +370,30 @@ class NoOpRunner(BaseRunner):
 RUNNERS_REGISTRY_PYTHON_CLASS['noop'] = NoOpRunner
 
 
+class DryRunRunner(BaseRunner):
+    """
+    Runner for --dry-run.
+
+    It performs no action before reporting FINISHED status with cancel result.
+
+    Runnable attributes usage:
+
+     * uri: not used
+
+     * args: not used
+    """
+
+    def run(self):
+        yield self.prepare_status('started')
+        yield self.prepare_status('finished',
+                                  {'result': 'cancel',
+                                   'fail_reason': 'Test cancelled due to '
+                                                  '--dry-run'})
+
+
+RUNNERS_REGISTRY_PYTHON_CLASS['dry-run'] = DryRunRunner
+
+
 class ExecRunner(BaseRunner):
     """
     Runner for standalone executables with or without arguments

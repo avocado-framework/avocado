@@ -337,6 +337,17 @@ class JobTest(unittest.TestCase):
         self.job.run()
         self.assertEqual(len(self.job.get_failed_tests()), 1)
 
+    def test_job_dryrun(self):
+        config = {'run.references': ['/bin/true', '/bin/false'],
+                  'run.results_dir': self.tmpdir.name,
+                  'run.dry_run.enabled': True,
+                  'core.show': ['none']}
+        suite = TestSuite.from_config(config)
+        self.job = job.Job(config, [suite])
+        self.job.setup()
+        self.job.run()
+        self.assertEqual(self.job.result.cancelled, 2)
+
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         self.tmpdir.cleanup()
