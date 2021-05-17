@@ -329,7 +329,6 @@ class JobTest(unittest.TestCase):
     def test_job_get_failed_tests(self):
         config = {'run.references': ['/bin/true', '/bin/false'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.dry_run.enabled': True,
                   'core.show': ['none']}
         suite = TestSuite.from_config(config)
         self.job = job.Job(config, [suite])
