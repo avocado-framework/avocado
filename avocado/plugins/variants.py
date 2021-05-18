@@ -58,7 +58,8 @@ class Variants(CLICmd):
                                  default=0,
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--summary')
+                                 long_arg='--summary',
+                                 metavar='SUMMARY')
 
         help_msg = 'Verbosity of the list of variants. ' + verbosity_levels
         settings.register_option(section='variants',
@@ -67,7 +68,8 @@ class Variants(CLICmd):
                                  default=1,
                                  help_msg=help_msg,
                                  parser=parser,
-                                 long_arg='--variants')
+                                 long_arg='--variants',
+                                 metavar='VARIANTS')
 
         help_msg = ('[obsoleted by --variants] Shows the node content '
                     '(variables)')
@@ -86,7 +88,8 @@ class Variants(CLICmd):
                                  help_msg=help_msg,
                                  default=None,
                                  parser=parser,
-                                 long_arg='--json-variants-dump')
+                                 long_arg='--json-variants-dump',
+                                 metavar='FILE')
 
         env_parser = parser.add_argument_group("environment view options")
 

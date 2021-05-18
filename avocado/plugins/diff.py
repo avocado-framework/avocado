@@ -94,6 +94,7 @@ class Diff(CLICmd):
                     '(no)config,(no)sysinfo (defaults to all enabled).')
         settings.register_option(section='diff',
                                  key='filter',
+                                 metavar='DIFF_FILTER',
                                  key_type=self._validate_filters,
                                  help_msg=help_msg,
                                  default=['cmdline', 'time', 'variants',
