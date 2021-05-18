@@ -10,6 +10,9 @@
 	{"name": "Avocado source is sound",
 	 "description": "On your development machine, on a fresh Avocado source to be released, run `$ make check`. Expected result: Make command should say OK."},
 
+	{"name": "Set the readthedocs.org token",
+	 "description": "Generate and export the content of a token (from https://readthedocs.org/accounts/tokens/) as the AVOCADO_READTHEDOCS_TOKEN environment variable. For this step you have to be admin of avocado-framework project on readthedocs.org."},
+
 	{"name": "Avocado pre-release job",
 	 "description": "With a load as light as possible on your system, run `selftests/pre_release/jobs/pre_release.py`. Expected results: all tests PASSed"},
 
