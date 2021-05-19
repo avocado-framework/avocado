@@ -34,7 +34,7 @@ class RpmBackend(BaseBackend):
         :param version: Package version.
         """
         cmd = (self.lowlevel_base_cmd + ' -q --qf %{VERSION} ' + name)
-        inst_version = process.system_output(cmd, ignore_status=True)
+        inst_version = process.system_output(cmd, ignore_status=True).decode()
 
         if 'not installed' in inst_version:
             return False
