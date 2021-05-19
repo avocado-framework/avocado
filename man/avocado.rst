@@ -32,13 +32,14 @@ on them being loaded (`avocado --help`)::
     -v, --version         show program's version number and exit
     --config [CONFIG_FILE]
                           Use custom configuration from a file
-    --paginator {on,off}  Turn the paginator on/off.
-    --show [STREAM[:LVL]]
-                          List of comma separated builtin logs, or logging
+    --enable-paginator    Turn the paginator on. Useful when output is too long.
+    -V, --verbose         Some commands can produce more information. This
+                          option will enable the verbosity when applicable.
+    --show CORE.SHOW      List of comma separated builtin logs, or logging
                           streams optionally followed by LEVEL (DEBUG,INFO,...).
-                          Builtin streams are: "test": test output; "debug":
-                          tracebacks and other debugging info; "app":
-                          application output; "early": early logging of other
+                          Builtin streams are: "app": application output;
+                          "test": test output; "debug": tracebacks and other
+                          debugging info; "early": early logging of other
                           streams, including test (very verbose); "all": all
                           builtin streams; "none": disables regular output
                           (leaving only errors enabled). By default: 'app'
@@ -46,16 +47,22 @@ on them being loaded (`avocado --help`)::
 Real use of avocado depends on running avocado subcommands. This a
 typical list of avocado subcommands::
 
+    assets              Manage assets
     config              Shows avocado config keys
     diff                Shows the difference between 2 jobs.
     distro              Shows detected Linux distribution
     exec-path           Returns path to avocado bash libraries and exits.
+    jobs                Manage Avocado jobs
     list                List available tests
-    multiplex           Tool to analyze and visualize test variants and params
     plugins             Displays plugin information
+    replay              Runs a new job using a previous job as its
+                        configuration
     run                 Runs one or more tests (native test, test alias,
                         binary or script)
     sysinfo             Collect system information
+    variants            Tool to analyze and visualize test variants and params
+    vmimage             Provides VM images acquired from official repositories
+
 
 To get usage instructions for a given subcommand, run it with `--help`.
 Example::
@@ -69,8 +76,23 @@ Options for subcommand `run` (`avocado run --help`)::
 
     optional arguments:
       -h, --help            show this help message and exit
+      -p NAME_VALUE, --test-parameter NAME_VALUE
+                            Parameter name and value to pass to all tests. This is
+                            only applicable when not using a varianter plugin.
+                            This option format must be given in the NAME=VALUE
+                            format, and may be given any number of times, or per
+                            parameter.
+      --test-runner TEST_RUNNER
+                            Selects the runner implementation from one of the
+                            installed and active implementations. You can run
+                            "avocado plugins" and find the list of valid runners
+                            under the "Plugins that run test suites on a job
+                            (runners) section. Defaults to "runner", which is the
+                            conventional and traditional runner.
       -d, --dry-run         Instead of running the test only list them and log
                             their params.
+      --dry-run-no-cleanup  Do not automatically clean up temporary directories
+                            used by dry-run
       --force-job-id UNIQUE_JOB_ID
                             Forces the use of a particular job ID. Used internally
                             when interacting with an avocado server. You should
@@ -78,54 +100,53 @@ Options for subcommand `run` (`avocado run --help`)::
                             you're doing
       --job-results-dir DIRECTORY
                             Forces to use of an alternate job results directory.
+      --job-category CATEGORY
+                            Categorizes this within a directory with the same
+                            name, by creating a link to the job result directory
       --job-timeout SECONDS
                             Set the maximum amount of time (in SECONDS) that tests
                             are allowed to execute. Values <= zero means "no
                             timeout". You can also use suffixes, like: s
                             (seconds), m (minutes), h (hours).
       --failfast            Enable the job interruption on first failed test.
-                            test.
       --keep-tmp            Keep job temporary files (useful for avocado
                             debugging).
+      --ignore-missing-references
+                            Force the job execution, even if some of the test
+                            references are not resolved to tests. "on" and "off"
+                            will be deprecated soon.
       --disable-sysinfo     Enable or disable sysinfo information. Like hardware
                             details, profiles, etc.
-      --execution-order {tests-per-variant,variants-per-test}
-                            How to iterate through test suite and variants
-
-    output and result format:
-      --store-logging-stream [STREAM[:LEVEL] [STREAM[:LEVEL] ...]]
-                            Store given logging STREAMs in
-                            $JOB_RESULTS_DIR/$STREAM.$LEVEL.
-      --html FILE           Enable HTML output to the FILE where the result should
-                            be written. The value - (output to stdout) is not
-                            supported since not all HTML resources can be embedded
-                            into a single file (page resources will be copied to
-                            the output file dir)
-      --open-browser        Open the generated report on your preferred browser.
-                            This works even if --html was not explicitly passed,
-                            since an HTML report is always generated on the job
-                            results dir. Current: False
-      --html-job-result {on,off}
-                            Enables default HTML result in the job results
-                            directory. File will be located at
-                            "html/results.html".
+      --execution-order RUN.EXECUTION_ORDER
+                            Defines the order of iterating through test suite and
+                            test variants
+      --log-test-data-directories
+                            Logs the possible data directories for each test. This
+                            is helpful when writing new tests and not being sure
+                            where to put data files. Look for "Test data
+                            directories" in your test log
       --journal             Records test status changes (for use with avocado-
                             journal-replay and avocado-server)
       --json FILE           Enable JSON result format and write it to FILE. Use
-                            '-' to redirect to the standard output.
-      --json-job-result {on,off}
+                            "-" to redirect to the standard output.
+      --disable-json-job-result
                             Enables default JSON result in the job results
                             directory. File will be named "results.json".
-      --tap FILE            Enable TAP result output and write it to FILE. Use '-'
-                            to redirect to the standard output.
-      --tap-job-result {on,off}
+      --tap FILE            Enable TAP result output and write it to FILE. Use "-"
+                            to redirect to standard output.
+      --disable-tap-job-result
                             Enables default TAP result in the job results
-                            directory. File will be named "results.tap".
-      --tap-include-logs    Include test logs as comments in TAP output. Defaults
-                            to False
+                            directory. File will be named "results.tap"
+      --tap-include-logs    Include test logs as comments in TAP output.
+      -z, --archive         Archive (ZIP) files generated by tests
+
+    output and result format:
+      --store-logging-stream LOGGING_STREAM
+                            Store given logging STREAMs in
+                            "$JOB_RESULTS_DIR/$STREAM.$LEVEL."
       --xunit FILE          Enable xUnit result format and write it to FILE. Use
-                            '-' to redirect to the standard output.
-      --xunit-job-result {on,off}
+                            "-" to redirect to the standard output.
+      --disable-xunit-job-result
                             Enables default xUnit result in the job results
                             directory. File will be named "results.xml".
       --xunit-job-name XUNIT_JOB_NAME
@@ -136,43 +157,50 @@ Options for subcommand `run` (`avocado run --help`)::
       --xunit-max-test-log-chars SIZE
                             Limit the attached job log to given number of
                             characters (k/m/g suffix allowed)
-      -z, --archive         Archive (ZIP) files generated by tests
 
     output check arguments:
-      --output-check-record {none,all,stdout,stderr}
-                            Record output streams of your tests to reference files
-                            (valid options: none (do not record output streams),
-                            all (record both stdout and stderr), stdout (record
-                            only stderr), stderr (record only stderr). Current:
-                            none
+      --output-check-record {none,stdout,stderr,both,combined,all}
+                            Record the output produced by each test (from stdout
+                            and stderr) into both the current executing result and
+                            into reference files. Reference files are used on
+                            subsequent runs to determine if the test produced the
+                            expected output or not, and the current executing
+                            result is used to check against a previously recorded
+                            reference file. Valid values: "none" (to explicitly
+                            disable all recording) "stdout" (to record standard
+                            output *only*), "stderr" (to record standard error
+                            *only*), "both" (to record standard output and error
+                            in separate files), "combined" (for standard output
+                            and error in a single file). "all" is also a valid but
+                            deprecated option that is a synonym of "both".
       --disable-output-check
                             Disables test output (stdout/stderr) check. If this
                             option is given, no output will be checked, even if
                             there are reference files present for the test.
 
     loader options:
-      --loaders [LOADERS [LOADERS ...]]
+      --loaders LOADER_NAME_OR_TEST_TYPE [LOADER_NAME_OR_TEST_TYPE ...]
                             Overrides the priority of the test loaders. You can
                             specify either @loader_name or TEST_TYPE. By default
                             it tries all available loaders according to priority
                             set in settings->plugins.loaders.
-      --external-runner EXECUTABLE
+      --external-runner EXTERNAL_RUNNER
                             Path to an specific test runner that allows the use of
                             its own tests. This should be used for running tests
-                            that do not conform to Avocado' SIMPLE testinterface
+                            that do not conform to Avocado's SIMPLE test interface
                             and can not run standalone. Note: the use of
                             --external-runner overwrites the --loaders to
-                            "external_runner"
+                            'external_runner'
       --external-runner-chdir {runner,test}
                             Change directory before executing tests. This option
                             may be necessary because of requirements and/or
                             limitations of the external test runner. If the
                             external runner requires to be run from its own base
-                            directory,use "runner" here. If the external runner
+                            directory, use 'runner' here. If the external runner
                             runs tests based on files and requires to be run from
                             the directory where those files are located, use
-                            "test" here and specify the test directory with the
-                            option "--external-runner-testdir". Defaults to "None"
+                            'test' here and specify the test directory with the
+                            option '--external-runner-testdir'.
       --external-runner-testdir DIRECTORY
                             Where test files understood by the external test
                             runner are located in the filesystem. Obviously this
@@ -180,7 +208,7 @@ Options for subcommand `run` (`avocado run --help`)::
                             run tests from files
 
     filtering parameters:
-      --filter-by-tags TAGS
+      -t TAGS, --filter-by-tags TAGS
                             Filter tests based on tags
       --filter-by-tags-include-empty
                             Include all tests without tags during filtering. This
@@ -192,69 +220,42 @@ Options for subcommand `run` (`avocado run --help`)::
                             will be kept in the test suite found previously to
                             filtering.
 
-    test execution inside docker container:
-      --docker IMAGE        Name of the docker image torun tests on.
-      --docker-cmd CMD      Override the docker command, eg. 'sudo docker' or
-                            other base docker options like hypervisor. Default:
-                            'docker'
-      --docker-options OPT  Extra options for docker run cmd. (see: man docker-
-                            run)
-      --docker-no-cleanup   Preserve container after test
+    JSON serialized based varianter options:
+      --json-variants-load FILE
+                            Load the Variants from a JSON serialized file
 
-    keep environment variables:
-      --env-keep ENV_KEEP   Keep environment variables in remote executions
+    nrunner specific options:
+      --nrunner-shuffle     Shuffle the tasks to be executed
+      --nrunner-status-server-listen HOST_PORT
+                            URI for listing the status server. Usually a
+                            "HOST:PORT" string
+      --nrunner-status-server-uri HOST_PORT
+                            URI for connecting to the status server, usually a
+                            "HOST:PORT" string. Use this if your status server is
+                            in another host, or different port
+      --nrunner-max-parallel-tasks NUMBER_OF_TASKS
+                            Number of maximum number tasks running in parallel.
+                            You can disable parallel execution by setting this to
+                            1. Defaults to the amount of CPUs on this machine.
+      --nrunner-spawner SPAWNER
+                            Spawn tasks in a specific spawner. Available spawners:
+                            'process' and 'podman'
 
-    GNU Debugger support:
-      --gdb-run-bin EXECUTABLE[:BREAKPOINT]
-                            Run a given executable inside the GNU debugger,
-                            pausing at a given breakpoint (defaults to "main")
-      --gdb-prerun-commands EXECUTABLE:COMMANDS
-                            After loading an executable in GDB, but before
-                            actually running it, execute the GDB commands in the
-                            given file. EXECUTABLE is optional, if omitted
-                            COMMANDS will apply to all executables
-      --gdb-coredump {on,off}
-                            Automatically generate a core dump when the inferior
-                            process received a fatal signal such as SIGSEGV or
-                            SIGABRT
+    podman spawner specific options:
+      --spawner-podman-bin PODMAN_BIN
+                            Path to the podman binary
+      --spawner-podman-image CONTAINER_IMAGE
+                            Image name to use when creating the container
 
     job replay:
-      --replay REPLAY_JOBID
-                            Replay a job identified by its (partial) hash id. Use
-                            "--replay latest" to replay the latest job.
-      --replay-test-status REPLAY_TESTSTATUS
-                            Filter tests to replay by test status
-      --replay-ignore REPLAY_IGNORE
-                            Ignore variants (variants) and/or configuration
-                            (config) from the source job
-
-    resultsdb options:
-      --resultsdb-api RESULTSDB_API
-                            Specify the resultsdb API url
-      --resultsdb-logs RESULTSDB_LOGS
-                            Specify the URL where the logs are published
-
-    test execution on a Virtual Machine:
-      --vm-domain VM_DOMAIN
-                            Specify Libvirt Domain Name
-      --vm-hypervisor-uri VM_HYPERVISOR_URI
-                            Specify hypervisor URI driver connection. Current:
-                            qemu:///system
-      --vm-hostname VM_HOSTNAME
-                            Specify VM hostname to login. By default Avocado
-                            attempts to automatically find the VM IP address.
-      --vm-port VM_PORT     Specify the port number to login on VM. Current: 22
-      --vm-username VM_USERNAME
-                            Specify the username to login on VM
-      --vm-password VM_PASSWORD
-                            Specify the password to login on VM
-      --vm-key-file VM_KEY_FILE
-                            Specify an identity file with a private key instead of
-                            a password (Example: .pem files from Amazon EC2)
-      --vm-cleanup          Restore VM to a previous state, before running tests
-      --vm-timeout SECONDS  Amount of time (in seconds) to wait for a successful
-                            connection to the virtual machine. Defaults to 120
-                            seconds.
+      --replay JOB_ID       Replay a job identified by its (partial) hash id. Use
+                            "--replay" latest to replay the latest job.
+      --replay-test-status TEST_STATUS
+                            Filter tests to replay by test status.
+      --replay-ignore IGNORE
+                            Ignore variants and/or configuration from the source
+                            job.
+      --replay-resume       Resume an interrupted job
 
     wrapper support:
       --wrapper SCRIPT[:EXECUTABLE]
@@ -265,32 +266,33 @@ Options for subcommand `run` (`avocado run --help`)::
                             EXECUTABLE. Multiple wrapper options are allowed, but
                             only one global wrapper can be defined.
 
-    yaml to mux options:
-      -m [FILE [FILE ...]], --mux-yaml [FILE [FILE ...]]
-                            Location of one or more Avocado multiplex (.yaml)
-                            FILE(s) (order dependent)
-      --mux-filter-only [MUX_FILTER_ONLY [MUX_FILTER_ONLY ...]]
-                            Filter only path(s) from multiplexing
-      --mux-filter-out [MUX_FILTER_OUT [MUX_FILTER_OUT ...]]
-                            Filter out path(s) from multiplexing
-      --mux-path [MUX_PATH [MUX_PATH ...]]
-                            List of default paths used to determine path priority
-                            when querying for parameters
-      --mux-inject [MUX_INJECT [MUX_INJECT ...]]
-                            Inject [path:]key:node values into the final multiplex
-                            tree.
+Options for subcommand `assets` (`avocado assets --help`)::
 
-Options for subcommand `config` (`avocado config --help`)::
+    positional arguments:
+      {fetch,register,purge,list}
+        fetch               Fetch assets from test source or config file if it's
+                            not already in the cache
+        register            Register an asset directly to the cacche
+        purge               Removes assets cached locally.
+        list                List all cached assets.
 
     optional arguments:
       -h, --help            show this help message and exit
-      --datadir             Shows the data directories currently being used by
-                            avocado
+
+Options for subcommand `config` (`avocado config --help`)::
+
+    positional arguments:
+      sub-command
+        reference  Show a configuration reference with all registered options
+
+    optional arguments:
+      -h, --help   show this help message and exit
+      --datadir    Shows the data directories currently being used by Avocado
 
 Options for subcommand `diff` (`avocado diff --help`)::
 
     positional arguments:
-      <JOB>                 A job reference, identified by a (partial) unique ID
+      JOB                   A job reference, identified by a (partial) unique ID
                             (SHA1) or test results directory.
 
     optional arguments:
@@ -304,71 +306,95 @@ Options for subcommand `diff` (`avocado diff --help`)::
                             Comma separated filter of diff sections:
                             (no)cmdline,(no)time,(no)variants,(no)results,
                             (no)config,(no)sysinfo (defaults to all enabled).
-      --create-reports      Create temporary files with job reports (to be used by
-                            other diff tools)
+      --diff-strip-id       Strip the "id" from "id-name;variant" when comparing
+                            test results.
+      --create-reports      Create temporary files with job reports to be used by
+                            other diff tools
+
+    By default, a textual diff report is generated in the standard output.
 
 Options for subcommand `distro` (`avocado distro --help`)::
 
     optional arguments:
       -h, --help            show this help message and exit
       --distro-def-create   Creates a distro definition file based on the path
-                            given
+                            given.
       --distro-def-name DISTRO_DEF_NAME
                             Distribution short name
       --distro-def-version DISTRO_DEF_VERSION
-                            Distribution major version number
-      ---distro-def-release DISTRO_DEF_RELEASE
+                            Distribution major version name
+      --distro-def-release DISTRO_DEF_RELEASE
                             Distribution release version number
       --distro-def-arch DISTRO_DEF_ARCH
                             Primary architecture that the distro targets
-      --distro-def-path DISTRO_DEF_PATH
+      --distro-def-path DISTRO.DISTRO_DEF_PATH
                             Top level directory of the distro installation files
-      --distro-def-type {deb,rpm}
-                            Distro type (one of: deb, rpm)
+      --distro-def-type {rpm,deb}
+                            Distro type (one of: rpm, deb)
 
 Options for subcommand `exec-path` (`avocado exec-path --help`)::
 
     optional arguments:
       -h, --help  show this help message and exit
 
+Options for subcommand `jobs` (`avocado jobs --help`)::
+
+    positional arguments:
+      sub-command
+        list            List all known jobs by Avocado
+        show            Show details about a specific job. When passing a Job ID,
+                        you can use any Job Reference (job_id, "latest", or job
+                        results path).
+        get-output-files
+                        Download output files generated by tests on
+                        AVOCADO_TEST_OUTPUT_DIR
+
+    optional arguments:
+      -h, --help        show this help message and exit
+
 Options for subcommand `list` (`avocado list --help`)::
 
     positional arguments:
-      reference             List of test references (aliases or paths). If empty,
-                            avocado will list tests on the configured test source,
-                            (see 'avocado config --datadir') Also, if there are
+      references            List of test references (aliases or paths). If empty,
+                            Avocado will list tests on the configured test source,
+                            (see "avocado config --datadir") Also, if there are
                             other test loader plugins active, tests from those
                             plugins might also show up (behavior may vary among
                             plugins)
 
     optional arguments:
       -h, --help            show this help message and exit
-      -V, --verbose         Whether to show extra information (headers and
-                            summary). Current: False
+      --resolver            What is the method used to detect tests? If --resolver
+                            used, Avocado will use the Next Runner Resolver
+                            method. If not the legacy one will be used.
+      --write-recipes-to-directory DIRECTORY
+                            Writes runnable recipe files to a directory. Valid
+                            only when using --resolver.
+      --json JSON_FILE      Writes output to a json file.
 
     loader options:
-      --loaders [LOADERS [LOADERS ...]]
+      --loaders LOADER_NAME_OR_TEST_TYPE [LOADER_NAME_OR_TEST_TYPE ...]
                             Overrides the priority of the test loaders. You can
                             specify either @loader_name or TEST_TYPE. By default
                             it tries all available loaders according to priority
                             set in settings->plugins.loaders.
-      --external-runner EXECUTABLE
+      --external-runner EXTERNAL_RUNNER
                             Path to an specific test runner that allows the use of
                             its own tests. This should be used for running tests
-                            that do not conform to Avocado' SIMPLE testinterface
+                            that do not conform to Avocado's SIMPLE test interface
                             and can not run standalone. Note: the use of
                             --external-runner overwrites the --loaders to
-                            "external_runner"
+                            'external_runner'
       --external-runner-chdir {runner,test}
                             Change directory before executing tests. This option
                             may be necessary because of requirements and/or
                             limitations of the external test runner. If the
                             external runner requires to be run from its own base
-                            directory,use "runner" here. If the external runner
+                            directory, use 'runner' here. If the external runner
                             runs tests based on files and requires to be run from
                             the directory where those files are located, use
-                            "test" here and specify the test directory with the
-                            option "--external-runner-testdir". Defaults to "None"
+                            'test' here and specify the test directory with the
+                            option '--external-runner-testdir'.
       --external-runner-testdir DIRECTORY
                             Where test files understood by the external test
                             runner are located in the filesystem. Obviously this
@@ -376,7 +402,7 @@ Options for subcommand `list` (`avocado list --help`)::
                             run tests from files
 
     filtering parameters:
-      --filter-by-tags TAGS
+      -t TAGS, --filter-by-tags TAGS
                             Filter tests based on tags
       --filter-by-tags-include-empty
                             Include all tests without tags during filtering. This
@@ -388,7 +414,32 @@ Options for subcommand `list` (`avocado list --help`)::
                             will be kept in the test suite found previously to
                             filtering.
 
-Options for subcommand `multiplex` (`avocado multiplex --help`)::
+Options for subcommand `plugins` (`avocado plugins --help`)::
+
+    optional arguments:
+      -h, --help            show this help message and exit
+
+Options for subcommand `replay` (`avocado reply --help`)::
+
+    positional arguments:
+      SOURCE_JOB_ID  Replays a job, identified by: complete or partial Job ID,
+                     "latest" for the latest job, the job results path.
+
+    optional arguments:
+      -h, --help     show this help message and exit
+
+Options for subcommand `sysinfo` (`avocado sysinfo --help`)::
+
+    positional arguments:
+      sysinfodir  Directory where Avocado will dump sysinfo data. If one is not
+                  given explicitly, it will default to a directory named
+                  "sysinfo-" followed by a timestamp in the current working
+                  directory.
+
+    optional arguments:
+      -h, --help  show this help message and exit
+
+Options for subcommand `variants` (`avocado variants --help`)::
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -400,39 +451,27 @@ Options for subcommand `multiplex` (`avocado multiplex --help`)::
                             max)
       -c, --contents        [obsoleted by --variants] Shows the node content
                             (variables)
+      --json-variants-dump FILE
+                            Dump the Variants to a JSON serialized file
 
     environment view options:
-      -d, --debug           Debug the multiplex tree.
+      -d, --debug           Use debug implementation to gather more information.
 
     tree view options:
       -t, --tree            [obsoleted by --summary] Shows the multiplex tree
                             structure
       -i, --inherit         [obsoleted by --summary] Show the inherited values
 
-    yaml to mux options:
-      -m [FILE [FILE ...]], --mux-yaml [FILE [FILE ...]]
-                            Location of one or more Avocado multiplex (.yaml)
-                            FILE(s) (order dependent)
-      --mux-filter-only [MUX_FILTER_ONLY [MUX_FILTER_ONLY ...]]
-                            Filter only path(s) from multiplexing
-      --mux-filter-out [MUX_FILTER_OUT [MUX_FILTER_OUT ...]]
-                            Filter out path(s) from multiplexing
-      --mux-path [MUX_PATH [MUX_PATH ...]]
-                            List of default paths used to determine path priority
-                            when querying for parameters
-      --mux-inject [MUX_INJECT [MUX_INJECT ...]]
-                            Inject [path:]key:node values into the final multiplex
-                            tree.
+    JSON serialized based varianter options:
+      --json-variants-load FILE
+                            Load the Variants from a JSON serialized file
 
-Options for subcommand `plugins` (`avocado plugins --help`)::
-
-    optional arguments:
-      -h, --help            show this help message and exit
-
-Options for subcommand `sysinfo` (`avocado sysinfo --help`)::
+Options for subcommand `vmimage` (`avocado vmimage --help`)::
 
     positional arguments:
-      sysinfodir  Dir where to dump sysinfo
+      {list,get}
+        list      List of all downloaded images
+        get       Downloads chosen VMimage if it's not already in the cache
 
     optional arguments:
       -h, --help  show this help message and exit
