@@ -13,13 +13,13 @@ DESCRIPTION
 ===========
 
 Avocado is a modern test framework that is built on the experience
-accumulated with `autotest` (`http://autotest.github.io`).
+accumulated with `autotest` (https://autotest.github.io).
 
 `avocado` is also the name of its test runner command line tool,
 described in this man page.
 
 For more information about the Avocado project, please check its
-website: http://avocado-framework.github.io/
+website: https://avocado-framework.github.io/
 
 OPTIONS
 =======
@@ -463,7 +463,7 @@ DEBUGGING TESTS
 
 When you are developing new tests, frequently you want to look at the
 straight output of the job log in the stdout, without having to tail the
-job log. In order to do that, you can use --show=test to the avocado
+job log. In order to do that, you can use `--show=test` to the avocado
 test runner::
 
     $ avocado --show=test run examples/tests/sleeptest.py
@@ -495,7 +495,7 @@ Running the same example with this option will give you::
     ...
 
 The levels you can choose are the levels available in the python logging
-system `https://docs.python.org/2/library/logging.html#logging-levels`,
+system https://docs.python.org/2/library/logging.html#logging-levels,
 translated to lowercase strings, so 'notset', 'debug', 'info',
 'warning', 'error', 'critical', in order of severity.
 
@@ -512,7 +512,7 @@ job logs, those continue to be generated normally.
 SILENCING SYSINFO REPORT
 ========================
 
-You may specify --sysinfo=off and avocado will not collect profilers,
+You may specify `--sysinfo=off` and avocado will not collect profilers,
 hardware details and other system information, inside the job result
 directory.
 
@@ -916,7 +916,7 @@ From those 2 files, only stdout.expected is non empty::
     PASS : sync interrupted
 
 The output files were originally obtained using the test runner and
-passing the option --output-check-record all to the test runner::
+passing the option `--output-check-record` all to the test runner::
 
     $ avocado run --output-check-record all examples/tests/synctest.py
     JOB ID    : <id>
@@ -1027,13 +1027,13 @@ BUGS
 ====
 
 If you find a bug, please report it over our github page as an issue:
-`https://github.com/avocado-framework/avocado/issues`
+https://github.com/avocado-framework/avocado/issues
 
 LICENSE
 =======
 
 Avocado is released under GPLv2 (explicit version)
-`http://gnu.org/licenses/gpl-2.0.html`. Even though most of the current
+https://gnu.org/licenses/gpl-2.0.html. Even though most of the current
 code is licensed under a "and any later version" clause, some parts are
 specifically bound to the version 2 of the license and therefore that's
 the official license of the prject itself. For more details, please see
@@ -1043,7 +1043,7 @@ MORE INFORMATION
 ================
 
 For more information please check Avocado's project website, located at
-`http://avocado-framework.github.io/`. There you'll find links to online
+https://avocado-framework.github.io/. There you'll find links to online
 documentation, source code and community resources.
 
 AUTHOR
