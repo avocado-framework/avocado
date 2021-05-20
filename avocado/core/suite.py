@@ -103,8 +103,7 @@ class TestSuite:
         self._runner = None
         self._test_parameters = None
 
-        if (self.config.get('run.dry_run.enabled') and
-                self.config.get('run.test_runner') == 'runner'):
+        if self.config.get('run.dry_run.enabled'):
             self._convert_to_dry_run()
 
         if self.size == 0:
@@ -119,8 +118,12 @@ class TestSuite:
         return self.size
 
     def _convert_to_dry_run(self):
-        for i in range(self.size):
-            self.tests[i] = [DryRunTest, self.tests[i][1]]
+        if self.config.get('run.test_runner') == 'nrunner':
+            for runnable in self.tests:
+                runnable.kind = 'dry-run'
+        else:
+            for i in range(self.size):
+                self.tests[i] = [DryRunTest, self.tests[i][1]]
 
     @classmethod
     def _from_config_with_loader(cls, config, name=None):

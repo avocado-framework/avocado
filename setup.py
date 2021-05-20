@@ -131,6 +131,7 @@ if __name__ == '__main__':
                   'avocado = avocado.core.main:main',
                   'avocado-runner = avocado.core.nrunner:main',
                   'avocado-runner-noop = avocado.core.nrunner:main',
+                  'avocado-runner-dry-run = avocado.core.nrunner:main',
                   'avocado-runner-exec = avocado.core.nrunner:main',
                   'avocado-runner-exec-test = avocado.core.nrunner:main',
                   'avocado-runner-python-unittest = avocado.core.nrunner:main',
