@@ -17,7 +17,7 @@ Test resolver for magic test words
 """
 
 from avocado.core.nrunner import Runnable
-from avocado.core.plugin_interfaces import Resolver
+from avocado.core.plugin_interfaces import Discoverer, Resolver
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult)
 
@@ -40,3 +40,16 @@ class MagicResolver(Resolver):
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
                                    [Runnable('magic', reference)])
+
+
+class MagicDiscoverer(Discoverer):
+
+    name = 'magic-discoverer'
+    description = 'Test discoverer for magic words'
+
+    @staticmethod
+    def discover():
+        resolutions = []
+        for reference in VALID_MAGIC_WORDS:
+            resolutions.append(MagicResolver.resolve(reference))
+        return resolutions

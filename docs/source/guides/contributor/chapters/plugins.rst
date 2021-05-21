@@ -186,10 +186,14 @@ New test type plugin example
 ============================
 
 For a new test type to be recognized and executed by Avocado's "nrunner"
-architecture, there needs to be two types of plugins:
+architecture, there needs to be two types of plugins and one optional:
 
  * resolvers: they resolve references into proper test descriptions
    that Avocado can run
+
+ * discoverers (optional): They are doing the same job as resolvers but
+   without a reference. They are used when the tests can be created from
+   different data e.g.  config files.
 
  * runners: these make use of the resolutions made by resolvers and
    actually execute the tests, reporting the results back to Avocado
@@ -198,8 +202,8 @@ The following example shows real code for a resolver and a runner for
 a "magic" test type.  This "magic" test simply passes or fails
 depending on the test reference.
 
-Resolver example
-----------------
+Resolver and Discoverer example
+-------------------------------
 
 The resolver implementation will simply set the test type ("magic")
 and transform the reference given into its "url":
