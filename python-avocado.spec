@@ -26,15 +26,10 @@
 # enabled by default.
 %global with_tests 1
 
-# The Python dependencies are already tracked by the python2
-# or python3 "Requires".  This filters out the python binaries
-# from the RPM automatic requires/provides scanner.
-%global __requires_exclude ^/usr/bin/python[23]$
-
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 88.1
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -381,6 +376,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Sun May 23 2021 Cleber Rosa <cleber@redhat.com> - 88.1-2
+- Remove /usr/bin/python[23] requirement exclusion
+
 * Mon May 17 2021 Cleber Rosa <cleber@redhat.com> - 88.1-1
 - New release with readthedocs.org documentation hotfix
 
