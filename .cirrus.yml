@@ -33,6 +33,7 @@ windows_smokecheck_task:
 
 fedora_selftests_task:
     selftests_script:
+       - git clone --depth=1 https://github.com/clebergnu/avocado-result-html optional_plugins/html
        - make develop
        - PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 python3 selftests/check.py --disable-static-checks
     container:

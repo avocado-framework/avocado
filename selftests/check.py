@@ -356,15 +356,6 @@ def create_suites(args):
         'run.references': [check_file_exists],
         'run.test_runner': 'runner',
         'run.dict_variants': [
-            {'namespace': 'job.run.result.html.enabled',
-             'value': True,
-             'file': 'results.html',
-             'assert': True},
-
-            {'namespace': 'job.run.result.html.enabled',
-             'value': False,
-             'file': 'results.html',
-             'assert': False},
 
             {'namespace': 'job.run.result.json.enabled',
              'value': True,
@@ -431,9 +422,6 @@ def create_suites(args):
         'run.references': [check_output_file],
         'run.test_runner': 'runner',
         'run.dict_variants': [
-            {'namespace': 'job.run.result.html.output',
-             'file': 'custom.html',
-             'assert': True},
 
             {'namespace': 'job.run.result.json.output',
              'file': 'custom.json',

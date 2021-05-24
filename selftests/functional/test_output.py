@@ -531,9 +531,8 @@ class OutputPluginTest(TestCaseTmpDir):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         output_lines = output.splitlines()
-        # The current human output produces 6 lines when running a single test,
-        # with an optional 7th line when the HTML report generation is enabled
-        self.assertGreaterEqual(len(output_lines), 6,
+        # The current human output produces 6 lines when running a single test
+        self.assertGreaterEqual(len(output_lines), 5,
                                 ('Basic human interface did not produce the '
                                  'expected output. Output produced: "%s"' % output))
         second_line = output_lines[1]
