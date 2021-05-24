@@ -43,7 +43,7 @@ import json
 import os
 import re
 
-from pkg_resources import resource_filename
+from pkg_resources import resource_exists, resource_filename
 
 from .settings_dispatcher import SettingsDispatcher
 
@@ -293,7 +293,8 @@ class Settings:
         self._append_user_config()
 
     def _append_system_config(self):
-        self.all_config_paths.append(self._config_path_pkg)
+        if self._config_path_pkg is not None:
+            self.all_config_paths.append(self._config_path_pkg)
         self.all_config_paths.append(self._config_path_system)
         configs = glob.glob(os.path.join(self._config_dir_system_extra,
                                          '*.conf'))
@@ -314,7 +315,10 @@ class Settings:
 
         config_file_name = 'avocado.conf'
         config_pkg_base = os.path.join('etc', 'avocado', config_file_name)
-        self._config_path_pkg = resource_filename('avocado', config_pkg_base)
+        if resource_exists('avocado', config_pkg_base):
+            self._config_path_pkg = resource_filename('avocado', config_pkg_base)
+        else:
+            self._config_path_pkg = None
         self._config_dir_system = os.path.join(cfg_dir, 'avocado')
         self._config_dir_system_extra = os.path.join(cfg_dir,
                                                      'avocado',
