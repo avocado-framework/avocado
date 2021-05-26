@@ -16,9 +16,10 @@ from avocado.core import exit_codes
 from avocado.utils import astring, genio
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
-from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
-                             python_module_available, skipOnLevelsInferiorThan,
-                             skipUnlessPathExists, temp_dir_prefix)
+
+from ..utils import (AVOCADO, BASEDIR, TestCaseTmpDir, python_module_available,
+                     skipOnLevelsInferiorThan, skipUnlessPathExists,
+                     temp_dir_prefix)
 
 try:
     import xmlschema
