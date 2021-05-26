@@ -87,6 +87,7 @@ class JobScriptsTest(TestCaseTmpDir):
                                         SCRIPT_NON_ZERO_CFG % self.pre_dir)
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
+                   '--test-runner=runner '
                    '--disable-sysinfo passtest.py' % (AVOCADO, config,
                                                       self.tmpdir.name))
             result = process.run(cmd)
@@ -110,6 +111,7 @@ class JobScriptsTest(TestCaseTmpDir):
                                         SCRIPT_NON_EXISTING_DIR_CFG % self.pre_dir)
         with config:
             cmd = ('%s --config %s run --job-results-dir %s '
+                   '--test-runner=runner '
                    '--disable-sysinfo passtest.py' % (AVOCADO, config,
                                                       self.tmpdir.name))
             result = process.run(cmd)

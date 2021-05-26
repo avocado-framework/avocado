@@ -260,14 +260,14 @@ Resolving magic tests
 ---------------------
 
 Resolving the "pass" and "fail" references that the magic plugin knows about
-can be seen by running ``avocado list --resolver pass fail``::
+can be seen by running ``avocado list pass fail``::
 
   magic pass
   magic fail
 
 And you may get more insight into the resolution results, by adding a
 verbose parameter and another reference.  Try running ``avocado -V
-list --resolver pass fail something-else``::
+list pass fail something-else``::
 
   Type  Test Tag(s)
   magic pass
@@ -310,9 +310,9 @@ tests is through a command starting with ``avocado
 run --test-runner=nrunner``.
 
 To run both the ``pass`` and ``fail`` magic tests, you'd run
-``avocado run --test-runner=nrunner -- pass fail``::
+``avocado run -- pass fail``::
 
-  $ avocado run --test-runner=nrunner -- pass fail
+  $ avocado run -- pass fail
   JOB ID     : 86fd45f8c1f2fe766c252eefbcac2704c2106db9
   JOB LOG    : $HOME/avocado/job-results/job-2021-02-05T12.43-86fd45f/job.log
    (1/2) pass: STARTED

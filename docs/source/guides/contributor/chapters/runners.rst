@@ -1,11 +1,11 @@
 .. _nrunner:
 
-The "nrunner" and "runner" test runner
-======================================
+The "nrunner" and "legacy runner" test runner
+=============================================
 
 This section details a test runner called "nrunner", also known as
 N(ext) Runner, and the architecture around.  It compares it with the
-older (and default) test runner, simply called "runner".
+older, legacy (no longer default) test runner, simply called "runner".
 
 At its essence, this new architecture is about making Avocado more
 capable and flexible, and even though it starts with a major internal
@@ -17,18 +17,18 @@ most of the N(ext)Runner code, but as development continues, it's
 spreading around to other places in the Avocado source tree.  Other
 components with different and seemingly unrelated names, say the
 "resolvers" or the "spawners", are also pretty much about the
-N(ext)Runner and are not used in the current (default) architecture.
+nrunner and are not used in the legacy architecture.
 
 Motivation
 ----------
 
 There are a number of reasons for introducing a different architecture
 and implementation.  Some of them are related to limitations found in
-the current implementation, that were found to be too hard to remove
+the legacy implementation, that were found to be too hard to remove
 without major breakage.  Also, missing features that are deemed
 important would be a better fit wihin a different architecture.
 
-For instance, these are the current limitations of the Avocado test
+For instance, these are the limitations of the Avocado legacy test
 runner:
 
 * Test execution limited to the same machine, given that the
@@ -58,22 +58,22 @@ implemented under a different architecture and implementation:
 * Simplified and automated deployment of the runner component into
   execution environments such as containers and virtual machines
 
-Current and N(ext) Runner components of Avocado
+NRunner and Legacy Runner components of Avocado
 -----------------------------------------------
 
 Whenever we mention the **current** architecture or implementation,
-we are talking about:
+we are talking about the nrunner.  It includes:
 
 * ``avocado list`` command
 * ``avocado run`` command
-* :mod:`avocado.core.loader` module to find tests
-
-Whenever we talk about the N(ext)Runner, we are talking about:
-
-* ``avocado list --resolver`` command
-* ``avocado run --test-runner=nrunner`` command
 * :mod:`avocado.core.resolver` module to resolve tests
 * :mod:`avocado.core.spawners` modules to spawn tasks
+
+Whenever we talk about legacy runner, we are talking about:
+
+* ``avocado list --loader`` command
+* ``avocado run --test-runner=runner`` command
+* :mod:`avocado.core.loader` module to find tests
 
 Basic Avocado usage and workflow
 --------------------------------
@@ -98,16 +98,17 @@ this is not a requirement.  Avocado calls those "names" given as arguments
 to ``avocado run`` "test references", because they are references that
 hopefully "point to" tests.
 
-Here we need to make a distincion between the current architecture,
-and the architecture which the N(ext)Runner introduces.  In the
-current Avocado test runner, this process happens by means of the
-:mod:`avocado.core.loader` module.  The very same mechanism, is used
-when listing tests.  This produces an internal representation of
-the tests, which we simply call a "factory"::
+Here we need to make a distincion between the legacy architecture, and
+the nrunner architecture.  In the legacy Avocado test runner, this
+process happens by means of the :mod:`avocado.core.loader` module.
+The very same mechanism, is used when listing tests.  This produces an
+internal representation of the tests, which we simply call a
+"factory"::
 
-  +--------------------+    +---------------------+
-  | avocado list | run | -> | avocado.core.loader | ---+
-  +--------------------+    +---------------------+    |
+  +----------------------------------+    +---------------------+
+  | avocado list --loader            | -> | avocado.core.loader |
+  | avocado run --test-runner=runner |    |                     |
+  +----------------------------------+    +---------------------+
                                                        |
     +--------------------------------------------------+
     |
@@ -134,22 +135,22 @@ the tests, which we simply call a "factory"::
 
   ...
 
-Because the N(ext)Runner is living side by side with the current
-architecture, command line options have been introduced to distinguish
-between them: ``avocado list --resolver`` and ``avocado
-run --test-runner=nrunner``.
+Because the nrunner is now the default implementation, to distinguish
+between implementations and select the legacy implementation you must
+use: ``avocado list --loader`` and ``avocado
+run--test-runner=runner``.
 
-On the N(ext)Runner architecture, a different terminology and
-foundation is used.  Each one of the test references given to ``list
---resolver`` or ``run --test-runner=runner`` will be "resolved" into
-zero or more tests.  Being more precise and verbose, resolver plugins
-will produce :class:`avocado.core.resolver.ReferenceResolution`, which
-contain zero or more :class:`avocado.core.nrunner.Runnable`, which are
-described in the following section.  Overall, the process looks like::
+On the nrunner architecture, a different terminology and
+foundation is used.  Each one of the test references given to ``list``
+or ``run`` will be "resolved" into zero or more tests.  Being more
+precise and verbose, resolver plugins will produce
+:class:`avocado.core.resolver.ReferenceResolution`, which contain zero
+or more :class:`avocado.core.nrunner.Runnable`, which are described in
+the following section.  Overall, the process looks like::
 
-  +-------------------------+    +-----------------------+
-  | avocado list --resolver | -> | avocado.core.resolver | ---+
-  +-------------------------+    +-----------------------+    |
+  +--------------------+    +-----------------------+
+  | avocado list | run | -> | avocado.core.resolver | ---+
+  +--------------------+    +-----------------------+    |
                                                               |
     +---------------------------------------------------------+
     |
@@ -193,21 +194,21 @@ a given action.  This action, within the realm of software development
 with automated testing, has to do with the output or outcome of a
 "code payload" when executed under a given controlled environment.
 
-The current Avocado architecture uses the "Test Factories" described
+The legacy Avocado architecture uses the "Test Factories" described
 earlier to load and execute such a "code payload".  Each of those test
 factories contain the name of a Python class to be instantiated, and a
 number of arguments that will be given to that class initialization.
 
-So the primary "code payload" for every Avocado test in the current
+So the primary "code payload" for every Avocado test in the legacy
 architecture will always be Python code that inherits from
 :class:`avocado.core.test.Test`.  Even when the user wants to run a
-standalone executable (a ``SIMPLE`` test in the current architecture
+standalone executable (a ``SIMPLE`` test in the legacy architecture
 terminology), that still means loading and instantiating (effectively
 executing) the Python class' :class:`avocado.core.test.SimpleTest`
 code.
 
 Once all the test factories are found by :mod:`avocado.core.loader`,
-as described in the previous section, the current architecture runs
+as described in the previous section, the legacy architecture runs
 tests roughly following these steps:
 
 1. Create one (and only one) queue to communicate with the test
@@ -239,8 +240,8 @@ architecture listed earlier.  It should be clear that:
    tests in a local process is tightly coupled and hard coded into the
    test execution code
 
-Now let's shift our attention to the N(ext)Runner architecture.  In
-the N(ext)Runner architecture, a
+Now let's shift our attention to the nrunner architecture.  In
+the nrunner architecture, a
 :class:`avocado.core.nrunner.Runnable` describe a "code payload" that
 will be executed, but they are not executable code themselves.
 Because they are **data** and not **code**, they are easily serialized
@@ -391,7 +392,7 @@ create Runnables based on the user's input from the command line::
 Runner
 ~~~~~~
 
-A Runner, within the context of the N(ext)Runner architecture, is an
+A Runner, within the context of the nrunner architecture, is an
 active entity.  It acts on the information that a runnable contains,
 and quite simply, should be able to run what the Runnable describes.
 

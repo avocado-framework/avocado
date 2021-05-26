@@ -35,6 +35,7 @@ class Run(TestCaseTmpDir):
             '{0} --show=test run --disable-sysinfo --job-results-dir={1} '
             '--cit-order-of-combinations=1 '
             '--cit-parameter-file={2} '
+            '--test-runner=runner '
             '-- {3}'
         ).format(AVOCADO, self.tmpdir.name, params_path, test_path)
         result = process.run(cmd_line)

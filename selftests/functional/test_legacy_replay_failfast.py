@@ -11,8 +11,10 @@ class ReplayFailfastTests(TestCaseTmpDir):
 
     def setUp(self):
         super(ReplayFailfastTests, self).setUp()
-        cmd_line = ('%s run passtest.py failtest.py passtest.py '
-                    '--failfast --job-results-dir %s --disable-sysinfo --json -'
+        cmd_line = ('%s run --failfast --job-results-dir %s '
+                    '--disable-sysinfo --json - '
+                    '--test-runner=runner '
+                    'passtest.py failtest.py passtest.py '
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
         self.run_and_check(cmd_line, expected_rc)
@@ -30,6 +32,7 @@ class ReplayFailfastTests(TestCaseTmpDir):
 
     def test_run_replay_failfast(self):
         cmd_line = ('%s run --replay %s --failfast '
+                    '--test-runner=runner '
                     '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
@@ -37,6 +40,7 @@ class ReplayFailfastTests(TestCaseTmpDir):
 
     def test_run_replay_disable_failfast(self):
         cmd_line = ('%s run --replay %s '
+                    '--test-runner=runner '
                     '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL

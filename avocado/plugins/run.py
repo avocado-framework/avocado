@@ -103,11 +103,12 @@ class Run(CLICmd):
                     'installed and active implementations.  You can run '
                     '"avocado plugins" and find the list of valid runners '
                     'under the "Plugins that run test suites on a job '
-                    '(runners) section.  Defaults to "runner", which is '
-                    'the conventional and traditional runner.')
+                    '(runners) section.  Defaults to "nrunner", which is '
+                    'the new runner.  To use the conventional and traditional '
+                    'runner, use "runner".')
         settings.register_option(section='run',
                                  key='test_runner',
-                                 default='runner',
+                                 default='nrunner',
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--test-runner',

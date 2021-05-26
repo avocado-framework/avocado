@@ -46,6 +46,7 @@ class WrapperTest(TestCaseTmpDir):
     def test_global_wrapper(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --wrapper %s '
+                    '--test-runner=runner '
                     'examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir.name, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -63,6 +64,7 @@ class WrapperTest(TestCaseTmpDir):
     def test_process_wrapper(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir.name, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -80,6 +82,7 @@ class WrapperTest(TestCaseTmpDir):
     def test_both_wrappers(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --wrapper %s '
+                    '--test-runner=runner '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir.name, self.dummy.path,
                        self.script.path))

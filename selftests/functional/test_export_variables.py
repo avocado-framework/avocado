@@ -36,6 +36,7 @@ class EnvironmentVariablesTest(TestCaseTmpDir):
     def test_environment_vars(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s %s'
+                    ' --test-runner=runner'
                     % (AVOCADO, self.tmpdir.name, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK

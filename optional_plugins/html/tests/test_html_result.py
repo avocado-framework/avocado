@@ -53,6 +53,7 @@ class HtmlResultTest(unittest.TestCase):
         tmpfile3 = os.path.join(tmpdir, "result.html")
         cmd_line = ('avocado run --job-results-dir %s --disable-sysinfo '
                     '--xunit %s --json %s --html %s --tap-include-logs '
+                    '--test-runner=runner '
                     'passtest.py' % (self.tmpdir.name, tmpfile, tmpfile2, tmpfile3))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr

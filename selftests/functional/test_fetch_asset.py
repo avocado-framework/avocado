@@ -62,9 +62,11 @@ class FetchAsset(unittest.TestCase):
         test_file.close()
 
         expected_rc = exit_codes.AVOCADO_ALL_OK
-        cmd_line = "%s --config %s run %s " % (AVOCADO,
-                                               self.config_file.name,
-                                               test_file.name)
+        cmd_line = ("%s --config %s run "
+                    "--test-runner=runner "
+                    "%s" % (AVOCADO,
+                            self.config_file.name,
+                            test_file.name))
         result = process.run(cmd_line)
         os.remove(localpath)
         self.assertEqual(expected_rc, result.exit_status)
@@ -93,9 +95,11 @@ class FetchAsset(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         expected_stdout = "not found in the cache"
 
-        cmd_line = "%s --config %s run %s " % (AVOCADO,
-                                               self.config_file.name,
-                                               test_file.name)
+        cmd_line = ("%s --config %s run "
+                    "--test-runner=runner "
+                    "%s" % (AVOCADO,
+                            self.config_file.name,
+                            test_file.name))
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)
@@ -124,9 +128,11 @@ class FetchAsset(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         expected_stdout = "Missing asset"
 
-        cmd_line = "%s --config %s run %s " % (AVOCADO,
-                                               self.config_file.name,
-                                               test_file.name)
+        cmd_line = ("%s --config %s run "
+                    "--test-runner=runner "
+                    "%s" % (AVOCADO,
+                            self.config_file.name,
+                            test_file.name))
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)
@@ -154,9 +160,11 @@ class FetchAsset(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         expected_stdout = "Missing asset"
 
-        cmd_line = "%s --config %s run %s " % (AVOCADO,
-                                               self.config_file.name,
-                                               test_file.name)
+        cmd_line = ("%s --config %s run "
+                    "--test-runner=runner "
+                    "%s " % (AVOCADO,
+                             self.config_file.name,
+                             test_file.name))
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)

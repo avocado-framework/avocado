@@ -166,7 +166,7 @@ class TaskRun(unittest.TestCase):
 class ResolveSerializeRun(TestCaseTmpDir):
     @skipUnlessPathExists('/bin/true')
     def test(self):
-        cmd = "%s list --resolver --write-recipes-to-directory=%s -- /bin/true"
+        cmd = "%s list --write-recipes-to-directory=%s -- /bin/true"
         cmd %= (AVOCADO, self.tmpdir.name)
         res = process.run(cmd)
         self.assertEqual(b'exec-test /bin/true\n', res.stdout)

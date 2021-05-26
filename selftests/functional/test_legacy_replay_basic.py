@@ -11,8 +11,9 @@ class ReplayTests(TestCaseTmpDir):
 
     def setUp(self):
         super(ReplayTests, self).setUp()
-        cmd_line = ('%s run passtest.py passtest.py passtest.py passtest.py '
-                    '--job-results-dir %s --disable-sysinfo --json -'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --json - '
+                    '--test-runner=runner '
+                    'passtest.py passtest.py passtest.py passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -33,6 +34,7 @@ class ReplayTests(TestCaseTmpDir):
         Runs a replay job with an invalid jobid.
         """
         cmd_line = ('%s run --replay %s '
+                    '--test-runner=runner '
                     '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, 'foo', self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
@@ -43,6 +45,7 @@ class ReplayTests(TestCaseTmpDir):
         Runs a replay job using the 'latest' keyword.
         """
         cmd_line = ('%s run --replay latest --job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner '
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -63,6 +66,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run --replay %s '
                     '--job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner '
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -74,6 +78,7 @@ class ReplayTests(TestCaseTmpDir):
         partial_id = self.jobid[:5]
         cmd_line = ('%s run --replay %s '
                     '--job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner'
                     % (AVOCADO, partial_id, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -84,6 +89,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run --replay %s '
                     '--job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner '
                     % (AVOCADO, self.jobdir, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
@@ -94,6 +100,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run --replay %s --replay-ignore foo'
                     '--job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner '
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
@@ -107,6 +114,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run --replay %s --replay-ignore variants '
                     '--job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner '
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
@@ -119,6 +127,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run --replay %s --replay-test-status E '
                     '--job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner '
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
@@ -134,6 +143,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run --replay %s --replay-test-status '
                     'FAIL --job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner '
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
@@ -147,6 +157,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run --replay %s --replay-ignore variants '
                     '--replay-test-status FAIL --job-results-dir %s '
+                    '--test-runner=runner '
                     '--disable-sysinfo' % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
@@ -160,6 +171,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run sleeptest --replay %s '
                     '--replay-test-status FAIL --job-results-dir %s '
+                    '--test-runner=runner '
                     '--disable-sysinfo' % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)

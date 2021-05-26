@@ -49,6 +49,7 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_noid(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
@@ -56,6 +57,7 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_passtest(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     'passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
@@ -70,6 +72,7 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_doublepass(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     'passtest.py passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--mux-path /foo/\\* /bar/\\* /baz/\\*'
@@ -85,6 +88,7 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_failtest(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     'passtest.py failtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
@@ -97,6 +101,7 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_failtest_tests_per_variant(self):
         cmd_line = ("%s run --job-results-dir %s --disable-sysinfo "
+                    "--test-runner=runner "
                     "passtest.py failtest.py -m "
                     "examples/tests/sleeptest.py.data/sleeptest.yaml "
                     "--execution-order tests-per-variant"
@@ -110,6 +115,7 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_double_mplex(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     'passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
@@ -119,8 +125,9 @@ class MultiplexTests(unittest.TestCase):
 
     def test_empty_file(self):
         cmd_line = ("%s run --job-results-dir %s -m optional_plugins/"
-                    "varianter_yaml_to_mux/tests/.data/empty_file -- "
-                    "passtest.py" % (AVOCADO, self.tmpdir.name))
+                    "varianter_yaml_to_mux/tests/.data/empty_file "
+                    "--test-runner=runner "
+                    "-- passtest.py" % (AVOCADO, self.tmpdir.name))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (1, 0))
 
     def test_run_mplex_params(self):
@@ -129,6 +136,7 @@ class MultiplexTests(unittest.TestCase):
                             ('/run/long', 'This is very long\nmultiline\ntext.')):
             variant, msg = variant_msg
             cmd_line = ('%s --show=test run --job-results-dir %s --disable-sysinfo '
+                        '--test-runner=runner '
                         'examples/tests/env_variables.sh '
                         '-m examples/tests/env_variables.sh.data/env_variables.yaml '
                         '--mux-filter-only %s'
@@ -158,6 +166,7 @@ class ReplayTests(unittest.TestCase):
         prefix = 'avocado__%s__%s__%s__' % (__name__, 'ReplayTests', 'setUp')
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         cmd_line = ('%s run passtest.py '
+                    '--test-runner=runner '
                     '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--job-results-dir %s --disable-sysinfo --json -'
                     % (AVOCADO, self.tmpdir.name))
@@ -184,6 +193,7 @@ class DryRun(unittest.TestCase):
 
     def test_dry_run(self):
         cmd = ("%s run --disable-sysinfo --dry-run --dry-run-no-cleanup --json - "
+               "--test-runner=runner "
                "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
                "foo:bar:b foo:baz:c bar:bar:bar "
                "-- passtest.py failtest.py gendata.py " % AVOCADO)

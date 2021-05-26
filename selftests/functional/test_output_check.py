@@ -140,6 +140,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
 
     def _check_output_record_all(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+                    '--test-runner=runner '
                     '--output-check-record all'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -156,6 +157,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
 
     def _check_output_record_combined(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+                    '--test-runner=runner '
                     '--output-check-record combined'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -178,6 +180,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
 
     def test_output_record_none(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+                    '--test-runner=runner '
                     '--output-check-record none'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -190,6 +193,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
 
     def test_output_record_stdout(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+                    '--test-runner=runner '
                     '--output-check-record stdout'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -206,6 +210,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
     def test_output_record_and_check(self):
         self._check_output_record_all()
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s'
+                    ' --test-runner=runner'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -216,6 +221,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
     def test_output_record_and_check_combined(self):
         self._check_output_record_combined()
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s'
+                    ' --test-runner=runner'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -230,6 +236,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         with open(stdout_file, 'wb') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --xunit -'
+                    ' --test-runner=runner'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -245,6 +252,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         with open(output_file, 'wb') as output_file_obj:
             output_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --xunit -'
+                    ' --test-runner=runner'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -267,6 +275,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
             stderr_file_obj.write(tampered_msg_stderr)
 
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --json -'
+                    ' --test-runner=runner'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -310,6 +319,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
                     '--disable-output-check --xunit -'
+                    ' --test-runner=runner'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -326,6 +336,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         with open(simple_test, 'w') as file_obj:
             file_obj.write(TEST_WITH_SAME_EXPECTED_OUTPUT)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+                    '--test-runner=runner '
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
@@ -336,6 +347,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         simple_test, variants_file = self._setup_simple_test(
             TEST_WITH_DIFFERENT_EXPECTED_OUTPUT)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+                    '--test-runner=runner '
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
@@ -350,6 +362,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         simple_test, variants_file = self._setup_simple_test(
             TEST_WITH_DIFFERENT_EXPECTED_OUTPUT_VARIANTS)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+                    '--test-runner=runner '
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)
@@ -366,6 +379,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         simple_test, variants_file = self._setup_simple_test(
             TEST_WITH_DIFFERENT_AND_SAME_EXPECTED_OUTPUT)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+                    '--test-runner=runner '
                     '--output-check-record both --json-variants-load %s' %
                     (AVOCADO, self.tmpdir.name, simple_test, variants_file))
         process.run(cmd_line, ignore_status=True)

@@ -103,12 +103,14 @@ class JobTimeOutTest(TestCaseTmpDir):
     def test_sleep_longer_timeout(self):
         """:avocado: tags=parallel:1"""
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     '--xunit - --job-timeout=5 %s examples/tests/passtest.py' %
                     (AVOCADO, self.tmpdir.name, self.script.path))
         self.run_and_check(cmd_line, 0, 2, 0, 0, 0)
 
     def test_sleep_short_timeout(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     '--xunit - --job-timeout=1 %s examples/tests/passtest.py' %
                     (AVOCADO, self.tmpdir.name, self.script.path))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED,
@@ -117,6 +119,7 @@ class JobTimeOutTest(TestCaseTmpDir):
 
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
                     '--xunit - --job-timeout=1 %s' %
                     (AVOCADO, self.tmpdir.name, self.py.path))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED,

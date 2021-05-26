@@ -18,6 +18,7 @@ class SysInfoTest(TestCaseTmpDir):
 
     def test_sysinfo_enabled(self):
         cmd_line = ('%s run --job-results-dir %s '
+                    '--test-runner=runner '
                     'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -45,8 +46,9 @@ class SysInfoTest(TestCaseTmpDir):
             self.assertTrue(os.path.exists(sysinfo_subdir), msg)
 
     def test_sysinfo_disabled(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo passtest.py'
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--test-runner=runner '
+                    'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -68,6 +70,7 @@ class SysInfoTest(TestCaseTmpDir):
     def test_sysinfo_html_output(self):
         html_output = "{}/output.html".format(self.tmpdir.name)
         cmd_line = ('{} run --html {} --job-results-dir {} '
+                    '--test-runner=runner '
                     'passtest.py'.format(AVOCADO, html_output,
                                          self.tmpdir.name))
         result = process.run(cmd_line)

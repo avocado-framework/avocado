@@ -146,7 +146,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
                                              'avocado_loader_test',
                                              mode=mode)
         test_script.save()
-        cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
+        cmd_line = ('%s -V list --loader %s' % (AVOCADO, test_script.path))
         result = process.run(cmd_line)
         self.assertIn('%s: %s' % (exp_str, count), result.stdout_text)
         test_script.remove()
@@ -191,7 +191,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
                                              'avocado_loader_test',
                                              mode=self.MODE_0664)
         test_script.save()
-        cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
+        cmd_line = ('%s -V list --loader %s' % (AVOCADO, test_script.path))
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         test_script.remove()
@@ -233,13 +233,14 @@ class LoaderTestFunctional(TestCaseTmpDir):
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES)
         os.chdir(BASEDIR)
         mytest.save()
-        cmd_line = "%s -V list %s" % (AVOCADO, mytest)
+        cmd_line = "%s -V list --loader %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
         self.assertIn(b'simple: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' -- '%s'"
-                    % (AVOCADO, self.tmpdir.name, mytest))
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' "
+                    "--test-runner=runner "
+                    "-- '%s'" % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
     @skipOnLevelsInferiorThan(2)
@@ -254,14 +255,16 @@ class LoaderTestFunctional(TestCaseTmpDir):
         os.chdir(BASEDIR)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' -- '%s'"
-                    % (AVOCADO, self.tmpdir.name, mytest))
+        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' "
+                    "--test-runner=runner "
+                    "-- '%s'" % (AVOCADO, self.tmpdir.name, mytest))
         self._run_with_timeout(cmd_line, 5)
 
     def test_python_unittest(self):
         test_path = os.path.join(BASEDIR, "selftests", ".data", "unittests.py")
-        cmd = ("%s run --disable-sysinfo --job-results-dir %s --json - -- %s"
-               % (AVOCADO, self.tmpdir.name, test_path))
+        cmd = ("%s run --disable-sysinfo --job-results-dir %s --json - "
+               "--test-runner=runner "
+               "-- %s" % (AVOCADO, self.tmpdir.name, test_path))
         result = process.run(cmd, ignore_status=True)
         jres = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, 1, result)
@@ -287,7 +290,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
         Check whether the subtests filter works for both INSTRUMENTED
         and SIMPLE in a directory list.
         """
-        cmd = "%s list examples/tests/:fail" % AVOCADO
+        cmd = "%s list --loader examples/tests/:fail" % AVOCADO
         result = process.run(cmd)
         expected = (b"INSTRUMENTED examples/tests/assert.py:Assert.test_fails_to_raise\n"
                     b"INSTRUMENTED examples/tests/doublefail.py:DoubleFail.test\n"
@@ -308,14 +311,15 @@ class LoaderTestFunctional(TestCaseTmpDir):
         test_script.save()
 
         cmd = ("%s run --loaders=FOO "
+               "--test-runner=runner "
                "--external-runner=/bin/sh %s") % (AVOCADO, test_script.path)
         result = process.run(cmd)
         expected_warning = ("The loaders and external-runner are incompatible."
                             "The values in loaders will be ignored.")
         self.assertIn(expected_warning, result.stderr_text)
 
-        cmd = "%s run --external-runner=/bin/sh %s" % (AVOCADO,
-                                                       test_script.path)
+        cmd = ("%s run --external-runner=/bin/sh %s "
+               "--test-runner=runner" % (AVOCADO, test_script.path))
         result = process.run(cmd)
         self.assertNotIn(expected_warning, result.stderr_text)
 

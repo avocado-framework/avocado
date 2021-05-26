@@ -38,10 +38,12 @@ class StreamsTest(TestCaseTmpDir):
         variable `AVOCADO_LOG_EARLY` being set.
         """
         cmds = (('%s --show early run --disable-sysinfo '
+                 '--test-runner=runner '
                  '--job-results-dir %s passtest.py' % (AVOCADO, self.tmpdir.name),
                  {}),
-                ('%s run --disable-sysinfo --job-results-dir'
-                 ' %s passtest.py' % (AVOCADO, self.tmpdir.name),
+                ('%s run --disable-sysinfo --job-results-dir %s '
+                 '--test-runner=runner '
+                 'passtest.py' % (AVOCADO, self.tmpdir.name),
                  {'AVOCADO_LOG_EARLY': 'y'}))
         for cmd, env in cmds:
             result = process.run(cmd, env=env, shell=True)
@@ -56,6 +58,7 @@ class StreamsTest(TestCaseTmpDir):
         Checks that the test stream (early in this case) goes to stdout
         """
         cmd = ('%s --show=test run --disable-sysinfo --job-results-dir %s '
+               '--test-runner=runner '
                'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -72,6 +75,7 @@ class StreamsTest(TestCaseTmpDir):
         Checks that only errors are output, and that they go to stderr
         """
         cmd = ('%s --show none run --disable-sysinfo --job-results-dir %s '
+               '--test-runner=runner '
                'passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
