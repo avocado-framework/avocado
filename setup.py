@@ -46,7 +46,7 @@ class Clean(clean):
         call(('rm -rf MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES',
               'PYPI_UPLOAD ./build ./dist'), shell=True)
         call('rm -rf ./man/avocado.1 ./docs/build', shell=True)
-        call('rm -rf /var/tmp/avocado* /tmp/avaocado*', shell=True)
+        call('rm -rf /var/tmp/avocado* /tmp/avocado*', shell=True)
         call('find . -name "*.egg-info" -exec rm -rv {} +', shell=True)
         call('find . -name "*.pyc" -exec rm -rv {} +', shell=True)
         call('find . -name __pycache__ -type d -exec rm -rv {} +', shell=True)
