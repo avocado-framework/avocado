@@ -10,6 +10,7 @@ RUNNER = "%s -m avocado.core.runners.requirement_package" % sys.executable
 
 class RunnableRun(unittest.TestCase):
 
+    @unittest.skip('Skipping until test collision is fixed (#4620).')
     def test_no_kwargs(self):
         res = process.run("%s runnable-run -k requirement-package" % RUNNER,
                           ignore_status=True)
@@ -18,6 +19,7 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'time': ", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
+    @unittest.skip('Skipping until test collision is fixed (#4620).')
     def test_action_check_alone(self):
         action = 'action=check'
         res = process.run("%s runnable-run -k requirement-package %s"
@@ -29,6 +31,7 @@ class RunnableRun(unittest.TestCase):
                       res.stdout)
         self.assertEqual(res.exit_status, 0)
 
+    @unittest.skip('Skipping until test collision is fixed (#4620).')
     @unittest.skipUnless(os.getenv('CI'), "This test runs on CI environments"
                          " only as it depends on the system package manager,"
                          " and some environments don't have it available.")
@@ -54,6 +57,7 @@ class RunnableRun(unittest.TestCase):
 
 class TaskRun(unittest.TestCase):
 
+    @unittest.skip('Skipping until test collision is fixed (#4620).')
     def test_no_kwargs(self):
         res = process.run("%s task-run -i XXXreq-pacXXX -k requirement-package"
                           % RUNNER, ignore_status=True)

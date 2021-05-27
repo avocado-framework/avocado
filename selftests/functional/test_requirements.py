@@ -104,6 +104,7 @@ class BasicTest(TestCaseTmpDir):
             self.assertIn('PASS 1', result.stdout_text,)
             self.assertNotIn('bash', result.stdout_text,)
 
+    @unittest.skip('Skipping until test collision is fixed (#4620).')
     @unittest.skipUnless(os.getenv('CI'), skip_package_manager_message)
     def test_single_fail(self):
         with script.Script(os.path.join(self.tmpdir.name,
@@ -117,6 +118,7 @@ class BasicTest(TestCaseTmpDir):
             self.assertIn('SKIP 1', result.stdout_text,)
             self.assertNotIn('-foo-bar-', result.stdout_text,)
 
+    @unittest.skip('Skipping until test collision is fixed (#4620).')
     @unittest.skipUnless(os.getenv('CI'), skip_install_message)
     def test_multiple_success(self):
         with script.Script(os.path.join(self.tmpdir.name,
@@ -129,6 +131,7 @@ class BasicTest(TestCaseTmpDir):
             self.assertIn('PASS 3', result.stdout_text,)
             self.assertNotIn('vim-common', result.stdout_text,)
 
+    @unittest.skip('Skipping until test collision is fixed (#4620).')
     @unittest.skipUnless(os.getenv('CI'), skip_install_message)
     def test_multiple_fails(self):
         with script.Script(os.path.join(self.tmpdir.name,
