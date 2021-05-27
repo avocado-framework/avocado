@@ -3,14 +3,22 @@ Development environment
 
 .. include:: /.include/helpus.rst
 
-.. warning:: TODO: Needs improvment here. i.e: virtualenvs, GPG, etc.
+.. warning:: TODO: Needs improvement here. i.e: virtualenvs, GPG, etc.
 
 Installing dependencies
 -----------------------
 
 You need to install few dependencies before start coding::
 
- $ sudo dnf install gcc libvirt-devel
+ $ sudo dnf install gcc python-devel
+
+Then install all the python dependencies::
+
+ $ make requirements-selftests
+
+Or if you already have pip installed, you can run directly::
+
+ $ pip install -r requirements-selftests.txt
 
 
 Installing in develop mode
@@ -24,7 +32,7 @@ additional step::
   $ make develop
 
 On POSIX systems this will create an "egg link" to your original source tree under
-"$HOME/.local/lib/pythonX.Y/site-packages". Then, on your original source tree, an
+``$HOME/.local/lib/pythonX.Y/site-packages``. Then, on your original source tree, an
 "egg info" directory will be created, containing, among other things, the Setuptools
 entry points mentioned before. This works like a symlink, so you only need to run
 this once (unless you add a new entry-point, then you need to re-run it to make it
@@ -40,11 +48,11 @@ specific plugin's maintainer recommendations.
 
 Plugins that are developed by the Avocado team, will try to follow the
 same Setuptools standard for distributing the packages. Because of that,
-as a facility, you can use `make requirements-plugins` from the main
-Avocado project to install requirements of the plugins and `make
-develop-external` to install plugins in develop mode to. You just need
+as a facility, you can use ``make requirements-plugins`` from the main
+Avocado project to install requirements of the plugins and ``make
+develop-external`` to install plugins in develop mode to. You just need
 to set where your plugins are installed, by using the environment
-variable `$AVOCADO_EXTERNAL_PLUGINS_PATH`. The workflow could be::
+variable ``$AVOCADO_EXTERNAL_PLUGINS_PATH``. The workflow could be::
 
     $ cd $AVOCADO_PROJECTS_DIR
     $ git clone $AVOCADO_GIT
