@@ -638,7 +638,7 @@ class Job:
 
         if 'INTERRUPTED' in summary:
             self.exitcode |= exit_codes.AVOCADO_JOB_INTERRUPTED
-        if 'FAIL' in summary:
+        if 'FAIL' in summary or 'ERROR' in summary:
             self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
 
         return self.exitcode
