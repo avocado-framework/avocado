@@ -113,3 +113,9 @@ class StatusRepo:
     @property
     def status_journal_summary(self):
         return self._status_journal_summary
+
+    def get_result_set_for_tasks(self, task_ids):
+        """Returns a set of results for the given task."""
+        results = [key for key, value in self._by_result.items()
+                   if any([True for task_id in task_ids if task_id in value])]
+        return set(results)
