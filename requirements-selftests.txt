@@ -23,3 +23,6 @@ netifaces
 # For tests that validate the produced XUnit output
 elementpath==1.1.8
 xmlschema==1.0.11
+
+# For building the manpage
+docutils
