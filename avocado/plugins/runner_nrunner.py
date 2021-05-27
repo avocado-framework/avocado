@@ -245,8 +245,7 @@ class Runner(RunnerInterface):
             message_handler.process_message(message, task, job)
 
     def run_suite(self, job, test_suite):
-        # pylint: disable=W0201
-        self.summary = set()
+        summary = set()
 
         test_suite.tests, _ = nrunner.check_runnables_runner_requirements(
             test_suite.tests)
@@ -276,7 +275,7 @@ class Runner(RunnerInterface):
             loop.run_until_complete(asyncio.wait_for(asyncio.gather(*workers),
                                                      job.timeout or None))
         except (KeyboardInterrupt, asyncio.TimeoutError):
-            self.summary.add("INTERRUPTED")
+            summary.add("INTERRUPTED")
 
         # Wait until all messages may have been processed by the
         # status_updater. This should be replaced by a mechanism
@@ -288,4 +287,4 @@ class Runner(RunnerInterface):
 
         job.result.end_tests()
         self.status_server.close()
-        return self.summary
+        return summary
