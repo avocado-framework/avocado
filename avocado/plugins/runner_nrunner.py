@@ -229,7 +229,7 @@ class Runner(RunnerInterface):
 
     async def _update_status(self, job):
         tasks_by_id = {str(runtime_task.task.identifier): runtime_task.task
-                       for runtime_task in self.tasks}
+                       for runtime_task in self.runtime_tasks}
         message_handler = MessageHandler()
         while True:
             try:
@@ -245,8 +245,7 @@ class Runner(RunnerInterface):
             message_handler.process_message(message, task, job)
 
     def run_suite(self, job, test_suite):
-        # pylint: disable=W0201
-        self.summary = set()
+        summary = set()
 
         test_suite.tests, _ = nrunner.check_runnables_runner_requirements(
             test_suite.tests)
@@ -256,14 +255,16 @@ class Runner(RunnerInterface):
         self._start_status_server(listen)
 
         # pylint: disable=W0201
-        self.tasks = self._get_all_runtime_tasks(test_suite)
+        self.runtime_tasks = self._get_all_runtime_tasks(test_suite)
         if test_suite.config.get('nrunner.shuffle'):
-            random.shuffle(self.tasks)
-        tsm = TaskStateMachine(self.tasks, self.status_repo)
+            random.shuffle(self.runtime_tasks)
+        test_ids = [rt.task.identifier for rt in self.runtime_tasks
+                    if rt.task.category == 'test']
+        tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
         spawner_name = test_suite.config.get('nrunner.spawner')
         spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
         max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
-                          len(self.tasks))
+                          len(self.runtime_tasks))
         timeout = test_suite.config.get('task.timeout.running')
         workers = [Worker(state_machine=tsm,
                           spawner=spawner,
@@ -276,7 +277,7 @@ class Runner(RunnerInterface):
             loop.run_until_complete(asyncio.wait_for(asyncio.gather(*workers),
                                                      job.timeout or None))
         except (KeyboardInterrupt, asyncio.TimeoutError):
-            self.summary.add("INTERRUPTED")
+            summary.add("INTERRUPTED")
 
         # Wait until all messages may have been processed by the
         # status_updater. This should be replaced by a mechanism
@@ -288,4 +289,9 @@ class Runner(RunnerInterface):
 
         job.result.end_tests()
         self.status_server.close()
-        return self.summary
+
+        # Update the overall summary with found test statuses, which will
+        # determine the Avocado command line exit status
+        summary.update([status.upper() for status in
+                        self.status_repo.get_result_set_for_tasks(test_ids)])
+        return summary
