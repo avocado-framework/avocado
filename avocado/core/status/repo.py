@@ -113,3 +113,14 @@ class StatusRepo:
     @property
     def status_journal_summary(self):
         return self._status_journal_summary
+
+    @staticmethod
+    def _is_in_task(tasks, task_ids):
+        """Returns True if any of the tasks is in task_ids."""
+        return any([True for task_id in task_ids if task_id in tasks])
+
+    def get_result_set_for_tasks(self, task_ids):
+        """Returns a set of results for the given tasks."""
+        results = [key for key, value in self._by_result.items()
+                   if self._is_in_task(value, task_ids)]
+        return set(results)

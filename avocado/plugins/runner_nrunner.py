@@ -258,6 +258,8 @@ class Runner(RunnerInterface):
         self.runtime_tasks = self._get_all_runtime_tasks(test_suite)
         if test_suite.config.get('nrunner.shuffle'):
             random.shuffle(self.runtime_tasks)
+        test_ids = [rt.task.identifier for rt in self.runtime_tasks
+                    if rt.task.category == 'test']
         tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
         spawner_name = test_suite.config.get('nrunner.spawner')
         spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
@@ -287,4 +289,9 @@ class Runner(RunnerInterface):
 
         job.result.end_tests()
         self.status_server.close()
+
+        # Update the overall summary with found test statuses, which will
+        # determine the Avocado command line exit status
+        summary.update([status.upper() for status in
+                        self.status_repo.get_result_set_for_tasks(test_ids)])
         return summary
