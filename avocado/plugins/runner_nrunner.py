@@ -229,7 +229,7 @@ class Runner(RunnerInterface):
 
     async def _update_status(self, job):
         tasks_by_id = {str(runtime_task.task.identifier): runtime_task.task
-                       for runtime_task in self.tasks}
+                       for runtime_task in self.runtime_tasks}
         message_handler = MessageHandler()
         while True:
             try:
@@ -256,14 +256,14 @@ class Runner(RunnerInterface):
         self._start_status_server(listen)
 
         # pylint: disable=W0201
-        self.tasks = self._get_all_runtime_tasks(test_suite)
+        self.runtime_tasks = self._get_all_runtime_tasks(test_suite)
         if test_suite.config.get('nrunner.shuffle'):
-            random.shuffle(self.tasks)
-        tsm = TaskStateMachine(self.tasks, self.status_repo)
+            random.shuffle(self.runtime_tasks)
+        tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
         spawner_name = test_suite.config.get('nrunner.spawner')
         spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
         max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
-                          len(self.tasks))
+                          len(self.runtime_tasks))
         timeout = test_suite.config.get('task.timeout.running')
         workers = [Worker(state_machine=tsm,
                           spawner=spawner,
