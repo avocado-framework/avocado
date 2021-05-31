@@ -113,7 +113,8 @@ class RequirementPackageRunner(nrunner.BaseRunner):
             stderr = ("Invalid action %s. Use one of 'install', 'check' or"
                       " 'remove'" % cmd)
             yield self.prepare_status('running',
-                                      {'type': 'stderr', 'log': stderr})
+                                      {'type': 'stderr',
+                                       'log': stderr.encode()})
             yield self.prepare_status('finished', {'result': 'error'})
             return
 

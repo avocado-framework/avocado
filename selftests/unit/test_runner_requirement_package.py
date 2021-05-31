@@ -36,7 +36,7 @@ class BasicTests(unittest.TestCase):
                 break
         result = 'error'
         self.assertIn(result, messages[-1]['result'])
-        stderr = "Invalid action foo. Use one of 'install', 'check' or 'remove'"
+        stderr = b"Invalid action foo. Use one of 'install', 'check' or 'remove'"
         self.assertIn(stderr, messages[-2]['log'])
 
 
