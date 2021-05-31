@@ -18,7 +18,7 @@
 # location of each test, each one on its own line. The idea is to be able
 # to filter the tests you want to run by doing something like:
 #
-# $ avocado run `avocado-find-unittests <path-to-test.py> | <your-condition> | xargs`
+# $ avocado run `avocado-safeloader-find-python-unittests <path-to-test.py> | <your-condition> | xargs`
 #
 
 import os
