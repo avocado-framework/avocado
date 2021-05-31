@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; specifically version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2021
+# Author: Cleber Rosa <cleber@redhat.com>
+
+#
+# Simple script that, given Python file containing unittests, returns the canonical
+# location of each test, each one on its own line.
+#
+# Warning: this script uses Python's unittest TestLoader.discover()
+# and will load (and thus eval) the Python files given in the command
+# as arguments.
+#
+
+import os
+import sys
+import unittest
+
+
+def get_tests(suite):
+    result = []
+    if hasattr(suite, '__iter__'):
+        for suite_or_test in suite:
+            result.extend(get_tests(suite_or_test))
+    else:
+        result.append(suite)
+    return result
+
+
+if __name__ == '__main__':
+    test_module_paths = sys.argv[1:]
+    result = []
+    loader = unittest.TestLoader()
+    for test_module_path in test_module_paths:
+
+        start_dir, pattern = os.path.split(test_module_path)
+        suite = loader.discover(start_dir, pattern)
+        tests = get_tests(suite)
+
+        module_name = start_dir.replace(os.path.sep, ".")
+        result.extend(["%s.%s" % (module_name, test.id()) for test in tests])
+
+    if result:
+        print("\n".join(result))
