@@ -71,3 +71,18 @@ fedora_selftests_task:
         matrix:
           - image: quay.io/avocado-framework/avocado-ci-fedora-32
           - image: quay.io/avocado-framework/avocado-ci-fedora-33
+
+#
+# This is a *partial* check for the behavior of the safeloader, that
+# compares it to Python's unittest behavior.  This is intended to help
+# in the resolution of https://github.com/avocado-framework/avocado/issues/4625
+# avoiding new regressions.  It should also be expanded (and/or converted
+# into a selftest) to include avocado-instrumented tests too.
+#
+safeloader_task:
+    selftests_script:
+       - dnf -y install diffutils
+       - make develop
+       - for i in $(git grep -c -E 'import unittest$' selftests/unit/test_*.py selftests/unit/utils/test_*.py | cut -d ':' -f 1); do echo "*** $i ***"; python3 contrib/scripts/find-python-unittest $i > /tmp/1; AVOCADO_SAFELOADER_UNITTEST_ORDER_COMPAT=1 python3 contrib/scripts/avocado-safeloader-find-python-unittest $i > /tmp/2; diff -u /tmp/1 /tmp/2; done;
+    container:
+        image: quay.io/avocado-framework/avocado-ci-fedora-32
