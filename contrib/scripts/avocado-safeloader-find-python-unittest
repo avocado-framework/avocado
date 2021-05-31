@@ -42,4 +42,8 @@ if __name__ == '__main__':
             result += ["%s.%s.%s" % (test_module_name, klass, method_name)
                        for (method_name, _, _) in methods]
     if result:
+        if os.environ.get('AVOCADO_SAFELOADER_UNITTEST_ORDER_COMPAT', False):
+            from functools import cmp_to_key
+            from unittest.util import three_way_cmp
+            result.sort(key=cmp_to_key(three_way_cmp))
         print("\n".join(result))
