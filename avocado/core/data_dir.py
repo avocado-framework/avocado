@@ -136,8 +136,9 @@ def get_data_dir():
         * VM images
         * Reference bitmaps
     """
-    return _get_rw_dir(_get_settings_dir('data_dir'),
-                       SYSTEM_DATA_DIR, USER_DATA_DIR)
+    warnings.warn(("get_data_dir() is deprecated, get values from "
+                   "settings.as_dict() or self.config"), DeprecationWarning)
+    return settings.as_dict().get('datadir.paths.data_dir')
 
 
 def get_datafile_path(*args):

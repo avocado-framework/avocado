@@ -110,7 +110,7 @@ def register_core_options():
                          help_msg=help_msg)
 
     help_msg = 'Data directory for Avocado'
-    default = prepend_base_path('/var/lib/avocado/data')
+    default = prepend_base_path('~/avocado/data')
     stgs.register_option(section='datadir.paths',
                          key='data_dir',
                          key_type=prepend_base_path,
