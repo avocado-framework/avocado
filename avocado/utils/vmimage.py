@@ -20,6 +20,7 @@ import os
 import re
 import tempfile
 import uuid
+import warnings
 from html.parser import HTMLParser
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -502,44 +503,54 @@ class Image:
         process.run(cmd)
         return new_image
 
+    @classmethod
+    def from_parameters(cls, name=None, version=None, build=None, arch=None,
+                        checksum=None, algorithm=None, cache_dir=None,
+                        snapshot_dir=None):
+        """
+        Returns an Image, according to the parameters provided.
+
+        :param name: (optional) Name of the Image Provider, usually matches
+                     the distro name.
+        :param version: (optional) Version of the system image.
+        :param build: (optional) Build number of the system image.
+        :param arch: (optional) Architecture of the system image.
+        :param checksum: (optional) Hash of the system image to match after
+                         download.
+        :param algorithm: (optional) Hash type, used when the checksum is
+                          provided.
+        :param cache_dir: (optional) Local system path where the base
+                          images will be held.
+        :param snapshot_dir: (optional) Local system path where the snapshot
+                             images will be held.  Defaults to cache_dir if
+                             none is given.
+
+        :returns: Image instance that can provide the image
+                  according to the parameters.
+        """
+        provider = get_best_provider(name, version, build, arch)
+
+        if cache_dir is None:
+            cache_dir = tempfile.gettempdir()
+        try:
+            return cls(name=provider.name, url=provider.get_image_url(),
+                       version=provider.version, arch=provider.arch,
+                       checksum=checksum, algorithm=algorithm,
+                       build=provider.build, cache_dir=cache_dir,
+                       snapshot_dir=snapshot_dir)
+        except ImageProviderError:
+            pass
+
+        raise AttributeError('Provider not available')
+
 
 def get(name=None, version=None, build=None, arch=None, checksum=None,
         algorithm=None, cache_dir=None, snapshot_dir=None):
-    """
-    Wrapper to get the best Image Provider, according to the parameters
-    provided.
-
-    :param name: (optional) Name of the Image Provider, usually matches
-                 the distro name.
-    :param version: (optional) Version of the system image.
-    :param build: (optional) Build number of the system image.
-    :param arch: (optional) Architecture of the system image.
-    :param checksum: (optional) Hash of the system image to match after
-                     download.
-    :param algorithm: (optional) Hash type, used when the checksum is
-                      provided.
-    :param cache_dir: (optional) Local system path where the base
-                      images will be held.
-    :param snapshot_dir: (optional) Local system path where the snapshot images
-                         will be held.  Defaults to cache_dir if none is given.
-
-    :returns: Image instance that can provide the image
-              according to the parameters.
-    """
-    provider = get_best_provider(name, version, build, arch)
-
-    if cache_dir is None:
-        cache_dir = tempfile.gettempdir()
-    try:
-        return Image(name=provider.name, url=provider.get_image_url(),
-                     version=provider.version, arch=provider.arch,
-                     checksum=checksum, algorithm=algorithm,
-                     build=provider.build, cache_dir=cache_dir,
-                     snapshot_dir=snapshot_dir)
-    except ImageProviderError:
-        pass
-
-    raise AttributeError('Provider not available')
+    """This method is deprecated. Use Image.from_parameters()."""
+    warnings.warn("deprecated, use Image.from_parameters() instead.",
+                  DeprecationWarning)
+    return Image.from_parameters(name, version, build, arch, checksum,
+                                 algorithm, cache_dir, snapshot_dir)
 
 
 def get_best_provider(name=None, version=None, build=None, arch=None):
