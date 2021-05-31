@@ -570,7 +570,7 @@ class Job:
         """
         assert self.tmpdir is not None, "Job.setup() not called"
         if self.time_start == -1:
-            self.time_start = time.time()
+            self.time_start = time.monotonic()
         try:
             self.result.tests_total = self.size
             pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
@@ -606,7 +606,7 @@ class Job:
         finally:
             self.post_tests()
             if self.time_end == -1:
-                self.time_end = time.time()
+                self.time_end = time.monotonic()
                 self.time_elapsed = self.time_end - self.time_start
             self.render_results()
             pre_post_dispatcher.map_method('post', self)

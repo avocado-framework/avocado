@@ -152,13 +152,13 @@ class LoaderTestFunctional(TestCaseTmpDir):
         test_script.remove()
 
     def _run_with_timeout(self, cmd_line, timeout):
-        current_time = time.time()
+        current_time = time.monotonic()
         deadline = current_time + timeout
         test_process = subprocess.Popen(cmd_line, stdout=subprocess.PIPE,  # pylint: disable=W1509
                                         stderr=subprocess.PIPE,
                                         preexec_fn=os.setsid, shell=True)
         while not test_process.poll():
-            if time.time() > deadline:
+            if time.monotonic() > deadline:
                 os.killpg(os.getpgid(test_process.pid), signal.SIGKILL)
                 self.fail("Failed to run test under %s seconds" % timeout)
             time.sleep(0.05)
@@ -192,10 +192,10 @@ class LoaderTestFunctional(TestCaseTmpDir):
                                              mode=self.MODE_0664)
         test_script.save()
         cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
-        initial_time = time.time()
+        initial_time = time.monotonic()
         result = process.run(cmd_line, ignore_status=True)
         test_script.remove()
-        actual_time = time.time() - initial_time
+        actual_time = time.monotonic() - initial_time
         self.assertLess(actual_time, 3.0,
                         ("Took more than 3 seconds to list tests. Loader "
                          "probably loaded/executed Python code and slept for "

@@ -71,7 +71,7 @@ class RobotRunner(nrunner.BaseRunner):
         most_current_execution_state_time = None
         while queue.empty():
             time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
-            now = time.time()
+            now = time.monotonic()
             if most_current_execution_state_time is not None:
                 next_execution_state_mark = (most_current_execution_state_time +
                                              nrunner.RUNNER_RUN_STATUS_INTERVAL)

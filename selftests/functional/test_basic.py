@@ -729,9 +729,9 @@ class RunnerSimpleTest(TestCaseTmpDir):
         one_hundred = 'failtest.py ' * 100
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s'
                     % (AVOCADO, self.tmpdir.name, one_hundred))
-        initial_time = time.time()
+        initial_time = time.monotonic()
         result = process.run(cmd_line, ignore_status=True)
-        actual_time = time.time() - initial_time
+        actual_time = time.monotonic() - initial_time
         self.assertLess(actual_time, 30.0)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -749,9 +749,9 @@ class RunnerSimpleTest(TestCaseTmpDir):
                             'sleeptest.py')
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s'
                     % (AVOCADO, self.tmpdir.name, sleep_fail_sleep))
-        initial_time = time.time()
+        initial_time = time.monotonic()
         result = process.run(cmd_line, ignore_status=True)
-        actual_time = time.time() - initial_time
+        actual_time = time.monotonic() - initial_time
         self.assertLess(actual_time, 33.0)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -854,8 +854,8 @@ class RunnerSimpleTest(TestCaseTmpDir):
         os.kill(pid, signal.SIGTSTP)   # This freezes the process
         # The deadline is 3s timeout + 10s test postprocess before kill +
         # 10s reserve for additional steps (still below 60s)
-        deadline = time.time() + 20
-        while time.time() < deadline:
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline:
             if not proc.is_alive():
                 break
             time.sleep(0.1)

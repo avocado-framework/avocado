@@ -33,11 +33,11 @@ def measure_duration(func):
     """
     def wrapper(*args, **kwargs):
         """ Wrapper function """
-        start = time.time()
+        start = time.monotonic()
         try:
             return func(*args, **kwargs)
         finally:
-            duration = time.time() - start
+            duration = time.monotonic() - start
             __MEASURE_DURATION[func] = (__MEASURE_DURATION.get(func, 0) +
                                         duration)
             LOGGER.debug("PERF: %s: (%ss, %ss)", func, duration,
