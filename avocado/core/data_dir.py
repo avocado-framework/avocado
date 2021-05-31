@@ -158,8 +158,9 @@ def get_logs_dir():
 
     The log dir is where we store job/test logs in general.
     """
-    return _get_rw_dir(_get_settings_dir('logs_dir'),
-                       SYSTEM_LOG_DIR, USER_LOG_DIR)
+    warnings.warn(("get_logs_dir() is deprecated, get values from "
+                   "settings.as_dict() or self.config"), DeprecationWarning)
+    return settings.as_dict().get('datadir.paths.logs_dir')
 
 
 def create_job_logs_dir(base_dir=None, unique_id=None):
