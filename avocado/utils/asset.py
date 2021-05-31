@@ -367,7 +367,7 @@ class Asset:
                                       self.relative_dir)
             dirname = os.path.dirname(asset_file)
             if not os.path.isdir(dirname):
-                os.makedirs(dirname)
+                os.makedirs(dirname, exist_ok=True)
             try:
                 if fetch(urlobj, asset_file):
                     if self.metadata is not None:
