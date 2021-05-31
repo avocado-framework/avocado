@@ -131,13 +131,13 @@ class TestStatus:
         :raise exceptions.TestError: On timeout/error
         """
         step = 0.01
-        end = time.time() + timeout
+        end = time.monotonic() + timeout
         while not self.early_status:
             if not proc.is_alive():
                 if not self.early_status:
                     raise exceptions.TestError("Process died before it pushed "
                                                "early test_status.")
-            if time.time() > end and not self.early_status:
+            if time.monotonic() > end and not self.early_status:
                 os.kill(proc.pid, signal.SIGTERM)
                 if not wait.wait_for(lambda: not proc.is_alive(), 1, 0, 0.01):
                     os.kill(proc.pid, signal.SIGKILL)
@@ -199,16 +199,16 @@ class TestStatus:
         config = settings.as_dict()
         if self.status:     # status exists, wait for process to finish
             timeout_process_alive = config.get('runner.timeout.process_alive')
-            deadline = min(deadline, time.time() + timeout_process_alive)
-            while time.time() < deadline:
+            deadline = min(deadline, time.monotonic() + timeout_process_alive)
+            while time.monotonic() < deadline:
                 result_dispatcher.map_method('test_progress', False)
                 if wait.wait_for(lambda: not proc.is_alive(), 1, 0, step):
                     return self._add_status_failures(self.status)
             err = "Test reported status but did not finish"
         else:   # proc finished, wait for late status delivery
             timeout_process_died = config.get('runner.timeout.process_died')
-            deadline = min(deadline, time.time() + timeout_process_died)
-            while time.time() < deadline:
+            deadline = min(deadline, time.monotonic() + timeout_process_died)
+            while time.monotonic() < deadline:
                 result_dispatcher.map_method('test_progress', False)
                 if wait.wait_for(lambda: self.status, 1, 0, step):
                     # Status delivered after the test process finished, pass
@@ -218,7 +218,7 @@ class TestStatus:
         TEST_LOG.debug("Original status: %s", str(self.status))
         test_state = self.early_status
         test_state['time_start'] = started
-        test_state['time_elapsed'] = time.time() - started
+        test_state['time_elapsed'] = time.monotonic() - started
         test_state['fail_reason'] = err
         test_state['status'] = exceptions.TestAbortError.status
         test_state['fail_class'] = (exceptions.TestAbortError.__class__.
@@ -236,8 +236,8 @@ class TestStatus:
             os.kill(proc.pid, signal.SIGTERM)
             if not wait.wait_for(lambda: not proc.is_alive(), 1, 0, 0.01):
                 os.kill(proc.pid, signal.SIGKILL)
-                end_time = time.time() + 60
-                while time.time() < end_time:
+                end_time = time.monotonic() + 60
+                while time.monotonic() < end_time:
                     if not proc.is_alive():
                         break
                     time.sleep(0.1)

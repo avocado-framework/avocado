@@ -288,7 +288,7 @@ class Asset:
             return False
         creation_time = os.lstat(path)[stat.ST_CTIME]
         expire_time = creation_time + expire
-        if time.time() > expire_time:
+        if time.monotonic() > expire_time:
             return True
         return False
 

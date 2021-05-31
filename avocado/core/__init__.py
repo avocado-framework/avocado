@@ -197,7 +197,7 @@ def initialize_plugin_infrastructure():
                          default=[],
                          help_msg=help_msg)
 
-    kinds = pkg_resources.get_entry_map('avocado-framework').keys()
+    kinds = list(pkg_resources.get_entry_map('avocado-framework').keys())
     plugin_types = [kind[8:] for kind in kinds
                     if kind.startswith('avocado.plugins.')]
     for plugin_type in plugin_types:

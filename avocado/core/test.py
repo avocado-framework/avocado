@@ -519,17 +519,17 @@ class Test(unittest.TestCase, TestData):
     def _tag_start(self):
         self.log.info('START %s', self.name)
         self.__running = True
-        self.time_start = time.time()
+        self.time_start = time.monotonic()
 
     def _tag_end(self):
         self.__running = False
-        self.time_end = time.time()
+        self.time_end = time.monotonic()
         # for consistency sake, always use the same stupid method
         self._update_time_elapsed(self.time_end)
 
     def _update_time_elapsed(self, current_time=None):
         if current_time is None:
-            current_time = time.time()
+            current_time = time.monotonic()
         self.time_elapsed = current_time - self.time_start
 
     def report_state(self):
