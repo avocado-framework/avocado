@@ -147,7 +147,8 @@ def get_datafile_path(*args):
 
     :param args: Arguments passed to os.path.join. Ex ('images', 'jeos.qcow2')
     """
-    new_args = tuple([get_data_dir()] + list(args))
+    config = settings.as_dict()
+    new_args = tuple([config.get('datadir.paths.data_dir')] + list(args))
     return os.path.join(*new_args)
 
 

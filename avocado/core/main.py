@@ -19,7 +19,7 @@ import time
 import traceback
 
 try:
-    from avocado.core import data_dir
+    from avocado.core.settings import settings
 except ImportError:
     sys.stderr.write("Unable to import Avocado libraries, please verify "
                      "your installation, and if necessary reinstall it.\n")
@@ -29,7 +29,9 @@ except ImportError:
 
 
 def get_crash_dir():
-    crash_dir_path = os.path.join(data_dir.get_data_dir(), "crashes")
+    config = settings.as_dict()
+    crash_dir_path = os.path.join(config.get('datadir.paths.data_dir'),
+                                  "crashes")
     try:
         os.makedirs(crash_dir_path)
     except OSError:
