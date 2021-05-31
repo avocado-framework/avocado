@@ -2,7 +2,8 @@ import glob
 import os
 import unittest
 
-from avocado.core import data_dir, exit_codes, job_id
+from avocado.core import exit_codes, job_id
+from avocado.core.settings import settings
 from avocado.utils import process
 from selftests.utils import AVOCADO, BASEDIR
 
@@ -48,7 +49,9 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
                                 command line
         """
         os.chdir(BASEDIR)
-        log_dir = data_dir.get_logs_dir()
+        config = settings.as_dict()
+        log_dir = config.get('datadir.paths.logs_dir')
+
         self.assertIsNotNone(log_dir)
         job = job_id.create_unique_job_id()
         cmd_line = '%s run --disable-sysinfo --force-job-id=%%s %%s' % AVOCADO
