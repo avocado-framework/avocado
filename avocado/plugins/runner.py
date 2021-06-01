@@ -361,12 +361,11 @@ class TestRunner(Runner):
         job.result.tests_total = test_result_total
         index = 1
         try:
-            for test_factory in test_suite.tests:
-                test_factory[1]["base_logdir"] = job.logdir
-                test_factory[1]["config"] = job.config
             for test_factory, variant in self._iter_suite(test_suite,
                                                           execution_order):
                 test_parameters = test_factory[1]
+                test_parameters["base_logdir"] = job.logdir
+                test_parameters["config"] = job.config
                 name = test_parameters.get("name")
                 if test_suite.name:
                     prefix = "{}-{}".format(test_suite.name, index)
