@@ -295,13 +295,15 @@ class TestRunner(Runner):
         paths = variant.get("paths")
         empty_variants = varianter.is_empty_variant(var)
 
-        if "params" not in template[1]:
-            factory = [template[0], template[1].copy()]
+        original_params_to_klass = template[1]
+        if "params" not in original_params_to_klass:
+            params_to_klass = original_params_to_klass.copy()
             if test_parameters and empty_variants:
                 var[0] = tree.TreeNode().get_node("/", True)
                 var[0].value = test_parameters
                 paths = ["/"]
-            factory[1]["params"] = (var, paths)
+            params_to_klass["params"] = (var, paths)
+            factory = [template[0], params_to_klass]
             return factory, variant
 
         if not empty_variants:
