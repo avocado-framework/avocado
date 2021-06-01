@@ -18,11 +18,13 @@
 # location of each test, each one on its own line. The idea is to be able
 # to filter the tests you want to run by doing something like:
 #
-# $ avocado run `avocado-find-unittests <path-to-test.py> | <your-condition> | xargs`
+# $ avocado run `avocado-safeloader-find-python-unittests <path-to-test.py> | <your-condition> | xargs`
 #
 
 import os
 import sys
+from functools import cmp_to_key
+from unittest.util import three_way_cmp
 
 from avocado.core.safeloader import find_python_unittests
 
@@ -39,7 +41,9 @@ if __name__ == '__main__':
                 test_module_path = test_module_path[:-3]
             test_module_name = os.path.relpath(test_module_path)
             test_module_name = test_module_name.replace(os.path.sep, ".")
-            result += ["%s.%s.%s" % (test_module_name, klass, method)
-                       for method in methods]
+            result += ["%s.%s.%s" % (test_module_name, klass, method_name)
+                       for (method_name, _, _) in methods]
     if result:
+        if os.environ.get('AVOCADO_SAFELOADER_UNITTEST_ORDER_COMPAT', False):
+            result.sort(key=cmp_to_key(three_way_cmp))
         print("\n".join(result))
