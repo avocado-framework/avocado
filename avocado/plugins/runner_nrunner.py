@@ -184,39 +184,71 @@ class Runner(RunnerInterface):
         return requirements_runtime_tasks
 
     @staticmethod
+    def _create_runtime_tasks_for_test(test_suite, runnable, no_digits,
+                                       index, status_uris, variant):
+        """Creates runtime tasks for both tests, and for its requirements."""
+        result = []
+        # test related operations
+        if test_suite.name:
+            prefix = "{}-{}".format(test_suite.name, index)
+        else:
+            prefix = index
+        test_id = TestID(prefix,
+                         runnable.uri,
+                         variant,
+                         no_digits)
+        # handles the test task
+        task = nrunner.Task(runnable, test_id, status_uris,
+                            nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
+        runtime_task = RuntimeTask(task)
+        result.append(runtime_task)
+
+        # handles the requirements
+        requirements_runtime_tasks = (
+            Runner._get_requirements_runtime_tasks(runnable,
+                                                   prefix,
+                                                   status_uris))
+        # extend the list of tasks with the requirements runtime tasks
+        if requirements_runtime_tasks is not None:
+            for requirement_runtime_task in requirements_runtime_tasks:
+                # make sure we track the dependencies of a task
+                runtime_task.task.dependencies.add(
+                    requirement_runtime_task.task)
+            result.extend(requirements_runtime_tasks)
+
+        return result
+
+    @staticmethod
     def _get_all_runtime_tasks(test_suite):
         runtime_tasks = []
-        no_digits = len(str(len(test_suite)))
+        test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
+        no_digits = len(str(test_result_total))
         status_uris = [test_suite.config.get('nrunner.status_server_uri')]
-        for index, runnable in enumerate(test_suite.tests, start=1):
-            # test related operations
-            if test_suite.name:
-                prefix = "{}-{}".format(test_suite.name, index)
-            else:
-                prefix = index
-            test_id = TestID(prefix,
-                             runnable.uri,
-                             None,
-                             no_digits)
-            # handles the test task
-            task = nrunner.Task(runnable, test_id, status_uris,
-                                nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
-            runtime_task = RuntimeTask(task)
-            runtime_tasks.append(runtime_task)
-
-            # handles the requirements
-            requirements_runtime_tasks = (
-                Runner._get_requirements_runtime_tasks(runnable,
-                                                       prefix,
-                                                       status_uris))
-            # extend the list of tasks with the requirements runtime tasks
-            if requirements_runtime_tasks is not None:
-                for requirement_runtime_task in requirements_runtime_tasks:
-                    # make sure we track the dependencies of a task
-                    runtime_task.task.dependencies.add(
-                        requirement_runtime_task.task)
-                runtime_tasks.extend(requirements_runtime_tasks)
-
+        execution_order = test_suite.config.get('run.execution_order')
+        if execution_order == "variants-per-test":
+            for index, (runnable, variant) in enumerate(((test, variant)
+                                                         for test in test_suite.tests
+                                                         for variant in test_suite.variants.itertests()),
+                                                        start=1):
+                runtime_tasks.extend(Runner._create_runtime_tasks_for_test(
+                    test_suite,
+                    runnable,
+                    no_digits,
+                    index,
+                    status_uris,
+                    variant))
+        elif execution_order == "tests-per-variant":
+            for index, (runnable, variant) in enumerate(((test, variant)
+                                                         for variant in test_suite.variants.itertests()
+                                                         for test in test_suite.tests),
+                                                        start=1):
+                runtime_tasks.extend(Runner._create_runtime_tasks_for_test(
+                    test_suite,
+                    runnable,
+                    no_digits,
+                    index,
+                    status_uris,
+                    variant))
         return runtime_tasks
 
     def _start_status_server(self, status_server_listen):
@@ -249,7 +281,7 @@ class Runner(RunnerInterface):
 
         test_suite.tests, _ = nrunner.check_runnables_runner_requirements(
             test_suite.tests)
-        job.result.tests_total = test_suite.size  # no support for variants yet
+        job.result.tests_total = test_suite.variants.get_number_of_tests(test_suite.tests)
 
         listen = test_suite.config.get('nrunner.status_server_listen')
         self._start_status_server(listen)

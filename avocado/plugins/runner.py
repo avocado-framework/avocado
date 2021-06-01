@@ -295,13 +295,15 @@ class TestRunner(Runner):
         paths = variant.get("paths")
         empty_variants = varianter.is_empty_variant(var)
 
-        if "params" not in template[1]:
-            factory = [template[0], template[1].copy()]
+        original_params_to_klass = template[1]
+        if "params" not in original_params_to_klass:
+            params_to_klass = original_params_to_klass.copy()
             if test_parameters and empty_variants:
                 var[0] = tree.TreeNode().get_node("/", True)
                 var[0].value = test_parameters
                 paths = ["/"]
-            factory[1]["params"] = (var, paths)
+            params_to_klass["params"] = (var, paths)
+            factory = [template[0], params_to_klass]
             return factory, variant
 
         if not empty_variants:
@@ -361,12 +363,11 @@ class TestRunner(Runner):
         job.result.tests_total = test_result_total
         index = 1
         try:
-            for test_factory in test_suite.tests:
-                test_factory[1]["base_logdir"] = job.logdir
-                test_factory[1]["config"] = job.config
             for test_factory, variant in self._iter_suite(test_suite,
                                                           execution_order):
                 test_parameters = test_factory[1]
+                test_parameters["base_logdir"] = job.logdir
+                test_parameters["config"] = job.config
                 name = test_parameters.get("name")
                 if test_suite.name:
                     prefix = "{}-{}".format(test_suite.name, index)
