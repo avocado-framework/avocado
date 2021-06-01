@@ -46,9 +46,14 @@ class RequirementPackageRunner(nrunner.BaseRunner):
             if software_manager.install(package):
                 stdout = MESSAGES[cmd]['success'] % package
             else:
-                result = 'error'
-                stdout = ''
-                stderr = MESSAGES[cmd]['fail'] % package
+                # check if the error is a false negative because of package
+                # installation collision
+                if software_manager.check_installed(package):
+                    stdout = MESSAGES[cmd]['success'] % package
+                else:
+                    result = 'error'
+                    stdout = ''
+                    stderr = MESSAGES[cmd]['fail'] % package
         else:
             stdout = MESSAGES['check-installed']['success'] % package
         return result, stdout, stderr
@@ -61,9 +66,14 @@ class RequirementPackageRunner(nrunner.BaseRunner):
             if software_manager.remove(package):
                 stdout = MESSAGES[cmd]['success'] % package
             else:
-                result = 'error'
-                stdout = ''
-                stderr = MESSAGES[cmd]['fail'] % package
+                # check if the error is a false negative because of package
+                # installation collision
+                if not software_manager.check_installed(package):
+                    stdout = MESSAGES[cmd]['success'] % package
+                else:
+                    result = 'error'
+                    stdout = ''
+                    stderr = MESSAGES[cmd]['fail'] % package
         else:
             stdout = MESSAGES['check-installed']['fail'] % package
         return result, stdout, stderr
