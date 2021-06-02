@@ -117,16 +117,14 @@ class PythonModule:
         Keeps track of objects names and importable entities
         """
         abs_path_of_module_dir = os.path.abspath(os.path.dirname(self.path))
+        imported_path = self._get_adjusted_path_for_level(statement,
+                                                          abs_path_of_module_dir)
         if getattr(statement, 'module', None) is not None:
-            imported_path = self._get_adjusted_path_for_level(statement,
-                                                              abs_path_of_module_dir)
+            # Module has a name, so its path is absolute, and not relative
+            # to the directory structure
             module_path = statement.module.replace('.', os.path.sep)
             imported_path = os.path.join(imported_path, module_path)
-        else:
-            # Module has no name, its path is relative to the directory
-            # structure
-            imported_path = self._get_adjusted_path_for_level(statement,
-                                                              abs_path_of_module_dir)
+
         for name in statement.names:
             full_path = os.path.join(imported_path,
                                      name.name.replace('.', os.path.sep))
