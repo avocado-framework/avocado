@@ -1,4 +1,5 @@
 import asyncio
+import collections
 import multiprocessing
 import time
 
@@ -7,7 +8,7 @@ class TaskStateMachine:
     """Represents all phases that a task can go through its life."""
 
     def __init__(self, tasks, status_repo):
-        self._requested = tasks
+        self._requested = collections.deque(tasks)
         self._status_repo = status_repo
         self._triaging = []
         self._ready = []
@@ -66,7 +67,7 @@ class Worker:
         try:
             async with self._state_machine.lock:
                 if len(self._state_machine.triaging) < self._max_triaging:
-                    runtime_task = self._state_machine.requested.pop(0)
+                    runtime_task = self._state_machine.requested.popleft()
                     self._state_machine.triaging.append(runtime_task)
                 else:
                     return
