@@ -112,10 +112,8 @@ class PythonModule:
             path = os.path.dirname(path)
         return path
 
-    def add_imported_object(self, statement):
-        """
-        Keeps track of objects names and importable entities
-        """
+    def _get_imported_path_from_statement(self, statement):
+        """Returns the imported path, from absolute or relative import."""
         abs_path_of_module_dir = os.path.abspath(os.path.dirname(self.path))
         imported_path = self._get_adjusted_path_for_level(statement,
                                                           abs_path_of_module_dir)
@@ -124,7 +122,13 @@ class PythonModule:
             # to the directory structure
             module_path = statement.module.replace('.', os.path.sep)
             imported_path = os.path.join(imported_path, module_path)
+        return imported_path
 
+    def add_imported_object(self, statement):
+        """
+        Keeps track of objects names and importable entities
+        """
+        imported_path = self._get_imported_path_from_statement(statement)
         for name in statement.names:
             full_path = os.path.join(imported_path,
                                      name.name.replace('.', os.path.sep))
