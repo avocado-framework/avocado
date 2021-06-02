@@ -118,15 +118,18 @@ class PythonModule:
         """
         abs_path_of_module_dir = os.path.abspath(os.path.dirname(self.path))
         if getattr(statement, 'module', None) is not None:
-            path = self._get_adjusted_path_for_level(statement, abs_path_of_module_dir)
+            imported_path = self._get_adjusted_path_for_level(statement,
+                                                              abs_path_of_module_dir)
             module_path = statement.module.replace('.', os.path.sep)
-            path = os.path.join(path, module_path)
+            imported_path = os.path.join(imported_path, module_path)
         else:
             # Module has no name, its path is relative to the directory
             # structure
-            path = self._get_adjusted_path_for_level(statement, abs_path_of_module_dir)
+            imported_path = self._get_adjusted_path_for_level(statement,
+                                                              abs_path_of_module_dir)
         for name in statement.names:
-            full_path = os.path.join(path, name.name.replace('.', os.path.sep))
+            full_path = os.path.join(imported_path,
+                                     name.name.replace('.', os.path.sep))
             final_name = self._get_name_from_alias_statement(name)
             self.imported_objects[final_name] = full_path
 
