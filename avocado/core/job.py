@@ -200,10 +200,11 @@ class Job:
         test_handler = output.add_log_handler(LOG_JOB,
                                               logging.FileHandler,
                                               self.logfile, self.loglevel, fmt)
+        test_handler.set_name("job_log_handler_{}".format(self._unique_id))
         root_logger = logging.getLogger()
         root_logger.addHandler(test_handler)
         root_logger.setLevel(self.loglevel)
-        self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
+        self.__logging_handlers[test_handler.get_name()] = [LOG_JOB.name, ""]
         # Add --store-logging-streams
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
@@ -224,11 +225,13 @@ class Job:
                                        logging.getLevelName(level))
                 handler = output.add_log_handler(name, logging.FileHandler,
                                                  logfile, level, formatter)
+                handler.set_name("{}_{}".format(name, self._unique_id))
             except ValueError as details:
                 self.log.error("Failed to set log for --store-logging-stream "
                                "%s:%s: %s.", name, level, details)
             else:
-                self.__logging_handlers[handler] = [name]
+                handler.set_name("{}_{}".format(self._unique_id, name))
+                self.__logging_handlers[handler.get_name()] = [name]
 
         # Enable console loggers
         enabled_logs = self.config.get("core.show")
@@ -243,15 +246,19 @@ class Job:
                                                   STD_OUTPUT.stdout,
                                                   logging.DEBUG,
                                                   fmt="%(message)s")
+            test_handler.set_name("test_log_handler_{}".format(self._unique_id))
             root_logger.addHandler(test_handler)
-            self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
+            self.__logging_handlers[test_handler.get_name()] = [LOG_JOB.name, ""]
 
     def __stop_job_logging(self):
         if self._stdout_stderr:
             sys.stdout, sys.stderr = self._stdout_stderr
         for handler, loggers in self.__logging_handlers.items():
             for logger in loggers:
-                logging.getLogger(logger).removeHandler(handler)
+                current_logger = logging.getLogger(logger)
+                for hdlr in current_logger.handlers:
+                    if hdlr.get_name() == handler:
+                        current_logger.removeHandler(hdlr=hdlr)
 
     def _log_avocado_config(self):
         LOG_JOB.info('Avocado config:')
