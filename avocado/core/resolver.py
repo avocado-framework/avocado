@@ -17,13 +17,12 @@ Test resolver module.
 """
 
 import os
-from enum import Enum
+from enum import EnumMeta
 
 from .enabled_extension_manager import EnabledExtensionManager
 from .exceptions import JobTestSuiteReferenceResolutionError
 
-
-class ReferenceResolutionResult(Enum):
+class ReferenceResolutionResult(EnumMeta):
     #: Given test reference was properly resolved
     SUCCESS = object()
     #: Given test reference was not properly resolved
@@ -32,7 +31,7 @@ class ReferenceResolutionResult(Enum):
     ERROR = object()
 
 
-class ReferenceResolutionAction(Enum):
+class ReferenceResolutionAction(EnumMeta):
     #: Stop trying to resolve the reference
     RETURN = object()
     #: Continue to resolve the given reference
