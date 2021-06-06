@@ -10,9 +10,18 @@ from avocado.core import exit_codes
 from avocado.core.job import Job
 from avocado.core.suite import TestSuite
 from avocado.utils.network.ports import find_free_port
+from avocado.utils.path import find_command
 
 BOOLEAN_ENABLED = [True, 'true', 'on', 1]
 BOOLEAN_DISABLED = [False, 'false', 'off', 0]
+
+
+def _get_true_bin():
+    return find_command(cmd='true', default="/bin/true")
+
+
+def _get_false_bin():
+    return find_command(cmd='false', default="/bin/false")
 
 
 class JobAPIFeaturesTest(Test):
@@ -46,7 +55,7 @@ class JobAPIFeaturesTest(Test):
         """Creates the Job config."""
         if value is None:
             value = self.params.get('value')
-        reference = self.params.get('reference', default=['/bin/true'])
+        reference = self.params.get('reference', default=[_get_true_bin()])
         config = {'core.show': ['none'],
                   'run.results_dir': self.workdir,
                   'run.references': reference}
@@ -290,13 +299,13 @@ def create_suites(args):
             {'namespace': 'job.run.result.tap.include_logs',
              'value': True,
              'file': 'results.tap',
-             'content': "Command '/bin/true' finished with 0",
+             'content': "Command '{}' finished with 0".format(_get_true_bin()),
              'assert': True},
 
             {'namespace': 'job.run.result.tap.include_logs',
              'value': False,
              'file': 'results.tap',
-             'content': "Command '/bin/true' finished with 0",
+             'content': "Command '{}' finished with 0".format(_get_true_bin()),
              'assert': False},
 
             {'namespace': 'job.run.result.xunit.job_name',
@@ -310,7 +319,7 @@ def create_suites(args):
              'file': 'results.xml',
              'content': '--[ CUT DUE TO XML PER TEST LIMIT ]--',
              'assert': True,
-             'reference': ['/bin/false'],
+             'reference': [_get_false_bin()],
              'exit_code': 1},
 
             {'namespace': 'run.failfast',
@@ -318,7 +327,7 @@ def create_suites(args):
              'file': 'results.json',
              'content': '"skip": 1',
              'assert': True,
-             'reference': ['/bin/false', '/bin/true'],
+             'reference': [_get_false_bin(), _get_true_bin()],
              'exit_code': 9},
 
             {'namespace': 'run.ignore_missing_references',
@@ -326,7 +335,7 @@ def create_suites(args):
              'file': 'results.json',
              'content': '"pass": 1',
              'assert': True,
-             'reference': ['/bin/true', 'foo']},
+             'reference': [_get_true_bin(), 'foo']},
 
             {'namespace': 'run.unique_job_id',
              'value': 'abcdefghi',
