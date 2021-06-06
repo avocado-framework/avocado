@@ -56,7 +56,12 @@ class TAPResult(ResultEvents):
     def __init__(self, config):  # pylint: disable=W0613
         self.__logs = []
         self.__open_files = []
+        self._job = None
         self.config = config
+        self.__include_logs = self.config.get('job.run.result.tap.include_logs')
+        self.is_header_printed = False
+
+    def _initialize_loggers(self):
         output = self.config.get('job.run.result.tap.output')
         if output == '-':
             log = LOG_UI.debug
@@ -65,8 +70,11 @@ class TAPResult(ResultEvents):
             log = open(output, "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
-        self.__include_logs = self.config.get('job.run.result.tap.include_logs')
-        self.is_header_printed = False
+        # Should we add default results.tap?
+        if self.config.get('job.run.result.tap.enabled'):
+            log = open(os.path.join(self._job.logdir, 'results.tap'), "w", 1)
+            self.__open_files.append(log)
+            self.__logs.append(file_log_factory(log))
 
     def __write(self, msg, *writeargs):
         """
@@ -87,19 +95,32 @@ class TAPResult(ResultEvents):
         """
         Log the test plan
         """
-        # Should we add default results.tap?
-        if self.config.get('job.run.result.tap.enabled'):
-            log = open(os.path.join(job.logdir, 'results.tap'), "w", 1)
-            self.__open_files.append(log)
-            self.__logs.append(file_log_factory(log))
+        self._job = job
 
     def start_test(self, result, state):
         pass
+
+    def __getstate__(self):
+        """
+        Remove open log files and logs in case of an early abort.
+
+        If we have an early abort the loggers are initialized,
+        and we have stored open files and logs in the protected
+        attributes. But by this time they are not needed anymore
+        and we can reset the attributes.
+
+        :return: class internal state
+        """
+        state = self.__dict__
+        state["_TAPResult__open_files"] = []
+        state["_TAPResult__logs"] = []
+        return state
 
     def end_test(self, result, state):
         """
         Log the test status and details
         """
+        self._initialize_loggers()
         if not self.is_header_printed:
             self.__write("1..%d", result.tests_total)
             self.__flush()
