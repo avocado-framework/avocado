@@ -21,6 +21,7 @@ import os
 import subprocess
 import sys
 import time
+import platform
 
 import jinja2 as jinja
 
@@ -29,6 +30,7 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Init, Result
 from avocado.core.settings import settings
 from avocado.utils import astring
+from avocado.utils.path import find_command
 
 
 class ReportModel:
@@ -196,10 +198,15 @@ class HTMLResult(Result):
         if not setsid:
             setsid = getattr(os, 'setpgrp', None)
         inout = open(os.devnull, "r+")
-        cmd = ['xdg-open', html_path]
-        subprocess.Popen(cmd, close_fds=True, stdin=inout,  # pylint: disable=W1509
-                         stdout=inout, stderr=inout,
-                         preexec_fn=setsid)
+        if "macOS" in platform.platform():
+            open_path = find_command("open", default=None)
+        else:
+            open_path = find_command("xdg-open", default=None)
+        if open_path:
+            cmd = [open_path, html_path]
+            subprocess.Popen(cmd, close_fds=True, stdin=inout,  # pylint: disable=W1509
+                             stdout=inout, stderr=inout,
+                             preexec_fn=setsid)
 
     @staticmethod
     def _render(result, output_path):
