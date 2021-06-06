@@ -28,6 +28,7 @@ import time
 
 from .external import gdbmi_parser
 from .network import ports
+from .path import find_command
 
 #: Contains a list of binary names that should be run via the GNU debugger
 #: and be stopped at a given point. That means that a breakpoint will be set
@@ -257,8 +258,9 @@ class GDB:
 
     DEFAULT_BREAK = 'main'
 
-    def __init__(self, path='/usr/bin/gdb', *extra_args):  # pylint: disable=W1113
-
+    def __init__(self, path=None, *extra_args):  # pylint: disable=W1113
+        if path is None:
+            path = find_command("gdb", default="/usr/bin/gdb")
         self.path = path
         args = [self.path]
         args += self.REQUIRED_ARGS
@@ -551,7 +553,7 @@ class GDBServer:
     #: ready to accept new connections
     INIT_TIMEOUT = 5.0
 
-    def __init__(self, path='/usr/bin/gdbserver', port=None,  # pylint: disable=W0613, W1113
+    def __init__(self, path=None, port=None,  # pylint: disable=W0613, W1113
                  wait_until_running=True, *extra_args):
         """
         Initializes a new gdbserver instance
@@ -567,6 +569,8 @@ class GDBServer:
         :type wait_until_running: bool
         :param extra_args: optional extra arguments to be passed to gdbserver
         """
+        if path is None:
+            path = find_command("gdbserver", default="/usr/bin/gdbserver")
         self.path = path
         args = [self.path]
         args += self.REQUIRED_ARGS
