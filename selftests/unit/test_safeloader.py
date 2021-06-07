@@ -315,9 +315,9 @@ class DocstringDirectives(unittest.TestCase):
         Tests the regular expressions that deal with docstring directives
         """
         for directive in self.VALID_DIRECTIVES:
-            self.assertTrue(safeloader.DOCSTRING_DIRECTIVE_RE.match(directive))
+            self.assertTrue(safeloader.docstring.DOCSTRING_DIRECTIVE_RE.match(directive))
         for directive in self.INVALID_DIRECTIVES:
-            self.assertFalse(safeloader.DOCSTRING_DIRECTIVE_RE.match(directive))
+            self.assertFalse(safeloader.docstring.DOCSTRING_DIRECTIVE_RE.match(directive))
 
 
 class UnlimitedDiff(unittest.TestCase):
