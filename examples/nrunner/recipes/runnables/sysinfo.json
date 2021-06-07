@@ -1,0 +1,1 @@
+{"kind": "sysinfo", "uri": "pre", "kwargs": {"sysinfo_files": {"commands": ["uptime", "dmidecode"], "files": ["/proc/version", "/proc/meminfo"]}}}

@@ -192,6 +192,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-runner-tap
 %{_bindir}/avocado-runner-requirement-asset
 %{_bindir}/avocado-runner-requirement-package
+%{_bindir}/avocado-runner-sysinfo
 %{_bindir}/avocado-software-manager
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
