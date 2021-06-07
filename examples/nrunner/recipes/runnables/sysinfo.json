@@ -1,0 +1,4 @@
+{"config":{"sysinfo.collect.commands_timeout": -1, "sysinfo.collect.locale": "C", "sysinfo.collect.installed_packages": false},
+  "kind": "sysinfo",
+  "uri": "pre",
+  "kwargs": {"sysinfo": {"commands": ["uptime", "dmidecode"], "files": ["/proc/version", "/proc/meminfo"]}}}
