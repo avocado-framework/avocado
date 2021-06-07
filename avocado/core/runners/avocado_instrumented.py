@@ -10,8 +10,9 @@ from ..test import TestID
 from ..tree import TreeNode
 
 
-def _send_message(msg, queue, message_type):
-    status = {'type': message_type, 'log': msg}
+def _send_message(msg, queue, message_type, encoding='utf-8'):
+    status = {'type': message_type, 'log': msg.encode(encoding),
+              'encoding': encoding}
     queue.put(status)
 
 
@@ -124,8 +125,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             queue.put({'status': 'finished',
                        'result': state['status'].lower()})
         except Exception:
-            _send_message(traceback.format_exc().encode('utf-8'), queue,
-                          'stderr')
+            _send_message(traceback.format_exc(), queue, 'stderr')
             queue.put({'status': 'finished', 'result': 'error'})
 
     def run(self):
@@ -177,8 +177,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
         except Exception:
             yield self.prepare_status('running',
                                       {'type': 'stderr',
-                                       'log': traceback.format_exc().encode(
-                                           'utf-8')})
+                                       'log': traceback.format_exc()})
             yield self.prepare_status('finished', {'result': 'error'})
 
 

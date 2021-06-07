@@ -624,10 +624,12 @@ It will save the log to the debug.log file in the task directory.
 :param status: 'running'
 :param type: 'log'
 :param log: log message
-:type log: string
+:type log: bytes
+:param encoding: optional value for decoding messages
+:type encoding: str
 :param time: Time stamp of the message
 :type time: float
-:example: {'status': 'running', 'type': 'log', 'log': 'log message',
+:example: {'status': 'running', 'type': 'log', 'log': b'log message',
          'time': 18405.55351474}
 
 Stdout message
@@ -637,10 +639,12 @@ It will save the stdout to the stdout file in the task directory.
 :param status: 'running'
 :param type: 'stdout'
 :param log: stdout message
-:type log: string
+:type log: bytes
+:param encoding: optional value for decoding messages
+:type encoding: str
 :param time: Time stamp of the message
 :type time: float
-:example: {'status': 'running', 'type': 'stdout', 'log': 'stdout message',
+:example: {'status': 'running', 'type': 'stdout', 'log': b'stdout message',
          'time': 18405.55351474}
 
 Stderr message
@@ -650,10 +654,12 @@ It will save the stderr to the stderr file in the task directory.
 :param status: 'running'
 :param type: 'stderr'
 :param log: stderr message
-:type log: string
+:type log: bytes
+:param encoding: optional value for decoding messages
+:type encoding: str
 :param time: Time stamp of the message
 :type time: float
-:example: {'status': 'running', 'type': 'stderr', 'log': 'stderr message',
+:example: {'status': 'running', 'type': 'stderr', 'log': b'stderr message',
          'time': 18405.55351474}
 
 Whiteboard message
@@ -663,8 +669,10 @@ It will save the stderr to the whiteboard file in the task directory.
 :param status: 'running'
 :param type: 'whiteboard'
 :param log: whiteboard message
-:type log: string
+:type log: bytes
+:param encoding: optional value for decoding messages
+:type encoding: str
 :param time: Time stamp of the message
 :type time: float
 :example: {'status': 'running', 'type': 'whiteboard',
-         'log': 'whiteboard message', 'time': 18405.55351474}
+         'log': b'whiteboard message', 'time': 18405.55351474}
