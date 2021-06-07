@@ -178,9 +178,9 @@ class RunnerOperationTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('    base     ' + mapping['base_dir'], result.stdout_text)
-        self.assertIn('    data     ' + mapping['data_dir'], result.stdout_text)
-        self.assertIn('    logs     ' + mapping['logs_dir'], result.stdout_text)
+        self.assertIn('   base    ' + mapping['base_dir'], result.stdout_text)
+        self.assertIn('   data    ' + mapping['data_dir'], result.stdout_text)
+        self.assertIn('   logs    ' + mapping['logs_dir'], result.stdout_text)
 
     def test_runner_phases(self):
         cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '

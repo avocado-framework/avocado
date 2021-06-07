@@ -136,8 +136,9 @@ def get_data_dir():
         * VM images
         * Reference bitmaps
     """
-    return _get_rw_dir(_get_settings_dir('data_dir'),
-                       SYSTEM_DATA_DIR, USER_DATA_DIR)
+    warnings.warn(("get_data_dir() is deprecated, get values from "
+                   "settings.as_dict() or self.config"), DeprecationWarning)
+    return settings.as_dict().get('datadir.paths.data_dir')
 
 
 def get_datafile_path(*args):
@@ -146,7 +147,8 @@ def get_datafile_path(*args):
 
     :param args: Arguments passed to os.path.join. Ex ('images', 'jeos.qcow2')
     """
-    new_args = tuple([get_data_dir()] + list(args))
+    config = settings.as_dict()
+    new_args = tuple([config.get('datadir.paths.data_dir')] + list(args))
     return os.path.join(*new_args)
 
 
@@ -156,8 +158,9 @@ def get_logs_dir():
 
     The log dir is where we store job/test logs in general.
     """
-    return _get_rw_dir(_get_settings_dir('logs_dir'),
-                       SYSTEM_LOG_DIR, USER_LOG_DIR)
+    warnings.warn(("get_logs_dir() is deprecated, get values from "
+                   "settings.as_dict() or self.config"), DeprecationWarning)
+    return settings.as_dict().get('datadir.paths.logs_dir')
 
 
 def create_job_logs_dir(base_dir=None, unique_id=None):

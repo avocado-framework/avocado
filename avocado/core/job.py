@@ -265,7 +265,7 @@ class Job:
         LOG_JOB.info('')
         LOG_JOB.info('base     %s', data_dir.get_base_dir())
         LOG_JOB.info('tests    %s', data_dir.get_test_dir())
-        LOG_JOB.info('data     %s', data_dir.get_data_dir())
+        LOG_JOB.info('data     %s', self.config.get('datadir.paths.data_dir'))
         LOG_JOB.info('logs     %s', self.logdir)
         LOG_JOB.info('')
 
