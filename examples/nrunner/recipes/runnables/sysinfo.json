@@ -1,0 +1,1 @@
+{"kind": "sysinfo", "uri": "pre", "args": [{"commands": ["uptime", "dmidecode"], "files": ["/proc/version", "/proc/meminfo"]}]}
