@@ -160,29 +160,6 @@ def get_this_file():
                          "module")
 
 
-class ModuleImportedAs(unittest.TestCase):
-
-    def _test(self, content, result):
-        temp_script = script.TemporaryScript('temp.py', content,
-                                             'avocado_loader_unittest')
-        temp_script.save()
-        module = ast.parse(content, temp_script.path)
-        temp_script.remove()
-        self.assertEqual(result, safeloader.modules_imported_as(module))
-
-    def test_foo(self):
-        self._test('import foo', {'foo': 'foo'})
-
-    def test_foo_as_bar(self):
-        self._test('import foo as bar', {'foo': 'bar'})
-
-    def test_foo_as_foo(self):
-        self._test('import foo as foo', {'foo': 'foo'})
-
-    def test_import_inside_class(self):
-        self._test("class Foo: import foo as foo", {})
-
-
 class DocstringDirectives(unittest.TestCase):
 
     VALID_DIRECTIVES = [":avocado: foo",
@@ -367,11 +344,6 @@ class FindClassAndMethods(UnlimitedDiff):
             'PythonModule': ['test_is_avocado_test',
                              'test_import_of_all_module_level',
                              'test_import_relative'],
-            'ModuleImportedAs': ['_test',
-                                 'test_foo',
-                                 'test_foo_as_bar',
-                                 'test_foo_as_foo',
-                                 'test_import_inside_class'],
             'DocstringDirectives': ['test_longline',
                                     'test_newlines',
                                     'test_enabled',
@@ -423,10 +395,6 @@ class FindClassAndMethods(UnlimitedDiff):
             'PythonModule': ['test_is_avocado_test',
                              'test_import_of_all_module_level',
                              'test_import_relative'],
-            'ModuleImportedAs': ['test_foo',
-                                 'test_foo_as_bar',
-                                 'test_foo_as_foo',
-                                 'test_import_inside_class'],
             'DocstringDirectives': ['test_longline',
                                     'test_newlines',
                                     'test_enabled',

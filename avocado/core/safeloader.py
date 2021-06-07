@@ -204,42 +204,6 @@ def statement_import_as(statement):
     return result
 
 
-def modules_imported_as(module):
-    """
-    Returns a mapping of imported module names whether using aliases or not
-
-    The goal of this utility function is to return the name of the import
-    as used in the rest of the module, whether an aliased import was used
-    or not.
-
-    For code such as:
-
-    >>> import foo as bar
-
-    This function should return {"foo": "bar"}
-
-    And for code such as:
-
-    >>> import foo
-
-    It should return {"foo": "foo"}
-
-    Please note that only global level imports are looked at. If there are
-    imports defined, say, inside functions or class definitions, they will
-    not be seen by this function.
-
-    :param module: module, as parsed by :func:`ast.parse`
-    :type module: :class:`_ast.Module`
-    :returns: a mapping of names {<realname>: <alias>} of modules imported
-    :rtype: dict
-    """
-    result = {}
-    for statement in module.body:
-        if isinstance(statement, ast.Import):
-            result.update(statement_import_as(statement))
-    return result
-
-
 #: Gets the docstring directive value from a string. Used to tweak
 #: test behavior in various ways
 DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(r[a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\{\}\"\-\.\/ ]*))\s*$'
