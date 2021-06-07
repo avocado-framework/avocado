@@ -1632,7 +1632,7 @@ Avocado INSTRUMENTED tests, those written in Python and using the
 specified as docstrings.
 
 To be considered valid, the docstring must match this pattern:
-:data:`avocado.core.safeloader.DOCSTRING_DIRECTIVE_RE_RAW`.
+:data:`avocado.core.safeloader.docstring.DOCSTRING_DIRECTIVE_RE_RAW`.
 
 An Avocado docstring directive has two parts:
 
