@@ -28,6 +28,7 @@ class RequirementsResolver:
             # original `requirements` dictionary from the test
             requirement_copy = requirement.copy()
             kind = 'requirement-%s' % requirement_copy.pop('type')
-            requirement_runnable = Runnable(kind, None, **requirement_copy)
+            requirement_runnable = Runnable(kind, None, config=runnable.config,
+                                            **requirement_copy)
             requirements_runnables.append(requirement_runnable)
         return requirements_runnables
