@@ -225,6 +225,23 @@ class RpmBackend(BaseBackend):
                 subpacks += self.find_rpm_packages(new_filepath)
         return subpacks
 
+    @staticmethod
+    def is_valid(package_path):
+        """Verifies if a package is a valid rpm file.
+
+        :param str package_path: .rpm package path.
+        :returns: True if valid, otherwise false.
+        :rtype: bool
+        """
+        abs_path = os.path.abspath(os.path.expanduser((package_path)))
+        try:
+            result = process.run("rpm -qip {}".format(abs_path))
+        except process.CmdError:
+            return False
+        if result.exit_status == 0:
+            return True
+        return False
+
     def perform_setup(self, packages, no_dependencies=False):
         """
         General RPM setup with automatic handling of dependencies based on
