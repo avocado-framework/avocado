@@ -51,6 +51,23 @@ class DpkgBackend(BaseBackend):
                 installed_packages.append("%s-%s" % (parts[1], parts[2]))
         return installed_packages
 
+    @staticmethod
+    def is_valid(package_path):
+        """Verifies if a package is a valid deb file.
+
+        :param str package_path: .deb package path.
+        :returns: True if valid, otherwise false.
+        :rtype: bool
+        """
+        abs_path = os.path.abspath(os.path.expanduser((package_path)))
+        try:
+            result = process.run("ar t {}".format(abs_path))
+        except process.CmdError:
+            return False
+        if result.exit_status == 0:
+            return True
+        return False
+
     def list_files(self, package):
         """
         List files installed by package [package].
