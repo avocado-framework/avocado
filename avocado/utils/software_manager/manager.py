@@ -49,3 +49,24 @@ class SoftwareManager:
         except NotImplementedError:
             pass
         return self.initialized
+
+    @staticmethod
+    def extract_from_package(package_path, dest_path=None):
+        """Try to extract a package content into a destination directory.
+
+        It will try to see if the package is valid against all supported
+        package managers and if any is found, then extracts its content into
+        the extract_path.
+
+        Raises NotImplementedError when a non-supported package is used.
+
+        :param str package_path: package file path.
+        :param str dest_path: destination path to extract. Default is the
+                              current directory.
+        :returns: destination path were the package it was extracted.
+        """
+        for backend in SUPPORTED_PACKAGE_MANAGERS.values():
+            if backend.is_valid(package_path):
+                return backend.extract_from_package(package_path, dest_path)
+        raise NotImplementedError('No package manager supported was found for '
+                                  'package %s.' % package_path)

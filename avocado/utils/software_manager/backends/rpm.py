@@ -242,6 +242,32 @@ class RpmBackend(BaseBackend):
             return True
         return False
 
+    @staticmethod
+    def extract_from_package(package_path, dest_path=None):
+        """Extracts the package content to a specific destination path.
+
+        :param str package_path: path to the rpm package.
+        :param dest_path: destination path to extract the files. Default it
+                          will be the current directory.
+        :returns: path of the extracted file
+        :returns: the path of the extracted files.
+        :rtype: str
+        """
+        abs_path = os.path.abspath(os.path.expanduser(package_path))
+        dest = dest_path or os.path.curdir
+
+        # If something goes wrong process.run will raise a CmdError exception
+        result = process.run("rpm2cpio {} | cpio -dium -D {}".format(abs_path,
+                                                                     dest),
+                             shell=True)
+        if result.exit_status == 0:
+            return dest
+
+        # But, sometimes the process don't crash, instead exits with a non
+        # zero output
+        msg = "Failed to extract from package: {}".format(result.stderr_text)
+        raise OSError(msg)
+
     def perform_setup(self, packages, no_dependencies=False):
         """
         General RPM setup with automatic handling of dependencies based on
