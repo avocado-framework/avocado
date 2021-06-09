@@ -67,10 +67,6 @@ The strace file will be located at Avocado log directory, on
 Caveats
 ~~~~~~~
 
-* It is not possible to debug with GDB (`--gdb-run-bin`) and use
-  wrappers (`--wrapper`) at the same time. These two options are
-  mutually exclusive.
-
 * You can only set one (global) wrapper. If you need functionality
   present in two wrappers, you have to combine those into a single
   wrapper script.
