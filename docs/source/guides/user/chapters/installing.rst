@@ -101,10 +101,10 @@ The following image shows the status of the Avocado packages building on COPR:
 OpenSUSE
 ~~~~~~~~
 
-The `OpenSUSE`_ project packages LTS versions of Avocado.  You can install
-packages by running the following commands::
+The OpenSUSE project provides packages for Avocado. Check the
+`Virtualization:Tests project in OpenSUSE build service`_
+to get the packages from there.
 
-  $ sudo zypper install avocado
 
 Debian
 ~~~~~~
@@ -127,5 +127,5 @@ Then to install Avocado from the git repository run::
     $ cd avocado
     $ sudo python3 setup.py install
 
-.. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado
+.. _Virtualization:Tests project in OpenSUSE build service: https://build.opensuse.org/project/show/Virtualization:Tests
 .. _Avocado-VT: https://avocado-vt.readthedocs.io/en/latest/GetStartedGuide.html#installing-avocado-vt
