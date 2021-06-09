@@ -39,7 +39,7 @@ directory by running::
 
   $ avocado run --store-logging-stream [STREAM[:LEVEL][STREAM[:LEVEL] ...]]
  
-This will produce `$STREAM.$LEVEL` files per each (unique) entry in the test
+This will produce ``$STREAM.$LEVEL`` files per each (unique) entry in the test
 results directory.
 
 .. note:: You have to specify separated logging streams. You can't use the

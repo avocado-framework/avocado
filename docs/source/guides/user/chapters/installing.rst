@@ -4,7 +4,7 @@ Installing
 ==========
 
 Avocado is primarily written in Python, so a standard Python installation is
-possible and often preferable. You can also install from your distro
+possible and often preferable. You can also install from your Linux distribution
 repository, if available.
 
 .. note:: Please note that this installs the Avocado core functionality.  Many
@@ -24,7 +24,7 @@ with a single command::
 
   $ pip3 install --user avocado-framework
 
-This will fetch the Avocado package (and possibly some of its dependecies) from
+This will fetch the Avocado package (and possibly some of its dependencies) from
 the PyPI repository, and will attempt to install it in the user's home
 directory (usually under ``~/.local``), which you might want to add to your
 ``PATH`` variable if not done already.
@@ -101,10 +101,10 @@ The following image shows the status of the Avocado packages building on COPR:
 OpenSUSE
 ~~~~~~~~
 
-The `OpenSUSE`_ project packages LTS versions of Avocado.  You can install
-packages by running the following commands::
+The OpenSUSE project provides packages for Avocado. Check the
+`Virtualization:Tests project in OpenSUSE build service`_
+to get the packages from there.
 
-  $ sudo zypper install avocado
 
 Debian
 ~~~~~~
@@ -127,5 +127,5 @@ Then to install Avocado from the git repository run::
     $ cd avocado
     $ sudo python3 setup.py install
 
-.. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado
+.. _Virtualization:Tests project in OpenSUSE build service: https://build.opensuse.org/project/show/Virtualization:Tests
 .. _Avocado-VT: https://avocado-vt.readthedocs.io/en/latest/GetStartedGuide.html#installing-avocado-vt

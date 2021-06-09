@@ -35,8 +35,8 @@ Config file parsing order
 
 Avocado starts by parsing what it calls system wide config file, that is
 shipped to all Avocado users on a system wide directory,
-``/etc/avocado/avocado.conf`` (when installed by your distro's package
-manager).
+``/etc/avocado/avocado.conf`` (when installed by your Linux distribution's
+package manager).
 
 There is another directory that will be scanned by extra config files,
 ``/etc/avocado/conf.d``. This directory may contain plugin config files, and
@@ -114,8 +114,8 @@ Where the lower config files override values of the upper files and the
   given situation.
 
 .. note::  When Avocado runs inside virtualenv than path for global config
-  files is also changed. For example, `avocado.conf` comes from the virual-env
-  path `venv/etc/avocado/avocado.conf`.
+  files is also changed. For example, ``avocado.conf`` comes from the virual-env
+  path ``venv/etc/avocado/avocado.conf``.
 
 
 Order of precedence for values used in tests

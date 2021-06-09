@@ -30,11 +30,11 @@ Resulting in::
 
   JOB ID     : f3139826f1b169a0b456e0e880ffb83ed26d9858
   SRC JOB ID : latest
-  JOB LOG    : /home/cleber/avocado/job-results/job-2020-08-13T11.24-f313982/job.log
+  JOB LOG    : $HOME/avocado/job-results/job-2020-08-13T11.24-f313982/job.log
    (1/2) /bin/true: PASS (0.01 s)
    (2/2) /bin/false: FAIL: Exited with status: '1', stdout: '' stderr: '' (0.07 s)
   RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-  JOB HTML   : /home/cleber/avocado/job-results/job-2020-08-13T11.24-f313982/results.html
+  JOB HTML   : $HOME/avocado/job-results/job-2020-08-13T11.24-f313982/results.html
   JOB TIME   : 0.39 s
 
 It's also possible to use the other types of references to jobs, like
@@ -55,7 +55,7 @@ than the newer implementation discussed earlier, but it has some cons:
   the replayed job or if overriding aspects of the source job
 
 * The implementation has to account for each of the options capable of
-  being overriden
+  being overridden
 
 It's expected that more complex use cases for Jobs, including replays,
 should instead use the Job API directly.  Regardless, the remainder of
@@ -249,11 +249,11 @@ diff file and, optionally, open it on your preferred browser (option
     $ avocado diff 7025aaba 384b949c --html /tmp/myjobdiff.html
     /tmp/myjobdiff.html
 
-If the option ``--open-browser`` is used without the ``--html``, we will create
-a temporary html file.
+If the option ``--open-browser`` is used without the ``--html``, a temporary html file
+will be created.
 
-For those wiling to use a custom diff tool instead of the Avocado Diff tool, we
-offer the option ``--create-reports``, so we create two temporary files with
+For those wiling to use a custom diff tool instead of the Avocado Diff tool, there is
+an option ``--create-reports`` that will, create two temporary files with
 the relevant content. The file names are printed and user can copy/paste to the
 custom diff tool command line::
 
@@ -283,7 +283,7 @@ Listing tests
 
 Avocado can list your tests without run it. This can be handy sometimes.
 
-You have two ways of discovering the tests. You can simulate the execution by
+There are two ways of discovering the tests. One way is to simulate the execution by
 using the ``--dry-run`` argument::
 
     $ avocado run /bin/true --dry-run

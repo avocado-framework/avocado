@@ -75,8 +75,8 @@ more information about this type of tests, please visit the :ref:`Instrumented`
 section of this document.
 
 .. note:: Mapping the Test References to tests can be affected
-   by command-line switches like `--external-runner`, which
-   completelly changes the meaning of the given strings.
+   by command-line switches like ``--external-runner``, which
+   completely changes the meaning of the given strings.
 
 Conventions
 ~~~~~~~~~~~
@@ -93,7 +93,7 @@ reference::
   passtest.py:PassTest.test
 
 Unless a file with that exact name exists, most resolvers will split
-it into `passtest.py` as the filesystem path, and `PassTest.test` as
+it into ``passtest.py`` as the filesystem path, and ``PassTest.test`` as
 an additional specification for the individual test.  It's also
 possible that some resolvers will support regular expressions and
 globs for the additional information component.
@@ -179,8 +179,15 @@ Example of Test IDs::
 Test types
 ----------
 
-Avocado at its simplest configuration can run three different types of tests
-[#f1]_. You can mix and match those in a single job.
+Avocado at its simplest configuration can run three different types of tests:
+
+* simple
+* python unittest
+* instrumented
+
+You can mix and match those in a single job.
+
+Avocado plugins can also introduce additional test types.
 
 Simple
 ~~~~~~
@@ -219,7 +226,7 @@ successful. The ``ERROR``, ``FAIL`` and ``INTERRUPTED`` signal failures.
 TAP
 ~~~
 
-TAP tests are pretty much like Simple tests in the sense tha they are
+TAP tests are pretty much like Simple tests in the sense that they are
 programs (either binaries or scripts) that will executed.  The
 difference is that the test result will be decided based on the
 produced output, that should be in `Test Anything Protocol
@@ -230,15 +237,19 @@ Test statuses
 
 Avocado sticks to the following definitions of test statuses:
 
- * ```PASS```: The test passed, which means all conditions being tested have passed.
- * ```FAIL```: The test failed, which means at least one condition being tested has
+ * ``PASS``: The test passed, which means all conditions being tested have passed.
+ * ``FAIL``: The test failed, which means at least one condition being tested has
    failed. Ideally, it should mean a problem in the software being tested has been found.
- * ```ERROR```: An error happened during the test execution. This can happen, for example,
+ * ``ERROR``: An error happened during the test execution. This can happen, for example,
    if there's a bug in the test runner, in its libraries or if a resource breaks unexpectedly.
    Uncaught exceptions in the test code will also result in this status.
- * ```SKIP```: The test runner decided a requested test should not be run. This
+ * ``SKIP``: The test runner decided a requested test should not be run. This
    can happen, for example, due to missing requirements in the test environment
    or when there's a job timeout.
+ * ``WARN``: The test ran and something might have gone wrong but didn't explicitly failed.
+ * ``CANCEL``: The test was canceled and didn't run.
+ * ``INTERRUPTED``: The test was explicitly interrupted. Usually this means that a user
+   hit CTRL+C while the job was still running or did not finish before the timeout specified.
 
 Exit codes
 ----------
@@ -260,4 +271,3 @@ If a job finishes with exit code `9`, for example, it means we had at least one
 test that failed and also we had at some point a job interruption, probably due
 to the job timeout or a `CTRL+C`.
 
-.. [#f1] Avocado plugins can introduce additional test types.

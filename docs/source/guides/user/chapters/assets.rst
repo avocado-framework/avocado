@@ -24,7 +24,7 @@ the following command::
 
  $ avocado assets list
 
-This command supports `--by-size-filter` and `--by-days` options. When using
+This command supports ``--by-size-filter`` and ``--by-days`` options. When using
 the former you should pass a comparison filter and a size in bytes. For
 instance::
 
@@ -33,7 +33,7 @@ instance::
 The command above will list only assets bigger than 2Kb. We support the
 following operators: `=`, `>=`, `<=`, `<` and `>`.
 
-Now, if you are looking for assets older (based on the acces time) than 10
+Now, if you are looking for assets older (based on the access time) than 10
 days, you could use this command::
 
  $ avocado assets list --by-days=10
@@ -47,8 +47,8 @@ provided a utility to help you with that::
  $ avocado assets purge --help
 
 Assets can be removed applying the same filters as described when listing them.
-You can remove assets by a size filter (`--by-size-filter`) or assets older
-than N days (`--by-days`).
+You can remove assets by a size filter (``--by-size-filter``) or assets older
+than N days (``--by-days``).
 
 .. _assets-removing-by-overall-cache-limit:
 
@@ -74,7 +74,7 @@ suffix.
 Changing the default cache dirs
 -------------------------------
 
-Assets are stored inside the `datadir.paths.cache_dirs` option. You can change
+Assets are stored inside the ``datadir.paths.cache_dirs`` option. You can change
 this in your configuration file and discover your current value with the
 following command::
 

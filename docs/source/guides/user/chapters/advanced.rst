@@ -38,8 +38,8 @@ programs called by the test.
 Usage
 ~~~~~
 
-This feature is implemented as a plugin, that adds the `--wrapper` option
-to the Avocado `run` command.  For a detailed explanation, please consult the
+This feature is implemented as a plugin, that adds the ``--wrapper`` option
+to the ``avocado run`` command.  For a detailed explanation, please consult the
 Avocado man page.
 
 Example of a transparent way of running strace as a wrapper::
@@ -66,10 +66,6 @@ The strace file will be located at Avocado log directory, on
 
 Caveats
 ~~~~~~~
-
-* It is not possible to debug with GDB (`--gdb-run-bin`) and use
-  wrappers (`--wrapper`) at the same time. These two options are
-  mutually exclusive.
 
 * You can only set one (global) wrapper. If you need functionality
   present in two wrappers, you have to combine those into a single
