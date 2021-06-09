@@ -1,14 +1,14 @@
 import os
-import re
 import sys
 import unittest
 import unittest.mock
+from collections import OrderedDict
 
 from avocado.core.safeloader.core import (find_avocado_tests,
-                                          find_class_and_methods,
                                           find_python_unittests)
 from avocado.utils import script
-from selftests.utils import TestCaseTmpDir, setup_avocado_loggers
+
+from ..utils import TestCaseTmpDir, setup_avocado_loggers
 
 setup_avocado_loggers()
 
@@ -176,73 +176,23 @@ class UnlimitedDiff(unittest.TestCase):
 class FindClassAndMethods(UnlimitedDiff):
 
     def test_self(self):
-        reference = {
-            'FindClassAndMethods': ['test_self',
-                                    'test_with_pattern',
-                                    'test_with_base_class',
-                                    'test_with_pattern_and_base_class',
-                                    'test_methods_order',
-                                    'test_import_not_on_parent',
-                                    'test_recursive_discovery',
-                                    'test_recursive_discovery_python_unittest'],
-            'UnlimitedDiff': ['setUp'],
-            'MultiLevel': ['setUp',
-                           'test_base_level0',
-                           'test_relative_level0_name_from_level1',
-                           'test_relative_level0_from_level1',
-                           'test_relative_level0_name_from_level2',
-                           'test_relative_level0_from_level2',
-                           'test_non_relative_level0_from_level2'],
-        }
-        found = find_class_and_methods(get_this_file())
-        self.assertEqual(reference, found)
-
-    def test_with_pattern(self):
-        reference = {
-            'FindClassAndMethods': ['test_self',
-                                    'test_with_pattern',
-                                    'test_with_base_class',
-                                    'test_with_pattern_and_base_class',
-                                    'test_methods_order',
-                                    'test_import_not_on_parent',
-                                    'test_recursive_discovery',
-                                    'test_recursive_discovery_python_unittest'],
+        reference = OrderedDict({
             'UnlimitedDiff': [],
-            'MultiLevel': ['test_base_level0',
-                           'test_relative_level0_name_from_level1',
-                           'test_relative_level0_from_level1',
-                           'test_relative_level0_name_from_level2',
-                           'test_relative_level0_from_level2',
-                           'test_non_relative_level0_from_level2'],
-        }
-        found = find_class_and_methods(get_this_file(),
-                                       re.compile(r'test.*'))
-        self.assertEqual(reference, found)
 
-    def test_with_base_class(self):
-        reference = {
-            'FindClassAndMethods': ['test_self',
-                                    'test_with_pattern',
-                                    'test_with_base_class',
-                                    'test_with_pattern_and_base_class',
-                                    'test_methods_order',
-                                    'test_import_not_on_parent',
-                                    'test_recursive_discovery',
-                                    'test_recursive_discovery_python_unittest'],
-        }
-        found = find_class_and_methods(get_this_file(),
-                                       base_class='UnlimitedDiff')
-        self.assertEqual(reference, found)
+            'FindClassAndMethods': [('test_self', {}, []),
+                                    ('test_methods_order', {}, []),
+                                    ('test_import_not_on_parent', {}, []),
+                                    ('test_recursive_discovery', {}, []),
+                                    ('test_recursive_discovery_python_unittest', {}, [])],
 
-    def test_with_pattern_and_base_class(self):
-        reference = {
-            'FindClassAndMethods': ['test_with_pattern',
-                                    'test_with_base_class',
-                                    'test_with_pattern_and_base_class']
-        }
-        found = find_class_and_methods(get_this_file(),
-                                       re.compile(r'test_with.*'),
-                                       'UnlimitedDiff')
+            'MultiLevel': [('test_base_level0', {}, []),
+                           ('test_relative_level0_name_from_level1', {}, []),
+                           ('test_relative_level0_from_level1', {}, []),
+                           ('test_relative_level0_name_from_level2', {}, []),
+                           ('test_relative_level0_from_level2', {}, []),
+                           ('test_non_relative_level0_from_level2', {}, [])]
+             })
+        found = find_python_unittests(get_this_file())
         self.assertEqual(reference, found)
 
     def test_methods_order(self):
