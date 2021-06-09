@@ -52,7 +52,7 @@ An example of a plugin's full qualified name:
 
 This plugin will generate the job result in JSON format.
 
-.. note:: Inside Avocado we will omit the prefix 'avocado.plugins' to make the
+.. note:: Inside Avocado we will omit the prefix ``avocado.plugins`` to make the
   things clean.
 
 .. note:: When listing plugins with ``avocado plugins`` pay attention to the
@@ -67,8 +67,7 @@ This plugin will generate the job result in JSON format.
 Disabling a plugin
 -------------------
 
-If you, as Avocado user, would like to disable a plugin, kkyou can disable on config files:
-points`_, it can be explicitly disabled in Avocado.
+If you, as Avocado user, would like to disable a plugin, you can disable on config files.
 
 The mechanism available to do so is to add entries to the ``disable``
 key under the ``plugins`` section of the Avocado configuration file.
@@ -277,7 +276,7 @@ the integral job results won't be easily accessible.
 For instance, on Continuous Integration (CI) services, one usually
 gets access to the output produced on the console, while access to
 other files produced (generally called artifacts) may or may not be
-acessible.
+accessible.
 
 For this reason, it may be helpful to simply output the logs for tests
 that have "interesting" outcomes, which usually means that fail and
@@ -291,4 +290,4 @@ can set on your configuration file::
 
 At the end of the job, a header will be printed for each test that
 ended with any of the statuses given, followed by the raw content of
-its reespective log file.
+its respective log file.

@@ -40,7 +40,7 @@ instrumented and simple tests::
      (4/6) failtest.py:FailTest.test: FAIL (0.00 s)
      (5/6) synctest.py:SyncTest.test: PASS (2.44 s)
      (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
-    RESULTS    : PASS 4 | ERROR 0 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
+    RESULTS    : PASS 4 | ERROR 0 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 5.98 s
 
 .. note:: Although in most cases running ``avocado run $test1 $test3 ...`` is
@@ -78,7 +78,7 @@ Sending Signals
 ~~~~~~~~~~~~~~~
 
 To interrupt a job execution a user can press ``ctrl+c`` which after a single
-press sends SIGTERM to the main test's process and waits for it to finish.  If
+press sends ``SIGTERM`` to the main test's process and waits for it to finish.  If
 this does not help user can press ``ctrl+c`` again (after 2s grace period)
 which destroys the test's process ungracefully and safely finishes the job
 execution always providing the test results.
@@ -102,7 +102,7 @@ first failed test::
      (1/4) /bin/true: PASS (0.01 s)
      (2/4) /bin/false: FAIL (0.01 s)
     Interrupting job (failfast).
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 0.12 s
 
 The default behavior, that is, when ``--failfast`` is **not** set, is
@@ -123,30 +123,30 @@ root folder to help Avocado on the "test resolution" phase.
 
 The idea is that, you know more about your tests than anybody else. And you can
 specify where your tests are, and what type (kind) they are. You just have to
-add a `.avocado.hint` in your root folder with the section`[kinds]` and one
+add a ``.avocado.hint`` in your root folder with the section ``[kinds]`` and one
 section for each kind that you are using.
 
-On the specific test type section, you can specify 3 options: `uri`, `args` and
-`kwargs`.
+On the specific test type section, you can specify 3 options: ``uri``, ``args`` and
+``kwargs``.
 
-.. note:: Some test types will convert kwargs into variable environments.
+.. note:: Some test types will convert ``kwargs`` into variable environments.
  Please check the documentation of the test type that you are using.
 
-You can also use the keyworkd `$testpath` in any of the options inside the test
-type section. Avocado will replace `$testpath` with your test path, after the
+You can also use the keyworkd ``$testpath`` in any of the options inside the test
+type section. Avocado will replace ``$testpath`` with your test path, after the
 expansion.
 
 For instance, bellow you will find a hint file example where we have only one
-test type: `tap`:
+test type ``TAP``:
 
 .. literalinclude:: ../../../../../examples/hint-files/.avocado.hint.example
 
-Let's suppose that you have 2 tests that matches `./tests/unit/*.sh`:
+Let's suppose that you have 2 tests that matches ``./tests/unit/*.sh``:
 
-* ./tests/unit/foo.sh
-* ./tests/unit/bar.sh
+* ``./tests/unit/foo.sh``
+* ``./tests/unit/bar.sh``
 
-Avocado will run each one as a `TAP` test, as you desired.
+Avocado will run each one as a ``TAP`` test, as you desired.
 
 Ignoring missing test references
 --------------------------------
@@ -183,7 +183,7 @@ test runner that knows how to find and run their own tests.
 Still, running those tests inside Avocado may be a good idea for
 various reasons, including being able to have results in different
 human and machine readable formats, collecting system information
-alongside those tests (the Avocado's `sysinfo` functionality), and
+alongside those tests (the Avocado's ``sysinfo`` functionality), and
 more.
 
 Avocado makes that possible by means of its "external runner" feature. The
@@ -192,14 +192,14 @@ most basic way of using it is::
     $ avocado run --external-runner=/path/to/external_runner foo bar baz
 
 In this example, Avocado will report individual test results for tests
-`foo`, `bar` and `baz`. The actual results will be based on the return
-code of individual executions of `/path/to/external_runner foo`,
-`/path/to/external_runner bar` and finally `/path/to/external_runner baz`.
+``foo``, ``bar`` and ``baz``. The actual results will be based on the return
+code of individual executions of ``/path/to/external_runner foo``,
+``/path/to/external_runner bar`` and finally ``/path/to/external_runner baz``.
 
-As another way to explain an show how this feature works, think of the
+As another way to explain and show how this feature works, think of the
 "external runner" as some kind of interpreter and the individual tests as
 anything that this interpreter recognizes and is able to execute. A
-UNIX shell, say `/bin/sh` could be considered an external runner, and
+UNIX shell, say ``/bin/sh`` could be considered an external runner, and
 files with shell code could be considered tests::
 
     $ echo "exit 0" > /tmp/pass
@@ -209,13 +209,13 @@ files with shell code could be considered tests::
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL (0.01 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 0.11 s
     JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This example is pretty obvious, and could be achieved by giving
-`/tmp/pass` and `/tmp/fail` shell "shebangs" (`#!/bin/sh`), making
-them executable (`chmod +x /tmp/pass /tmp/fail)`, and running them as
+``/tmp/pass`` and ``/tmp/fail`` shell "shebangs" (``#!/bin/sh``), making
+them executable (``chmod +x /tmp/pass /tmp/fail)``, and running them as
 "SIMPLE" tests.
 
 But now consider the following example::
@@ -224,11 +224,11 @@ But now consider the following example::
     JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
     (1/1) https://google.com/: PASS (0.02 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 3.14 s
     JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
-This effectively makes `/bin/curl` an "external test runner", responsible for
+This effectively makes ``/bin/curl`` an "external test runner", responsible for
 trying to fetch those URLs, and reporting PASS or FAIL for each of them.
 
 .. warning:: The external runner is incompatible with loaders from
@@ -265,7 +265,7 @@ is, the job and its test(s) results are constantly updated::
      (1/3) sleeptest.py:SleepTest.test: PASS (1.01 s)
      (2/3) failtest.py:FailTest.test: FAIL (0.00 s)
      (3/3) synctest.py:SyncTest.test: PASS (1.98 s)
-    RESULTS    : PASS 1 | ERROR 1 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    RESULTS    : PASS 1 | ERROR 1 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 3.27 s
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
 
@@ -285,11 +285,11 @@ Several standards exist in the test community, and Avocado can in theory
 support pretty much every result standard out there.
 
 Out of the box, Avocado supports a couple of machine readable results. They are
-always generated and stored in the results directory in `results.$type` files,
+always generated and stored in the results directory in ``results.$type`` files,
 but you can ask for a different location too.
 
 Currently, you can find three different formats available on this folder:
-**xUnit (XML)**, **JSON** and **TAP**:
+**xUnit (XML)**, **JSON** and **TAP**.
 
  **1. xUnit:**
 
@@ -328,12 +328,12 @@ output in the standard output of the runner, simply use::
    </testsuite>
 
 
-.. note:: The dash `-` in the option `--xunit`, it means that the xunit result
+.. note:: The dash ``-`` in the option ``--xunit``, it means that the xunit result
           should go to the standard output.
 
 .. note:: In case your tests produce very long outputs, you can limit the
           number of embedded characters by
-          `--xunit-max-test-log-chars`. If the output in the log file is
+          ``--xunit-max-test-log-chars``. If the output in the log file is
           longer it only attaches up-to max-test-log-chars characters
           one half starting from the beginning of the content, the other
           half from the end of the content.
@@ -341,7 +341,7 @@ output in the standard output of the runner, simply use::
 
 **2. JSON:**
 
-`JSON <http://www.json.org/>`__ is a widely used data exchange format. The JSON
+`JSON <https://www.json.org/>`__ is a widely used data exchange format. The JSON
 Avocado plugin outputs job information, similarly to the xunit output plugin::
 
     $ avocado run sleeptest.py failtest.py synctest.py --json -
@@ -392,7 +392,7 @@ Avocado plugin outputs job information, similarly to the xunit output plugin::
         "total": 3
     }
 
-.. note:: The dash `-` in the option `--json`, it means that the xunit result
+.. note:: The dash ``-`` in the option ``--json``, it means that the xunit result
           should go to the standard output.
 
 Bear in mind that there's no documented standard for the Avocado JSON result
@@ -403,7 +403,7 @@ compatibility with applications that parse the current form of its JSON result.
 
  **3. TAP:**
 
-Provides the basic `TAP <http://testanything.org/>`__ (Test Anything Protocol)
+Provides the basic `TAP <https://testanything.org/>`__ (Test Anything Protocol)
 results, currently in v12. Unlike most existing Avocado machine readable
 outputs this one is streamlined (per test results)::
 
@@ -483,7 +483,7 @@ and the JSON result to output to a file::
         ...
    }
 
-But you won't be able to do the same without the --json flag passed to
+But you won't be able to do the same without the ``--json`` flag passed to
 the program::
 
    $ avocado run sleeptest.py synctest.py --xunit - --json -
@@ -531,8 +531,8 @@ the sysinfo collection. Avocado supports three types of tasks:
 1. commands - file with new-line separated list of commands to be executed
    before and after the job/test (single execution commands). It is possible
    to set a timeout which is enforced per each executed command in
-   [sysinfo.collect] by setting "commands_timeout" to a positive number.
-   You can also use the environment variable AVOCADO_SYSINFODIR which points
+   ``[sysinfo.collect]`` by setting "commands_timeout" to a positive number.
+   You can also use the environment variable ``AVOCADO_SYSINFODIR`` which points
    to the sysinfo directory in results.
 2. fail_commands - similar to commands, but gets executed only when the test
    fails.

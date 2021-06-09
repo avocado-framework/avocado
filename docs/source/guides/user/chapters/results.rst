@@ -10,14 +10,16 @@ results directory structure can be seen below ::
     $HOME/avocado/job-results/job-2014-08-13T00.45-4a92bc0/
     ├── id
     ├── jobdata
-    │   ├── args
+    │   ├── args.json
     │   ├── cmdline
     │   ├── config
-    │   ├── multiplex
     │   ├── pwd
-    │   └── test_references
+    │   ├── test_references
+    │   └── variants.json
     ├── job.log
+    ├── results.html
     ├── results.json
+    ├── results.tap
     ├── results.xml
     ├── sysinfo
     │   ├── post
@@ -34,6 +36,7 @@ results directory structure can be seen below ::
     │   │   ├── ifconfig_-a
     │   │   ├── interrupts
     │   │   ├── ip_link
+    │   │   ├── journalctl.gz
     │   │   ├── ld_--version
     │   │   ├── lscpu
     │   │   ├── lspci_-vvnn
@@ -99,7 +102,7 @@ results directory structure can be seen below ::
     22 directories, 65 files
 
 
-From what you can see, the results dir has:
+From what you can see, the results directory has:
 
 1) A human readable ``id`` in the top level, with the job SHA1.
 2) A human readable ``job.log`` in the top level, with human readable logs of
@@ -119,10 +122,10 @@ Test execution instances specification
 The instances should have:
 
 1) A top level human readable ``job.log``, with job debug information
-2) A ``sysinfo`` subdir, with sub directories ``pre``, ``post`` and
+2) A ``sysinfo`` subdirectory, with sub directories ``pre``, ``post`` and
    ``profile`` that store sysinfo files pre test, post test and
    profiling info while the test was running, respectively.
-3) A ``data`` subdir, where the test can output a number of files if necessary.
+3) A ``data`` subdirectory, where the test can output a number of files if necessary.
 
 
 Test execution environment

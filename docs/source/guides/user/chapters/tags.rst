@@ -21,7 +21,7 @@ by requesting only tests that are tagged with ``net``::
   INSTRUMENTED perf.py:Network.test_latency
   INSTRUMENTED perf.py:Network.test_throughput
 
-Now, suppose you're not in an environment where you're confortable
+Now, suppose you're not in an environment where you're comfortable
 running a test that will write to your raw disk devices (such as your
 development workstation).  You know that some tests are tagged
 with ``safe`` while others are tagged with ``unsafe``.  To only
@@ -52,7 +52,7 @@ them separate by commas.  Example::
   $ avocado list perf.py --filter-by-tags=disk,slow,superuser,unsafe
   INSTRUMENTED perf.py:Disk.test_device
 
-If no test contains **all tags** given on a single `--filter-by-tags`
+If no test contains **all tags** given on a single ``--filter-by-tags``
 parameter, no test will be included::
 
   $ avocado list perf.py --filter-by-tags=disk,slow,superuser,safe | wc -l

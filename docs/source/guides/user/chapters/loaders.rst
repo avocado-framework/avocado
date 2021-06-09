@@ -39,10 +39,10 @@ The order of test loaders
 -------------------------
 
 As described in previous sections, Avocado supports different types of test
-starting with `SIMPLE` tests, which are simply executable files, the basic
-Python unittest and tests called `INSTRUMENTED`.
+starting with ``SIMPLE`` tests, which are simply executable files, the basic
+Python unittest and tests called ``INSTRUMENTED``.
 
-With additional plugins new test types can be supported, like the `avocado-vt`
+With additional plugins new test types can be supported, like the ``avocado-vt``
 ones, which uses complex matrix of tests from config files that don't directly
 map to existing files.
 

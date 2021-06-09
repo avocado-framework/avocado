@@ -4,7 +4,7 @@ Managing Requirements
 =====================
 
 .. note:: Test requirements are supported only on the nrunner runner. To use
-  this feature, remember to use `--test-runner=nrunner` argument.
+  this feature, remember to use ``--test-runner=nrunner`` argument.
 
 A test's requirement can be fulfilled by the Requirements Resolver feature.
 
@@ -29,7 +29,7 @@ a requirement of `type` `package`::
         {"type": "package", "name": "hello"}
 
 To define a requirement for the test, use the test's docstring with the format of
-keywords `:avocado: requirement=`. The following example shows the same package
+keywords ``:avocado: requirement=``. The following example shows the same package
 requirement showed above inside a test docstring::
 
         from avocado import Test

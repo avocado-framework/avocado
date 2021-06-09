@@ -4,7 +4,7 @@ Installing
 ==========
 
 Avocado is primarily written in Python, so a standard Python installation is
-possible and often preferable. You can also install from your distro
+possible and often preferable. You can also install from your Linux distribution
 repository, if available.
 
 .. note:: Please note that this installs the Avocado core functionality.  Many
@@ -24,7 +24,7 @@ with a single command::
 
   $ pip3 install --user avocado-framework
 
-This will fetch the Avocado package (and possibly some of its dependecies) from
+This will fetch the Avocado package (and possibly some of its dependencies) from
 the PyPI repository, and will attempt to install it in the user's home
 directory (usually under ``~/.local``), which you might want to add to your
 ``PATH`` variable if not done already.

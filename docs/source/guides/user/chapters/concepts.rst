@@ -75,8 +75,8 @@ more information about this type of tests, please visit the :ref:`Instrumented`
 section of this document.
 
 .. note:: Mapping the Test References to tests can be affected
-   by command-line switches like `--external-runner`, which
-   completelly changes the meaning of the given strings.
+   by command-line switches like ``--external-runner``, which
+   completely changes the meaning of the given strings.
 
 Conventions
 ~~~~~~~~~~~
@@ -93,7 +93,7 @@ reference::
   passtest.py:PassTest.test
 
 Unless a file with that exact name exists, most resolvers will split
-it into `passtest.py` as the filesystem path, and `PassTest.test` as
+it into ``passtest.py`` as the filesystem path, and ``PassTest.test`` as
 an additional specification for the individual test.  It's also
 possible that some resolvers will support regular expressions and
 globs for the additional information component.
@@ -219,7 +219,7 @@ successful. The ``ERROR``, ``FAIL`` and ``INTERRUPTED`` signal failures.
 TAP
 ~~~
 
-TAP tests are pretty much like Simple tests in the sense tha they are
+TAP tests are pretty much like Simple tests in the sense that they are
 programs (either binaries or scripts) that will executed.  The
 difference is that the test result will be decided based on the
 produced output, that should be in `Test Anything Protocol

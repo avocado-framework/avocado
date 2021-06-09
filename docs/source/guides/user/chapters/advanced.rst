@@ -38,8 +38,8 @@ programs called by the test.
 Usage
 ~~~~~
 
-This feature is implemented as a plugin, that adds the `--wrapper` option
-to the Avocado `run` command.  For a detailed explanation, please consult the
+This feature is implemented as a plugin, that adds the ``--wrapper`` option
+to the ``avocado run`` command.  For a detailed explanation, please consult the
 Avocado man page.
 
 Example of a transparent way of running strace as a wrapper::
