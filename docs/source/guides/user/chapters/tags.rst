@@ -1,6 +1,9 @@
 Filtering tests by tags
 =======================
 
+.. warning:: The example perf.py is not distributed with avocado anymore.
+             This is an old example that needs to be updated.
+
 Avocado allows tests to be given tags, which can be used to create test
 categories. With tags set, users can select a subset of the tests found by the
 test resolver (also known as test loader).
