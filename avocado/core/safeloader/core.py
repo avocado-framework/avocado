@@ -169,7 +169,7 @@ def _examine_class(path, class_name, match, target_module, target_class,
                                                           match,
                                                           target_module,
                                                           target_class,
-                                                          _determine_match_avocado)
+                                                          determine_match)
             if _info:
                 _extend_test_list(info, _info)
                 disabled.update(_disabled)
