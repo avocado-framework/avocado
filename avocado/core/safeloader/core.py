@@ -11,8 +11,14 @@ from .module import PythonModule
 
 
 def get_methods_info(statement_body, class_tags, class_requirements):
-    """
-    Returns information on an Avocado instrumented test method
+    """Returns information on test methods.
+
+    :param statement_body: the body of a "class" statement
+    :param class_tags: the tags at the class level, to be combined with the
+                       tags at the method level.
+    :param class_requirements: the requirements at the class level, to be
+                               combined with the requirements at the method
+                               level.
     """
     methods_info = []
     for st in statement_body:
