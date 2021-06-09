@@ -148,13 +148,14 @@ def _examine_class(path, class_name, match, target_module, target_class,
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
             found_spec = PathFinder.find_spec(parent_module, modules_paths)
-            if found_spec is not None:
-                _info, _disabled, _match = _examine_class(found_spec.origin,
-                                                          parent_class,
-                                                          match,
-                                                          target_module,
-                                                          target_class,
-                                                          determine_match)
+            if found_spec is None:
+                continue
+            _info, _disabled, _match = _examine_class(found_spec.origin,
+                                                      parent_class,
+                                                      match,
+                                                      target_module,
+                                                      target_class,
+                                                      determine_match)
             if _info:
                 _extend_test_list(info, _info)
                 disabled.update(_disabled)
