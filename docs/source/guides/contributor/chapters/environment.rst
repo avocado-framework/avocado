@@ -10,7 +10,7 @@ Installing dependencies
 
 You need to install few dependencies before start coding::
 
- $ sudo dnf install gcc python-devel
+ $ sudo dnf install gcc python-devel enchant
 
 Then install all the python dependencies::
 
