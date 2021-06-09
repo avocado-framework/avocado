@@ -39,21 +39,6 @@ def get_methods_info(statement_body, class_tags, class_requirements):
     return methods_info
 
 
-def _determine_match_avocado(module, klass, docstring):
-    """
-    Implements the match check for Avocado Instrumented Tests
-    """
-    directives = get_docstring_directives(docstring)
-    if 'disable' in directives:
-        return True
-    if 'enable' in directives:
-        return True
-    if 'recursive' in directives:
-        return True
-    # Still not decided, try inheritance
-    return module.is_matching_klass(klass)
-
-
 def _extend_test_list(current, new):
     for test in new:
         test_method_name = test[0]
@@ -316,6 +301,21 @@ def find_python_tests(module_name, class_name, determine_match, path):
             disabled.update(_disabled)
 
     return result, disabled
+
+
+def _determine_match_avocado(module, klass, docstring):
+    """
+    Implements the match check for Avocado Instrumented Tests
+    """
+    directives = get_docstring_directives(docstring)
+    if 'disable' in directives:
+        return True
+    if 'enable' in directives:
+        return True
+    if 'recursive' in directives:
+        return True
+    # Still not decided, try inheritance
+    return module.is_matching_klass(klass)
 
 
 def find_avocado_tests(path):
