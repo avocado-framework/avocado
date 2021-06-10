@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 from avocado.core import nrunner
+from avocado.core.runners.utils.messages import FinishedMessage, StartedMessage
 
 
 class FooRunner(nrunner.BaseRunner):
     def run(self):
-        yield self.prepare_status('started')
-        yield self.prepare_status('finished', {'result': 'pass'})
+        yield StartedMessage.get()
+        yield FinishedMessage.get('pass')
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
