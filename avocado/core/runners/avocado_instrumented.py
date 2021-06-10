@@ -1,60 +1,12 @@
-import logging
 import multiprocessing
-import sys
 import tempfile
 import time
 import traceback
 
-from .. import loader, nrunner, output
+from .. import loader, nrunner
 from ..test import TestID
 from ..tree import TreeNode
-
-
-def _send_message(msg, queue, message_type, encoding='utf-8'):
-    status = {'type': message_type, 'log': msg.encode(encoding),
-              'encoding': encoding}
-    queue.put(status)
-
-
-class RunnerLogHandler(logging.Handler):
-
-    def __init__(self, queue, message_type):
-        """
-        Runner logger which will put every log to the runner queue
-
-        :param queue: queue for the runner messages
-        :type queue: multiprocessing.SimpleQueue
-        :param message_type: type of the log
-        :type message_type: string
-        """
-        super().__init__()
-        self.queue = queue
-        self.message_type = message_type
-
-    def emit(self, record):
-        msg = self.format(record)
-        _send_message(msg, self.queue, self.message_type)
-
-
-class StreamToQueue:
-
-    def __init__(self,  queue, message_type):
-        """
-        Runner Stream which will transfer every  to the runner queue
-
-        :param queue: queue for the runner messages
-        :type queue: multiprocessing.SimpleQueue
-        :param message_type: type of the log
-        :type message_type: string
-        """
-        self.queue = queue
-        self.message_type = message_type
-
-    def write(self, buf):
-        _send_message(buf, self.queue, self.message_type)
-
-    def flush(self):
-        pass
+from .utils import messages
 
 
 class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
@@ -71,24 +23,6 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
      * args: not used
     """
     DEFAULT_TIMEOUT = 86400
-
-    @staticmethod
-    def _start_logging(runnable, queue):
-        log_level = runnable.config.get('job.output.loglevel', logging.DEBUG)
-        log_handler = RunnerLogHandler(queue, 'log')
-        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
-        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
-        log_handler.setFormatter(formatter)
-        log = output.LOG_JOB
-        log.addHandler(log_handler)
-        log.setLevel(log_level)
-        log.propagate = False
-        root_logger = logging.getLogger()
-        root_logger.addHandler(log_handler)
-        output.LOG_UI.addHandler(RunnerLogHandler(queue, 'stdout'))
-
-        sys.stdout = StreamToQueue(queue, "stdout")
-        sys.stderr = StreamToQueue(queue, "stderr")
 
     @staticmethod
     def _run_avocado(runnable, queue):
@@ -114,22 +48,21 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                              'run.results_dir': tempfile.mkdtemp(),
                              }]
 
-            AvocadoInstrumentedTestRunner._start_logging(runnable, queue)
+            messages.start_logging(runnable.config, queue)
             instance = loader.loader.load_test(test_factory)
             early_state = instance.get_state()
             early_state['type'] = "early_state"
             queue.put(early_state)
             instance.run_avocado()
             state = instance.get_state()
-            _send_message(state['whiteboard'], queue, 'whiteboard')
-            queue.put({'status': 'finished',
-                       'result': state['status'].lower()})
+            queue.put(messages.get_whiteboard_message(state['whiteboard']))
+            queue.put(messages.get_finished_message(state['status'].lower()))
         except Exception:
-            _send_message(traceback.format_exc(), queue, 'stderr')
-            queue.put({'status': 'finished', 'result': 'error'})
+            queue.put(messages.get_stderr_message(traceback.format_exc()))
+            queue.put(messages.get_finished_message('error'))
 
     def run(self):
-        yield self.prepare_status('started')
+        yield messages.get_started_message()
         try:
             queue = multiprocessing.SimpleQueue()
             process = multiprocessing.Process(target=self._run_avocado,
@@ -139,7 +72,6 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
             time_started = time.monotonic()
 
-            early_status = {}
             timeout = float(self.DEFAULT_TIMEOUT)
             most_current_execution_state_time = None
             while True:
@@ -152,33 +84,23 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                     if (most_current_execution_state_time is None or
                             now > next_execution_state_mark):
                         most_current_execution_state_time = now
-                        yield self.prepare_status('running')
+                        yield messages.get_running_message()
                     if (now - time_started) > timeout:
                         process.terminate()
-                        status = early_status
-                        status['result'] = 'interrupted'
-                        if 'name' in status:
-                            del status['name']
-                        if 'time_start' in status:
-                            del status['time_start']
-                        yield self.prepare_status('finished', status)
+                        yield messages.get_finished_message('interrupted', 'timeout')
                         break
                 else:
                     message = queue.get()
-                    if message.get('status') == 'finished':
-                        yield self.prepare_status('finished', message)
-                        break
-                    elif message.get('type') == 'early_state':
-                        early_status = message
-                        timeout = float(early_status.get('timeout') or
+                    if message.get('type') == 'early_state':
+                        timeout = float(message.get('timeout') or
                                         self.DEFAULT_TIMEOUT)
                     else:
-                        yield self.prepare_status('running', message)
+                        yield message
+                    if message.get('status') == 'finished':
+                        break
         except Exception:
-            yield self.prepare_status('running',
-                                      {'type': 'stderr',
-                                       'log': traceback.format_exc()})
-            yield self.prepare_status('finished', {'result': 'error'})
+            yield messages.get_stderr_message(traceback.format_exc())
+            yield messages.get_finished_message('error')
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
