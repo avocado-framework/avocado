@@ -11,8 +11,14 @@ from .module import PythonModule
 
 
 def get_methods_info(statement_body, class_tags, class_requirements):
-    """
-    Returns information on an Avocado instrumented test method
+    """Returns information on test methods.
+
+    :param statement_body: the body of a "class" statement
+    :param class_tags: the tags at the class level, to be combined with the
+                       tags at the method level.
+    :param class_requirements: the requirements at the class level, to be
+                               combined with the requirements at the method
+                               level.
     """
     methods_info = []
     for st in statement_body:
@@ -33,21 +39,6 @@ def get_methods_info(statement_body, class_tags, class_requirements):
     return methods_info
 
 
-def _determine_match_avocado(module, klass, docstring):
-    """
-    Implements the match check for Avocado Instrumented Tests
-    """
-    directives = get_docstring_directives(docstring)
-    if 'disable' in directives:
-        return True
-    if 'enable' in directives:
-        return True
-    if 'recursive' in directives:
-        return True
-    # Still not decided, try inheritance
-    return module.is_matching_klass(klass)
-
-
 def _extend_test_list(current, new):
     for test in new:
         test_method_name = test[0]
@@ -55,11 +46,27 @@ def _extend_test_list(current, new):
             current.append(test)
 
 
-def _examine_class(path, class_name, match, target_module, target_class,
-                   determine_match):
+def _examine_class(target_module, target_class, determine_match, path,
+                   class_name, match):
     """
     Examine a class from a given path
 
+    :param target_module: the name of the module from which a class should
+                          have come from.  When attempting to find a Python
+                          unittest, the target_module will most probably
+                          be "unittest", as per the standard library module
+                          name.  When attempting to find Avocado tests, the
+                          target_module will most probably be "avocado".
+    :type target_module: str
+    :param target_class: the name of the class that is considered to contain
+                         test methods.  When attempting to find Python
+                         unittests, the target_class will most probably be
+                         "TestCase".  When attempting to find Avocado tests,
+                         the target_class  will most probably be "Test".
+    :type target_class: str
+    :param determine_match: a callable that will determine if a match has
+                            occurred or not
+    :type determine_match: function
     :param path: path to a Python source code file
     :type path: str
     :param class_name: the specific class to be found
@@ -67,14 +74,6 @@ def _examine_class(path, class_name, match, target_module, target_class,
     :param match: whether the inheritance from <target_module.target_class> has
                   been determined or not
     :type match: bool
-    :param target_module: the module name under which the target_class lives
-    :type target_module: str
-    :param target_class: the name of the class that class_name should
-                         ultimately inherit from
-    :type target_class: str
-    :param determine_match: a callable that will determine if a match has
-                            occurred or not
-    :type determine_match: function
     :returns: tuple where first item is a list of test methods detected
               for given class; second item is set of class names which
               look like avocado tests but are force-disabled.
@@ -113,10 +112,12 @@ def _examine_class(path, class_name, match, target_module, target_class,
                 # a module
                 continue
             parent_class = parent.id
-            _info, _disabled, _match = _examine_class(module.path, parent_class,
-                                                      match, target_module,
+            _info, _disabled, _match = _examine_class(target_module,
                                                       target_class,
-                                                      determine_match)
+                                                      determine_match,
+                                                      module.path,
+                                                      parent_class,
+                                                      match)
             if _info:
                 parents.remove(parent)
                 _extend_test_list(info, _info)
@@ -157,13 +158,14 @@ def _examine_class(path, class_name, match, target_module, target_class,
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
             found_spec = PathFinder.find_spec(parent_module, modules_paths)
-            if found_spec is not None:
-                _info, _disabled, _match = _examine_class(found_spec.origin,
-                                                          parent_class,
-                                                          match,
-                                                          target_module,
-                                                          target_class,
-                                                          _determine_match_avocado)
+            if found_spec is None:
+                continue
+            _info, _disabled, _match = _examine_class(target_module,
+                                                      target_class,
+                                                      determine_match,
+                                                      found_spec.origin,
+                                                      parent_class,
+                                                      match)
             if _info:
                 _extend_test_list(info, _info)
                 disabled.update(_disabled)
@@ -173,19 +175,26 @@ def _examine_class(path, class_name, match, target_module, target_class,
     return info, disabled, match
 
 
-def find_python_tests(module_name, class_name, determine_match, path):
+def find_python_tests(target_module, target_class, determine_match, path):
     """
     Attempts to find Python tests from source files
 
     A Python test in this context is a method within a specific type
     of class (or that inherits from a specific class).
 
-    :param module_name: the name of the module from which a class should
-                        have come from
-    :type module_name: str
-    :param class_name: the name of the class that is considered to contain
-                       test methods
-    :type class_name: str
+    :param target_module: the name of the module from which a class should
+                          have come from.  When attempting to find a Python
+                          unittest, the target_module will most probably
+                          be "unittest", as per the standard library module
+                          name.  When attempting to find Avocado tests, the
+                          target_module will most probably be "avocado".
+    :type target_module: str
+    :param target_class: the name of the class that is considered to contain
+                         test methods.  When attempting to find Python
+                         unittests, the target_class will most probably be
+                         "TestCase".  When attempting to find Avocado tests,
+                         the target_class  will most probably be "Test".
+    :type target_class: str
     :type determine_match: a callable that will determine if a given module
                            and class is contains valid Python tests
     :type determine_match: function
@@ -197,7 +206,7 @@ def find_python_tests(module_name, class_name, determine_match, path):
               forcefully disabled.
     :rtype: tuple
     """
-    module = PythonModule(path, module_name, class_name)
+    module = PythonModule(path, target_module, target_class)
     # The resulting test classes
     result = collections.OrderedDict()
     disabled = set()
@@ -244,12 +253,12 @@ def find_python_tests(module_name, class_name, determine_match, path):
                 # a module
                 continue
             parent_class = parent.id
-            _info, _dis, _python_test = _examine_class(module.path,
+            _info, _dis, _python_test = _examine_class(target_module,
+                                                       target_class,
+                                                       determine_match,
+                                                       module.path,
                                                        parent_class,
-                                                       is_valid_test,
-                                                       module_name,
-                                                       class_name,
-                                                       determine_match)
+                                                       is_valid_test)
             if _info:
                 parents.remove(parent)
                 _extend_test_list(info, _info)
@@ -263,7 +272,7 @@ def find_python_tests(module_name, class_name, determine_match, path):
             if hasattr(parent, 'value'):
                 if hasattr(parent.value, 'id'):
                     # We know 'parent.Class' or 'asparent.Class' and need
-                    # to get path and original_module_name. Class is given
+                    # to get path and original_target_module. Class is given
                     # by parent definition.
                     _parent = module.imported_objects.get(parent.value.id)
                     if _parent is None:
@@ -278,7 +287,7 @@ def find_python_tests(module_name, class_name, determine_match, path):
                     continue
             else:
                 # We only know 'Class' or 'AsClass' and need to get
-                # path, module and original class_name
+                # path, module and original target_class
                 _parent = module.imported_objects.get(parent.id)
                 if _parent is None:
                     # We can't examine this parent (probably broken
@@ -292,12 +301,12 @@ def find_python_tests(module_name, class_name, determine_match, path):
             found_spec = PathFinder.find_spec(parent_module, modules_paths)
             if found_spec is None:
                 continue
-            _info, _dis, _python_test = _examine_class(found_spec.origin,
+            _info, _dis, _python_test = _examine_class(target_module,
+                                                       target_class,
+                                                       determine_match,
+                                                       found_spec.origin,
                                                        parent_class,
-                                                       is_valid_test,
-                                                       module_name,
-                                                       class_name,
-                                                       determine_match)
+                                                       is_valid_test)
             if _info:
                 info.extend(_info)
                 _disabled.update(_dis)
@@ -310,6 +319,21 @@ def find_python_tests(module_name, class_name, determine_match, path):
             disabled.update(_disabled)
 
     return result, disabled
+
+
+def _determine_match_avocado(module, klass, docstring):
+    """
+    Implements the match check for Avocado Instrumented Tests
+    """
+    directives = get_docstring_directives(docstring)
+    if 'disable' in directives:
+        return True
+    if 'enable' in directives:
+        return True
+    if 'recursive' in directives:
+        return True
+    # Still not decided, try inheritance
+    return module.is_matching_klass(klass)
 
 
 def find_avocado_tests(path):
