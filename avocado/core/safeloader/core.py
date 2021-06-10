@@ -233,15 +233,13 @@ def find_python_tests(target_module, target_class, determine_match, path):
 
         # If "recursive" tag is specified, it is forced as test
         if check_docstring_directive(docstring, 'recursive'):
-            is_valid_test = True
+            match = True
         else:
-            is_valid_test = module.is_matching_klass(klass)
+            match = module.is_matching_klass(klass)
         info = get_methods_info(klass.body,
                                 get_docstring_directives_tags(docstring),
                                 get_docstring_directives_requirements(
                                     docstring))
-        _disabled = set()
-
         # Getting the list of parents of the current class
         parents = klass.bases
 
@@ -253,18 +251,18 @@ def find_python_tests(target_module, target_class, determine_match, path):
                 # a module
                 continue
             parent_class = parent.id
-            _info, _dis, _python_test = _examine_class(target_module,
-                                                       target_class,
-                                                       determine_match,
-                                                       module.path,
-                                                       parent_class,
-                                                       is_valid_test)
+            _info, _disable, _match = _examine_class(target_module,
+                                                     target_class,
+                                                     determine_match,
+                                                     module.path,
+                                                     parent_class,
+                                                     match)
             if _info:
                 parents.remove(parent)
                 _extend_test_list(info, _info)
-                _disabled.update(_dis)
-            if _python_test is not is_valid_test:
-                is_valid_test = _python_test
+                disabled.update(_disable)
+            if _match is not match:
+                match = _match
 
         # If there are parents left to be discovered, they
         # might be in a different module.
@@ -301,22 +299,22 @@ def find_python_tests(target_module, target_class, determine_match, path):
             found_spec = PathFinder.find_spec(parent_module, modules_paths)
             if found_spec is None:
                 continue
-            _info, _dis, _python_test = _examine_class(target_module,
-                                                       target_class,
-                                                       determine_match,
-                                                       found_spec.origin,
-                                                       parent_class,
-                                                       is_valid_test)
+            _info, _dis, _match = _examine_class(target_module,
+                                                 target_class,
+                                                 determine_match,
+                                                 found_spec.origin,
+                                                 parent_class,
+                                                 match)
             if _info:
                 info.extend(_info)
-                _disabled.update(_dis)
-            if _python_test is not is_valid_test:
-                is_valid_test = _python_test
+                disabled.update(_dis)
+            if _match is not match:
+                match = _match
 
         # Only update the results if this was detected as 'avocado.Test'
-        if is_valid_test:
+        if match:
             result[klass.name] = info
-            disabled.update(_disabled)
+            disabled.update(disabled)
 
     return result, disabled
 
