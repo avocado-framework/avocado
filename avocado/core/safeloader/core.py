@@ -46,6 +46,36 @@ def _extend_test_list(current, new):
             current.append(test)
 
 
+def _examine_same_module(parents, info, disabled, match, module,
+                         target_module, target_class, determine_match):
+    # Searching the parents in the same module
+    for parent in parents[:]:
+        # Looking for a 'class FooTest(Parent)'
+        if not isinstance(parent, ast.Name):
+            # 'class FooTest(bar.Bar)' not supported withing
+            # a module
+            continue
+        parent_class = parent.id
+
+        # From this point we use `_$variable` to name temporary returns
+        # from method calls that are to-be-assigned/combined with the
+        # existing `$variable`.
+        _info, _disable, _match = _examine_class(target_module,
+                                                 target_class,
+                                                 determine_match,
+                                                 module.path,
+                                                 parent_class,
+                                                 match)
+        if _info:
+            parents.remove(parent)
+            _extend_test_list(info, _info)
+            disabled.update(_disable)
+        if _match is not match:
+            match = _match
+
+    return match
+
+
 def _examine_class(target_module, target_class, determine_match, path,
                    class_name, match):
     """
@@ -100,30 +130,8 @@ def _examine_class(target_module, target_class, determine_match, path,
         # Getting the list of parents of the current class
         parents = klass.bases
 
-        # From this point we use `_$variable` to name temporary returns
-        # from method calls that are to-be-assigned/combined with the
-        # existing `$variable`.
-
-        # Searching the parents in the same module
-        for parent in parents[:]:
-            # Looking for a 'class FooTest(Parent)'
-            if not isinstance(parent, ast.Name):
-                # 'class FooTest(bar.Bar)' not supported withing
-                # a module
-                continue
-            parent_class = parent.id
-            _info, _disabled, _match = _examine_class(target_module,
-                                                      target_class,
-                                                      determine_match,
-                                                      module.path,
-                                                      parent_class,
-                                                      match)
-            if _info:
-                parents.remove(parent)
-                _extend_test_list(info, _info)
-                disabled.update(_disabled)
-            if _match is not match:
-                match = _match
+        match = _examine_same_module(parents, info, disabled, match, module,
+                                     target_module, target_class, determine_match)
 
         # If there are parents left to be discovered, they
         # might be in a different module.
@@ -243,26 +251,8 @@ def find_python_tests(target_module, target_class, determine_match, path):
         # Getting the list of parents of the current class
         parents = klass.bases
 
-        # Searching the parents in the same module
-        for parent in parents[:]:
-            # Looking for a 'class FooTest(Parent)'
-            if not isinstance(parent, ast.Name):
-                # 'class FooTest(bar.Bar)' not supported withing
-                # a module
-                continue
-            parent_class = parent.id
-            _info, _disable, _match = _examine_class(target_module,
-                                                     target_class,
-                                                     determine_match,
-                                                     module.path,
-                                                     parent_class,
-                                                     match)
-            if _info:
-                parents.remove(parent)
-                _extend_test_list(info, _info)
-                disabled.update(_disable)
-            if _match is not match:
-                match = _match
+        match = _examine_same_module(parents, info, disabled, match, module,
+                                     target_module, target_class, determine_match)
 
         # If there are parents left to be discovered, they
         # might be in a different module.
