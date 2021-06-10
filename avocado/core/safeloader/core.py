@@ -46,18 +46,11 @@ def _extend_test_list(current, new):
             current.append(test)
 
 
-def _examine_class(path, class_name, match, target_module, target_class,
-                   determine_match):
+def _examine_class(target_module, target_class, determine_match, path,
+                   class_name, match):
     """
     Examine a class from a given path
 
-    :param path: path to a Python source code file
-    :type path: str
-    :param class_name: the specific class to be found
-    :type path: str
-    :param match: whether the inheritance from <target_module.target_class> has
-                  been determined or not
-    :type match: bool
     :param target_module: the name of the module from which a class should
                           have come from.  When attempting to find a Python
                           unittest, the target_module will most probably
@@ -74,6 +67,13 @@ def _examine_class(path, class_name, match, target_module, target_class,
     :param determine_match: a callable that will determine if a match has
                             occurred or not
     :type determine_match: function
+    :param path: path to a Python source code file
+    :type path: str
+    :param class_name: the specific class to be found
+    :type path: str
+    :param match: whether the inheritance from <target_module.target_class> has
+                  been determined or not
+    :type match: bool
     :returns: tuple where first item is a list of test methods detected
               for given class; second item is set of class names which
               look like avocado tests but are force-disabled.
@@ -112,10 +112,12 @@ def _examine_class(path, class_name, match, target_module, target_class,
                 # a module
                 continue
             parent_class = parent.id
-            _info, _disabled, _match = _examine_class(module.path, parent_class,
-                                                      match, target_module,
+            _info, _disabled, _match = _examine_class(target_module,
                                                       target_class,
-                                                      determine_match)
+                                                      determine_match,
+                                                      module.path,
+                                                      parent_class,
+                                                      match)
             if _info:
                 parents.remove(parent)
                 _extend_test_list(info, _info)
@@ -158,12 +160,12 @@ def _examine_class(path, class_name, match, target_module, target_class,
             found_spec = PathFinder.find_spec(parent_module, modules_paths)
             if found_spec is None:
                 continue
-            _info, _disabled, _match = _examine_class(found_spec.origin,
-                                                      parent_class,
-                                                      match,
-                                                      target_module,
+            _info, _disabled, _match = _examine_class(target_module,
                                                       target_class,
-                                                      determine_match)
+                                                      determine_match,
+                                                      found_spec.origin,
+                                                      parent_class,
+                                                      match)
             if _info:
                 _extend_test_list(info, _info)
                 disabled.update(_disabled)
@@ -251,12 +253,12 @@ def find_python_tests(target_module, target_class, determine_match, path):
                 # a module
                 continue
             parent_class = parent.id
-            _info, _dis, _python_test = _examine_class(module.path,
-                                                       parent_class,
-                                                       is_valid_test,
-                                                       target_module,
+            _info, _dis, _python_test = _examine_class(target_module,
                                                        target_class,
-                                                       determine_match)
+                                                       determine_match,
+                                                       module.path,
+                                                       parent_class,
+                                                       is_valid_test)
             if _info:
                 parents.remove(parent)
                 _extend_test_list(info, _info)
@@ -299,12 +301,12 @@ def find_python_tests(target_module, target_class, determine_match, path):
             found_spec = PathFinder.find_spec(parent_module, modules_paths)
             if found_spec is None:
                 continue
-            _info, _dis, _python_test = _examine_class(found_spec.origin,
-                                                       parent_class,
-                                                       is_valid_test,
-                                                       target_module,
+            _info, _dis, _python_test = _examine_class(target_module,
                                                        target_class,
-                                                       determine_match)
+                                                       determine_match,
+                                                       found_spec.origin,
+                                                       parent_class,
+                                                       is_valid_test)
             if _info:
                 info.extend(_info)
                 _disabled.update(_dis)
