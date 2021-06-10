@@ -610,6 +610,8 @@ This message has to be sent when the runner finishes the test.
 :type result: Lowercase values for the statuses defined in :data:`avocado.core.teststatus.STATUSES`
 :param time: end time of the test
 :type time: float
+:param fail_reason: Optional parameter for brief specification, of the failed result.
+:type fail_reason: str
 :example: {'status': 'finished', 'result': 'pass', 'time': 16444.819830573}
 
 Running messages
