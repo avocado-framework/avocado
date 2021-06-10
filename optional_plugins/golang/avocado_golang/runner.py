@@ -4,6 +4,7 @@ import time
 from avocado_golang import GO_BIN
 
 from avocado.core import nrunner
+from avocado.core.runners.utils import messages
 
 
 class GolangRunner(nrunner.BaseRunner):
@@ -26,6 +27,7 @@ class GolangRunner(nrunner.BaseRunner):
     """
 
     def run(self):
+        yield messages.get_started_message()
         module, test = self.runnable.uri.split(':', 1)
 
         cmd = [GO_BIN, 'test', '-v', module]
@@ -40,14 +42,13 @@ class GolangRunner(nrunner.BaseRunner):
 
         while process.poll() is None:
             time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
-            yield self.prepare_status('running')
+            yield messages.get_running_message()
 
         result = 'pass' if process.returncode == 0 else 'fail'
-        yield self.prepare_status('finished',
-                                  {'result': result,
-                                   'returncode': process.returncode,
-                                   'stdout': process.stdout.read(),
-                                   'stderr': process.stderr.read()})
+        yield messages.get_stdout_message(process.stdout.read())
+        yield messages.get_stderr_message(process.stderr.read())
+        yield messages.get_finished_message(result,
+                                            returncode=process.returncode)
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
