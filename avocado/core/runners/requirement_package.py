@@ -4,6 +4,7 @@ from multiprocessing import Process, SimpleQueue
 from ...utils.software_manager.main import MESSAGES
 from ...utils.software_manager.manager import SoftwareManager
 from .. import nrunner
+from .utils import messages
 
 
 class RequirementPackageRunner(nrunner.BaseRunner):
@@ -105,17 +106,15 @@ class RequirementPackageRunner(nrunner.BaseRunner):
         queue.put(output)
 
     def run(self):
-        yield self.prepare_status('started')
+        yield messages.get_started_message()
         # check if there is a valid 'action' argument
         cmd = self.runnable.kwargs.get('action', 'install')
         # avoid invalid arguments
         if cmd not in ['install', 'check', 'remove']:
             stderr = ("Invalid action %s. Use one of 'install', 'check' or"
                       " 'remove'" % cmd)
-            yield self.prepare_status('running',
-                                      {'type': 'stderr',
-                                       'log': stderr.encode()})
-            yield self.prepare_status('finished', {'result': 'error'})
+            yield messages.get_stderr_message(stderr.encode())
+            yield messages.get_finished_message('error')
             return
 
         package = self.runnable.kwargs.get('name')
@@ -131,7 +130,7 @@ class RequirementPackageRunner(nrunner.BaseRunner):
 
             while queue.empty():
                 time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
-                yield self.prepare_status('running')
+                yield messages.get_running_message()
 
             output = queue.get()
             result = output['result']
@@ -144,13 +143,9 @@ class RequirementPackageRunner(nrunner.BaseRunner):
             stderr = ('Package name should be passed as kwargs using'
                       ' name="package_name".')
 
-        yield self.prepare_status('running',
-                                  {'type': 'stdout',
-                                   'log': stdout.encode()})
-        yield self.prepare_status('running',
-                                  {'type': 'stderr',
-                                   'log': stderr.encode()})
-        yield self.prepare_status('finished', {'result': result})
+        yield messages.get_stdout_message(stdout.encode())
+        yield messages.get_stderr_message(stderr.encode())
+        yield messages.get_finished_message(result)
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
