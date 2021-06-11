@@ -46,6 +46,72 @@ def _extend_test_list(current, new):
             current.append(test)
 
 
+def _examine_same_module(parents, info, disabled, match, module,
+                         target_module, target_class, determine_match):
+    # Searching the parents in the same module
+    for parent in parents[:]:
+        # Looking for a 'class FooTest(Parent)'
+        if not isinstance(parent, ast.Name):
+            # 'class FooTest(bar.Bar)' not supported withing
+            # a module
+            continue
+        parent_class = parent.id
+
+        # From this point we use `_$variable` to name temporary returns
+        # from method calls that are to-be-assigned/combined with the
+        # existing `$variable`.
+        _info, _disable, _match = _examine_class(target_module,
+                                                 target_class,
+                                                 determine_match,
+                                                 module.path,
+                                                 parent_class,
+                                                 match)
+        if _info:
+            parents.remove(parent)
+            _extend_test_list(info, _info)
+            disabled.update(_disable)
+        if _match is not match:
+            match = _match
+
+    return match
+
+
+class ClassNotSuitable(Exception):
+    """Exception raised when examination of a class should not proceed."""
+
+
+def _get_attributes_for_further_examination(parent, module):
+    """Returns path, module and class for further examination."""
+    if hasattr(parent, 'value'):
+        if hasattr(parent.value, 'id'):
+            # We know 'parent.Class' or 'asparent.Class' and need
+            # to get path and original_module_name. Class is given
+            # by parent definition.
+            _parent = module.imported_objects.get(parent.value.id)
+            if _parent is None:
+                # We can't examine this parent (probably broken
+                # module)
+                raise ClassNotSuitable
+            parent_path = os.path.dirname(_parent)
+            parent_module = os.path.basename(_parent)
+            parent_class = parent.attr
+        else:
+            # We don't support multi-level 'parent.parent.Class'
+            raise ClassNotSuitable
+    else:
+        # We only know 'Class' or 'AsClass' and need to get
+        # path, module and original class_name
+        _parent = module.imported_objects.get(parent.id)
+        if _parent is None:
+            # We can't examine this parent (probably broken
+            # module)
+            raise ClassNotSuitable
+        parent_path, parent_module, parent_class = (
+            _parent.rsplit(os.path.sep, 2))
+
+    return parent_path, parent_module, parent_class
+
+
 def _examine_class(target_module, target_class, determine_match, path,
                    class_name, match):
     """
@@ -100,60 +166,19 @@ def _examine_class(target_module, target_class, determine_match, path,
         # Getting the list of parents of the current class
         parents = klass.bases
 
-        # From this point we use `_$variable` to name temporary returns
-        # from method calls that are to-be-assigned/combined with the
-        # existing `$variable`.
-
-        # Searching the parents in the same module
-        for parent in parents[:]:
-            # Looking for a 'class FooTest(Parent)'
-            if not isinstance(parent, ast.Name):
-                # 'class FooTest(bar.Bar)' not supported withing
-                # a module
-                continue
-            parent_class = parent.id
-            _info, _disabled, _match = _examine_class(target_module,
-                                                      target_class,
-                                                      determine_match,
-                                                      module.path,
-                                                      parent_class,
-                                                      match)
-            if _info:
-                parents.remove(parent)
-                _extend_test_list(info, _info)
-                disabled.update(_disabled)
-            if _match is not match:
-                match = _match
+        match = _examine_same_module(parents, info, disabled, match, module,
+                                     target_module, target_class, determine_match)
 
         # If there are parents left to be discovered, they
         # might be in a different module.
         for parent in parents:
-            if hasattr(parent, 'value'):
-                if hasattr(parent.value, 'id'):
-                    # We know 'parent.Class' or 'asparent.Class' and need
-                    # to get path and original_module_name. Class is given
-                    # by parent definition.
-                    _parent = module.imported_objects.get(parent.value.id)
-                    if _parent is None:
-                        # We can't examine this parent (probably broken
-                        # module)
-                        continue
-                    parent_path = os.path.dirname(_parent)
-                    parent_module = os.path.basename(_parent)
-                    parent_class = parent.attr
-                else:
-                    # We don't support multi-level 'parent.parent.Class'
-                    continue
-            else:
-                # We only know 'Class' or 'AsClass' and need to get
-                # path, module and original class_name
-                _parent = module.imported_objects.get(parent.id)
-                if _parent is None:
-                    # We can't examine this parent (probably broken
-                    # module)
-                    continue
-                parent_path, parent_module, parent_class = (
-                    _parent.rsplit(os.path.sep, 2))
+            try:
+                (parent_path,
+                 parent_module,
+                 parent_class) = _get_attributes_for_further_examination(parent,
+                                                                         module)
+            except ClassNotSuitable:
+                continue
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
@@ -233,90 +258,51 @@ def find_python_tests(target_module, target_class, determine_match, path):
 
         # If "recursive" tag is specified, it is forced as test
         if check_docstring_directive(docstring, 'recursive'):
-            is_valid_test = True
+            match = True
         else:
-            is_valid_test = module.is_matching_klass(klass)
+            match = module.is_matching_klass(klass)
         info = get_methods_info(klass.body,
                                 get_docstring_directives_tags(docstring),
                                 get_docstring_directives_requirements(
                                     docstring))
-        _disabled = set()
-
         # Getting the list of parents of the current class
         parents = klass.bases
 
-        # Searching the parents in the same module
-        for parent in parents[:]:
-            # Looking for a 'class FooTest(Parent)'
-            if not isinstance(parent, ast.Name):
-                # 'class FooTest(bar.Bar)' not supported withing
-                # a module
-                continue
-            parent_class = parent.id
-            _info, _dis, _python_test = _examine_class(target_module,
-                                                       target_class,
-                                                       determine_match,
-                                                       module.path,
-                                                       parent_class,
-                                                       is_valid_test)
-            if _info:
-                parents.remove(parent)
-                _extend_test_list(info, _info)
-                _disabled.update(_dis)
-            if _python_test is not is_valid_test:
-                is_valid_test = _python_test
+        match = _examine_same_module(parents, info, disabled, match, module,
+                                     target_module, target_class, determine_match)
 
         # If there are parents left to be discovered, they
         # might be in a different module.
         for parent in parents:
-            if hasattr(parent, 'value'):
-                if hasattr(parent.value, 'id'):
-                    # We know 'parent.Class' or 'asparent.Class' and need
-                    # to get path and original_target_module. Class is given
-                    # by parent definition.
-                    _parent = module.imported_objects.get(parent.value.id)
-                    if _parent is None:
-                        # We can't examine this parent (probably broken
-                        # module)
-                        continue
-                    parent_path = os.path.dirname(_parent)
-                    parent_module = os.path.basename(_parent)
-                    parent_class = parent.attr
-                else:
-                    # We don't support multi-level 'parent.parent.Class'
-                    continue
-            else:
-                # We only know 'Class' or 'AsClass' and need to get
-                # path, module and original target_class
-                _parent = module.imported_objects.get(parent.id)
-                if _parent is None:
-                    # We can't examine this parent (probably broken
-                    # module)
-                    continue
-                parent_path, parent_module, parent_class = (
-                    _parent.rsplit(os.path.sep, 2))
+            try:
+                (parent_path,
+                 parent_module,
+                 parent_class) = _get_attributes_for_further_examination(parent,
+                                                                         module)
+            except ClassNotSuitable:
+                continue
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
             found_spec = PathFinder.find_spec(parent_module, modules_paths)
             if found_spec is None:
                 continue
-            _info, _dis, _python_test = _examine_class(target_module,
-                                                       target_class,
-                                                       determine_match,
-                                                       found_spec.origin,
-                                                       parent_class,
-                                                       is_valid_test)
+            _info, _dis, _match = _examine_class(target_module,
+                                                 target_class,
+                                                 determine_match,
+                                                 found_spec.origin,
+                                                 parent_class,
+                                                 match)
             if _info:
                 info.extend(_info)
-                _disabled.update(_dis)
-            if _python_test is not is_valid_test:
-                is_valid_test = _python_test
+                disabled.update(_dis)
+            if _match is not match:
+                match = _match
 
         # Only update the results if this was detected as 'avocado.Test'
-        if is_valid_test:
+        if match:
             result[klass.name] = info
-            disabled.update(_disabled)
+            disabled.update(disabled)
 
     return result, disabled
 
