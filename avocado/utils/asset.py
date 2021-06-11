@@ -498,8 +498,8 @@ class Asset:
         This will check if the file's data wasn't modified N days ago.
 
         :param days: how many days ago will be the threshold. Ex: "10" will
-        return the assets files that *was not* accessed during the last 10
-        days.
+                     return the assets files that *was not* accessed during
+                     the last 10 days.
         :param cache_dirs: list of directories to use during the search.
         """
         result = []
@@ -515,7 +515,8 @@ class Asset:
         """Return a list of all assets in cache based on its size in MB.
 
         :param size_filter: a string with a filter (comparison operator +
-        value). Ex ">20", "<=200". Supported operators: ==, <, >, <=, >=.
+                            value). Ex ">20", "<=200". Supported operators:
+                            ==, <, >, <=, >=.
         :param cache_dirs: list of directories to use during the search.
         """
         try:

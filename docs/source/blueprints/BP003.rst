@@ -487,7 +487,7 @@ The final implementation may use other tools, such as a
 :class:`asyncio.Lock`.  It may also use individual :class:`Tasks
 <asyncio.Task>` for each work in each phase.
 
-.. literalinclude:: ../../../examples/nrunner/task-state-machine.py
+.. literalinclude:: ../../../contrib/scripts/task-state-machine.py
 
 Backwards Compatibility
 ***********************
