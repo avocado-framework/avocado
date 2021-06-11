@@ -1510,17 +1510,6 @@ tests:
 | `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
-.. warning:: ``AVOCADO_TEST_SRCDIR`` was present in earlier versions,
-             but has been deprecated on version 60.0, and removed on
-             version 62.0.  Please use ``AVOCADO_TEST_WORKDIR``
-             instead.
-
-.. warning:: ``AVOCADO_TEST_DATADIR`` was present in earlier versions,
-             but has been deprecated on version 60.0, and removed on
-             version 62.0.  The test data files (and directories) are
-             now dynamically evaluated and are not available as
-             environment variables
-
 SIMPLE Tests BASH extensions
 ----------------------------
 
