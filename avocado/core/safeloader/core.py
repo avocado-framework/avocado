@@ -76,6 +76,42 @@ def _examine_same_module(parents, info, disabled, match, module,
     return match
 
 
+class ClassNotSuitable(Exception):
+    """Exception raised when examination of a class should not proceed."""
+
+
+def _get_attributes_for_further_examination(parent, module):
+    """Returns path, module and class for further examination."""
+    if hasattr(parent, 'value'):
+        if hasattr(parent.value, 'id'):
+            # We know 'parent.Class' or 'asparent.Class' and need
+            # to get path and original_module_name. Class is given
+            # by parent definition.
+            _parent = module.imported_objects.get(parent.value.id)
+            if _parent is None:
+                # We can't examine this parent (probably broken
+                # module)
+                raise ClassNotSuitable
+            parent_path = os.path.dirname(_parent)
+            parent_module = os.path.basename(_parent)
+            parent_class = parent.attr
+        else:
+            # We don't support multi-level 'parent.parent.Class'
+            raise ClassNotSuitable
+    else:
+        # We only know 'Class' or 'AsClass' and need to get
+        # path, module and original class_name
+        _parent = module.imported_objects.get(parent.id)
+        if _parent is None:
+            # We can't examine this parent (probably broken
+            # module)
+            raise ClassNotSuitable
+        parent_path, parent_module, parent_class = (
+            _parent.rsplit(os.path.sep, 2))
+
+    return parent_path, parent_module, parent_class
+
+
 def _examine_class(target_module, target_class, determine_match, path,
                    class_name, match):
     """
@@ -136,32 +172,13 @@ def _examine_class(target_module, target_class, determine_match, path,
         # If there are parents left to be discovered, they
         # might be in a different module.
         for parent in parents:
-            if hasattr(parent, 'value'):
-                if hasattr(parent.value, 'id'):
-                    # We know 'parent.Class' or 'asparent.Class' and need
-                    # to get path and original_module_name. Class is given
-                    # by parent definition.
-                    _parent = module.imported_objects.get(parent.value.id)
-                    if _parent is None:
-                        # We can't examine this parent (probably broken
-                        # module)
-                        continue
-                    parent_path = os.path.dirname(_parent)
-                    parent_module = os.path.basename(_parent)
-                    parent_class = parent.attr
-                else:
-                    # We don't support multi-level 'parent.parent.Class'
-                    continue
-            else:
-                # We only know 'Class' or 'AsClass' and need to get
-                # path, module and original class_name
-                _parent = module.imported_objects.get(parent.id)
-                if _parent is None:
-                    # We can't examine this parent (probably broken
-                    # module)
-                    continue
-                parent_path, parent_module, parent_class = (
-                    _parent.rsplit(os.path.sep, 2))
+            try:
+                (parent_path,
+                 parent_module,
+                 parent_class) = _get_attributes_for_further_examination(parent,
+                                                                         module)
+            except ClassNotSuitable:
+                continue
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
@@ -257,32 +274,13 @@ def find_python_tests(target_module, target_class, determine_match, path):
         # If there are parents left to be discovered, they
         # might be in a different module.
         for parent in parents:
-            if hasattr(parent, 'value'):
-                if hasattr(parent.value, 'id'):
-                    # We know 'parent.Class' or 'asparent.Class' and need
-                    # to get path and original_target_module. Class is given
-                    # by parent definition.
-                    _parent = module.imported_objects.get(parent.value.id)
-                    if _parent is None:
-                        # We can't examine this parent (probably broken
-                        # module)
-                        continue
-                    parent_path = os.path.dirname(_parent)
-                    parent_module = os.path.basename(_parent)
-                    parent_class = parent.attr
-                else:
-                    # We don't support multi-level 'parent.parent.Class'
-                    continue
-            else:
-                # We only know 'Class' or 'AsClass' and need to get
-                # path, module and original target_class
-                _parent = module.imported_objects.get(parent.id)
-                if _parent is None:
-                    # We can't examine this parent (probably broken
-                    # module)
-                    continue
-                parent_path, parent_module, parent_class = (
-                    _parent.rsplit(os.path.sep, 2))
+            try:
+                (parent_path,
+                 parent_module,
+                 parent_class) = _get_attributes_for_further_examination(parent,
+                                                                         module)
+            except ClassNotSuitable:
+                continue
 
             modules_paths = [parent_path,
                              os.path.dirname(module.path)] + sys.path
