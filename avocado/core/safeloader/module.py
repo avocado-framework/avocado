@@ -1,6 +1,8 @@
 import ast
 import os
 
+from .imported import ImportedSymbol
+
 
 class PythonModule:
     """
@@ -11,7 +13,7 @@ class PythonModule:
     be used for, say, Python unittests.
     """
     __slots__ = ('path', 'klass_imports', 'mod_imports', 'mod', 'imported_objects',
-                 'module', 'klass')
+                 'module', 'klass', 'imported_symbols')
 
     def __init__(self, path, module='avocado', klass='Test'):
         """
@@ -39,6 +41,7 @@ class PythonModule:
         #            Basically a $path/$module/$variable string, but depending
         #            on the type of import, it can be also be $path/$module.
         self.imported_objects = {}
+        self.imported_symbols = {}
         with open(self.path) as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
 
@@ -126,6 +129,15 @@ class PythonModule:
                                      name.name.replace('.', os.path.sep))
             final_name = self._get_name_from_alias_statement(name)
             self.imported_objects[final_name] = full_path
+            # Currently, ImportedSymbol.from_statement() only supports the first
+            # symbol imported in the statement.  That's why where the final_name
+            # is used instead for the symbol, and the (correct) module comes
+            # from its utility method.
+            symbol_name = name.name if name.name else name.asname
+            module_name = ImportedSymbol.get_module_path_from_statement(statement)
+            self.imported_symbols[final_name] = ImportedSymbol(symbol_name,
+                                                               module_name,
+                                                               os.path.abspath(self.path))
 
     @staticmethod
     def _get_name_from_alias_statement(alias):
