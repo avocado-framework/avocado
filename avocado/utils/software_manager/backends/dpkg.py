@@ -51,6 +51,42 @@ class DpkgBackend(BaseBackend):
                 installed_packages.append("%s-%s" % (parts[1], parts[2]))
         return installed_packages
 
+    @staticmethod
+    def is_valid(package_path):
+        """Verifies if a package is a valid deb file.
+
+        :param str package_path: .deb package path.
+        :returns: True if valid, otherwise false.
+        :rtype: bool
+        """
+        abs_path = os.path.abspath(os.path.expanduser((package_path)))
+        try:
+            result = process.run("ar t {}".format(abs_path))
+        except process.CmdError:
+            return False
+        return result.exit_status == 0
+
+    @staticmethod
+    def extract_from_package(package_path, dest_path=None):
+        """Extracts the package content to a specific destination path.
+
+        :param str package_path: path to the deb package.
+        :param dest_path: destination path to extract the files. Default is the
+                          current directory.
+        :returns: path of the extracted file
+        :returns: the path of the extracted files.
+        :rtype: str
+        """
+        abs_path = os.path.abspath(os.path.expanduser(package_path))
+        dest = dest_path or os.path.curdir
+
+        # 'ar' command does not creates the directory if doesn't exists
+        os.makedirs(dest, exist_ok=True)
+
+        # If something goes wrong process.run will raise a CmdError exception
+        process.run("ar -x {} --output {}".format(abs_path, dest))
+        return dest
+
     def list_files(self, package):
         """
         List files installed by package [package].

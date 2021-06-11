@@ -225,6 +225,43 @@ class RpmBackend(BaseBackend):
                 subpacks += self.find_rpm_packages(new_filepath)
         return subpacks
 
+    @staticmethod
+    def is_valid(package_path):
+        """Verifies if a package is a valid rpm file.
+
+        :param str package_path: .rpm package path.
+        :returns: True if valid, otherwise false.
+        :rtype: bool
+        """
+        abs_path = os.path.abspath(os.path.expanduser((package_path)))
+        try:
+            result = process.run("rpm -qip {}".format(abs_path))
+        except process.CmdError:
+            return False
+        if result.exit_status == 0:
+            return True
+        return False
+
+    @staticmethod
+    def extract_from_package(package_path, dest_path=None):
+        """Extracts the package content to a specific destination path.
+
+        :param str package_path: path to the rpm package.
+        :param dest_path: destination path to extract the files. Default it
+                          will be the current directory.
+        :returns: path of the extracted file
+        :returns: the path of the extracted files.
+        :rtype: str
+        """
+        abs_path = os.path.abspath(os.path.expanduser(package_path))
+        dest = dest_path or os.path.curdir
+
+        # If something goes wrong process.run will raise a CmdError exception
+        process.run("rpm2cpio {} | cpio -dium -D {}".format(abs_path,
+                                                            dest),
+                    shell=True)
+        return dest
+
     def perform_setup(self, packages, no_dependencies=False):
         """
         General RPM setup with automatic handling of dependencies based on
