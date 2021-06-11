@@ -12,7 +12,7 @@ class PythonModule:
     instrumented tests, but it's supposed to be agnostic enough to
     be used for, say, Python unittests.
     """
-    __slots__ = ('path', 'klass_imports', 'mod_imports', 'mod', 'imported_objects',
+    __slots__ = ('path', 'klass_imports', 'mod_imports', 'mod',
                  'module', 'klass', 'imported_symbols')
 
     def __init__(self, path, module='avocado', klass='Test'):
@@ -35,12 +35,6 @@ class PythonModule:
         self.path = path
         self.module = module
         self.klass = klass
-        # A dict that keeps track of objects names and importable entities
-        #   key => object name from this module point of view
-        #   value => Something-like a directory path to the import.
-        #            Basically a $path/$module/$variable string, but depending
-        #            on the type of import, it can be also be $path/$module.
-        self.imported_objects = {}
         self.imported_symbols = {}
         with open(self.path) as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
@@ -119,16 +113,12 @@ class PythonModule:
             imported_path = os.path.join(imported_path, module_path)
         return imported_path
 
-    def add_imported_object(self, statement):
+    def add_imported_symbol(self, statement):
         """
-        Keeps track of objects names and importable entities
+        Keeps track of symbol names and importable entities
         """
-        imported_path = self._get_imported_path_from_statement(statement)
         for name in statement.names:
-            full_path = os.path.join(imported_path,
-                                     name.name.replace('.', os.path.sep))
             final_name = self._get_name_from_alias_statement(name)
-            self.imported_objects[final_name] = full_path
             # Currently, ImportedSymbol.from_statement() only supports the first
             # symbol imported in the statement.  That's why where the final_name
             # is used instead for the symbol, and the (correct) module comes
@@ -145,7 +135,7 @@ class PythonModule:
         return alias.asname if alias.asname else alias.name
 
     def _handle_import_from(self, statement):
-        self.add_imported_object(statement)
+        self.add_imported_symbol(statement)
         if statement.module != self.module:
             return
         name = self._statement_import_as(statement).get(self.klass, None)
@@ -162,7 +152,7 @@ class PythonModule:
         return result
 
     def _handle_import(self, statement):
-        self.add_imported_object(statement)
+        self.add_imported_symbol(statement)
         imported_as = self._statement_import_as(statement)
         name = imported_as.get(self.module, None)
         if name is not None:
