@@ -17,21 +17,21 @@ class PythonModuleSelf(unittest.TestCase):
         self.module = PythonModule(self.path)
 
     def test_add_imported_empty(self):
-        self.assertEqual(self.module.imported_objects, {})
+        self.assertEqual(self.module.imported_symbols, {})
 
-    def test_add_imported_object_from_module(self):
+    def test_add_imported_symbols_from_module(self):
         import_stm = ast.ImportFrom(module='foo', names=[ast.Name(name='bar',
                                                                   asname=None)])
-        self.module.add_imported_object(import_stm)
-        self.assertEqual(self.module.imported_objects['bar'],
-                         os.path.join(self.path, 'foo', 'bar'))
+        self.module.add_imported_symbol(import_stm)
+        self.assertEqual(self.module.imported_symbols['bar'].module_path, 'foo')
+        self.assertEqual(self.module.imported_symbols['bar'].symbol, 'bar')
 
     def test_add_imported_object_from_module_asname(self):
         import_stm = ast.ImportFrom(module='foo', names=[ast.Name(name='bar',
                                                                   asname='baz')])
-        self.module.add_imported_object(import_stm)
-        self.assertEqual(self.module.imported_objects['baz'],
-                         os.path.join(self.path, 'foo', 'bar'))
+        self.module.add_imported_symbol(import_stm)
+        self.assertEqual(self.module.imported_symbols['baz'].module_path, 'foo')
+        self.assertEqual(self.module.imported_symbols['baz'].symbol, 'bar')
 
     def test_is_not_avocado_test(self):
         self.assertFalse(self.module.is_matching_klass(ast.ClassDef()))
@@ -75,4 +75,4 @@ class PythonModuleTest(unittest.TestCase):
         module = PythonModule(path)
         for _ in module.iter_classes():
             pass
-        self.assertIn('TestCaseTmpDir', module.imported_objects)
+        self.assertIn('TestCaseTmpDir', module.imported_symbols)
