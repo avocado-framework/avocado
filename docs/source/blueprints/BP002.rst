@@ -8,7 +8,7 @@ BP002
 :Reviewers: Beraldo Leal, Cleber Rosa
 :Created: 27-Jan-2020
 :Type: Architecture Blueprint
-:Status: Approved
+:Status: WIP
 
 .. contents:: Table of Contents
 
@@ -250,18 +250,44 @@ Related Issues
 
 Here a list of all issues related to this blueprint:
 
-#. Add the support for `--requirements-file` command-line parameter.
+#. `[DONE] <https://github.com/avocado-framework/avocado/issues/4312>`__
+   Implement the initial architecture for a requirements resolver based
+   on BP002 and add support for packages
 
-#. Add the unsafe flag support for the requirements resolver.
-
-#. Create a complete section in the User's Guide on how to handle test
+#. `[DONE] <https://github.com/avocado-framework/avocado/issues/4312>`__
+   Create a complete section in the User's Guide on how to handle test
    requirements.
 
-#. Create a new section in the Contributor's Guide on how to develop modules
-   to handle new types of requirements.
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4675>`__
+   BP002: implement the file runner to support file requirements
 
-.. warning:: The link to the GitHub issues will be added to this list as they
-             are created.
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4663>`__
+   BP002: implement the image runner to support image requirements
+
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4664>`__
+   BP002: implement the git repository runner to support Git repository
+   requirements
+
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4665>`__
+   BP002: add support to JSON representation for requirements
+
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4666>`__
+   BP002: add support to Python executable that produces JSON representation
+   for requirements
+
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4667>`__
+   BP002: add command-line parameter to support requirements file
+
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4668>`__
+   BP002: add support to auto-detect requirements files based on file location
+
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4669>`__
+   BP002 add support to run unsafe Python code that produces JSON
+   representation for requirements
+
+#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4676>`__
+   BP002: Create a new section in the Contributor's Guide on how to implement
+   requirements runners
 
 References
 **********
