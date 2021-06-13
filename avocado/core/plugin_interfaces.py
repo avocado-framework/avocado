@@ -245,6 +245,7 @@ class Discoverer(Plugin):
         the discoverer will be able to use another data for gathering test
         resolutions. It work same as the Resolver, but without the test
         reference.
+
         :returns: the result of the resolution process, containing the
                   success, failure or error, along with zero or more
                   :class:`avocado.core.nrunner.Runnable` objects

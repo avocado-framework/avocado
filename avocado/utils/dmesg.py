@@ -50,10 +50,10 @@ def collect_dmesg(output_file=None):
     The dmesg operation is a privileged user task.
     This function needs sudo permissions enabled on the target host
 
-    :param output_file : File use for save dmesg output if not provided it use
+    :param output_file: File use for save dmesg output if not provided it use
                         tmp file which located in system  /tmp path
     :type output_file: str
-    :return: file which contain dmesg
+    :returns: file which contain dmesg
     :rtype: str
     """
     if output_file is None:
@@ -70,9 +70,8 @@ def collect_dmesg(output_file=None):
 def collect_errors_dmesg(patterns):
     """Check patterns in dmesg.
 
-    :param patterns  :  List variable to search in dmesg
-
-    :return error log in form of list
+    :param patterns : list variable to search in dmesg
+    :returns: error log in form of list
     :rtype: list of str
     """
     error = []
@@ -89,7 +88,6 @@ def collect_errors_by_level(output_file=None, level_check=5, skip_errors=None):
 
     :param output_file: The file used to save dmesg
     :type output_file: str
-
     :param level_check: level of severity of issues to be checked
                         1 - emerg
                         2 - emerg,alert
@@ -132,7 +130,7 @@ def skip_dmesg_messages(dmesg_stdout, skip_messages):
 
       :dmesg_stdout: dmesg messages from which filter should be applied. This
                      must be a decoded output buffer with new lines.
-      :type dmesg_stdout: string
+      :type dmesg_stdout: str
       :skip_messages: list of strings to be removed
       :type skip_messages: list
     """
