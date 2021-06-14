@@ -70,7 +70,8 @@ class RunningMessageHandler(BaseMessageHandler):
         self._handlers = {'log': [LogMessageHandler()],
                           'stdout': [StdoutMessageHandler()],
                           'stderr': [StderrMessageHandler()],
-                          'whiteboard': [WhiteboardMessageHandler()]}
+                          'whiteboard': [WhiteboardMessageHandler()],
+                          'file': [FileMessageHandler()]}
 
     def process_message(self, message, task, job):
         for handler in self._handlers.get(message.get('type'), []):
@@ -300,4 +301,37 @@ class WhiteboardMessageHandler(BaseRunningMessageHandler):
 
     def handle(self, message, task, job):
         self._save_message_to_file('whiteboard', message['log'], task,
+                                   message.get('encoding', None))
+
+
+class FileMessageHandler(BaseRunningMessageHandler):
+    """
+    Handler for file message.
+
+    In task directory will save log into the runner specific file. When the
+    file doesn't exist, the file will be created. If the file exist,
+    the message data will be appended at the end.
+
+    :param status: 'running'
+    :param type: 'file'
+    :param path: relative path to the file. The file will be created under
+                the Task directory and the absolute path will be created
+                as `absolute_task_directory_path/relative_file_path`.
+    :type path: string
+    :param log: data to be saved inside file
+    :type log: bytes
+    :param time: Time stamp of the message
+    :type time: float
+
+    example: {'status': 'running', 'type': 'file', 'path':'foo/runner.log',
+             'log': 'this will be saved inside file',
+             'time': 18405.55351474}
+    """
+
+    def handle(self, message, task, job):
+        filename = os.path.relpath(os.path.join("/", message['path']), "/")
+        file = os.path.join(task.metadata['task_path'], filename)
+        if not os.path.exists(file):
+            os.makedirs(os.path.dirname(file))
+        self._save_message_to_file(filename, message['log'], task,
                                    message.get('encoding', None))

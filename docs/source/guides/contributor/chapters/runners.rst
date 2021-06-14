@@ -608,3 +608,5 @@ based on the information which is being transmitted.
 .. autoclass:: avocado.core.messages.StderrMessageHandler
 
 .. autoclass:: avocado.core.messages.WhiteboardMessageHandler
+
+.. autoclass:: avocado.core.messages.FileMessageHandler
