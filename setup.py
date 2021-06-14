@@ -15,9 +15,11 @@
 
 import glob
 import os
+import shutil
 import sys
 from abc import abstractmethod
 from distutils.command.clean import clean
+from pathlib import Path
 from subprocess import CalledProcessError, call, check_call
 
 from setuptools import Command, find_packages, setup
@@ -43,15 +45,27 @@ class Clean(clean):
 
     def run(self):
         super().run()
-        call(('rm -rf MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES',
-              'PYPI_UPLOAD ./build ./dist'), shell=True)
-        call('rm -rf ./man/avocado.1 ./docs/build', shell=True)
-        call('rm -rf /var/tmp/avocado* /tmp/avocado/*', shell=True)
-        call('find . -name "*.egg-info" -exec rm -rv {} +', shell=True)
-        call('find . -name "*.pyc" -exec rm -rv {} +', shell=True)
-        call('find . -name __pycache__ -type d -exec rm -rv {} +', shell=True)
-        call('find ./docs/source/api/ -name "*.rst" -exec rm -rv {} +',
-             shell=True)
+        cleaning_list = ["MANIFEST", "BUILD", "BUILDROOT", "SPECS",
+                         "RPMS", "SRPMS", "SOURCES", "PYPI_UPLOAD",
+                         "./build", "./dist",
+                         "./man/avocado.1", "./docs/build",
+                         "/tmp/avocado/"]
+
+        cleaning_list += list(Path('/var/tmp/').glob(".avocado-task*"))
+        cleaning_list += list(Path('/var/tmp/').glob("avocado*"))
+        cleaning_list += list(Path('.').rglob("*.egg-info"))
+        cleaning_list += list(Path('.').rglob("*.pyc"))
+        cleaning_list += list(Path('.').rglob("__pycache__"))
+        cleaning_list += list(Path('./docs/source/api/').rglob("*.rst"))
+
+        for e in cleaning_list:
+            if not os.path.exists(e):
+                continue
+            if os.path.isfile(e):
+                os.remove(e)
+            if os.path.isdir(e):
+                shutil.rmtree(e)
+
         self.clean_optional_plugins()
 
     @staticmethod
