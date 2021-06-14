@@ -335,14 +335,9 @@ class Asset:
         asset_file = None
         error = "unknown"
         try:
-            asset_file = self.find_asset_file()
+            return self.find_asset_file(create_metadata=True)
         except OSError:
             LOG.info("Asset not in cache, fetching it.")
-
-        if asset_file is not None:
-            if self.metadata is not None:
-                self._create_metadata_file(asset_file)
-            return asset_file
 
         # If we get to this point, we have to download it from a location.
         # A writable cache directory is then needed. The first available
@@ -381,10 +376,14 @@ class Asset:
 
         raise OSError("Failed to fetch %s (%s)." % (self.asset_name, error))
 
-    def find_asset_file(self):
+    def find_asset_file(self, create_metadata=False):
         """
         Search for the asset file in each one of the cache locations
 
+        :param bool create_metadata: Should this method create the
+                                     metadata in case asset file found
+                                     and metadata is not found?  Default
+                                     is False.
         :return: asset path, if it exists in the cache
         :rtype: str
         :raises: OSError
@@ -405,6 +404,9 @@ class Asset:
             # Ignore mismatch hash
             if not self._has_valid_hash(asset_file, self.asset_hash):
                 continue
+
+            if create_metadata:
+                self._create_metadata_file(asset_file)
 
             return asset_file
 
