@@ -26,8 +26,8 @@ import re
 import shutil
 import stat
 import sys
-import tempfile
 import time
+import uuid
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -125,12 +125,19 @@ class Asset:
         """
         try:
             # Temporary unique name to use while downloading
-            temp = '%s.%s' % (asset_path,
-                              next(tempfile._get_candidate_names()))  # pylint: disable=W0212
-            url_download(url_obj.geturl(), temp)
+            temp = '%s.%s' % (asset_path, str(uuid.uuid4()))
 
-            # Acquire lock only after download the file
-            with FileLock(asset_path, 1):
+            # To avoid parallel downloads of the same asset, and errors during
+            # the write after download, let's get the lock before start the
+            # download.
+            with FileLock(asset_path, 120):
+                try:
+                    self.find_asset_file(create_metadata=True)
+                    return True
+                except OSError:
+                    LOG.info("Asset not in cache after lock, fetching it.")
+
+                url_download(url_obj.geturl(), temp)
                 shutil.copy(temp, asset_path)
                 self._create_hash_file(asset_path)
                 if not self._verify_hash(asset_path):
