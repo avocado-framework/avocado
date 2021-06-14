@@ -592,89 +592,19 @@ information will be processed by the avocado core.
 Supported message types
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Started message
-+++++++++++++
-This message has to be sent when the runner starts the test.
+.. autoclass:: avocado.core.messages.StartMessageHandler
 
-:param status: 'started'
-:param time: start time of the test
-:type time: float
-:example: {'status': 'started', 'time': 16444.819830573}
-
-Finished message
-++++++++++++++++
-This message has to be sent when the runner finishes the test.
-
-:param status: 'finished'
-:param result: test result
-:type result: Lowercase values for the statuses defined in :data:`avocado.core.teststatus.STATUSES`
-:param time: end time of the test
-:type time: float
-:param fail_reason: Optional parameter for brief specification, of the failed result.
-:type fail_reason: str
-:example: {'status': 'finished', 'result': 'pass', 'time': 16444.819830573}
+.. autoclass:: avocado.core.messages.FinishMessageHandler
 
 Running messages
 ++++++++++++++++
 This message can be used during the run-time and has different properties
 based on the information which is being transmitted.
 
-Log message
-***********
-It will save the log to the debug.log file in the task directory.
+.. autoclass:: avocado.core.messages.LogMessageHandler
 
-:param status: 'running'
-:param type: 'log'
-:param log: log message
-:type log: bytes
-:param encoding: optional value for decoding messages
-:type encoding: str
-:param time: Time stamp of the message
-:type time: float
-:example: {'status': 'running', 'type': 'log', 'log': b'log message',
-         'time': 18405.55351474}
+.. autoclass:: avocado.core.messages.StdoutMessageHandler
 
-Stdout message
-**************
-It will save the stdout to the stdout file in the task directory.
+.. autoclass:: avocado.core.messages.StderrMessageHandler
 
-:param status: 'running'
-:param type: 'stdout'
-:param log: stdout message
-:type log: bytes
-:param encoding: optional value for decoding messages
-:type encoding: str
-:param time: Time stamp of the message
-:type time: float
-:example: {'status': 'running', 'type': 'stdout', 'log': b'stdout message',
-         'time': 18405.55351474}
-
-Stderr message
-**************
-It will save the stderr to the stderr file in the task directory.
-
-:param status: 'running'
-:param type: 'stderr'
-:param log: stderr message
-:type log: bytes
-:param encoding: optional value for decoding messages
-:type encoding: str
-:param time: Time stamp of the message
-:type time: float
-:example: {'status': 'running', 'type': 'stderr', 'log': b'stderr message',
-         'time': 18405.55351474}
-
-Whiteboard message
-******************
-It will save the stderr to the whiteboard file in the task directory.
-
-:param status: 'running'
-:param type: 'whiteboard'
-:param log: whiteboard message
-:type log: bytes
-:param encoding: optional value for decoding messages
-:type encoding: str
-:param time: Time stamp of the message
-:type time: float
-:example: {'status': 'running', 'type': 'whiteboard',
-         'log': b'whiteboard message', 'time': 18405.55351474}
+.. autoclass:: avocado.core.messages.WhiteboardMessageHandler
