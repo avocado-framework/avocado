@@ -321,10 +321,11 @@ class Asset:
         return self._has_valid_hash(asset_path, self.asset_hash)
 
     def fetch(self):
-        """
-        Fetches the asset. First tries to find the asset on the provided
-        cache_dirs list. Then tries to download the asset from the locations
-        list provided.
+        """Try to fetch the current asset.
+
+        First tries to find the asset on the provided cache_dirs list.
+        Then tries to download the asset from the locations list
+        provided.
 
         :raise OSError: When it fails to fetch the asset
         :returns: The path for the file on the cache directory.
