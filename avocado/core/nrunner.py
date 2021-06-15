@@ -72,6 +72,35 @@ def check_runnables_runner_requirements(runnables, runners_registry=None):
     return (ok, missing)
 
 
+class ConfigDecoder(json.JSONDecoder):
+    """
+    JSON Decoder for config options.
+    """
+
+    @staticmethod
+    def decode_set(config_dict):
+        for k, v in config_dict.items():
+            if isinstance(v, dict):
+                if '__encoded_set__' in v:
+                    config_dict[k] = set(v['__encoded_set__'])
+        return config_dict
+
+    def decode(self, config_str):  # pylint: disable=W0221
+        config_dict = json.JSONDecoder.decode(self, config_str)
+        return self.decode_set(config_dict)
+
+
+class ConfigEncoder(json.JSONEncoder):
+    """
+    JSON Encoder for config options.
+    """
+
+    def default(self, config_option):  # pylint: disable=W0221
+        if isinstance(config_option, set):
+            return {'__encoded_set__': list(config_option)}
+        return json.JSONEncoder.default(self, config_option)
+
+
 class Runnable:
     """
     Describes an entity that be executed in the context of a task
@@ -102,7 +131,8 @@ class Runnable:
         return cls(args.get('kind'),
                    args.get('uri'),
                    *decoded_args,
-                   config=json.loads(args.get('config', '{}')),
+                   config=json.loads(args.get('config', '{}'),
+                                     cls=ConfigDecoder),
                    **_key_val_args_to_kwargs(args.get('kwargs', [])))
 
     @classmethod
@@ -116,10 +146,11 @@ class Runnable:
         """
         with open(recipe_path) as recipe_file:
             recipe = json.load(recipe_file)
+        config = ConfigDecoder.decode_set(recipe.get('config', {}))
         return cls(recipe.get('kind'),
                    recipe.get('uri'),
                    *recipe.get('args', ()),
-                   config=recipe.get('config', {}),
+                   config=config,
                    **recipe.get('kwargs', {}))
 
     def get_command_args(self):
@@ -139,7 +170,7 @@ class Runnable:
 
         if self.config is not None:
             args.append('-c')
-            args.append(json.dumps(self.config))
+            args.append(json.dumps(self.config, cls=ConfigEncoder))
 
         for arg in self.args:
             args.append('-a')
@@ -185,7 +216,7 @@ class Runnable:
 
         :rtype: str
         """
-        return json.dumps(self.get_dict())
+        return json.dumps(self.get_dict(), cls=ConfigEncoder)
 
     def get_serializable_tags(self):
         tags = {}
