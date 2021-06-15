@@ -119,7 +119,7 @@ if __name__ == '__main__':
           long_description=get_long_description(),
           author='Avocado Developers',
           author_email='avocado-devel@redhat.com',
-          url='http://avocado-framework.github.io/',
+          url='https://avocado-framework.github.io/',
           license="GPLv2+",
           classifiers=[
               "Development Status :: 5 - Production/Stable",
