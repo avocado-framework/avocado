@@ -67,7 +67,6 @@ def resolutions_to_runnables(resolutions, config):
     filter_by_tags = config.get("filter.by_tags.tags")
     include_empty = config.get("filter.by_tags.include_empty")
     include_empty_key = config.get('filter.by_tags.include_empty_key')
-    runner_config = settings.filter_config(config, r'^runner\.')
     for resolution in resolutions:
         if resolution.result != ReferenceResolutionResult.SUCCESS:
             continue
@@ -78,7 +77,7 @@ def resolutions_to_runnables(resolutions, config):
                                                  include_empty,
                                                  include_empty_key):
                     continue
-            runnable.config = runner_config
+            runnable.config = config
             result.append(runnable)
     return result
 
