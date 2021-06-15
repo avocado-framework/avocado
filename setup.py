@@ -45,11 +45,12 @@ class Clean(clean):
 
     def run(self):
         super().run()
-        cleaning_list = ["MANIFEST", "BUILD", "BUILDROOT", "SPECS",
-                         "RPMS", "SRPMS", "SOURCES", "PYPI_UPLOAD",
-                         "./build", "./dist",
-                         "./man/avocado.1", "./docs/build",
-                         "/tmp/avocado/"]
+        cleaning_list = [Path("MANIFEST"), Path("BUILD"), Path("BUILDROOT"),
+                         Path("SPECS"), Path("RPMS"), Path("SRPMS"),
+                         Path("SOURCES"), Path("PYPI_UPLOAD"),
+                         Path("./build"), Path("./dist"),
+                         Path("./man/avocado.1"), Path("./docs/build"),
+                         Path("/tmp/avocado/")]
 
         cleaning_list += list(Path('/var/tmp/').glob(".avocado-task*"))
         cleaning_list += list(Path('/var/tmp/').glob("avocado*"))
@@ -59,9 +60,9 @@ class Clean(clean):
         cleaning_list += list(Path('./docs/source/api/').rglob("*.rst"))
 
         for e in cleaning_list:
-            if os.path.exists(e) and os.path.isfile(e):
-                os.remove(e)
-            if os.path.exists(e) and os.path.isdir(e):
+            if e.exists() and e.is_file():
+                e.remove()
+            if e.exists() and e.is_dir():
                 shutil.rmtree(e)
 
         self.clean_optional_plugins()
