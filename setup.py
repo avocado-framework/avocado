@@ -19,7 +19,7 @@ import sys
 from abc import abstractmethod
 from distutils.command.clean import clean
 from pathlib import Path
-from subprocess import CalledProcessError, call, check_call
+from subprocess import CalledProcessError, check_call, run
 
 from setuptools import Command, find_packages, setup
 
@@ -69,12 +69,10 @@ class Clean(clean):
 
     @staticmethod
     def clean_optional_plugins():
-        root_dir = Path(os.getcwd())
-        for plugin in list(root_dir.rglob("./optional_plugins/*/setup.py")):
+        for plugin in list(Path(os.getcwd()).rglob("./optional_plugins/*/setup.py")):
             print(">> CLEANING {}".format(plugin))
-            os.chdir(plugin.parent)
-            call('{} setup.py clean --all'.format(sys.executable), shell=True)
-            os.chdir(root_dir)
+            run('{} setup.py clean --all'.format(sys.executable),
+                shell=True, cwd=plugin.parent, check=True)
 
 
 class SimpleCommand(Command):
