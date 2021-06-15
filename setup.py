@@ -13,7 +13,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import glob
 import os
 import shutil
 import sys
@@ -70,11 +69,10 @@ class Clean(clean):
 
     @staticmethod
     def clean_optional_plugins():
-        root_dir = os.getcwd()
-        for plugin in map(os.path.dirname,
-                          glob.glob('./optional_plugins/*/setup.py')):
+        root_dir = Path(os.getcwd())
+        for plugin in list(root_dir.rglob("./optional_plugins/*/setup.py")):
             print(">> CLEANING {}".format(plugin))
-            os.chdir(plugin)
+            os.chdir(plugin.parent)
             call('{} setup.py clean --all'.format(sys.executable), shell=True)
             os.chdir(root_dir)
 
