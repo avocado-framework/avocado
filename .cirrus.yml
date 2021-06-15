@@ -49,8 +49,8 @@ debian_egg_task:
        - python3 -c 'import sys; from pkg_resources import require; require("avocado-framework"); from avocado.core.main import main; sys.exit(main())' run /bin/true
     container:
         matrix:
-          - image: debian:9.13
-          - image: debian:10.8
+          - image: debian:10.9
+          - image: debian:bullseye-20210511
           - image: ubuntu:18.04
           - image: ubuntu:20.04
 
