@@ -84,7 +84,7 @@ class DpkgBackend(BaseBackend):
         os.makedirs(dest, exist_ok=True)
 
         # If something goes wrong process.run will raise a CmdError exception
-        process.run("ar -x {} --output {}".format(abs_path, dest))
+        process.run("cd {} && ar -x {}".format(dest, abs_path), shell=True)
         return dest
 
     def list_files(self, package):
