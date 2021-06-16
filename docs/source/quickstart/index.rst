@@ -263,9 +263,6 @@ Build and Quality Status
    :target: https://lgtm.com/projects/g/avocado-framework/avocado/context:javascript
    :alt: lgtm language grade for JavaScript
 
-.. image:: https://codecov.io/gh/avocado-framework/avocado/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/avocado-framework/avocado
-
 .. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
    :target: https://avocado-framework.readthedocs.io/en/latest/
    :alt: Documentation Status
