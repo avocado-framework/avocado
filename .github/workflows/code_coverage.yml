@@ -1,0 +1,41 @@
+name: Code Coverage
+
+on: [pull_request]
+
+jobs:
+  Code-coverage:
+
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install and pre script
+        env:
+          SELF_CHECK_CONTINUOUS: "yes"
+          CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
+        run: |
+         pip install -r requirements-selftests.txt
+         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+         chmod +x ./cc-test-reporter
+         ./cc-test-reporter before-build
+      - name: Run script
+        env:
+          SELF_CHECK_CONTINUOUS: "yes"
+          CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
+        run: make develop && ./selftests/run_coverage
+      - name: post script
+        env:
+          SELF_CHECK_CONTINUOUS: "yes"
+          CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
+        run: ./cc-test-reporter after-build
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+

@@ -1,0 +1,56 @@
+name: Smokecheck on OS X
+
+on: [pull_request]
+
+jobs:
+  smokecheck-on-osx:
+
+    runs-on: macos-10.15
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install avocado
+        run: python setup.py develop --user
+      - name: Show avocado help
+        run: python -m avocado --help
+      - name: nrunner example test
+        run: python -m avocado run --test-runner=nrunner examples/tests/passtest.py
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  ad-hoc-checks-on-osx:
+
+    runs-on: macos-10.15
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install avocado
+        run: |
+          python3 -m pip install -r requirements-selftests.txt
+          python setup.py develop --user
+      - name: resolver test
+        run: python -m avocado --verbose list --resolver selftests/unit/* selftests/functional/* selftests/*sh
+      # This test is known NOT to work
+      #- name: unittest test
+      #  run: python -m unittest discover -v selftests.unit
+      - run: echo "🥑 This job's status is ${{ job.status }}."

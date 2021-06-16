@@ -1,0 +1,34 @@
+name: Smokecheck on Windows
+
+on: [pull_request]
+
+jobs:
+  Avocado-smokecheck-on-windows:
+
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install avocado
+        run: python setup.py develop --user
+      - name: Show avocado help
+        run: python -m avocado --help
+      # this step doesn't work in python 3.6 or python 3.7
+      - name: nrunner example test 3.8
+        if: ${{ matrix.python-version == '3.8'}}
+        run: python -m avocado run --test-runner=nrunner examples\tests\passtest.py
+      - name: nrunner example test 3.9
+        if: ${{ matrix.python-version == '3.9' }}
+        run: python -m avocado run --test-runner=nrunner examples\tests\passtest.py
+      - run: echo "🥑 This job's status is ${{ job.status }}."

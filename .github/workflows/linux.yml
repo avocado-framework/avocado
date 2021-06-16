@@ -1,0 +1,37 @@
+name: Checks on Linux
+
+on: [pull_request]
+
+jobs:
+  Checks-on-linux:
+
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      # You can test your matrix by printing the current Python version
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install dependencies
+        run: |
+         pip install -r requirements-selftests.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user
+      - name: Avocado version
+        run: avocado --version
+      - name: Make check
+        env:
+          AVOCADO_LOG_DEBUG: "yes"
+          AVOCADO_CHECK_LEVEL: "1"
+        run:  make check
+      - run: echo "🥑 This job's status is ${{ job.status }}."
