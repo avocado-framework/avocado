@@ -13,12 +13,13 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import glob
 import os
+import shutil
 import sys
 from abc import abstractmethod
 from distutils.command.clean import clean
-from subprocess import CalledProcessError, call, check_call
+from pathlib import Path
+from subprocess import CalledProcessError, check_call, run
 
 from setuptools import Command, find_packages, setup
 
@@ -43,26 +44,35 @@ class Clean(clean):
 
     def run(self):
         super().run()
-        call(('rm -rf MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES',
-              'PYPI_UPLOAD ./build ./dist'), shell=True)
-        call('rm -rf ./man/avocado.1 ./docs/build', shell=True)
-        call('rm -rf /var/tmp/avocado* /tmp/avocado/*', shell=True)
-        call('find . -name "*.egg-info" -exec rm -rv {} +', shell=True)
-        call('find . -name "*.pyc" -exec rm -rv {} +', shell=True)
-        call('find . -name __pycache__ -type d -exec rm -rv {} +', shell=True)
-        call('find ./docs/source/api/ -name "*.rst" -exec rm -rv {} +',
-             shell=True)
+        cleaning_list = ["MANIFEST", "BUILD", "BUILDROOT", "SPECS",
+                         "RPMS", "SRPMS", "SOURCES", "PYPI_UPLOAD",
+                         "./build", "./dist",
+                         "./man/avocado.1", "./docs/build",
+                         "/tmp/avocado/"]
+
+        cleaning_list += list(Path('/var/tmp/').glob(".avocado-task*"))
+        cleaning_list += list(Path('/var/tmp/').glob("avocado*"))
+        cleaning_list += list(Path('.').rglob("*.egg-info"))
+        cleaning_list += list(Path('.').rglob("*.pyc"))
+        cleaning_list += list(Path('.').rglob("__pycache__"))
+        cleaning_list += list(Path('./docs/source/api/').rglob("*.rst"))
+
+        for e in cleaning_list:
+            if not os.path.exists(e):
+                continue
+            if os.path.isfile(e):
+                os.remove(e)
+            if os.path.isdir(e):
+                shutil.rmtree(e)
+
         self.clean_optional_plugins()
 
     @staticmethod
     def clean_optional_plugins():
-        root_dir = os.getcwd()
-        for plugin in map(os.path.dirname,
-                          glob.glob('./optional_plugins/*/setup.py')):
+        for plugin in list(Path(os.getcwd()).rglob("./optional_plugins/*/setup.py")):
             print(">> CLEANING {}".format(plugin))
-            os.chdir(plugin)
-            call('{} setup.py clean --all'.format(sys.executable), shell=True)
-            os.chdir(root_dir)
+            run('{} setup.py clean --all'.format(sys.executable),
+                shell=True, cwd=plugin.parent, check=True)
 
 
 class SimpleCommand(Command):
@@ -109,7 +119,7 @@ if __name__ == '__main__':
           long_description=get_long_description(),
           author='Avocado Developers',
           author_email='avocado-devel@redhat.com',
-          url='http://avocado-framework.github.io/',
+          url='https://avocado-framework.github.io/',
           license="GPLv2+",
           classifiers=[
               "Development Status :: 5 - Production/Stable",
