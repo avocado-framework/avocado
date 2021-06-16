@@ -70,9 +70,10 @@ class Clean(clean):
     @staticmethod
     def clean_optional_plugins():
         for plugin in list(Path(os.getcwd()).rglob("./optional_plugins/*/setup.py")):
-            print(">> CLEANING {}".format(plugin))
+            parent_dir = plugin.parent
+            print(">> CLEANING {}".format(parent_dir))
             run('{} setup.py clean --all'.format(sys.executable),
-                shell=True, cwd=plugin.parent, check=True)
+                shell=True, cwd=parent_dir, check=True)
 
 
 class SimpleCommand(Command):
@@ -133,6 +134,7 @@ if __name__ == '__main__':
               "Programming Language :: Python :: 3.6",
               "Programming Language :: Python :: 3.7",
               "Programming Language :: Python :: 3.8",
+              "Programming Language :: Python :: 3.9",
               ],
           packages=find_packages(exclude=('selftests*',)),
           include_package_data=True,
