@@ -26,8 +26,8 @@ import re
 import shutil
 import stat
 import sys
-import tempfile
 import time
+import uuid
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -125,12 +125,19 @@ class Asset:
         """
         try:
             # Temporary unique name to use while downloading
-            temp = '%s.%s' % (asset_path,
-                              next(tempfile._get_candidate_names()))  # pylint: disable=W0212
-            url_download(url_obj.geturl(), temp)
+            temp = '%s.%s' % (asset_path, str(uuid.uuid4()))
 
-            # Acquire lock only after download the file
-            with FileLock(asset_path, 1):
+            # To avoid parallel downloads of the same asset, and errors during
+            # the write after download, let's get the lock before start the
+            # download.
+            with FileLock(asset_path, 120):
+                try:
+                    self.find_asset_file(create_metadata=True)
+                    return True
+                except OSError:
+                    LOG.info("Asset not in cache after lock, fetching it.")
+
+                url_download(url_obj.geturl(), temp)
                 shutil.copy(temp, asset_path)
                 self._create_hash_file(asset_path)
                 if not self._verify_hash(asset_path):
@@ -321,10 +328,11 @@ class Asset:
         return self._has_valid_hash(asset_path, self.asset_hash)
 
     def fetch(self):
-        """
-        Fetches the asset. First tries to find the asset on the provided
-        cache_dirs list. Then tries to download the asset from the locations
-        list provided.
+        """Try to fetch the current asset.
+
+        First tries to find the asset on the provided cache_dirs list.
+        Then tries to download the asset from the locations list
+        provided.
 
         :raise OSError: When it fails to fetch the asset
         :returns: The path for the file on the cache directory.
@@ -334,14 +342,9 @@ class Asset:
         asset_file = None
         error = "unknown"
         try:
-            asset_file = self.find_asset_file()
+            return self.find_asset_file(create_metadata=True)
         except OSError:
             LOG.info("Asset not in cache, fetching it.")
-
-        if asset_file is not None:
-            if self.metadata is not None:
-                self._create_metadata_file(asset_file)
-            return asset_file
 
         # If we get to this point, we have to download it from a location.
         # A writable cache directory is then needed. The first available
@@ -380,10 +383,14 @@ class Asset:
 
         raise OSError("Failed to fetch %s (%s)." % (self.asset_name, error))
 
-    def find_asset_file(self):
+    def find_asset_file(self, create_metadata=False):
         """
         Search for the asset file in each one of the cache locations
 
+        :param bool create_metadata: Should this method create the
+                                     metadata in case asset file found
+                                     and metadata is not found?  Default
+                                     is False.
         :return: asset path, if it exists in the cache
         :rtype: str
         :raises: OSError
@@ -404,6 +411,9 @@ class Asset:
             # Ignore mismatch hash
             if not self._has_valid_hash(asset_file, self.asset_hash):
                 continue
+
+            if create_metadata:
+                self._create_metadata_file(asset_file)
 
             return asset_file
 
