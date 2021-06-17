@@ -44,26 +44,32 @@ class ModuleRelativePath(unittest.TestCase):
 
 class SymbolAndModulePathCommon(unittest.TestCase):
 
-    def _check(self, input_symbol, input_module_path, input_statement):
-        statement = ast.parse(input_statement).body[0]
-        symbol = ImportedSymbol.get_symbol_from_statement(statement)
-        msg = 'Expected symbol name "%s", found "%s"' % (input_symbol,
-                                                         symbol)
-        self.assertEqual(symbol, input_symbol, msg)
-        module_path = ImportedSymbol.get_module_path_from_statement(statement)
-        msg = 'Expected module path "%s", found "%s"' % (input_module_path,
-                                                         module_path)
-        self.assertEqual(module_path, input_module_path, msg)
-        imported_symbol = ImportedSymbol(symbol, module_path)
-        self.assertEqual(imported_symbol.to_str(), input_statement)
-        self.assertEqual(imported_symbol,
-                         ImportedSymbol.from_statement(statement))
+    def _check(self, input_symbol, input_module_path, *input_statements):
+        statement_str_matches = []
+        for input_statement in input_statements:
+            statement = ast.parse(input_statement).body[0]
+            symbol = ImportedSymbol.get_symbol_from_statement(statement)
+            msg = 'Expected symbol name "%s", found "%s"' % (input_symbol,
+                                                             symbol)
+            self.assertEqual(symbol, input_symbol, msg)
+            module_path = ImportedSymbol.get_module_path_from_statement(statement)
+            msg = 'Expected module path "%s", found "%s"' % (input_module_path,
+                                                             module_path)
+            self.assertEqual(module_path, input_module_path, msg)
+            imported_symbol = ImportedSymbol(symbol, module_path)
+            statement_str_matches.append(imported_symbol.to_str() == input_statement)
+            self.assertEqual(imported_symbol,
+                             ImportedSymbol.from_statement(statement))
+        self.assertIn(True, statement_str_matches)
 
 
 class SymbolAndModulePathImport(SymbolAndModulePathCommon):
 
     def test_symbol_only(self):
         self._check("os", "", "import os")
+
+    def test_compound(self):
+        self._check("path", "os", "import os.path", "from os import path")
 
 
 class SymbolAndModulePathImportFrom(SymbolAndModulePathCommon):
