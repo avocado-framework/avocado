@@ -31,3 +31,8 @@ class StatementImportAs(unittest.TestCase):
         statement = ast.parse("import z, a").body[0]
         self.assertEqual(collections.OrderedDict({"z": "z", "a": "a"}),
                          get_statement_import_as(statement))
+
+    def test_incorrect_statement_type(self):
+        statement = ast.parse("pass").body[0]
+        with self.assertRaises(ValueError):
+            _ = get_statement_import_as(statement)

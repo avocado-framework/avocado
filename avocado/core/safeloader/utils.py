@@ -1,3 +1,4 @@
+import ast
 import collections
 
 
@@ -10,6 +11,10 @@ def get_statement_import_as(statement):
     :returns: a mapping of names {<realname>: <alias>} of modules imported
     :rtype: collections.OrderedDict
     """
+    if not any([isinstance(statement, ast.Import),
+                isinstance(statement, ast.ImportFrom)]):
+        raise ValueError("Value given is not an ast import or "
+                         "import from statement")
     result = collections.OrderedDict()
     for name in statement.names:
         if name.asname is not None:
