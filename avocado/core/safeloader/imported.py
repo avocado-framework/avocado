@@ -64,6 +64,18 @@ class ImportedSymbol:
         return ('', non_relative)
 
     @staticmethod
+    def _get_relative_prefix(statement):
+        """Returns the string that represents to the relative import level.
+
+        :param statement: an "import from" ast statement
+        :type statement: :class:`ast.ImportFrom`
+        :returns: the string that represents the relative import level.
+        :rtype: str
+        """
+        relative_level = getattr(statement, 'level', 0) or 0
+        return ''.join(['.' for _ in range(relative_level)])
+
+    @staticmethod
     def get_symbol_from_statement(statement):
         if isinstance(statement, ast.ImportFrom):
             return statement.names[0].name

@@ -23,6 +23,25 @@ class ModulePathComponents(unittest.TestCase):
         self.assertEqual(res, ('a.b.c', 'd'))
 
 
+class ModuleRelativePath(unittest.TestCase):
+
+    def test_no_relative_import(self):
+        statement = ast.parse('import os').body[0]
+        self.assertEqual(ImportedSymbol._get_relative_prefix(statement), '')
+
+    def test_no_relative_import_from(self):
+        statement = ast.parse('from os import path').body[0]
+        self.assertEqual(ImportedSymbol._get_relative_prefix(statement), '')
+
+    def test_relative_import_from_upper(self):
+        statement = ast.parse('from ..selftests import utils').body[0]
+        self.assertEqual(ImportedSymbol._get_relative_prefix(statement), '..')
+
+    def test_relative_import_from_same(self):
+        statement = ast.parse('from .utils import function').body[0]
+        self.assertEqual(ImportedSymbol._get_relative_prefix(statement), '.')
+
+
 class SymbolAndModulePath(unittest.TestCase):
 
     def _check(self, input_symbol, input_module_path, input_statement):
