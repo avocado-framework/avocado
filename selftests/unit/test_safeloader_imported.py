@@ -42,7 +42,7 @@ class ModuleRelativePath(unittest.TestCase):
         self.assertEqual(ImportedSymbol._get_relative_prefix(statement), '.')
 
 
-class SymbolAndModulePath(unittest.TestCase):
+class SymbolAndModulePathCommon(unittest.TestCase):
 
     def _check(self, input_symbol, input_module_path, input_statement):
         statement = ast.parse(input_statement).body[0]
@@ -59,8 +59,14 @@ class SymbolAndModulePath(unittest.TestCase):
         self.assertEqual(imported_symbol,
                          ImportedSymbol.from_statement(statement))
 
+
+class SymbolAndModulePathImport(SymbolAndModulePathCommon):
+
     def test_symbol_only(self):
         self._check("os", "", "import os")
+
+
+class SymbolAndModulePathImportFrom(SymbolAndModulePathCommon):
 
     def test_symbol_module_path(self):
         self._check("path", "os", "from os import path")
@@ -78,6 +84,9 @@ class SymbolAndModulePath(unittest.TestCase):
     def test_symbol_module_path_from_relative_multiple(self):
         self._check("mod", "..selftests.utils",
                     "from ..selftests.utils import mod")
+
+
+class SymbolAndModulePathErrors(unittest.TestCase):
 
     def test_incorrect_statement_type(self):
         statement = ast.parse("pass").body[0]
