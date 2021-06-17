@@ -45,6 +45,25 @@ class ImportedSymbol:
         self.importer_fs_path = importer_fs_path
 
     @staticmethod
+    def _split_last_module_path_component(module_path):
+        """Splits a module path into a lower and topmost components.
+
+        It also discards any information about relative location.
+
+        :param module_path: a module path, such as "os" or "os.path"
+                            or "..selftests.utils"
+        :type module_path: str
+        :returns: the lower and topmost components
+        :rtype: tuple
+        """
+        non_relative = module_path.strip('.')
+        if '.' in non_relative:
+            module_components = non_relative.rsplit('.', 1)
+            if len(module_components) == 2:
+                return (module_components[0], module_components[1])
+        return ('', non_relative)
+
+    @staticmethod
     def get_symbol_from_statement(statement):
         if isinstance(statement, ast.ImportFrom):
             return statement.names[0].name
