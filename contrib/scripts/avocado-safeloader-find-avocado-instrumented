@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; specifically version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2021
+# Author: Cleber Rosa <cleber@redhat.com>
+
+#
+# Simple script that, given Python file containing unittests, returns the canonical
+# location of each test, each one on its own line. The idea is to be able
+# to filter the tests you want to run by doing something like:
+#
+# $ avocado run `avocado-safeloader-find-avocado-instrumented <path-to-test.py> | <your-condition> | xargs`
+#
+
+import os
+import sys
+
+from avocado.core.safeloader import find_avocado_tests
+
+if __name__ == '__main__':
+    test_module_paths = sys.argv[1:]
+    result = []
+    for test_module_path in test_module_paths:
+        try:
+            test_class_methods, _ = find_avocado_tests(test_module_path)
+        except IOError as error:
+            continue
+        for klass, methods in test_class_methods.items():
+            test_module_name = os.path.relpath(test_module_path)
+            result += ["%s:%s.%s" % (test_module_name, klass, method_name)
+                       for (method_name, _, _) in methods]
+    if result:
+        print("\n".join(result))
