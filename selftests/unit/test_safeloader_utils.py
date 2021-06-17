@@ -1,4 +1,5 @@
 import ast
+import collections
 import unittest
 
 from avocado.core.safeloader.utils import get_statement_import_as
@@ -24,4 +25,9 @@ class StatementImportAs(unittest.TestCase):
     def test_import_from_alias(self):
         statement = ast.parse("from os import path as stdlibpath").body[0]
         self.assertEqual({"path": "stdlibpath"},
+                         get_statement_import_as(statement))
+
+    def test_import_order(self):
+        statement = ast.parse("import z, a").body[0]
+        self.assertEqual(collections.OrderedDict({"z": "z", "a": "a"}),
                          get_statement_import_as(statement))
