@@ -1,6 +1,5 @@
 import ast
 import collections
-import os
 import sys
 from importlib.machinery import PathFinder
 
@@ -113,10 +112,9 @@ def _get_attributes_for_further_examination(parent, module):
     return parent_path, parent_module, parent_class
 
 
-def _find_import_match(parent_path, parent_module, module):
+def _find_import_match(parent_path, parent_module):
     """Attempts to find an importable module."""
-    modules_paths = [parent_path,
-                     os.path.dirname(module.path)] + sys.path
+    modules_paths = [parent_path] + sys.path
     found_spec = PathFinder.find_spec(parent_module, modules_paths)
     if found_spec is None:
         raise ClassNotSuitable
@@ -188,8 +186,7 @@ def _examine_class(target_module, target_class, determine_match, path,
                  parent_module,
                  parent_class) = _get_attributes_for_further_examination(parent,
                                                                          module)
-                found_spec = _find_import_match(parent_path, parent_module,
-                                                module)
+                found_spec = _find_import_match(parent_path, parent_module)
             except ClassNotSuitable:
                 continue
 
@@ -287,8 +284,7 @@ def find_python_tests(target_module, target_class, determine_match, path):
                  parent_module,
                  parent_class) = _get_attributes_for_further_examination(parent,
                                                                          module)
-                found_spec = _find_import_match(parent_path, parent_module,
-                                                module)
+                found_spec = _find_import_match(parent_path, parent_module)
             except ClassNotSuitable:
                 continue
 
@@ -307,7 +303,6 @@ def find_python_tests(target_module, target_class, determine_match, path):
         # Only update the results if this was detected as 'avocado.Test'
         if match:
             result[klass.name] = info
-            disabled.update(disabled)
 
     return result, disabled
 
