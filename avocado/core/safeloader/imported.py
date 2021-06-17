@@ -185,8 +185,10 @@ class ImportedSymbol:
         return self.symbol
 
     def __repr__(self):
-        return '<ImportedSymbol symbol="%s" module_path="%s">' % (self.symbol,
-                                                                  self.module_path)
+        return ('<ImportedSymbol symbol="%s" module_path="%s" '
+                'importer_fs_path="%s">' % (self.symbol,
+                                            self.module_path,
+                                            self.importer_fs_path))
 
     def __eq__(self, other):
         return ((self.symbol == other.symbol) and
