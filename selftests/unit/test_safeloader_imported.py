@@ -9,9 +9,13 @@ class SymbolAndModulePath(unittest.TestCase):
     def _check(self, input_symbol, input_module_path, input_statement):
         statement = ast.parse(input_statement).body[0]
         symbol = ImportedSymbol.get_symbol_from_statement(statement)
-        self.assertEqual(symbol, input_symbol)
+        msg = 'Expected symbol name "%s", found "%s"' % (input_symbol,
+                                                         symbol)
+        self.assertEqual(symbol, input_symbol, msg)
         module_path = ImportedSymbol.get_module_path_from_statement(statement)
-        self.assertEqual(module_path, input_module_path)
+        msg = 'Expected module path "%s", found "%s"' % (input_module_path,
+                                                         module_path)
+        self.assertEqual(module_path, input_module_path, msg)
         imported_symbol = ImportedSymbol(symbol, module_path)
         self.assertEqual(imported_symbol.to_str(), input_statement)
         self.assertEqual(imported_symbol,
