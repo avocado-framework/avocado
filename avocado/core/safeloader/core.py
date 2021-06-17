@@ -307,7 +307,6 @@ def find_python_tests(target_module, target_class, determine_match, path):
         # Only update the results if this was detected as 'avocado.Test'
         if match:
             result[klass.name] = info
-            disabled.update(disabled)
 
     return result, disabled
 
