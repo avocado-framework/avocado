@@ -1,6 +1,8 @@
 import ast
 import os
 
+from .utils import get_statement_import_as
+
 
 class ImportedSymbol:
     """A representation of an importable symbol.
@@ -45,43 +47,67 @@ class ImportedSymbol:
         self.importer_fs_path = importer_fs_path
 
     @staticmethod
+    def _split_last_module_path_component(module_path):
+        """Splits a module path into a lower and topmost components.
+
+        It also discards any information about relative location.
+
+        :param module_path: a module path, such as "os" or "os.path"
+                            or "..selftests.utils"
+        :type module_path: str
+        :returns: the lower and topmost components
+        :rtype: tuple
+        """
+        non_relative = module_path.strip('.')
+        if '.' in non_relative:
+            module_components = non_relative.rsplit('.', 1)
+            if len(module_components) == 2:
+                return (module_components[0], module_components[1])
+        return ('', non_relative)
+
+    @staticmethod
+    def _get_relative_prefix(statement):
+        """Returns the string that represents to the relative import level.
+
+        :param statement: an "import from" ast statement
+        :type statement: :class:`ast.ImportFrom`
+        :returns: the string that represents the relative import level.
+        :rtype: str
+        """
+        relative_level = getattr(statement, 'level', 0) or 0
+        return ''.join(['.' for _ in range(relative_level)])
+
+    @staticmethod
     def get_symbol_from_statement(statement):
-        if isinstance(statement, ast.ImportFrom):
-            return statement.names[0].name
-
-        if isinstance(statement, ast.Import):
-            if getattr(statement, 'module', None) is not None:
-                # Module has a name, so its path is absolute, and not relative
-                # to the directory structure
-                module_path = statement.module
-            else:
-                relative_level = getattr(statement, 'level', 0) or 0
-                relative_path = "".join(["." for _ in range(relative_level)])
-                name = statement.names[0].name
-                module_path = relative_path + name
-            return module_path
-
-        raise ValueError("Statement is not an import: %s" % statement)
+        return ImportedSymbol.get_symbol_module_path_from_statement(statement)[0]
 
     @staticmethod
     def get_module_path_from_statement(statement):
-        module_path = getattr(statement, 'module', None) or ''
+        return ImportedSymbol.get_symbol_module_path_from_statement(statement)[1]
+
+    @staticmethod
+    def get_symbol_module_path_from_statement(statement, name_index=0):
+        symbol = ''
+        module_path = ''
+        names = list(get_statement_import_as(statement).keys())
+
         if isinstance(statement, ast.Import):
-            if statement.names[0].asname:
-                module_path = statement.names[0].name
-                if '.' in module_path:
-                    module_path = module_path.rsplit('.', 1)[0]
-        # If this is an aliased import, module_path will be
-        # everything but the last component
-        relative_level = getattr(statement, 'level', 0) or 0
-        relative_level_prefix = "".join(["." for _ in range(relative_level)])
-        return relative_level_prefix + module_path
+            module_path = names[name_index]
+            module_path, symbol = ImportedSymbol._split_last_module_path_component(module_path)
+            return symbol, module_path
+
+        elif isinstance(statement, ast.ImportFrom):
+            symbol = names[name_index]
+            relative = ImportedSymbol._get_relative_prefix(statement)
+            module_name = statement.module or ''
+            module_path = relative + module_name
+
+        return symbol, module_path
 
     @classmethod
     def from_statement(cls, statement, importer_fs_path=None):
-        return cls(cls.get_symbol_from_statement(statement),
-                   cls.get_module_path_from_statement(statement),
-                   importer_fs_path)
+        symbol, module_path = cls.get_symbol_module_path_from_statement(statement)
+        return cls(symbol, module_path, importer_fs_path)
 
     def to_str(self):
         """Returns a string representation of the plausible statement used."""
@@ -159,8 +185,10 @@ class ImportedSymbol:
         return self.symbol
 
     def __repr__(self):
-        return '<ImportedSymbol symbol="%s" module_path="%s">' % (self.symbol,
-                                                                  self.module_path)
+        return ('<ImportedSymbol symbol="%s" module_path="%s" '
+                'importer_fs_path="%s">' % (self.symbol,
+                                            self.module_path,
+                                            self.importer_fs_path))
 
     def __eq__(self, other):
         return ((self.symbol == other.symbol) and
