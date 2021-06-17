@@ -258,7 +258,7 @@ Here a list of all issues related to this blueprint:
    Create a complete section in the User's Guide on how to handle test
    requirements.
 
-#. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4675>`__
+#. `[DONE] <https://github.com/avocado-framework/avocado/issues/4675>`__
    BP002: implement the file runner to support file requirements
 
 #. `[OPEN] <https://github.com/avocado-framework/avocado/issues/4663>`__

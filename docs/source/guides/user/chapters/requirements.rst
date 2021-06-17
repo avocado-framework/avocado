@@ -83,3 +83,17 @@ parameters available to use the package `type` of requirements are:
 Following is an example of a test using the Package requirement:
 
 .. literalinclude:: ../../../../../examples/tests/passtest_with_requirement.py
+
+Asset
++++++
+
+Support fetching assets using the Avocado Assets utility. The
+parameters available to use the asset `type` of requirements are:
+
+ * `type`: `asset`
+ * `name`: the file name or uri (required)
+ * `asset_has`: hash of the file (optional)
+ * `algorithm`: hash algorithm (optional)
+ * `locations`: location(s) where the file can be fetched from (optional)
+ * `expire`: time in seconds for the asset to expire (optional)
+
