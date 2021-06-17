@@ -2,6 +2,7 @@ import ast
 import os
 
 from .imported import ImportedSymbol
+from .utils import get_statement_import_as
 
 
 class PythonModule:
@@ -38,24 +39,6 @@ class PythonModule:
         self.imported_symbols = {}
         with open(self.path) as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
-
-    @staticmethod
-    def _statement_import_as(statement):
-        """
-        Returns a mapping of imported module names whether using aliases or not
-
-        :param statement: an AST import statement
-        :type statement: ast.Import
-        :returns: a mapping of names {<realname>: <alias>} of modules imported
-        :rtype: dict
-        """
-        result = {}
-        for name in statement.names:
-            if name.asname is not None:
-                result[name.name] = name.asname
-            else:
-                result[name.name] = name.name
-        return result
 
     def is_matching_klass(self, klass):
         """
@@ -138,7 +121,7 @@ class PythonModule:
         self.add_imported_symbol(statement)
         if statement.module != self.module:
             return
-        name = self._statement_import_as(statement).get(self.klass, None)
+        name = get_statement_import_as(statement).get(self.klass, None)
         if name is not None:
             self.klass_imports.add(name)
 
@@ -153,7 +136,7 @@ class PythonModule:
 
     def _handle_import(self, statement):
         self.add_imported_symbol(statement)
-        imported_as = self._statement_import_as(statement)
+        imported_as = get_statement_import_as(statement)
         name = imported_as.get(self.module, None)
         if name is not None:
             self.mod_imports.add(name)
