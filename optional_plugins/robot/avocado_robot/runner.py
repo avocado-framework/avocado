@@ -31,7 +31,7 @@ class RobotRunner(nrunner.BaseRunner):
     def _run(self, uri, queue):
         stdout = io.StringIO()
         stderr = io.StringIO()
-        output_dir = tempfile.mkdtemp()
+        output_dir = tempfile.mkdtemp(prefix=".avocado-robot")
         file_name, suit_test = uri.split(':', 1)
         suite_name, test_name = suit_test.split('.', 1)
         native_robot_result = run(file_name,

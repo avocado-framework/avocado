@@ -117,7 +117,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                              'modulePath': module_path,
                              'params': (params, ["/"]),
                              'tags': runnable.tags,
-                             'run.results_dir': tempfile.mkdtemp(),
+                             'run.results_dir': tempfile.mkdtemp(prefix=".avocado-task"),
                              }]
 
             AvocadoInstrumentedTestRunner._start_logging(runnable, queue)
