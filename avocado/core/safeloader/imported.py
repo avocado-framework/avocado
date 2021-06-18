@@ -1,5 +1,7 @@
 import ast
 import os
+import sys
+from importlib.machinery import PathFinder
 
 from .utils import get_statement_import_as
 
@@ -55,6 +57,59 @@ class ImportedSymbol:
         #: An optional alias the symbol, such as when a
         #: "from os import path as os_path" is given
         self.symbol_alias = symbol_alias
+
+    def _walk_importable_components(self, symbol_is_module=False):
+        if symbol_is_module:
+            full_name = "%s.%s" % (self.module_path, self.symbol)
+        else:
+            full_name = self.module_path
+        # Stripping leading dots, as relative paths will be handled with
+        # insertion to module_paths with the relative path
+        components = full_name.strip(".").split(".")
+        for index, component in enumerate(components):
+            if index > 0:
+                previous = components[index - 1]
+            else:
+                previous = ''
+            yield (component, previous)
+
+    def get_importable_spec(self, symbol_is_module=False):
+        """Returns the specification of an actual importable module.
+
+        This is a check based on the limitations that we do not
+        actually perform an import, and assumes a directory structure
+        with modules.
+
+        :param symbol_is_module: if it's known that the symbol is also
+                                 a module, include it in the search for
+                                 an importable spec
+        :type symbol_is_module: bool
+        """
+        modules_paths = sys.path
+        modules_paths.insert(0, self.get_relative_module_fs_path())
+        spec = None
+        for component, previous in self._walk_importable_components(symbol_is_module):
+            if previous:
+                modules_paths = [os.path.join(mod, previous) for
+                                 mod in modules_paths[:]]
+            spec = PathFinder.find_spec(component, modules_paths)
+            if spec is None:
+                break
+        return spec
+
+    def is_importable(self, symbol_is_module=False):
+        """Checks whether this imported symbol seems to be importable.
+
+        This is a check based on the limitations that we do not
+        actually perform an import, and assumes a directory structure
+        with modules.
+
+        :param symbol_is_module: if it's known that the symbol is also
+                                 a module, include it in the search for
+                                 an importable spec
+        :type symbol_is_module: bool
+        """
+        return self.get_importable_spec(symbol_is_module) is not None
 
     @staticmethod
     def _split_last_module_path_component(module_path):
