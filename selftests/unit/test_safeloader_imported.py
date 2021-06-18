@@ -186,3 +186,39 @@ class ParentPath(unittest.TestCase):
                                                importer)
         self.assertEqual(symbol.get_parent_fs_path(),
                          "/abs/fs/location/of")
+
+
+class Importable(unittest.TestCase):
+
+    def test_single(self):
+        imported_symbol = ImportedSymbol("avocado", "", __file__)
+        self.assertTrue(imported_symbol.is_importable())
+
+    def test_compound(self):
+        imported_symbol = ImportedSymbol("avocado.utils",
+                                         "software_manager",
+                                         __file__)
+        self.assertTrue(imported_symbol.is_importable(True))
+
+    def test_compound_dont_know_if_symbol_is_module(self):
+        imported_symbol = ImportedSymbol("avocado.utils",
+                                         "BaseClass",
+                                         __file__)
+        self.assertTrue(imported_symbol.is_importable(False))
+
+    def test_non_existing_module(self):
+        imported_symbol = ImportedSymbol("avocado.utils",
+                                         "non_existing_symbol",
+                                         __file__)
+        self.assertFalse(imported_symbol.is_importable(True))
+
+    def test_non_existing_symbol(self):
+        imported_symbol = ImportedSymbol("non_existing_module", "",
+                                         __file__)
+        self.assertFalse(imported_symbol.is_importable())
+
+    def test_non_existing_module_path(self):
+        imported_symbol = ImportedSymbol("avocado.utils.non_existing",
+                                         "",
+                                         __file__)
+        self.assertFalse(imported_symbol.is_importable())
