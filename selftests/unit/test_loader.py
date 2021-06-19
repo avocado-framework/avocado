@@ -357,50 +357,50 @@ class LoaderTest(unittest.TestCase):
 
     def test_mod_import_and_classes(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                            '.data', 'loader_instrumented', 'dont_crash.py')
+                            '.data', 'safeloader', 'data', 'dont_crash.py')
         tests = self.loader.discover(path)
-        exps = [('DiscoverMe', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe.test'),
-                ('DiscoverMe2', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe2.test'),
-                ('DiscoverMe3', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe3.test'),
-                ('DiscoverMe4', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe4.test')]
+        exps = [('DiscoverMe', 'selftests/.data/safeloader/data/dont_crash.py:DiscoverMe.test'),
+                ('DiscoverMe2', 'selftests/.data/safeloader/data/dont_crash.py:DiscoverMe2.test'),
+                ('DiscoverMe3', 'selftests/.data/safeloader/data/dont_crash.py:DiscoverMe3.test'),
+                ('DiscoverMe4', 'selftests/.data/safeloader/data/dont_crash.py:DiscoverMe4.test')]
         self._check_discovery(exps, tests)
 
     def test_imports(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                            '.data', 'loader_instrumented', 'imports.py')
+                            '.data', 'safeloader', 'data', 'imports.py')
         tests = self.loader.discover(path)
-        exps = [('Test1', 'selftests/.data/loader_instrumented/imports.py:Test1.test'),
-                ('Test3', 'selftests/.data/loader_instrumented/imports.py:Test3.test'),
-                ('Test4', 'selftests/.data/loader_instrumented/imports.py:Test4.test'),
-                ('Test5', 'selftests/.data/loader_instrumented/imports.py:Test5.test'),
-                ('Test6', 'selftests/.data/loader_instrumented/imports.py:Test6.test'),
-                ('Test8', 'selftests/.data/loader_instrumented/imports.py:Test8.test'),
-                ('Test9', 'selftests/.data/loader_instrumented/imports.py:Test9.test'),
-                ('Test10', 'selftests/.data/loader_instrumented/imports.py:Test10.test')]
+        exps = [('Test1', 'selftests/.data/safeloader/data/imports.py:Test1.test'),
+                ('Test3', 'selftests/.data/safeloader/data/imports.py:Test3.test'),
+                ('Test4', 'selftests/.data/safeloader/data/imports.py:Test4.test'),
+                ('Test5', 'selftests/.data/safeloader/data/imports.py:Test5.test'),
+                ('Test6', 'selftests/.data/safeloader/data/imports.py:Test6.test'),
+                ('Test8', 'selftests/.data/safeloader/data/imports.py:Test8.test'),
+                ('Test9', 'selftests/.data/safeloader/data/imports.py:Test9.test'),
+                ('Test10', 'selftests/.data/safeloader/data/imports.py:Test10.test')]
         self._check_discovery(exps, tests)
 
     def test_dont_detect_non_avocado(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                            '.data', 'loader_instrumented', 'dont_detect_non_avocado.py')
+                            '.data', 'safeloader', 'data', 'dont_detect_non_avocado.py')
         tests = self.loader.discover(path)
         self._check_discovery([], tests)
 
     def test_infinite_recurse(self):
         """Checks we don't crash on infinite recursion"""
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                            '.data', 'loader_instrumented',
+                            '.data', 'safeloader', 'data',
                             'infinite_recurse.py')
         tests = self.loader.discover(path)
         self.assertEqual(tests, [])
 
     def test_double_import(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                            '.data', 'loader_instrumented', 'double_import.py')
+                            '.data', 'safeloader', 'data', 'double_import.py')
         tests = self.loader.discover(path)
-        exps = [('Test1', 'selftests/.data/loader_instrumented/double_import.py:Test1.test1'),
-                ('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
-                ('Test3', 'selftests/.data/loader_instrumented/double_import.py:Test3.test3'),
-                ('Test4', 'selftests/.data/loader_instrumented/double_import.py:Test4.test4')]
+        exps = [('Test1', 'selftests/.data/safeloader/data/double_import.py:Test1.test1'),
+                ('Test2', 'selftests/.data/safeloader/data/double_import.py:Test2.test2'),
+                ('Test3', 'selftests/.data/safeloader/data/double_import.py:Test3.test3'),
+                ('Test4', 'selftests/.data/safeloader/data/double_import.py:Test4.test4')]
         self._check_discovery(exps, tests)
 
     def test_list_raising_exception(self):
