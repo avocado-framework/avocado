@@ -54,7 +54,7 @@ exclusively or in addition to other builtin streams::
 The outcome should be similar to::
 
     JOB ID     : af786f86db530bff26cd6a92c36e99bedcdca95b
-    JOB LOG    : /home/cleber/avocado/job-results/job-2016-03-18T10.29-af786f8/job.log
+    JOB LOG    : /home/user/avocado/job-results/job-2016-03-18T10.29-af786f8/job.log
      (1/1) plant.py:Plant.test_plant_organic: progress: 1-plant.py:Plant.test_plant_organic: preparing soil on row 0
     progress: 1-plant.py:Plant.test_plant_organic: preparing soil on row 1
     progress: 1-plant.py:Plant.test_plant_organic: preparing soil on row 2
@@ -69,7 +69,7 @@ The outcome should be similar to::
     PASS (7.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB TIME   : 7.11 s
-    JOB HTML   : /home/cleber/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
+    JOB HTML   : /home/user/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
 
 The custom ``progress`` stream is combined with the application output, which
 may or may not suit your needs or preferences. If you want the ``progress``

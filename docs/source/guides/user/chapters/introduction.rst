@@ -347,7 +347,7 @@ Avocado plugin outputs job information, similarly to the xunit output plugin::
     $ avocado run sleeptest.py failtest.py synctest.py --json -
     {
         "cancel": 0,
-        "debuglog": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/job.log",
+        "debuglog": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/job.log",
         "errors": 0,
         "failures": 1,
         "job_id": "10715c4645d2d2b57889d7a4317fcd01451b600e",
@@ -357,8 +357,8 @@ Avocado plugin outputs job information, similarly to the xunit output plugin::
             {
                 "end": 1470761623.176954,
                 "fail_reason": "None",
-                "logdir": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test",
-                "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test/debug.log",
+                "logdir": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test",
+                "logfile": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test/debug.log",
                 "start": 1470761622.174918,
                 "status": "PASS",
                 "id": "1-sleeptest.py:SleepTest.test",
@@ -368,8 +368,8 @@ Avocado plugin outputs job information, similarly to the xunit output plugin::
             {
                 "end": 1470761623.193472,
                 "fail_reason": "This test is supposed to fail",
-                "logdir": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test",
-                "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test/debug.log",
+                "logdir": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test",
+                "logfile": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test/debug.log",
                 "start": 1470761623.192334,
                 "status": "FAIL",
                 "id": "2-failtest.py:FailTest.test",
@@ -379,8 +379,8 @@ Avocado plugin outputs job information, similarly to the xunit output plugin::
             {
                 "end": 1470761625.656061,
                 "fail_reason": "None",
-                "logdir": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test",
-                "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test/debug.log",
+                "logdir": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test",
+                "logfile": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test/debug.log",
                 "start": 1470761623.208165,
                 "status": "PASS",
                 "id": "3-synctest.py:SyncTest.test",
@@ -478,7 +478,7 @@ and the JSON result to output to a file::
 
    $ cat /tmp/result.json
    {
-        "debuglog": "/home/cleber/avocado/job-results/job-2016-08-09T13.55-1a94ad6/job.log",
+        "debuglog": "/home/user/avocado/job-results/job-2016-08-09T13.55-1a94ad6/job.log",
         "errors": 0,
         ...
    }

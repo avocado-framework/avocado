@@ -10,11 +10,11 @@ with a few usability tweaks.
 
     $ avocado run passtest
     JOB ID     : f186c729dd234c8fdf4a46f297ff0863684e2955
-    JOB LOG : /home/lmr/avocado/job-results/job-2015-08-15T08.09-f186c72/job.log
+    JOB LOG : /home/user/avocado/job-results/job-2015-08-15T08.09-f186c72/job.log
     TESTS      : 1
     (1/1) passtest.py:PassTest.test: PASS (0.00 s)
     RESULTS : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML : /home/lmr/avocado/job-results/job-2015-08-15T08.09-f186c72/html/results.html
+    JOB HTML : /home/user/avocado/job-results/job-2015-08-15T08.09-f186c72/html/results.html
     TIME       : 0.00 s
 
 * Bugfixes. You may refer to [1] for the full list of 58 commits.

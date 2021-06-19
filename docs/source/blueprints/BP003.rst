@@ -458,12 +458,12 @@ expected to other information will also have to be inferred, and
 In the end, it's expected that results similar to this would be presented::
 
     JOB ID     : f59bd40b8ac905864c4558dc02b6177d4f422ca3
-    JOB LOG    : /home/cleber/avocado/job-results/job-2020-05-20T17.58-f59bd40/job.log
+    JOB LOG    : /home/user/avocado/job-results/job-2020-05-20T17.58-f59bd40/job.log
      (1/2) tests.py:Test.test_1: CANCEL (0 s)
      (1/2) tests.py:Test.test_2: PASS (2.56 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
     JOB TIME   : 0.19 s
-    JOB HTML   : /home/cleber/avocado/job-results/job-2020-05-20T17.58-f59bd40/results.html
+    JOB HTML   : /home/user/avocado/job-results/job-2020-05-20T17.58-f59bd40/results.html
 
 Notice that Task #2 may show up before Task #1.  There may be issues
 associated with the current UI to deal with regarding out of order
