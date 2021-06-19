@@ -28,7 +28,7 @@ proposed filesystem structure::
     from setuptools import setup, find_packages
 
     setup(name='apricot',
-          description='Apricot - Avocado SubFramwork',
+          description='Apricot - Avocado SubFramework',
           version=open("VERSION", "r").read().strip(),
           author='Apricot Developers',
           author_email='apricot-devel@example.com',
