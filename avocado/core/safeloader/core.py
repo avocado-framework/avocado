@@ -80,30 +80,60 @@ class ClassNotSuitable(Exception):
 
 
 def _get_attributes_for_further_examination(parent, module):
-    """Returns path, module and class for further examination."""
+    """Returns path, module and class for further examination.
+
+    This looks at one of the parents of an interesting class, so for the
+    example class Test bellow:
+
+    >>> class Test(unittest.TestCase, MixIn):
+    >>>   pass
+
+    This function should be called twice: once for unittest.TestCase,
+    and once for MixIn.
+
+    :param parent: parent is one of the possibly many parents from
+                   which the class being examined inherits from.
+    :type parent: :class:`ast.Attribute`
+    :param module: PythonModule instance with information about the
+                   module being inspected
+    :type module: :class:`avocado.core.safeloader.module.PythonModule`
+    :raises: ClassNotSuitable
+    :returns: the path, module and class name to be further examined
+    :rtype: tuple
+    """
     if hasattr(parent, 'value'):
-        if hasattr(parent.value, 'id'):
+        # A "value" in an "attribute" in this context means that
+        # there's a "module.class" notation.  It may be called that
+        # way, because it resembles "class" being an attribute of the
+        # "module" object.  In short, if "parent" has a "value"
+        # attribute, it means that this is given as a
+        # "module.parent_class" notation, meaning that:
+        # - parent is a module
+        # - parent.value *should* be a class, because there's
+        #   currently no support for the "module.module.parent_class"
+        #   notation.  See issue #4706.
+        klass = parent.value
+        if not hasattr(klass, 'id'):
+            # We don't support multi-level 'parent.parent.Class'
+            raise ClassNotSuitable
+        else:
             # We know 'parent.Class' or 'asparent.Class' and need
             # to get path and original_module_name. Class is given
             # by parent definition.
-            imported_symbol = module.imported_symbols.get(parent.value.id)
+            imported_symbol = module.imported_symbols.get(klass.id)
             if imported_symbol is None:
-                # We can't examine this parent (probably broken
-                # module)
+                # We can't examine this parent (probably broken module)
                 raise ClassNotSuitable
             parent_path = imported_symbol.get_parent_fs_path()
             parent_module = imported_symbol.symbol
             parent_class = parent.attr
-        else:
-            # We don't support multi-level 'parent.parent.Class'
-            raise ClassNotSuitable
     else:
         # We only know 'Class' or 'AsClass' and need to get
         # path, module and original class_name
-        imported_symbol = module.imported_symbols.get(parent.id)
+        klass = parent.id
+        imported_symbol = module.imported_symbols.get(klass)
         if imported_symbol is None:
-            # We can't examine this parent (probably broken
-            # module)
+            # We can't examine this parent (probably broken module)
             raise ClassNotSuitable
         parent_path = imported_symbol.get_compat_parent_path()
         parent_module = imported_symbol.get_compat_module_path()
