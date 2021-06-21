@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 88.1
-Release: 2%{?gitrel}%{?dist}
+Version: 89.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -377,6 +377,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Jun 21 2021 Cleber Rosa <cleber@redhat.com> - 89.0-1
+- New release
+
 * Sun May 23 2021 Cleber Rosa <cleber@redhat.com> - 88.1-2
 - Remove /usr/bin/python[23] requirement exclusion
 
