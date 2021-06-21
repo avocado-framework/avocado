@@ -9,22 +9,25 @@ class ImportedSymbol:
 
     Attributes:
 
-    symbol : str
     module_path : str
+    symbol : str
     importer_fs_path: str or None
     """
 
-    def __init__(self, symbol, module_path='', importer_fs_path=None):
-        #: The name of the imported symbol.  On a statement such as
-        #: "import os", the symbol is "os".  On a statement such as
-        #: "from unittest.mock import mock_open", the symbol is "mock_open"
-        self.symbol = symbol
+    def __init__(self, module_path, symbol='', importer_fs_path=None):
         #: Path from where the symbol was imported.  On a statement such as
-        #: "import os", module_path is None.  On a statement such as
-        #: "from unittest.mock import mock_open", the module_path is
-        #: "unittest.mock".  On a statement such as "from ..foo import bar",
-        #: module_path is "..foo" (relative).
+        #: "import os", module_path is "os" and there's no symbol.
+        #: On a statement such as from unittest.mock import mock_open",
+        #: the module_path is "unittest.mock".  On a statement such as
+        #: "from ..foo import bar", module_path is "..foo" (relative).
         self.module_path = module_path
+        #: The name of the imported symbol.  On a statement such as
+        #: "import os", there's no symbol.  On a statement such as
+        #: "from unittest import mock"", the symbol is "mock" (even
+        #: though it may actually also be a module, but it's impossible
+        #: to know for sure).  On a statement such as "from unittest.mock
+        #: import mock_open", symbol is "mock_open".
+        self.symbol = symbol
         #: The full, absolute filesystem path of the module importing
         #: this symbol.  This is used for relative path calculations,
         #: but it's limited to relative modules that also share the
@@ -92,9 +95,10 @@ class ImportedSymbol:
         names = list(get_statement_import_as(statement).keys())
 
         if isinstance(statement, ast.Import):
+            # On an Import statement, it's impossible to import a symbol
+            # so everything is the module_path
             module_path = names[name_index]
-            module_path, symbol = ImportedSymbol._split_last_module_path_component(module_path)
-            return symbol, module_path
+            return '', module_path
 
         elif isinstance(statement, ast.ImportFrom):
             symbol = names[name_index]
@@ -107,12 +111,12 @@ class ImportedSymbol:
     @classmethod
     def from_statement(cls, statement, importer_fs_path=None, index=0):
         symbol, module_path = cls.get_symbol_module_path_from_statement(statement, index)
-        return cls(symbol, module_path, importer_fs_path)
+        return cls(module_path, symbol, importer_fs_path)
 
     def to_str(self):
         """Returns a string representation of the plausible statement used."""
-        if not self.module_path:
-            return "import %s" % self.symbol
+        if not self.symbol:
+            return "import %s" % self.module_path
         return "from %s import %s" % (self.module_path, self.symbol)
 
     def is_relative(self):
@@ -185,12 +189,12 @@ class ImportedSymbol:
         return self.symbol
 
     def __repr__(self):
-        return ('<ImportedSymbol symbol="%s" module_path="%s" '
-                'importer_fs_path="%s">' % (self.symbol,
-                                            self.module_path,
+        return ('<ImportedSymbol module_path="%s" symbol="%s" '
+                'importer_fs_path="%s">' % (self.module_path,
+                                            self.symbol,
                                             self.importer_fs_path))
 
     def __eq__(self, other):
-        return ((self.symbol == other.symbol) and
-                (self.module_path == other.module_path) and
+        return ((self.module_path == other.module_path) and
+                (self.symbol == other.symbol) and
                 (self.importer_fs_path == other.importer_fs_path))
