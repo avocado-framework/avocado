@@ -44,7 +44,7 @@ class ModuleRelativePath(unittest.TestCase):
 
 class SymbolAndModulePathCommon(unittest.TestCase):
 
-    def _check_basic(self, input_symbol, input_module_path, input_statement):
+    def _check_basic(self, input_module_path, input_symbol, input_statement):
         """Checks all but to_str(), returning the imported_symbol instance."""
         statement = ast.parse(input_statement).body[0]
         symbol = ImportedSymbol.get_symbol_from_statement(statement)
@@ -55,16 +55,16 @@ class SymbolAndModulePathCommon(unittest.TestCase):
         msg = 'Expected module path "%s", found "%s"' % (input_module_path,
                                                          module_path)
         self.assertEqual(module_path, input_module_path, msg)
-        imported_symbol = ImportedSymbol(symbol, module_path)
+        imported_symbol = ImportedSymbol(module_path, symbol)
         self.assertEqual(imported_symbol,
                          ImportedSymbol.from_statement(statement))
         return imported_symbol
 
-    def _check(self, input_symbol, input_module_path, *input_statements):
+    def _check(self, input_module_path, input_symbol, *input_statements):
         statement_str_matches = []
         for input_statement in input_statements:
-            imported_symbol = self._check_basic(input_symbol,
-                                                input_module_path,
+            imported_symbol = self._check_basic(input_module_path,
+                                                input_symbol,
                                                 input_statement)
             match = imported_symbol.to_str() == input_statement
             statement_str_matches.append(match)
@@ -80,26 +80,26 @@ class SymbolAndModulePathImport(SymbolAndModulePathCommon):
         self._check_basic("os", "", "import os as operatingsystem")
 
     def test_compound(self):
-        self._check("path", "os", "import os.path", "from os import path")
+        self._check("os.path", "", "import os.path")
 
 
 class SymbolAndModulePathImportFrom(SymbolAndModulePathCommon):
 
     def test_symbol_module_path(self):
-        self._check("path", "os", "from os import path")
+        self._check("os", "path", "from os import path")
 
     def test_symbol_module_path_compound(self):
-        self._check("mock_open", "unittest.mock",
+        self._check("unittest.mock", "mock_open",
                     "from unittest.mock import mock_open")
 
     def test_symbol_module_path_only_relative(self):
-        self._check("utils", "..", "from .. import utils")
+        self._check("..", "utils", "from .. import utils")
 
     def test_symbol_module_path_from_relative(self):
-        self._check("utils", "..selftests", "from ..selftests import utils")
+        self._check("..selftests", "utils", "from ..selftests import utils")
 
     def test_symbol_module_path_from_relative_multiple(self):
-        self._check("mod", "..selftests.utils",
+        self._check("..selftests.utils", "mod",
                     "from ..selftests.utils import mod")
 
 
@@ -114,13 +114,13 @@ class SymbolAndModulePathErrors(unittest.TestCase):
 class RelativePath(unittest.TestCase):
 
     def test_same(self):
-        imported_symbol = ImportedSymbol("symbol", ".module",
+        imported_symbol = ImportedSymbol(".module", "symbol",
                                          "/abs/fs/location/test.py")
         self.assertEqual(imported_symbol.get_relative_module_fs_path(),
                          "/abs/fs/location")
 
     def test_upper(self):
-        imported_symbol = ImportedSymbol("symbol", "..module",
+        imported_symbol = ImportedSymbol("..module", "symbol",
                                          "/abs/fs/location/test.py")
         self.assertEqual(imported_symbol.get_relative_module_fs_path(),
                          "/abs/fs")
