@@ -17,7 +17,7 @@ def check_tmp_dirs():
     fail = False
     for dir_to_check in dirs_to_check:
         dir_list = os.listdir(dir_to_check)
-        avocado_tmp_dirs = [d for d in dir_list if d.startswith('avocado')]
+        avocado_tmp_dirs = [d for d in dir_list if (d.startswith('avocado') and os.path.isdir(d))]
         try:
             assert len(avocado_tmp_dirs) == 0
             print('No temporary avocado dirs lying around in %s' %
