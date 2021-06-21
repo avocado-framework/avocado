@@ -105,8 +105,8 @@ class ImportedSymbol:
         return symbol, module_path
 
     @classmethod
-    def from_statement(cls, statement, importer_fs_path=None):
-        symbol, module_path = cls.get_symbol_module_path_from_statement(statement)
+    def from_statement(cls, statement, importer_fs_path=None, index=0):
+        symbol, module_path = cls.get_symbol_module_path_from_statement(statement, index)
         return cls(symbol, module_path, importer_fs_path)
 
     def to_str(self):

@@ -100,17 +100,12 @@ class PythonModule:
         """
         Keeps track of symbol names and importable entities
         """
-        for name in statement.names:
+        for index, name in enumerate(statement.names):
             final_name = self._get_name_from_alias_statement(name)
-            # Currently, ImportedSymbol.from_statement() only supports the first
-            # symbol imported in the statement.  That's why where the final_name
-            # is used instead for the symbol, and the (correct) module comes
-            # from its utility method.
-            symbol_name = name.name if name.name else name.asname
-            module_name = ImportedSymbol.get_module_path_from_statement(statement)
-            self.imported_symbols[final_name] = ImportedSymbol(symbol_name,
-                                                               module_name,
-                                                               os.path.abspath(self.path))
+            imported_symbol = ImportedSymbol.from_statement(statement,
+                                                            os.path.abspath(self.path),
+                                                            index)
+            self.imported_symbols[final_name] = imported_symbol
 
     @staticmethod
     def _get_name_from_alias_statement(alias):
