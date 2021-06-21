@@ -28,7 +28,7 @@ proposed filesystem structure::
     from setuptools import setup, find_packages
 
     setup(name='apricot',
-          description='Apricot - Avocado SubFramwork',
+          description='Apricot - Avocado SubFramework',
           version=open("VERSION", "r").read().strip(),
           author='Apricot Developers',
           author_email='apricot-devel@example.com',
@@ -86,16 +86,16 @@ To (non-intrusively) install your module, use::
     reading manifest file 'apricot.egg-info/SOURCES.txt'
     writing manifest file 'apricot.egg-info/SOURCES.txt'
     running build_ext
-    Creating /home/apahim/.local/lib/python2.7/site-packages/apricot.egg-link (link to .)
+    Creating /home/user/.local/lib/python2.7/site-packages/apricot.egg-link (link to .)
     apricot 1.0 is already the active version in easy-install.pth
 
-    Installed /home/apahim/git/apricot
+    Installed /home/user/git/apricot
     Processing dependencies for apricot==1.0
     Searching for avocado-framework==55.0
     Best match: avocado-framework 55.0
     avocado-framework 55.0 is already the active version in easy-install.pth
 
-    Using /home/apahim/git/avocado
+    Using /home/user/git/avocado
     Using /usr/lib/python2.7/site-packages
     Searching for six==1.10.0
     Best match: six 1.10.0
@@ -105,7 +105,7 @@ To (non-intrusively) install your module, use::
     Searching for pbr==3.1.1
     Best match: pbr 3.1.1
     Adding pbr 3.1.1 to easy-install.pth file
-    Installing pbr script to /home/apahim/.local/bin
+    Installing pbr script to /home/user/.local/bin
 
     Using /usr/lib/python2.7/site-packages
     Finished processing dependencies for apricot==1.0

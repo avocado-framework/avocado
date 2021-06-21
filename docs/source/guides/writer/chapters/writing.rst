@@ -1152,8 +1152,8 @@ the correct version, the result will be::
     $ avocado run cancel_test.py
     JOB ID     : 39c1f120830b9769b42f5f70b6b7bad0b1b1f09f
     JOB LOG    : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/job.log
-     (1/2) /home/apahim/avocado/tests/test_cancel.py:CancelTest.test_iperf: CANCEL (1.15 s)
-     (2/2) /home/apahim/avocado/tests/test_cancel.py:CancelTest.test_gcc: PASS (1.13 s)
+     (1/2) /home/user/avocado/tests/test_cancel.py:CancelTest.test_iperf: CANCEL (1.15 s)
+     (2/2) /home/user/avocado/tests/test_cancel.py:CancelTest.test_gcc: PASS (1.13 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
     JOB TIME   : 2.38 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/html/results.html

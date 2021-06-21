@@ -488,7 +488,7 @@ This command will run the `sleeptest.py` test, as found on the standard
 test directories. The output should be similar to::
 
     JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
      (1/1) sleeptest.py:SleepTest.test: PASS (1.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 1.11 s
@@ -509,7 +509,7 @@ test runner::
     ...
     PARAMS (key=timeout, path=*, default=None) => None
     Test metadata:
-      filename: /home/<user>/avocado/examples/tests/sleeptest.py
+      filename: /home/user/avocado/examples/tests/sleeptest.py
       teststmpdir: /var/tmp/avocado_o98elmi0
       workdir: /var/tmp/avocado_iyzcj3hn/avocado_job_mwikfsnl/1-examples_tests_sleeptest.py_SleepTest.test
     START 1-examples/tests/sleeptest.py:SleepTest.test
@@ -634,13 +634,13 @@ EXPLORING RESULTS
 When `avocado` runs tests, it saves all its results on your system::
 
     JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
 
 For your convenience, `avocado` maintains a link to the latest job run
 (an `avocado run` command in this context), so you can always use
 `"latest"` to browse your test results::
 
-    $ ls /home/<user>/avocado/job-results/latest
+    $ ls /home/user/avocado/job-results/latest
     id
     jobdata
     job.log
@@ -696,7 +696,7 @@ You can execute `sleeptest` in all variations exposed above with::
 And the output should look like::
 
     JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
      (1/4) examples/tests/sleeptest.py:SleepTest.test;run-short-beaf: PASS (0.50 s)
      (2/4) examples/tests/sleeptest.py:SleepTest.test;run-medium-5595: PASS (1.01 s)
      (3/4) examples/tests/sleeptest.py:SleepTest.test;run-long-f397: PASS (5.01 s)
@@ -819,7 +819,7 @@ files with shell code could be considered tests::
     $ echo "exit 1" > /tmp/fail
     $ avocado run --external-runner=/bin/sh /tmp/pass /tmp/fail
     JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
     TESTS      : 2
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL: Exited with status: '1', stdout: '' stderr: '' (0.02 s)
@@ -836,7 +836,7 @@ But now consider the following example::
     $ avocado run --external-runner=/bin/curl http://local-avocado-server:9405/jobs/ \
                                               http://remote-avocado-server:9405/jobs/
     JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
     TESTS      : 2
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
@@ -876,7 +876,7 @@ passing the option `--output-check-record` all to the test runner::
 
     $ avocado run --output-check-record all examples/tests/synctest.py
     JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
      (1/1) examples/tests/synctest.py:SyncTest.test: PASS (4.00 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB TIME   : 4.10 s
@@ -907,10 +907,10 @@ Let's record the output (both stdout and stderr) for this one::
 
     $ avocado run output_record.sh --output-check-record all
     JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
      (1/1) output_record.sh: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/results.html
+    JOB HTML   : /home/user/avocado/job-results/job-<date>-<shortid>/results.html
     JOB TIME   : 0.11 s
 
 After this is done, you'll notice that a the test data directory
