@@ -103,6 +103,33 @@ class SymbolAndModulePathImportFrom(SymbolAndModulePathCommon):
                     "from ..selftests.utils import mod")
 
 
+class Alias(unittest.TestCase):
+
+    def test_module_alias(self):
+        statement = ast.parse("import os as operatingsystem").body[0]
+        imported_symbol = ImportedSymbol.from_statement(statement)
+        self.assertEqual(imported_symbol.module_path, "os")
+        self.assertEqual(imported_symbol.module_name, "operatingsystem")
+
+    def test_module_noalias(self):
+        statement = ast.parse("import os").body[0]
+        imported_symbol = ImportedSymbol.from_statement(statement)
+        self.assertEqual(imported_symbol.module_path, "os")
+        self.assertEqual(imported_symbol.module_name, "os")
+
+    def test_symbol_alias(self):
+        statement = ast.parse("from os import path as os_path").body[0]
+        imported_symbol = ImportedSymbol.from_statement(statement)
+        self.assertEqual(imported_symbol.symbol, "path")
+        self.assertEqual(imported_symbol.symbol_name, "os_path")
+
+    def test_symbol_noalias(self):
+        statement = ast.parse("from os import path").body[0]
+        imported_symbol = ImportedSymbol.from_statement(statement)
+        self.assertEqual(imported_symbol.symbol, "path")
+        self.assertEqual(imported_symbol.symbol_name, "path")
+
+
 class SymbolAndModulePathErrors(unittest.TestCase):
 
     def test_incorrect_statement_type(self):
