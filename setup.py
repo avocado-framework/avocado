@@ -37,6 +37,14 @@ def get_long_description():
     return readme_contents
 
 
+def walk_plugins_setup_py(action_name="UNNAMED", action="--help"):
+
+    for plugin in list(Path(os.getcwd()).rglob("./optional_plugins/*/setup.py")):
+        parent_dir = plugin.parent
+        print(">> {} {}".format(action_name, parent_dir))
+        run('{} setup.py {}'.format(sys.executable, action),
+            shell=True, cwd=parent_dir, check=True)
+
 class Clean(clean):
     """Our custom command to get rid of junk files after build."""
 
@@ -69,11 +77,7 @@ class Clean(clean):
 
     @staticmethod
     def clean_optional_plugins():
-        for plugin in list(Path(os.getcwd()).rglob("./optional_plugins/*/setup.py")):
-            parent_dir = plugin.parent
-            print(">> CLEANING {}".format(parent_dir))
-            run('{} setup.py clean --all'.format(sys.executable),
-                shell=True, cwd=parent_dir, check=True)
+        walk_plugins_setup_py(action_name="CLEANING", action="clean --all")
 
 
 class SimpleCommand(Command):
