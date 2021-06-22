@@ -1,5 +1,6 @@
 import ast
 import collections
+import os
 import sys
 from importlib.machinery import PathFinder
 
@@ -124,9 +125,32 @@ def _get_attributes_for_further_examination(parent, module):
             if imported_symbol is None:
                 # We can't examine this parent (probably broken module)
                 raise ClassNotSuitable
+
+            # The values for the most common conditions
             parent_path = imported_symbol.get_parent_fs_path()
             parent_module = imported_symbol.symbol
             parent_class = parent.attr
+
+            # Special situation: in this case, because we know the parent
+            # class is given as, module.class notation, we know what the
+            # module name is.  The imported symbol, because of its knowledge
+            # *only* about the imports, and not about the class definitions,
+            # can not tell if an import is a "from module import other_module"
+            # or a "from module import class"
+            module_name_components = imported_symbol.module_name.split('.')
+            last = module_name_components[-1]
+            if klass.id == last:
+                parent_path = os.path.dirname(imported_symbol.importer_fs_path)
+                parent_module = imported_symbol.module_path
+
+            module_path_components = imported_symbol.module_path.strip('.').split('.')
+            # Special situation: if there is more than one component in the
+            # module path, the first one should be added to the path,
+            # so that the last module in the is found by the importlib
+            # machinery, so that the examination can continue on the upper levels
+            if len(module_path_components) > 1:
+                parent_path = os.path.join(parent_path, module_path_components[0])
+                parent_module = module_path_components[-1]
     else:
         # We only know 'Class' or 'AsClass' and need to get
         # path, module and original class_name
