@@ -3,7 +3,6 @@ PYTHON=$(shell which python3 2>/dev/null || which python 2>/dev/null)
 endif
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
-RST2MAN=$(shell which rst2man.py 2>/dev/null || which rst2man 2>/dev/null)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell basename ${PWD})
 AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
@@ -142,6 +141,9 @@ endif
 
 man: man/avocado.1
 
+%.1: %.rst
+	$(PYTHON) setup.py man
+
 variables:
 	@echo "PYTHON: $(PYTHON)"
 	@echo "VERSION: $(VERSION)"
@@ -167,7 +169,3 @@ propagate-version:
 	done
 
 .PHONY: source install clean check variables
-
-# implicit rule/recipe for man page creation
-%.1: %.rst
-	$(RST2MAN) $< $@
