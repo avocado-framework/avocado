@@ -92,12 +92,6 @@ clean:
 	$(PYTHON) setup.py clean --all
 
 uninstall:
-	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> UNLINK $$PLUGIN";\
-			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN unlink &>/dev/null || echo ">> FAIL $$PLUGIN";\
-			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); cd -; fi;\
-		else echo ">> SKIP $$PLUGIN"; fi;\
-	done
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
 
 requirements-plugins:
@@ -121,12 +115,6 @@ check: clean uninstall develop
 
 develop:
 	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS)
-	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
-			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN PYTHON="$(PYTHON)" link &>/dev/null;\
-			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
-		else echo ">> SKIP $$PLUGIN"; fi;\
-	done
 
 develop-external:
 ifndef AVOCADO_EXTERNAL_PLUGINS_PATH
