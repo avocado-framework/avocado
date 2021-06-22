@@ -1,26 +1,149 @@
-name: Avocado Gating CI
+name: GH Actions
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
-  lint:
-    name: Logical, stylistic, analytical and formatter checks
+
+  full-smokecheck-linux:
+
+    name: Linux with Python ${{ matrix.python-version }}
     runs-on: ubuntu-20.04
 
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+      fail-fast: false
+
     steps:
-      - name: Checkout the code
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: Installing selftests requirements
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install dependencies
         run: pip install -r requirements-selftests.txt
-
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
-
       - name: Avocado version
         run: avocado --version
+      - name: Avocado smoketest
+        run: python -m avocado run passtest.py
+      - name: Quick lint checks
+        run: python setup.py lint
+      - name: Tree static check, unittests and fast functional tests
+        env:
+          AVOCADO_LOG_DEBUG: "yes"
+          AVOCADO_CHECK_LEVEL: "1"
+        run: make check
+      - run: echo "🥑 This job's status is ${{ job.status }}."
 
-      - name: Running lint checks
-        run: python3 setup.py lint
+  code-coverage:
+
+    name: Code Coverage
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install and pre script
+        env:
+          SELF_CHECK_CONTINUOUS: "yes"
+          CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
+        run: |
+         pip install -r requirements-selftests.txt
+         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+         chmod +x ./cc-test-reporter
+         ./cc-test-reporter before-build
+      - name: Run script
+        env:
+          SELF_CHECK_CONTINUOUS: "yes"
+          CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
+        run: make develop && ./selftests/run_coverage
+      - name: post script
+        env:
+          SELF_CHECK_CONTINUOUS: "yes"
+          CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
+        run: ./cc-test-reporter after-build
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+# Windows checks on latest OS X
+
+  smokecheck-osx:
+
+    name: OS X with Python ${{ matrix.python-version }}
+    runs-on: macos-10.15
+
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install avocado
+        run: |
+          python3 -m pip install -r requirements-selftests.txt
+          python setup.py develop --user
+      - name: Show avocado help
+        run: python -m avocado --help
+      - name: nrunner example test
+        run: python -m avocado run --test-runner=nrunner examples/tests/passtest.py
+      - name: resolver test
+        run: python -m avocado --verbose list --resolver selftests/unit/* selftests/functional/* selftests/*sh
+      # This test is known NOT to work
+      #- name: unittest test
+      #  run: python -m unittest discover -v selftests.unit
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+# Windows checks on latest Python
+
+  smokecheck-windows:
+
+    name: Windows with Python ${{ matrix.python-version }}
+    runs-on: windows-2019
+
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install avocado
+        run: python setup.py develop --user
+      - name: Show avocado help
+        run: python -m avocado --help
+      - name: nrunner example test
+        run: python -m avocado run --test-runner=nrunner examples\tests\passtest.py
+      - run: echo "🥑 This job's status is ${{ job.status }}."
