@@ -1,6 +1,5 @@
 import ast
 import collections
-import os
 import sys
 from importlib.machinery import PathFinder
 
@@ -99,8 +98,12 @@ def _get_attributes_for_further_examination(parent, module):
                    module being inspected
     :type module: :class:`avocado.core.safeloader.module.PythonModule`
     :raises: ClassNotSuitable
-    :returns: the path, module and class name to be further examined
-    :rtype: tuple
+    :returns: a tuple with three values: the class name, the imported
+              symbol instance matching the further examination step,
+              and a hint about the symbol name also being a module.
+    :rtype: tuple of (str,
+            :class:`avocado.core.safeloader.imported.ImportedSymbol`,
+            bool)
     """
     if hasattr(parent, 'value'):
         # A "value" in an "attribute" in this context means that
@@ -126,9 +129,6 @@ def _get_attributes_for_further_examination(parent, module):
                 # We can't examine this parent (probably broken module)
                 raise ClassNotSuitable
 
-            # The values for the most common conditions
-            parent_path = imported_symbol.get_parent_fs_path()
-            parent_module = imported_symbol.symbol
             parent_class = parent.attr
 
             # Special situation: in this case, because we know the parent
@@ -137,20 +137,8 @@ def _get_attributes_for_further_examination(parent, module):
             # *only* about the imports, and not about the class definitions,
             # can not tell if an import is a "from module import other_module"
             # or a "from module import class"
-            module_name_components = imported_symbol.module_name.split('.')
-            last = module_name_components[-1]
-            if klass.id == last:
-                parent_path = os.path.dirname(imported_symbol.importer_fs_path)
-                parent_module = imported_symbol.module_path
+            symbol_is_module = (klass.id == imported_symbol.symbol_name)
 
-            module_path_components = imported_symbol.module_path.strip('.').split('.')
-            # Special situation: if there is more than one component in the
-            # module path, the first one should be added to the path,
-            # so that the last module in the is found by the importlib
-            # machinery, so that the examination can continue on the upper levels
-            if len(module_path_components) > 1:
-                parent_path = os.path.join(parent_path, module_path_components[0])
-                parent_module = module_path_components[-1]
     else:
         # We only know 'Class' or 'AsClass' and need to get
         # path, module and original class_name
@@ -159,11 +147,11 @@ def _get_attributes_for_further_examination(parent, module):
         if imported_symbol is None:
             # We can't examine this parent (probably broken module)
             raise ClassNotSuitable
-        parent_path = imported_symbol.get_compat_parent_path()
-        parent_module = imported_symbol.get_compat_module_path()
-        parent_class = imported_symbol.get_compat_symbol()
 
-    return parent_path, parent_module, parent_class
+        parent_class = imported_symbol.get_compat_symbol()
+        symbol_is_module = False
+
+    return parent_class, imported_symbol, symbol_is_module
 
 
 def _find_import_match(parent_path, parent_module):
@@ -236,11 +224,15 @@ def _examine_class(target_module, target_class, determine_match, path,
         # might be in a different module.
         for parent in parents:
             try:
-                (parent_path,
-                 parent_module,
-                 parent_class) = _get_attributes_for_further_examination(parent,
-                                                                         module)
-                found_spec = _find_import_match(parent_path, parent_module)
+                (parent_class,
+                 imported_symbol,
+                 symbol_is_module) = _get_attributes_for_further_examination(parent,
+                                                                             module)
+
+                found_spec = imported_symbol.get_importable_spec(symbol_is_module)
+                if found_spec is None:
+                    continue
+
             except ClassNotSuitable:
                 continue
 
@@ -334,11 +326,15 @@ def find_python_tests(target_module, target_class, determine_match, path):
         # might be in a different module.
         for parent in parents:
             try:
-                (parent_path,
-                 parent_module,
-                 parent_class) = _get_attributes_for_further_examination(parent,
-                                                                         module)
-                found_spec = _find_import_match(parent_path, parent_module)
+                (parent_class,
+                 imported_symbol,
+                 symbol_is_module) = _get_attributes_for_further_examination(parent,
+                                                                             module)
+
+                found_spec = imported_symbol.get_importable_spec(symbol_is_module)
+                if found_spec is None:
+                    continue
+
             except ClassNotSuitable:
                 continue
 
