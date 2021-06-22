@@ -244,42 +244,6 @@ class ImportedSymbol:
             return os.path.join(parent_path, self.module_path)
         return parent_path
 
-    def get_compat_parent_path(self):
-        """Returns a "parent path" compatible with the path based notation.
-
-        This is intended for temporary compatibility purposes with the
-        single path based notation of keeping track of the path/module/class.
-        """
-        parent_path = self.get_relative_module_fs_path()
-        non_rel_mod_path = self.module_path.strip(".")
-        pure_module_path_to_fs = non_rel_mod_path.replace(".", os.path.sep)
-        if self.symbol:
-            pure_module_path_to_fs = os.path.dirname(pure_module_path_to_fs)
-        return os.path.join(parent_path, pure_module_path_to_fs)
-
-    def get_compat_module_path(self):
-        """Returns a "parent module" compatible with the path based notation.
-
-        This is intended for temporary compatibility purposes with the
-        single path based notation of keeping track of the path/module/class.
-        """
-        non_rel_mod_path = self.module_path.strip(".")
-        split = non_rel_mod_path.rsplit(".", 1)
-        if len(split) > 1:
-            return split[1]
-        return non_rel_mod_path
-
-    def get_compat_symbol(self):
-        """Returns a "parent symbol" compatible with the path based notation.
-
-        This is intended for temporary compatibility purposes with the
-        single path based notation of keeping track of the path/module/class.
-        """
-        split = self.symbol.rsplit(".", 1)
-        if len(split) > 1:
-            return split[1]
-        return self.symbol
-
     def __repr__(self):
         return ('<ImportedSymbol module_path="%s" symbol="%s" '
                 'importer_fs_path="%s">' % (self.module_path,
