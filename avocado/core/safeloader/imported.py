@@ -14,7 +14,8 @@ class ImportedSymbol:
     importer_fs_path: str or None
     """
 
-    def __init__(self, module_path, symbol='', importer_fs_path=None):
+    def __init__(self, module_path, symbol='', importer_fs_path=None,
+                 module_alias='', symbol_alias=''):
         #: Path from where the symbol was imported.  On a statement such as
         #: "import os", module_path is "os" and there's no symbol.
         #: On a statement such as from unittest.mock import mock_open",
@@ -48,6 +49,12 @@ class ImportedSymbol:
         #: The relative filesystem path of the module (which should
         #: contain the symbol) will be "/path/to".
         self.importer_fs_path = importer_fs_path
+        #: An optional alias for the module, such as when a
+        #: "import os as operating_system" statement is given.
+        self.module_alias = module_alias
+        #: An optional alias the symbol, such as when a
+        #: "from os import path as os_path" is given
+        self.symbol_alias = symbol_alias
 
     @staticmethod
     def _split_last_module_path_component(module_path):
@@ -92,26 +99,56 @@ class ImportedSymbol:
     def get_symbol_module_path_from_statement(statement, name_index=0):
         symbol = ''
         module_path = ''
-        names = list(get_statement_import_as(statement).keys())
+        module_alias = ''
+        symbol_alias = ''
+        import_as = get_statement_import_as(statement)
+        names = list(import_as.keys())
+        as_names = list(import_as.values())
 
         if isinstance(statement, ast.Import):
             # On an Import statement, it's impossible to import a symbol
             # so everything is the module_path
             module_path = names[name_index]
-            return '', module_path
+            module_alias = as_names[name_index]
 
         elif isinstance(statement, ast.ImportFrom):
             symbol = names[name_index]
             relative = ImportedSymbol._get_relative_prefix(statement)
             module_name = statement.module or ''
             module_path = relative + module_name
+            symbol_alias = as_names[name_index]
 
-        return symbol, module_path
+        return symbol, module_path, module_alias, symbol_alias
+
+    @property
+    def module_name(self):
+        """The final name of the module from its importer perspective.
+
+        If a alias exists, it will be the alias name.  If not, it will
+        be the original name.
+        """
+        if self.module_alias:
+            return self.module_alias
+        return self.module_path
+
+    @property
+    def symbol_name(self):
+        """The final name of the symbol from its importer perspective.
+
+        If a alias exists, it will be the alias name.  If not, it will
+        be the original name.
+        """
+        if self.symbol_alias:
+            return self.symbol_alias
+        return self.symbol
 
     @classmethod
     def from_statement(cls, statement, importer_fs_path=None, index=0):
-        symbol, module_path = cls.get_symbol_module_path_from_statement(statement, index)
-        return cls(module_path, symbol, importer_fs_path)
+        (symbol,
+         module_path,
+         module_alias,
+         symbol_alias) = cls.get_symbol_module_path_from_statement(statement, index)
+        return cls(module_path, symbol, importer_fs_path, module_alias, symbol_alias)
 
     def to_str(self):
         """Returns a string representation of the plausible statement used."""
