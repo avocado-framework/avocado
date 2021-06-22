@@ -375,7 +375,6 @@ class LoaderTest(unittest.TestCase):
                 ('Test5', 'selftests/.data/safeloader/data/imports.py:Test5.test'),
                 ('Test6', 'selftests/.data/safeloader/data/imports.py:Test6.test'),
                 ('Test8', 'selftests/.data/safeloader/data/imports.py:Test8.test'),
-                ('Test9', 'selftests/.data/safeloader/data/imports.py:Test9.test'),
                 ('Test10', 'selftests/.data/safeloader/data/imports.py:Test10.test')]
         self._check_discovery(exps, tests)
 
