@@ -21,6 +21,7 @@ from distutils.command.clean import clean
 from pathlib import Path
 from subprocess import CalledProcessError, check_call, run
 
+import setuptools.command.develop
 from setuptools import Command, find_packages, setup
 
 # pylint: disable=E0611
@@ -79,6 +80,29 @@ class Clean(clean):
     @staticmethod
     def clean_optional_plugins():
         walk_plugins_setup_py(action_name="CLEANING", action=["clean", "--all"])
+
+
+class Develop(setuptools.command.develop.develop):
+    """Custom develop command."""
+
+    def run(self):
+
+        # python setup.py develop --user --uninstall
+        # we uninstall the plugins before uninstalling avocado
+        if self.user and not self.external:
+            if not self.uninstall:
+                super().run()
+                walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"])
+
+        # python setup.py develop --user
+        # we install the plugins after installing avocado
+            elif self.uninstall:
+                walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"])
+                super().run()
+
+        # other cases: do nothing and call parent function
+        else:
+            super().run()
 
 
 class SimpleCommand(Command):
@@ -267,6 +291,7 @@ if __name__ == '__main__':
           test_suite='selftests',
           python_requires='>=3.6',
           cmdclass={'clean': Clean,
+                    'develop': Develop,
                     'lint': Linter,
                     'man': Man},
           install_requires=['setuptools'])
