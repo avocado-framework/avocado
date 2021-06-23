@@ -48,37 +48,31 @@ all:
 
 include Makefile.include
 
-source-pypi: clean
+source-pypi: python_build
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	git archive --format="tar" --prefix="$(PYTHON_MODULE_NAME)/" $(VERSION) | tar --file - --delete '$(PYTHON_MODULE_NAME)/optional_plugins' > "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar"
+	$(PYTHON) -m build --sdist -o PYPI_UPLOAD
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/setup.py; then\
 			echo ">> Creating source distribution for $$PLUGIN";\
 			cd $$PLUGIN;\
-			$(PYTHON) setup.py sdist -d ../../PYPI_UPLOAD;\
+			$(PYTHON) -m build --sdist -o ../../PYPI_UPLOAD;\
 			cd -;\
                 fi;\
 	done
 
-wheel: clean
+wheel: python_build
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	$(PYTHON) setup.py bdist_wheel -d PYPI_UPLOAD
+	$(PYTHON) -m build -o PYPI_UPLOAD
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/setup.py; then\
 			echo ">> Creating wheel distribution for $$PLUGIN";\
 			cd $$PLUGIN;\
-			$(PYTHON) setup.py bdist_wheel -d ../../PYPI_UPLOAD;\
+			$(PYTHON) -m build -o ../../PYPI_UPLOAD;\
 			cd -;\
                 fi;\
 	done
 
-pypi: wheel source-pypi develop
-	mkdir PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
-	cp avocado_framework.egg-info/PKG-INFO PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
-	tar rf "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar" -C PYPI_UPLOAD $(PYTHON_MODULE_NAME)/PKG-INFO
-	gzip -9 "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar"
-	rm -f PYPI_UPLOAD/$(PYTHON_MODULE_NAME)/PKG-INFO
-	rmdir PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
+pypi: wheel
 	@echo
 	@echo "Please use the files on PYPI_UPLOAD dir to upload a new version to PyPI"
 	@echo "The URL to do that may be a bit tricky to find, so here it is:"
@@ -87,6 +81,9 @@ pypi: wheel source-pypi develop
 	@echo "Alternatively, you can also run a command like: "
 	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/*.{tar.gz,whl}"
 	@echo
+
+python_build: pip
+	$(PYTHON) -m pip install $(PYTHON_DEVELOP_ARGS) build
 
 clean:
 	$(PYTHON) setup.py clean --all
