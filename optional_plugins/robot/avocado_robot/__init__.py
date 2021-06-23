@@ -139,7 +139,7 @@ class RobotResolver(Resolver):
     description = 'Test resolver for Robot Framework tests'
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference, config):
 
         # It may be possible to have Robot Framework tests in other
         # types of files such as reStructuredText (.rst), but given

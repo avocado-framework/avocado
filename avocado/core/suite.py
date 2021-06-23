@@ -169,6 +169,7 @@ class TestSuite:
             if os.path.exists(hint_filepath):
                 hint = HintParser(hint_filepath)
             resolutions = resolve(references,
+                                  config,
                                   hint=hint,
                                   ignore_missing=ignore_missing)
         except JobTestSuiteReferenceResolutionError as details:

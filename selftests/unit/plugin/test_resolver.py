@@ -37,7 +37,7 @@ class AvocadoInstrumented(unittest.TestCase):
         passtest = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
         test = 'PassTest.test'
         uri = '%s:%s' % (passtest, test)
-        res = AvocadoInstrumentedResolver().resolve(passtest)
+        res = AvocadoInstrumentedResolver().resolve(passtest, {})
         self.assertEqual(res.reference, passtest)
         self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
         self.assertIsNone(res.info)
@@ -54,7 +54,7 @@ class AvocadoInstrumented(unittest.TestCase):
         passtest = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
         test_filter = 'test'
         reference = '%s:%s' % (passtest, test_filter)
-        res = AvocadoInstrumentedResolver().resolve(reference)
+        res = AvocadoInstrumentedResolver().resolve(reference, {})
         self.assertEqual(res.reference, reference)
         self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
         self.assertEqual(len(res.resolutions), 1)
@@ -63,7 +63,7 @@ class AvocadoInstrumented(unittest.TestCase):
         passtest = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
         test_filter = 'test_other'
         reference = '%s:%s' % (passtest, test_filter)
-        res = AvocadoInstrumentedResolver().resolve(reference)
+        res = AvocadoInstrumentedResolver().resolve(reference, {})
         self.assertEqual(res.reference, reference)
         self.assertEqual(res.result, resolver.ReferenceResolutionResult.NOTFOUND)
 
@@ -73,7 +73,7 @@ class ExecTest(unittest.TestCase):
     def test_exec_test(self):
         with script.TemporaryScript('exec-test.sh', "#!/bin/sh\ntrue",
                                     'test_resolver_exec_test') as simple_test:
-            res = ExecTestResolver().resolve(simple_test.path)
+            res = ExecTestResolver().resolve(simple_test.path, {})
             self.assertEqual(res.reference, simple_test.path)
             self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
             self.assertEqual(len(res.resolutions), 1)

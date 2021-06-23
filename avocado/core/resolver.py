@@ -98,11 +98,11 @@ class Resolver(EnabledExtensionManager):
     def __init__(self):
         super(Resolver, self).__init__('avocado.plugins.resolver')
 
-    def resolve(self, reference):
+    def resolve(self, reference, config):
         resolution = []
         for ext in self.extensions:
             try:
-                result = ext.obj.resolve(reference)
+                result = ext.obj.resolve(reference, config)
                 if not result.origin:
                     result.origin = ext.name
             except Exception as exc:  # pylint: disable=W0703
@@ -130,11 +130,11 @@ class Discoverer(EnabledExtensionManager):
     def __init__(self):
         super(Discoverer, self).__init__('avocado.plugins.discoverer')
 
-    def discover(self):
+    def discover(self, config):
         resolutions = []
         for ext in self.extensions:
             try:
-                results = ext.obj.discover()
+                results = ext.obj.discover(config)
             except Exception as exc:  # pylint: disable=W0703
                 results = [ReferenceResolution('',
                                                ReferenceResolutionResult.ERROR,
@@ -191,7 +191,7 @@ def _extend_directory(path):
     return paths
 
 
-def resolve(references, hint=None, ignore_missing=True):
+def resolve(references, config, hint=None, ignore_missing=True):
     resolutions = []
     hint_resolutions = []
     hint_references = {}
@@ -217,10 +217,10 @@ def resolve(references, hint=None, ignore_missing=True):
             if reference in hint_references:
                 resolutions.append(hint_references[reference])
             else:
-                resolutions.extend(resolver.resolve(reference))
+                resolutions.extend(resolver.resolve(reference, config))
     else:
         discoverer = Discoverer()
-        resolutions.extend(discoverer.discover())
+        resolutions.extend(discoverer.discover(config))
 
     # This came up from a previous method and can be refactored to improve
     # performance since that we could merge with the loop above.

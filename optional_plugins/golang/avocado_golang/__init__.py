@@ -226,7 +226,7 @@ class GolangResolver(Resolver):
     description = 'Test resolver for Go language tests'
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference, config):
 
         if GO_BIN is None:
             return ReferenceResolution(reference,

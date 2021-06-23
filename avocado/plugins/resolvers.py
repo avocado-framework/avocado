@@ -34,7 +34,7 @@ class ExecTestResolver(Resolver):
     description = 'Test resolver for executable files to be handled as tests'
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference, config):
 
         criteria_check = check_file(reference, reference, suffix=None,
                                     type_name='executable file',
@@ -42,14 +42,14 @@ class ExecTestResolver(Resolver):
                                     access_name='executable')
         if criteria_check is not True:
             return criteria_check
-
+        runnable = Runnable('exec-test', reference,
+                            config=settings.filter_config(config, r'^runner\.'))
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
-                                   [Runnable('exec-test', reference,
-                                             config=settings.as_dict(r'^runner\.'))])
+                                   [runnable])
 
 
-def python_resolver(name, reference, find_tests):
+def python_resolver(name, reference, find_tests, config):
     module_path, tests_filter = reference_split(reference)
     if tests_filter is not None:
         tests_filter = re.compile(tests_filter)
@@ -67,11 +67,12 @@ def python_resolver(name, reference, find_tests):
             if tests_filter is not None and not tests_filter.search(klass_method):
                 continue
             uri = "%s:%s" % (module_path, klass_method)
+            runnable_config = settings.filter_config(config, r'^runner\.')
             runnables.append(Runnable(name,
                                       uri=uri,
                                       tags=tags,
                                       requirements=reqs,
-                                      config=settings.as_dict(r'^runner\.')))
+                                      config=runnable_config))
     if runnables:
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
@@ -92,10 +93,11 @@ class PythonUnittestResolver(Resolver):
         return find_python_unittests(module_path), None
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference, config):
         return python_resolver(PythonUnittestResolver.name,
                                reference,
-                               PythonUnittestResolver._find_compat)
+                               PythonUnittestResolver._find_compat,
+                               config)
 
 
 class AvocadoInstrumentedResolver(Resolver):
@@ -104,10 +106,11 @@ class AvocadoInstrumentedResolver(Resolver):
     description = 'Test resolver for Avocado Instrumented tests'
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference, config):
         return python_resolver(AvocadoInstrumentedResolver.name,
                                reference,
-                               find_avocado_tests)
+                               find_avocado_tests,
+                               config)
 
 
 class TapResolver(Resolver):
@@ -116,7 +119,7 @@ class TapResolver(Resolver):
     description = 'Test resolver for executable files to be handled as tests'
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference, config):
 
         criteria_check = check_file(reference, reference, suffix=None,
                                     type_name='executable file',
@@ -125,7 +128,8 @@ class TapResolver(Resolver):
         if criteria_check is not True:
             return criteria_check
 
+        runnable = Runnable('tap', reference,
+                            config=settings.filter_config(config, r'^runner\.'))
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
-                                   [Runnable('tap', reference,
-                                             config=settings.as_dict(r'^runner\.'))])
+                                   [runnable])

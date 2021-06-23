@@ -37,12 +37,12 @@ class LoaderResolverModule(unittest.TestCase):
 
     def test_resolver_no_go_bin(self):
         with unittest.mock.patch('avocado_golang.GO_BIN', None):
-            res = avocado_golang.GolangResolver().resolve('countavocados')
+            res = avocado_golang.GolangResolver().resolve('countavocados', {})
         self.assertEqual(res.reference, 'countavocados')
         self.assertEqual(res.result, ReferenceResolutionResult.NOTFOUND)
 
     def test_resolver(self):
-        res = avocado_golang.GolangResolver().resolve('countavocados')
+        res = avocado_golang.GolangResolver().resolve('countavocados', {})
         self.assertEqual(res.result, ReferenceResolutionResult.SUCCESS)
         self.assertEqual(len(res.resolutions), 3)
         empty_container = res.resolutions[0]

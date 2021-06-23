@@ -220,12 +220,13 @@ class Resolver(Plugin):
     """Base plugin interface for resolving test references into resolutions."""
 
     @abc.abstractmethod
-    def resolve(self, reference):
+    def resolve(self, reference, config):
         """Resolves the given reference into a reference resolution.
 
         :param reference: a specification that can eventually be resolved
                           into a test (in the form of a
                           :class:`avocado.core.nrunner.Runnable`)
+        :param config: Avocado configuration
         :type reference: str
         :returns: the result of the resolution process, containing the
                   success, failure or error, along with zero or more
@@ -238,7 +239,7 @@ class Discoverer(Plugin):
     """Base plugin interface for discovering tests without reference."""
 
     @abc.abstractmethod
-    def discover(self):
+    def discover(self, config):
         """Discovers a test resolutions
 
         It will be used when the `test.references` variable is empty, but
@@ -246,6 +247,7 @@ class Discoverer(Plugin):
         resolutions. It work same as the Resolver, but without the test
         reference.
 
+        :param config: Avocado configuration
         :returns: the result of the resolution process, containing the
                   success, failure or error, along with zero or more
                   :class:`avocado.core.nrunner.Runnable` objects
