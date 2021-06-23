@@ -200,7 +200,7 @@ def _examine_class(target_module, target_class, determine_match, path,
     info = []
     disabled = set()
 
-    for klass in module.iter_classes():
+    for klass in module.iter_classes(class_name):
         if class_name != klass.name:
             continue
 
@@ -247,6 +247,23 @@ def _examine_class(target_module, target_class, determine_match, path,
                 disabled.update(_disabled)
             if _match is not match:
                 match = _match
+
+    if not match and module.interesting_klass_found:
+        imported_symbol = module.imported_symbols[class_name]
+        if imported_symbol:
+            found_spec = imported_symbol.get_importable_spec()
+            if found_spec:
+                _info, _disabled, _match = _examine_class(target_module,
+                                                          target_class,
+                                                          determine_match,
+                                                          found_spec.origin,
+                                                          class_name,
+                                                          match)
+                if _info:
+                    _extend_test_list(info, _info)
+                    disabled.update(_disabled)
+                if _match is not match:
+                    match = _match
 
     return info, disabled, match
 
