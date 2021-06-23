@@ -1,17 +1,17 @@
 os: linux
-dist: xenial
+dist: focal
 language: python
 cache: pip
-arch: amd64
+arch:
+  - s390x
+  - ppc64le
+  - arm64
 
 python:
-    - "3.6"
-    - "3.7"
-    - "3.8"
+    - "3.9"
 
 env:
-      AVOCADO_LOG_DEBUG=yes
-      AVOCADO_CHECK_LEVEL=1
+    - AVOCADO_PARALLEL_LINT_JOBS=1
 
 addons:
   apt:
@@ -25,52 +25,3 @@ install:
 
 script:
     - make check
-
-jobs:
-  include:
-    - name: "Code Coverage"
-      python: "3.8"
-      arch: amd64
-      env:
-        - SELF_CHECK_CONTINUOUS=yes
-        - CC_TEST_REPORTER_ID=387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6
-      install:
-        - pip install -r requirements-selftests.txt
-        - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-        - chmod +x ./cc-test-reporter
-        - ./cc-test-reporter before-build
-      script:
-        - make develop && ./selftests/run_coverage
-      after_script:
-        - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
-    - python: "3.8"
-      arch: s390x
-      env:
-        - AVOCADO_PARALLEL_LINT_JOBS=1
-      # Travis s390x builders currently shows:
-      # [Errno 13] Permission denied: '/home/travis/.cache/pip/wheels/xx'
-      # Disable pip cache dir temporarily
-      install:
-       - pip install --no-cache-dir -r requirements-selftests.txt
-    - python: "3.8"
-      arch: ppc64le
-      env:
-        - AVOCADO_PARALLEL_LINT_JOBS=1
-      # Travis ppc64 builders currently shows:
-      # [Errno 13] Permission denied: '/home/travis/.cache/pip/wheels/xx'
-      # Disable pip cache dir temporarily
-      install:
-       - pip install --no-cache-dir -r requirements-selftests.txt
-    - python: "3.8"
-      arch: arm64
-      env:
-        - AVOCADO_PARALLEL_LINT_JOBS=1
-      # Travis amd64 builders currently shows:
-      # [Errno 13] Permission denied: '/home/travis/.cache/pip/wheels/xx'
-      # Disable pip cache dir temporarily
-      install:
-       - pip install --no-cache-dir -r requirements-selftests.txt
-
-  allow_failures:
-    - python: "nightly"
-    - name: "Ad hoc checks on OS X"
