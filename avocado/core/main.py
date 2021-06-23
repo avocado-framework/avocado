@@ -51,9 +51,12 @@ def handle_exception(*exc_info):
     tmp, name = tempfile.mkstemp(".log", prefix, get_crash_dir())
     os.write(tmp, msg.encode('utf-8'))
     os.close(tmp)
-    # Print friendly message in console-like output
-    msg = ("Avocado crashed unexpectedly: %s\nYou can find details in %s\n"
-           % (exc_info[1], name))
+    if exc_info[0].__name__ == "KeyboardInterrupt":
+        msg = "%s You can find details in %s\n" % (exc_info[0].__doc__, name)
+    else:
+        # Print friendly message in console-like output
+        msg = ("Avocado crashed unexpectedly: %s\nYou can find details in %s\n"
+               % (exc_info[1], name))
     os.write(2, msg.encode('utf-8'))
     # This exit code is replicated from avocado/core/exit_codes.py and not
     # imported because we are dealing with import failures
