@@ -504,7 +504,7 @@ say you want to pick up a test suite written in C that it is in a tarball,
 uncompress it, compile the suite code, and then executing the test. Here's
 an example that does that::
 
-        #!/usr/bin/env python
+        #!/usr/bin/env python3
 
         import os
 
