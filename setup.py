@@ -110,6 +110,26 @@ class Linter(SimpleCommand):
             sys.exit(128)
 
 
+class Man(SimpleCommand):
+    """Build man page"""
+
+    description = 'Build man page.'
+
+    def run(self):
+        if shutil.which("rst2man"):
+            cmd = "rst2man"
+        elif shutil.which("rst2man.py"):
+            cmd = "rst2man.py"
+        else:
+            sys.exit("rst2man not found, I can't build the manpage")
+
+        try:
+            run('{} man/avocado.rst man/avocado.1'.format(cmd), shell=True, check=True)
+        except CalledProcessError as e:
+            print("Failed manpage build: ", e)
+            sys.exit(128)
+
+
 if __name__ == '__main__':
     # Force "make develop" inside the "readthedocs.org" environment
     if os.environ.get("READTHEDOCS") and "install" in sys.argv:
@@ -241,5 +261,6 @@ if __name__ == '__main__':
           test_suite='selftests',
           python_requires='>=3.6',
           cmdclass={'clean': Clean,
-                    'lint': Linter},
+                    'lint': Linter,
+                    'man': Man},
           install_requires=['setuptools'])
