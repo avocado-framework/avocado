@@ -32,7 +32,8 @@ with open(os.path.join(BASE_PATH, 'VERSION'), 'r') as version_file:
 
 
 def get_long_description():
-    with open(os.path.join(BASE_PATH, 'README.rst'), 'r') as readme:
+    with open(os.path.join(BASE_PATH, 'README.rst'), 'rt',
+              encoding='utf-8') as readme:
         readme_contents = readme.read()
     return readme_contents
 

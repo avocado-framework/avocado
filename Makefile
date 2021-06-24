@@ -21,19 +21,28 @@ all:
 	@echo
 	@echo "Development related targets:"
 	@echo "check:             Runs tree static check, unittests and fast functional tests"
+	@echo "smokecheck:        Runs the simplest possible avocado test execution"
 	@echo "develop:           Runs 'python setup.py --develop' on this tree alone"
-	@echo "develop-external:  Install Avocado's external plugins in develop mode. You need to set AVOCADO_EXTERNAL_PLUGINS_PATH"
+	@echo "develop-external:  Install Avocado's external plugins in develop mode."
+	@echo "                   You need to set AVOCADO_EXTERNAL_PLUGINS_PATH"
 	@echo "clean:             Get rid of build scratch from this project and subprojects"
+	@echo "variables:         Show the value of variables as defined in this Makefile or"
+	@echo "                   given as input to make"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements-selftests:  Install runtime and selftests requirements"
 	@echo "requirements-plugins:    Install plugins requirements"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
-	@echo "source:    Create source package"
-	@echo "install:   Install on local system"
-	@echo "uninstall: Uninstall Avocado and also subprojects"
-	@echo "man:      Generate the avocado man page"
+	@echo "source:       Create single source package with commit info, suitable for RPMs"
+	@echo "source-pypi:  Create source packages suitable for PyPI"
+	@echo "wheel:        Create binary wheel packages suitable for PyPI"
+	@echo "pypi:         Create both source and binary wheel packages and show how to"
+	@echo "              upload them to PyPI"
+	@echo "python_build: Installs the build package, needed for source-pypi and wheel"
+	@echo "install:      Install on local system"
+	@echo "uninstall:    Uninstall Avocado and also subprojects"
+	@echo "man:          Generate the avocado man page"
 	@echo
 	@echo "RPM related targets:"
 	@echo "srpm:  Generate a source RPM package (.srpm)"
@@ -48,45 +57,38 @@ all:
 
 include Makefile.include
 
-source-pypi: clean
+source-pypi: python_build
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	git archive --format="tar" --prefix="$(PYTHON_MODULE_NAME)/" $(VERSION) | tar --file - --delete '$(PYTHON_MODULE_NAME)/optional_plugins' > "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar"
+	$(PYTHON) -m build --sdist -o PYPI_UPLOAD
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/setup.py; then\
 			echo ">> Creating source distribution for $$PLUGIN";\
 			cd $$PLUGIN;\
-			$(PYTHON) setup.py sdist -d ../../PYPI_UPLOAD;\
+			$(PYTHON) -m build --sdist -o ../../PYPI_UPLOAD;\
 			cd -;\
                 fi;\
 	done
 
-wheel: clean
+wheel: python_build
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	$(PYTHON) setup.py bdist_wheel -d PYPI_UPLOAD
+	$(PYTHON) -m build -o PYPI_UPLOAD
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/setup.py; then\
 			echo ">> Creating wheel distribution for $$PLUGIN";\
 			cd $$PLUGIN;\
-			$(PYTHON) setup.py bdist_wheel -d ../../PYPI_UPLOAD;\
+			$(PYTHON) -m build -o ../../PYPI_UPLOAD;\
 			cd -;\
                 fi;\
 	done
 
-pypi: wheel source-pypi develop
-	mkdir PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
-	cp avocado_framework.egg-info/PKG-INFO PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
-	tar rf "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar" -C PYPI_UPLOAD $(PYTHON_MODULE_NAME)/PKG-INFO
-	gzip -9 "PYPI_UPLOAD/$(PYTHON_MODULE_NAME)-$(VERSION).tar"
-	rm -f PYPI_UPLOAD/$(PYTHON_MODULE_NAME)/PKG-INFO
-	rmdir PYPI_UPLOAD/$(PYTHON_MODULE_NAME)
+pypi: wheel
 	@echo
-	@echo "Please use the files on PYPI_UPLOAD dir to upload a new version to PyPI"
-	@echo "The URL to do that may be a bit tricky to find, so here it is:"
-	@echo " https://pypi.python.org/pypi?%3Aaction=submit_form"
-	@echo
-	@echo "Alternatively, you can also run a command like: "
+	@echo "Please upload your packages running a command like: "
 	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/*.{tar.gz,whl}"
 	@echo
+
+python_build: pip
+	$(PYTHON) -m pip install $(PYTHON_DEVELOP_ARGS) build
 
 clean:
 	$(PYTHON) setup.py clean --all
@@ -168,4 +170,4 @@ propagate-version:
 		else echo ">> Skipping $$DIR"; fi;\
 	done
 
-.PHONY: source install clean check variables
+.PHONY: source source-pypi wheel pypi install clean uninstall requirements-plugins requirements-selftests smokecheck check develop develop-external propagate-version variables
