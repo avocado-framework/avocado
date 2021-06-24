@@ -200,6 +200,9 @@ It is super easy, just run the follow command::
 
 This will install the avocado command in your home directory.
 
+Before use avocado, you may need to configure the $PATH environment variable
+to include the path of avocado in your machine.
+
 .. note:: For more details and alternative methods, please visit the
           Installing section on Avocado User's Guide.
 
