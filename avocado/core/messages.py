@@ -300,8 +300,14 @@ class WhiteboardMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        self._save_message_to_file('whiteboard', message['log'], task,
-                                   message.get('encoding', None))
+        encoding = message.get('encoding', 'utf-8')
+        whiteboard = task.metadata.get('whiteboard', '')
+        whiteboard += message['log'].decode(encoding)
+        task.metadata['whiteboard'] = whiteboard
+        self._save_message_to_file('whiteboard',
+                                   message['log'],
+                                   task,
+                                   encoding)
 
 
 class FileMessageHandler(BaseRunningMessageHandler):
