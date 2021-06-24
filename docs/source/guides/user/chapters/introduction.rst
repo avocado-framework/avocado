@@ -46,7 +46,7 @@ instrumented and simple tests::
 .. note:: Although in most cases running ``avocado run $test1 $test3 ...`` is
           fine, it can lead to argument vs. test name clashes. The safest
           way to execute tests is ``avocado run --$argument1 --$argument2
-          -- $test1 $test2``. Everything after `--` will be considered
+          -- $test1 $test2``. Everything after ``--`` will be considered
           positional arguments, therefore test names (in case of
           ``avocado run``)
 
