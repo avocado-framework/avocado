@@ -27,10 +27,10 @@ name::
     JOB TIME   : 0.15 s
 
 You probably noticed that we used ``/bin/true`` as a test, and in accordance
-with our expectations, it passed! These are known as `simple tests`, but there
-is also another type of test, which we call `instrumented tests`.
+with our expectations, it passed! These are known as **simple tests**, but there
+is also another type of test, which we call **instrumented tests**.
 
-.. tip:: See more at the "Test types" section on the Avocado User's Guide.
+.. tip:: See more at the `Test types`_ section on the `Avocado User's Guide`_.
 
 Why should I use it?
 ====================
@@ -53,7 +53,7 @@ Currently we support, out of box, the following output formats:
 * **JSON**: a widely used data exchange format. The JSON Avocado plugin
   outputs job information, similarly to the xunit output plugin.
 
-* **TAP**: Provides the basic TAP (Test Anything Protocol) results,
+* **TAP**: Provides the basic TAP (`Test Anything Protocol`_) results,
   currently in v12. Unlike most existing Avocado machine readable outputs
   this one is streamlined (per test results).
 
@@ -63,8 +63,8 @@ Currently we support, out of box, the following output formats:
   Avocado will write the output on the specified filename.
 
 When it comes to outputs, Avocado is very flexible. You can check the various
-**output plugins**. If you need something more sophisticated, visit our plugins
-section.
+**output plugins**. If you need something more sophisticated, visit our `plugins
+section`_.
 
 Sysinfo data collector
 ----------------------
@@ -87,7 +87,7 @@ Check out the files stored at ``$HOME/avocado/job-results/latest/sysinfo/``::
   'gcc --version'        meminfo
 
 
-For more information about sysinfo collector, please consult the Avocado User's Guide.
+For more information about sysinfo collector, please consult the `Avocado User's Guide`_.
 
 Job Replay and Job Diff
 -----------------------
@@ -154,13 +154,13 @@ list available plugins. The usage is pretty simple::
  journal Journal options for the 'run' subcommand
  ...
 
-For more information about plugins, please visit the Plugin System section on
-the Avocado User's Guide.
+For more information about plugins, please visit the `Plugin System`_ section on
+the `Avocado User's Guide`_.
 
 Utility libraries
 -----------------
 
-When writting tests, developers often need to perform basic tasks on OS and end
+When writing tests, developers often need to perform basic tasks on OS and end
 up having to implement these routines just to run they tests.
 
 Avocado has **more than 40** *utility modules* that helps you to perform basic
@@ -201,7 +201,7 @@ It is super easy, just run the follow command::
 This will install the avocado command in your home directory.
 
 .. note:: For more details and alternative methods, please visit the
-          Installing section on Avocado User's Guide.
+         `Installing section on Avocado User’s Guide`_
 
 Documentation
 =============
@@ -216,12 +216,12 @@ methods, tutorials and API or browse this site for more content.
 Bugs/Requests
 =============
 
-Please use the GitHub issue tracker to submit bugs or request features.
+Please use the `GitHub issue tracker`_ to submit bugs or request features.
 
 Changelog
 =========
 
-Please consult the Avocado Releases on our official documentation for fixes and enhancements of each version.
+Please consult the `Avocado Releases`_ for fixes and enhancements of each version.
 
 License
 =======
@@ -266,3 +266,13 @@ Build and Quality Status
 .. image:: https://readthedocs.org/projects/avocado-framework/badge/?version=latest
    :target: https://avocado-framework.readthedocs.io/en/latest/
    :alt: Documentation Status
+
+
+.. _Avocado User's Guide: https://avocado-framework.readthedocs.io/en/latest/guides/user/index.html
+.. _Installing section on Avocado User’s Guide: https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/installing.html#installing
+.. _Test types: https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/concepts.html#test-types
+.. _plugins section: https://avocado-framework.readthedocs.io/en/latest/plugins/index.html
+.. _Plugin System: https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/plugins.html
+.. _Avocado Releases: https://avocado-framework.readthedocs.io/en/latest/releases/index.html
+.. _GitHub issue tracker: https://github.com/avocado-framework/avocado/issues
+.. _Test Anything Protocol: https://testanything.org/
