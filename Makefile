@@ -120,12 +120,7 @@ develop-external:
 ifndef AVOCADO_EXTERNAL_PLUGINS_PATH
 	$(error AVOCADO_EXTERNAL_PLUGINS_PATH is not defined)
 endif
-	for PLUGIN in $(shell find $(AVOCADO_EXTERNAL_PLUGINS_PATH) -maxdepth 1 -mindepth 1 -type d); do\
-		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
-			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN PYTHON="$(PYTHON)" link &>/dev/null || echo ">> FAIL $$PLUGIN";\
-			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
-		else echo ">> SKIP $$PLUGIN"; fi;\
-	done
+	$(PYTHON) setup.py developexternal $(PYTHON_DEVELOP_ARGS)
 
 man: man/avocado.1
 

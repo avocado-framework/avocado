@@ -104,6 +104,26 @@ class Develop(setuptools.command.develop.develop):
             super().run()
 
 
+class DevelopExternal(setuptools.command.develop.develop):
+    """Install Avocado's external plugins in develop mode.."""
+
+    description = "Install Avocado's external plugins in develop mode. \
+                   You need to set AVOCADO_EXTERNAL_PLUGINS_PATH."
+
+    def run(self):
+
+        d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
+
+        if (d is None or not os.path.exists(d)):
+            sys.exit("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't properly set")
+
+        if not os.path.isabs(d):
+            d = os.path.abspath(d)
+
+        if self.user:
+            walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"], directory=d)
+
+
 class SimpleCommand(Command):
     """Make Command implementation simpler."""
 
@@ -290,6 +310,7 @@ if __name__ == '__main__':
           python_requires='>=3.6',
           cmdclass={'clean': Clean,
                     'develop': Develop,
+                    'developexternal': DevelopExternal,
                     'lint': Linter,
                     'man': Man},
           install_requires=['setuptools'])
