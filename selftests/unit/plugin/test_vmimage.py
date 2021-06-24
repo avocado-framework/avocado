@@ -84,7 +84,7 @@ class VMImagePlugin(unittest.TestCase):
                          'base_dir = %(base_dir)s\n'
                          'data_dir = %(data_dir)s\n'
                          'cache_dirs = %(cache_dirs)s\n') % mapping
-        config_file = tempfile.NamedTemporaryFile('w', delete=False)
+        config_file = tempfile.NamedTemporaryFile('w', prefix=".avocado-selftest", delete=False)
         config_file.write(temp_settings)
         config_file.close()
         return base_dir, mapping, config_file.name

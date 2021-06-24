@@ -15,7 +15,7 @@ non_registered = this should be ignored
 class SettingsTest(unittest.TestCase):
 
     def setUp(self):
-        self.config_file = tempfile.NamedTemporaryFile('w', delete=False)
+        self.config_file = tempfile.NamedTemporaryFile('w', prefix=".avocado-selftest", delete=False)
         self.config_file.write(example)
         self.config_file.close()
 

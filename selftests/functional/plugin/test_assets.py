@@ -72,7 +72,7 @@ class AssetsFetchSuccess(TestCaseTmpDir):
             locations='https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz')
         """
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py", prefix=".avocado-selftest", delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -119,7 +119,7 @@ class AssetsFetchSuccess(TestCaseTmpDir):
     def test_asset_purge(self):
         """Make sure that we can remove a asset from cache."""
         # creates a single byte asset
-        asset_file = tempfile.NamedTemporaryFile(delete=False)
+        asset_file = tempfile.NamedTemporaryFile(prefix=".avocado-selftest", delete=False)
         asset_file.write(b'\xff')
         asset_file.close()
 
@@ -162,7 +162,7 @@ class AssetsFetchSuccess(TestCaseTmpDir):
     def test_asset_purge_by_overall_cache_size(self):
         """Make sure that we can set cache limits."""
         # creates a single byte asset
-        asset_file = tempfile.NamedTemporaryFile(delete=False)
+        asset_file = tempfile.NamedTemporaryFile(prefix=".avocado-selftest", delete=False)
         asset_file.write(b'\xff')
         asset_file.close()
 
@@ -235,7 +235,7 @@ class AssetsPlugin(unittest.TestCase):
             locations='https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz')
         """
         test_content = NOT_TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py", prefix=".avocado-selftest", delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -262,7 +262,7 @@ class AssetsPlugin(unittest.TestCase):
             locations='https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz')
         """
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".c", delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".c", prefix=".avocado-selftest", delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -290,7 +290,7 @@ class AssetsPlugin(unittest.TestCase):
             locations='http://localhost/hello-2.9.tar.gz')
         """
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py", prefix=".avocado-selftest", delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -317,7 +317,7 @@ class AssetsPlugin(unittest.TestCase):
             locations='http://localhost/hello-2.9.tar.gz')
         """
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py", prefix=".avocado-selftest", delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -337,7 +337,7 @@ class AssetsPlugin(unittest.TestCase):
     def test_asset_purge_by_days(self):
         """Make sure that we can remove assets by days."""
         # creates a single byte asset
-        asset_file = tempfile.NamedTemporaryFile(delete=False)
+        asset_file = tempfile.NamedTemporaryFile(prefix=".avocado-selftest", delete=False)
         asset_file.write(b'\xff')
         asset_file.close()
 

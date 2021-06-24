@@ -79,7 +79,7 @@ def get_temporary_config(module_name, klass, method):
                      'data_dir = %(data_dir)s\n'
                      'cache_dirs = ["%(cache_dir)s"]\n'
                      'logs_dir = %(logs_dir)s\n') % mapping
-    config_file = tempfile.NamedTemporaryFile('w', delete=False)
+    config_file = tempfile.NamedTemporaryFile('w', prefix=".avocado-selftest", delete=False)
     config_file.write(temp_settings)
     config_file.close()
     return base_dir, mapping, config_file
