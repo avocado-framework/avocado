@@ -19,6 +19,7 @@ import time
 import traceback
 
 try:
+    from avocado.core import exit_codes
     from avocado.core.settings import settings
 except ImportError:
     sys.stderr.write("Unable to import Avocado libraries, please verify "
@@ -51,13 +52,16 @@ def handle_exception(*exc_info):
     tmp, name = tempfile.mkstemp(".log", prefix, get_crash_dir())
     os.write(tmp, msg.encode('utf-8'))
     os.close(tmp)
-    # Print friendly message in console-like output
-    msg = ("Avocado crashed unexpectedly: %s\nYou can find details in %s\n"
-           % (exc_info[1], name))
+    if exc_info[0] is KeyboardInterrupt:
+        msg = "%s\nYou can find details in %s\n" % (exc_info[0].__doc__, name)
+        exit_code = exit_codes.AVOCADO_JOB_INTERRUPTED
+    else:
+        # Print friendly message in console-like output
+        msg = ("Avocado crashed unexpectedly: %s\nYou can find details in %s\n"
+               % (exc_info[1], name))
+        exit_code = exit_codes.AVOCADO_GENERIC_CRASH
     os.write(2, msg.encode('utf-8'))
-    # This exit code is replicated from avocado/core/exit_codes.py and not
-    # imported because we are dealing with import failures
-    sys.exit(-1)
+    sys.exit(exit_code)
 
 
 def main():
