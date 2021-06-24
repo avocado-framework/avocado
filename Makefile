@@ -168,4 +168,4 @@ propagate-version:
 		else echo ">> Skipping $$DIR"; fi;\
 	done
 
-.PHONY: source install clean check variables
+.PHONY: source source-pypi wheel pypi install clean uninstall requirements-plugins requirements-selftests smokecheck check develop develop-external propagate-version variables
