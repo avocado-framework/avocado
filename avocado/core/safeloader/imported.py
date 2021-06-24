@@ -1,5 +1,7 @@
 import ast
 import os
+import sys
+from importlib.machinery import PathFinder
 
 from .utils import get_statement_import_as
 
@@ -9,22 +11,26 @@ class ImportedSymbol:
 
     Attributes:
 
-    symbol : str
     module_path : str
+    symbol : str
     importer_fs_path: str or None
     """
 
-    def __init__(self, symbol, module_path='', importer_fs_path=None):
-        #: The name of the imported symbol.  On a statement such as
-        #: "import os", the symbol is "os".  On a statement such as
-        #: "from unittest.mock import mock_open", the symbol is "mock_open"
-        self.symbol = symbol
+    def __init__(self, module_path, symbol='', importer_fs_path=None,
+                 module_alias='', symbol_alias=''):
         #: Path from where the symbol was imported.  On a statement such as
-        #: "import os", module_path is None.  On a statement such as
-        #: "from unittest.mock import mock_open", the module_path is
-        #: "unittest.mock".  On a statement such as "from ..foo import bar",
-        #: module_path is "..foo" (relative).
+        #: "import os", module_path is "os" and there's no symbol.
+        #: On a statement such as from unittest.mock import mock_open",
+        #: the module_path is "unittest.mock".  On a statement such as
+        #: "from ..foo import bar", module_path is "..foo" (relative).
         self.module_path = module_path
+        #: The name of the imported symbol.  On a statement such as
+        #: "import os", there's no symbol.  On a statement such as
+        #: "from unittest import mock"", the symbol is "mock" (even
+        #: though it may actually also be a module, but it's impossible
+        #: to know for sure).  On a statement such as "from unittest.mock
+        #: import mock_open", symbol is "mock_open".
+        self.symbol = symbol
         #: The full, absolute filesystem path of the module importing
         #: this symbol.  This is used for relative path calculations,
         #: but it's limited to relative modules that also share the
@@ -45,6 +51,65 @@ class ImportedSymbol:
         #: The relative filesystem path of the module (which should
         #: contain the symbol) will be "/path/to".
         self.importer_fs_path = importer_fs_path
+        #: An optional alias for the module, such as when a
+        #: "import os as operating_system" statement is given.
+        self.module_alias = module_alias
+        #: An optional alias the symbol, such as when a
+        #: "from os import path as os_path" is given
+        self.symbol_alias = symbol_alias
+
+    def _walk_importable_components(self, symbol_is_module=False):
+        if symbol_is_module:
+            full_name = "%s.%s" % (self.module_path, self.symbol)
+        else:
+            full_name = self.module_path
+        # Stripping leading dots, as relative paths will be handled with
+        # insertion to module_paths with the relative path
+        components = full_name.strip(".").split(".")
+        for index, component in enumerate(components):
+            if index > 0:
+                previous = components[index - 1]
+            else:
+                previous = ''
+            yield (component, previous)
+
+    def get_importable_spec(self, symbol_is_module=False):
+        """Returns the specification of an actual importable module.
+
+        This is a check based on the limitations that we do not
+        actually perform an import, and assumes a directory structure
+        with modules.
+
+        :param symbol_is_module: if it's known that the symbol is also
+                                 a module, include it in the search for
+                                 an importable spec
+        :type symbol_is_module: bool
+        """
+        modules_paths = sys.path
+        modules_paths.insert(0, self.get_relative_module_fs_path())
+        spec = None
+        for component, previous in self._walk_importable_components(symbol_is_module):
+            if previous:
+                modules_paths = [os.path.join(mod, previous) for
+                                 mod in modules_paths[:]]
+            spec = PathFinder.find_spec(component, modules_paths)
+            if spec is None:
+                break
+        return spec
+
+    def is_importable(self, symbol_is_module=False):
+        """Checks whether this imported symbol seems to be importable.
+
+        This is a check based on the limitations that we do not
+        actually perform an import, and assumes a directory structure
+        with modules.
+
+        :param symbol_is_module: if it's known that the symbol is also
+                                 a module, include it in the search for
+                                 an importable spec
+        :type symbol_is_module: bool
+        """
+        return self.get_importable_spec(symbol_is_module) is not None
 
     @staticmethod
     def _split_last_module_path_component(module_path):
@@ -89,30 +154,61 @@ class ImportedSymbol:
     def get_symbol_module_path_from_statement(statement, name_index=0):
         symbol = ''
         module_path = ''
-        names = list(get_statement_import_as(statement).keys())
+        module_alias = ''
+        symbol_alias = ''
+        import_as = get_statement_import_as(statement)
+        names = list(import_as.keys())
+        as_names = list(import_as.values())
 
         if isinstance(statement, ast.Import):
+            # On an Import statement, it's impossible to import a symbol
+            # so everything is the module_path
             module_path = names[name_index]
-            module_path, symbol = ImportedSymbol._split_last_module_path_component(module_path)
-            return symbol, module_path
+            module_alias = as_names[name_index]
 
         elif isinstance(statement, ast.ImportFrom):
             symbol = names[name_index]
             relative = ImportedSymbol._get_relative_prefix(statement)
             module_name = statement.module or ''
             module_path = relative + module_name
+            symbol_alias = as_names[name_index]
 
-        return symbol, module_path
+        return symbol, module_path, module_alias, symbol_alias
+
+    @property
+    def module_name(self):
+        """The final name of the module from its importer perspective.
+
+        If a alias exists, it will be the alias name.  If not, it will
+        be the original name.
+        """
+        if self.module_alias:
+            return self.module_alias
+        return self.module_path
+
+    @property
+    def symbol_name(self):
+        """The final name of the symbol from its importer perspective.
+
+        If a alias exists, it will be the alias name.  If not, it will
+        be the original name.
+        """
+        if self.symbol_alias:
+            return self.symbol_alias
+        return self.symbol
 
     @classmethod
-    def from_statement(cls, statement, importer_fs_path=None):
-        symbol, module_path = cls.get_symbol_module_path_from_statement(statement)
-        return cls(symbol, module_path, importer_fs_path)
+    def from_statement(cls, statement, importer_fs_path=None, index=0):
+        (symbol,
+         module_path,
+         module_alias,
+         symbol_alias) = cls.get_symbol_module_path_from_statement(statement, index)
+        return cls(module_path, symbol, importer_fs_path, module_alias, symbol_alias)
 
     def to_str(self):
         """Returns a string representation of the plausible statement used."""
-        if not self.module_path:
-            return "import %s" % self.symbol
+        if not self.symbol:
+            return "import %s" % self.module_path
         return "from %s import %s" % (self.module_path, self.symbol)
 
     def is_relative(self):
@@ -148,49 +244,13 @@ class ImportedSymbol:
             return os.path.join(parent_path, self.module_path)
         return parent_path
 
-    def get_compat_parent_path(self):
-        """Returns a "parent path" compatible with the path based notation.
-
-        This is intended for temporary compatibility purposes with the
-        single path based notation of keeping track of the path/module/class.
-        """
-        parent_path = self.get_relative_module_fs_path()
-        non_rel_mod_path = self.module_path.strip(".")
-        pure_module_path_to_fs = non_rel_mod_path.replace(".", os.path.sep)
-        if self.symbol:
-            pure_module_path_to_fs = os.path.dirname(pure_module_path_to_fs)
-        return os.path.join(parent_path, pure_module_path_to_fs)
-
-    def get_compat_module_path(self):
-        """Returns a "parent module" compatible with the path based notation.
-
-        This is intended for temporary compatibility purposes with the
-        single path based notation of keeping track of the path/module/class.
-        """
-        non_rel_mod_path = self.module_path.strip(".")
-        split = non_rel_mod_path.rsplit(".", 1)
-        if len(split) > 1:
-            return split[1]
-        return non_rel_mod_path
-
-    def get_compat_symbol(self):
-        """Returns a "parent symbol" compatible with the path based notation.
-
-        This is intended for temporary compatibility purposes with the
-        single path based notation of keeping track of the path/module/class.
-        """
-        split = self.symbol.rsplit(".", 1)
-        if len(split) > 1:
-            return split[1]
-        return self.symbol
-
     def __repr__(self):
-        return ('<ImportedSymbol symbol="%s" module_path="%s" '
-                'importer_fs_path="%s">' % (self.symbol,
-                                            self.module_path,
+        return ('<ImportedSymbol module_path="%s" symbol="%s" '
+                'importer_fs_path="%s">' % (self.module_path,
+                                            self.symbol,
                                             self.importer_fs_path))
 
     def __eq__(self, other):
-        return ((self.symbol == other.symbol) and
-                (self.module_path == other.module_path) and
+        return ((self.module_path == other.module_path) and
+                (self.symbol == other.symbol) and
                 (self.importer_fs_path == other.importer_fs_path))

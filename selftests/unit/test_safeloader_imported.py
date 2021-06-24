@@ -44,7 +44,7 @@ class ModuleRelativePath(unittest.TestCase):
 
 class SymbolAndModulePathCommon(unittest.TestCase):
 
-    def _check_basic(self, input_symbol, input_module_path, input_statement):
+    def _check_basic(self, input_module_path, input_symbol, input_statement):
         """Checks all but to_str(), returning the imported_symbol instance."""
         statement = ast.parse(input_statement).body[0]
         symbol = ImportedSymbol.get_symbol_from_statement(statement)
@@ -55,16 +55,16 @@ class SymbolAndModulePathCommon(unittest.TestCase):
         msg = 'Expected module path "%s", found "%s"' % (input_module_path,
                                                          module_path)
         self.assertEqual(module_path, input_module_path, msg)
-        imported_symbol = ImportedSymbol(symbol, module_path)
+        imported_symbol = ImportedSymbol(module_path, symbol)
         self.assertEqual(imported_symbol,
                          ImportedSymbol.from_statement(statement))
         return imported_symbol
 
-    def _check(self, input_symbol, input_module_path, *input_statements):
+    def _check(self, input_module_path, input_symbol, *input_statements):
         statement_str_matches = []
         for input_statement in input_statements:
-            imported_symbol = self._check_basic(input_symbol,
-                                                input_module_path,
+            imported_symbol = self._check_basic(input_module_path,
+                                                input_symbol,
                                                 input_statement)
             match = imported_symbol.to_str() == input_statement
             statement_str_matches.append(match)
@@ -80,27 +80,54 @@ class SymbolAndModulePathImport(SymbolAndModulePathCommon):
         self._check_basic("os", "", "import os as operatingsystem")
 
     def test_compound(self):
-        self._check("path", "os", "import os.path", "from os import path")
+        self._check("os.path", "", "import os.path")
 
 
 class SymbolAndModulePathImportFrom(SymbolAndModulePathCommon):
 
     def test_symbol_module_path(self):
-        self._check("path", "os", "from os import path")
+        self._check("os", "path", "from os import path")
 
     def test_symbol_module_path_compound(self):
-        self._check("mock_open", "unittest.mock",
+        self._check("unittest.mock", "mock_open",
                     "from unittest.mock import mock_open")
 
     def test_symbol_module_path_only_relative(self):
-        self._check("utils", "..", "from .. import utils")
+        self._check("..", "utils", "from .. import utils")
 
     def test_symbol_module_path_from_relative(self):
-        self._check("utils", "..selftests", "from ..selftests import utils")
+        self._check("..selftests", "utils", "from ..selftests import utils")
 
     def test_symbol_module_path_from_relative_multiple(self):
-        self._check("mod", "..selftests.utils",
+        self._check("..selftests.utils", "mod",
                     "from ..selftests.utils import mod")
+
+
+class Alias(unittest.TestCase):
+
+    def test_module_alias(self):
+        statement = ast.parse("import os as operatingsystem").body[0]
+        imported_symbol = ImportedSymbol.from_statement(statement)
+        self.assertEqual(imported_symbol.module_path, "os")
+        self.assertEqual(imported_symbol.module_name, "operatingsystem")
+
+    def test_module_noalias(self):
+        statement = ast.parse("import os").body[0]
+        imported_symbol = ImportedSymbol.from_statement(statement)
+        self.assertEqual(imported_symbol.module_path, "os")
+        self.assertEqual(imported_symbol.module_name, "os")
+
+    def test_symbol_alias(self):
+        statement = ast.parse("from os import path as os_path").body[0]
+        imported_symbol = ImportedSymbol.from_statement(statement)
+        self.assertEqual(imported_symbol.symbol, "path")
+        self.assertEqual(imported_symbol.symbol_name, "os_path")
+
+    def test_symbol_noalias(self):
+        statement = ast.parse("from os import path").body[0]
+        imported_symbol = ImportedSymbol.from_statement(statement)
+        self.assertEqual(imported_symbol.symbol, "path")
+        self.assertEqual(imported_symbol.symbol_name, "path")
 
 
 class SymbolAndModulePathErrors(unittest.TestCase):
@@ -114,13 +141,13 @@ class SymbolAndModulePathErrors(unittest.TestCase):
 class RelativePath(unittest.TestCase):
 
     def test_same(self):
-        imported_symbol = ImportedSymbol("symbol", ".module",
+        imported_symbol = ImportedSymbol(".module", "symbol",
                                          "/abs/fs/location/test.py")
         self.assertEqual(imported_symbol.get_relative_module_fs_path(),
                          "/abs/fs/location")
 
     def test_upper(self):
-        imported_symbol = ImportedSymbol("symbol", "..module",
+        imported_symbol = ImportedSymbol("..module", "symbol",
                                          "/abs/fs/location/test.py")
         self.assertEqual(imported_symbol.get_relative_module_fs_path(),
                          "/abs/fs")
@@ -159,3 +186,39 @@ class ParentPath(unittest.TestCase):
                                                importer)
         self.assertEqual(symbol.get_parent_fs_path(),
                          "/abs/fs/location/of")
+
+
+class Importable(unittest.TestCase):
+
+    def test_single(self):
+        imported_symbol = ImportedSymbol("avocado", "", __file__)
+        self.assertTrue(imported_symbol.is_importable())
+
+    def test_compound(self):
+        imported_symbol = ImportedSymbol("avocado.utils",
+                                         "software_manager",
+                                         __file__)
+        self.assertTrue(imported_symbol.is_importable(True))
+
+    def test_compound_dont_know_if_symbol_is_module(self):
+        imported_symbol = ImportedSymbol("avocado.utils",
+                                         "BaseClass",
+                                         __file__)
+        self.assertTrue(imported_symbol.is_importable(False))
+
+    def test_non_existing_module(self):
+        imported_symbol = ImportedSymbol("avocado.utils",
+                                         "non_existing_symbol",
+                                         __file__)
+        self.assertFalse(imported_symbol.is_importable(True))
+
+    def test_non_existing_symbol(self):
+        imported_symbol = ImportedSymbol("non_existing_module", "",
+                                         __file__)
+        self.assertFalse(imported_symbol.is_importable())
+
+    def test_non_existing_module_path(self):
+        imported_symbol = ImportedSymbol("avocado.utils.non_existing",
+                                         "",
+                                         __file__)
+        self.assertFalse(imported_symbol.is_importable())

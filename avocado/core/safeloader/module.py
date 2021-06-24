@@ -14,7 +14,7 @@ class PythonModule:
     be used for, say, Python unittests.
     """
     __slots__ = ('path', 'klass_imports', 'mod_imports', 'mod',
-                 'module', 'klass', 'imported_symbols')
+                 'module', 'klass', 'imported_symbols', 'interesting_klass_found')
 
     def __init__(self, path, module='avocado', klass='Test'):
         """
@@ -39,6 +39,7 @@ class PythonModule:
         self.imported_symbols = {}
         with open(self.path) as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
+        self.interesting_klass_found = False
 
     def is_matching_klass(self, klass):
         """
@@ -100,25 +101,22 @@ class PythonModule:
         """
         Keeps track of symbol names and importable entities
         """
-        for name in statement.names:
+        for index, name in enumerate(statement.names):
             final_name = self._get_name_from_alias_statement(name)
-            # Currently, ImportedSymbol.from_statement() only supports the first
-            # symbol imported in the statement.  That's why where the final_name
-            # is used instead for the symbol, and the (correct) module comes
-            # from its utility method.
-            symbol_name = name.name if name.name else name.asname
-            module_name = ImportedSymbol.get_module_path_from_statement(statement)
-            self.imported_symbols[final_name] = ImportedSymbol(symbol_name,
-                                                               module_name,
-                                                               os.path.abspath(self.path))
+            imported_symbol = ImportedSymbol.from_statement(statement,
+                                                            os.path.abspath(self.path),
+                                                            index)
+            self.imported_symbols[final_name] = imported_symbol
 
     @staticmethod
     def _get_name_from_alias_statement(alias):
         """Returns the aliased name or original one."""
         return alias.asname if alias.asname else alias.name
 
-    def _handle_import_from(self, statement):
+    def _handle_import_from(self, statement, interesting_klass):
         self.add_imported_symbol(statement)
+        if interesting_klass in [name.name for name in statement.names]:
+            self.interesting_klass_found = True
         if statement.module != self.module:
             return
         name = get_statement_import_as(statement).get(self.klass, None)
@@ -145,14 +143,14 @@ class PythonModule:
                 if mod_name == self.module:
                     self.mod_imports.add(mod_name)
 
-    def iter_classes(self):
+    def iter_classes(self, interesting_klass=None):
         """
         Iterate through classes and keep track of imported avocado statements
         """
         for statement in self.mod.body:
             # Looking for a 'from <module> import <klass>'
             if isinstance(statement, ast.ImportFrom):
-                self._handle_import_from(statement)
+                self._handle_import_from(statement, interesting_klass)
 
             # Looking for a 'import <module>'
             elif isinstance(statement, ast.Import):

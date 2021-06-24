@@ -50,8 +50,7 @@ class Test8(Class8):
     pass
 
 
-# Incorrect syntax, but detecting is more complicated than necessary
-# as it should fail on load-time... Let's include it.
+# Incorrect syntax, should not be included
 class Test9(AsClass9):
     pass
 

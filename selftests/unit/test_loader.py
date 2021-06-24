@@ -375,7 +375,6 @@ class LoaderTest(unittest.TestCase):
                 ('Test5', 'selftests/.data/safeloader/data/imports.py:Test5.test'),
                 ('Test6', 'selftests/.data/safeloader/data/imports.py:Test6.test'),
                 ('Test8', 'selftests/.data/safeloader/data/imports.py:Test8.test'),
-                ('Test9', 'selftests/.data/safeloader/data/imports.py:Test9.test'),
                 ('Test10', 'selftests/.data/safeloader/data/imports.py:Test10.test')]
         self._check_discovery(exps, tests)
 
@@ -383,7 +382,17 @@ class LoaderTest(unittest.TestCase):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                             '.data', 'safeloader', 'data', 'dont_detect_non_avocado.py')
         tests = self.loader.discover(path)
-        self._check_discovery([], tests)
+        exps = [(test.PythonUnittest,
+                 'dont_detect_non_avocado.StaticallyNotAvocadoTest.test'),
+                (test.PythonUnittest,
+                 'dont_detect_non_avocado.StaticallyNotAvocadoTest.teststmpdir'),
+                (test.PythonUnittest,
+                 'dont_detect_non_avocado.NotTest.test2'),
+                (test.PythonUnittest,
+                 'dont_detect_non_avocado.NotTest.test'),
+                (test.PythonUnittest,
+                 'dont_detect_non_avocado.NotTest.teststmpdir')]
+        self._check_discovery(exps, tests)
 
     def test_infinite_recurse(self):
         """Checks we don't crash on infinite recursion"""
