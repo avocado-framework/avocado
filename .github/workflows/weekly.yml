@@ -1,0 +1,50 @@
+name: Weekly tests
+
+on:
+# Runs at 5:00 UTC on Mondays
+  schedule:
+    - cron: "0 5 * * 1"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  latest-python:
+    name: Linux with Python ${{ matrix.python-version }}
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        # see list of available Python versions at https://github.com/actions/python-versions/blob/main/versions-manifest.json
+        python-version: [3.10.0-beta.3]
+      fail-fast: false
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install dependencies
+        run: pip install -r requirements-selftests.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user
+      - name: Avocado version
+        run: avocado --version
+      - name: Avocado smoketest
+        run: python -m avocado run passtest.py
+      - name: Quick lint checks
+        run: python setup.py lint
+      - name: Tree static check, unittests and fast functional tests
+        env:
+          AVOCADO_LOG_DEBUG: "yes"
+          AVOCADO_CHECK_LEVEL: "1"
+        run: make check
+      - run: echo "🥑 This job's status is ${{ job.status }}."
