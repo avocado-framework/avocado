@@ -85,6 +85,16 @@ class Clean(clean):
 class Develop(setuptools.command.develop.develop):
     """Custom develop command."""
 
+    user_options = setuptools.command.develop.develop.user_options + [
+        ("external", None, "Install external plugins in development mode"),
+    ]
+
+    boolean_options = setuptools.command.develop.develop.boolean_options + ['external']
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.external = 0  # pylint: disable=W0201
+
     def run(self):
 
         # python setup.py develop --user --uninstall
@@ -99,6 +109,20 @@ class Develop(setuptools.command.develop.develop):
             elif self.uninstall:
                 walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"])
                 super().run()
+
+        # if we're working with external plugins
+        elif self.user and self.external:
+
+            d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
+            if (d is None or not os.path.exists(d)):
+                sys.exit("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't properly set")
+            if not os.path.isabs(d):
+                d = os.path.abspath(d)
+
+            if self.uninstall:
+                walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"], directory=d)
+            elif not self.uninstall:
+                walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"], directory=d)
 
         # other cases: do nothing and call parent function
         else:
