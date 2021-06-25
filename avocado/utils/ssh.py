@@ -253,7 +253,10 @@ class Session:
             cmd = path_utils.find_command('scp')
         except path_utils.CmdNotFoundError as exc:
             raise exc
-        options = self._dash_o_opts_to_str(self.DEFAULT_OPTIONS)
+        options = list(self.DEFAULT_OPTIONS)
+        if self.user is not None:  # Prevent failure from unspecified user
+            options.append(("User", self.user))
+        options = self._dash_o_opts_to_str(options)
         if recursive:
             options += ' -r'
         options += " {} {}".format(source, destination)
