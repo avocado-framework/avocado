@@ -104,12 +104,18 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             module_path, klass_method = runnable.uri.split(':', 1)
 
             klass, method = klass_method.split('.', 1)
+
+            # inject the run.test_parameters option in the Test params
+            # this handles the -p command-line argument
+            params = TreeNode().get_node("/", True)
+            params.value = dict(runnable.config.get('run.test_parameters', []))
+
             test_factory = [klass,
                             {'name': TestID(1, klass_method),
                              'methodName': method,
                              'config': runnable.config,
                              'modulePath': module_path,
-                             'params': (TreeNode(), []),
+                             'params': (params, ["/"]),
                              'tags': runnable.tags,
                              'run.results_dir': tempfile.mkdtemp(),
                              }]
