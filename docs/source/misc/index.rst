@@ -70,6 +70,18 @@ project, which is a framework that runs in pure CFEngine language, to
 help structure your CFEngine policy and provide reusable, single
 purpose components.
 
+POK
+~~~
+
+`POK <https://pok-kernel.github.io/>`__ is a real-time embedded
+operating system for safety-critical systems.
+
+It uses Avocado in its `unitary
+<https://github.com/pok-kernel/pok/tree/main/testsuite/unitary_tests>`__
+and `multiprocessing unitary
+<https://github.com/pok-kernel/pok/tree/main/testsuite/multiprocessing_unitary_tests>`__
+tests.
+
 Avocado extensions
 ------------------
 
