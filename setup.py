@@ -178,7 +178,7 @@ class Man(SimpleCommand):
             sys.exit("rst2man not found, I can't build the manpage")
 
         try:
-            run('{} man/avocado.rst man/avocado.1'.format(cmd), shell=True, check=True)
+            run([cmd, "man/avocado.rst", "man/avocado.1"], check=True)
         except CalledProcessError as e:
             print("Failed manpage build: ", e)
             sys.exit(128)
