@@ -2,6 +2,7 @@ import io
 
 from .. import nrunner
 from ..tapparser import TapParser, TestResult
+from .utils.messages import FinishedMessage
 
 
 class TAPRunner(nrunner.ExecRunner):
@@ -56,9 +57,8 @@ class TAPRunner(nrunner.ExecRunner):
 
     def _process_final_status(self, process,
                               stdout=None, stderr=None):  # pylint: disable=W0613
-        return self.prepare_status('finished',
-                                   {'result': self._get_tap_result(stdout),
-                                    'returncode': process.returncode})
+        return FinishedMessage.get(self._get_tap_result(stdout),
+                                   returncode=process.returncode)
 
 
 class RunnerApp(nrunner.BaseRunnerApp):

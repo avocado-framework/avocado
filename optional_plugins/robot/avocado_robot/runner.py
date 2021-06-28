@@ -24,6 +24,7 @@ import time
 from robot import run
 
 from avocado.core import nrunner
+from avocado.core.runners.utils import messages
 
 
 class RobotRunner(nrunner.BaseRunner):
@@ -57,16 +58,16 @@ class RobotRunner(nrunner.BaseRunner):
 
     def run(self):
         if not self.runnable.uri:
-            yield {'status': 'finished',
-                   'result': 'error',
-                   'output': 'uri is required but was not given'}
+            yield messages.FinishedMessage.get('error',
+                                               fail_reason='uri is required '
+                                                           'but was not given')
             return
 
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run,
                                           args=(self.runnable.uri, queue))
         process.start()
-        yield self.prepare_status('started')
+        yield messages.StartedMessage.get()
 
         most_current_execution_state_time = None
         while queue.empty():
@@ -78,9 +79,12 @@ class RobotRunner(nrunner.BaseRunner):
             if (most_current_execution_state_time is None or
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
-                yield self.prepare_status('running')
+                yield messages.RunningMessage.get()
 
-        yield queue.get()
+        status = queue.get()
+        yield messages.StdoutMessage.get(status['stdout'])
+        yield messages.StderrMessage.get(status['stderr'])
+        yield messages.FinishedMessage.get(status['result'])
 
 
 class RunnerApp(nrunner.BaseRunnerApp):

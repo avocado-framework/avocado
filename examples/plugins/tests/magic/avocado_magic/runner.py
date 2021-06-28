@@ -1,4 +1,5 @@
 from avocado.core import nrunner
+from avocado.core.runners.utils.messages import FinishedMessage, StartedMessage
 
 
 class MagicRunner(nrunner.BaseRunner):
@@ -21,12 +22,12 @@ class MagicRunner(nrunner.BaseRunner):
     """
 
     def run(self):
-        yield self.prepare_status('started')
+        yield StartedMessage.get()
         if self.runnable.uri in ['pass', 'fail']:
             result = self.runnable.uri
         else:
             result = 'error'
-        yield self.prepare_status('finished', {'result': result})
+        yield FinishedMessage.get(result)
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
