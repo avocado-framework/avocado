@@ -61,11 +61,10 @@ class PodmanSpawner(Spawner, SpawnerMixin):
     description = 'Podman (container) based spawner'
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
-    @staticmethod
-    def is_task_alive(runtime_task):
+    def is_task_alive(self, runtime_task):
         if runtime_task.spawner_handle is None:
             return False
-        podman_bin = settings.as_dict().get('spawner.podman.bin')
+        podman_bin = self.config.get('spawner.podman.bin')
         cmd = [podman_bin, "ps", "--all", "--format={{.State}}",
                "--filter=id=%s" % runtime_task.spawner_handle]
         process = subprocess.Popen(cmd,
@@ -148,10 +147,9 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         await proc.wait()
         return proc.returncode == 0
 
-    @staticmethod
-    async def wait_task(runtime_task):
+    async def wait_task(self, runtime_task):
         while True:
-            if not PodmanSpawner.is_task_alive(runtime_task):
+            if not self.is_task_alive(runtime_task):
                 return
             await asyncio.sleep(0.1)
 
