@@ -48,11 +48,10 @@ class Clean(clean):
         cleaning_list = ["MANIFEST", "BUILD", "BUILDROOT", "SPECS",
                          "RPMS", "SRPMS", "SOURCES", "PYPI_UPLOAD",
                          "./build", "./dist",
-                         "./man/avocado.1", "./docs/build",
-                         "/tmp/avocado/"]
+                         "./man/avocado.1", "./docs/build"]
 
-        cleaning_list += list(Path('/var/tmp/').glob(".avocado-task*"))
-        cleaning_list += list(Path('/var/tmp/').glob("avocado*"))
+        cleaning_list += list(Path('/tmp/').glob(".avocado-*"))
+        cleaning_list += list(Path('/var/tmp/').glob(".avocado-*"))
         cleaning_list += list(Path('.').rglob("*.egg-info"))
         cleaning_list += list(Path('.').rglob("*.pyc"))
         cleaning_list += list(Path('.').rglob("__pycache__"))
