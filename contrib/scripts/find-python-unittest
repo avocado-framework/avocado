@@ -38,6 +38,10 @@ def get_tests(suite):
 
 
 if __name__ == '__main__':
+    if sys.version_info < (3, 8, 0):
+        abs_path = os.path.abspath(__file__)
+        top_path = os.path.dirname(os.path.dirname(os.path.dirname(abs_path)))
+        sys.path.insert(0, top_path)
     test_module_paths = sys.argv[1:]
     result = []
     loader = unittest.TestLoader()
