@@ -5,7 +5,7 @@ from avocado.core.nrunner import Runnable
 from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolution
 from avocado.core.settings import SettingsError
-from selftests.utils import skipUnlessPathExists
+from selftests.utils import TestCaseTmpDir, skipUnlessPathExists
 
 BAD = """[kinds]
 tap = ./tests/*.t
@@ -18,13 +18,15 @@ uri = $testpath
 """
 
 
-class HintTest(unittest.TestCase):
+class HintTest(TestCaseTmpDir):
     def setUp(self):
-        self.wrong_file = tempfile.NamedTemporaryFile('w', delete=False)
+        super().setUp()
+
+        self.wrong_file = tempfile.NamedTemporaryFile('w', dir=self.tmpdir.name, delete=False)
         self.wrong_file.write(BAD)
         self.wrong_file.close()
 
-        self.good_file = tempfile.NamedTemporaryFile('w', delete=False)
+        self.good_file = tempfile.NamedTemporaryFile('w', dir=self.tmpdir.name, delete=False)
         self.good_file.write(GOOD)
         self.good_file.close()
 

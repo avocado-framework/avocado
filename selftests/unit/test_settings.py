@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 from avocado.core import settings
+from selftests.utils import TestCaseTmpDir
 
 example = """[foo]
 bar = default from file
@@ -12,10 +13,11 @@ non_registered = this should be ignored
 """
 
 
-class SettingsTest(unittest.TestCase):
+class SettingsTest(TestCaseTmpDir):
 
     def setUp(self):
-        self.config_file = tempfile.NamedTemporaryFile('w', delete=False)
+        super().setUp()
+        self.config_file = tempfile.NamedTemporaryFile('w', dir=self.tmpdir.name, delete=False)
         self.config_file.write(example)
         self.config_file.close()
 
@@ -146,6 +148,7 @@ class SettingsTest(unittest.TestCase):
 
     def tearDown(self):
         os.unlink(self.config_file.name)
+        super().tearDown()
 
 
 class ConfigOption(unittest.TestCase):
