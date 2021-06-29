@@ -25,7 +25,6 @@ from avocado.core.references import reference_split
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult, check_file)
 from avocado.core.safeloader import find_avocado_tests, find_python_unittests
-from avocado.core.settings import settings
 
 
 class ExecTestResolver(Resolver):
@@ -33,8 +32,7 @@ class ExecTestResolver(Resolver):
     name = 'exec-test'
     description = 'Test resolver for executable files to be handled as tests'
 
-    @staticmethod
-    def resolve(reference):
+    def resolve(self, reference):
 
         criteria_check = check_file(reference, reference, suffix=None,
                                     type_name='executable file',
@@ -43,13 +41,13 @@ class ExecTestResolver(Resolver):
         if criteria_check is not True:
             return criteria_check
 
+        runnable = Runnable('exec-test', reference, config=self.config)
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
-                                   [Runnable('exec-test', reference,
-                                             config=settings.as_dict(r'^runner\.'))])
+                                   [runnable])
 
 
-def python_resolver(name, reference, find_tests):
+def python_resolver(name, reference, find_tests, config):
     module_path, tests_filter = reference_split(reference)
     if tests_filter is not None:
         tests_filter = re.compile(tests_filter)
@@ -71,7 +69,7 @@ def python_resolver(name, reference, find_tests):
                                       uri=uri,
                                       tags=tags,
                                       requirements=reqs,
-                                      config=settings.as_dict(r'^runner\.')))
+                                      config=config))
     if runnables:
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
@@ -91,11 +89,11 @@ class PythonUnittestResolver(Resolver):
         """Used as compatibility for the :func:`python_resolver()` interface."""
         return find_python_unittests(module_path), None
 
-    @staticmethod
-    def resolve(reference):
+    def resolve(self, reference):
         return python_resolver(PythonUnittestResolver.name,
                                reference,
-                               PythonUnittestResolver._find_compat)
+                               PythonUnittestResolver._find_compat,
+                               self.config)
 
 
 class AvocadoInstrumentedResolver(Resolver):
@@ -103,11 +101,11 @@ class AvocadoInstrumentedResolver(Resolver):
     name = 'avocado-instrumented'
     description = 'Test resolver for Avocado Instrumented tests'
 
-    @staticmethod
-    def resolve(reference):
+    def resolve(self, reference):
         return python_resolver(AvocadoInstrumentedResolver.name,
                                reference,
-                               find_avocado_tests)
+                               find_avocado_tests,
+                               self.config)
 
 
 class TapResolver(Resolver):
@@ -115,8 +113,7 @@ class TapResolver(Resolver):
     name = 'tap'
     description = 'Test resolver for executable files to be handled as tests'
 
-    @staticmethod
-    def resolve(reference):
+    def resolve(self, reference):
 
         criteria_check = check_file(reference, reference, suffix=None,
                                     type_name='executable file',
@@ -125,7 +122,7 @@ class TapResolver(Resolver):
         if criteria_check is not True:
             return criteria_check
 
+        runnable = Runnable('tap', reference, cofig=self.config)
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
-                                   [Runnable('tap', reference,
-                                             config=settings.as_dict(r'^runner\.'))])
+                                   [runnable])
