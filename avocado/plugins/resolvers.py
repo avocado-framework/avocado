@@ -111,7 +111,7 @@ class AvocadoInstrumentedResolver(Resolver):
 class TapResolver(Resolver):
 
     name = 'tap'
-    description = 'Test resolver for executable files to be handled as tests'
+    description = 'Test resolver for executable files to be handled as TAP tests'
 
     def resolve(self, reference):
 
