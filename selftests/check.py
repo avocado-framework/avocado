@@ -540,7 +540,8 @@ def main():
         features = []
         for suite in suites:
             for variants in suite.config['run.dict_variants']:
-                features.append(variants['namespace'])
+                if variants.get('namespace'):
+                    features.append(variants['namespace'])
 
         unique_features = sorted(set(features))
         print('Features covered (%i):' % len(unique_features))
