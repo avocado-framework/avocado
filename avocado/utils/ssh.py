@@ -27,6 +27,13 @@ try:
 except path_utils.CmdNotFoundError:
     SSH_CLIENT_BINARY = None
 
+try:
+    #: The echo client binary to use, if one is found in the system
+    #: We do this because echo is used to pass the sudo password to ssh
+    ECHO_CLIENT_BINARY = path_utils.find_command('echo')
+except path_utils.CmdNotFoundError:
+    ECHO_CLIENT_BINARY = None
+
 
 class NWException(Exception):
     """
@@ -85,7 +92,7 @@ class Session:
         """
         return " ".join(["-o '%s=%s'" % (_[0], _[1]) for _ in opts])
 
-    def _ssh_cmd(self, dash_o_opts=(), opts=(), command=''):
+    def _ssh_cmd(self, dash_o_opts=(), opts=(), command='', sudo=False):
         cmd = self._dash_o_opts_to_str(dash_o_opts)
         if self.user is not None:
             cmd += " -l %s" % self.user
@@ -93,8 +100,12 @@ class Session:
                 cmd += " -i %s" % self.key
         if self.port is not None:
             cmd += " -p %s" % self.port
-        cmd = "%s %s %s %s '%s'" % (SSH_CLIENT_BINARY, cmd,
-                                    " ".join(opts), self.host, command)
+        pass_password = ""
+        if sudo and self.password is not None:
+            pass_password = "%s %s |" % (ECHO_CLIENT_BINARY, self.password)
+            cmd += " -tt"  # forces ssh to allocate a pseudo-tty
+        cmd = "%s %s %s %s %s '%s'" % (pass_password, SSH_CLIENT_BINARY, cmd,
+                                       " ".join(opts), self.host, command)
         return cmd
 
     def _master_connection(self):
@@ -183,7 +194,7 @@ class Session:
         if os.path.exists(control):
             return control
 
-    def get_raw_ssh_command(self, command):
+    def get_raw_ssh_command(self, command, sudo=False):
         """
         Returns the raw command that will be executed locally
 
@@ -193,13 +204,15 @@ class Session:
 
         :param command: the command to execute over the SSH session
         :type command: str
+        :param sudo: Whether to run the command using sudo or not.
+        :type sudo: bool
         :returns: The raw SSH command, that can be executed locally for
                   the execution of a remote command.
         :rtype: str
         """
-        return self._ssh_cmd(self.DEFAULT_OPTIONS, ('-q', ), command)
+        return self._ssh_cmd(self.DEFAULT_OPTIONS, ('-q', ), command, sudo=sudo)
 
-    def cmd(self, command, ignore_status=True):
+    def cmd(self, command, ignore_status=True, sudo=False):
         """
         Runs a command over the SSH session
 
@@ -211,12 +224,18 @@ class Session:
                               in case of either the command or ssh connection
                               returned with exit status other than zero.
         :type ignore_status: bool
+        :param sudo: Whether to run the command using sudo or not.
+        :type sudo: bool
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
+        if not command.startswith("sudo") and sudo:
+            command = "sudo " + command
         try:
-            return process.run(self.get_raw_ssh_command(command),
-                               ignore_status=ignore_status)
+            #: shell=sudo is used here because there are sometimes errors
+            #: when passing the password to subprocess otherwise
+            return process.run(self.get_raw_ssh_command(command, sudo=sudo),
+                               ignore_status=ignore_status, shell=sudo)
         except process.CmdError as exc:
             if exc.result.exit_status == 255:
                 exc.additional_text = 'SSH connection failed'

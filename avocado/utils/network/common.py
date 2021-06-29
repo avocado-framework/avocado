@@ -7,6 +7,4 @@ def run_command(command, host, sudo=False):
     if host.__class__.__name__ == 'LocalHost':
         return process.system_output(command, sudo=sudo).decode('utf-8')
 
-    if sudo:
-        command = "sudo {}".format(command)
-    return host.remote_session.cmd(command).stdout.decode('utf-8')
+    return host.remote_session.cmd(command, sudo=sudo).stdout.decode('utf-8')
