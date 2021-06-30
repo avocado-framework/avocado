@@ -61,11 +61,13 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             queue.put(early_state)
             instance.run_avocado()
             state = instance.get_state()
+            fail_reason = state.get('fail_reason')
             queue.put(messages.WhiteboardMessage.get(state['whiteboard']))
-            queue.put(messages.FinishedMessage.get(state['status'].lower()))
-        except Exception:
+            queue.put(messages.FinishedMessage.get(state['status'].lower(),
+                                                   fail_reason=fail_reason))
+        except Exception as e:
             queue.put(messages.StderrMessage.get(traceback.format_exc()))
-            queue.put(messages.FinishedMessage.get('error'))
+            queue.put(messages.FinishedMessage.get('error', fail_reason=str(e)))
 
     def run(self):
         yield messages.StartedMessage.get()
@@ -105,9 +107,9 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                         yield message
                     if message.get('status') == 'finished':
                         break
-        except Exception:
+        except Exception as e:
             yield messages.StderrMessage.get(traceback.format_exc())
-            yield messages.FinishedMessage.get('error')
+            yield messages.FinishedMessage.get('error', fail_reason=str(e))
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
