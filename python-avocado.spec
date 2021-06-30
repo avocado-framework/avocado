@@ -44,7 +44,6 @@ BuildRequires: kmod
 %if 0%{?fedora} >= 30
 BuildRequires: glibc-all-langpacks
 %endif
-BuildRequires: python3-jinja2
 BuildRequires: python3-devel
 BuildRequires: python3-docutils
 BuildRequires: python3-lxml
@@ -101,9 +100,6 @@ sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to
 %if 0%{?rhel}
 %endif
 %py3_build
-pushd optional_plugins/html
-%py3_build
-popd
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %py3_build
@@ -129,9 +125,6 @@ rst2man man/avocado.rst man/avocado.1
 %install
 %py3_install
 %{__mv} %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
-pushd optional_plugins/html
-%py3_install
-popd
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %py3_install
@@ -170,9 +163,6 @@ find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x 
 %check
 %if %{with_tests}
 %{__python3} setup.py develop --user --skip-optional-plugins
-pushd optional_plugins/html
-%{__python3} setup.py develop --user
-popd
 %if ! 0%{?rhel}
 pushd optional_plugins/resultsdb
 %{__python3} setup.py develop --user
@@ -198,7 +188,7 @@ popd
 # AVOCADO_CHECK_LEVEL: package build environments have the least
 # amount of resources we have observed so far.  Let's avoid tests that
 # require too much resources or are time sensitive
-PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/check.py --disable-static-checks --disable-plugin-checks=robot
+PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/check.py --disable-static-checks --disable-plugin-checks=robot --disable-plugin-checks=html
 %endif
 
 %files -n python3-%{srcname}
@@ -217,14 +207,12 @@ PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} 
 %{_bindir}/avocado-runner-requirement-package
 %{_bindir}/avocado-software-manager
 %{python3_sitelib}/avocado*
-%exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_resultsdb*
 %exclude %{python3_sitelib}/avocado_golang*
 %exclude %{python3_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_varianter_pict*
 %exclude %{python3_sitelib}/avocado_varianter_cit*
 %exclude %{python3_sitelib}/avocado_result_upload*
-%exclude %{python3_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %exclude %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
@@ -254,18 +242,6 @@ Common files (such as configuration) for the Avocado Testing Framework.
 %config(noreplace)%{_sysconfdir}/avocado/scripts/job/pre.d/README
 %config(noreplace)%{_sysconfdir}/avocado/scripts/job/post.d/README
 
-%package -n python3-%{srcname}-plugins-output-html
-Summary: Avocado HTML report plugin
-Requires: python3-%{srcname} == %{version}, python3-jinja2
-
-%description -n python3-%{srcname}-plugins-output-html
-Adds to avocado the ability to generate an HTML report at every job results
-directory. It also gives the user the ability to write a report on an
-arbitrary filesystem location.
-
-%files -n python3-%{srcname}-plugins-output-html
-%{python3_sitelib}/avocado_result_html*
-%{python3_sitelib}/avocado_framework_plugin_result_html*
 
 %if ! 0%{?rhel}
 %package -n python3-%{srcname}-plugins-resultsdb
@@ -377,6 +353,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Jun 30 2021 Ana Guerrero Lopez <ana@redhat.com> - 89.0-2
+- Remove HTML plugin package.
+
 * Fri Jul  9 2021 Cleber Rosa <crosa@redhat.com> - 89.0-1
 - Skip initialization of plugins previous to running test, as
   the supported plugins are already explicitly included
