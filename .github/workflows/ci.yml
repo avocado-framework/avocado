@@ -20,6 +20,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - name: Check out HTML plugin
+        uses: actions/checkout@v2
+        with:
+          repository: 'avocado-framework/avocado-result-html'
+          path: 'optional_plugins/html'
+          fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -56,6 +62,12 @@ jobs:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
       - name: Check out repository code
         uses: actions/checkout@v2
+      - name: Check out HTML plugin
+        uses: actions/checkout@v2
+        with:
+          repository: 'avocado-framework/avocado-result-html'
+          path: 'optional_plugins/html'
+          fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
