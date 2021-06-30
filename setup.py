@@ -105,6 +105,7 @@ class Linter(SimpleCommand):
             check_call('selftests/lint.sh')
             check_call('selftests/signedoff-check.sh')
             check_call('selftests/spell.sh')
+            check_call('selftests/modules-boundaries.sh')
         except CalledProcessError as e:
             print("Failed during lint checks: ", e)
             sys.exit(128)
