@@ -21,6 +21,7 @@ addons:
     - golang
 
 install:
+    - git clone https://github.com/avocado-framework/avocado-result-html optional_plugins/html
     - pip install -r requirements-selftests.txt
 
 script:
