@@ -128,7 +128,7 @@ class FileMessage(GenericRunningMessage):
 
     @classmethod
     def get(cls, msg, path):  # pylint: disable=W0221
-        super().get(msg=msg, path=path)
+        return super().get(msg=msg, path=path)
 
 
 _supported_types = {LogMessage.message_type: LogMessage,
