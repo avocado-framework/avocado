@@ -520,26 +520,6 @@ class OutputPluginTest(TestCaseTmpDir):
                          (expected_rc, result))
         self.assertEqual(result.stdout, b"")
 
-    def test_default_enabled_plugins(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--tap-include-logs passtest.py'
-                    % (AVOCADO, self.tmpdir.name))
-        result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout_text + result.stderr_text
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        output_lines = output.splitlines()
-        # The current human output produces 6 lines when running a single test,
-        # with an optional 7th line when the HTML report generation is enabled
-        self.assertGreaterEqual(len(output_lines), 6,
-                                ('Basic human interface did not produce the '
-                                 'expected output. Output produced: "%s"' % output))
-        second_line = output_lines[1]
-        debug_log = second_line.split()[-1]
-        self.check_output_files(debug_log)
-
     def test_verify_whiteboard_save(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         config = os.path.join(self.tmpdir.name, "conf.ini")
