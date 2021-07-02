@@ -6,11 +6,31 @@ from xml.dom import minidom
 
 from avocado.core import exit_codes
 from avocado.utils import genio, process
+from selftests.utils import AVOCADO
 
 
 class HtmlResultTest(unittest.TestCase):
+
     def setUp(self):
         self.tmpdir = tempfile.TemporaryDirectory(prefix='avocado_' + __name__)
+
+    def test_sysinfo_html_output(self):
+        html_output = "{}/output.html".format(self.tmpdir.name)
+        cmd_line = ('{} run --html {} --job-results-dir {} '
+                    'passtest.py'.format(AVOCADO, html_output,
+                                         self.tmpdir.name))
+        result = process.run(cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         'Avocado did not return rc %d:\n%s' % (expected_rc,
+                                                                result))
+        with open(html_output, 'rt') as fp:
+            output = fp.read()
+
+        # Try to find some strings on HTML
+        self.assertNotEqual(output.find('Filesystem'), -1)
+        self.assertNotEqual(output.find('root='), -1)
+        self.assertNotEqual(output.find('MemAvailable'), -1)
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)
