@@ -119,7 +119,7 @@ class ReportModel:
                                                    self.html_output_dir)
             formatted['logfile_basename'] = os.path.basename(logfile)
             formatted['time'] = "%.2f" % tst['time_elapsed']
-            local_time_start = time.localtime(tst['time_start'])
+            local_time_start = time.localtime(tst['actual_time_start'])
             formatted['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
                                                     local_time_start)
             formatted['row_class'] = mapping[tst['status']]
