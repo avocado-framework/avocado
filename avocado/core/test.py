@@ -51,6 +51,7 @@ COMMON_TMPDIR_NAME = 'AVOCADO_TESTS_COMMON_TMPDIR'
 TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
                          'status', 'running', 'paused',
                          'time_start', 'time_elapsed', 'time_end',
+                         'actual_time_start', 'actual_time_end',
                          'fail_reason', 'fail_class', 'traceback',
                          'tags', 'timeout', 'whiteboard', 'phase')
 
@@ -217,13 +218,17 @@ class Test(unittest.TestCase, TestData):
     #: Arbitrary string which will be stored in `$logdir/whiteboard` location
     #: when the test finishes.
     whiteboard = ''
-    #: (unix) time when the test started (could be forced from test)
+    #: (unix) time when the test started, monotonic (could be forced from test)
     time_start = -1
-    #: (unix) time when the test finished (could be forced from test)
+    #: (unix) time when the test finished, monotonic (could be forced from test)
     time_end = -1
     #: duration of the test execution (always recalculated from time_end -
     #: time_start
     time_elapsed = -1
+    #: (unix) time when the test started, actual one to be shown to users
+    actual_time_start = -1
+    #: (unix) time when the test finished, actual one to be shown to users
+    actual_time_end = -1
     #: Test timeout (the timeout from params takes precedence)
     timeout = None
 
@@ -520,10 +525,12 @@ class Test(unittest.TestCase, TestData):
         self.log.info('START %s', self.name)
         self.__running = True
         self.time_start = time.monotonic()
+        self.actual_time_start = time.time()
 
     def _tag_end(self):
         self.__running = False
         self.time_end = time.monotonic()
+        self.actual_time_end = time.time()
         # for consistency sake, always use the same stupid method
         self._update_time_elapsed(self.time_end)
 
