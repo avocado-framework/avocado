@@ -452,6 +452,12 @@ class ExecRunner(BaseRunner):
             current.update(self.runnable.kwargs)
             env = current
 
+        # inject the run.test_parameters option in the environment variables
+        # this handles the -p command-line argument
+        params = dict(self.runnable.config.get('run.test_parameters', []))
+        if params:
+            env.update(params)
+
         if env and 'PATH' not in env:
             env['PATH'] = os.environ.get('PATH')
         process = subprocess.Popen(
