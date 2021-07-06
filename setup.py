@@ -21,6 +21,7 @@ from distutils.command.clean import clean
 from pathlib import Path
 from subprocess import CalledProcessError, check_call, run
 
+import setuptools.command.develop
 from setuptools import Command, find_packages, setup
 
 # pylint: disable=E0611
@@ -36,6 +37,15 @@ def get_long_description():
               encoding='utf-8') as readme:
         readme_contents = readme.read()
     return readme_contents
+
+
+def walk_plugins_setup_py(action_name="UNNAMED", action=None,
+                          directory=os.path.join(BASE_PATH, "optional_plugins")):
+
+    for plugin in list(Path(directory).glob("*/setup.py")):
+        parent_dir = plugin.parent
+        print(">> {} {}".format(action_name, parent_dir))
+        run([sys.executable, "setup.py"] + action, cwd=parent_dir, check=True)
 
 
 class Clean(clean):
@@ -69,11 +79,54 @@ class Clean(clean):
 
     @staticmethod
     def clean_optional_plugins():
-        for plugin in list(Path(os.getcwd()).rglob("./optional_plugins/*/setup.py")):
-            parent_dir = plugin.parent
-            print(">> CLEANING {}".format(parent_dir))
-            run('{} setup.py clean --all'.format(sys.executable),
-                shell=True, cwd=parent_dir, check=True)
+        walk_plugins_setup_py(action_name="CLEANING", action=["clean", "--all"])
+
+
+class Develop(setuptools.command.develop.develop):
+    """Custom develop command."""
+
+    user_options = setuptools.command.develop.develop.user_options + [
+        ("external", None, "Install external plugins in development mode"),
+    ]
+
+    boolean_options = setuptools.command.develop.develop.boolean_options + ['external']
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.external = 0  # pylint: disable=W0201
+
+    def run(self):
+
+        # python setup.py develop --user --uninstall
+        # we uninstall the plugins before uninstalling avocado
+        if self.user and not self.external:
+            if not self.uninstall:
+                super().run()
+                walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"])
+
+        # python setup.py develop --user
+        # we install the plugins after installing avocado
+            elif self.uninstall:
+                walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"])
+                super().run()
+
+        # if we're working with external plugins
+        elif self.user and self.external:
+
+            d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
+            if (d is None or not os.path.exists(d)):
+                sys.exit("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't properly set")
+            if not os.path.isabs(d):
+                d = os.path.abspath(d)
+
+            if self.uninstall:
+                walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"], directory=d)
+            elif not self.uninstall:
+                walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"], directory=d)
+
+        # other cases: do nothing and call parent function
+        else:
+            super().run()
 
 
 class SimpleCommand(Command):
@@ -125,7 +178,7 @@ class Man(SimpleCommand):
             sys.exit("rst2man not found, I can't build the manpage")
 
         try:
-            run('{} man/avocado.rst man/avocado.1'.format(cmd), shell=True, check=True)
+            run([cmd, "man/avocado.rst", "man/avocado.1"], check=True)
         except CalledProcessError as e:
             print("Failed manpage build: ", e)
             sys.exit(128)
@@ -262,6 +315,7 @@ if __name__ == '__main__':
           test_suite='selftests',
           python_requires='>=3.6',
           cmdclass={'clean': Clean,
+                    'develop': Develop,
                     'lint': Linter,
                     'man': Man},
           install_requires=['setuptools'])

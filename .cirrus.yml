@@ -26,7 +26,7 @@ redhat_egg_task:
 
 debian_version_task:
     version_script:
-       - python3 --version || (apt update && apt -y install python3 python3-setuptools)
+       - python3 --version || (apt update && apt -y install python3 python3-setuptools ca-certificates)
        - python3 setup.py develop --user
        - python3 -m avocado --version
 
@@ -52,15 +52,6 @@ debian_egg_task:
           - image: debian:bullseye-20210621
           - image: ubuntu:18.04
           - image: ubuntu:20.04
-
-windows_smokecheck_task:
-    version_script:
-       - choco install -y python3 --version 3.9.0
-       - C:\Python39\python setup.py develop --user
-       - C:\Python39\python -m avocado --help
-       - C:\Python39\python -m avocado run --test-runner=nrunner examples\tests\passtest.py
-    windows_container:
-       image: cirrusci/windowsservercore:2019
 
 fedora_selftests_task:
     selftests_script:
