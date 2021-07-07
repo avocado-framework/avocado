@@ -21,19 +21,23 @@ def get_methods_info(statement_body, class_tags, class_requirements):
     """
     methods_info = []
     for st in statement_body:
-        if (isinstance(st, ast.FunctionDef) and
-                st.name.startswith('test')):
-            docstring = ast.get_docstring(st)
+        if not (isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef))):
+            continue
 
-            mt_tags = get_docstring_directives_tags(docstring)
-            mt_tags.update(class_tags)
+        if not st.name.startswith('test'):
+            continue
 
-            mt_requirements = get_docstring_directives_requirements(docstring)
-            mt_requirements.extend(class_requirements)
+        docstring = ast.get_docstring(st)
 
-            methods = [method for method, _, _ in methods_info]
-            if st.name not in methods:
-                methods_info.append((st.name, mt_tags, mt_requirements))
+        mt_tags = get_docstring_directives_tags(docstring)
+        mt_tags.update(class_tags)
+
+        mt_requirements = get_docstring_directives_requirements(docstring)
+        mt_requirements.extend(class_requirements)
+
+        methods = [method for method, _, _ in methods_info]
+        if st.name not in methods:
+            methods_info.append((st.name, mt_tags, mt_requirements))
 
     return methods_info
 

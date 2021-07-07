@@ -15,7 +15,7 @@ from avocado.plugins.spawners.process import ProcessSpawner as Spawner
 
 class StateMachine(TestCase):
 
-    def test(self):
+    async def test(self):
         number_of_tasks = 80
         number_of_workers = 8
 
@@ -26,9 +26,8 @@ class StateMachine(TestCase):
         status_repo = StatusRepo()
 
         state_machine = statemachine.TaskStateMachine(runtime_tasks, status_repo)
-        loop = asyncio.get_event_loop()
         workers = [statemachine.Worker(state_machine, spawner).run()
                    for _ in range(number_of_workers)]
 
-        loop.run_until_complete(asyncio.gather(*workers))
+        await asyncio.gather(*workers)
         self.assertEqual(number_of_tasks, len(state_machine.finished))
