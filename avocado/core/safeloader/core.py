@@ -129,6 +129,10 @@ def _get_attributes_for_further_examination(parent, module):
                 # We can't examine this parent (probably broken module)
                 raise ClassNotSuitable
 
+            # We currently don't support classes whose parents are generics
+            if isinstance(parent, ast.Subscript):
+                raise ClassNotSuitable
+
             parent_class = parent.attr
 
             # Special situation: in this case, because we know the parent
