@@ -134,6 +134,9 @@ class FinishMessageHandler(BaseMessageHandler):
 
     def handle(self, message, task, job):
         message.update(task.metadata)
+        # This parameter is required by the HTML plugin
+        message.update({'actual_time_start': job.actual_time_start})
+
         message['name'] = TestID.from_identifier(task.identifier)
         message['status'] = message.get('result').upper()
 

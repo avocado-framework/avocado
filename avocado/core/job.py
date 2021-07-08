@@ -162,6 +162,11 @@ class Job:
         #: The total amount of time the job took from start to finish,
         #: or `-1` if it has not been started by means of the `run()` method
         self.time_elapsed = -1
+        #: time when the test started, actual one to be shown to users
+        self.actual_time_start = -1
+        #: time when the test finished, actual one to be shown to users
+        self.actual_time_end = -1
+
         self.funcatexit = CallbackRegister("JobExit %s" % self.unique_id, LOG_JOB)
         self._stdout_stderr = None
         self.replay_sourcejob = self.config.get('replay_sourcejob')
@@ -571,6 +576,7 @@ class Job:
         assert self.tmpdir is not None, "Job.setup() not called"
         if self.time_start == -1:
             self.time_start = time.monotonic()
+            self.actual_time_start = time.time()
         try:
             self.result.tests_total = self.size
             pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
@@ -607,6 +613,7 @@ class Job:
             self.post_tests()
             if self.time_end == -1:
                 self.time_end = time.monotonic()
+                self.actual_time_end = time.time()
                 self.time_elapsed = self.time_end - self.time_start
             self.render_results()
             pre_post_dispatcher.map_method('post', self)
