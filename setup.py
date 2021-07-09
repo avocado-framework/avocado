@@ -39,8 +39,11 @@ def get_long_description():
     return readme_contents
 
 
-def walk_plugins_setup_py(action_name="UNNAMED", action=None,
+def walk_plugins_setup_py(action, action_name=None,
                           directory=os.path.join(BASE_PATH, "optional_plugins")):
+
+    if action_name is None:
+        action_name = action[0].upper()
 
     for plugin in list(Path(directory).glob("*/setup.py")):
         parent_dir = plugin.parent
@@ -79,7 +82,7 @@ class Clean(clean):
 
     @staticmethod
     def clean_optional_plugins():
-        walk_plugins_setup_py(action_name="CLEANING", action=["clean", "--all"])
+        walk_plugins_setup_py(["clean", "--all"])
 
 
 class Develop(setuptools.command.develop.develop):
@@ -100,6 +103,9 @@ class Develop(setuptools.command.develop.develop):
         action_options = []
         if self.uninstall:
             action_options.append('--uninstall')
+            action_name = "DEVELOP UNLINK"
+        else:
+            action_name = "DEVELOP LINK"
         if self.user:
             action_options.append('--user')
 
@@ -108,12 +114,14 @@ class Develop(setuptools.command.develop.develop):
         if self.user and not self.external:
             if not self.uninstall:
                 super().run()
-                walk_plugins_setup_py(action_name="LINK", action=["develop"] + action_options)
+                walk_plugins_setup_py(action=["develop"] + action_options,
+                                      action_name=action_name)
 
         # python setup.py develop --user
         # we install the plugins after installing avocado
             elif self.uninstall:
-                walk_plugins_setup_py(action_name="UNLINK", action=["develop"] + action_options)
+                walk_plugins_setup_py(action=["develop"] + action_options,
+                                      action_name=action_name)
                 super().run()
 
         # if we're working with external plugins
@@ -125,9 +133,11 @@ class Develop(setuptools.command.develop.develop):
             d = os.path.abspath(d)
 
             if self.uninstall:
-                walk_plugins_setup_py(action_name="UNLINK", action=["develop"] + action_options, directory=d)
+                walk_plugins_setup_py(action=["develop"] + action_options,
+                                      action_name=action_name, directory=d)
             elif not self.uninstall:
-                walk_plugins_setup_py(action_name="LINK", action=["develop"] + action_options, directory=d)
+                walk_plugins_setup_py(action=["develop"] + action_options,
+                                      action_name=action_name, directory=d)
 
         # other cases: do nothing and call parent function
         else:
