@@ -97,17 +97,23 @@ class Develop(setuptools.command.develop.develop):
 
     def run(self):
 
+        action_options = []
+        if self.uninstall:
+            action_options.append('--uninstall')
+        if self.user:
+            action_options.append('--user')
+
         # python setup.py develop --user --uninstall
         # we uninstall the plugins before uninstalling avocado
         if self.user and not self.external:
             if not self.uninstall:
                 super().run()
-                walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"])
+                walk_plugins_setup_py(action_name="LINK", action=["develop"] + action_options)
 
         # python setup.py develop --user
         # we install the plugins after installing avocado
             elif self.uninstall:
-                walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"])
+                walk_plugins_setup_py(action_name="UNLINK", action=["develop"] + action_options)
                 super().run()
 
         # if we're working with external plugins
@@ -119,9 +125,9 @@ class Develop(setuptools.command.develop.develop):
             d = os.path.abspath(d)
 
             if self.uninstall:
-                walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"], directory=d)
+                walk_plugins_setup_py(action_name="UNLINK", action=["develop"] + action_options, directory=d)
             elif not self.uninstall:
-                walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"], directory=d)
+                walk_plugins_setup_py(action_name="LINK", action=["develop"] + action_options, directory=d)
 
         # other cases: do nothing and call parent function
         else:
