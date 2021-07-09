@@ -90,13 +90,18 @@ class Develop(setuptools.command.develop.develop):
 
     user_options = setuptools.command.develop.develop.user_options + [
         ("external", None, "Install external plugins in development mode"),
+        ("skip-optional-plugins", None,
+         "Do not include in-tree optional plugins in development mode")
     ]
 
-    boolean_options = setuptools.command.develop.develop.boolean_options + ['external']
+    boolean_options = setuptools.command.develop.develop.boolean_options + [
+        'external',
+        'skip-optional-plugins']
 
     def initialize_options(self):
         super().initialize_options()
         self.external = 0  # pylint: disable=W0201
+        self.skip_optional_plugins = 0  # pylint: disable=W0201
 
     def run(self):
 
@@ -114,14 +119,16 @@ class Develop(setuptools.command.develop.develop):
         if self.user and not self.external:
             if not self.uninstall:
                 super().run()
-                walk_plugins_setup_py(action=["develop"] + action_options,
-                                      action_name=action_name)
+                if not self.skip_optional_plugins:
+                    walk_plugins_setup_py(action=["develop"] + action_options,
+                                          action_name=action_name)
 
         # python setup.py develop --user
         # we install the plugins after installing avocado
             elif self.uninstall:
-                walk_plugins_setup_py(action=["develop"] + action_options,
-                                      action_name=action_name)
+                if not self.skip_optional_plugins:
+                    walk_plugins_setup_py(action=["develop"] + action_options,
+                                          action_name=action_name)
                 super().run()
 
         # if we're working with external plugins
