@@ -116,8 +116,7 @@ class Develop(setuptools.command.develop.develop):
             d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
             if (d is None or not os.path.exists(d)):
                 sys.exit("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't properly set")
-            if not os.path.isabs(d):
-                d = os.path.abspath(d)
+            d = os.path.abspath(d)
 
             if self.uninstall:
                 walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"], directory=d)
