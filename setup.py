@@ -98,37 +98,49 @@ class Develop(setuptools.command.develop.develop):
         'external',
         'skip-optional-plugins']
 
-    def _walk_develop_plugins(self, action_name, action_options):
+    def _walk_develop_plugins(self):
         if not self.skip_optional_plugins:
-            walk_plugins_setup_py(action=["develop"] + action_options,
-                                  action_name=action_name)
+            walk_plugins_setup_py(action=["develop"] + self.action_options,
+                                  action_name=self.action_name)
+
+    @property
+    def action_options(self):
+        result = []
+        if self.uninstall:
+            result.append("--uninstall")
+        if self.user:
+            result.append("--user")
+        return result
+
+    @property
+    def action_name(self):
+        if self.uninstall:
+            return "DEVELOP UNLINK"
+        else:
+            return "DEVELOP LINK"
 
     def initialize_options(self):
         super().initialize_options()
         self.external = 0  # pylint: disable=W0201
         self.skip_optional_plugins = 0  # pylint: disable=W0201
 
-    def run(self):
-        action_options = []
-        if self.uninstall:
-            action_options.append('--uninstall')
-            action_name = "DEVELOP UNLINK"
-        else:
-            action_name = "DEVELOP LINK"
-        if self.user:
-            action_options.append('--user')
+    def handle_uninstall(self):
+        """When uninstalling, we remove the plugins before Avocado."""
+        self._walk_develop_plugins()
+        super().run()
 
+    def handle_install(self):
+        """When installing, we install plugins after installing Avocado."""
+        super().run()
+        self._walk_develop_plugins()
+
+    def run(self):
         # python setup.py develop --user [--uninstall]
         if self.user and not self.external:
-            # When installing, we install plugins after installing Avocado
             if not self.uninstall:
-                super().run()
-                self._walk_develop_plugins(action_name, action_options)
-
-            # When uninstalling, we remove the plugins before Avocado
+                self.handle_install()
             elif self.uninstall:
-                self._walk_develop_plugins(action_name, action_options)
-                super().run()
+                self.handle_uninstall()
 
         # if we're working with external plugins
         elif self.user and self.external:
@@ -138,8 +150,8 @@ class Develop(setuptools.command.develop.develop):
                 sys.exit("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't properly set")
             d = os.path.abspath(d)
 
-            walk_plugins_setup_py(action=["develop"] + action_options,
-                                  action_name=action_name, directory=d)
+            walk_plugins_setup_py(action=["develop"] + self.action_options,
+                                  action_name=self.action_name, directory=d)
 
         # other cases: do nothing and call parent function
         else:
