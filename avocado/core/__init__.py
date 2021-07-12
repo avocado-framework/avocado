@@ -94,7 +94,7 @@ def register_core_options():
                          help_msg=help_msg)
 
     help_msg = 'Base directory for Avocado tests and auxiliary data'
-    default = prepend_base_path('/var/lib/avocado')
+    default = prepend_base_path('~/avocado')
     stgs.register_option(section='datadir.paths',
                          key='base_dir',
                          key_type=prepend_base_path,
