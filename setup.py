@@ -98,13 +98,17 @@ class Develop(setuptools.command.develop.develop):
         'external',
         'skip-optional-plugins']
 
+    def _walk_develop_plugins(self, action_name, action_options):
+        if not self.skip_optional_plugins:
+            walk_plugins_setup_py(action=["develop"] + action_options,
+                                  action_name=action_name)
+
     def initialize_options(self):
         super().initialize_options()
         self.external = 0  # pylint: disable=W0201
         self.skip_optional_plugins = 0  # pylint: disable=W0201
 
     def run(self):
-
         action_options = []
         if self.uninstall:
             action_options.append('--uninstall')
@@ -114,21 +118,16 @@ class Develop(setuptools.command.develop.develop):
         if self.user:
             action_options.append('--user')
 
-        # python setup.py develop --user --uninstall
-        # we uninstall the plugins before uninstalling avocado
+        # python setup.py develop --user [--uninstall]
         if self.user and not self.external:
+            # When installing, we install plugins after installing Avocado
             if not self.uninstall:
                 super().run()
-                if not self.skip_optional_plugins:
-                    walk_plugins_setup_py(action=["develop"] + action_options,
-                                          action_name=action_name)
+                self._walk_develop_plugins(action_name, action_options)
 
-        # python setup.py develop --user
-        # we install the plugins after installing avocado
+            # When uninstalling, we remove the plugins before Avocado
             elif self.uninstall:
-                if not self.skip_optional_plugins:
-                    walk_plugins_setup_py(action=["develop"] + action_options,
-                                          action_name=action_name)
+                self._walk_develop_plugins(action_name, action_options)
                 super().run()
 
         # if we're working with external plugins
