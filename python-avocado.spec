@@ -169,7 +169,7 @@ find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x 
 
 %check
 %if %{with_tests}
-%{__python3} setup.py develop --user
+%{__python3} setup.py develop --user --skip-optional-plugins
 pushd optional_plugins/html
 %{__python3} setup.py develop --user
 popd
@@ -377,6 +377,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Jul  9 2021 Cleber Rosa <crosa@redhat.com> - 89.0-1
+- Skip initialization of plugins previous to running test, as
+  the supported plugins are already explicitly included
+
 * Mon Jun 21 2021 Cleber Rosa <cleber@redhat.com> - 89.0-1
 - New release
 

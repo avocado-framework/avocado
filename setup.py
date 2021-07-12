@@ -39,8 +39,11 @@ def get_long_description():
     return readme_contents
 
 
-def walk_plugins_setup_py(action_name="UNNAMED", action=None,
+def walk_plugins_setup_py(action, action_name=None,
                           directory=os.path.join(BASE_PATH, "optional_plugins")):
+
+    if action_name is None:
+        action_name = action[0].upper()
 
     for plugin in list(Path(directory).glob("*/setup.py")):
         parent_dir = plugin.parent
@@ -79,7 +82,7 @@ class Clean(clean):
 
     @staticmethod
     def clean_optional_plugins():
-        walk_plugins_setup_py(action_name="CLEANING", action=["clean", "--all"])
+        walk_plugins_setup_py(["clean", "--all"])
 
 
 class Develop(setuptools.command.develop.develop):
@@ -87,27 +90,45 @@ class Develop(setuptools.command.develop.develop):
 
     user_options = setuptools.command.develop.develop.user_options + [
         ("external", None, "Install external plugins in development mode"),
+        ("skip-optional-plugins", None,
+         "Do not include in-tree optional plugins in development mode")
     ]
 
-    boolean_options = setuptools.command.develop.develop.boolean_options + ['external']
+    boolean_options = setuptools.command.develop.develop.boolean_options + [
+        'external',
+        'skip-optional-plugins']
 
     def initialize_options(self):
         super().initialize_options()
         self.external = 0  # pylint: disable=W0201
+        self.skip_optional_plugins = 0  # pylint: disable=W0201
 
     def run(self):
+
+        action_options = []
+        if self.uninstall:
+            action_options.append('--uninstall')
+            action_name = "DEVELOP UNLINK"
+        else:
+            action_name = "DEVELOP LINK"
+        if self.user:
+            action_options.append('--user')
 
         # python setup.py develop --user --uninstall
         # we uninstall the plugins before uninstalling avocado
         if self.user and not self.external:
             if not self.uninstall:
                 super().run()
-                walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"])
+                if not self.skip_optional_plugins:
+                    walk_plugins_setup_py(action=["develop"] + action_options,
+                                          action_name=action_name)
 
         # python setup.py develop --user
         # we install the plugins after installing avocado
             elif self.uninstall:
-                walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"])
+                if not self.skip_optional_plugins:
+                    walk_plugins_setup_py(action=["develop"] + action_options,
+                                          action_name=action_name)
                 super().run()
 
         # if we're working with external plugins
@@ -116,13 +137,14 @@ class Develop(setuptools.command.develop.develop):
             d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
             if (d is None or not os.path.exists(d)):
                 sys.exit("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't properly set")
-            if not os.path.isabs(d):
-                d = os.path.abspath(d)
+            d = os.path.abspath(d)
 
             if self.uninstall:
-                walk_plugins_setup_py(action_name="UNLINK", action=["develop", "--uninstall", "--user"], directory=d)
+                walk_plugins_setup_py(action=["develop"] + action_options,
+                                      action_name=action_name, directory=d)
             elif not self.uninstall:
-                walk_plugins_setup_py(action_name="LINK", action=["develop", "--user"], directory=d)
+                walk_plugins_setup_py(action=["develop"] + action_options,
+                                      action_name=action_name, directory=d)
 
         # other cases: do nothing and call parent function
         else:
