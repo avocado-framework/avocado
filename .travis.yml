@@ -3,8 +3,6 @@ dist: focal
 language: python
 cache: pip
 arch:
-  - s390x
-  - ppc64le
   - arm64
 
 python:
