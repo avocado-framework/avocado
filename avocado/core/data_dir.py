@@ -89,8 +89,9 @@ def get_base_dir():
         * Data directory
         * Tests directory
     """
-    return _get_rw_dir(_get_settings_dir('base_dir'),
-                       SYSTEM_BASE_DIR, USER_BASE_DIR)
+    warnings.warn(("get_base_dir() is deprecated, get values from "
+                   "settings.as_dict() or self.config"), DeprecationWarning)
+    return settings.as_dict().get('datadir.paths.base_dir')
 
 
 def get_test_dir():
