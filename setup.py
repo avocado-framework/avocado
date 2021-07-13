@@ -119,6 +119,16 @@ class Develop(setuptools.command.develop.develop):
         else:
             return "DEVELOP LINK"
 
+    @property
+    def external_plugins_path(self):
+        try:
+            d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
+            if not os.path.exists(d):
+                return None
+            return os.path.abspath(d)
+        except TypeError:
+            return None
+
     def initialize_options(self):
         super().initialize_options()
         self.external = 0  # pylint: disable=W0201
@@ -134,28 +144,28 @@ class Develop(setuptools.command.develop.develop):
         super().run()
         self._walk_develop_plugins()
 
+    def handle_external(self):
+        """Handles only external plugins.
+
+        The current logic means that --external will not install Avocado.
+        """
+        d = self.external_plugins_path
+        if d is None:
+            msg = ("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't "
+                   "properly set")
+            sys.exit(msg)
+
+        walk_plugins_setup_py(action=["develop"] + self.action_options,
+                              action_name=self.action_name, directory=d)
+
     def run(self):
-        # python setup.py develop --user [--uninstall]
-        if self.user and not self.external:
+        if self.external:
+            self.handle_external()
+        else:
             if not self.uninstall:
                 self.handle_install()
             elif self.uninstall:
                 self.handle_uninstall()
-
-        # if we're working with external plugins
-        elif self.user and self.external:
-
-            d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
-            if (d is None or not os.path.exists(d)):
-                sys.exit("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't properly set")
-            d = os.path.abspath(d)
-
-            walk_plugins_setup_py(action=["develop"] + self.action_options,
-                                  action_name=self.action_name, directory=d)
-
-        # other cases: do nothing and call parent function
-        else:
-            super().run()
 
 
 class SimpleCommand(Command):
