@@ -60,8 +60,8 @@ def resolutions_to_runnables(resolutions, config):
     :type resolutions: list of :class:`avocado.core.resolver.ReferenceResolution`
     :param config: job configuration
     :type config: dict
-    :returns: the resolutions converted to tasks
-    :rtype: list of :class:`avocado.core.nrunner.Task`
+    :returns: the resolutions converted to runnables
+    :rtype: list of :class:`avocado.core.nrunner.Runnable`
     """
     result = []
     filter_by_tags = config.get("filter.by_tags.tags")

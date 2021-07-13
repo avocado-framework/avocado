@@ -749,7 +749,10 @@ class Task:
         #: will not be accounted for on a Job's test results.
         self.category = category
         self.status_services = []
+        status_uris = status_uris or self.runnable.config.get('nrunner.status_server_uri')
         if status_uris is not None:
+            if type(status_uris) is not list:
+                status_uris = [status_uris]
             for status_uri in status_uris:
                 self.status_services.append(TaskStatusService(status_uri))
         if known_runners is None:

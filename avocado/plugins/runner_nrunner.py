@@ -151,7 +151,7 @@ class Runner(RunnerInterface):
     description = 'nrunner based implementation of job compliant runner'
 
     @staticmethod
-    def _get_requirements_runtime_tasks(runnable, prefix, status_uris):
+    def _get_requirements_runtime_tasks(runnable, prefix):
         if runnable.requirements is None:
             return
 
@@ -172,10 +172,8 @@ class Runner(RunnerInterface):
                 requirement_runnable.kind = 'noop'
             # creates the requirement task
             requirement_task = nrunner.Task(requirement_runnable,
-                                            task_id,
-                                            status_uris,
-                                            None,
-                                            'requirement')
+                                            identifier=task_id,
+                                            category='requirement')
             # make sure we track the dependencies of a task
             # runtime_task.task.dependencies.add(requirement_task)
             # created the requirement runtime task
@@ -185,7 +183,7 @@ class Runner(RunnerInterface):
 
     @staticmethod
     def _create_runtime_tasks_for_test(test_suite, runnable, no_digits,
-                                       index, status_uris, variant):
+                                       index, variant):
         """Creates runtime tasks for both tests, and for its requirements."""
         result = []
         # test related operations
@@ -198,16 +196,16 @@ class Runner(RunnerInterface):
                          variant,
                          no_digits)
         # handles the test task
-        task = nrunner.Task(runnable, test_id, status_uris,
-                            nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
+        task = nrunner.Task(runnable,
+                            identifier=test_id,
+                            known_runners=nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
         runtime_task = RuntimeTask(task)
         result.append(runtime_task)
 
         # handles the requirements
         requirements_runtime_tasks = (
             Runner._get_requirements_runtime_tasks(runnable,
-                                                   prefix,
-                                                   status_uris))
+                                                   prefix))
         # extend the list of tasks with the requirements runtime tasks
         if requirements_runtime_tasks is not None:
             for requirement_runtime_task in requirements_runtime_tasks:
@@ -223,7 +221,6 @@ class Runner(RunnerInterface):
         runtime_tasks = []
         test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
         no_digits = len(str(test_result_total))
-        status_uris = [test_suite.config.get('nrunner.status_server_uri')]
         execution_order = test_suite.config.get('run.execution_order')
         if execution_order == "variants-per-test":
             for index, (runnable, variant) in enumerate(((test, variant)
@@ -235,7 +232,6 @@ class Runner(RunnerInterface):
                     runnable,
                     no_digits,
                     index,
-                    status_uris,
                     variant))
         elif execution_order == "tests-per-variant":
             for index, (runnable, variant) in enumerate(((test, variant)
@@ -247,7 +243,6 @@ class Runner(RunnerInterface):
                     runnable,
                     no_digits,
                     index,
-                    status_uris,
                     variant))
         return runtime_tasks
 
