@@ -136,6 +136,9 @@ def get_data_dir():
         * GPG files
         * VM images
         * Reference bitmaps
+
+    .. warning:: This method is deprecated, get values from
+                 settings.as_dict() or self.config
     """
     warnings.warn(("get_data_dir() is deprecated, get values from "
                    "settings.as_dict() or self.config"), DeprecationWarning)
@@ -158,6 +161,9 @@ def get_logs_dir():
     Get the most appropriate log dir location.
 
     The log dir is where we store job/test logs in general.
+
+    .. warning:: This method is deprecated, get values from
+                 settings.as_dict() or self.config
     """
     warnings.warn(("get_logs_dir() is deprecated, get values from "
                    "settings.as_dict() or self.config"), DeprecationWarning)
@@ -210,6 +216,9 @@ def get_cache_dirs():
     Returns the list of cache dirs, according to configuration and convention.
 
     This will be deprecated. Please use settings.as_dict() or self.config.
+
+    .. warning:: This method is deprecated, get values from
+                 settings.as_dict() or self.config
     """
     warnings.warn(("get_cache_dirs() is deprecated, get values from "
                    "settings.as_dict() or self.config"), DeprecationWarning)
