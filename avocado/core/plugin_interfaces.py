@@ -15,6 +15,8 @@
 
 import abc
 
+from .resolver import ResolverMixin
+
 
 class Plugin(abc.ABC):
     """Base for all plugins."""
@@ -216,7 +218,7 @@ class Varianter(Plugin):
         """
 
 
-class Resolver(Plugin):
+class Resolver(Plugin, ResolverMixin):
     """Base plugin interface for resolving test references into resolutions."""
 
     @abc.abstractmethod
@@ -234,7 +236,7 @@ class Resolver(Plugin):
         """
 
 
-class Discoverer(Plugin):
+class Discoverer(Plugin, ResolverMixin):
     """Base plugin interface for discovering tests without reference."""
 
     @abc.abstractmethod

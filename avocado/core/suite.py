@@ -170,7 +170,8 @@ class TestSuite:
                 hint = HintParser(hint_filepath)
             resolutions = resolve(references,
                                   hint=hint,
-                                  ignore_missing=ignore_missing)
+                                  ignore_missing=ignore_missing,
+                                  config=config)
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
 

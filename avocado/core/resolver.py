@@ -19,6 +19,7 @@ Test resolver module.
 import os
 from enum import Enum
 
+from .. import settings
 from .enabled_extension_manager import EnabledExtensionManager
 from .exceptions import JobTestSuiteReferenceResolutionError
 
@@ -80,6 +81,13 @@ class ReferenceResolution:
                           self.info, self.origin)
 
 
+class ResolverMixin:
+    """Common utilities for Resolver implementations."""
+
+    def __init__(self, config=None):
+        self.config = config or settings.as_dict()
+
+
 class Resolver(EnabledExtensionManager):
 
     """
@@ -95,8 +103,9 @@ class Resolver(EnabledExtensionManager):
         ReferenceResolutionResult.ERROR: ReferenceResolutionAction.CONTINUE
     }
 
-    def __init__(self):
-        super(Resolver, self).__init__('avocado.plugins.resolver')
+    def __init__(self, config=None):
+        super(Resolver, self).__init__('avocado.plugins.resolver',
+                                       invoke_kwds={'config': config})
 
     def resolve(self, reference):
         resolution = []
@@ -127,8 +136,9 @@ class Discoverer(EnabledExtensionManager):
     tests from different data according to active discoverer plugins.
     """
 
-    def __init__(self):
-        super(Discoverer, self).__init__('avocado.plugins.discoverer')
+    def __init__(self, config=None):
+        super(Discoverer, self).__init__('avocado.plugins.discoverer',
+                                         invoke_kwds={'config': config})
 
     def discover(self):
         resolutions = []
@@ -191,7 +201,7 @@ def _extend_directory(path):
     return paths
 
 
-def resolve(references, hint=None, ignore_missing=True):
+def resolve(references, hint=None, ignore_missing=True, config=None):
     resolutions = []
     hint_resolutions = []
     hint_references = {}
@@ -206,7 +216,7 @@ def resolve(references, hint=None, ignore_missing=True):
     if references:
         # should be initialized with args, to define the behavior
         # of this instance as a whole
-        resolver = Resolver()
+        resolver = Resolver(config)
         extended_references = []
         for reference in references:
             # a reference extender is not (yet?) an extensible feature
@@ -219,7 +229,7 @@ def resolve(references, hint=None, ignore_missing=True):
             else:
                 resolutions.extend(resolver.resolve(reference))
     else:
-        discoverer = Discoverer()
+        discoverer = Discoverer(config)
         resolutions.extend(discoverer.discover())
 
     # This came up from a previous method and can be refactored to improve
