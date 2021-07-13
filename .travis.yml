@@ -24,4 +24,54 @@ install:
     - pip install -r requirements-selftests.txt
 
 script:
-    - make check
+    - python3 setup.py lint
+    - python3 setup.py develop --user
+    - python3 selftests/check.py --disable-static-checks --disable-selftests-functional
+##    - python3 selftests/check.py --disable-static-checks --disable-selftests-jobs --disable-selftests-unit --disable-selftests-nrunner --disable-selftests-optional-plugins --disable-plugin-checks html
+# Instead:
+    - avocado run --test-runner=runner selftests/functional/test_requirements_cache.py
+    - avocado run --test-runner=nrunner selftests/functional/test_requirements_cache.py
+    - avocado run --test-runner=nrunner selftests/functional/test_argument_parsing.py
+    - avocado run --test-runner=nrunner selftests/functional/test_export_variables.py
+    - avocado run --test-runner=nrunner selftests/functional/test_fetch_asset.py
+    - avocado run --test-runner=nrunner selftests/functional/test_getdata.py
+    - avocado run --test-runner=nrunner selftests/functional/test_interrupt.py
+    - avocado run --test-runner=nrunner selftests/functional/test_job_api_features.py
+    - avocado run --test-runner=nrunner selftests/functional/test_job_timeout.py
+    - avocado run --test-runner=nrunner selftests/functional/test_journal.py
+    - avocado run --test-runner=nrunner selftests/functional/test_json_variants.py
+    - avocado run --test-runner=nrunner selftests/functional/test_legacy_replay_basic.py
+    - avocado run --test-runner=nrunner selftests/functional/test_legacy_replay_external_runner.py
+    - avocado run --test-runner=nrunner selftests/functional/test_legacy_replay_failfast.py
+    - avocado run --test-runner=nrunner selftests/functional/test_list.py
+    - avocado run --test-runner=nrunner selftests/functional/test_loader.py
+    - avocado run --test-runner=nrunner selftests/functional/test_lv_utils.py
+    - avocado run --test-runner=nrunner selftests/functional/test_nrunner_interface.py
+    - avocado run --test-runner=nrunner selftests/functional/test_nrunner.py
+    - avocado run --test-runner=nrunner selftests/functional/test_output_check.py
+    - avocado run --test-runner=nrunner selftests/functional/test_output.py
+    - avocado run --test-runner=nrunner selftests/functional/test_replay.py
+    - avocado run --test-runner=nrunner selftests/functional/test_requirements_cache.py
+    - avocado run --test-runner=nrunner selftests/functional/test_requirements.py
+    - avocado run --test-runner=nrunner selftests/functional/test_resolver.py
+    - avocado run --test-runner=nrunner selftests/functional/test_runner_requirement_asset.py
+    - avocado run --test-runner=nrunner selftests/functional/test_runner_requirement_package.py
+    - avocado run --test-runner=nrunner selftests/functional/test_skiptests.py
+    - avocado run --test-runner=nrunner selftests/functional/test_software_manager.py
+    - avocado run --test-runner=nrunner selftests/functional/test_statuses.py
+    - avocado run --test-runner=nrunner selftests/functional/test_streams.py
+    - avocado run --test-runner=nrunner selftests/functional/test_sysinfo.py
+    - avocado run --test-runner=nrunner selftests/functional/test_task_statemachine.py
+    - avocado run --test-runner=nrunner selftests/functional/test_task_timeout.py
+    - avocado run --test-runner=nrunner selftests/functional/test_teststmpdir.py
+    - avocado run --test-runner=nrunner selftests/functional/test_thirdparty_bugs.py
+    - avocado run --test-runner=nrunner selftests/functional/test_unittest_compat.py
+    - avocado run --test-runner=nrunner selftests/functional/test_utils_asset.py
+    - avocado run --test-runner=nrunner selftests/functional/test_utils.py
+    - avocado run --test-runner=nrunner selftests/functional/test_wrapper.py
+    - avocado run --test-runner=nrunner selftests/functional/plugin/test_assets.py
+    - avocado run --test-runner=nrunner selftests/functional/plugin/test_diff.py
+    - avocado run --test-runner=nrunner selftests/functional/plugin/test_jobscripts.py
+    - avocado run --test-runner=nrunner selftests/functional/plugin/test_logs.py
+    - avocado run --test-runner=nrunner selftests/functional/plugin/test_vmimage.py
+    - avocado run --test-runner=nrunner --nrunner-max-parallel-tasks=6 selftests/functional/test_basic.py
