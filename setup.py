@@ -98,57 +98,74 @@ class Develop(setuptools.command.develop.develop):
         'external',
         'skip-optional-plugins']
 
+    def _walk_develop_plugins(self):
+        if not self.skip_optional_plugins:
+            walk_plugins_setup_py(action=["develop"] + self.action_options,
+                                  action_name=self.action_name)
+
+    @property
+    def action_options(self):
+        result = []
+        if self.uninstall:
+            result.append("--uninstall")
+        if self.user:
+            result.append("--user")
+        return result
+
+    @property
+    def action_name(self):
+        if self.uninstall:
+            return "DEVELOP UNLINK"
+        else:
+            return "DEVELOP LINK"
+
+    @property
+    def external_plugins_path(self):
+        try:
+            d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
+            if not os.path.exists(d):
+                return None
+            return os.path.abspath(d)
+        except TypeError:
+            return None
+
     def initialize_options(self):
         super().initialize_options()
         self.external = 0  # pylint: disable=W0201
         self.skip_optional_plugins = 0  # pylint: disable=W0201
 
+    def handle_uninstall(self):
+        """When uninstalling, we remove the plugins before Avocado."""
+        self._walk_develop_plugins()
+        super().run()
+
+    def handle_install(self):
+        """When installing, we install plugins after installing Avocado."""
+        super().run()
+        self._walk_develop_plugins()
+
+    def handle_external(self):
+        """Handles only external plugins.
+
+        The current logic means that --external will not install Avocado.
+        """
+        d = self.external_plugins_path
+        if d is None:
+            msg = ("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't "
+                   "properly set")
+            sys.exit(msg)
+
+        walk_plugins_setup_py(action=["develop"] + self.action_options,
+                              action_name=self.action_name, directory=d)
+
     def run(self):
-
-        action_options = []
-        if self.uninstall:
-            action_options.append('--uninstall')
-            action_name = "DEVELOP UNLINK"
+        if self.external:
+            self.handle_external()
         else:
-            action_name = "DEVELOP LINK"
-        if self.user:
-            action_options.append('--user')
-
-        # python setup.py develop --user --uninstall
-        # we uninstall the plugins before uninstalling avocado
-        if self.user and not self.external:
             if not self.uninstall:
-                super().run()
-                if not self.skip_optional_plugins:
-                    walk_plugins_setup_py(action=["develop"] + action_options,
-                                          action_name=action_name)
-
-        # python setup.py develop --user
-        # we install the plugins after installing avocado
+                self.handle_install()
             elif self.uninstall:
-                if not self.skip_optional_plugins:
-                    walk_plugins_setup_py(action=["develop"] + action_options,
-                                          action_name=action_name)
-                super().run()
-
-        # if we're working with external plugins
-        elif self.user and self.external:
-
-            d = os.getenv('AVOCADO_EXTERNAL_PLUGINS_PATH')
-            if (d is None or not os.path.exists(d)):
-                sys.exit("The variable AVOCADO_EXTERNAL_PLUGINS_PATH isn't properly set")
-            d = os.path.abspath(d)
-
-            if self.uninstall:
-                walk_plugins_setup_py(action=["develop"] + action_options,
-                                      action_name=action_name, directory=d)
-            elif not self.uninstall:
-                walk_plugins_setup_py(action=["develop"] + action_options,
-                                      action_name=action_name, directory=d)
-
-        # other cases: do nothing and call parent function
-        else:
-            super().run()
+                self.handle_uninstall()
 
 
 class SimpleCommand(Command):
