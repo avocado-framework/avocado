@@ -2,7 +2,6 @@ import glob
 import json
 import os
 import re
-import shutil
 import signal
 import tempfile
 import time
@@ -16,6 +15,7 @@ from avocado.core import exit_codes
 from avocado.utils import astring, genio
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
+from avocado.utils.network import find_free_port
 from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
                              python_module_available, skipOnLevelsInferiorThan,
                              skipUnlessPathExists, temp_dir_prefix)
@@ -517,30 +517,6 @@ class RunnerOperationTest(TestCaseTmpDir):
         finally:
             avocado_process.wait()
 
-    def test_dry_run(self):
-        examples_path = os.path.join('examples', 'tests')
-        passtest = os.path.join(examples_path, 'passtest.py')
-        failtest = os.path.join(examples_path, 'failtest.py')
-        gendata = os.path.join(examples_path, 'gendata.py')
-        cmd = ("%s run --test-runner=nrunner --disable-sysinfo --dry-run "
-               "--dry-run-no-cleanup --json - -- %s %s %s " % (AVOCADO,
-                                                               passtest,
-                                                               failtest,
-                                                               gendata))
-        number_of_tests = 3
-        result = json.loads(process.run(cmd).stdout_text)
-        debuglog = result['debuglog']
-        # Remove the result dir
-        shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
-        self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
-        self.assertEqual(result['job_id'], u'0' * 40)
-        # Check if all tests were skipped
-        self.assertEqual(result['cancel'], number_of_tests)
-        for i in range(number_of_tests):
-            test = result['tests'][i]
-            self.assertEqual(test['fail_reason'],
-                             u'Test cancelled due to --dry-run')
-
     def test_invalid_python(self):
         test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),
                                   INVALID_PYTHON_TEST)
@@ -599,6 +575,43 @@ class RunnerOperationTest(TestCaseTmpDir):
             test_log_path = os.path.join(test_log_dir, 'debug.log')
             with open(test_log_path, 'rb') as test_log:
                 self.assertIn(b'SHOULD BE ON debug.log', test_log.read())
+
+
+class DryRunTest(TestCaseTmpDir):
+
+    def setUp(self):
+        super(DryRunTest, self).setUp()
+        status_server = '127.0.0.1:%u' % find_free_port()
+        self.config_file = script.TemporaryScript(
+            'avocado.conf',
+            ("[nrunner]\n"
+             "status_server_listen = %s\n"
+             "status_server_uri = %s\n") % (status_server, status_server))
+        self.config_file.save()
+
+    def test_dry_run(self):
+        examples_path = os.path.join('examples', 'tests')
+        passtest = os.path.join(examples_path, 'passtest.py')
+        failtest = os.path.join(examples_path, 'failtest.py')
+        gendata = os.path.join(examples_path, 'gendata.py')
+        cmd = ("%s --config %s run --test-runner=nrunner --disable-sysinfo --dry-run "
+               "--dry-run-no-cleanup --json - -- %s %s %s " % (AVOCADO,
+                                                               self.config_file.path,
+                                                               passtest,
+                                                               failtest,
+                                                               gendata))
+        number_of_tests = 3
+        result = json.loads(process.run(cmd).stdout_text)
+        # Check if all tests were skipped
+        self.assertEqual(result['cancel'], number_of_tests)
+        for i in range(number_of_tests):
+            test = result['tests'][i]
+            self.assertEqual(test['fail_reason'],
+                             u'Test cancelled due to --dry-run')
+
+    def tearDown(self):
+        super(DryRunTest, self).tearDown()
+        self.config_file.remove()
 
 
 class RunnerHumanOutputTest(TestCaseTmpDir):
