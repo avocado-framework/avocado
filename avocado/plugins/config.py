@@ -100,7 +100,7 @@ class Config(CLICmd):
             LOG_UI.debug("file to customize values")
             LOG_UI.debug('')
             LOG_UI.info('Avocado Data Directories:')
-            LOG_UI.debug('   base    %s', data_dir.get_base_dir())
+            LOG_UI.debug('   base    %s', config.get('datadir.paths.base_dir'))
             LOG_UI.debug('   tests   %s', data_dir.get_test_dir())
             LOG_UI.debug('   data    %s', config.get('datadir.paths.data_dir'))
             LOG_UI.debug('   logs    %s', config.get('datadir.paths.logs_dir'))
