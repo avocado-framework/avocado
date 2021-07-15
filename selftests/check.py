@@ -2,7 +2,9 @@
 
 import argparse
 import glob
+import multiprocessing
 import os
+import platform
 import sys
 
 from avocado import Test
@@ -563,6 +565,14 @@ def main():
     # ========================================================================
     config = {'core.show': ['app'],
               'run.test_runner': 'nrunner'}
+
+    # Workaround for travis problem on arm64 - https://github.com/avocado-framework/avocado/issues/4768
+    if (platform.machine() == 'aarch64'):
+        max_parallel = int(multiprocessing.cpu_count()/2)
+        for suite in suites:
+            if suite.name == 'check':
+                suite.config['nrunner.max_parallel_tasks'] = max_parallel
+
     with Job(config, suites) as j:
         exit_code = j.run()
     print_failed_tests(j.get_failed_tests())
