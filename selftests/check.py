@@ -199,6 +199,9 @@ def parse_args():
     parser.add_argument('--disable-plugin-checks',
                         help='Disable checks for a plugin (by directory name)',
                         action='append', default=[])
+    parser.add_argument('--parallel-tasks',
+                        help='Set the maximum parallel tasks for testing',
+                        type=int)
     return parser.parse_args()
 
 
@@ -563,6 +566,10 @@ def main():
     # ========================================================================
     config = {'core.show': ['app'],
               'run.test_runner': 'nrunner'}
+    if args.parallel_tasks:
+        for suite in suites:
+            suite.config['nrunner.max_parallel_tasks'] = args.parallel_tasks
+        config['nrunner.max_parallel_tasks'] = args.parallel_tasks
     with Job(config, suites) as j:
         exit_code = j.run()
     print_failed_tests(j.get_failed_tests())
