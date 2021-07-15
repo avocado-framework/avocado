@@ -24,4 +24,8 @@ install:
     - pip install -r requirements-selftests.txt
 
 script:
-    - make check
+    - python -c "import multiprocessing; print(multiprocessing.cpu_count())"
+    - python3 setup.py lint
+    - python3 setup.py develop --user
+    - python3 selftests/check.py --disable-static-checks --disable-selftests-functional
+    - python3 selftests/check.py --disable-static-checks --disable-selftests-jobs --disable-selftests-unit --disable-selftests-nrunner --disable-selftests-optional-plugins --half-cpus
