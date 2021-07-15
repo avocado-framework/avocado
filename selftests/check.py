@@ -2,6 +2,7 @@
 
 import argparse
 import glob
+import multiprocessing
 import os
 import sys
 
@@ -214,7 +215,9 @@ def parse_args():
     parser.add_argument('--disable-selftests-optional-plugins',
                         help='Disable optional_plugins/*/tests/',
                         action='store_true')
-
+    parser.add_argument('--half-cpus',
+                        help='Only use half of the CPUS',
+                        action='store_true')
     return parser.parse_args()
 
 
@@ -587,6 +590,12 @@ def main():
     # ========================================================================
     config = {'core.show': ['app'],
               'run.test_runner': 'nrunner'}
+
+    if args.half_cpus:
+        max_parallel = int(multiprocessing.cpu_count()/2)
+        for suite in suites:
+            suite.config['nrunner.max_parallel_tasks'] = max_parallel
+
     with Job(config, suites) as j:
         exit_code = j.run()
     print_failed_tests(j.get_failed_tests())
