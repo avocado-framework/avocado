@@ -228,6 +228,9 @@ class LogMessageHandler(BaseRunningMessageHandler):
         This assumes that the log message will not contain a newline, and thus
         one is explicitly added here.
         """
+        if task.metadata.get('logfile') is None:
+            task.metadata['logfile'] = os.path.join(task.metadata['task_path'],
+                                                    'debug.log')
         self._save_message_to_file('debug.log', message['log'], task,
                                    message.get('encoding', None))
 
