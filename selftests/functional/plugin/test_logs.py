@@ -2,6 +2,7 @@ import os
 
 from avocado.core import exit_codes
 from avocado.utils import process, script
+from avocado.utils.network import find_free_port
 from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir
 
 CONFIG = """[job.output.testlogs]
@@ -64,13 +65,27 @@ class TestLogsFilesUI(TestCaseTmpDir):
 
 class TestLogging(TestCaseTmpDir):
 
+    def setUp(self):
+        super(TestLogging, self).setUp()
+        status_server = '127.0.0.1:%u' % find_free_port()
+        self.config_file = script.TemporaryScript(
+            'avocado.conf',
+            ("[nrunner]\n"
+             "status_server_listen = %s\n"
+             "status_server_uri = %s\n") % (status_server, status_server))
+        self.config_file.save()
+
     def test_job_log(self):
         pass_test = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
-        cmd_line = ('%s run --job-results-dir %s --test-runner=nrunner %s' %
-                    (AVOCADO, self.tmpdir.name, pass_test))
+        cmd_line = ('%s --config %s run --job-results-dir %s --test-runner=nrunner %s' %
+                    (AVOCADO, self.config_file.path, self.tmpdir.name, pass_test))
         process.run(cmd_line)
         log_file = os.path.join(self.tmpdir.name, 'latest', 'job.log')
         with open(log_file, 'r') as fp:
             log = fp.read()
         self.assertIn('passtest.py:PassTest.test: STARTED', log)
         self.assertIn('passtest.py:PassTest.test: PASS', log)
+
+    def tearDown(self):
+        super(TestLogging, self).tearDown()
+        self.config_file.remove()
