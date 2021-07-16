@@ -14,6 +14,10 @@ setup_avocado_loggers()
 
 KEEP_METHODS_ORDER = '''
 from avocado import Test
+from collections.abs import Sequence
+
+class NotATest(Sequence[None]):
+    pass
 
 class MyClass(Test):
     def test2(self):
