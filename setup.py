@@ -19,7 +19,7 @@ import sys
 from abc import abstractmethod
 from distutils.command.clean import clean
 from pathlib import Path
-from subprocess import CalledProcessError, check_call, run
+from subprocess import CalledProcessError, run
 
 import setuptools.command.develop
 from setuptools import Command, find_packages, setup
@@ -191,13 +191,13 @@ class Linter(SimpleCommand):
 
     def run(self):
         try:
-            check_call('selftests/inspekt-indent.sh')
-            check_call('selftests/inspekt-style.sh')
-            check_call('selftests/isort.sh')
-            check_call('selftests/lint.sh')
-            check_call('selftests/signedoff-check.sh')
-            check_call('selftests/spell.sh')
-            check_call('selftests/modules-boundaries.sh')
+            run(['selftests/inspekt-indent.sh'], check=True)
+            run(['selftests/inspekt-style.sh'], check=True)
+            run(['selftests/isort.sh'], check=True)
+            run(['selftests/lint.sh'], check=True)
+            run(['selftests/signedoff-check.sh'], check=True)
+            run(['selftests/spell.sh'], check=True)
+            run(['selftests/modules-boundaries.sh'], check=True)
         except CalledProcessError as e:
             print("Failed during lint checks: ", e)
             sys.exit(128)
