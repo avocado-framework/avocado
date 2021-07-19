@@ -201,6 +201,22 @@ def parse_args():
     parser.add_argument('--disable-plugin-checks',
                         help='Disable checks for a plugin (by directory name)',
                         action='append', default=[])
+    parser.add_argument('--disable-selftests-nrunner-interface',
+                        help='Disable selftests/functional/test_nrunner_interface.py',
+                        action='store_true')
+    parser.add_argument('--disable-selftests-unit',
+                        help='Disable selftests/unit/',
+                        action='store_true')
+    parser.add_argument('--disable-selftests-jobs',
+                        help='Disable selftests/jobs/',
+                        action='store_true')
+    parser.add_argument('--disable-selftests-functional',
+                        help='Disable selftests/functional/',
+                        action='store_true')
+    parser.add_argument('--disable-selftests-optional-plugins',
+                        help='Disable optional_plugins/*/tests/',
+                        action='store_true')
+
     return parser.parse_args()
 
 
@@ -504,17 +520,24 @@ def create_suites(args):
         config_nrunner_interface['run.dict_variants'].append({
             'runner': 'avocado-runner-robot'})
 
-    suites.append(TestSuite.from_config(config_nrunner_interface,
-                                        "nrunner-interface"))
+    if not args.disable_selftests_nrunner_interface:
+        suites.append(TestSuite.from_config(config_nrunner_interface, "nrunner-interface"))
 
     # ========================================================================
     # Run all static checks, unit and functional tests
     # ========================================================================
+
+    selftests = []
+    if not args.disable_selftests_unit:
+        selftests.append('selftests/unit/')
+    if not args.disable_selftests_jobs:
+        selftests.append('selftests/jobs/')
+    if not args.disable_selftests_functional:
+        selftests.append('selftests/functional/')
+
     status_server = '127.0.0.1:%u' % find_free_port()
     config_check = {
-        'run.references': ['selftests/jobs/',
-                           'selftests/unit/',
-                           'selftests/functional/'],
+        'run.references': selftests,
         'run.test_runner': 'nrunner',
         'nrunner.status_server_listen': status_server,
         'nrunner.status_server_uri': status_server,
@@ -525,11 +548,12 @@ def create_suites(args):
     if not args.disable_static_checks:
         config_check['run.references'] += glob.glob('selftests/*.sh')
 
-    for optional_plugin in glob.glob('optional_plugins/*'):
-        plugin_name = os.path.basename(optional_plugin)
-        if plugin_name not in args.disable_plugin_checks:
-            pattern = '%s/tests/*' % optional_plugin
-            config_check['run.references'] += glob.glob(pattern)
+    if not args.disable_selftests_optional_plugins:
+        for optional_plugin in glob.glob('optional_plugins/*'):
+            plugin_name = os.path.basename(optional_plugin)
+            if plugin_name not in args.disable_plugin_checks:
+                pattern = '%s/tests/*' % optional_plugin
+                config_check['run.references'] += glob.glob(pattern)
 
     suites.append(TestSuite.from_config(config_check, "check"))
     return suites
