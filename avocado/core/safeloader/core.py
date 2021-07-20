@@ -382,9 +382,12 @@ def find_python_tests(target_module, target_class, determine_match, path):
     return result, disabled
 
 
-def _determine_match_avocado(module, klass, docstring):
+def _determine_match_python(module, klass, docstring):
     """
-    Implements the match check for Avocado Instrumented Tests
+    Implements the match check for all Python based test classes
+
+    Meaning that the enable/disabled/recursive tags are respected for
+    Avocado Instrumented Tests and Python unittests.
     """
     directives = get_docstring_directives(docstring)
     if 'disable' in directives:
@@ -398,19 +401,10 @@ def _determine_match_avocado(module, klass, docstring):
 
 
 def find_avocado_tests(path):
-    return find_python_tests('avocado', 'Test', _determine_match_avocado, path)
-
-
-def _determine_match_unittest(module, klass,
-                              docstring):  # pylint: disable=W0613
-    """
-    Implements the match check for Python Unittests
-    """
-    return module.is_matching_klass(klass)
+    return find_python_tests('avocado', 'Test', _determine_match_python, path)
 
 
 def find_python_unittests(path):
     found, _ = find_python_tests('unittest', 'TestCase',
-                                 _determine_match_unittest,
-                                 path)
+                                 _determine_match_python, path)
     return found
