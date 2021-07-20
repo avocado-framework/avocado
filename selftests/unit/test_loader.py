@@ -382,17 +382,7 @@ class LoaderTest(unittest.TestCase):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                             '.data', 'safeloader', 'data', 'dont_detect_non_avocado.py')
         tests = self.loader.discover(path)
-        exps = [(test.PythonUnittest,
-                 'dont_detect_non_avocado.StaticallyNotAvocadoTest.test'),
-                (test.PythonUnittest,
-                 'dont_detect_non_avocado.StaticallyNotAvocadoTest.teststmpdir'),
-                (test.PythonUnittest,
-                 'dont_detect_non_avocado.NotTest.test2'),
-                (test.PythonUnittest,
-                 'dont_detect_non_avocado.NotTest.test'),
-                (test.PythonUnittest,
-                 'dont_detect_non_avocado.NotTest.teststmpdir')]
-        self._check_discovery(exps, tests)
+        self._check_discovery([], tests)
 
     def test_infinite_recurse(self):
         """Checks we don't crash on infinite recursion"""
