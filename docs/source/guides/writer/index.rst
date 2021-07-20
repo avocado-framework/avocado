@@ -11,3 +11,4 @@ Avocado Test Writer's Guide
    chapters/parameters
    chapters/libs
    chapters/subclassing
+   chapters/integrating
