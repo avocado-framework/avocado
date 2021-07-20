@@ -18,6 +18,7 @@ Contains the base test implementation, used as a base for the actual
 framework tests.
 """
 
+import asyncio
 import inspect
 import io
 import logging
@@ -769,7 +770,11 @@ class Test(unittest.TestCase, TestData):
         else:
             try:
                 self.__phase = 'TEST'
-                testMethod()
+                if inspect.iscoroutinefunction(testMethod):
+                    loop = asyncio.get_event_loop()
+                    loop.run_until_complete(testMethod())
+                else:
+                    testMethod()
             except exceptions.TestCancel as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise
