@@ -247,6 +247,7 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
             logger = job.log
         else:
             logger = None
+        candidates = []
         for suite in job.test_suites:
             for test in suite.tests:
                 # ignore nrunner/resolver based test suites that contain
@@ -254,12 +255,17 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
                 # completely different from the traditional job runner
                 if isinstance(test, Runnable):
                     continue
+
                 # fetch assets only on instrumented tests
                 if isinstance(test[0], str):
-                    fetch_assets(test[1]['modulePath'],
+                    candidate = (test[1]['modulePath'],
                                  test[0],
-                                 test[1]['methodName'],
-                                 logger)
+                                 test[1]['methodName'])
+                    if candidate not in candidates:
+                        candidates.append(candidate)
+
+        for candidate in candidates:
+            fetch_assets(*candidate, logger)
 
 
 class Assets(CLICmd):
