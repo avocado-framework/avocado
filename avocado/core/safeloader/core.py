@@ -388,7 +388,7 @@ def _determine_match_avocado(module, klass, docstring):
     """
     directives = get_docstring_directives(docstring)
     if 'disable' in directives:
-        return True
+        return False
     if 'enable' in directives:
         return True
     if 'recursive' in directives:
