@@ -13,6 +13,7 @@
 # Authors: Jan Richter <jarichte@redhat.com>
 
 import os
+import time
 
 from .test_id import TestID
 
@@ -104,6 +105,7 @@ class StartMessageHandler(BaseMessageHandler):
                     'base_path': base_path,
                     'task_path': task_path,
                     'time_start': message['time'],
+                    'actual_time_start': time.time(),
                     'name': task_id}
         if task.category == 'test':
             job.result.start_test(metadata)
@@ -141,6 +143,7 @@ class FinishMessageHandler(BaseMessageHandler):
         time_end = message['time']
         time_elapsed = time_end - time_start
         message['time_end'] = time_end
+        message['actual_time_end'] = time.time()
         message['time_elapsed'] = time_elapsed
 
         message['logdir'] = task.metadata['task_path']
