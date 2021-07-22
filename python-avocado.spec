@@ -1,5 +1,3 @@
-%global srcname avocado
-
 # Conditional for release vs. snapshot builds. Set to 1 for release build.
 %if ! 0%{?rel_build:1}
     %global rel_build 1
@@ -7,7 +5,7 @@
 
 # Settings used for build from snapshots.
 %if 0%{?rel_build}
-    %global gittar          %{srcname}-%{version}.tar.gz
+    %global gittar          avocado-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
         %global commit      87d40d3e84b505e8e7c56912d62910d084aa9d3d
@@ -17,7 +15,7 @@
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
-    %global gittar          %{srcname}-%{shortcommit}.tar.gz
+    %global gittar          avocado-%{shortcommit}.tar.gz
 %endif
 
 # Selftests are provided but may need to be skipped because many of
@@ -27,23 +25,20 @@
 %global with_tests 1
 
 Summary: Framework with tools and libraries for Automated Testing
-Name: python-%{srcname}
+Name: python-avocado
 Version: 89.0
-Release: 1%{?gitrel}%{?dist}
-License: GPLv2
-Group: Development/Tools
-URL: http://avocado-framework.github.io/
+Release: 2%{?gitrel}%{?dist}
+License: GPLv2+ and GPLv2 and MIT
+URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
-Source0: https://github.com/avocado-framework/%{srcname}/archive/%{version}.tar.gz#/%{gittar}
+Source0: https://github.com/avocado-framework/avocado/archive/%{version}/%{gittar}
 %else
-Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.gz#/%{gittar}
+Source0: https://github.com/avocado-framework/avocado/archive/%{commit}/%{gittar}
 %endif
 BuildArch: noarch
 BuildRequires: procps-ng
 BuildRequires: kmod
-%if 0%{?fedora} >= 30
 BuildRequires: glibc-all-langpacks
-%endif
 BuildRequires: python3-jinja2
 BuildRequires: python3-devel
 BuildRequires: python3-docutils
@@ -71,34 +66,30 @@ BuildRequires: perl-Test-Harness
 Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
 
-%package -n python3-%{srcname}
+%package -n python3-avocado
 Summary: %{summary}
-Requires: python3-%{srcname}-common == %{version}
+Requires: python3-avocado-common == %{version}-%{release}
 Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
-Requires: python3
-Requires: python3-setuptools
 %if ! 0%{?rhel}
 Requires: python3-pycdlib
 %endif
 
-%description -n python3-%{srcname}
+%description -n python3-avocado
 Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
 
 %prep
 %if 0%{?rel_build}
-%setup -q -n %{srcname}-%{version}
+%setup -q -n avocado-%{version}
 %else
-%setup -q -n %{srcname}-%{commit}
+%setup -q -n avocado-%{commit}
 %endif
 
 %build
 %if 0%{?rhel}
 sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
-%endif
-%if 0%{?rhel}
 %endif
 %py3_build
 pushd optional_plugins/html
@@ -128,7 +119,7 @@ rst2man man/avocado.rst man/avocado.1
 
 %install
 %py3_install
-%{__mv} %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
+mv %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
 pushd optional_plugins/html
 %py3_install
 popd
@@ -152,58 +143,44 @@ popd
 pushd optional_plugins/result_upload
 %py3_install
 popd
-%{__mkdir} -p %{buildroot}%{_mandir}/man1
-%{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
-%{__install} -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
-%{__install} -d -m 0755 %{buildroot}%{_docdir}/avocado
-%{__cp} -r examples/gdb-prerun-scripts %{buildroot}%{_docdir}/avocado
-%{__cp} -r examples/plugins %{buildroot}%{_docdir}/avocado
-%{__cp} -r examples/tests %{buildroot}%{_docdir}/avocado
-%{__cp} -r examples/wrappers %{buildroot}%{_docdir}/avocado
-%{__cp} -r examples/yaml_to_mux %{buildroot}%{_docdir}/avocado
-%{__cp} -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
-%{__cp} -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
-find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec %{__chmod} -c -x {} ';'
-%{__mkdir} -p %{buildroot}%{_libexecdir}/avocado
-%{__mv} %{buildroot}%{python3_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
+mkdir -p %{buildroot}%{_mandir}/man1
+install -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
+mkdir -p %{buildroot}%{_pkgdocdir}
+install -m 0644 README.rst %{buildroot}%{_pkgdocdir}
+install -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
+install -d -m 0755 %{buildroot}%{_docdir}/avocado
+cp -r examples/gdb-prerun-scripts %{buildroot}%{_docdir}/avocado
+cp -r examples/plugins %{buildroot}%{_docdir}/avocado
+cp -r examples/tests %{buildroot}%{_docdir}/avocado
+cp -r examples/wrappers %{buildroot}%{_docdir}/avocado
+cp -r examples/yaml_to_mux %{buildroot}%{_docdir}/avocado
+cp -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
+cp -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
+find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec chmod -c -x {} ';'
+mkdir -p %{buildroot}%{_libexecdir}/avocado
+mv %{buildroot}%{python3_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
+# adjust permissions for file containing shebang line needed for
+# spawning tasks in podman containers
+chmod -c +x %{buildroot}%{python3_sitelib}/avocado/core/nrunner.py
 
-%check
 %if %{with_tests}
-%{__python3} setup.py develop --user --skip-optional-plugins
-pushd optional_plugins/html
-%{__python3} setup.py develop --user
-popd
-%if ! 0%{?rhel}
-pushd optional_plugins/resultsdb
-%{__python3} setup.py develop --user
-popd
-%endif
-pushd optional_plugins/varianter_yaml_to_mux
-%{__python3} setup.py develop --user
-popd
-pushd optional_plugins/golang
-%{__python3} setup.py develop --user
-popd
-pushd optional_plugins/varianter_pict
-%{__python3} setup.py develop --user
-popd
-pushd optional_plugins/varianter_cit
-%{__python3} setup.py develop --user
-popd
-pushd optional_plugins/result_upload
-%{__python3} setup.py develop --user
-popd
+%check
 # LANG: to make the results predictable, we pin the language
 # that is used during test execution.
 # AVOCADO_CHECK_LEVEL: package build environments have the least
 # amount of resources we have observed so far.  Let's avoid tests that
 # require too much resources or are time sensitive
-PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/check.py --disable-static-checks --disable-plugin-checks=robot
+PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
+    PYTHONPATH=%{buildroot}%{python3_sitelib}:. \
+    LANG=en_US.UTF-8 \
+    AVOCADO_CHECK_LEVEL=0 \
+    %{python3} selftests/check.py --disable-static-checks --disable-plugin-checks=robot
 %endif
 
-%files -n python3-%{srcname}
+%files -n python3-avocado
 %defattr(-,root,root,-)
-%doc README.rst LICENSE
+%license LICENSE
+%{_pkgdocdir}/README.rst
 %{_bindir}/avocado
 %{_bindir}/avocado-runner
 %{_bindir}/avocado-runner-noop
@@ -233,13 +210,15 @@ PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} 
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python3_sitelib}/tests*
 
-%package -n python3-%{srcname}-common
+%package -n python3-avocado-common
 Summary: Avocado common files
+License: GPLv2+
 
-%description -n python3-%{srcname}-common
+%description -n python3-avocado-common
 Common files (such as configuration) for the Avocado Testing Framework.
 
-%files -n python3-%{srcname}-common
+%files -n python3-avocado-common
+%license LICENSE
 %{_mandir}/man1/avocado.1.gz
 %dir %{_sysconfdir}/avocado
 %dir %{_sysconfdir}/avocado/sysinfo
@@ -254,108 +233,118 @@ Common files (such as configuration) for the Avocado Testing Framework.
 %config(noreplace)%{_sysconfdir}/avocado/scripts/job/pre.d/README
 %config(noreplace)%{_sysconfdir}/avocado/scripts/job/post.d/README
 
-%package -n python3-%{srcname}-plugins-output-html
+%package -n python3-avocado-plugins-output-html
 Summary: Avocado HTML report plugin
-Requires: python3-%{srcname} == %{version}, python3-jinja2
+License: GPLv2+ and MIT
+Requires: python3-avocado == %{version}-%{release}
+Requires: python3-jinja2
 
-%description -n python3-%{srcname}-plugins-output-html
+%description -n python3-avocado-plugins-output-html
 Adds to avocado the ability to generate an HTML report at every job results
 directory. It also gives the user the ability to write a report on an
 arbitrary filesystem location.
 
-%files -n python3-%{srcname}-plugins-output-html
+%files -n python3-avocado-plugins-output-html
 %{python3_sitelib}/avocado_result_html*
 %{python3_sitelib}/avocado_framework_plugin_result_html*
 
 %if ! 0%{?rhel}
-%package -n python3-%{srcname}-plugins-resultsdb
+%package -n python3-avocado-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
-Requires: python3-%{srcname} == %{version}
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
 Requires: python3-resultsdb_api
 
-%description -n python3-%{srcname}-plugins-resultsdb
+%description -n python3-avocado-plugins-resultsdb
 Allows Avocado to send job results directly to a ResultsDB
 server.
 
-%files -n python3-%{srcname}-plugins-resultsdb
+%files -n python3-avocado-plugins-resultsdb
 %{python3_sitelib}/avocado_resultsdb*
 %{python3_sitelib}/avocado_framework_plugin_resultsdb*
 %endif
 
-%package -n python3-%{srcname}-plugins-varianter-yaml-to-mux
+%package -n python3-avocado-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
-Requires: python3-%{srcname} == %{version}
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
 Requires: python3-yaml
 
-%description -n python3-%{srcname}-plugins-varianter-yaml-to-mux
+%description -n python3-avocado-plugins-varianter-yaml-to-mux
 Can be used to produce multiple test variants with test parameters
 defined in a yaml file(s).
 
-%files -n python3-%{srcname}-plugins-varianter-yaml-to-mux
+%files -n python3-avocado-plugins-varianter-yaml-to-mux
 %{python3_sitelib}/avocado_varianter_yaml_to_mux*
 %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 
-%package -n python3-%{srcname}-plugins-golang
+%package -n python3-avocado-plugins-golang
 Summary: Avocado Plugin for Execution of golang tests
-Requires: python3-%{srcname} == %{version}
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
 Requires: golang
 
-%description -n python3-%{srcname}-plugins-golang
+%description -n python3-avocado-plugins-golang
 Allows Avocado to list golang tests, and if golang is installed,
 also run them.
 
-%files -n python3-%{srcname}-plugins-golang
+%files -n python3-avocado-plugins-golang
 %{python3_sitelib}/avocado_golang*
 %{python3_sitelib}/avocado_framework_plugin_golang*
 %{_bindir}/avocado-runner-golang
 
-%package -n python3-%{srcname}-plugins-varianter-pict
+%package -n python3-avocado-plugins-varianter-pict
 Summary: Varianter with combinatorial capabilities by PICT
-Requires: python3-%{srcname} == %{version}
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
 
-%description -n python3-%{srcname}-plugins-varianter-pict
+%description -n python3-avocado-plugins-varianter-pict
 This plugin uses a third-party tool to provide variants created by
 Pair-Wise algorithms, also known as Combinatorial Independent Testing.
 
-%files -n python3-%{srcname}-plugins-varianter-pict
+%files -n python3-avocado-plugins-varianter-pict
 %{python3_sitelib}/avocado_varianter_pict*
 %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
 
-%package -n python3-%{srcname}-plugins-varianter-cit
+%package -n python3-avocado-plugins-varianter-cit
 Summary: Varianter with Combinatorial Independent Testing capabilities
-Requires: python3-%{srcname} == %{version}
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
 
-%description -n python3-%{srcname}-plugins-varianter-cit
+%description -n python3-avocado-plugins-varianter-cit
 A varianter plugin that generates variants using Combinatorial
 Independent Testing (AKA Pair-Wise) algorithm developed in
 collaboration with CVUT Prague.
 
-%files -n python3-%{srcname}-plugins-varianter-cit
+%files -n python3-avocado-plugins-varianter-cit
 %{python3_sitelib}/avocado_varianter_cit*
 %{python3_sitelib}/avocado_framework_plugin_varianter_cit*
 
-%package -n python3-%{srcname}-plugins-result-upload
+%package -n python3-avocado-plugins-result-upload
 Summary: Avocado Plugin to propagate Job results to a remote host
-Requires: python3-%{srcname} == %{version}
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
 
-%description -n python3-%{srcname}-plugins-result-upload
+%description -n python3-avocado-plugins-result-upload
 This optional plugin is intended to upload the Avocado Job results to
 a dedicated sever.
 
-%files -n python3-%{srcname}-plugins-result-upload
+%files -n python3-avocado-plugins-result-upload
 %{python3_sitelib}/avocado_result_upload*
 %{python3_sitelib}/avocado_framework_plugin_result_upload*
 
-%package -n python3-%{srcname}-examples
+%package -n python3-avocado-examples
 Summary: Avocado Test Framework Example Tests
-Requires: python3-%{srcname} == %{version}
+License: GPLv2+
+Requires: python3-avocado == %{version}-%{release}
 
-%description -n python3-%{srcname}-examples
+%description -n python3-avocado-examples
 The set of example tests present in the upstream tree of the Avocado framework.
 Some of them are used as functional tests of the framework, others serve as
 examples of how to write tests on your own.
 
-%files -n python3-%{srcname}-examples
+%files -n python3-avocado-examples
+%license LICENSE
 %dir %{_docdir}/avocado
 %{_docdir}/avocado/gdb-prerun-scripts
 %{_docdir}/avocado/plugins
@@ -365,21 +354,22 @@ examples of how to write tests on your own.
 %{_docdir}/avocado/varianter_pict
 %{_docdir}/avocado/varianter_cit
 
-%package -n python3-%{srcname}-bash
+%package -n python3-avocado-bash
 Summary: Avocado Test Framework Bash Utilities
-Requires: python3-%{srcname} == %{version}
+License: GPLv2+ and GPLv2
+Requires: python3-avocado == %{version}-%{release}
 
-%description -n python3-%{srcname}-bash
+%description -n python3-avocado-bash
 A small set of utilities to interact with Avocado from the Bourne
 Again Shell code (and possibly other similar shells).
 
-%files -n python3-%{srcname}-bash
+%files -n python3-avocado-bash
+%license LICENSE
 %{_libexecdir}/avocado*
 
 %changelog
-* Fri Jul  9 2021 Cleber Rosa <crosa@redhat.com> - 89.0-1
-- Skip initialization of plugins previous to running test, as
-  the supported plugins are already explicitly included
+* Mon Jun 28 2021 Merlin Mathesius <mmathesi@redhat.com> - 89.0-2
+- Spec file cleanup identified during downstream package review.
 
 * Mon Jun 21 2021 Cleber Rosa <cleber@redhat.com> - 89.0-1
 - New release
