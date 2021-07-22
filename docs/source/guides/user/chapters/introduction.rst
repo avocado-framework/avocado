@@ -154,6 +154,13 @@ Avocado will run each one as a ``TAP`` test, as you desired.
 .. note:: Also, note that hint files are only supported when using the next
    runner (``--test-runner='nrunner'``).
 
+Since Avocado's next runner is capable of running tests not only in a
+subprocess but also in more isolated environments such as Podman containers,
+sending custom environment variables to the task executor can be achieved by
+using the ``kwargs`` parameter. Use a comma-separated list of variables here
+and Avocado will make sure your tests will receive those variables (regardless
+of the spawner type).
+
 Ignoring missing test references
 --------------------------------
 
