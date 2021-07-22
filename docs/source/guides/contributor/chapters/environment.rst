@@ -48,10 +48,8 @@ specific plugin's maintainer recommendations.
 
 Plugins that are developed by the Avocado team, will try to follow the
 same Setuptools standard for distributing the packages. Because of that,
-as a facility, you can use ``make requirements-plugins`` from the main
-Avocado project to install requirements of the plugins and ``make
-develop-external`` to install plugins in develop mode to. You just need
-to set where your plugins are installed, by using the environment
+you can use ``make develop-external`` to install plugins in develop mode to.
+You just need to set where your plugins are installed, by using the environment
 variable ``$AVOCADO_EXTERNAL_PLUGINS_PATH``. The workflow could be::
 
     $ cd $AVOCADO_PROJECTS_DIR
@@ -59,8 +57,9 @@ variable ``$AVOCADO_EXTERNAL_PLUGINS_PATH``. The workflow could be::
     $ git clone $AVOCADO_PROJECT2
     $ # Add more projects
     $ cd avocado    # go into the main Avocado project dir
-    $ make requirements-plugins
     $ export AVOCADO_EXTERNAL_PLUGINS_PATH=$AVOCADO_PROJECTS_DIR
     $ make develop-external
 
-You should see the process and status of each directory.
+You should see the process and status of each directory. This process
+will also handle plugins requirements automatically if they're
+defined in the ``setup.py` of every plugin.

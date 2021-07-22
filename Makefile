@@ -31,7 +31,6 @@ all:
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements-selftests:  Install runtime and selftests requirements"
-	@echo "requirements-plugins:    Install plugins requirements"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
 	@echo "source:       Create single source package with commit info, suitable for RPMs"
@@ -96,14 +95,6 @@ clean:
 uninstall:
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
 
-requirements-plugins:
-	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS);do\
-		if test -f $$PLUGIN/Makefile; then echo ">> REQUIREMENTS (Makefile) $$PLUGIN"; AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN requirements &>/dev/null;\
-		elif test -f $$PLUGIN/requirements.txt; then echo ">> REQUIREMENTS (requirements.txt) $$PLUGIN"; pip install $(PYTHON_DEVELOP_ARGS) -r $$PLUGIN/requirements.txt;\
-		else echo ">> SKIP $$PLUGIN";\
-		fi;\
-	done;
-
 requirements-selftests: pip
 	- $(PYTHON) -m pip install -r requirements-selftests.txt
 
@@ -153,4 +144,4 @@ propagate-version:
 		else echo ">> Skipping $$DIR"; fi;\
 	done
 
-.PHONY: source source-pypi wheel pypi install clean uninstall requirements-plugins requirements-selftests smokecheck check develop develop-external propagate-version variables
+.PHONY: source source-pypi wheel pypi install clean uninstall requirements-selftests smokecheck check develop develop-external propagate-version variables
