@@ -269,6 +269,43 @@ class Man(SimpleCommand):
             sys.exit(128)
 
 
+class Plugin(SimpleCommand):
+    """Handle plugins"""
+
+    description = 'Handle plugins'
+    user_options = [
+        ("list", 'l', "List available plugins"),
+        ("install=", 'i', "Plugin to install"),
+        ("user", 'u', "User install")
+    ]
+
+    def initialize_options(self):
+        self.list = False  # pylint: disable=W0201
+        self.install = None  # pylint: disable=W0201
+        self.user = False  # pylint: disable=W0201
+
+    def run(self):
+
+        plugins_list = []
+        directory = os.path.join(BASE_PATH, "optional_plugins")
+        for plugin in list(Path(directory).glob("*/setup.py")):
+            plugins_list.append(plugin.parts[-2])
+
+        if self.list or (not self.list and not self.install):
+            print("List of available plugins:\n ", "\n  ".join(plugins_list))
+            return
+
+        if self.install in plugins_list:
+            action = ["install"]
+            if self.user:
+                action += ["--user"]
+            parent_dir = os.path.join(directory, self.install)
+            run([sys.executable, "setup.py"] + action, cwd=parent_dir, check=True)
+        else:
+            print(self.install, "is not a known plugin. Please, check the list of available plugins.")
+            return
+
+
 if __name__ == '__main__':
     # Force "make develop" inside the "readthedocs.org" environment
     if os.environ.get("READTHEDOCS") and "install" in sys.argv:
@@ -403,5 +440,6 @@ if __name__ == '__main__':
                     'develop': Develop,
                     'lint': Linter,
                     'man': Man,
+                    'plugin': Plugin,
                     'test': Test},
           install_requires=['setuptools'])
