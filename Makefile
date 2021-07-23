@@ -19,18 +19,19 @@ RPM_BASE_NAME=python-avocado
 
 all:
 	@echo
+	@echo "User related targets:"
+	@echo "install-user:      Install avocado for the local user"
+	@echo
 	@echo "Development related targets:"
-	@echo "check:             Runs tree static check, unittests and fast functional tests"
-	@echo "smokecheck:        Runs the simplest possible avocado test execution"
 	@echo "develop:           Runs 'python setup.py --develop' on this tree alone"
 	@echo "develop-external:  Install Avocado's external plugins in develop mode."
 	@echo "                   You need to set AVOCADO_EXTERNAL_PLUGINS_PATH"
+	@echo "check:             Runs tree static check, unittests and fast functional tests"
+	@echo "smokecheck:        Runs the simplest possible avocado test execution"
 	@echo "clean:             Get rid of build scratch from this project and subprojects"
+	@echo "requirements-selftests:  Install runtime and selftests requirements"
 	@echo "variables:         Show the value of variables as defined in this Makefile or"
 	@echo "                   given as input to make"
-	@echo
-	@echo "Package requirements related targets"
-	@echo "requirements-selftests:  Install runtime and selftests requirements"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
 	@echo "source:       Create single source package with commit info, suitable for RPMs"
@@ -39,7 +40,7 @@ all:
 	@echo "pypi:         Create both source and binary wheel packages and show how to"
 	@echo "              upload them to PyPI"
 	@echo "python_build: Installs the build package, needed for source-pypi and wheel"
-	@echo "install:      Install on local system"
+	@echo "install:      Install on local system for all users (needs root)"
 	@echo "uninstall:    Uninstall Avocado and also subprojects"
 	@echo "man:          Generate the avocado man page"
 	@echo
@@ -91,6 +92,13 @@ python_build: pip
 
 clean:
 	$(PYTHON) setup.py clean --all
+
+install-user:
+	$(PYTHON) setup.py install --user
+	@echo
+	@echo "To install the optional plugins, please use: python setup.py plugin --install=<plugin_name>"
+	@echo
+	$(PYTHON) setup.py plugin --list
 
 uninstall:
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
@@ -144,4 +152,4 @@ propagate-version:
 		else echo ">> Skipping $$DIR"; fi;\
 	done
 
-.PHONY: source source-pypi wheel pypi install clean uninstall requirements-selftests smokecheck check develop develop-external propagate-version variables
+.PHONY: source source-pypi wheel pypi install install-user clean uninstall requirements-selftests smokecheck check develop develop-external propagate-version variables
