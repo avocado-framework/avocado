@@ -460,18 +460,12 @@ class ExecRunner(BaseRunner):
 
         if env and 'PATH' not in env:
             env['PATH'] = os.environ.get('PATH')
-        try:
-            process = subprocess.Popen(
-                [self.runnable.uri] + list(self.runnable.args),
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=env)
-        except Exception as e:
-            yield self.prepare_status('started')
-            yield self.prepare_status('finished', {'result': 'error',
-                                                   'fail_reason': str(e)})
-            return
+        process = subprocess.Popen(
+            [self.runnable.uri] + list(self.runnable.args),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env)
 
         yield self.prepare_status('started')
         most_current_execution_state_time = None
