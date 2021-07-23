@@ -643,8 +643,6 @@ def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
 
 
 def disable_log_handler(logger):
-    if not logger:
-        return
     if isinstance(logger, str):
         logger = logging.getLogger(logger)
     # Handlers might be reused elsewhere, can't delete them
