@@ -477,7 +477,7 @@ def reconfigure(args):
                                       STD_OUTPUT.stdout, logging.DEBUG)
             save_handler(LOG_JOB.name, handler, configuration)
         else:
-            disable_log_handler("")
+            disable_log_handler("avocado")
     # Not enabled by env
     if not os.environ.get('AVOCADO_LOG_DEBUG'):
         if "debug" in enabled:
