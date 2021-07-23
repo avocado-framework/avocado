@@ -39,8 +39,8 @@ distro: !mux
     x86_64:
       arch: amd64
     version: !mux
-      9.13.25:
-        version: 9.13.25-20210628
+      9.13.26:
+        version: 9.13.26-20210722
       10.10.1:
         version: 10.10.1-20210624
   fedora:
