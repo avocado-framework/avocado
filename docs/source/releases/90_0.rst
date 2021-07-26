@@ -1,0 +1,134 @@
+================
+90.0 Bladerunner
+================
+
+The Avocado team is proud to present another release: Avocado 90.0,
+AKA "Bladerunner", is now available!
+
+Release documentation: `Avocado 90.0
+<http://avocado-framework.readthedocs.io/en/90.0/>`_
+
+Important Announcement
+======================
+
+The Avocado team is planning to switch the default runner, from the
+implementation most people currently use (internally simply called
+``runner``), to the newer architecture and implementation called
+``nrunner``.  This is scheduled to happen on version 91.0 (the next
+release).
+
+**Users installing and relying on the latest Avocado release will be
+impacted by this change and should plan accordingly.**
+
+To keep using the current (soon to be legacy) runner, you **must** set
+the ``--test-runner=runner`` command line option (or the equivalent
+``test_runner`` configuration option, under section ``[run]``).
+
+Known issues are being tracked on our GitHub project page, with the
+``nrunner`` tag, and new issue reports are appreciated.
+
+.. tip:: To select the ``nrunner`` on this release (90.0 and earlier),
+         run ``avocado run --test-runner=nrunner``.
+
+Users/Test Writers
+==================
+
+* Avocado's safeloader (the system used to find Python based tests
+  without executing them) received a major overhaul and now supports:
+
+ 1. Multi-level module imports, such as ``from my.base.test import
+    Test`` where a project may contain a ``my/base`` directory
+    structure containing ``test.py`` that defines a custom ``Test``
+    class.
+
+ 2. Support for following the import/inheritance hierarchy when a
+    module contains an import for a given symbol, instead of the
+    actual ``class`` definition of a symbol.
+
+ 3. Considers coroutines (AKA ``async def``) as valid tests, reducing
+    the number of boiler plate code necessary for tests of ``asyncio``
+    based code.
+
+ 4. Supports class definitions (containing tests or not) that use a
+    typing hint with subscription, commonly used in generics.
+
+* Test parameters given with ``-p`` are now support when using the
+  ``nrunner``.
+
+* All status server URIs in the configuration are now respected for
+  ``nrunner`` executions.
+
+* The resolver plugins now have access to the job/suite configuration.
+
+* The data directories now have less heuristics and are now more
+  predictable and consistent with the configuration set.
+
+* The JSON results (``results.json``) now contain a field with the
+  path of the test log file.
+
+* The root logger for Python's :mod:`logging` should no longer be
+  impacted by Avocado's own logging initialization and clean up (which
+  now limits itself to ``avocado.*`` loggers).
+
+Bug Fixes
+=========
+
+* The ``whiteboard`` file and data are now properly saved when using
+  the ``nrunner``
+
+* The Podman spawner will now respect the Podman binary set in the job
+  configuration.
+
+* The date and time fields shown on some result formats, such as in
+  the HTML report, now are proper dates/times, and not Python's
+  "monotonic" date/time.
+
+* The correct failure reason for tests executed with the ``nrunner``
+  are now being captured, instead of a possible exception caused by a
+  error within the runner itself.
+
+Utility APIs
+============
+
+* :mod:`avocado.utils.ssh` now respects the username set when copying
+  files via ``scp``.
+
+Misc Changes
+============
+
+* Update of all executable script's "shebangs" to ``/usr/bin/env
+  python3`` from ``/usr/bin/env python``
+
+* Better handling of ``KeyboardInterrupt`` exceptions on early stages
+  of the Avocado execution.
+
+* The list of external resources was updated adding a number of
+  projects that either are extensions of Avocado, or that use Avocado
+  for their testing needs.
+
+Internal Changes
+================
+
+* ``selftests/check_tmp_dirs`` will only check for directories, ignoring files.
+
+* The examples in the documentation no longer contain user references
+  to specific users, using generic names and paths instead.
+
+* A duplicated step has been removed from pre-release test plan.
+
+* A setuptools command to build the man page was added.
+
+* Updates to the Travis CI jobs, testing only Python 3.9 on s390x,
+  ppc64le, and arm64, following the move to GHA.
+
+* A weekly GHA CI job was introduced.
+
+* Better standardization of the messages that ``nrunner`` runners
+  generate by means of new utility methods.
+
+* Allows the exclusion of optional plugins when doing ``python3
+  setup.py develop``.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/89.0...90.0>`_.

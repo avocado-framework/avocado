@@ -8,10 +8,10 @@
     %global gittar          avocado-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      87d40d3e84b505e8e7c56912d62910d084aa9d3d
+        %global commit      8327889c3004906c6ed54626d5e4d58d4e66dd98
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20210517
+        %global commit_date 20210723
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -26,8 +26,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 89.0
-Release: 2%{?gitrel}%{?dist}
+Version: 90.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -368,6 +368,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Jul 26 2021 Cleber Rosa <crosa@redhat.com> - 90.0-1
+- New release
+
 * Mon Jun 28 2021 Merlin Mathesius <mmathesi@redhat.com> - 89.0-2
 - Spec file cleanup identified during downstream package review.
 
