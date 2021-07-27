@@ -15,6 +15,8 @@
 import os
 import time
 
+from avocado.core.exceptions import TestSkipError
+
 from .test_id import TestID
 
 
@@ -152,6 +154,14 @@ class FinishMessageHandler(BaseMessageHandler):
             job.result.check_test(message)
             job.result_events_dispatcher.map_method('end_test', job.result,
                                                     message)
+
+            result = message.get('result')
+            failfast = task.runnable.config.get('run.failfast')
+            if failfast and result == 'fail':
+                msg = ("Task {} exited with return code = {}. Since failfast "
+                       "is enabled remaining tasks should be skipped.")
+                raise TestSkipError(msg.format(task.identifier,
+                                               message.get('returncode')))
 
 
 class BaseRunningMessageHandler(BaseMessageHandler):
