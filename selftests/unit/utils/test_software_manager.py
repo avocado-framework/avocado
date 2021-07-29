@@ -2,7 +2,7 @@ import os
 import unittest
 
 from avocado.utils import distro, software_manager
-from selftests.utils import setup_avocado_loggers
+from selftests.utils import BASEDIR, setup_avocado_loggers
 
 setup_avocado_loggers()
 
@@ -21,6 +21,19 @@ class Apt(unittest.TestCase):
         self.assertEqual(sm.provides('/bin/login'), 'login')
         self.assertTrue(isinstance(sm.backend,
                                    software_manager.backends.apt.AptBackend))
+
+
+class Dpkg(unittest.TestCase):
+
+    def test_is_valid(self):
+        deb_path = os.path.join(BASEDIR, 'selftests', '.data', 'hello.deb')
+        dpkg = software_manager.backends.dpkg.DpkgBackend
+        self.assertTrue(dpkg.is_valid(deb_path))
+
+    def test_is_not_valid(self):
+        not_deb_path = os.path.join(BASEDIR, 'selftests', '.data', 'guaca.a')
+        dpkg = software_manager.backends.dpkg.DpkgBackend
+        self.assertFalse(dpkg.is_valid(not_deb_path))
 
 
 if __name__ == '__main__':
