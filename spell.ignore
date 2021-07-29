@@ -336,6 +336,7 @@ rhs
 automagically
 preorder
 subtree
+failfast
 failtest
 failtests
 psutil
