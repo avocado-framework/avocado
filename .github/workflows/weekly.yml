@@ -33,7 +33,7 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
-        run: pip install -r requirements-selftests.txt
+        run: pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
       - name: Avocado version

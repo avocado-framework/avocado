@@ -14,11 +14,11 @@ You need to install few dependencies before start coding::
 
 Then install all the python dependencies::
 
- $ make requirements-selftests
+ $ make requirements-dev
 
 Or if you already have pip installed, you can run directly::
 
- $ pip install -r requirements-selftests.txt
+ $ pip install -r requirements-dev.txt
 
 
 Installing in develop mode

@@ -27,7 +27,7 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
-        run: pip install -r requirements-selftests.txt
+        run: pip install -r requirements-dev.txt
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
       - name: Avocado version
@@ -65,7 +65,7 @@ jobs:
           SELF_CHECK_CONTINUOUS: "yes"
           CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
         run: |
-         pip install -r requirements-selftests.txt
+         pip install -r requirements-dev.txt
          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
          chmod +x ./cc-test-reporter
          ./cc-test-reporter before-build
@@ -105,7 +105,7 @@ jobs:
         run: python -c "import sys; print(sys.version)"
       - name: Install avocado
         run: |
-          python3 -m pip install -r requirements-selftests.txt
+          python3 -m pip install -r requirements-dev.txt
           python setup.py develop --user
       - name: Show avocado help
         run: python -m avocado --help

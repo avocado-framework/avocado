@@ -30,8 +30,8 @@ all:
 	@echo "                   given as input to make"
 	@echo
 	@echo "Package requirements related targets"
-	@echo "requirements-selftests:  Install runtime and selftests requirements"
-	@echo "requirements-plugins:    Install plugins requirements"
+	@echo "requirements-dev:      Install development requirements"
+	@echo "requirements-plugins:  Install plugins requirements"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
 	@echo "source:       Create single source package with commit info, suitable for RPMs"
@@ -104,8 +104,8 @@ requirements-plugins:
 		fi;\
 	done;
 
-requirements-selftests: pip
-	- $(PYTHON) -m pip install -r requirements-selftests.txt
+requirements-dev: pip
+	- $(PYTHON) -m pip install -r requirements-dev.txt
 
 smokecheck: clean uninstall develop
 	PYTHON=$(PYTHON) $(PYTHON) -m avocado run passtest.py
@@ -153,4 +153,4 @@ propagate-version:
 		else echo ">> Skipping $$DIR"; fi;\
 	done
 
-.PHONY: source source-pypi wheel pypi install clean uninstall requirements-plugins requirements-selftests smokecheck check develop develop-external propagate-version variables
+.PHONY: source source-pypi wheel pypi install clean uninstall requirements-plugins requirements-dev smokecheck check develop develop-external propagate-version variables
