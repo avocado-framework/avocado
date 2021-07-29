@@ -15,8 +15,6 @@
 
 import abc
 
-from .resolver import ResolverMixin
-
 
 class Plugin(abc.ABC):
     """Base for all plugins."""
@@ -216,6 +214,14 @@ class Varianter(Plugin):
         :param kwargs: Other free-form arguments
         :rtype: str
         """
+
+
+class ResolverMixin:
+    """Common utilities for Resolver implementations."""
+
+    def __init__(self, config=None):
+        from avocado.core.settings import settings
+        self.config = config or settings.as_dict()
 
 
 class Resolver(Plugin, ResolverMixin):
