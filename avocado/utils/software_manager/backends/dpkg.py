@@ -1,6 +1,8 @@
+import io
 import logging
 import os
 import re
+import tarfile
 
 from ... import ar
 from ... import path as utils_path
@@ -86,12 +88,12 @@ class DpkgBackend(BaseBackend):
         """
         abs_path = os.path.abspath(os.path.expanduser(package_path))
         dest = dest_path or os.path.curdir
-
-        # 'ar' command does not creates the directory if doesn't exists
         os.makedirs(dest, exist_ok=True)
-
-        # If something goes wrong process.run will raise a CmdError exception
-        process.run("cd {} && ar -x {}".format(dest, abs_path), shell=True)
+        archive = ar.Ar(abs_path)
+        data_tarball_name = archive.list()[2]
+        member_data = archive.read_member(data_tarball_name)
+        tarball = tarfile.open(fileobj=io.BytesIO(member_data))
+        tarball.extractall(dest)
         return dest
 
     def list_files(self, package):
