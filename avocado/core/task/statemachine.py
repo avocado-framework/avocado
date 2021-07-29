@@ -47,6 +47,52 @@ class TaskStateMachine:
                            self._ready, self._started])
         return not pending
 
+    async def abort(self, status_reason=None):
+        """Abort all non-started tasks.
+
+        This method will move all non-started tasks to finished with a specific
+        reason.
+
+        :param status_reason: string reason. Optional.
+        """
+        await self.abort_queue('requested', status_reason)
+        await self.abort_queue('triaging', status_reason)
+        await self.abort_queue('ready', status_reason)
+
+    async def abort_queue(self, queue_name, status_reason=None):
+        """Abort all tasks inside a specific queue adding a status reason.
+
+        :param queue_name: a string with the queue name.
+        :param status_reason: string reason. Optional.
+        """
+        to_remove = []
+        async with self._lock:
+            queue = getattr(self, queue_name)
+            for _ in range(len(queue)):
+                if queue_name == 'requested':
+                    runtime_task = queue.popleft()
+                else:
+                    runtime_task = queue.pop(0)
+                to_remove.append(runtime_task)
+
+        for task in to_remove:
+            await self.finish_task(task, status_reason)
+
+    async def finish_task(self, runtime_task, status_reason=None):
+        """Include a task to the finished queue with a specific reason.
+
+        This method is assuming that you have removed (pop) the task from the
+        original queue.
+
+        :param runtime_task: A running task object.
+        :param status_reason: string reason. Optional.
+        """
+        async with self._lock:
+            if runtime_task not in self.finished:
+                if status_reason:
+                    runtime_task.status = status_reason
+                self.finished.append(runtime_task)
+
 
 class Worker:
 
@@ -199,6 +245,10 @@ class Worker:
                 runtime_task.status = 'FINISHED'
             except asyncio.TimeoutError:
                 runtime_task.status = 'FINISHED W/ TIMEOUT'
+        failfast = runtime_task.task.runnable.config.get('run.failfast')
+        result_stats = self._state_machine._status_repo.result_stats
+        if failfast and 'fail' in result_stats:
+            await self._state_machine.abort("FAILFAST is enabled")
 
         async with self._state_machine.lock:
             self._state_machine.finished.append(runtime_task)
