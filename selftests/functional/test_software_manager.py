@@ -5,6 +5,7 @@ from avocado.utils import software_manager
 from selftests.utils import BASEDIR, TestCaseTmpDir, skipUnlessPathExists
 
 
+@skipUnlessPathExists('/usr/bin/cpio')
 @skipUnlessPathExists('/usr/bin/rpm2cpio')
 class SoftwareManager(TestCaseTmpDir):
     def setUp(self):
