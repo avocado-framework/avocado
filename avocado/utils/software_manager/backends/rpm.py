@@ -235,7 +235,7 @@ class RpmBackend(BaseBackend):
         """
         abs_path = os.path.abspath(os.path.expanduser((package_path)))
         try:
-            result = process.run("rpm -qip {}".format(abs_path))
+            result = process.run("rpm -qp {}".format(abs_path))
         except process.CmdError:
             return False
         if result.exit_status == 0:
