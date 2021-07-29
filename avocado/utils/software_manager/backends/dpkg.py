@@ -1,6 +1,8 @@
 import logging
 import os
+import re
 
+from ... import ar
 from ... import path as utils_path
 from ... import process
 from .base import BaseBackend
@@ -60,11 +62,16 @@ class DpkgBackend(BaseBackend):
         :rtype: bool
         """
         abs_path = os.path.abspath(os.path.expanduser((package_path)))
-        try:
-            result = process.run("ar t {}".format(abs_path))
-        except process.CmdError:
+        member_regexes = [r'debian-binary',
+                          r'control\.tar\..*',
+                          r'data\.tar\..*']
+        members = ar.Ar(abs_path).list()
+        if len(members) != len(member_regexes):
             return False
-        return result.exit_status == 0
+        for regex, member in zip(member_regexes, members):
+            if not re.match(regex, member):
+                return False
+        return True
 
     @staticmethod
     def extract_from_package(package_path, dest_path=None):
