@@ -1,4 +1,4 @@
-# Avocado test requirements
+# Avocado development requirements
 
 # inspektor (static and style checks)
 isort==5.8.0

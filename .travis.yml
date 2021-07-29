@@ -21,7 +21,7 @@ addons:
     - golang
 
 install:
-    - pip install -r requirements-selftests.txt
+    - pip install -r requirements-dev.txt
 
 script:
     - make check
