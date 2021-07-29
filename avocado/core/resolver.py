@@ -19,7 +19,6 @@ Test resolver module.
 import os
 from enum import Enum
 
-from .. import settings
 from .enabled_extension_manager import EnabledExtensionManager
 from .exceptions import JobTestSuiteReferenceResolutionError
 
@@ -79,13 +78,6 @@ class ReferenceResolution:
                'resolutions="{}" info="{}" origin="{}">')
         return fmt.format(self.reference, self.result, self.resolutions,
                           self.info, self.origin)
-
-
-class ResolverMixin:
-    """Common utilities for Resolver implementations."""
-
-    def __init__(self, config=None):
-        self.config = config or settings.as_dict()
 
 
 class Resolver(EnabledExtensionManager):
