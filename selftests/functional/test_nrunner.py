@@ -24,6 +24,27 @@ class NRunnerFeatures(unittest.TestCase):
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 0)
 
+    @skipUnlessPathExists('/bin/false')
+    @skipUnlessPathExists('/bin/true')
+    def test_failfast(self):
+        status_server = "127.0.0.1:%u" % find_free_port()
+        config = {'run.references': ['/bin/true',
+                                     '/bin/false',
+                                     '/bin/true',
+                                     '/bin/true'],
+                  'run.test_runner': 'nrunner',
+                  'run.failfast': True,
+                  'nrunner.shuffle': False,
+                  'nrunner.status_server_listen': status_server,
+                  'nrunner.status_server_uri': status_server,
+                  'nrunner.max_parallel_tasks': 1}
+        with Job.from_config(job_config=config) as job:
+            self.assertEqual(job.run(), 1)
+            self.assertEqual(job.result.passed, 1)
+            self.assertEqual(job.result.errors, 0)
+            self.assertEqual(job.result.failed, 1)
+            self.assertEqual(job.result.skipped, 2)
+
 
 class RunnableRun(unittest.TestCase):
 
