@@ -130,7 +130,9 @@ class Worker:
                 for finished_rt_task in self._state_machine.finished:
                     if (finished_rt_task.task is task and
                             finished_rt_task.status == 'FAILED ON TRIAGE'):
-                        await fail_on_triage(runtime_task)
+
+                        await self._state_machine.finish_task(runtime_task,
+                                                              "FAILED ON TRIAGE")
                         return
                 # from here, this dependency `task` ran, so, let's check
                 # the its latest data in the status repo
@@ -145,15 +147,11 @@ class Worker:
                     return
                 # if this dependency task failed, skip the parent task
                 if latest_task_data['result'] not in ['pass']:
-                    await fail_on_triage(runtime_task)
+                    await self._state_machine.finish_task(runtime_task,
+                                                          "FAILED ON TRIAGE")
                     return
             # everything is fine!
             return True
-
-        async def fail_on_triage(runtime_task):
-            async with self._state_machine.lock:
-                self._state_machine.finished.append(runtime_task)
-                runtime_task.status = 'FAILED ON TRIAGE'
 
         try:
             async with self._state_machine.lock:
@@ -167,7 +165,8 @@ class Worker:
             requirements_ok = (
                     await self._spawner.check_task_requirements(runtime_task))
             if not requirements_ok:
-                await fail_on_triage(runtime_task)
+                await self._state_machine.finish_task(runtime_task,
+                                                      "FAILED ON TRIAGE")
                 return
 
         # handle task dependencies
@@ -223,8 +222,8 @@ class Worker:
             async with self._state_machine.lock:
                 self._state_machine.started.append(runtime_task)
         else:
-            async with self._state_machine.lock:
-                self._state_machine.finished.append(runtime_task)
+            await self._state_machine.finish_task(runtime_task,
+                                                  "FAILED ON START")
 
     async def monitor(self):
         """Reads from started, moves into finished."""
@@ -250,8 +249,7 @@ class Worker:
         if failfast and 'fail' in result_stats:
             await self._state_machine.abort("FAILFAST is enabled")
 
-        async with self._state_machine.lock:
-            self._state_machine.finished.append(runtime_task)
+        await self._state_machine.finish_task(runtime_task)
 
     async def run(self):
         """Pushes Tasks forward and makes them do something with their lives."""
