@@ -192,35 +192,38 @@ class JobAPIFeaturesTest(Test):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f',
-                        '--features',
-                        help='show the features tested by this test.',
+                        '--list-features',
+                        help='show the list of features tested by this test.',
                         action='store_true')
-    parser.add_argument('--disable-static-checks',
-                        help='Disable the static checks (isort, lint, etc)',
+    parser.add_argument('--static-checks',
+                        help='Run static checks (isort, lint, etc)',
+                        action='store_true')
+    parser.add_argument('--job-api',
+                        help='Run job API checks',
                         action='store_true')
     parser.add_argument('--disable-plugin-checks',
                         help='Disable checks for a plugin (by directory name)',
                         action='append', default=[])
-    parser.add_argument('--disable-selftests-nrunner-interface',
-                        help='Disable selftests/functional/test_nrunner_interface.py',
+    parser.add_argument('--nrunner-interface',
+                        help='Run selftests/functional/test_nrunner_interface.py',
                         action='store_true')
-    parser.add_argument('--disable-selftests-unit',
-                        help='Disable selftests/unit/',
+    parser.add_argument('--unit',
+                        help='Run selftests/unit/',
                         action='store_true')
-    parser.add_argument('--disable-selftests-jobs',
-                        help='Disable selftests/jobs/',
+    parser.add_argument('--jobs',
+                        help='Run selftests/jobs/',
                         action='store_true')
-    parser.add_argument('--disable-selftests-functional',
-                        help='Disable selftests/functional/',
+    parser.add_argument('--functional',
+                        help='Run selftests/functional/',
                         action='store_true')
-    parser.add_argument('--disable-selftests-optional-plugins',
-                        help='Disable optional_plugins/*/tests/',
+    parser.add_argument('--optional-plugins',
+                        help='Run optional_plugins/*/tests/',
                         action='store_true')
 
     return parser.parse_args()
 
 
-def create_suites(args):
+def create_suite_job_api(args):  # pylint: disable=W0621
     test_class = 'JobAPIFeaturesTest'
     suites = []
 
@@ -495,7 +498,11 @@ def create_suites(args):
 
     suites.append(TestSuite.from_config(config_check_tmp_directory_exists,
                                         "job-api-%s" % (len(suites) + 1)))
+    return suites
 
+
+def create_suites(args):  # pylint: disable=W0621
+    suites = []
     # ========================================================================
     # Run nrunner interface checks for all available runners
     # ========================================================================
@@ -520,7 +527,7 @@ def create_suites(args):
         config_nrunner_interface['run.dict_variants'].append({
             'runner': 'avocado-runner-robot'})
 
-    if not args.disable_selftests_nrunner_interface:
+    if args.nrunner_interface:
         suites.append(TestSuite.from_config(config_nrunner_interface, "nrunner-interface"))
 
     # ========================================================================
@@ -528,11 +535,11 @@ def create_suites(args):
     # ========================================================================
 
     selftests = []
-    if not args.disable_selftests_unit:
+    if args.unit:
         selftests.append('selftests/unit/')
-    if not args.disable_selftests_jobs:
+    if args.jobs:
         selftests.append('selftests/jobs/')
-    if not args.disable_selftests_functional:
+    if args.functional:
         selftests.append('selftests/functional/')
 
     status_server = '127.0.0.1:%u' % find_free_port()
@@ -545,10 +552,10 @@ def create_suites(args):
         'job.output.testlogs.statuses': ['FAIL']
     }
 
-    if not args.disable_static_checks:
+    if args.static_checks:
         config_check['run.references'] += glob.glob('selftests/*.sh')
 
-    if not args.disable_selftests_optional_plugins:
+    if args.optional_plugins:
         for optional_plugin in glob.glob('optional_plugins/*'):
             plugin_name = os.path.basename(optional_plugin)
             if plugin_name not in args.disable_plugin_checks:
@@ -556,6 +563,7 @@ def create_suites(args):
                 config_check['run.references'] += glob.glob(pattern)
 
     suites.append(TestSuite.from_config(config_check, "check"))
+
     return suites
 
 
@@ -566,13 +574,33 @@ def print_failed_tests(tests):
             print(test.get('name'), test.get('status'))
 
 
-def main():
-    args = parse_args()
-    suites = create_suites(args)
+def enable_all_tests(args):   # pylint: disable=W0621
+    args.static_checks = True
+    args.job_api = True
+    args.nrunner_interface = True
+    args.unit = True
+    args.jobs = True
+    args.functional = True
+    args.optional_plugins = True
+
+
+def main(args):  # pylint: disable=W0621
+
+    if not any([args.static_checks, args.job_api, args.nrunner_interface,
+                args.unit, args.jobs, args.functional,
+                args.optional_plugins, args.list_features]):
+        print("No test were selected to run, running all of them.")
+        enable_all_tests(args)
+
+    suites = []
+    if args.job_api:
+        suites += create_suite_job_api(args)
+    suites += create_suites(args)
+
     # ========================================================================
     # Print features covered in this test
     # ========================================================================
-    if args.features:
+    if args.list_features:
         features = []
         for suite in suites:
             for variants in suite.config['run.dict_variants']:
@@ -604,4 +632,5 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    args = parse_args()
+    sys.exit(main(args))
