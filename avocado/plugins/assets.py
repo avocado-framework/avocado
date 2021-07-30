@@ -45,7 +45,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.klass = klass
         # we need to make sure we cover the setUp method when fetching
         # assets for a specific test
-        self.method = [method, 'setUp']
+        self.methods = [method, 'setUp']
         self.asgmts = {}
         self.calls = []
 
@@ -150,7 +150,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         """
         # make sure we are into a class method and not a function
         if self.current_klass:
-            if self.method[0] and node.name not in self.method:
+            if self.methods[0] and node.name not in self.methods:
                 return
 
             self.current_method = node.name
