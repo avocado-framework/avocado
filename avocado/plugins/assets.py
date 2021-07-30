@@ -67,8 +67,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.visit(self.tree)
 
     def _parse_args(self, node):
-        """
-        Parse the AST fetch_asset node and build the arguments dictionary.
+        """Parse the AST fetch_asset node and build the arguments dictionary.
+
         :param node: AST node to be evaluated
         :type node: ast.Attribute
         :returns: keywords and arguments from a fetch_asset call.
@@ -127,8 +127,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         return fetch_args
 
     def visit_ClassDef(self, node):  # pylint: disable=C0103
-        """
-        Visit ClassDef on AST and save current Class.
+        """Visit ClassDef on AST and save current Class.
+
         :param node: AST node to be evaluated
         :type node: ast.*
         """
@@ -143,8 +143,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
             self.generic_visit(node)
 
     def visit_FunctionDef(self, node):  # pylint: disable=C0103
-        """
-        Visit FunctionDef on AST and save current method.
+        """Visit FunctionDef on AST and save current method.
+
         :param node: AST node to be evaluated
         :type node: ast.*
         """
@@ -166,9 +166,11 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         return result
 
     def visit_Assign(self, node):  # pylint: disable=C0103
-        """
-        Visit Assign on AST and build list of assignments that matches the
+        """Visit Assign on AST and build assignments.
+
+        This method will visit and build list of assignments that matches the
         pattern pattern `name = string`.
+
         :param node: AST node to be evaluated
         :type node: ast.*
         """
@@ -194,8 +196,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.generic_visit(node)
 
     def visit_Call(self, node):  # pylint: disable=C0103
-        """
-        Visit Calls on AST and build list of calls that matches the pattern.
+        """Visit Calls on AST and build list of calls that matches the pattern.
+
         :param node: AST node to be evaluated
         :type node: ast.*
         """
@@ -209,12 +211,12 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
 
 
 def fetch_assets(test_file, klass=None, method=None, logger=None):
-    """
-    Fetches the assets based on keywords listed on FetchAssetHandler.calls.
+    """Fetches the assets based on keywords listed on FetchAssetHandler.calls.
+
     :param test_file: File name of instrumented test to be evaluated
-    :type test_file: str
+                      :type test_file: str
     :returns: list of names that were successfully fetched and list of
-    fails.
+              fails.
     """
     cache_dirs = settings.as_dict().get('datadir.paths.cache_dirs')
     success = []
@@ -244,10 +246,11 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
 
 
 class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
-    """
-    Implements the assets fetch job pre tests. This has the same effect of
-    running the 'avocado assets fetch INSTRUMENTED', but it runs during the
-    test execution, before the actual test starts.
+    """Implements the assets fetch job pre tests.
+
+    This has the same effect of running the 'avocado assets fetch
+    INSTRUMENTED', but it runs during the test execution, before the actual
+    test starts.
     """
     name = "fetchasset"
     description = "Fetch assets before the test run"
@@ -297,8 +300,7 @@ class Assets(CLICmd):
         return len([a for a in args if a is not None])
 
     def configure(self, parser):
-        """
-        Add the subparser for the assets action.
+        """Add the subparser for the assets action.
 
         :param parser: The Avocado command line application parser
         :type parser: :class:`avocado.core.parser.ArgumentParser`
