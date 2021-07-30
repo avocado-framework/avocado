@@ -36,8 +36,8 @@ class Collectible:
     Abstract class for representing collectibles by sysinfo.
     """
 
-    def __init__(self, logf):
-        self.logf = astring.string_to_safe_path(logf)
+    def __init__(self, log_path):
+        self.log_path = astring.string_to_safe_path(log_path)
 
     def readline(self, logdir):
         """
@@ -45,7 +45,7 @@ class Collectible:
 
         :param logdir: Path to a log directory.
         """
-        path = os.path.join(logdir, self.logf)
+        path = os.path.join(logdir, self.log_path)
         if os.path.exists(path):
             return genio.read_one_line(path)
         else:
@@ -58,23 +58,23 @@ class Logfile(Collectible):
     Collectible system file.
 
     :param path: Path to the log file.
-    :param logf: Basename of the file where output is logged (optional).
+    :param log_path: Basename of the file where output is logged (optional).
     """
 
-    def __init__(self, path, logf=None):
-        if not logf:
-            logf = os.path.basename(path)
-        super(Logfile, self).__init__(logf)
+    def __init__(self, path, log_path=None):
+        if not log_path:
+            log_path = os.path.basename(path)
+        super(Logfile, self).__init__(log_path)
         self.path = path
 
     def __repr__(self):
         r = "sysinfo.Logfile(%r, %r)"
-        r %= (self.path, self.logf)
+        r %= (self.path, self.log_path)
         return r
 
     def __eq__(self, other):
         if isinstance(other, Logfile):
-            return (self.path, self.logf) == (other.path, other.logf)
+            return (self.path, self.log_path) == (other.path, other.log_path)
         elif isinstance(other, Collectible):
             return False
         return NotImplemented
@@ -86,7 +86,7 @@ class Logfile(Collectible):
         return not result
 
     def __hash__(self):
-        return hash((self.path, self.logf))
+        return hash((self.path, self.log_path))
 
     def run(self, logdir):
         """
@@ -98,7 +98,7 @@ class Logfile(Collectible):
             config = settings.as_dict()
             if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
                 pre_file = os.path.join(os.path.dirname(logdir), 'pre',
-                                        self.logf)
+                                        self.log_path)
                 if os.path.isfile(pre_file):
                     with open(self.path) as f1, open(pre_file) as f2:
                         if f1.read() == f2.read():
@@ -106,7 +106,7 @@ class Logfile(Collectible):
                                       self.path)
                             return
             try:
-                shutil.copyfile(self.path, os.path.join(logdir, self.logf))
+                shutil.copyfile(self.path, os.path.join(logdir, self.log_path))
             except IOError:
                 log.debug("Not logging %s (lack of permissions)", self.path)
         else:
@@ -119,25 +119,25 @@ class Command(Collectible):
     Collectible command.
 
     :param cmd: String with the command.
-    :param logf: Basename of the file where output is logged (optional).
+    :param log_path: Basename of the file where output is logged (optional).
     :param compress_log: Whether to compress the output of the command.
     """
 
-    def __init__(self, cmd, logf=None, compress_log=False):
-        if not logf:
-            logf = cmd
-        super(Command, self).__init__(logf)
+    def __init__(self, cmd, log_path=None, compress_log=False):
+        if not log_path:
+            log_path = cmd
+        super(Command, self).__init__(log_path)
         self.cmd = cmd
         self._compress_log = compress_log
 
     def __repr__(self):
         r = "sysinfo.Command(%r, %r, %r)"
-        r %= (self.cmd, self.logf, self._compress_log)
+        r %= (self.cmd, self.log_path, self._compress_log)
         return r
 
     def __eq__(self, other):
         if isinstance(other, Command):
-            return (self.cmd, self.logf) == (other.cmd, other.logf)
+            return (self.cmd, self.log_path) == (other.cmd, other.log_path)
         elif isinstance(other, Collectible):
             return False
         return NotImplemented
@@ -149,7 +149,7 @@ class Command(Collectible):
         return not result
 
     def __hash__(self):
-        return hash((self.cmd, self.logf))
+        return hash((self.cmd, self.log_path))
 
     def run(self, logdir):
         """
@@ -184,9 +184,9 @@ class Command(Collectible):
         except Exception as exc:  # pylint: disable=W0703
             log.warning('Could not execute "%s": %s', self.cmd, exc)
             return
-        logf_path = os.path.join(logdir, self.logf)
+        logf_path = os.path.join(logdir, self.log_path)
         if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
-            pre_file = os.path.join(os.path.dirname(logdir), 'pre', self.logf)
+            pre_file = os.path.join(os.path.dirname(logdir), 'pre', self.log_path)
             if os.path.isfile(pre_file):
                 with open(pre_file, 'rb') as f1:
                     if f1.read() == result.stdout:
@@ -228,7 +228,7 @@ class Daemon(Command):
         locale = config.get("sysinfo.collect.locale")
         if locale:
             env["LC_ALL"] = locale
-        logf_path = os.path.join(logdir, self.logf)
+        logf_path = os.path.join(logdir, self.log_path)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
 
@@ -261,14 +261,14 @@ class JournalctlWatcher(Collectible):
     """
     Track the content of systemd journal into a compressed file.
 
-    :param logf: Basename of the file where output is logged (optional).
+    :param log_path: Basename of the file where output is logged (optional).
     """
 
-    def __init__(self, logf=None):
-        if not logf:
-            logf = 'journalctl.gz'
+    def __init__(self, log_path=None):
+        if not log_path:
+            log_path = 'journalctl.gz'
 
-        super(JournalctlWatcher, self).__init__(logf)
+        super(JournalctlWatcher, self).__init__(log_path)
         self.cursor = self._get_cursor()
 
     @staticmethod
@@ -286,7 +286,7 @@ class JournalctlWatcher(Collectible):
             try:
                 cmd = 'journalctl --quiet --after-cursor %s' % self.cursor
                 log_diff = process.system_output(cmd, verbose=False)
-                dstpath = os.path.join(logdir, self.logf)
+                dstpath = os.path.join(logdir, self.log_path)
                 with gzip.GzipFile(dstpath, "wb") as out_journalctl:
                     out_journalctl.write(log_diff)
             except IOError:
@@ -306,16 +306,16 @@ class LogWatcher(Collectible):
     potentially large, helping to save space.
 
     :param path: Path to the log file.
-    :param logf: Basename of the file where output is logged (optional).
+    :param log_path: Basename of the file where output is logged (optional).
     """
 
-    def __init__(self, path, logf=None):
-        if not logf:
-            logf = os.path.basename(path) + ".gz"
+    def __init__(self, path, log_path=None):
+        if not log_path:
+            log_path = os.path.basename(path) + ".gz"
         else:
-            logf += ".gz"
+            log_path += ".gz"
 
-        super(LogWatcher, self).__init__(logf)
+        super(LogWatcher, self).__init__(log_path)
         self.path = path
         self.size = 0
         self.inode = 0
@@ -328,12 +328,12 @@ class LogWatcher(Collectible):
 
     def __repr__(self):
         r = "sysinfo.LogWatcher(%r, %r)"
-        r %= (self.path, self.logf)
+        r %= (self.path, self.log_path)
         return r
 
     def __eq__(self, other):
         if isinstance(other, Logfile):
-            return (self.path, self.logf) == (other.path, other.logf)
+            return (self.path, self.log_path) == (other.path, other.log_path)
         elif isinstance(other, Collectible):
             return False
         return NotImplemented
@@ -345,14 +345,14 @@ class LogWatcher(Collectible):
         return not result
 
     def __hash__(self):
-        return hash((self.path, self.logf))
+        return hash((self.path, self.log_path))
 
     def run(self, logdir):
         """
         Log all of the new data present in the log file.
         """
         try:
-            dstname = self.logf
+            dstname = self.log_path
             dstpath = os.path.join(logdir, dstname)
 
             bytes_to_skip = 0
