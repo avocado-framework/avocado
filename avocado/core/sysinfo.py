@@ -39,18 +39,6 @@ class Collectible:
     def __init__(self, log_path):
         self.log_path = astring.string_to_safe_path(log_path)
 
-    def readline(self, logdir):
-        """
-        Read one line of the collectible object.
-
-        :param logdir: Path to a log directory.
-        """
-        path = os.path.join(logdir, self.log_path)
-        if os.path.exists(path):
-            return genio.read_one_line(path)
-        else:
-            return ""
-
 
 class Logfile(Collectible):
 
