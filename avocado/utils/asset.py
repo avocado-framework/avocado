@@ -40,6 +40,9 @@ LOG = logging.getLogger('avocado.test')
 #: The default hash algorithm to use on asset cache operations
 DEFAULT_HASH_ALGORITHM = 'sha1'
 
+#: The default timeout for the downloading of assets
+DOWNLOAD_TIMEOUT = 300
+
 SUPPORTED_OPERATORS = {'==': operator.eq,
                        '<': operator.lt,
                        '>': operator.gt,
@@ -114,15 +117,18 @@ class Asset:
             with open(metadata_path, "w") as metadata_file:
                 json.dump(self.metadata, metadata_file)
 
-    def _download(self, url_obj, asset_path):
+    def _download(self, url_obj, asset_path, timeout=None):
         """
         Download the asset from an uri.
 
         :param url_obj: object from urlparse.
         :param asset_path: full path of the asset file.
+        :param timeout: timeout in seconds. Default is
+                        :data:`avocado.utils.asset.DOWNLOAD_TIMEOUT`.
         :returns: if the downloaded file matches the hash.
         :rtype: bool
         """
+        timeout = timeout or DOWNLOAD_TIMEOUT
         try:
             # Temporary unique name to use while downloading
             temp = '%s.%s' % (asset_path, str(uuid.uuid4()))
@@ -137,7 +143,7 @@ class Asset:
                 except OSError:
                     LOG.info("Asset not in cache after lock, fetching it.")
 
-                url_download(url_obj.geturl(), temp)
+                url_download(url_obj.geturl(), temp, timeout=timeout)
                 shutil.copy(temp, asset_path)
                 self._create_hash_file(asset_path)
                 if not self._verify_hash(asset_path):
@@ -198,7 +204,7 @@ class Asset:
             LOG.error('%s: %s', exc_type.__name__, exc_value)
             return [None, None]
 
-    def _get_local_file(self, url_obj, asset_path):
+    def _get_local_file(self, url_obj, asset_path, _):
         """
         Create a symlink for a local file into the cache.
 
@@ -327,13 +333,15 @@ class Asset:
         """
         return self._has_valid_hash(asset_path, self.asset_hash)
 
-    def fetch(self):
+    def fetch(self, timeout=None):
         """Try to fetch the current asset.
 
         First tries to find the asset on the provided cache_dirs list.
         Then tries to download the asset from the locations list
         provided.
 
+        :param timeout: timeout in seconds. Default is
+                        :data:`avocado.utils.asset.DOWNLOAD_TIMEOUT`.
         :raise OSError: When it fails to fetch the asset
         :returns: The path for the file on the cache directory.
         :rtype: str
@@ -341,6 +349,7 @@ class Asset:
         # First let's search for the file in each one of the cache locations
         asset_file = None
         error = "unknown"
+        timeout = timeout or DOWNLOAD_TIMEOUT
         try:
             return self.find_asset_file(create_metadata=True)
         except OSError:
@@ -372,7 +381,7 @@ class Asset:
             if not os.path.isdir(dirname):
                 os.makedirs(dirname, exist_ok=True)
             try:
-                if fetch(urlobj, asset_file):
+                if fetch(urlobj, asset_file, timeout):
                     if self.metadata is not None:
                         self._create_metadata_file(asset_file)
                     return asset_file

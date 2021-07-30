@@ -21,6 +21,7 @@ import logging
 import os
 import shutil
 import socket
+from multiprocessing import Process
 from urllib.request import urlopen
 
 from . import aurl, crypto, output
@@ -64,14 +65,23 @@ def url_download(url, filename, data=None, timeout=300):
     :param timeout: (optional) default timeout in seconds.
     :return: `None`.
     """
-    log.info('Fetching %s -> %s', url, filename)
+    def download():
+        log.info('Fetching %s -> %s', url, filename)
 
-    src_file = url_open(url, data=data, timeout=timeout)
-    try:
-        with open(filename, 'wb') as dest_file:
-            shutil.copyfileobj(src_file, dest_file)
-    finally:
-        src_file.close()
+        src_file = url_open(url, data=data)
+        try:
+            with open(filename, 'wb') as dest_file:
+                shutil.copyfileobj(src_file, dest_file)
+        finally:
+            src_file.close()
+
+    process = Process(target=download)
+    process.start()
+    process.join(timeout)
+    if process.is_alive():
+        process.terminate()
+        process.join()
+        raise OSError("Aborting downloading. Timeout was reach.")
 
 
 def url_download_interactive(url, output_file, title='', chunk_size=102400):

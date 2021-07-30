@@ -219,6 +219,7 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
               fails.
     """
     cache_dirs = settings.as_dict().get('datadir.paths.cache_dirs')
+    timeout = settings.as_dict().get('assets.fetch.timeout')
     success = []
     fail = []
     handler = FetchAssetHandler(test_file, klass, method)
@@ -232,7 +233,7 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
             if logger is not None:
                 logger.info('Fetching asset from %s:%s.%s',
                             test_file, klass, method)
-            asset_obj.fetch()
+            asset_obj.fetch(timeout)
             success.append(call['name'])
         except (OSError, ValueError) as failed:
             fail.append(failed)
@@ -365,6 +366,16 @@ class Assets(CLICmd):
                                  key_type=bool,
                                  parser=fetch_subcommand_parser,
                                  long_arg='--ignore-errors')
+
+        help_msg = "Timeout to be used when download an asset."
+        settings.register_option(section='assets.fetch',
+                                 key='timeout',
+                                 help_msg=help_msg,
+                                 default=300,
+                                 key_type=int,
+                                 metavar="TIMEOUT",
+                                 parser=fetch_subcommand_parser,
+                                 long_arg='--timeout')
 
         register_subcommand_parser = subcommands.add_parser(
                 'register',
