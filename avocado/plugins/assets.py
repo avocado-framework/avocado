@@ -227,14 +227,8 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
 
-        # make dictionary unpacking compatible with python 3.4 as it does
-        # not support constructions like:
-        # Asset(**call, cache_dirs=cache_dirs, expire=expire)
-        call['cache_dirs'] = cache_dirs
-        call['expire'] = expire
-
         try:
-            asset_obj = Asset(**call)
+            asset_obj = Asset(**call, cache_dirs=cache_dirs, expire=expire)
             if logger is not None:
                 logger.info('Fetching asset from %s:%s.%s',
                             test_file, klass, method)
