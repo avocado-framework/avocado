@@ -20,6 +20,7 @@ import shlex
 import shutil
 import subprocess
 import time
+from abc import ABC, abstractmethod
 
 from ..utils import astring, genio
 from ..utils import path as utils_path
@@ -30,7 +31,7 @@ from .settings import settings
 log = logging.getLogger("avocado.sysinfo")
 
 
-class Collectible:
+class Collectible(ABC):
 
     """
     Abstract class for representing collectibles by sysinfo.
@@ -38,6 +39,10 @@ class Collectible:
 
     def __init__(self, log_path):
         self.log_path = astring.string_to_safe_path(log_path)
+
+    @abstractmethod
+    def run(self, logdir):
+        pass
 
 
 class Logfile(Collectible):
