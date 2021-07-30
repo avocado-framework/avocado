@@ -44,6 +44,22 @@ class Collectible(ABC):
     def run(self, logdir):
         pass
 
+    def __eq__(self, other):
+        if hash(self) == hash(other):
+            return True
+        elif isinstance(other, Collectible):
+            return False
+        return NotImplemented
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return result
+        return not result
+
+    def __hash__(self):
+        return hash((self.log_path))
+
 
 class Logfile(Collectible):
 
