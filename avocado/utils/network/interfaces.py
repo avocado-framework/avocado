@@ -61,8 +61,10 @@ class NetworkInterface:
             raise NWException(msg)
         return "{}/ifcfg-{}".format(path, self.name)
 
-    def _get_interface_details(self, version=4):
-        cmd = "ip -{} -j address show {}".format(version, self.name)
+    def _get_interface_details(self, version=None):
+        cmd = "ip -j link show {}".format(self.name)
+        if version:
+            cmd = "ip -{} -j address show {}".format(version, self.name)
         output = run_command(cmd, self.host)
         try:
             result = json.loads(output)
@@ -71,7 +73,7 @@ class NetworkInterface:
                     return item
             raise NWException("Interface not found")
         except (NWException, json.JSONDecodeError):
-            msg = "Unable to get IP address on interface {}".format(self.name)
+            msg = "Unable to get the details of interface {}".format(self.name)
             log.error(msg)
             raise NWException(msg)
 
