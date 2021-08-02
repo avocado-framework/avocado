@@ -3,6 +3,8 @@ import collections
 import multiprocessing
 import time
 
+from avocado.core.exceptions import TestFailFast
+
 
 class TaskStateMachine:
     """Represents all phases that a task can go through its life."""
@@ -248,6 +250,7 @@ class Worker:
         result_stats = self._state_machine._status_repo.result_stats
         if failfast and 'fail' in result_stats:
             await self._state_machine.abort("FAILFAST is enabled")
+            raise TestFailFast("Interrupting job (failfast).")
 
         await self._state_machine.finish_task(runtime_task)
 
