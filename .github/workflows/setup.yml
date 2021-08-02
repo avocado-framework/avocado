@@ -1,0 +1,230 @@
+name: Setup tests
+
+on:
+# Runs at 5:00 UTC on Mondays
+  schedule:
+    - cron: "0 5 * * 1"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  user-installation:
+    name: User installation commands
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.x]
+      fail-fast: false
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Installing Avocado
+        run: python3 setup.py install --user
+      - name: Installing plugins
+        run: |
+         python3 setup.py plugin --install=golang --user
+         python3 setup.py plugin --install=html --user
+         python3 setup.py plugin --install=result_upload --user
+         python3 setup.py plugin --install=resultsdb --user
+         python3 setup.py plugin --install=robot --user
+         python3 setup.py plugin --install=varianter_cit --user
+         python3 setup.py plugin --install=varianter_pict --user
+         python3 setup.py plugin --install=varianter_yaml_to_mux --user
+      - name: Avocado version
+        run: avocado --version
+      - name: Avocado smoketest legacy runner
+        run: avocado run --test-runner=runner examples/tests/passtest.py
+      - name: Avocado smoketest
+        run: avocado run --test-runner=nrunner examples/tests/passtest.py
+      - name: Avocado two tests
+        run: avocado run --test-runner=nrunner /usr/bin/true examples/tests/passtest.py
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  system-wide-installation:
+    name: System wide installation commands
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.x]
+      fail-fast: false
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Installing Avocado
+        run: python3 setup.py install
+      - name: Installing plugins
+        run: |
+         python3 setup.py plugin --install=golang
+         python3 setup.py plugin --install=html
+         python3 setup.py plugin --install=result_upload
+         python3 setup.py plugin --install=resultsdb
+         python3 setup.py plugin --install=robot
+         python3 setup.py plugin --install=varianter_cit
+         python3 setup.py plugin --install=varianter_pict
+         python3 setup.py plugin --install=varianter_yaml_to_mux
+      - name: Avocado version
+        run: avocado --version
+      - name: Avocado smoketest legacy runner
+        run: avocado run --test-runner=runner examples/tests/passtest.py
+      - name: Avocado smoketest
+        run: avocado run --test-runner=nrunner examples/tests/passtest.py
+      - name: Avocado two tests
+        run: avocado run --test-runner=nrunner /usr/bin/true examples/tests/passtest.py
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  devel-user-installation:
+    name: Developer user commands
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.x]
+      fail-fast: false
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: pip3 install -r requirements-dev.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user
+      - name: Avocado version
+        run: avocado --version
+      - name: Avocado smoketest legacy runner
+        run: avocado run --test-runner=runner examples/tests/passtest.py
+      - name: Avocado smoketest
+        run: avocado run --test-runner=nrunner examples/tests/passtest.py
+      - name: Avocado build manpage
+        run: python3 setup.py man
+      - name: Tree static check, unittests and fast functional tests
+        run: python3 setup.py test
+      - name: Uninstall avocado
+        run: python3 setup.py develop --user --uninstall
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  devel-wide-system-installation:
+    name: Developer system wide commands
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.x]
+      fail-fast: false
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: pip3 install -r requirements-dev.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop
+      - name: Avocado version
+        run: avocado --version
+      - name: Avocado smoketest legacy runner
+        run: avocado run --test-runner=runner examples/tests/passtest.py
+      - name: Avocado smoketest
+        run: avocado run --test-runner=nrunner examples/tests/passtest.py
+      - name: Avocado build manpage
+        run: python3 setup.py man
+      - name: Tree static check, unittests and fast functional tests
+        run: python3 setup.py test
+      - name: Uninstall avocado
+        run: python3 setup.py develop --uninstall
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  virtualenv-installation:
+    name: Virtualenv installation
+    runs-on: ubuntu-20.04
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install packages
+        run: |
+         sudo apt-get update
+         sudo apt-get install -y  python3-virtualenv
+      - name: virtualenv
+        run: |
+         python3 -m venv env
+         source env/bin/activate
+         python3 setup.py install
+         python3 setup.py plugin --install=golang
+         python3 setup.py plugin --install=html
+         python3 setup.py plugin --install=result_upload
+         python3 setup.py plugin --install=resultsdb
+         python3 setup.py plugin --install=robot
+         python3 setup.py plugin --install=varianter_cit
+         python3 setup.py plugin --install=varianter_pict
+         python3 setup.py plugin --install=varianter_yaml_to_mux
+         avocado --version
+         avocado run --test-runner=runner examples/tests/passtest.py
+         avocado run --test-runner=nrunner examples/tests/passtest.py
+         deactivate
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+  devel-virtualenv-installation:
+    name: Developer Virtualenv installation
+    runs-on: ubuntu-20.04
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install packages
+        run: |
+         sudo apt-get update
+         sudo apt-get install -y  python3-virtualenv
+      - name: virtualenv
+        run: |
+         python3 -m venv env
+         source env/bin/activate
+         python3 setup.py develop
+         avocado --version
+         avocado run --test-runner=runner examples/tests/passtest.py
+         avocado run --test-runner=nrunner examples/tests/passtest.py
+         python3 setup.py test
+         deactivate
+      - run: echo "🥑 This job's status is ${{ job.status }}."
