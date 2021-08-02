@@ -35,6 +35,59 @@ older, use the ``--by-days`` option::
 
  $ avocado assets list --by-days=10
 
+Registering assets
+------------------
+
+To manually register a local asset in the cache, use the ``register`` command::
+
+ $ avocado assets register *NAME* *URL*
+
+Where ``NAME`` is the unique name to associate with this asset and ``URL`` is
+the path to the local asset to be manually registered.
+
+The ``register`` command also supports the ``--hash`` option, which allows the
+addition of the file's hash.
+
+Fetching assets from instrumented tests
+---------------------------------------
+
+The ``fetch`` command allows the download of a limited definition of  assets
+inside an Avocado Instrumented test. It uses a parser on instrumented test
+source to find ``fetch_asset`` calls composed of simple strings as parameters,
+or at least one level of variable in the same context with a string assignment,
+and fetch those assets without running the test. The only exception to strings
+as arguments is the ``locations`` parameter, which allows the user of a list.
+
+Following are some examples of supported definitions of assets by the ``fetch``
+command:
+
+.. code-block:: python
+
+    tarball_locations = [
+        'https://mirrors.peers.community/mirrors/gnu/hello/hello-2.9.tar.gz',
+        'https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz',
+        'http://gnu.c3sl.ufpr.br/ftp/hello-2.9.tar.gz',
+        'ftp://ftp.funet.fi/pub/gnu/prep/hello/hello-2.9.tar.gz'
+        ]
+    self.hello = self.fetch_asset(
+        name='hello-2.9.tar.gz',
+        asset_hash='cb0470b0e8f4f7768338f5c5cfe1688c90fbbc74',
+        locations=tarball_locations)
+
+.. code-block:: python
+
+    kernel_url = ('https://archives.fedoraproject.org/pub/archive/fedora'
+                  '/linux/releases/29/Everything/x86_64/os/images/pxeboot'
+                  '/vmlinuz')
+    kernel_hash = '23bebd2680757891cf7adedb033532163a792495'
+    kernel_path = self.fetch_asset(kernel_url, asset_hash=kernel_hash)
+
+To fetch the assets defined inside an instrumented test, use::
+
+ $ avocado assets fetch *AVOCADO_INSTRUMENTED*
+
+Where ``AVOCADO_INSTRUMENTED`` is the path to the Avocado Instrumented file.
+
 Removing assets
 ---------------
 
