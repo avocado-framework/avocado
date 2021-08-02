@@ -13,6 +13,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import argparse
 import os
 import shutil
 import sys
@@ -203,6 +204,51 @@ class Linter(SimpleCommand):
             sys.exit(128)
 
 
+class Test(SimpleCommand):
+    """Run selftests"""
+
+    description = 'Run selftests'
+    user_options = [
+        ("job-api", None, "Run job API checks"),
+        ("static-checks", None, "Run static checks (isort, lint, etc)"),
+        ("nrunner-interface", None, "Run selftests/functional/test_nrunner_interface.py"),
+        ("unit", None, "Run selftests/unit/"),
+        ("jobs", None, "Run selftests/jobs/"),
+        ("functional", None, "Run selftests/functional/"),
+        ("optional-plugins", None, "Run optional_plugins/*/tests/"),
+        ("disable-plugin-checks", None, "Disable checks for a plugin (by directory name)"),
+        ("list-features", None, "Show the features tested by this test")
+    ]
+
+    def initialize_options(self):
+        self.job_api = False  # pylint: disable=W0201
+        self.static_checks = False  # pylint: disable=W0201
+        self.nrunner_interface = False  # pylint: disable=W0201
+        self.unit = False  # pylint: disable=W0201
+        self.jobs = False  # pylint: disable=W0201
+        self.functional = False  # pylint: disable=W0201
+        self.optional_plugins = False  # pylint: disable=W0201
+        self.disable_plugin_checks = []  # pylint: disable=W0201
+        self.list_features = False  # pylint: disable=W0201
+
+    def run(self):
+
+        args = argparse.Namespace()
+        args.static_checks = self.static_checks
+        args.job_api = self.job_api
+        args.nrunner_interface = self.nrunner_interface
+        args.unit = self.unit
+        args.jobs = self.jobs
+        args.functional = self.functional
+        args.optional_plugins = self.optional_plugins
+        args.disable_plugin_checks = self.disable_plugin_checks
+        args.list_features = self.list_features
+
+        # Import here on purpose, otherwise it'll mess with install/develop commands
+        import selftests.check
+        selftests.check.main(args)
+
+
 class Man(SimpleCommand):
     """Build man page"""
 
@@ -356,5 +402,6 @@ if __name__ == '__main__':
           cmdclass={'clean': Clean,
                     'develop': Develop,
                     'lint': Linter,
-                    'man': Man},
+                    'man': Man,
+                    'test': Test},
           install_requires=['setuptools'])
