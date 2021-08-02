@@ -7,22 +7,27 @@ from avocado.utils import archive, build, process
 class Hello(Test):
 
     def setUp(self):
-        mirrors = ['https://mirrors.peers.community/mirrors/gnu/hello/',
-                   'https://mirrors.kernel.org/gnu/hello/',
-                   'http://gnu.c3sl.ufpr.br/ftp/',
-                   'ftp://ftp.funet.fi/pub/gnu/prep/hello/']
-        hello = 'hello-2.9.tar.gz'
-        hello_locations = ["%s%s" % (loc, hello) for loc in mirrors]
-        hello_sig = 'hello-2.9.tar.gz.sig'
-        hello_sig_locations = ["%s%s" % (loc, hello_sig) for loc in mirrors]
+        tarball_locations = [
+            'https://mirrors.peers.community/mirrors/gnu/hello/hello-2.9.tar.gz',
+            'https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz',
+            'http://gnu.c3sl.ufpr.br/ftp/hello-2.9.tar.gz',
+            'ftp://ftp.funet.fi/pub/gnu/prep/hello/hello-2.9.tar.gz'
+            ]
         self.hello = self.fetch_asset(
-            name=hello,
-            locations=hello_locations,
-            asset_hash='cb0470b0e8f4f7768338f5c5cfe1688c90fbbc74')
+            name='hello-2.9.tar.gz',
+            asset_hash='cb0470b0e8f4f7768338f5c5cfe1688c90fbbc74',
+            locations=tarball_locations)
+
+        sig_locations = [
+            'https://mirrors.peers.community/mirrors/gnu/hello/hello-2.9.tar.gz.sig',
+            'https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz.sig',
+            'http://gnu.c3sl.ufpr.br/ftp/hello-2.9.tar.gz.sig',
+            'ftp://ftp.funet.fi/pub/gnu/prep/hello/hello-2.9.tar.gz.sig'
+            ]
         self.hello_sig = self.fetch_asset(
-            name=hello_sig,
+            name='hello-2.9.tar.gz.sig',
             asset_hash='f3b9fae20c35740004ae7b8de1301836dab4ac30',
-            locations=hello_sig_locations)
+            locations=sig_locations)
 
     @fail_on(process.CmdError)
     def test_gpg_signature(self):

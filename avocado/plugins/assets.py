@@ -157,6 +157,14 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
             self.asgmts[self.current_klass][self.current_method] = {}
         self.generic_visit(node)
 
+    @staticmethod
+    def _ast_list_to_list(node):
+        result = []
+        for item in node.value.elts:
+            if hasattr(item, 'value'):
+                result.append(item.value)
+        return result
+
     def visit_Assign(self, node):  # pylint: disable=C0103
         """
         Visit Assign on AST and build list of assignments that matches the
@@ -164,7 +172,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         :param node: AST node to be evaluated
         :type node: ast.*
         """
-        if isinstance(node.value, ast.Str):
+        if isinstance(node.value, (ast.Str, ast.List)):
             # make sure we are into a class method, we are not supporting
             # attributes and module constant assignments at this time
             if self.current_klass and self.current_method:
@@ -177,7 +185,12 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
                     name = node.targets[0].attr
                 else:
                     name = node.targets[0].id
-                self.asgmts[cur_klass][cur_method][name] = node.value.s
+
+                if isinstance(node.value, ast.Str):
+                    self.asgmts[cur_klass][cur_method][name] = node.value.s
+                elif isinstance(node.value, ast.List):
+                    self.asgmts[cur_klass][cur_method][name] = self._ast_list_to_list(node)
+
         self.generic_visit(node)
 
     def visit_Call(self, node):  # pylint: disable=C0103
