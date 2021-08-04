@@ -34,8 +34,6 @@ jobs:
         run: avocado --version
       - name: Avocado smoketest
         run: python -m avocado run passtest.py
-      - name: Quick lint checks
-        run: python setup.py lint
       - name: Tree static check, unittests and fast functional tests
         env:
           AVOCADO_LOG_DEBUG: "yes"

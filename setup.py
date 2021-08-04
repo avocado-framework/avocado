@@ -186,22 +186,13 @@ class SimpleCommand(Command):
 
 
 class Linter(SimpleCommand):
-    """Lint Python source code."""
+    """Lint Python source code. (Deprecated)"""
 
     description = 'Run logical, stylistic, analytical and formatter checks.'
 
     def run(self):
-        try:
-            run(['selftests/inspekt-indent.sh'], check=True)
-            run(['selftests/inspekt-style.sh'], check=True)
-            run(['selftests/isort.sh'], check=True)
-            run(['selftests/lint.sh'], check=True)
-            run(['selftests/signedoff-check.sh'], check=True)
-            run(['selftests/spell.sh'], check=True)
-            run(['selftests/modules-boundaries.sh'], check=True)
-        except CalledProcessError as e:
-            print("Failed during lint checks: ", e)
-            sys.exit(128)
+        print("This command is deprecated, please use instead: python3 setup.py test --static-checks")
+        sys.exit()
 
 
 class Test(SimpleCommand):
