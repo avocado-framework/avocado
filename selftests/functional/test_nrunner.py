@@ -39,7 +39,7 @@ class NRunnerFeatures(unittest.TestCase):
                   'nrunner.status_server_uri': status_server,
                   'nrunner.max_parallel_tasks': 1}
         with Job.from_config(job_config=config) as job:
-            self.assertEqual(job.run(), 1)
+            self.assertEqual(job.run(), 9)
             self.assertEqual(job.result.passed, 1)
             self.assertEqual(job.result.errors, 0)
             self.assertEqual(job.result.failed, 1)

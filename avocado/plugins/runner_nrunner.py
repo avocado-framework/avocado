@@ -22,7 +22,9 @@ import random
 
 from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
+from avocado.core.exceptions import TestFailFast
 from avocado.core.messages import MessageHandler
+from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
 from avocado.core.requirements.resolver import RequirementsResolver
@@ -303,7 +305,9 @@ class Runner(RunnerInterface):
         try:
             loop.run_until_complete(asyncio.wait_for(asyncio.gather(*workers),
                                                      job.timeout or None))
-        except (KeyboardInterrupt, asyncio.TimeoutError):
+        except (KeyboardInterrupt, asyncio.TimeoutError, TestFailFast) as ex:
+            LOG_JOB.info(str(ex))
+            job.interrupted_reason = str(ex)
             summary.add("INTERRUPTED")
 
         # Wait until all messages may have been processed by the
