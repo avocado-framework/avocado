@@ -271,14 +271,15 @@ class Test(unittest.TestCase, TestData):
 
         self._config = config or settings.as_dict()
 
+        self.__base_logdir = base_logdir
         self.__base_logdir_tmp = None
-        if base_logdir is None:
+        if self.__base_logdir is None:
             prefix = 'avocado_test_'
             self.__base_logdir_tmp = tempfile.TemporaryDirectory(prefix=prefix)
-            base_logdir = self.__base_logdir_tmp.name
+            self.__base_logdir = self.__base_logdir_tmp.name
 
-        base_logdir = os.path.join(base_logdir, 'test-results')
-        logdir = os.path.join(base_logdir, self.name.str_filesystem)
+        self.__base_logdir = os.path.join(self.__base_logdir, 'test-results')
+        logdir = os.path.join(self.__base_logdir, self.name.str_filesystem)
         if os.path.exists(logdir):
             raise exceptions.TestSetupFail("Log dir already exists, this "
                                            "should never happen: %s"
@@ -324,19 +325,17 @@ class Test(unittest.TestCase, TestData):
         self.__fail_reason = None
         self.__fail_class = None
         self.__traceback = None
-        self.__cache_dirs = None    # Is initialized lazily
+
+        # Are initialized lazily
+        self.__cache_dirs = None
+        self.__base_tmpdir = None
+        self.__workdir = None
 
         self.__running = False
         self.paused = False
         self.paused_msg = ''
 
         self.__runner_queue = runner_queue
-
-        self.__base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir",
-                                              dir=base_logdir)
-        self.__workdir = os.path.join(self.__base_tmpdir,
-                                      self.name.str_filesystem)
-        utils_path.init_dir(self.__workdir)
 
         self.log.debug("Test metadata:")
         if self.filename:
@@ -347,10 +346,16 @@ class Test(unittest.TestCase, TestData):
             pass
         else:
             self.log.debug("  teststmpdir: %s", teststmpdir)
-        self.log.debug("  workdir: %s", self.workdir)
 
         unittest.TestCase.__init__(self, methodName=methodName)
         TestData.__init__(self)
+
+    @property
+    def _base_tmpdir(self):
+        if self.__base_tmpdir is None:
+            self.__base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir",
+                                                  dir=self.__base_logdir)
+        return self.__base_tmpdir
 
     @property
     def name(self):
@@ -455,6 +460,11 @@ class Test(unittest.TestCase, TestData):
         It can be used on tasks such as decompressing source tarballs,
         building software, etc.
         """
+        if self.__workdir is None:
+            self.__workdir = os.path.join(self._base_tmpdir,
+                                          self.name.str_filesystem)
+            utils_path.init_dir(self.__workdir)
+            self.log.debug("Test workdir initialized at: %s", self.__workdir)
         return self.__workdir
 
     @property
@@ -889,7 +899,8 @@ class Test(unittest.TestCase, TestData):
         os.environ['AVOCADO_VERSION'] = VERSION
         if self.basedir is not None:
             os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
-        os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
+        if self.__workdir is not None:
+            os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
@@ -1068,9 +1079,10 @@ class Test(unittest.TestCase, TestData):
         if self.__base_logdir_tmp is not None:
             self.__base_logdir_tmp.cleanup()
             self.__base_logdir_tmp = None
-        if not self._config.get('run.keep_tmp') and os.path.exists(
-                self.__base_tmpdir):
-            shutil.rmtree(self.__base_tmpdir)
+        if self.__base_tmpdir is not None:
+            if not self._config.get('run.keep_tmp') and os.path.exists(
+                    self.__base_tmpdir):
+                shutil.rmtree(self.__base_tmpdir)
 
     def tearDown(self):
         self._cleanup()
@@ -1095,6 +1107,9 @@ class SimpleTest(Test):
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir,
                                          config=config)
+        # Access workdir to initialize it, given that it's lazy
+        _ = self.workdir
+
         # Maximal allowed file name length is 255
         file_datadir = None
         if (self.filename is not None and
