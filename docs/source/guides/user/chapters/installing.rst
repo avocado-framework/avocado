@@ -119,13 +119,25 @@ Installing from source code
 First make sure you have a basic set of packages installed. The following
 applies to Fedora based distributions, please adapt to your platform::
 
-    $ sudo dnf install -y python3 git gcc python3-devel python3-pip libvirt-devel libffi-devel openssl-devel libyaml-devel redhat-rpm-config xz-devel
+    $ sudo dnf install -y python3 git gcc python3-pip
 
 Then to install Avocado from the git repository run::
 
     $ git clone git://github.com/avocado-framework/avocado.git
     $ cd avocado
-    $ sudo python3 setup.py install
+    $ python3 setup.py install --user
+
+Optionally, to install the plugins run:
+
+    $ python3 setup.py plugin --install=golang --user
+    $ python3 setup.py plugin --install=html --user
+    $ python3 setup.py plugin --install=result_upload --user
+    $ python3 setup.py plugin --install=resultsdb --user
+    $ python3 setup.py plugin --install=robot --user
+    $ python3 setup.py plugin --install=varianter_cit --user
+    $ python3 setup.py plugin --install=varianter_pict --user
+    $ python3 setup.py plugin --install=varianter_yaml_to_mux --user
+
 
 .. _Virtualization:Tests project in OpenSUSE build service: https://build.opensuse.org/project/show/Virtualization:Tests
 .. _Avocado-VT: https://avocado-vt.readthedocs.io/en/latest/GetStartedGuide.html#installing-avocado-vt

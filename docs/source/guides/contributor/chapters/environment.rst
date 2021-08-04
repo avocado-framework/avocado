@@ -29,7 +29,7 @@ registered. If you're hacking on Avocado and want to use the same, possibly
 modified, source for running your tests and experiments, you may do so with one
 additional step::
 
-  $ make develop
+  $ python3 setup.py develop [--user]
 
 On POSIX systems this will create an "egg link" to your original source tree under
 ``$HOME/.local/lib/pythonX.Y/site-packages``. Then, on your original source tree, an
