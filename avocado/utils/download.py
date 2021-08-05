@@ -20,7 +20,7 @@ Methods to download URLs and regular files.
 import logging
 import os
 import shutil
-import socket
+from multiprocessing import Process
 from urllib.request import urlopen
 
 from . import aurl, crypto, output
@@ -34,24 +34,21 @@ def url_open(url, data=None, timeout=5):
 
     :param url: URL to open.
     :param data: (optional) data to post.
-    :param timeout: (optional) default timeout in seconds.
+    :param timeout: (optional) default timeout in seconds. Please, be aware
+                    that timeout here is just for blocking operations during
+                    the connection setup, since this method doesn't read the
+                    file from the url.
     :return: file-like object.
     :raises: `URLError`.
     """
-    # Save old timeout
-    old_timeout = socket.getdefaulttimeout()
-    socket.setdefaulttimeout(timeout)
-    try:
-        result = urlopen(url, data=data)
-        msg = ('Retrieved URL "%s": content-length %s, date: "%s", '
-               'last-modified: "%s"')
-        log.debug(msg, url,
-                  result.headers.get('Content-Length', 'UNKNOWN'),
-                  result.headers.get('Date', 'UNKNOWN'),
-                  result.headers.get('Last-Modified', 'UNKNOWN'))
-        return result
-    finally:
-        socket.setdefaulttimeout(old_timeout)
+    result = urlopen(url, data=data, timeout=timeout)
+    msg = ('Retrieved URL "%s": content-length %s, date: "%s", '
+           'last-modified: "%s"')
+    log.debug(msg, url,
+              result.headers.get('Content-Length', 'UNKNOWN'),
+              result.headers.get('Date', 'UNKNOWN'),
+              result.headers.get('Last-Modified', 'UNKNOWN'))
+    return result
 
 
 def url_download(url, filename, data=None, timeout=300):
@@ -64,14 +61,23 @@ def url_download(url, filename, data=None, timeout=300):
     :param timeout: (optional) default timeout in seconds.
     :return: `None`.
     """
-    log.info('Fetching %s -> %s', url, filename)
+    def download():
+        log.info('Fetching %s -> %s', url, filename)
 
-    src_file = url_open(url, data=data, timeout=timeout)
-    try:
-        with open(filename, 'wb') as dest_file:
-            shutil.copyfileobj(src_file, dest_file)
-    finally:
-        src_file.close()
+        src_file = url_open(url, data=data)
+        try:
+            with open(filename, 'wb') as dest_file:
+                shutil.copyfileobj(src_file, dest_file)
+        finally:
+            src_file.close()
+
+    process = Process(target=download)
+    process.start()
+    process.join(timeout)
+    if process.is_alive():
+        process.terminate()
+        process.join()
+        raise OSError("Aborting downloading. Timeout was reach.")
 
 
 def url_download_interactive(url, output_file, title='', chunk_size=102400):

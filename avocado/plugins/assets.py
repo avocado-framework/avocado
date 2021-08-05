@@ -45,7 +45,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.klass = klass
         # we need to make sure we cover the setUp method when fetching
         # assets for a specific test
-        self.method = [method, 'setUp']
+        self.methods = [method, 'setUp']
         self.asgmts = {}
         self.calls = []
 
@@ -67,8 +67,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.visit(self.tree)
 
     def _parse_args(self, node):
-        """
-        Parse the AST fetch_asset node and build the arguments dictionary.
+        """Parse the AST fetch_asset node and build the arguments dictionary.
+
         :param node: AST node to be evaluated
         :type node: ast.Attribute
         :returns: keywords and arguments from a fetch_asset call.
@@ -127,8 +127,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         return fetch_args
 
     def visit_ClassDef(self, node):  # pylint: disable=C0103
-        """
-        Visit ClassDef on AST and save current Class.
+        """Visit ClassDef on AST and save current Class.
+
         :param node: AST node to be evaluated
         :type node: ast.*
         """
@@ -143,14 +143,14 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
             self.generic_visit(node)
 
     def visit_FunctionDef(self, node):  # pylint: disable=C0103
-        """
-        Visit FunctionDef on AST and save current method.
+        """Visit FunctionDef on AST and save current method.
+
         :param node: AST node to be evaluated
         :type node: ast.*
         """
         # make sure we are into a class method and not a function
         if self.current_klass:
-            if self.method[0] and node.name not in self.method:
+            if self.methods[0] and node.name not in self.methods:
                 return
 
             self.current_method = node.name
@@ -166,9 +166,11 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         return result
 
     def visit_Assign(self, node):  # pylint: disable=C0103
-        """
-        Visit Assign on AST and build list of assignments that matches the
+        """Visit Assign on AST and build assignments.
+
+        This method will visit and build list of assignments that matches the
         pattern pattern `name = string`.
+
         :param node: AST node to be evaluated
         :type node: ast.*
         """
@@ -194,8 +196,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.generic_visit(node)
 
     def visit_Call(self, node):  # pylint: disable=C0103
-        """
-        Visit Calls on AST and build list of calls that matches the pattern.
+        """Visit Calls on AST and build list of calls that matches the pattern.
+
         :param node: AST node to be evaluated
         :type node: ast.*
         """
@@ -209,14 +211,15 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
 
 
 def fetch_assets(test_file, klass=None, method=None, logger=None):
-    """
-    Fetches the assets based on keywords listed on FetchAssetHandler.calls.
+    """Fetches the assets based on keywords listed on FetchAssetHandler.calls.
+
     :param test_file: File name of instrumented test to be evaluated
-    :type test_file: str
+                      :type test_file: str
     :returns: list of names that were successfully fetched and list of
-    fails.
+              fails.
     """
     cache_dirs = settings.as_dict().get('datadir.paths.cache_dirs')
+    timeout = settings.as_dict().get('assets.fetch.timeout')
     success = []
     fail = []
     handler = FetchAssetHandler(test_file, klass, method)
@@ -225,18 +228,12 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
 
-        # make dictionary unpacking compatible with python 3.4 as it does
-        # not support constructions like:
-        # Asset(**call, cache_dirs=cache_dirs, expire=expire)
-        call['cache_dirs'] = cache_dirs
-        call['expire'] = expire
-
         try:
-            asset_obj = Asset(**call)
+            asset_obj = Asset(**call, cache_dirs=cache_dirs, expire=expire)
             if logger is not None:
                 logger.info('Fetching asset from %s:%s.%s',
                             test_file, klass, method)
-            asset_obj.fetch()
+            asset_obj.fetch(timeout)
             success.append(call['name'])
         except (OSError, ValueError) as failed:
             fail.append(failed)
@@ -244,10 +241,11 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
 
 
 class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
-    """
-    Implements the assets fetch job pre tests. This has the same effect of
-    running the 'avocado assets fetch INSTRUMENTED', but it runs during the
-    test execution, before the actual test starts.
+    """Implements the assets fetch job pre tests.
+
+    This has the same effect of running the 'avocado assets fetch
+    INSTRUMENTED', but it runs during the test execution, before the actual
+    test starts.
     """
     name = "fetchasset"
     description = "Fetch assets before the test run"
@@ -297,8 +295,7 @@ class Assets(CLICmd):
         return len([a for a in args if a is not None])
 
     def configure(self, parser):
-        """
-        Add the subparser for the assets action.
+        """Add the subparser for the assets action.
 
         :param parser: The Avocado command line application parser
         :type parser: :class:`avocado.core.parser.ArgumentParser`
@@ -369,6 +366,16 @@ class Assets(CLICmd):
                                  key_type=bool,
                                  parser=fetch_subcommand_parser,
                                  long_arg='--ignore-errors')
+
+        help_msg = "Timeout to be used when download an asset."
+        settings.register_option(section='assets.fetch',
+                                 key='timeout',
+                                 help_msg=help_msg,
+                                 default=300,
+                                 key_type=int,
+                                 metavar="TIMEOUT",
+                                 parser=fetch_subcommand_parser,
+                                 long_arg='--timeout')
 
         register_subcommand_parser = subcommands.add_parser(
                 'register',
