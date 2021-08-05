@@ -295,25 +295,22 @@ class TestRunner(Runner):
         paths = variant.get("paths")
         empty_variants = varianter.is_empty_variant(var)
 
+        if test_parameters and not empty_variants:
+            raise NotImplementedError("Specifying test params from test loader "
+                                      "and from varianter at the same time is "
+                                      "not yet supported. Either use variants "
+                                      "(-m) option or command-line params (-p).")
+
         original_params_to_klass = template[1]
         if "params" not in original_params_to_klass:
             params_to_klass = original_params_to_klass.copy()
-            if test_parameters and empty_variants:
+            if test_parameters:
                 var[0] = tree.TreeNode().get_node("/", True)
                 var[0].value = test_parameters
                 paths = ["/"]
             params_to_klass["params"] = (var, paths)
             factory = [template[0], params_to_klass]
             return factory, variant
-
-        if not empty_variants:
-            raise NotImplementedError("Specifying test params from test loader "
-                                      "and from varianter at the same time is "
-                                      "not yet supported. Please remove either "
-                                      "variants defined by the varianter (%s) "
-                                      "or make the test loader of test %s to "
-                                      "not to fill variants." % (variant,
-                                                                 template))
 
         return template, {"variant": var,
                           "variant_id": varianter.generate_variant_id(var),
