@@ -45,10 +45,10 @@ def url_open(url, data=None, timeout=5):
         result = urlopen(url, data=data)
         msg = ('Retrieved URL "%s": content-length %s, date: "%s", '
                'last-modified: "%s"')
-        logging.debug(msg, url,
-                      result.headers.get('Content-Length', 'UNKNOWN'),
-                      result.headers.get('Date', 'UNKNOWN'),
-                      result.headers.get('Last-Modified', 'UNKNOWN'))
+        log.debug(msg, url,
+                  result.headers.get('Content-Length', 'UNKNOWN'),
+                  result.headers.get('Date', 'UNKNOWN'),
+                  result.headers.get('Last-Modified', 'UNKNOWN'))
         return result
     finally:
         socket.setdefaulttimeout(old_timeout)
@@ -96,8 +96,8 @@ def url_download_interactive(url, output_file, title='', chunk_size=102400):
         except KeyError:
             raise ValueError('Could not find file size in HTTP headers')
 
-        logging.info('Downloading %s, %s to %s', os.path.basename(url),
-                     output.display_data_size(file_size), output_dir)
+        log.info('Downloading %s, %s to %s', os.path.basename(url),
+                 output.display_data_size(file_size), output_dir)
 
         progress_bar = output.ProgressBar(maximum=file_size, title=title)
 
