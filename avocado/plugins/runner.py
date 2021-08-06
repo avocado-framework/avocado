@@ -296,10 +296,11 @@ class TestRunner(Runner):
         empty_variants = varianter.is_empty_variant(var)
 
         if test_parameters and not empty_variants:
-            raise NotImplementedError("Specifying test params from test loader "
-                                      "and from varianter at the same time is "
-                                      "not yet supported. Either use variants "
-                                      "(-m) option or command-line params (-p).")
+            err_msg = ('Specifying test parameters (with config entry '
+                       '"run.test_parameters" or command line "-p") along with '
+                       'any varianter plugin (run "avocado plugins" for a list)'
+                       ' is not yet supported. Please use one or the other.')
+            raise NotImplementedError(err_msg)
 
         original_params_to_klass = template[1]
         if "params" not in original_params_to_klass:
