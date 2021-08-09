@@ -293,13 +293,6 @@ class TestRunner(Runner):
         """
         var = variant.get("variant")
         paths = variant.get("paths")
-        empty_variants = varianter.is_empty_variant(var)
-
-        if test_parameters and not empty_variants:
-            raise NotImplementedError("Specifying test params from test loader "
-                                      "and from varianter at the same time is "
-                                      "not yet supported. Either use variants "
-                                      "(-m) option or command-line params (-p).")
 
         original_params_to_klass = template[1]
         if "params" not in original_params_to_klass:

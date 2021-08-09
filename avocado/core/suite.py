@@ -26,7 +26,7 @@ from .resolver import ReferenceResolutionResult, resolve
 from .settings import settings
 from .tags import filter_test_tags, filter_test_tags_runnable
 from .test import DryRunTest, Test
-from .varianter import Varianter
+from .varianter import Varianter, is_empty_variant
 
 
 class TestSuiteError(Exception):
@@ -102,11 +102,30 @@ class TestSuite:
         self._runner = None
         self._test_parameters = None
 
+        self._check_both_parameters_and_variants()
+
         if self.config.get('run.dry_run.enabled'):
             self._convert_to_dry_run()
 
         if self.size == 0:
             return
+
+    def _has_both_parameters_and_variants(self):
+        if not self.test_parameters:
+            return False
+        for variant in self.variants.itertests():
+            var = variant.get("variant")
+            if not is_empty_variant(var):
+                return True
+        return False
+
+    def _check_both_parameters_and_variants(self):
+        if self._has_both_parameters_and_variants():
+            err_msg = ('Specifying test parameters (with config entry '
+                       '"run.test_parameters" or command line "-p") along with '
+                       'any varianter plugin (run "avocado plugins" for a list)'
+                       ' is not yet supported. Please use one or the other.')
+            raise TestSuiteError(err_msg)
 
     def __len__(self):
         """This is a convenient method to run `len()` over this object.
