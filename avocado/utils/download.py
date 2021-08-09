@@ -20,6 +20,7 @@ Methods to download URLs and regular files.
 import logging
 import os
 import shutil
+import socket
 from multiprocessing import Process
 from urllib.request import urlopen
 
@@ -41,7 +42,13 @@ def url_open(url, data=None, timeout=5):
     :return: file-like object.
     :raises: `URLError`.
     """
-    result = urlopen(url, data=data, timeout=timeout)
+    try:
+        result = urlopen(url, data=data, timeout=timeout)
+    except socket.timeout as ex:
+        msg = "Timeout was reach: {}".format(str(ex))
+        log.error(msg)
+        return None
+
     msg = ('Retrieved URL "%s": content-length %s, date: "%s", '
            'last-modified: "%s"')
     log.debug(msg, url,
