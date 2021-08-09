@@ -21,6 +21,7 @@ import logging
 import os
 import shutil
 import socket
+import sys
 from multiprocessing import Process
 from urllib.request import urlopen
 
@@ -70,6 +71,12 @@ def url_download(url, filename, data=None, timeout=300):
     """
     def download():
         src_file = url_open(url, data=data)
+        if not src_file:
+            msg = ("Failed to get file. Probably timeout was reach when "
+                   "connecting to the server.\n")
+            sys.stderr.write(msg)
+            sys.exit(1)
+
         try:
             with open(filename, 'wb') as dest_file:
                 shutil.copyfileobj(src_file, dest_file)
