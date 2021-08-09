@@ -69,8 +69,6 @@ def url_download(url, filename, data=None, timeout=300):
     :return: `None`.
     """
     def download():
-        log.info('Fetching %s -> %s', url, filename)
-
         src_file = url_open(url, data=data)
         try:
             with open(filename, 'wb') as dest_file:
@@ -79,6 +77,7 @@ def url_download(url, filename, data=None, timeout=300):
             src_file.close()
 
     process = Process(target=download)
+    log.info('Fetching %s -> %s', url, filename)
     process.start()
     process.join(timeout)
     if process.is_alive():
