@@ -56,3 +56,6 @@ if __name__ == '__main__':
 
     if result:
         print("\n".join(result))
+
+    for err in loader.errors:
+        print("ERROR: ", err, file=sys.stderr)
