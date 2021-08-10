@@ -89,7 +89,7 @@ class ConfigOption:
     def __init__(self, namespace, help_msg, key_type=str, default=None,
                  parser=None, short_arg=None, long_arg=None,
                  positional_arg=False, choices=None, nargs=None,
-                 metavar=None, required=None, action=None):
+                 metavar=None, required=None, action=None, argparse_type=None):
         self.namespace = namespace
         self.help_msg = help_msg
         self.key_type = key_type
@@ -104,6 +104,7 @@ class ConfigOption:
         self.required = required
         self._action = action
         self._value = None
+        self._argparse_type = argparse_type
 
         self._update_argparser()
 
@@ -144,6 +145,9 @@ class ConfigOption:
 
     @property
     def argparse_type(self):
+        if self._argparse_type is not None:
+            return self._argparse_type
+
         # type is automatic when using lists because Argparse do not support
         # list on command-line. They are comma separated strings that will be
         # converted to list here.
@@ -151,6 +155,10 @@ class ConfigOption:
             return str
         else:
             return self.key_type
+
+    @argparse_type.setter
+    def argparse_type(self, value):
+        self._argparse_type = value
 
     @property
     def metavar(self):
@@ -207,7 +215,8 @@ class ConfigOption:
 
     def add_argparser(self, parser, long_arg, short_arg=None,
                       positional_arg=False, choices=None, nargs=None,
-                      metavar=None, required=None, action=None):
+                      metavar=None, required=None, action=None,
+                      argparse_type=None):
         """Add an command-line argparser to this option."""
 
         self.parser = parser
@@ -219,6 +228,7 @@ class ConfigOption:
         self._metavar = metavar
         self.required = required
         self._action = action
+        self._argparse_type = argparse_type
 
         self._update_argparser()
 
@@ -333,7 +343,7 @@ class Settings:
                                 short_arg=None, positional_arg=False,
                                 choices=None, nargs=None, metavar=None,
                                 required=None, action=None,
-                                allow_multiple=False):
+                                allow_multiple=False, argparse_type=None):
         """Add a command-line argument parser to an existing option.
 
         This method is useful to add a parser when the option is registered
@@ -387,6 +397,16 @@ class Settings:
             Whether the same option may be available on different parsers.
             This is useful when the same option is available on different
             commands, such as "avocado run" or "avocado list".
+
+        argparse_type :
+            A possibly different type for the command line handling of
+            an option.  For instance, when an option has a "key_type" of "list",
+            its respective configuration file entry will expect a string that
+            can be evaluated to a Python list, but that is far from convenient
+            to set on the command line.  With this argument, a function that
+            will, for instance, split a comma separated list may be used,
+            resulting in command line users being able to provide convenient
+            input.
         """
         if not any([long_arg, short_arg, positional_arg]):
             raise SettingsError("To add an argument parser to an option, it "
@@ -405,7 +425,8 @@ class Settings:
             raise SettingsError(msg)
 
         option.add_argparser(parser, long_arg, short_arg, positional_arg,
-                             choices, nargs, metavar, required, action)
+                             choices, nargs, metavar, required, action,
+                             argparse_type)
 
     def as_dict(self, regex=None):
         """Return an dictionary with the current active settings.
