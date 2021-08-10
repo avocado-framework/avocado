@@ -19,20 +19,28 @@ class AptBackend(DpkgBackend):
     Debian based distributions, such as Ubuntu Linux.
     """
 
-    def __init__(self):
+    def __init__(self, session=None):
         """
         Initializes the base command and the debian package repository.
+
+        :param session: ssh connection to manage the apt package manager of
+                        another machine
+        :type session: avocado.utils.ssh.Session
         """
-        super(AptBackend, self).__init__()
-        executable = utils_path.find_command('apt-get')
+        super(AptBackend, self).__init__(session=session)
+        executable = utils_path.find_command('apt-get', session=self.session)
         self.base_command = executable + ' --yes --allow-unauthenticated'
         self.repo_file_path = '/etc/apt/sources.list.d/avocado.list'
         self.dpkg_force_confdef = ('-o Dpkg::Options::="--force-confdef" '
                                    '-o Dpkg::Options::="--force-confold"')
-        cmd_result = process.run('apt-get -v | head -1',
-                                 ignore_status=True,
-                                 verbose=False,
-                                 shell=True)
+        if self.session:
+            cmd_result = self.session.cmd('apt-get -v | head -1',
+                                          ignore_status=True)
+        else:
+            cmd_result = process.run('apt-get -v | head -1',
+                                     ignore_status=True,
+                                     verbose=False,
+                                     shell=True)
         out = cmd_result.stdout_text.strip()
         try:
             ver = re.findall(r'\d\S*', out)[0]
@@ -56,7 +64,10 @@ class AptBackend(DpkgBackend):
 
         :param name: Package name.
         """
-        if os.path.isfile(name):
+        if self.session:
+            if self.session.cmd('test -f %s' % name).exit_status == 0:
+                i_cmd = utils_path.find_command('gdebi', self.session) + ' -n -q ' + name
+        elif os.path.isfile(name):
             i_cmd = utils_path.find_command('gdebi') + ' -n -q ' + name
         else:
             command = 'install'
@@ -64,7 +75,10 @@ class AptBackend(DpkgBackend):
                               command, name])
 
         try:
-            process.system(i_cmd, shell=True, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + i_cmd)
+            else:
+                process.system(i_cmd, shell=True, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -80,7 +94,10 @@ class AptBackend(DpkgBackend):
         r_cmd = self.base_command + ' ' + command + ' ' + flag + ' ' + name
 
         try:
-            process.system(r_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + r_cmd)
+            else:
+                process.system(r_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -94,13 +111,27 @@ class AptBackend(DpkgBackend):
         """
         def _add_repo_file():
             add_cmd = "bash -c \"echo '%s' > %s\"" % (repo, self.repo_file_path)
-            process.system(add_cmd, shell=True, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + add_cmd)
+            else:
+                process.system(add_cmd, shell=True, sudo=True)
 
         def _get_repo_file_contents():
-            with open(self.repo_file_path, 'r') as repo_file:
-                return repo_file.read()
+            if self.session:
+                return self.session.cmd('cat %s' % self.repo_file_path).stdout_text.split('/n')
+            else:
+                try:
+                    return open(self.repo_file_path, 'r').read()
+                except IOError as err:
+                    log.debug('Could not open %s', self.repo_file_path)
+                    log.debug('Exception: %s', str(err))
+                    return None
 
-        if not os.path.isfile(self.repo_file_path):
+        if self.session:
+            if not self.session.cmd('test -f %s' % self.repo_file_path).exit_status == 0:
+                _add_repo_file()
+                return True
+        elif not self.session and not os.path.isfile(self.repo_file_path):
             _add_repo_file()
             return True
 
@@ -121,19 +152,25 @@ class AptBackend(DpkgBackend):
         """
         try:
             new_file_contents = []
-            with open(self.repo_file_path, 'r') as repo_file:
-                for line in repo_file.readlines():
-                    if line != repo:
-                        new_file_contents.append(line)
+            if self.session:
+                repo_file = self.session.cmd('cat %s' % self.repo_file_path).stdout_text.split('/n')
+            else:
+                repo_file = open(self.repo_file_path, 'r').read()
+            for line in repo_file:
+                if line != repo:
+                    new_file_contents.append(line)
             new_file_contents = "\n".join(new_file_contents)
             prefix = "avocado_software_manager"
             with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
                 tmp_file.write(new_file_contents)
                 tmp_file.flush()    # Sync the content
-                process.system('cp %s %s'
-                               % (tmp_file.name, self.repo_file_path),
-                               sudo=True)
-        except (OSError, process.CmdError) as details:
+                if self.session:
+                    self.session.copy_files(tmp_file.name, self.repo_file_path)
+                else:
+                    process.system('cp %s %s'
+                                   % (tmp_file.name, self.repo_file_path),
+                                   sudo=True)
+        except (OSError, process.CmdError, IOError) as details:
             log.error(details)
             return False
 
@@ -149,7 +186,10 @@ class AptBackend(DpkgBackend):
         ud_command = 'update'
         ud_cmd = self.base_command + ' ' + ud_command
         try:
-            process.system(ud_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + ud_cmd)
+            else:
+                process.system(ud_cmd, sudo=True)
         except process.CmdError:
             log.error("Apt package update failed")
 
@@ -163,7 +203,10 @@ class AptBackend(DpkgBackend):
                                up_command])
 
         try:
-            process.system(up_cmd, shell=True, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + up_cmd)
+            else:
+                process.system(up_cmd, shell=True, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -175,18 +218,25 @@ class AptBackend(DpkgBackend):
         :param name: File name.
         """
         try:
-            command = utils_path.find_command('apt-file')
+            command = utils_path.find_command('apt-file', session=self.session)
         except utils_path.CmdNotFoundError:
             self.install('apt-file')
-            command = utils_path.find_command('apt-file')
+            command = utils_path.find_command('apt-file', session=self.session)
         try:
-            process.run(command + ' update')
+            if self.session:
+                self.session.cmd(command + ' update')
+            else:
+                process.run(command + ' update')
         except process.CmdError:
             log.error("Apt file cache update failed")
         fu_cmd = command + ' search ' + name
         try:
-            paths = list(filter(None, os.environ['PATH'].split(':')))
-            provides = list(filter(None, process.run(fu_cmd).stdout_text.split('\n')))
+            if self.session:
+                paths = list(filter(None, self.session.cmd('echo $PATH').stdout_text.split(':')))
+                provides = list(filter(None, self.session.cmd(fu_cmd).stdout_text.split('/n')))
+            else:
+                paths = list(filter(None, os.environ['PATH'].split(':')))
+                provides = list(filter(None, process.run(fu_cmd).stdout_text.split('\n')))
             list_provides = []
             for each_path in paths:
                 for line in provides:
@@ -224,13 +274,22 @@ class AptBackend(DpkgBackend):
         src_cmd = '%s source %s' % (self.base_command, name)
         try:
             if self.build_dep(name):
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                os.chdir(path)
-                process.system_output(src_cmd)
-                for subdir in os.listdir(path):
-                    if subdir.startswith(name) and os.path.isdir(subdir):
-                        return os.path.join(path, subdir)
+                if self.session:
+                    if not self.session.cmd('[ -d %s ]' % path).exit_status == 0:
+                        self.session.cmd('mkdir -p %s' % path)
+                    self.session.cmd('cd %s' % path)
+                    self.session.cmd(src_cmd)
+                    for subdir in self.session.cmd('ls').stdout_text.split():
+                        if subdir.startswith(name) and self.session.cmd('[ -d %s ]' % subdir).exit_status == 0:
+                            return os.path.join(path, subdir)
+                else:
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    os.chdir(path)
+                    process.system_output(src_cmd)
+                    for subdir in os.listdir(path):
+                        if subdir.startswith(name) and os.path.isdir(subdir):
+                            return os.path.join(path, subdir)
         except process.CmdError as details:
             log.error("Apt package source failed %s", details)
             return ""
@@ -251,7 +310,10 @@ class AptBackend(DpkgBackend):
 
         src_cmd = '%s build-dep %s' % (self.base_command, name)
         try:
-            process.system_output(src_cmd)
+            if self.session:
+                self.session.cmd(src_cmd)
+            else:
+                process.system_output(src_cmd)
             return True
         except process.CmdError as details:
             log.error("Apt package build-dep failed %s", details)

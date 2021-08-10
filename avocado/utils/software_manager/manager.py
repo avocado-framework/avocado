@@ -11,7 +11,7 @@ class SoftwareManager:
     operations of a given package management tool.
     """
 
-    def __init__(self):
+    def __init__(self, session=None):
         """
         Lazily instantiate the object
         """
@@ -20,6 +20,7 @@ class SoftwareManager:
         self.lowlevel_base_command = None
         self.base_command = None
         self.pm_version = None
+        self.session = session
 
     def _init_on_demand(self):
         """
@@ -27,7 +28,7 @@ class SoftwareManager:
         operating system running and initializes the appropriate backend.
         """
         if not self.initialized:
-            inspector = SystemInspector()
+            inspector = SystemInspector(self.session)
             backend_type = inspector.get_package_management()
 
             if backend_type not in SUPPORTED_PACKAGE_MANAGERS:
@@ -35,7 +36,7 @@ class SoftwareManager:
                                           'system: %s.' % backend_type)
 
             backend = SUPPORTED_PACKAGE_MANAGERS[backend_type]
-            self.backend = backend()
+            self.backend = backend(self.session)
             self.initialized = True
 
     def __getattr__(self, name):

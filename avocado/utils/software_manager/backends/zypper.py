@@ -16,15 +16,20 @@ class ZypperBackend(RpmBackend):
     Set of operations for the zypper package manager, found on SUSE Linux.
     """
 
-    def __init__(self):
+    def __init__(self, session=None):
         """
         Initializes the base command and the yum package repository.
+
+        :param session: ssh connection that represents another machine
+        :type session: avocado.utils.ssh.Session
         """
-        super(ZypperBackend, self).__init__()
-        self.base_command = utils_path.find_command('zypper') + ' -n'
+        super(ZypperBackend, self).__init__(session=session)
+        self.base_command = utils_path.find_command('zypper', self.session) + ' -n'
         z_cmd = self.base_command + ' --version'
-        cmd_result = process.run(z_cmd, ignore_status=True,
-                                 verbose=False)
+        if self.session:
+            cmd_result = self.session.cmd(z_cmd, ignore_status=True)
+        else:
+            cmd_result = process.run(z_cmd, ignore_status=True, verbose=False)
         out = cmd_result.stdout_text.strip()
         try:
             ver = re.findall(r'\d.\d*.\d*', out)[0]
@@ -41,7 +46,10 @@ class ZypperBackend(RpmBackend):
         """
         i_cmd = self.base_command + ' install -l ' + name
         try:
-            process.system(i_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + i_cmd)
+            else:
+                process.system(i_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -54,7 +62,10 @@ class ZypperBackend(RpmBackend):
         """
         ar_cmd = self.base_command + ' addrepo ' + url
         try:
-            process.system(ar_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + ar_cmd)
+            else:
+                process.system(ar_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -67,7 +78,10 @@ class ZypperBackend(RpmBackend):
         """
         rr_cmd = self.base_command + ' removerepo ' + url
         try:
-            process.system(rr_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + rr_cmd)
+            else:
+                process.system(rr_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -79,7 +93,10 @@ class ZypperBackend(RpmBackend):
         r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
 
         try:
-            process.system(r_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + r_cmd)
+            else:
+                process.system(r_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -99,7 +116,10 @@ class ZypperBackend(RpmBackend):
             u_cmd = self.base_command + ' ' + 'update' + ' ' + name
 
         try:
-            process.system(u_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + u_cmd)
+            else:
+                process.system(u_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -113,7 +133,11 @@ class ZypperBackend(RpmBackend):
         p_cmd = self.base_command + ' what-provides ' + name
         list_provides = []
         try:
-            p_output = process.system_output(p_cmd).split('\n')[4:]
+            if self.session:
+                p_output = self.session.cmd(p_cmd).stdout_text.split('\n')[4:]
+            else:
+                p_output = process.system_output(p_cmd).decode('utf-8').split('\n')[4:]
+
             for line in p_output:
                 line = [a.strip() for a in line.split('|')]
                 try:
@@ -142,7 +166,10 @@ class ZypperBackend(RpmBackend):
         s_cmd = '%s source-install -d %s' % (self.base_command, name)
 
         try:
-            process.system(s_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + s_cmd)
+            else:
+                process.system(s_cmd, sudo=True)
             return True
         except process.CmdError:
             log.error('Installing dependencies failed')
@@ -160,7 +187,10 @@ class ZypperBackend(RpmBackend):
         s_cmd = '%s source-install %s' % (self.base_command, name)
 
         try:
-            process.system(s_cmd, sudo=True)
+            if self.session:
+                self.session.cmd('sudo ' + s_cmd)
+            else:
+                process.system(s_cmd, sudo=True)
             if self.build_dep(name):
                 return '/usr/src/packages/SPECS/%s.spec' % name
         except process.CmdError:
@@ -186,7 +216,7 @@ class ZypperBackend(RpmBackend):
         try:
             spec_path = self._source_install(name)
             if spec_path:
-                return self.prepare_source(spec_path, dest_path)
+                return self.prepare_source(spec_path, dest_path, session=self.session)
             else:
                 log.error("Source not installed properly")
                 return ""

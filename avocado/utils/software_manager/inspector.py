@@ -45,11 +45,12 @@ class SystemInspector:
     machine properties.
     """
 
-    def __init__(self):
+    def __init__(self, session=None):
         """
         Probe system, and save information for future reference.
         """
-        self.distro = distro.detect().name
+        self.distro = distro.detect(session).name
+        self.session = session
 
     def get_package_management(self):
         """
@@ -60,7 +61,7 @@ class SystemInspector:
         list_supported = []
         for high_level_pm in SUPPORTED_PACKAGE_MANAGERS:
             try:
-                utils_path.find_command(high_level_pm)
+                utils_path.find_command(high_level_pm, session=self.session)
                 list_supported.append(high_level_pm)
             except utils_path.CmdNotFoundError:
                 pass
