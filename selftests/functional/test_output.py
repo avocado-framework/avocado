@@ -354,7 +354,7 @@ class OutputTest(TestCaseTmpDir):
         """
         with script.Script(os.path.join(self.tmpdir.name, "test_show.py"),
                            OUTPUT_SHOW_TEST, script.READ_ONLY_MODE) as test:
-            cmd = "%s run %s" % (AVOCADO, test.path)
+            cmd = "%s run --disable-sysinfo -- %s" % (AVOCADO, test.path)
             result = process.run(cmd)
             expected_job_id_number = 2
             expected_bin_true_number = 1
@@ -605,7 +605,7 @@ class OutputPluginTest(TestCaseTmpDir):
 
     def test_tap_totaltests(self):
         cmd_line = ("%s run passtest.py passtest.py passtest.py passtest.py "
-                    "--job-results-dir %s "
+                    "--job-results-dir %s --disable-sysinfo "
                     "--tap -" % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expr = b'1..4'
