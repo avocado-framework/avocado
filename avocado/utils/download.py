@@ -20,12 +20,14 @@ Methods to download URLs and regular files.
 import logging
 import os
 import shutil
+import socket
+import sys
 from multiprocessing import Process
 from urllib.request import urlopen
 
 from . import aurl, crypto, output
 
-log = logging.getLogger('avocado.test')
+log = logging.getLogger('avocado.utils.download')
 
 
 def url_open(url, data=None, timeout=5):
@@ -41,7 +43,13 @@ def url_open(url, data=None, timeout=5):
     :return: file-like object.
     :raises: `URLError`.
     """
-    result = urlopen(url, data=data, timeout=timeout)
+    try:
+        result = urlopen(url, data=data, timeout=timeout)
+    except socket.timeout as ex:
+        msg = "Timeout was reach: {}".format(str(ex))
+        log.error(msg)
+        return None
+
     msg = ('Retrieved URL "%s": content-length %s, date: "%s", '
            'last-modified: "%s"')
     log.debug(msg, url,
@@ -62,9 +70,13 @@ def url_download(url, filename, data=None, timeout=300):
     :return: `None`.
     """
     def download():
-        log.info('Fetching %s -> %s', url, filename)
-
         src_file = url_open(url, data=data)
+        if not src_file:
+            msg = ("Failed to get file. Probably timeout was reach when "
+                   "connecting to the server.\n")
+            sys.stderr.write(msg)
+            sys.exit(1)
+
         try:
             with open(filename, 'wb') as dest_file:
                 shutil.copyfileobj(src_file, dest_file)
@@ -72,6 +84,7 @@ def url_download(url, filename, data=None, timeout=300):
             src_file.close()
 
     process = Process(target=download)
+    log.info('Fetching %s -> %s', url, filename)
     process.start()
     process.join(timeout)
     if process.is_alive():
