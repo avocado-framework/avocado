@@ -542,11 +542,9 @@ class PythonUnittestRunner(BaseRunner):
 
     Runnable attributes usage:
 
-     * uri: a "dotted name" that can be given to Python standard
-            library's :meth:`unittest.TestLoader.loadTestsFromName`
-            method. While it's not enforced, it's highly recommended
-            that this is "a test method within a test case class" within
-            a test module.  Example is: "module.Class.test_method".
+     * uri: a single test reference, that is "a test method within a test case
+            class" within a test module.  Example is:
+            "./tests/foo.py:ClassFoo.test_bar".
 
      * args: not used
 
