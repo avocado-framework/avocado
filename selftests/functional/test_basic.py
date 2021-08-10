@@ -576,6 +576,16 @@ class RunnerOperationTest(TestCaseTmpDir):
             with open(test_log_path, 'rb') as test_log:
                 self.assertIn(b'SHOULD BE ON debug.log', test_log.read())
 
+    def test_store_logging_stream(self):
+        cmd = ("%s run --job-results-dir %s --store-logging-stream=progress "
+               "--disable-sysinfo -- logging_streams.py" % (AVOCADO,
+                                                            self.tmpdir.name))
+        result = process.run(cmd)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+
+        progress_info = os.path.join(self.tmpdir.name, 'latest', 'progress.INFO')
+        self.assertTrue(os.path.exists(progress_info))
+
 
 class DryRunTest(TestCaseTmpDir):
 

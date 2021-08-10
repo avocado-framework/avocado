@@ -215,7 +215,8 @@ class Run(CLICmd):
         settings.add_argparser_to_option('job.run.store_logging_stream',
                                          parser=parser.output,
                                          long_arg='--store-logging-stream',
-                                         metavar='LOGGING_STREAM')
+                                         metavar='LOGGING_STREAM',
+                                         argparse_type=lambda x: set(x.split(',')))
 
         help_msg = ('Logs the possible data directories for each test. This '
                     'is helpful when writing new tests and not being sure '
