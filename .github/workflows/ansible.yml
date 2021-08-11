@@ -1,0 +1,39 @@
+name: Ansible deployment test
+
+on:
+  pull_request:
+    branches: [ master ]
+  # Runs at 5:00 UTC on Mondays
+  schedule:
+    - cron: "0 5 * * 1"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  podman:
+    name: Ansible (${{matrix.extra}})
+    runs-on: ubuntu-latest
+    env:
+      RUN_BEFORE: 'dnf install -y git ansible'
+      GIT_URL: 'git://github.com/${{github.repository}}'
+      INVENTORY: 'selftests/deployment/inventory'
+      PLAYBOOK: 'selftests/deployment/deployment.yml'
+      IMAGE: 'fedora:34'
+    strategy:
+      matrix:
+        extra: ["method=pip", "method=copr", "method=official", "method=pip avocado_vt=true", "method=copr avocado_vt=true", "method=official avocado_vt=true"]
+      fail-fast: false
+
+    steps:
+      - name: Install podman
+        run: sudo apt-get -y install podman
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Fetch container image
+        run: podman pull ${{env.IMAGE}}
+      - name: Run Ansible playbook
+        run: podman run --rm -ti ${{env.IMAGE}} /bin/bash -c '${{env.RUN_BEFORE}} && ansible-pull -v -U ${{env.GIT_URL}} -i ${{env.INVENTORY}} -c local ${{env.PLAYBOOK}} -e "${{matrix.extra}}" -e "avocado_git_url=${{env.GIT_URL}}"'
+
