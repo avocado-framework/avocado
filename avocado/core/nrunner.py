@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tempfile
 import time
-import unittest
+from unittest import TestLoader, TextTestRunner
 from uuid import uuid1
 
 try:
@@ -572,8 +572,7 @@ class PythonUnittestRunner(BaseRunner):
     """
 
     @property
-    def unittest_name(self):
-        """Convert a test reference (uri) to an unittest name reference."""
+    def unittest(self):
         uri = self.runnable.uri
         if ':' in uri:
             module, class_method = uri.rsplit(':', 1)
@@ -587,23 +586,61 @@ class PythonUnittestRunner(BaseRunner):
             if module.startswith(os.path.sep):
                 module = module[1:]
         module = module.replace(os.path.sep, ".")
-        return '%s.%s' % (module, class_method)
+        klass, method = class_method.rsplit('.', maxsplit=1)
+        return module, klass, method
+
+    @property
+    def unittest_name(self):
+        """Convert a test reference (uri) to an unittest name reference."""
+        unittest = self.unittest
+        if not unittest:
+            return None
+        return "{}.{}.{}".format(*unittest)
+
+    @property
+    def module_path(self):
+        unittest = self.unittest
+        if not unittest:
+            return None
+        module, _, _ = unittest
+        path = module.replace('.', os.path.sep)
+        # This will fix adding support to hidden directories
+        path = path.replace('//', '/.')
+        return os.path.dirname(path)
+
+    @property
+    def module_class_method(self):
+        """Return a dotted name with module + class + method.
+
+        Important to note here that module is only the module file without the
+        full path.
+        """
+        unittest = self.unittest
+        if not unittest:
+            return None
+
+        full_module, klass, method = unittest
+        # Lets split the full_module and get the module_path + module it self
+        # We care here only about the module (without the path)
+        _, module = full_module.rsplit(".", maxsplit=1)
+        return ".".join((module, klass, method))
 
     @classmethod
-    def _run_unittest(cls, unittest_name, queue):
-        sys.path.insert(0, ".")
+    def _run_unittest(cls, module_path, module_class_method, queue):
+        sys.path.insert(0, module_path)
         stream = io.StringIO()
 
         try:
-            suite = unittest.TestLoader().loadTestsFromName(unittest_name)
+            loader = TestLoader()
+            suite = loader.loadTestsFromName(module_class_method)
         except ValueError as ex:
-            msg = "loadTestsFromName error {}".format(str(ex))
+            msg = "loadTestsFromName error finding unittest {}: {}"
             queue.put({'status': 'finished',
                        'result': 'error',
-                       'output': msg})
+                       'output': msg.format(module_class_method, str(ex))})
             return
 
-        runner = unittest.TextTestRunner(stream=stream, verbosity=0)
+        runner = TextTestRunner(stream=stream, verbosity=0)
         unittest_result = runner.run(suite)
 
         if len(unittest_result.errors) > 0:
@@ -632,7 +669,9 @@ class PythonUnittestRunner(BaseRunner):
 
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_unittest,
-                                          args=(self.unittest_name, queue))
+                                          args=(self.module_path,
+                                                self.module_class_method,
+                                                queue))
         process.start()
         yield self.prepare_status('started')
 
