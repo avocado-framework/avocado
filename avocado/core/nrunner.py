@@ -583,7 +583,15 @@ class PythonUnittestRunner(BaseRunner):
         sys.path.insert(0, ".")
         stream = io.StringIO()
 
-        suite = unittest.TestLoader().loadTestsFromName(unittest_name)
+        try:
+            suite = unittest.TestLoader().loadTestsFromName(unittest_name)
+        except ValueError as ex:
+            msg = "loadTestsFromName error {}".format(str(ex))
+            queue.put({'status': 'finished',
+                       'result': 'error',
+                       'output': msg})
+            return
+
         runner = unittest.TextTestRunner(stream=stream, verbosity=0)
         unittest_result = runner.run(suite)
 
