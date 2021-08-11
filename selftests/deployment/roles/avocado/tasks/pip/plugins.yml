@@ -29,19 +29,9 @@
     name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-varianter-pict&subdirectory=optional_plugins/varianter_pict"
     virtualenv: "{{ temporary_dir.path }}"
 
-- name: Avocado glib loader plugin installation via pip
-  pip:
-    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-glib&subdirectory=optional_plugins/glib"
-    virtualenv: "{{ temporary_dir.path }}"
-
 - name: Avocado golang loader plugin installation via pip
   pip:
     name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-golang&subdirectory=optional_plugins/golang"
-    virtualenv: "{{ temporary_dir.path }}"
-
-- name: Avocado YAML loader plugin installation via pip
-  pip:
-    name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-loader-yaml&subdirectory=optional_plugins/loader_yaml"
     virtualenv: "{{ temporary_dir.path }}"
 
 # This is a workaround until we fix avocado-vt/issues/2193
