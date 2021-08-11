@@ -557,13 +557,18 @@ class PythonUnittestRunner(BaseRunner):
 
      * kwargs: not used
     """
-    @staticmethod
-    def _uri_to_unittest_name(uri):
+
+    @property
+    def unittest_name(self):
+        """Convert a test reference (uri) to an unittest name reference."""
+        uri = self.runnable.uri
+        if not uri:
+            return None
         if ':' in uri:
             module, class_method = uri.rsplit(':', 1)
         else:
-            module = uri
-            class_method = None
+            return None
+
         if module.endswith('.py'):
             module = module[:-3]
         if module.startswith(os.path.curdir):
@@ -571,15 +576,13 @@ class PythonUnittestRunner(BaseRunner):
             if module.startswith(os.path.sep):
                 module = module[1:]
         module = module.replace(os.path.sep, ".")
-        if class_method:
-            return '%s.%s' % (module, class_method)
-        return module
+        return '%s.%s' % (module, class_method)
 
     @classmethod
-    def _run_unittest(cls, uri, queue):
+    def _run_unittest(cls, unittest_name, queue):
         sys.path.insert(0, ".")
         stream = io.StringIO()
-        unittest_name = cls._uri_to_unittest_name(uri)
+
         suite = unittest.TestLoader().loadTestsFromName(unittest_name)
         runner = unittest.TextTestRunner(stream=stream, verbosity=0)
         unittest_result = runner.run(suite)
@@ -601,15 +604,15 @@ class PythonUnittestRunner(BaseRunner):
         queue.put(output)
 
     def run(self):
-        if not self.runnable.uri:
-            error_msg = 'uri is required but was not given'
+        if not self.unittest_name:
+            error_msg = 'URI is required but was not given or it is invalid.'
             yield self.prepare_status('finished', {'result': 'error',
                                                    'output': error_msg})
             return
 
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run_unittest,
-                                          args=(self.runnable.uri, queue))
+                                          args=(self.unittest_name, queue))
         process.start()
         yield self.prepare_status('started')
 

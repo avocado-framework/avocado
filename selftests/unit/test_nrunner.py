@@ -303,22 +303,18 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
-        output1 = (b'============================================================='
-                   b'=========\nERROR: error')
-        output2 = b'\n\nFAILED (errors=1)\n'
-        output = results[-2]
+        output = 'URI is required but was not given or it is invalid.'
         result = results[-1]
         self.assertEqual(result['status'], 'finished')
         self.assertEqual(result['result'], 'error')
-        self.assertTrue(output['log'].startswith(output1))
-        self.assertTrue(output['log'].endswith(output2))
+        self.assertEqual(result['output'], output)
 
     def test_runner_python_unittest_empty_uri_error(self):
         runnable = nrunner.Runnable('python-unittest', '')
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
-        output = 'uri is required but was not given'
+        output = 'URI is required but was not given or it is invalid.'
         result = results[-1]
         self.assertEqual(result['status'], 'finished')
         self.assertEqual(result['result'], 'error')
