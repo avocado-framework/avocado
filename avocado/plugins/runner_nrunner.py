@@ -19,6 +19,7 @@ NRunner based implementation of job compliant runner
 import asyncio
 import multiprocessing
 import random
+from copy import deepcopy
 
 from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
@@ -34,6 +35,7 @@ from avocado.core.status.server import StatusServer
 from avocado.core.task.runtime import RuntimeTask
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
+from avocado.core.varianter import dump_variant
 
 
 class RunnerInit(Init):
@@ -188,7 +190,12 @@ class Runner(RunnerInterface):
                                        index, variant):
         """Creates runtime tasks for both tests, and for its requirements."""
         result = []
+
         # test related operations
+        # when creating variants, they need to have a copy of the runnable.
+        if len(test_suite.tests) == 1 and index > 1:
+            runnable = deepcopy(runnable)
+        # create test ID
         if test_suite.name:
             prefix = "{}-{}".format(test_suite.name, index)
         else:
@@ -197,6 +204,9 @@ class Runner(RunnerInterface):
                          runnable.uri,
                          variant,
                          no_digits)
+        # inject variant on runnable
+        runnable.variant = dump_variant(variant)
+
         # handles the test task
         task = nrunner.Task(runnable,
                             identifier=test_id,

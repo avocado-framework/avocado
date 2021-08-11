@@ -116,13 +116,15 @@ class Runnable:
         self.args = args
         self.tags = kwargs.pop('tags', None)
         self.requirements = kwargs.pop('requirements', None)
+        self.variant = kwargs.pop('variant', None)
         self.kwargs = kwargs
 
     def __repr__(self):
         fmt = ('<Runnable kind="{}" uri="{}" config="{}" args="{}" '
-               'kwargs="{}" tags="{}" requirements="{}">')
+               'kwargs="{}" tags="{}" requirements="{}"> variant="{}"')
         return fmt.format(self.kind, self.uri, self.config, self.args,
-                          self.kwargs, self.tags, self.requirements)
+                          self.kwargs, self.tags, self.requirements,
+                          self.variant)
 
     @classmethod
     def from_args(cls, args):
@@ -181,6 +183,9 @@ class Runnable:
         if self.tags is not None:
             args.append('tags=json:%s' % json.dumps(self.get_serializable_tags()))
 
+        if self.variant is not None:
+            args.append('variant=json:%s' % json.dumps(self.variant))
+
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):
                 val = "json:%s" % json.dumps(val)
@@ -206,6 +211,8 @@ class Runnable:
         kwargs = self.kwargs.copy()
         if self.tags is not None:
             kwargs['tags'] = self.get_serializable_tags()
+        if self.variant is not None:
+            kwargs['variant'] = self.variant
         if kwargs:
             recipe['kwargs'] = kwargs
         return recipe

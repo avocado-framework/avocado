@@ -112,9 +112,11 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
     return out
 
 
-def dump_ivariants(ivariants):
-    """
-    Walks the iterable variants and dumps them into json-serializable object
+def dump_variant(variant):
+    """Dump a variant into a json-serializable representation
+
+    :param variant: Valid variant (list of TreeNode-like objects)
+    :return: json-serializable representation
     """
     def dump_tree_node(node):
         """
@@ -125,15 +127,22 @@ def dump_ivariants(ivariants):
                   astring.to_text(key), value)
                  for key, value in node.environment.items()])
 
+    safe_variant = {}
+    safe_variant["paths"] = [astring.to_text(pth)
+                             for pth in variant.get("paths")]
+    safe_variant["variant_id"] = variant.get("variant_id")
+    safe_variant["variant"] = [dump_tree_node(_)
+                               for _ in variant.get("variant", [])]
+    return safe_variant
+
+
+def dump_ivariants(ivariants):
+    """
+    Walks the iterable variants and dumps them into json-serializable object
+    """
     variants = []
     for variant in ivariants():
-        safe_variant = {}
-        safe_variant["paths"] = [astring.to_text(pth)
-                                 for pth in variant.get("paths")]
-        safe_variant["variant_id"] = variant.get("variant_id")
-        safe_variant["variant"] = [dump_tree_node(_)
-                                   for _ in variant.get("variant", [])]
-        variants.append(safe_variant)
+        variants.append(dump_variant(variant))
     return variants
 
 
