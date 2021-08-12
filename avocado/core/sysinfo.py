@@ -123,19 +123,17 @@ class Command(Collectible):
 
     :param cmd: String with the command.
     :param log_path: Basename of the file where output is logged (optional).
-    :param compress_log: Whether to compress the output of the command.
     """
 
-    def __init__(self, cmd, log_path=None, compress_log=False):
+    def __init__(self, cmd, log_path=None):
         if not log_path:
             log_path = cmd
         super(Command, self).__init__(log_path)
         self.cmd = cmd
-        self._compress_log = compress_log
 
     def __repr__(self):
-        r = "Command(%r, %r, %r)"
-        r %= (self.cmd, self.log_path, self._compress_log)
+        r = "Command(%r, %r)"
+        r %= (self.cmd, self.log_path)
         return r
 
     def __eq__(self, other):
@@ -190,12 +188,9 @@ class Command(Collectible):
                         log.debug("Not logging %s (no change detected)",
                                   self.cmd)
                         return
-        if self._compress_log:
-            with gzip.GzipFile(logf_path, 'wb') as logf:
-                logf.write(result.stdout)
-        else:
-            with open(logf_path, 'wb') as logf:
-                logf.write(result.stdout)
+
+        with open(logf_path, 'wb') as logf:
+            logf.write(result.stdout)
 
 
 class Daemon(Command):
