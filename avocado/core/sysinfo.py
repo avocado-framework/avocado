@@ -88,12 +88,6 @@ class Logfile(Collectible):
             return False
         return NotImplemented
 
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        return not result
-
     def __hash__(self):
         return hash((self.path, self.log_path))
 
@@ -150,12 +144,6 @@ class Command(Collectible):
         elif isinstance(other, Collectible):
             return False
         return NotImplemented
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        return not result
 
     def __hash__(self):
         return hash((self.cmd, self.log_path))
@@ -346,12 +334,6 @@ class LogWatcher(Collectible):
         elif isinstance(other, Collectible):
             return False
         return NotImplemented
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        return not result
 
     def __hash__(self):
         return hash((self.path, self.log_path))
