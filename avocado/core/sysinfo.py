@@ -212,6 +212,11 @@ class Daemon(Command):
         super(Daemon, self).__init__(*args, **kwargs)
         self.daemon_process = None
 
+    def __repr__(self):
+        r = "Daemon(%r, %r)"
+        r %= (self.cmd, self.log_path)
+        return r
+
     def __eq__(self, other):
         if isinstance(other, Daemon):
             return (self.cmd, self.log_path) == (other.cmd, other.log_path)
@@ -274,6 +279,11 @@ class JournalctlWatcher(Collectible):
 
         super(JournalctlWatcher, self).__init__(log_path)
         self.cursor = self._get_cursor()
+
+    def __repr__(self):
+        r = "JournalctlWatcher(%r)"
+        r %= self.log_path
+        return r
 
     def __eq__(self, other):
         if isinstance(other, JournalctlWatcher):
