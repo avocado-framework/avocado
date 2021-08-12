@@ -32,6 +32,12 @@ log = logging.getLogger("avocado.sysinfo")
 DATA_SIZE = 200000
 
 
+class CollectibleException(Exception):
+    """
+    Base exception for all collectible errors.
+    """
+
+
 class Collectible(ABC):
 
     """
@@ -119,9 +125,11 @@ class Logfile(Collectible):
             try:
                 yield from self._read_file(self.path)
             except IOError:
-                log.debug("Not logging %s (lack of permissions)", self.path)
+                raise CollectibleException("Not logging %s (lack of "
+                                           "permissions)" % self.path)
         else:
-            log.debug("Not logging %s (file does not exist)", self.path)
+            raise CollectibleException("Not logging %s (file not found)" %
+                                       self.path)
 
 
 class Command(Collectible):
@@ -180,10 +188,11 @@ class Command(Collectible):
             yield result.stdout
 
         except FileNotFoundError as exc_fnf:
-            log.debug("Not logging '%s' (command '%s' was not found)", self.cmd,
-                      exc_fnf.filename)
+            raise CollectibleException("Not logging '%s' (command '%s' was not "
+                                       "found)" % (self.cmd, exc_fnf.filename))
         except Exception as exc:  # pylint: disable=W0703
-            log.warning('Could not execute "%s": %s', self.cmd, exc)
+            raise CollectibleException('Could not execute "%s": %s' %
+                                       (self.cmd, exc))
 
 
 class Daemon(Command):
@@ -237,8 +246,9 @@ class Daemon(Command):
                                                    stdin=stdin, stdout=stdout,
                                                    stderr=subprocess.STDOUT,
                                                    shell=False, env=env)
-        except OSError:
-            log.debug("Not logging  %s (command could not be run)", self.cmd)
+        except OSError as os_err:
+            raise CollectibleException('Could not execute "%s": %s' % (self.cmd,
+                                                                       os_err))
 
     def collect(self):
         """
@@ -253,9 +263,10 @@ class Daemon(Command):
                 for line in self.temp_file.readlines():
                     yield line
             else:
-                log.error("Daemon process '%s' (pid %d) "
-                          "terminated abnormally (code %d)",
-                          self.cmd, self.daemon_process.pid, retcode)
+                raise OSError("Daemon process '%s' (pid %d) terminated"
+                              " abnormally (code %d)" % (self.cmd,
+                                                         self.daemon_process.pid,
+                                                         retcode))
 
 
 class JournalctlWatcher(Collectible):
@@ -296,7 +307,8 @@ class JournalctlWatcher(Collectible):
             last_record = json.loads(astring.to_text(result, "utf-8"))
             return last_record['__CURSOR']
         except Exception as detail:  # pylint: disable=W0703
-            log.debug("Journalctl collection failed: %s", detail)
+            raise CollectibleException("Journalctl collection failed: %s" %
+                                       detail)
 
     def collect(self):
         """
@@ -309,7 +321,8 @@ class JournalctlWatcher(Collectible):
                 log_diff = process.system_output(cmd, verbose=False)
                 yield log_diff
             except Exception as detail:  # pylint: disable=W0703
-                log.debug("Journalctl collection failed: %s", detail)
+                raise CollectibleException("Journalctl collection failed: %s" %
+                                           detail)
 
 
 class LogWatcher(Collectible):
@@ -340,7 +353,8 @@ class LogWatcher(Collectible):
             self.size = stat.st_size
             self.inode = stat.st_ino
         except (IOError, OSError):
-            log.debug("Not logging %s (lack of permissions)", self.path)
+            raise CollectibleException("Not logging %s (lack of permissions)" %
+                                       self.path)
 
     def __repr__(self):
         r = "LogWatcher(%r, %r)"
@@ -374,7 +388,8 @@ class LogWatcher(Collectible):
         try:
             yield from self._read_file(self.path, bytes_to_skip)
         except (IOError, OSError):
-            log.debug("Not logging %s (lack of permissions)", self.path)
+            raise CollectibleException("Not logging %s (lack of permissions)" %
+                                       self.path)
 
 
 class SysInfo:
@@ -476,7 +491,10 @@ class SysInfo:
                     "/var/log/system.log"]
         for logpath in logpaths:
             if os.path.exists(logpath):
-                return LogWatcher(logpath)
+                try:
+                    return LogWatcher(logpath)
+                except PermissionError as e:
+                    log.debug(e.args[0])
         raise ValueError("System log file not found (looked for %s)" %
                          logpaths)
 
@@ -504,7 +522,10 @@ class SysInfo:
         for fail_filename in self.sysinfo_files["fail_files"]:
             self.end_fail_collectibles.add(Logfile(fail_filename))
 
-        self.end_collectibles.add(JournalctlWatcher())
+        try:
+            self.end_collectibles.add(JournalctlWatcher())
+        except CollectibleException as e:
+            log.debug(e.args[0])
 
     def _get_installed_packages(self):
         sm = software_manager.SoftwareManager()
@@ -538,6 +559,8 @@ class SysInfo:
                     log_file.write(data)
             if optimized:
                 self._optimize(log_hook)
+        except CollectibleException as e:
+            log.debug(e.args[0])
         except Exception as exc:  # pylint: disable=W0703
             log.error("Collection %s failed: %s", type(log_hook), exc)
 
@@ -553,7 +576,10 @@ class SysInfo:
         os.environ['AVOCADO_SYSINFODIR'] = self.pre_dir
         for log_hook in self.start_collectibles:
             if isinstance(log_hook, Daemon):  # log daemons in profile directory
-                log_hook.run()
+                try:
+                    log_hook.run()
+                except CollectibleException as e:
+                    log.debug(e.args[0])
             else:
                 self._save_sysinfo(log_hook, self.pre_dir)
 
