@@ -77,7 +77,7 @@ class Logfile(Collectible):
         self.path = path
 
     def __repr__(self):
-        r = "sysinfo.Logfile(%r, %r)"
+        r = "Logfile(%r, %r)"
         r %= (self.path, self.log_path)
         return r
 
@@ -140,7 +140,7 @@ class Command(Collectible):
         self._compress_log = compress_log
 
     def __repr__(self):
-        r = "sysinfo.Command(%r, %r, %r)"
+        r = "Command(%r, %r, %r)"
         r %= (self.cmd, self.log_path, self._compress_log)
         return r
 
@@ -336,7 +336,7 @@ class LogWatcher(Collectible):
             log.debug("Not logging %s (lack of permissions)", self.path)
 
     def __repr__(self):
-        r = "sysinfo.LogWatcher(%r, %r)"
+        r = "LogWatcher(%r, %r)"
         r %= (self.path, self.log_path)
         return r
 
