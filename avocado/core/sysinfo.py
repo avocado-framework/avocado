@@ -212,6 +212,13 @@ class Daemon(Command):
         super(Daemon, self).__init__(*args, **kwargs)
         self.daemon_process = None
 
+    def __eq__(self, other):
+        if isinstance(other, Daemon):
+            return (self.cmd, self.log_path) == (other.cmd, other.log_path)
+        elif isinstance(other, Collectible):
+            return False
+        return NotImplemented
+
     def run(self, logdir):
         """
         Execute the daemon as a subprocess and log its output in logdir.
@@ -267,6 +274,13 @@ class JournalctlWatcher(Collectible):
 
         super(JournalctlWatcher, self).__init__(log_path)
         self.cursor = self._get_cursor()
+
+    def __eq__(self, other):
+        if isinstance(other, JournalctlWatcher):
+            return self.log_path == other.log_path
+        elif isinstance(other, Collectible):
+            return False
+        return NotImplemented
 
     @staticmethod
     def _get_cursor():
@@ -329,7 +343,7 @@ class LogWatcher(Collectible):
         return r
 
     def __eq__(self, other):
-        if isinstance(other, Logfile):
+        if isinstance(other, LogWatcher):
             return (self.path, self.log_path) == (other.path, other.log_path)
         elif isinstance(other, Collectible):
             return False
