@@ -58,7 +58,7 @@ class Collectible(ABC):
         return not result
 
     def __hash__(self):
-        return hash((self.log_path))
+        return hash((self.log_path, Collectible))
 
 
 class Logfile(Collectible):
@@ -89,7 +89,7 @@ class Logfile(Collectible):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self.path, self.log_path))
+        return hash((self.path, self.log_path, Logfile))
 
     def run(self, logdir):
         """
@@ -146,7 +146,7 @@ class Command(Collectible):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self.cmd, self.log_path))
+        return hash((self.cmd, self.log_path, Command))
 
     def run(self, logdir):
         """
@@ -224,6 +224,9 @@ class Daemon(Command):
             return False
         return NotImplemented
 
+    def __hash__(self):
+        return hash((self.cmd, self.log_path, Daemon))
+    
     def run(self, logdir):
         """
         Execute the daemon as a subprocess and log its output in logdir.
@@ -291,6 +294,9 @@ class JournalctlWatcher(Collectible):
         elif isinstance(other, Collectible):
             return False
         return NotImplemented
+
+    def __hash__(self):
+        return hash((self.log_path, JournalctlWatcher))
 
     @staticmethod
     def _get_cursor():
@@ -360,7 +366,7 @@ class LogWatcher(Collectible):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self.path, self.log_path))
+        return hash((self.path, self.log_path, LogWatcher))
 
     def run(self, logdir):
         """
