@@ -243,7 +243,7 @@ class CommandResult:
         return "".join([m.value for m in self.stream_messages])
 
     def __repr__(self):
-        return "%s at %s" % (self.command, self.timestamp)
+        return "%s at %.9f" % (self.command, self.timestamp)
 
 
 class GDB:

@@ -40,7 +40,7 @@ def measure_duration(func):
             duration = time.monotonic() - start
             __MEASURE_DURATION[func] = (__MEASURE_DURATION.get(func, 0) +
                                         duration)
-            LOGGER.debug("PERF: %s: (%ss, %ss)", func, duration,
+            LOGGER.debug("PERF: %s: (%.9fs, %.9fs)", func, duration,
                          __MEASURE_DURATION[func])
     return wrapper
 
