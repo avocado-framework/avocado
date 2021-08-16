@@ -34,12 +34,9 @@
     name: "git+{{ avocado_git_url}}@{{ avocado_git_branch }}#egg=avocado-framework-plugin-golang&subdirectory=optional_plugins/golang"
     virtualenv: "{{ temporary_dir.path }}"
 
-# This is a workaround until we fix avocado-vt/issues/2193
-- name: Avocado VT plugin installation via RPM
-  package:
-    name: python3-avocado-plugins-vt
-    state: latest
+- name: Avocado VT plugin installation via pip
+  pip:
+    name: "git+{{ avocado_vt_git_url}}@{{ avocado_vt_git_branch }}"
+    virtualenv: "{{ temporary_dir.path }}"
   when:
-    - ansible_facts['distribution_file_variety'] == "RedHat"
-    - ansible_facts['distribution'] != "Fedora"
     - avocado_vt|default(false)|bool == true
