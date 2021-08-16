@@ -1,4 +1,8 @@
+import logging
+
 from .utils import json_loads
+
+LOG = logging.getLogger(__name__)
 
 
 class StatusMsgMissingDataError(Exception):
@@ -25,12 +29,16 @@ class StatusRepo:
         self._by_result = {}
 
     def _handle_task_finished(self, message):
+        task_id = message['id']
         self._set_by_result(message)
         self._set_task_data(message)
+        LOG.debug('Task "%s" finished message: "%s"', task_id, message)
 
     def _handle_task_started(self, message):
         if 'output_dir' not in message:
             raise StatusMsgMissingDataError('output_dir')
+        task_id = message['id']
+        LOG.debug('Task "%s" started message: "%s"', task_id, message)
         self._set_task_data(message)
 
     def _set_by_result(self, message):
