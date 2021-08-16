@@ -192,9 +192,6 @@ class Runner(RunnerInterface):
         result = []
 
         # test related operations
-        # when creating variants, they need to have a copy of the runnable.
-        if len(test_suite.tests) == 1 and index > 1:
-            runnable = deepcopy(runnable)
         # create test ID
         if test_suite.name:
             prefix = "{}-{}".format(test_suite.name, index)
@@ -233,29 +230,29 @@ class Runner(RunnerInterface):
         runtime_tasks = []
         test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
         no_digits = len(str(test_result_total))
+        # define execution order
         execution_order = test_suite.config.get('run.execution_order')
         if execution_order == "variants-per-test":
-            for index, (runnable, variant) in enumerate(((test, variant)
-                                                         for test in test_suite.tests
-                                                         for variant in test_suite.variants.itertests()),
-                                                        start=1):
-                runtime_tasks.extend(Runner._create_runtime_tasks_for_test(
-                    test_suite,
-                    runnable,
-                    no_digits,
-                    index,
-                    variant))
+            test_variant = [(test, variant) for test in test_suite.tests
+                            for variant in test_suite.variants.itertests()]
         elif execution_order == "tests-per-variant":
-            for index, (runnable, variant) in enumerate(((test, variant)
-                                                         for variant in test_suite.variants.itertests()
-                                                         for test in test_suite.tests),
-                                                        start=1):
-                runtime_tasks.extend(Runner._create_runtime_tasks_for_test(
-                    test_suite,
-                    runnable,
-                    no_digits,
-                    index,
-                    variant))
+            test_variant = [(test, variant)
+                            for variant in test_suite.variants.itertests()
+                            for test in test_suite.tests]
+
+        # decide if a copy of the runnable is needed, in case of more
+        # variants than tests
+        copy_runnable = len(test_variant) > len(test_suite.tests)
+        # create runtime tasks
+        for index, (runnable, variant) in enumerate(test_variant, start=1):
+            if copy_runnable:
+                runnable = deepcopy(runnable)
+            runtime_tasks.extend(Runner._create_runtime_tasks_for_test(
+                test_suite,
+                runnable,
+                no_digits,
+                index,
+                variant))
         return runtime_tasks
 
     def _start_status_server(self, status_server_listen):
