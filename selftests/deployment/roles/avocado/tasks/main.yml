@@ -9,4 +9,5 @@
 
 - name: Avocado examples must be installed via specific method
   include_tasks: "roles/avocado/tasks/{{ method }}/examples.yml"
-  when: method is defined
+  when:
+    - method == 'pip' or method == 'copr'

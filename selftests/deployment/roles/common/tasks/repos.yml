@@ -19,30 +19,6 @@
     - method == 'official' or method == 'copr'
     - ansible_facts['distribution'] == "Fedora"
 
-# Official repos
-- name: Install Avocado EPEL Official Releases repo
-  yum_repository:
-    name: avocado
-    description: Avocado EPEL Official Releases repo
-    baseurl: https://avocado-project.org/data/repos/epel-$releasever-noarch/
-    gpgcheck: yes
-    gpgkey: https://avocado-project.org/data/repos/crosa_redhat_com.gpg
-  when:
-    - method == 'official'
-    - ansible_facts['distribution_file_variety'] == "RedHat"
-    - ansible_facts['distribution_major_version'] == "7"
-
-- name: Install Avocado Fedora Official Releases repo
-  yum_repository:
-    name: avocado
-    description: Avocado Fedora Official Releases repo
-    baseurl: https://avocado-project.org/data/repos/fedora-$releasever-noarch/
-    gpgcheck: yes
-    gpgkey: https://avocado-project.org/data/repos/crosa_redhat_com.gpg
-  when:
-    - method == 'official'
-    - ansible_facts['distribution'] == "Fedora"
-
 # Copr repos (Avocado)
 - name: Avocado EPEL Copr repo
   yum_repository:
