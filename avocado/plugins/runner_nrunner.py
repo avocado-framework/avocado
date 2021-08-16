@@ -35,7 +35,7 @@ from avocado.core.status.server import StatusServer
 from avocado.core.task.runtime import RuntimeTask
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
-from avocado.core.varianter import dump_variant
+from avocado.core.varianter import dump_variant, is_empty_variant
 
 
 class RunnerInit(Init):
@@ -192,8 +192,10 @@ class Runner(RunnerInterface):
         result = []
 
         # test related operations
-        # when creating variants, they need to have a copy of the runnable.
-        if len(test_suite.tests) == 1 and index > 1:
+        # when creating variants, the number of tasks created are greater than
+        # the number of tests on the test suite. In this case, these variants
+        # need a copy of the runnable.
+        if not is_empty_variant(variant):
             runnable = deepcopy(runnable)
         # create test ID
         if test_suite.name:
