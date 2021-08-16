@@ -73,7 +73,7 @@ def register_job_options():
                              key='store_logging_stream',
                              nargs='+',
                              help_msg=help_msg,
-                             default=[],
+                             default=['avocado.core:DEBUG'],
                              metavar='STREAM[:LEVEL]',
                              key_type=list)
 

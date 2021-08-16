@@ -1,9 +1,12 @@
 import asyncio
 import collections
+import logging
 import multiprocessing
 import time
 
 from avocado.core.exceptions import TestFailFast
+
+LOG = logging.getLogger(__name__)
 
 
 class TaskStateMachine:
@@ -77,6 +80,14 @@ class TaskStateMachine:
                     runtime_task = queue.pop(0)
                 to_remove.append(runtime_task)
 
+        if to_remove:
+            if status_reason:
+                LOG.debug('Aborting queue "%s" by finishing %u tasks: %s',
+                          queue_name, len(to_remove), status_reason)
+            else:
+                LOG.debug('Aborting queue "%s" by finishing %u tasks',
+                          queue_name, len(to_remove))
+
         for task in to_remove:
             await self.finish_task(task, status_reason)
 
@@ -93,6 +104,10 @@ class TaskStateMachine:
             if runtime_task not in self.finished:
                 if status_reason:
                     runtime_task.status = status_reason
+                    LOG.debug('Task "%s" finished: %s',
+                              runtime_task.task.identifier, status_reason)
+                else:
+                    LOG.debug('Task "%s" finished', runtime_task.task.identifier)
                 self.finished.append(runtime_task)
 
 
@@ -109,6 +124,13 @@ class Worker:
             max_running = 2 * multiprocessing.cpu_count() - 1
         self._max_running = max_running
         self._task_timeout = task_timeout
+        LOG.debug("%s has been initialized", self)
+
+    def __repr__(self):
+        fmt = ('<Worker spawner="{}" max_triaging={} max_running={} '
+               'task_timeout={}>')
+        return fmt.format(self._spawner, self._max_triaging,
+                          self._max_running, self._task_timeout)
 
     async def bootstrap(self):
         """Reads from requested, moves into triaging."""
@@ -117,6 +139,8 @@ class Worker:
                 if len(self._state_machine.triaging) < self._max_triaging:
                     runtime_task = self._state_machine.requested.popleft()
                     self._state_machine.triaging.append(runtime_task)
+                    LOG.debug('Task "%s": requested -> triaging',
+                              runtime_task.task.identifier)
                 else:
                     return
         except IndexError:
@@ -166,7 +190,10 @@ class Worker:
             # check for requirements a task may have
             requirements_ok = (
                     await self._spawner.check_task_requirements(runtime_task))
-            if not requirements_ok:
+            if requirements_ok:
+                LOG.debug('Task "%s": requirements OK (will proceed to check '
+                          'dependencies)', runtime_task.task.identifier)
+            else:
                 await self._state_machine.finish_task(runtime_task,
                                                       "FAILED ON TRIAGE")
                 return
@@ -188,6 +215,8 @@ class Worker:
             # successfully, so we can move on with the parent task
             dependencies_ok = await check_finished_dependencies(runtime_task)
             if not dependencies_ok:
+                LOG.debug('Task "%s" has failed dependencies',
+                          runtime_task.task.identifier)
                 return
 
         # the task is ready to run
@@ -216,8 +245,12 @@ class Worker:
             await asyncio.sleep(0.1)
             return
 
+        LOG.debug('Task "%s": about to be spawned with "%s"',
+                  runtime_task.task.identifier, self._spawner)
         start_ok = await self._spawner.spawn_task(runtime_task)
         if start_ok:
+            LOG.debug('Task "%s": spawned successfully',
+                      runtime_task.task.identifier)
             runtime_task.status = None
             if self._task_timeout is not None:
                 runtime_task.execution_timeout = time.monotonic() + self._task_timeout
