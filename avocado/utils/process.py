@@ -727,7 +727,7 @@ class SubProcess:
         if self.result.duration == 0:
             self.result.duration = time.monotonic() - self.start_time
         if self.verbose:
-            log.info("Command '%s' finished with %s after %ss", self.cmd, rc,
+            log.info("Command '%s' finished with %s after %.9fs", self.cmd, rc,
                      self.result.duration)
         self.result.pid = self._popen.pid
         self._fill_streams()
@@ -843,7 +843,7 @@ class SubProcess:
                     the specified timeout.
         """
         def nuke_myself():
-            self.result.interrupted = ("timeout after %ss"
+            self.result.interrupted = ("timeout after %.9fs"
                                        % (time.monotonic() - self.start_time))
             try:
                 kill_process_tree(self.get_pid(), sig, timeout=1)
