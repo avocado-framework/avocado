@@ -22,7 +22,9 @@ jobs:
       IMAGE: 'fedora:34'
     strategy:
       matrix:
-        extra: ["method=pip", "method=copr", "method=official", "method=pip avocado_vt=true", "method=copr avocado_vt=true", "method=official avocado_vt=true"]
+        #        extra: ["method=pip", "method=copr", "method=official", "method=pip avocado_vt=true", "method=copr avocado_vt=true", "method=official avocado_vt=true"]
+        #        lack of updated packages in the repos for python3-avocado-plugins-vt
+                extra: ["method=pip", "method=copr", "method=official", "method=pip avocado_vt=true"]
       fail-fast: false
 
     steps:
