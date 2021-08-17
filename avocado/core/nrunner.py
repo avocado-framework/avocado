@@ -356,8 +356,36 @@ class BaseRunner(abc.ABC):
     Base interface for a Runner
     """
 
+    @staticmethod
+    def _get_avocado_version():
+        """Return the Avocado package version, if installed"""
+        version = "unknown.unknown"
+        if PKG_RESOURCES_AVAILABLE:
+            try:
+                version = pkg_resources.get_distribution(
+                    'avocado-framework').version
+            except pkg_resources.DistributionNotFound:
+                pass
+        return version
+
     def __init__(self, runnable):
         self.runnable = runnable
+
+        # set default Avocado env variables
+        #
+        # NOTE: these environment variables are redefined inside an Avocado
+        # instrumented test.
+        #
+        # this is a code duplication from avocado/core/version.py to avoid
+        # nrunner depending on other than python modules
+        os.environ['AVOCADO_VERSION'] = self._get_avocado_version()
+
+        # this is a code duplication from avocado/core/data_dir.py to avoid
+        # nrunner depending on other than python modules
+        os.environ['AVOCADO_TEST_BASEDIR'] = self.runnable.config.get(
+            'datadir.paths.base_dir', '')
+        os.environ['AVOCADO_TEST_LOGDIR'] = self.runnable.config.get(
+            'datadir.paths.logs_dir', '')
 
     @staticmethod
     def prepare_status(status_type, additional_info=None):
