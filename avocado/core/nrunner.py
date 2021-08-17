@@ -452,6 +452,21 @@ class ExecRunner(BaseRunner):
         return self.prepare_status('finished',
                                    {'returncode': process.returncode})
 
+    def _create_params(self):
+        """Create params for the test"""
+        # inject the -p command-line / run.test_parameters option in the
+        # environment variables
+        params = dict(self.runnable.config.get('run.test_parameters', []))
+
+        if self.runnable.variant is not None:
+            params_from_variant = dict([(str(key), str(val)) for _, key, val in
+                                        self.runnable.variant['variant'][0][1]])
+            # if we have params from the variant, replace the original params
+            if params_from_variant:
+                params = params_from_variant
+
+        return params
+
     def run(self):
         env = None
         if self.runnable.kwargs:
@@ -459,9 +474,7 @@ class ExecRunner(BaseRunner):
             current.update(self.runnable.kwargs)
             env = current
 
-        # inject the run.test_parameters option in the environment variables
-        # this handles the -p command-line argument
-        params = dict(self.runnable.config.get('run.test_parameters', []))
+        params = self._create_params()
         if params:
             env.update(params)
 

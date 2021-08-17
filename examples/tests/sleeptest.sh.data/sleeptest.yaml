@@ -1,0 +1,9 @@
+!mux
+short:
+    SLEEP_LENGTH: 0.5
+medium:
+    SLEEP_LENGTH: 1
+long:
+    SLEEP_LENGTH: 5
+longest:
+    SLEEP_LENGTH: 10
