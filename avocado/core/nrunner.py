@@ -360,8 +360,53 @@ class BaseRunner(abc.ABC):
     Base interface for a Runner
     """
 
+    @staticmethod
+    def _get_avocado_version():
+        """Return the Avocado package version, if installed"""
+        version = "unknown.unknown"
+        if PKG_RESOURCES_AVAILABLE:
+            try:
+                version = pkg_resources.get_distribution(
+                    'avocado-framework').version
+            except pkg_resources.DistributionNotFound:
+                pass
+        return version
+
+    def set_env_variables(self):
+        """Set default AVOCADO_TEST_* environment variables
+
+        This feature was carried from the legacy runner architecture for
+        compatibility purpose.
+
+        NOTE: these environment variables are redefined inside an Avocado
+        instrumented test.
+        """
+        outputdir = self.runnable.kwargs.get('AVOCADO_TEST_OUTPUTDIR')
+        # create work dir inside the output dir
+        workdir = os.path.join(outputdir, 'workdir')
+        os.mkdir(workdir)
+        # create fake log dir inside output dir
+        logdir = os.path.join(outputdir, 'job-results')
+        os.mkdir(logdir)
+        # create fake log file inside the logdir
+        logfile = os.path.join(logdir, 'debug.log')
+        open(logfile, 'w').close()
+        # add the environment variable values to the runnable kwargs
+        self.runnable.kwargs.update({
+            'AVOCADO_VERSION': self._get_avocado_version(),
+            'AVOCADO_TEST_BASEDIR': os.path.dirname(
+                self.runnable.uri),
+            'AVOCADO_TEST_WORKDIR': workdir,
+            'AVOCADO_TEST_LOGDIR': logdir,
+            'AVOCADO_TEST_LOGFILE': logfile,
+        })
+
     def __init__(self, runnable):
         self.runnable = runnable
+        # set default Avocado environment variables if running on a valid Task
+        if (runnable.kwargs.get('AVOCADO_TEST_OUTPUTDIR') is not None and
+                self.runnable.uri is not None):
+            self.set_env_variables()
 
     @staticmethod
     def prepare_status(status_type, additional_info=None):
