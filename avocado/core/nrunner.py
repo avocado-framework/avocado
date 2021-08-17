@@ -471,12 +471,60 @@ class ExecRunner(BaseRunner):
 
         return params
 
+    @staticmethod
+    def _get_avocado_version():
+        """Return the Avocado package version, if installed"""
+        version = "unknown.unknown"
+        if PKG_RESOURCES_AVAILABLE:
+            try:
+                version = pkg_resources.get_distribution(
+                    'avocado-framework').version
+            except pkg_resources.DistributionNotFound:
+                pass
+        return version
+
+    def get_env_variables(self):
+        """Get the default AVOCADO_TEST_* environment variables
+
+        This feature was carried from the legacy runner architecture for
+        compatibility purpose.
+        """
+        outputdir = self.runnable.kwargs.get('AVOCADO_TEST_OUTPUTDIR')
+        # create work dir inside the output dir
+        workdir = os.path.join(outputdir, 'workdir')
+        os.makedirs(workdir, exist_ok=True)
+        # create fake log dir inside output dir
+        logdir = os.path.join(outputdir, 'job-results')
+        os.makedirs(logdir, exist_ok=True)
+        # create fake log file inside the logdir
+        logfile = os.path.join(logdir, 'debug.log')
+        open(logfile, 'w').close()
+        # create the avocado environment variable dictionary
+        avocado_test_env_variables = {
+            'AVOCADO_VERSION': self._get_avocado_version(),
+            'AVOCADO_TEST_BASEDIR': os.path.dirname(
+                self.runnable.uri),
+            'AVOCADO_TEST_WORKDIR': workdir,
+            'AVOCADO_TEST_LOGDIR': logdir,
+            'AVOCADO_TEST_LOGFILE': logfile,
+        }
+        return avocado_test_env_variables
+
     def run(self):
         env = None
         if self.runnable.kwargs:
             current = dict(os.environ)
             current.update(self.runnable.kwargs)
             env = current
+
+        # set default Avocado environment variables if running on a valid Task
+        if (self.runnable.kwargs.get('AVOCADO_TEST_OUTPUTDIR') is not None and
+                self.runnable.uri is not None):
+            avocado_test_env_variables = self.get_env_variables()
+            if env is None:
+                env = avocado_test_env_variables
+            else:
+                env.update(avocado_test_env_variables)
 
         params = self._create_params()
         if params:
