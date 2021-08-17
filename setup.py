@@ -13,6 +13,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import argparse
 import os
 import shutil
 import sys
@@ -185,22 +186,58 @@ class SimpleCommand(Command):
 
 
 class Linter(SimpleCommand):
-    """Lint Python source code."""
+    """Lint Python source code. (Deprecated)"""
 
     description = 'Run logical, stylistic, analytical and formatter checks.'
 
     def run(self):
-        try:
-            run(['selftests/inspekt-indent.sh'], check=True)
-            run(['selftests/inspekt-style.sh'], check=True)
-            run(['selftests/isort.sh'], check=True)
-            run(['selftests/lint.sh'], check=True)
-            run(['selftests/signedoff-check.sh'], check=True)
-            run(['selftests/spell.sh'], check=True)
-            run(['selftests/modules-boundaries.sh'], check=True)
-        except CalledProcessError as e:
-            print("Failed during lint checks: ", e)
-            sys.exit(128)
+        print("This command is deprecated, please use instead: python3 setup.py test --static-checks")
+        sys.exit()
+
+
+class Test(SimpleCommand):
+    """Run selftests"""
+
+    description = 'Run selftests'
+    user_options = [
+        ("job-api", None, "Run job API checks"),
+        ("static-checks", None, "Run static checks (isort, lint, etc)"),
+        ("nrunner-interface", None, "Run selftests/functional/test_nrunner_interface.py"),
+        ("unit", None, "Run selftests/unit/"),
+        ("jobs", None, "Run selftests/jobs/"),
+        ("functional", None, "Run selftests/functional/"),
+        ("optional-plugins", None, "Run optional_plugins/*/tests/"),
+        ("disable-plugin-checks", None, "Disable checks for a plugin (by directory name)"),
+        ("list-features", None, "Show the features tested by this test")
+    ]
+
+    def initialize_options(self):
+        self.job_api = False  # pylint: disable=W0201
+        self.static_checks = False  # pylint: disable=W0201
+        self.nrunner_interface = False  # pylint: disable=W0201
+        self.unit = False  # pylint: disable=W0201
+        self.jobs = False  # pylint: disable=W0201
+        self.functional = False  # pylint: disable=W0201
+        self.optional_plugins = False  # pylint: disable=W0201
+        self.disable_plugin_checks = []  # pylint: disable=W0201
+        self.list_features = False  # pylint: disable=W0201
+
+    def run(self):
+
+        args = argparse.Namespace()
+        args.static_checks = self.static_checks
+        args.job_api = self.job_api
+        args.nrunner_interface = self.nrunner_interface
+        args.unit = self.unit
+        args.jobs = self.jobs
+        args.functional = self.functional
+        args.optional_plugins = self.optional_plugins
+        args.disable_plugin_checks = self.disable_plugin_checks
+        args.list_features = self.list_features
+
+        # Import here on purpose, otherwise it'll mess with install/develop commands
+        import selftests.check
+        selftests.check.main(args)
 
 
 class Man(SimpleCommand):
@@ -221,6 +258,43 @@ class Man(SimpleCommand):
         except CalledProcessError as e:
             print("Failed manpage build: ", e)
             sys.exit(128)
+
+
+class Plugin(SimpleCommand):
+    """Handle plugins"""
+
+    description = 'Handle plugins'
+    user_options = [
+        ("list", 'l', "List available plugins"),
+        ("install=", 'i', "Plugin to install"),
+        ("user", 'u', "User install")
+    ]
+
+    def initialize_options(self):
+        self.list = False  # pylint: disable=W0201
+        self.install = None  # pylint: disable=W0201
+        self.user = False  # pylint: disable=W0201
+
+    def run(self):
+
+        plugins_list = []
+        directory = os.path.join(BASE_PATH, "optional_plugins")
+        for plugin in list(Path(directory).glob("*/setup.py")):
+            plugins_list.append(plugin.parts[-2])
+
+        if self.list or (not self.list and not self.install):
+            print("List of available plugins:\n ", "\n  ".join(plugins_list))
+            return
+
+        if self.install in plugins_list:
+            action = ["install"]
+            if self.user:
+                action += ["--user"]
+            parent_dir = os.path.join(directory, self.install)
+            run([sys.executable, "setup.py"] + action, cwd=parent_dir, check=True)
+        else:
+            print(self.install, "is not a known plugin. Please, check the list of available plugins.")
+            return
 
 
 if __name__ == '__main__':
@@ -356,5 +430,7 @@ if __name__ == '__main__':
           cmdclass={'clean': Clean,
                     'develop': Develop,
                     'lint': Linter,
-                    'man': Man},
+                    'man': Man,
+                    'plugin': Plugin,
+                    'test': Test},
           install_requires=['setuptools'])
