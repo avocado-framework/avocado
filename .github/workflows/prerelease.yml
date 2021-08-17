@@ -1,0 +1,99 @@
+name: Pre-release tests
+
+on:
+  # Runs at 5:00 UTC on Mondays
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+jobs:
+
+  make-check:
+    name: Run 'make check'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user
+      - name: Run make check
+        run: make check
+
+  avocado-pre-release:
+    name: Avocado pre-release job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install avocado
+        run: |
+          sudo python3 -m pip install -r requirements-dev.txt
+          sudo python3 setup.py develop
+      - name: Avocado pre-release job
+        run: ./selftests/pre_release/jobs/pre_release.py
+
+
+  # Re-implements ./selftests/pre_release/tests/check-copr-rpm-version.sh
+  check-rpm-available-copr:
+    name: Check the right RPM packages are available in COPR
+    runs-on: ubuntu-latest
+    env:
+      FEDORA_VERSION: '34'
+    container:
+      image: fedora:34
+    steps:
+      - name: install repos and packages
+        run: |
+          dnf -y install git
+          dnf -y module disable avocado
+          dnf -y install 'dnf-command(copr)'
+          dnf -y copr enable @avocado/avocado-latest
+      - uses: actions/checkout@v2
+        with:
+          ref: 'master'
+      - name: Check the right RPM packages are available
+        run: |
+          VERSION=$(python3 setup.py --version 2>/dev/null)
+          RPM_RELEASE_NUMBER=$(grep -E '^Release:\s([0-9]+)' python-avocado.spec | sed -E 's/Release:\s([0-9]+).*/\1/')
+          COMMIT_DATE=$(git log -n 1 --pretty='format:%cd' --date='format:%Y%m%d')
+          SHORT_COMMIT=$(git rev-parse --short=9 master)
+          dnf -y install python3-avocado-${VERSION}-${RPM_RELEASE_NUMBER}.${COMMIT_DATE}git${SHORT_COMMIT}.fc${{env.FEDORA_VERSION}}
+
+
+  avocado-deployment-copr:
+    name: Avocado deployment
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:34
+      volumes:
+        - /tmp/artifact:/tmp/artifact
+    env:
+      GIT_URL: 'git://github.com/avocado-framework/avocado'
+      INVENTORY: 'selftests/deployment/inventory'
+      PLAYBOOK: 'selftests/deployment/deployment.yml'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install Ansible
+        run: dnf install -y git ansible
+      - name: Run Ansible playbook
+        run:  ansible-pull -v -U ${{env.GIT_URL}} -i ${{env.INVENTORY}} -c local ${{env.PLAYBOOK}} -e "method=copr"
+      - name: Create artifact directory
+        run: mkdir -p /tmp/artifact
+      - name: Run test
+        run: avocado run /usr/bin/true --html /tmp/artifact/report.html
+      - name: Save artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: avocado-html
+          path: /tmp/artifact
+          retention-days: 1
