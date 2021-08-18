@@ -42,6 +42,10 @@ RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 #: SpawnMethod.PYTHON_CLASS
 RUNNERS_REGISTRY_PYTHON_CLASS = {}
 
+#: The default category for tasks, and the value that will cause the
+#: task results to be included in the job results
+TASK_DEFAULT_CATEGORY = 'test'
+
 
 def check_runnables_runner_requirements(runnables, runners_registry=None):
     """
@@ -796,7 +800,7 @@ class Task:
     """
 
     def __init__(self, runnable, identifier=None, status_uris=None,
-                 known_runners=None, category='test'):
+                 known_runners=None, category=TASK_DEFAULT_CATEGORY):
         """Instantiates a new Task.
 
         :param runnable: the "description" of what the task should run.
@@ -813,7 +817,8 @@ class Task:
         :type status_uri: list
         :param known_runners: a mapping of runnable kinds to runners.
         :type known_runners: dict
-        :param category: category of this task. Defaults to 'test'.
+        :param category: category of this task. Defaults to
+                         :data:`TASK_DEFAULT_CATEGORY`.
         :type category: str
         """
         self.runnable = runnable
