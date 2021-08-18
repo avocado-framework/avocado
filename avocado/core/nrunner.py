@@ -838,7 +838,7 @@ class Task:
 
     def __repr__(self):
         fmt = ('<Task identifier="{}" runnable="{}" dependencies="{}"'
-               ' status_services="{}"')
+               ' status_services="{}">')
         return fmt.format(self.identifier, self.runnable, self.dependencies,
                           self.status_services)
 
