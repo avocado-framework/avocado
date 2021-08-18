@@ -751,7 +751,8 @@ class Task:
     """
 
     def __init__(self, runnable, identifier=None, status_uris=None,
-                 known_runners=None, category=TASK_DEFAULT_CATEGORY):
+                 known_runners=None, category=TASK_DEFAULT_CATEGORY,
+                 job_id=None):
         """Instantiates a new Task.
 
         :param runnable: the "description" of what the task should run.
@@ -771,12 +772,17 @@ class Task:
         :param category: category of this task. Defaults to
                          :data:`TASK_DEFAULT_CATEGORY`.
         :type category: str
+        :param job_id: the ID of the job, for authenticating messages that get
+                       sent to the destination job's status server and will make
+                       into the job's results.
+        :type job_id: str
         """
         self.runnable = runnable
         self.identifier = identifier or str(uuid1())
         #: Category of the task.  If the category is not "test", it
         #: will not be accounted for on a Job's test results.
         self.category = category
+        self.job_id = job_id
         self.status_services = []
         status_uris = status_uris or self.runnable.config.get('nrunner.status_server_uri')
         if status_uris is not None:
@@ -794,9 +800,9 @@ class Task:
 
     def __repr__(self):
         fmt = ('<Task identifier="{}" runnable="{}" dependencies="{}"'
-               ' status_services="{}" category="{}">')
+               ' status_services="{}" category="{}" job_id="{}">')
         return fmt.format(self.identifier, self.runnable, self.dependencies,
-                          self.status_services, self.category)
+                          self.status_services, self.category, self.job_id)
 
     def are_requirements_available(self, runners_registry=None):
         """Verifies if requirements needed to run this task are available.
@@ -848,7 +854,7 @@ class Task:
         :returns: the arguments that can be used on an avocado-runner command
         :rtype: list
         """
-        args = ['-i', str(self.identifier)]
+        args = ['-i', str(self.identifier), '-j', str(self.job_id)]
         args += self.runnable.get_command_args()
 
         for status_service in self.status_services:
@@ -865,6 +871,8 @@ class Task:
             if status['status'] == 'started':
                 status.update({'output_dir': self.output_dir})
             status.update({"id": self.identifier})
+            if self.job_id is not None:
+                status.update({"job_id": self.job_id})
             for status_service in self.status_services:
                 status_service.post(status)
             yield status
@@ -937,6 +945,9 @@ class BaseRunnerApp:
         (('-s', '--status-uri'),
          {'action': 'append', 'default': None,
           'help': 'URIs of status services to report to'}),
+        (('-j', '--job-id'),
+         {'type': str, 'required': False, 'metavar': 'JOB_ID',
+          'help': 'Identifier of Job this task belongs to'}),
     )
     CMD_TASK_RUN_ARGS += CMD_RUNNABLE_RUN_ARGS
 
@@ -1087,7 +1098,8 @@ class BaseRunnerApp:
         task = Task(runnable, args.get('identifier'),
                     args.get('status_uri', []),
                     known_runners=self.RUNNABLE_KINDS_CAPABLE,
-                    category=args.get('category', TASK_DEFAULT_CATEGORY))
+                    category=args.get('category', TASK_DEFAULT_CATEGORY),
+                    job_id=args.get('job_id'))
         for status in task.run():
             self.echo(status)
 
