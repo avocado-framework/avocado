@@ -927,6 +927,11 @@ class BaseRunnerApp:
     CMD_TASK_RUN_ARGS = (
         (('-i', '--identifier'),
          {'type': str, 'required': True, 'help': 'Task unique identifier'}),
+        (('-t', '--category'),
+         {'type': str, 'required': False, 'default': TASK_DEFAULT_CATEGORY,
+          'help': ('The category for tasks.  If set to "%s" (the default), '
+                   'the results of this task will be included in the '
+                   'results of the job' % TASK_DEFAULT_CATEGORY)}),
         (('-s', '--status-uri'),
          {'action': 'append', 'default': None,
           'help': 'URIs of status services to report to'}),
@@ -1079,7 +1084,8 @@ class BaseRunnerApp:
         runnable = Runnable.from_args(args)
         task = Task(runnable, args.get('identifier'),
                     args.get('status_uri', []),
-                    known_runners=self.RUNNABLE_KINDS_CAPABLE)
+                    known_runners=self.RUNNABLE_KINDS_CAPABLE,
+                    category=args.get('category', TASK_DEFAULT_CATEGORY))
         for status in task.run():
             self.echo(status)
 
