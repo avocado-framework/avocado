@@ -17,6 +17,8 @@ import time
 
 from .test_id import TestID
 
+DEFAULT_LOG_FILE = 'debug.log'
+
 
 class BaseMessageHandler:
     """
@@ -157,6 +159,51 @@ class FinishMessageHandler(BaseMessageHandler):
 class BaseRunningMessageHandler(BaseMessageHandler):
     """Base interface for resolving running messages."""
 
+    _tag = b''
+
+    def __init__(self):
+        self.line_buffer = b''
+
+    def _get_tagged_line(self, data, encoding=None):
+        """
+        It will add the tag in to each line of data as a prefix. If the data
+        don't finish with the new line character, the last line is marked
+        as incomplete, and it is saved to the line buffer for next usage.
+        :param data:
+        :param encoding:
+        :return:
+        """
+        if not encoding:
+            data_lines = data.splitlines(True)
+            if len(data_lines) <= 1 and not data.endswith(b'\n'):
+                self.line_buffer += data
+                return b''
+            else:
+                data = self.line_buffer + b' '.join(data_lines[:-1])
+                if data_lines[-1].endswith(b'\n'):
+                    self.line_buffer = b''
+                    data += data_lines[-1]
+                else:
+                    self.line_buffer = data_lines[-1]
+        return self._tag + self._tag.join(data.splitlines(True))
+
+    def _save_to_default_file(self, message, task):
+        """
+        It will save message log into the default log file.
+
+        The default log file is based on `DEFAULT_LOG_FILE` variable and every
+        line of log will be saved with prefix based on `_tag` variable
+
+        :param message: message from runner
+        :type message: dict
+        :param task: runtime_task which message is related to
+        :type task: :class:`avocado.core.nrunner.Task`
+        """
+        encoding = message.get('encoding', None)
+        data = self._get_tagged_line(message['log'], encoding)
+        if data:
+            self._save_message_to_file(DEFAULT_LOG_FILE, data, task, encoding)
+
     @staticmethod
     def _message_to_line(message, encoding):
         """
@@ -225,6 +272,8 @@ class LogMessageHandler(BaseRunningMessageHandler):
              'time': 18405.55351474}
     """
 
+    _tag = b'[debug] '
+
     def handle(self, message, task, job):
         """Logs a textual message to a file.
 
@@ -234,15 +283,14 @@ class LogMessageHandler(BaseRunningMessageHandler):
         if task.metadata.get('logfile') is None:
             task.metadata['logfile'] = os.path.join(task.metadata['task_path'],
                                                     'debug.log')
-        self._save_message_to_file('debug.log', message['log'], task,
-                                   message.get('encoding', None))
+        self._save_to_default_file(message, task)
 
 
 class StdoutMessageHandler(BaseRunningMessageHandler):
     """
     Handler for stdout message.
 
-    It will save the stdout to the stdout file in the task directory.
+    It will save the stdout to the stdout and debug file in the task directory.
 
     :param status: 'running'
     :param type: 'stdout'
@@ -257,7 +305,10 @@ class StdoutMessageHandler(BaseRunningMessageHandler):
              'time': 18405.55351474}
     """
 
+    _tag = b'[stdout] '
+
     def handle(self, message, task, job):
+        self._save_to_default_file(message, task)
         self._save_message_to_file('stdout', message['log'], task,
                                    message.get('encoding', None))
 
@@ -266,7 +317,7 @@ class StderrMessageHandler(BaseRunningMessageHandler):
     """
     Handler for stderr message.
 
-    It will save the stderr to the stderr file in the task directory.
+    It will save the stderr to the stderr and debug file in the task directory.
 
     :param status: 'running'
     :param type: 'stderr'
@@ -281,7 +332,10 @@ class StderrMessageHandler(BaseRunningMessageHandler):
              'time': 18405.55351474}
     """
 
+    _tag = b'[stdout] '
+
     def handle(self, message, task, job):
+        self._save_to_default_file(message, task)
         self._save_message_to_file('stderr', message['log'], task,
                                    message.get('encoding', None))
 
