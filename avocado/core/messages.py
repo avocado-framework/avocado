@@ -101,10 +101,13 @@ class StartMessageHandler(BaseMessageHandler):
         task_id = TestID.from_identifier(task.identifier)
         base_path = job.test_results_path
         task_path = os.path.join(base_path, task_id.str_filesystem)
+        logfile = os.path.join(task_path, DEFAULT_LOG_FILE)
         os.makedirs(task_path, exist_ok=True)
+        open(logfile, 'w').close()
         metadata = {'job_logdir': job.logdir,
                     'job_unique_id': job.unique_id,
                     'base_path': base_path,
+                    'logfile':  logfile,
                     'task_path': task_path,
                     'time_start': message['time'],
                     'actual_time_start': time.time(),
