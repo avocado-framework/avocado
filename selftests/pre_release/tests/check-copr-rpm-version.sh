@@ -13,7 +13,7 @@ COMMIT_DATE=$(git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
 SHORT_COMMIT=$(git rev-parse --short=9 $ORIGIN/master)
 RPM_RELEASE_NUMBER=$(grep -E '^Release:\s([0-9]+)' python-avocado.spec | sed -E 's/Release:\s([0-9]+).*/\1/')
 DISTRO=fedora
-DISTRO_VERSION=33
+DISTRO_VERSION=34
 
 RPM_NVR="python3-avocado-${VERSION}-${RPM_RELEASE_NUMBER}.${COMMIT_DATE}git${SHORT_COMMIT}.fc${DISTRO_VERSION}"
 
