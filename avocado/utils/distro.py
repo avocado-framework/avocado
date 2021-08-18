@@ -21,6 +21,8 @@ import logging
 import os
 import re
 
+from .network.common import command_exit_status, run_command
+
 LOGGER = logging.getLogger('avocado.test')
 
 __all__ = ['LinuxDistro',
@@ -92,9 +94,8 @@ UNKNOWN_DISTRO = LinuxDistro(UNKNOWN_DISTRO_NAME,
 class Probe:
 
     """
-    Probes the machine and does it best to confirm it's the right distro.
-    If given an avocado.utils.ssh.Session object representing another machine, Probe
-    will attempt to detect another machine's distro via an ssh connection.
+    Probes the machine and does it best to confirm it's the right distro given
+    an avocado.utils.network.hosts.Hosts object
     """
     #: Points to a file that can determine if this machine is running a given
     #: Linux Distribution. This servers a first check that enables the extra
@@ -114,23 +115,9 @@ class Probe:
     #: :attr:`CHECK_FILE_EXISTS`
     CHECK_VERSION_REGEX = None
 
-    def __init__(self, session=None):
+    def __init__(self, host):
         self.score = 0
-        self.session = session
-
-    def check_for_remote_file(self, file_name):
-        """
-        Checks if provided file exists in remote machine
-
-        :param file_name: name of file
-        :type file_name: str
-        :returns: whether the file exists in remote machine or not
-        :rtype: bool
-        """
-        if self.session and self.session.cmd("test -f %s" % file_name).exit_status == 0:
-            return True
-        else:
-            return False
+        self.host = host
 
     def check_name_for_file(self):
         """
@@ -153,9 +140,7 @@ class Probe:
         Get the distro name if the :attr:`CHECK_FILE` is set and exists
         """
         if self.check_name_for_file():
-            if self.check_for_remote_file(self.CHECK_FILE):
-                return self.CHECK_FILE_DISTRO_NAME
-            elif os.path.exists(self.CHECK_FILE):
+            if command_exit_status("test -f %s" % self.CHECK_FILE, self.host) == 0:
                 return self.CHECK_FILE_DISTRO_NAME
 
     def check_name_for_file_contains(self):
@@ -183,18 +168,9 @@ class Probe:
         Get the distro if the :attr:`CHECK_FILE` is set and has content
         """
         if self.check_name_for_file_contains():
-            check_file = None
-            if self.check_for_remote_file(self.CHECK_FILE):
-                check_file = self.session.cmd("cat %s" % self.CHECK_FILE).stdout_text.split('/n')
-            elif os.path.exists(self.CHECK_FILE):
-                try:
-                    check_file = open(self.CHECK_FILE)
-                except IOError as err:
-                    LOGGER.debug("Could not open %s", self.CHECK_FILE)
-                    LOGGER.debug("Exception: %s", str(err))
-                    return None
-
-            if not check_file:
+            if command_exit_status("test -f %s" % self.CHECK_FILE, self.host) == 0:
+                check_file = run_command("cat %s" % self.CHECK_FILE, self.host).split('/n')
+            else:
                 return None
 
             for line in check_file:
@@ -218,22 +194,10 @@ class Probe:
         Returns the match result for the version regex on the file content
         """
         if self.check_version():
-            if self.session:
-                if self.session.cmd("test -f %s" % self.CHECK_FILE).exit_status != 0:
-                    return None
-            elif not os.path.exists(self.CHECK_FILE):
+            if command_exit_status("test -f %s" % self.CHECK_FILE, self.host) != 0:
                 return None
 
-            version_file_content = None
-            if self.session:
-                version_file_content = self.session.cmd("cat %s" % self.CHECK_FILE).stdout_text
-            else:
-                try:
-                    version_file_content = open(self.CHECK_FILE).read()
-                except IOError as err:
-                    LOGGER.debug("Could not open %s", self.CHECK_FILE)
-                    LOGGER.debug("Exception: %s", str(err))
-                    return None
+            version_file_content = run_command("cat %s" % self.CHECK_FILE)
 
             return self.CHECK_VERSION_REGEX.match(version_file_content)
 
@@ -268,8 +232,6 @@ class Probe:
 
     def get_distro(self):
         """
-        :param session: ssh connection between another machine
-
         Returns the :class:`LinuxDistro` this probe detected
         """
         name = None
@@ -294,11 +256,7 @@ class Probe:
             release = self.release()
             self.score += 1
 
-        if self.session:
-            arch = self.session.cmd("uname -m").stdout_text
-        else:
-            # can't think of a better way to do this
-            arch = os.uname()[4]
+        arch = run_command("uname -m", self.host)
 
         # name is the first thing that should be identified. If we don't know
         # the distro name, we don't bother checking for versions
@@ -458,22 +416,19 @@ register_probe(UbuntuProbe)
 register_probe(OpenEulerProbe)
 
 
-def detect(session=None):
+def detect(host):
     """
-    Attempts to detect the Linux Distribution running on this machine.
+    Attempts to detect the Linux Distribution running on a machine.
 
-    If given an avocado.utils.ssh.Session object, it will attempt to detect the
-    distro of another machine via an ssh connection.
-
-    :param session: ssh connection between another machine
-    :type session: avocado.utils.ssh.Session
+    :param host: represents a host either a LocalHost or RemoteHost
+    :type session: avocado.utils.network.hosts.Host
     :returns: the detected :class:`LinuxDistro` or :data:`UNKNOWN_DISTRO`
     :rtype: :class:`LinuxDistro`
     """
     results = []
 
     for probe_class in REGISTERED_PROBES:
-        probe_instance = probe_class(session)
+        probe_instance = probe_class(host)
         distro_result = probe_instance.get_distro()
         if distro_result is not UNKNOWN_DISTRO:
             results.append((distro_result, probe_instance))

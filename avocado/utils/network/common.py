@@ -10,3 +10,9 @@ def run_command(command, host, sudo=False):
     if sudo:
         command = "sudo {}".format(command)
     return host.remote_session.cmd(command).stdout.decode('utf-8')
+
+def command_exit_status(command, host):
+    if host.__class__.__name__ == 'LocalHost':
+        return process.system(command)
+    else:
+        return host.remote_session.cmd(command).stdout_text.exit_status
