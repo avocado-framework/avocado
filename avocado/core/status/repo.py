@@ -12,7 +12,14 @@ class StatusMsgMissingDataError(Exception):
 class StatusRepo:
     """Maintains tasks' status related data and provides aggregated info."""
 
-    def __init__(self):
+    def __init__(self, job_id):
+        """Initializes a new StatusRepo
+
+        :param job_id: the job unique identification for which the
+                       messages are destined to.
+        :type job_id: str
+        """
+        self.job_id = job_id
         #: Contains all received messages by a given task (by its ID)
         self._all_data = {}
         #: Contains the most up to date status of a task, and the time
@@ -96,8 +103,16 @@ class StatusRepo:
                 self._status[task_id] = (status, time)
 
     def process_message(self, message):
-        if 'id' not in message:
-            raise StatusMsgMissingDataError('id')
+        for required_field in ('id', 'job_id'):
+            if required_field not in message:
+                raise StatusMsgMissingDataError(required_field)
+
+        job_id = message.get('job_id')
+        if job_id != self.job_id:
+            LOG.warning('Received a message destined for a different job: %s',
+                        message)
+            return
+        message.pop('job_id')
 
         self._update_status(message)
         handlers = {'started': self._handle_task_started,

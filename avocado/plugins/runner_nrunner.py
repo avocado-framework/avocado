@@ -261,7 +261,7 @@ class Runner(RunnerInterface):
 
     def _start_status_server(self, status_server_listen, job_id):
         # pylint: disable=W0201
-        self.status_repo = StatusRepo()
+        self.status_repo = StatusRepo(job_id)
         # pylint: disable=W0201
         self.status_server = StatusServer(status_server_listen,
                                           self.status_repo)
