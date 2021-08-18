@@ -153,8 +153,6 @@ class TapParser:
             if line == '':
                 continue
 
-            yield self.Error('unexpected input at line %d' % (lineno,))
-
         if state == self._YAML:
             yield self.Error('YAML block not terminated (started on line %d)' % (yaml_lineno,))
 
