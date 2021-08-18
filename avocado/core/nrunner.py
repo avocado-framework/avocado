@@ -838,9 +838,9 @@ class Task:
 
     def __repr__(self):
         fmt = ('<Task identifier="{}" runnable="{}" dependencies="{}"'
-               ' status_services="{}">')
+               ' status_services="{}" category="{}">')
         return fmt.format(self.identifier, self.runnable, self.dependencies,
-                          self.status_services)
+                          self.status_services, self.category)
 
     def are_requirements_available(self, runners_registry=None):
         """Verifies if requirements needed to run this task are available.
