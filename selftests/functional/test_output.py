@@ -173,7 +173,7 @@ from avocado.utils.network.ports import find_free_port
 
 class RunnerNRunnerWithFixedTasks(runner_nrunner.Runner):
     @staticmethod
-    def _get_all_runtime_tasks(test_suite):
+    def _get_all_runtime_tasks(test_suite, job_id):
         runtime_tasks = []
         no_digits = len(str(len(test_suite)))
         status_uris = [test_suite.config.get('nrunner.status_server_uri')]
@@ -183,12 +183,14 @@ class RunnerNRunnerWithFixedTasks(runner_nrunner.Runner):
             if '/bin/true' in runnable.uri:
                 task = nrunner.Task(
                     runnable, test_id, status_uris,
-                    nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
+                    nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
+                    job_id=job_id)
             else:
                 task = nrunner.Task(
                     runnable, test_id, status_uris,
                     nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
-                    'non-test')
+                    'non-test',
+                    job_id=job_id)
             runtime_tasks.append(RuntimeTask(task))
         return runtime_tasks
 

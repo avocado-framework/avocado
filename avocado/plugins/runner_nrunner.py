@@ -155,7 +155,7 @@ class Runner(RunnerInterface):
     description = 'nrunner based implementation of job compliant runner'
 
     @staticmethod
-    def _get_requirements_runtime_tasks(runnable, prefix):
+    def _get_requirements_runtime_tasks(runnable, prefix, job_id):
         if runnable.requirements is None:
             return
 
@@ -177,7 +177,8 @@ class Runner(RunnerInterface):
             # creates the requirement task
             requirement_task = nrunner.Task(requirement_runnable,
                                             identifier=task_id,
-                                            category='requirement')
+                                            category='requirement',
+                                            job_id=job_id)
             # make sure we track the dependencies of a task
             # runtime_task.task.dependencies.add(requirement_task)
             # created the requirement runtime task
@@ -187,7 +188,7 @@ class Runner(RunnerInterface):
 
     @staticmethod
     def _create_runtime_tasks_for_test(test_suite, runnable, no_digits,
-                                       index, variant):
+                                       index, variant, job_id):
         """Creates runtime tasks for both tests, and for its requirements."""
         result = []
 
@@ -210,14 +211,16 @@ class Runner(RunnerInterface):
         # handles the test task
         task = nrunner.Task(runnable,
                             identifier=test_id,
-                            known_runners=nrunner.RUNNERS_REGISTRY_PYTHON_CLASS)
+                            known_runners=nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
+                            job_id=job_id)
         runtime_task = RuntimeTask(task)
         result.append(runtime_task)
 
         # handles the requirements
         requirements_runtime_tasks = (
             Runner._get_requirements_runtime_tasks(runnable,
-                                                   prefix))
+                                                   prefix,
+                                                   job_id))
         # extend the list of tasks with the requirements runtime tasks
         if requirements_runtime_tasks is not None:
             for requirement_runtime_task in requirements_runtime_tasks:
@@ -229,7 +232,7 @@ class Runner(RunnerInterface):
         return result
 
     @staticmethod
-    def _get_all_runtime_tasks(test_suite):
+    def _get_all_runtime_tasks(test_suite, job_id):
         runtime_tasks = []
         test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
         no_digits = len(str(test_result_total))
@@ -244,7 +247,8 @@ class Runner(RunnerInterface):
                     runnable,
                     no_digits,
                     index,
-                    variant))
+                    variant,
+                    job_id))
         elif execution_order == "tests-per-variant":
             for index, (runnable, variant) in enumerate(((test, variant)
                                                          for variant in test_suite.variants.itertests()
@@ -255,10 +259,11 @@ class Runner(RunnerInterface):
                     runnable,
                     no_digits,
                     index,
-                    variant))
+                    variant,
+                    job_id))
         return runtime_tasks
 
-    def _start_status_server(self, status_server_listen):
+    def _start_status_server(self, status_server_listen, job_id):
         # pylint: disable=W0201
         self.status_repo = StatusRepo()
         # pylint: disable=W0201
@@ -291,10 +296,10 @@ class Runner(RunnerInterface):
         job.result.tests_total = test_suite.variants.get_number_of_tests(test_suite.tests)
 
         listen = test_suite.config.get('nrunner.status_server_listen')
-        self._start_status_server(listen)
+        self._start_status_server(listen, job.unique_id)
 
         # pylint: disable=W0201
-        self.runtime_tasks = self._get_all_runtime_tasks(test_suite)
+        self.runtime_tasks = self._get_all_runtime_tasks(test_suite, job.unique_id)
         if test_suite.config.get('nrunner.shuffle'):
             random.shuffle(self.runtime_tasks)
         test_ids = [rt.task.identifier for rt in self.runtime_tasks
