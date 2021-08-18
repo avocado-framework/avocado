@@ -834,7 +834,9 @@ class Task:
                             *runnable_recipe.get('args', ()),
                             config=runnable_recipe.get('config'))
         status_uris = recipe.get('status_uris')
-        return cls(runnable, identifier, status_uris, known_runners)
+        category = recipe.get('category')
+        return cls(runnable, identifier, status_uris, known_runners,
+                   category)
 
     def get_command_args(self):
         """
