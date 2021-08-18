@@ -770,10 +770,16 @@ class TaskStatusService:
         self.connection = None
 
     def post(self, status):
-        host, port = self.uri.split(':')
-        port = int(port)
-        if self.connection is None:
-            self.connection = socket.create_connection((host, port))
+        if ':' in self.uri:
+            host, port = self.uri.split(':')
+            port = int(port)
+            if self.connection is None:
+                self.connection = socket.create_connection((host, port))
+        else:
+            if self.connection is None:
+                self.connection = socket.socket(socket.AF_UNIX,
+                                                socket.SOCK_STREAM)
+                self.connection.connect(self.uri)
 
         data = json_dumps(status)
         self.connection.send(data.encode('ascii') + "\n".encode('ascii'))
