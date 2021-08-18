@@ -15,6 +15,7 @@
 import os
 import time
 
+from .nrunner import TASK_DEFAULT_CATEGORY
 from .test_id import TestID
 
 
@@ -107,7 +108,7 @@ class StartMessageHandler(BaseMessageHandler):
                     'time_start': message['time'],
                     'actual_time_start': time.time(),
                     'name': task_id}
-        if task.category == 'test':
+        if task.category == TASK_DEFAULT_CATEGORY:
             job.result.start_test(metadata)
             job.result_events_dispatcher.map_method('start_test', job.result,
                                                     metadata)
