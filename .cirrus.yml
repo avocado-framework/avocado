@@ -48,7 +48,7 @@ debian_version_task:
     container:
         matrix:
           - image: debian:10.10
-          - image: debian:bullseye-20210621
+          - image: debian:11.0
           - image: ubuntu:18.04
           - image: ubuntu:20.04
 
@@ -64,7 +64,7 @@ debian_egg_task:
     container:
         matrix:
           - image: debian:10.10
-          - image: debian:bullseye-20210621
+          - image: debian:11.0
           - image: ubuntu:18.04
           - image: ubuntu:20.04
 

@@ -50,10 +50,10 @@ distro: !mux
     !filter-out : /run/architectures/ppc
     !filter-out : /run/architectures/ppc64
     version: !mux
-      32:
-        version: 32
       33:
         version: 33
+      34:
+        version: 34
   ubuntu:
     name: ubuntu
     !filter-out : /run/architectures/arm
@@ -64,8 +64,10 @@ distro: !mux
     version: !mux
       18.04:
         version: '18.04'
-      19.10:
-        version: '19.10'
+      20.10:
+        version: '20.10'
+      21.04:
+        version: '21.04'
   opensuse:
     name: opensuse
     !filter-out : /run/architectures/arm
@@ -75,14 +77,11 @@ distro: !mux
     !filter-out : /run/architectures/ppc64le
     !filter-out : /run/architectures/s390x
     version: !mux
+      15.1:
+        version: 15.1
       15.2:
         !filter-out : /run/architectures/aarch64
         version: 15.2
-      15.1:
-        version: 15.1
-      42.3:
-        !filter-out : /run/architectures/aarch64
-        version: 42.3
 
 architectures: !mux
   arm:
