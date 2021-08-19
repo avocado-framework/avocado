@@ -7,29 +7,16 @@
         {"name": "Check status of master branch",
          "description": "Navigate to:\n\n   https://github.com/avocado-framework/avocado#build-and-quality-status\n\nand make sure that all build and quality services report good indicators"},
 
-	{"name": "Avocado source is sound",
-	 "description": "On your development machine, on a fresh Avocado source to be released, run `$ make check`. Expected result: Make command should say OK."},
+        {"name": "Set the readthedocs.org token",
+        "description": "Generate and export the content of a token (from https://readthedocs.org/accounts/tokens/) as the AVOCADO_READTHEDOCS_TOKEN environment variable. For this step you have to be admin of avocado-framework project on readthedocs.org."},
 
-	{"name": "Set the readthedocs.org token",
-	 "description": "Generate and export the content of a token (from https://readthedocs.org/accounts/tokens/) as the AVOCADO_READTHEDOCS_TOKEN environment variable. For this step you have to be admin of avocado-framework project on readthedocs.org."},
+        {"name": "Run GitHub Action 'Pre-release tests'",
+         "description": "Run the GitHub Action 'Pre-release tests' on the master branch at https://github.com/avocado-framework/avocado/actions/workflows/prerelease.yml and check all the tests pass. Make at least a quick visual check to the logs."},
 
-	{"name": "Avocado pre-release job",
-	 "description": "With a load as light as possible on your system, run `selftests/pre_release/jobs/pre_release.py`. Expected results: all tests PASSed"},
+        {"name": "Avocado Remote Machine HTML report",
+         "description": "Download the HTML artifact from the previous step and on a web browser, open the HTML report. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`) or `debug.log` point to valid locations."},
 
-        {"name": "Check the right RPM packages are available in COPR",
-         "description": "Run `selftests/pre_release/tests/check-copr-rpm-version.sh`. Expected result: last line with: Complete!"},
-
-	{"name": "Avocado deployment",
-	 "description": "Execute the ansible playbook located at selftests/deployments/deployment.yml with '-e method=copr' on one or many fresh virtual machines."},
-
-	{"name": "Avocado Test Run on RPM based installation",
-	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py --html /tmp/report.html`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`."},
-
-	{"name": "Avocado Remote Machine HTML report",
-	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-/**/avocado/tests/**/examples/tests/passtest.py:PassTest.test` (under `Test ID`) and `debug.log` point to valid locations."},
-
-	{"name": "Paginator",
-	"description": "Start new terminal and store the stty setting by running `stty -a > /tmp/tty_state_pre`. Then run `AVOCADO_LOG_EARLY=y avocado config` and verify paginator is enabled, colored output is produced and quit. Then run `stty -a > /tmp/tty_state_post` followed by `diff /tmp/tty_state_{pre,post}` and verify the setting was not changed (no output)."}
-
+        {"name": "Paginator",
+         "description": "Start new terminal and store the stty setting by running `stty -a > /tmp/tty_state_pre`. Then run `AVOCADO_LOG_EARLY=y avocado config` and verify paginator is enabled, colored output is produced and quit. Then run `stty -a > /tmp/tty_state_post` followed by `diff /tmp/tty_state_{pre,post}` and verify the setting was not changed (no output)."}
     ]
 }
