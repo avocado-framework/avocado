@@ -19,6 +19,7 @@ it's running under.
 
 import logging
 import os
+import platform
 import re
 
 LOGGER = logging.getLogger('avocado.test')
@@ -297,8 +298,7 @@ class Probe:
         if self.session:
             arch = self.session.cmd("uname -m").stdout_text
         else:
-            # can't think of a better way to do this
-            arch = os.uname()[4]
+            arch = platform.machine()
 
         # name is the first thing that should be identified. If we don't know
         # the distro name, we don't bother checking for versions
