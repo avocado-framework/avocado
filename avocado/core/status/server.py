@@ -20,6 +20,10 @@ class StatusServer:
         self._repo = repo
         self._server_task = None
 
+    @property
+    def uri(self):
+        return self._uri
+
     async def create_server(self):
         limit = settings.as_dict().get('nrunner.status_server_buffer_size')
         if ':' in self._uri:
