@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 
 from ..settings import settings
@@ -19,6 +20,10 @@ class StatusServer:
         self._uri = uri
         self._repo = repo
         self._server_task = None
+
+    @property
+    def uri(self):
+        return self._uri
 
     async def create_server(self):
         limit = settings.as_dict().get('nrunner.status_server_buffer_size')
@@ -46,6 +51,8 @@ class StatusServer:
 
     def close(self):
         self._server_task.close()
+        if os.path.exists(self._uri):
+            os.unlink(self._uri)
 
     async def cb(self, reader, _):
         while True:
