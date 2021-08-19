@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 
 from ..settings import settings
@@ -50,6 +51,8 @@ class StatusServer:
 
     def close(self):
         self._server_task.close()
+        if os.path.exists(self._uri):
+            os.unlink(self._uri)
 
     async def cb(self, reader, _):
         while True:
