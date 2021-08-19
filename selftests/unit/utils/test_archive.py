@@ -11,7 +11,7 @@ from selftests.utils import BASEDIR, temp_dir_prefix
 class ArchiveTest(unittest.TestCase):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.basedir = tempfile.TemporaryDirectory(prefix=prefix)
         self.compressdir = tempfile.mkdtemp(dir=self.basedir.name)
         self.decompressdir = tempfile.mkdtemp(dir=self.basedir.name)

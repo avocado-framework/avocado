@@ -71,7 +71,7 @@ class VMImagePlugin(unittest.TestCase):
         And returns a dictionary containing the temporary data dir paths and
         the path to a configuration file contain those same settings
         """
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         base_dir = tempfile.TemporaryDirectory(prefix=prefix)
         data_directory = os.path.join(base_dir.name, 'data')
         cache_directory = os.path.join(data_directory, 'cache')

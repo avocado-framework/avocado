@@ -44,7 +44,7 @@ class Base(unittest.TestCase):
                      os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
                      'TRAVIS Environment is unsuitable for these tests')
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.mountpoint = os.path.join(self.tmpdir.name, "disk")
         os.mkdir(self.mountpoint)

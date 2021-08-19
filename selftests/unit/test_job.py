@@ -17,7 +17,7 @@ class JobTest(unittest.TestCase):
     def setUp(self):
         self.job = None
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @staticmethod

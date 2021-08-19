@@ -12,7 +12,7 @@ setup_avocado_loggers()
 
 class TestGenio(unittest.TestCase):
     def test_check_pattern_in_directory(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         tempdirname = tempfile.mkdtemp(prefix=prefix)
         with self.assertRaises(genio.GenIOError):
             genio.is_pattern_in_file(tempdirname, 'something')

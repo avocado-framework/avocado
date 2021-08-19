@@ -52,7 +52,7 @@ class BaseIso9660:
             os.path.join(os.path.dirname(os.path.dirname(__file__)),
                          os.path.pardir, ".data", "sample.iso"))
         self.iso = None
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @unittest.skipIf(os.uname()[4] == 's390x',
