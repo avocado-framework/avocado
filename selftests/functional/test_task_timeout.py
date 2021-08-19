@@ -1,10 +1,7 @@
-import tempfile
-
 from avocado.core.job import Job
 from avocado.utils import script
 from avocado.utils.network.ports import find_free_port
-from selftests.utils import (TestCaseTmpDir, skipUnlessPathExists,
-                             temp_dir_prefix)
+from selftests.utils import TestCaseTmpDir, skipUnlessPathExists
 
 SCRIPT_CONTENT = """#!/bin/bash
 /bin/sleep 30
@@ -20,9 +17,6 @@ class TaskTimeOutTest(TestCaseTmpDir):
             SCRIPT_CONTENT,
             'avocado_timeout_functional')
         self.script.save()
-
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @skipUnlessPathExists('/bin/sleep')
     def test_sleep_longer_timeout(self):
