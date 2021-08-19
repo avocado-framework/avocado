@@ -6,6 +6,7 @@ import subprocess
 from avocado.core.plugin_interfaces import CLI, Init, Spawner
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
+from avocado.utils import distro
 
 
 class PodmanSpawnerInit(Init):
@@ -22,12 +23,22 @@ class PodmanSpawnerInit(Init):
             help_msg=help_msg,
             default='/usr/bin/podman')
 
-        help_msg = 'Image name to use when creating the container'
+        this_distro = distro.detect()
+        if this_distro != distro.UNKNOWN_DISTRO:
+            default_distro = '{0}:{1}'.format(this_distro.name,
+                                              this_distro.version)
+        else:
+            default_distro = 'fedora:latest'
+        help_msg = ('Image name to use when creating the container. '
+                    'The first default choice is a container image '
+                    'matching the current OS. If unable to detect, '
+                    'default becomes the latest Fedora release. Default '
+                    'on this system: {0}'.format(default_distro))
         settings.register_option(
             section=section,
             key='image',
             help_msg=help_msg,
-            default='fedora:31')
+            default=default_distro)
 
 
 class PodmanCLI(CLI):
