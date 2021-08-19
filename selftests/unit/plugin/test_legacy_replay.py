@@ -1,26 +1,18 @@
 import os
-import tempfile
 import unittest
 
 from avocado.core import test
 from avocado.plugins.legacy import replay as replay_legacy
-from selftests.utils import setup_avocado_loggers, temp_dir_prefix
+from selftests.utils import TestCaseTmpDir, setup_avocado_loggers
 
 setup_avocado_loggers()
 
 
-class Replay(unittest.TestCase):
+class Replay(TestCaseTmpDir):
 
     """
     avocado.plugins.Replay unittests
     """
-
-    def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-
-    def tearDown(self):
-        self.tmpdir.cleanup()
 
     def test_replay_map_interrupted_json(self):
         """
