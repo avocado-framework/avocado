@@ -11,385 +11,18 @@
 # This code was inspired in the autotest project,
 # client/shared/settings.py
 # Author: John Admanski <jadmanski@google.com>
-
-import gzip
-import json
+import filecmp
 import logging
 import os
-import shlex
-import shutil
-import subprocess
 import time
-from abc import ABC, abstractmethod
 
-from ..utils import astring, genio
+from ..utils import genio
 from ..utils import path as utils_path
-from ..utils import process, software_manager
+from ..utils import software_manager, sysinfo
 from . import output
 from .settings import settings
 
 log = logging.getLogger("avocado.sysinfo")
-
-
-class Collectible(ABC):
-
-    """
-    Abstract class for representing collectibles by sysinfo.
-    """
-
-    def __init__(self, log_path):
-        self.log_path = astring.string_to_safe_path(log_path)
-
-    @abstractmethod
-    def run(self, logdir):
-        pass
-
-    def __eq__(self, other):
-        if hash(self) == hash(other):
-            return True
-        elif isinstance(other, Collectible):
-            return False
-        return NotImplemented
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        return not result
-
-    def __hash__(self):
-        return hash((self.log_path))
-
-
-class Logfile(Collectible):
-
-    """
-    Collectible system file.
-
-    :param path: Path to the log file.
-    :param log_path: Basename of the file where output is logged (optional).
-    """
-
-    def __init__(self, path, log_path=None):
-        if not log_path:
-            log_path = os.path.basename(path)
-        super(Logfile, self).__init__(log_path)
-        self.path = path
-
-    def __repr__(self):
-        r = "sysinfo.Logfile(%r, %r)"
-        r %= (self.path, self.log_path)
-        return r
-
-    def __eq__(self, other):
-        if isinstance(other, Logfile):
-            return (self.path, self.log_path) == (other.path, other.log_path)
-        elif isinstance(other, Collectible):
-            return False
-        return NotImplemented
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        return not result
-
-    def __hash__(self):
-        return hash((self.path, self.log_path))
-
-    def run(self, logdir):
-        """
-        Copy the log file to the appropriate log dir.
-
-        :param logdir: Log directory which the file is going to be copied to.
-        """
-        if os.path.exists(self.path):
-            config = settings.as_dict()
-            if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
-                pre_file = os.path.join(os.path.dirname(logdir), 'pre',
-                                        self.log_path)
-                if os.path.isfile(pre_file):
-                    with open(self.path) as f1, open(pre_file) as f2:
-                        if f1.read() == f2.read():
-                            log.debug("Not logging %s (no change detected)",
-                                      self.path)
-                            return
-            try:
-                shutil.copyfile(self.path, os.path.join(logdir, self.log_path))
-            except IOError:
-                log.debug("Not logging %s (lack of permissions)", self.path)
-        else:
-            log.debug("Not logging %s (file does not exist)", self.path)
-
-
-class Command(Collectible):
-
-    """
-    Collectible command.
-
-    :param cmd: String with the command.
-    :param log_path: Basename of the file where output is logged (optional).
-    :param compress_log: Whether to compress the output of the command.
-    """
-
-    def __init__(self, cmd, log_path=None, compress_log=False):
-        if not log_path:
-            log_path = cmd
-        super(Command, self).__init__(log_path)
-        self.cmd = cmd
-        self._compress_log = compress_log
-
-    def __repr__(self):
-        r = "sysinfo.Command(%r, %r, %r)"
-        r %= (self.cmd, self.log_path, self._compress_log)
-        return r
-
-    def __eq__(self, other):
-        if isinstance(other, Command):
-            return (self.cmd, self.log_path) == (other.cmd, other.log_path)
-        elif isinstance(other, Collectible):
-            return False
-        return NotImplemented
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        return not result
-
-    def __hash__(self):
-        return hash((self.cmd, self.log_path))
-
-    def run(self, logdir):
-        """
-        Execute the command as a subprocess and log its output in logdir.
-
-        :param logdir: Path to a log directory.
-        """
-        env = os.environ.copy()
-        config = settings.as_dict()
-        if "PATH" not in env:
-            env["PATH"] = "/usr/bin:/bin"
-        locale = config.get("sysinfo.collect.locale")
-        if locale:
-            env["LC_ALL"] = locale
-        timeout = config.get('sysinfo.collect.commands_timeout')
-        # the sysinfo configuration supports negative or zero integer values
-        # but the avocado.utils.process APIs define no timeouts as "None"
-        if int(timeout) <= 0:
-            timeout = None
-        try:
-            result = process.run(self.cmd,
-                                 timeout=timeout,
-                                 verbose=False,
-                                 ignore_status=True,
-                                 allow_output_check='combined',
-                                 shell=True,
-                                 env=env)
-        except FileNotFoundError as exc_fnf:
-            log.debug("Not logging '%s' (command '%s' was not found)", self.cmd,
-                      exc_fnf.filename)
-            return
-        except Exception as exc:  # pylint: disable=W0703
-            log.warning('Could not execute "%s": %s', self.cmd, exc)
-            return
-        logf_path = os.path.join(logdir, self.log_path)
-        if config.get('sysinfo.collect.optimize') and logdir.endswith('post'):
-            pre_file = os.path.join(os.path.dirname(logdir), 'pre', self.log_path)
-            if os.path.isfile(pre_file):
-                with open(pre_file, 'rb') as f1:
-                    if f1.read() == result.stdout:
-                        log.debug("Not logging %s (no change detected)",
-                                  self.cmd)
-                        return
-        if self._compress_log:
-            with gzip.GzipFile(logf_path, 'wb') as logf:
-                logf.write(result.stdout)
-        else:
-            with open(logf_path, 'wb') as logf:
-                logf.write(result.stdout)
-
-
-class Daemon(Command):
-
-    """
-    Collectible daemon.
-
-    :param cmd: String with the daemon command.
-    :param logf: Basename of the file where output is logged (optional).
-    :param compress_log: Whether to compress the output of the command.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(Daemon, self).__init__(*args, **kwargs)
-        self.daemon_process = None
-
-    def run(self, logdir):
-        """
-        Execute the daemon as a subprocess and log its output in logdir.
-
-        :param logdir: Path to a log directory.
-        """
-        env = os.environ.copy()
-        config = settings.as_dict()
-        if "PATH" not in env:
-            env["PATH"] = "/usr/bin:/bin"
-        locale = config.get("sysinfo.collect.locale")
-        if locale:
-            env["LC_ALL"] = locale
-        logf_path = os.path.join(logdir, self.log_path)
-        stdin = open(os.devnull, "r")
-        stdout = open(logf_path, "w")
-
-        try:
-            self.daemon_process = subprocess.Popen(shlex.split(self.cmd),
-                                                   stdin=stdin, stdout=stdout,
-                                                   stderr=subprocess.STDOUT,
-                                                   shell=False, env=env)
-        except OSError:
-            log.debug("Not logging  %s (command could not be run)", self.cmd)
-
-    def stop(self):
-        """
-        Stop daemon execution.
-        """
-        if self.daemon_process is not None:
-            retcode = self.daemon_process.poll()
-            if retcode is None:
-                process.kill_process_tree(self.daemon_process.pid)
-                retcode = self.daemon_process.wait()
-            else:
-                log.error("Daemon process '%s' (pid %d) "
-                          "terminated abnormally (code %d)",
-                          self.cmd, self.daemon_process.pid, retcode)
-            return retcode
-
-
-class JournalctlWatcher(Collectible):
-
-    """
-    Track the content of systemd journal into a compressed file.
-
-    :param log_path: Basename of the file where output is logged (optional).
-    """
-
-    def __init__(self, log_path=None):
-        if not log_path:
-            log_path = 'journalctl.gz'
-
-        super(JournalctlWatcher, self).__init__(log_path)
-        self.cursor = self._get_cursor()
-
-    @staticmethod
-    def _get_cursor():
-        try:
-            cmd = 'journalctl --quiet --lines 1 --output json'
-            result = process.system_output(cmd, verbose=False)
-            last_record = json.loads(astring.to_text(result, "utf-8"))
-            return last_record['__CURSOR']
-        except Exception as detail:  # pylint: disable=W0703
-            log.debug("Journalctl collection failed: %s", detail)
-
-    def run(self, logdir):
-        if self.cursor:
-            try:
-                cmd = 'journalctl --quiet --after-cursor %s' % self.cursor
-                log_diff = process.system_output(cmd, verbose=False)
-                dstpath = os.path.join(logdir, self.log_path)
-                with gzip.GzipFile(dstpath, "wb") as out_journalctl:
-                    out_journalctl.write(log_diff)
-            except IOError:
-                log.debug("Not logging journalctl (lack of permissions): %s",
-                          dstpath)
-            except Exception as detail:  # pylint: disable=W0703
-                log.debug("Journalctl collection failed: %s", detail)
-
-
-class LogWatcher(Collectible):
-
-    """
-    Keep track of the contents of a log file in another compressed file.
-
-    This object is normally used to track contents of the system log
-    (/var/log/messages), and the outputs are gzipped since they can be
-    potentially large, helping to save space.
-
-    :param path: Path to the log file.
-    :param log_path: Basename of the file where output is logged (optional).
-    """
-
-    def __init__(self, path, log_path=None):
-        if not log_path:
-            log_path = os.path.basename(path) + ".gz"
-        else:
-            log_path += ".gz"
-
-        super(LogWatcher, self).__init__(log_path)
-        self.path = path
-        self.size = 0
-        self.inode = 0
-        try:
-            stat = os.stat(path)
-            self.size = stat.st_size
-            self.inode = stat.st_ino
-        except (IOError, OSError):
-            log.debug("Not logging %s (lack of permissions)", self.path)
-
-    def __repr__(self):
-        r = "sysinfo.LogWatcher(%r, %r)"
-        r %= (self.path, self.log_path)
-        return r
-
-    def __eq__(self, other):
-        if isinstance(other, Logfile):
-            return (self.path, self.log_path) == (other.path, other.log_path)
-        elif isinstance(other, Collectible):
-            return False
-        return NotImplemented
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
-        return not result
-
-    def __hash__(self):
-        return hash((self.path, self.log_path))
-
-    def run(self, logdir):
-        """
-        Log all of the new data present in the log file.
-        """
-        try:
-            dstname = self.log_path
-            dstpath = os.path.join(logdir, dstname)
-
-            bytes_to_skip = 0
-            current_stat = os.stat(self.path)
-            current_inode = current_stat.st_ino
-            current_size = current_stat.st_size
-            if current_inode == self.inode:
-                bytes_to_skip = self.size
-
-            self.inode = current_inode
-            self.size = current_size
-
-            with open(self.path, "rb") as in_messages:
-                with gzip.GzipFile(dstpath, "wb") as out_messages:
-                    in_messages.seek(bytes_to_skip)
-                    while True:
-                        # Read data in manageable chunks rather than
-                        # all at once.
-                        in_data = in_messages.read(200000)
-                        if not in_data:
-                            break
-                        out_messages.write(in_data)
-        except ValueError as detail:
-            log.info(detail)
-        except (IOError, OSError):
-            log.debug("Not logging %s (lack of permissions)", self.path)
-        except Exception as detail:  # pylint: disable=W0703
-            log.error("Log file %s collection failed: %s", self.path, detail)
 
 
 class SysInfo:
@@ -491,30 +124,41 @@ class SysInfo:
                     "/var/log/system.log"]
         for logpath in logpaths:
             if os.path.exists(logpath):
-                return LogWatcher(logpath)
+                try:
+                    return sysinfo.LogWatcher(logpath)
+                except PermissionError as e:
+                    log.debug(e.args[0])
         raise ValueError("System log file not found (looked for %s)" %
                          logpaths)
 
     def _set_collectibles(self):
+        timeout = self.config.get('sysinfo.collect.commands_timeout')
+        locale = self.config.get('sysinfo.collect.locale')
         if self.profiler:
             for cmd in self.sysinfo_files["profilers"]:
-                self.start_collectibles.add(Daemon(cmd))
+                self.start_collectibles.add(sysinfo.Daemon(cmd, locale=locale))
 
         for cmd in self.sysinfo_files["commands"]:
-            self.start_collectibles.add(Command(cmd))
-            self.end_collectibles.add(Command(cmd))
+            self.start_collectibles.add(sysinfo.Command(cmd, timeout=timeout,
+                                                        locale=locale))
+            self.end_collectibles.add(sysinfo.Command(cmd, timeout=timeout,
+                                                      locale=locale))
 
         for fail_cmd in self.sysinfo_files["fail_commands"]:
-            self.end_fail_collectibles.add(Command(fail_cmd))
+            self.end_fail_collectibles.add(sysinfo.Command(fail_cmd,
+                                                           timeout=timeout,
+                                                           locale=locale))
 
         for filename in self.sysinfo_files["files"]:
-            self.start_collectibles.add(Logfile(filename))
-            self.end_collectibles.add(Logfile(filename))
+            self.start_collectibles.add(sysinfo.Logfile(filename))
+            self.end_collectibles.add(sysinfo.Logfile(filename))
 
         for fail_filename in self.sysinfo_files["fail_files"]:
-            self.end_fail_collectibles.add(Logfile(fail_filename))
-
-        self.end_collectibles.add(JournalctlWatcher())
+            self.end_fail_collectibles.add(sysinfo.Logfile(fail_filename))
+        try:
+            self.end_collectibles.add(sysinfo.JournalctlWatcher())
+        except sysinfo.CollectibleException as e:
+            log.debug(e.args[0])
 
     def _get_installed_packages(self):
         sm = software_manager.SoftwareManager()
@@ -540,14 +184,38 @@ class SysInfo:
         removed_packages = "\n".join(old_packages - new_packages) + "\n"
         genio.write_file(removed_path, removed_packages)
 
+    def _save_sysinfo(self, log_hook, sysinfo_dir, optimized=False):
+        try:
+            file_path = os.path.join(sysinfo_dir, log_hook.name)
+            with open(file_path, "wb") as log_file:
+                for data in log_hook.collect():
+                    log_file.write(data)
+            if optimized:
+                self._optimize(log_hook)
+        except sysinfo.CollectibleException as e:
+            log.debug(e.args[0])
+        except Exception as exc:  # pylint: disable=W0703
+            log.error("Collection %s failed: %s", type(log_hook), exc)
+
+    def _optimize(self, log_hook):
+        pre_file = os.path.join(self.pre_dir, log_hook.name)
+        post_file = os.path.join(self.post_dir, log_hook.name)
+        if filecmp.cmp(pre_file, post_file):
+            os.remove(post_file)
+            log.debug("Not logging %s (no change detected)", log_hook.name)
+
     def start(self):
         """Log all collectibles at the start of the event."""
         os.environ['AVOCADO_SYSINFODIR'] = self.pre_dir
         for log_hook in self.start_collectibles:
-            if isinstance(log_hook, Daemon):  # log daemons in profile directory
-                log_hook.run(self.profile_dir)
+            # log daemons in profile directory
+            if isinstance(log_hook, sysinfo.Daemon):
+                try:
+                    log_hook.run()
+                except sysinfo.CollectibleException as e:
+                    log.debug(e.args[0])
             else:
-                log_hook.run(self.pre_dir)
+                self._save_sysinfo(log_hook, self.pre_dir)
 
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
@@ -556,19 +224,19 @@ class SysInfo:
         """
         Logging hook called whenever a job finishes.
         """
+        optimized = self.config.get('sysinfo.collect.optimize')
         os.environ['AVOCADO_SYSINFODIR'] = self.post_dir
         for log_hook in self.end_collectibles:
-            log_hook.run(self.post_dir)
+            self._save_sysinfo(log_hook, self.post_dir, optimized)
 
         if status == "FAIL":
             for log_hook in self.end_fail_collectibles:
-                log_hook.run(self.post_dir)
+                self._save_sysinfo(log_hook, self.post_dir, optimized)
 
         # Stop daemon(s) started previously
         for log_hook in self.start_collectibles:
-            if isinstance(log_hook, Daemon):
-                log_hook.stop()
-
+            if isinstance(log_hook, sysinfo.Daemon):
+                self._save_sysinfo(log_hook, self.post_dir)
         if self.log_packages:
             self._log_modified_packages(self.post_dir)
 

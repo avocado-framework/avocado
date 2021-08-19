@@ -3,6 +3,7 @@ import tempfile
 import unittest
 
 from avocado.core import sysinfo
+from avocado.utils import sysinfo as sysinfo_collectible
 from selftests.utils import temp_dir_prefix
 
 
@@ -13,31 +14,31 @@ class SysinfoTest(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_loggables_equal(self):
-        cmd1 = sysinfo.Command("ls -l")
-        cmd2 = sysinfo.Command("ls -l")
+        cmd1 = sysinfo_collectible.Command("ls -l")
+        cmd2 = sysinfo_collectible.Command("ls -l")
         self.assertEqual(cmd1, cmd2)
-        file1 = sysinfo.Logfile("/proc/cpuinfo")
-        file2 = sysinfo.Logfile("/proc/cpuinfo")
+        file1 = sysinfo_collectible.Logfile("/proc/cpuinfo")
+        file2 = sysinfo_collectible.Logfile("/proc/cpuinfo")
         self.assertEqual(file1, file2)
 
     def test_loggables_not_equal(self):
-        cmd1 = sysinfo.Command("ls -l")
-        cmd2 = sysinfo.Command("ls -la")
+        cmd1 = sysinfo_collectible.Command("ls -l")
+        cmd2 = sysinfo_collectible.Command("ls -la")
         self.assertNotEqual(cmd1, cmd2)
-        file1 = sysinfo.Logfile("/proc/cpuinfo")
-        file2 = sysinfo.Logfile("/etc/fstab")
+        file1 = sysinfo_collectible.Logfile("/proc/cpuinfo")
+        file2 = sysinfo_collectible.Logfile("/etc/fstab")
         self.assertNotEqual(file1, file2)
 
     def test_loggables_set(self):
         container = set()
-        cmd1 = sysinfo.Command("ls -l")
-        cmd2 = sysinfo.Command("ls -l")
-        cmd3 = sysinfo.Command("ps -ef")
-        cmd4 = sysinfo.Command("uname -a")
-        file1 = sysinfo.Command("/proc/cpuinfo")
-        file2 = sysinfo.Command("/etc/fstab")
-        file3 = sysinfo.Command("/etc/fstab")
-        file4 = sysinfo.Command("/etc/fstab")
+        cmd1 = sysinfo_collectible.Command("ls -l")
+        cmd2 = sysinfo_collectible.Command("ls -l")
+        cmd3 = sysinfo_collectible.Command("ps -ef")
+        cmd4 = sysinfo_collectible.Command("uname -a")
+        file1 = sysinfo_collectible.Command("/proc/cpuinfo")
+        file2 = sysinfo_collectible.Command("/etc/fstab")
+        file3 = sysinfo_collectible.Command("/etc/fstab")
+        file4 = sysinfo_collectible.Command("/etc/fstab")
         # From the above 8 objects, only 5 are unique loggables.
         container.add(cmd1)
         container.add(cmd2)
