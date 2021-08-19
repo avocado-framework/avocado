@@ -56,11 +56,11 @@ class RunnerInit(Init):
 
         help_msg = ('If the status server should automatically choose '
                     'a "status_server_listen" and "status_server_uri" '
-                    'configuration. Default is not to auto configure a '
+                    'configuration. Default is to auto configure a '
                     'status server.')
         settings.register_option(section=section,
                                  key='status_server_auto',
-                                 default=False,
+                                 default=True,
                                  key_type=bool,
                                  help_msg=help_msg)
 
@@ -136,8 +136,8 @@ class RunnerCLI(CLI):
         settings.add_argparser_to_option(
             namespace='nrunner.status_server_auto',
             parser=parser,
-            long_arg='--nrunner-status-server-auto',
-            action='store_true')
+            long_arg='--nrunner-status-server-disable-auto',
+            action='store_false')
 
         settings.add_argparser_to_option(
             namespace='nrunner.status_server_listen',
