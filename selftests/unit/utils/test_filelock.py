@@ -9,7 +9,7 @@ from selftests.utils import temp_dir_prefix
 class TestFileLock(unittest.TestCase):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.filename = os.path.join(self.tmpdir.name, 'file.img')
         self.content = 'Foo bar'

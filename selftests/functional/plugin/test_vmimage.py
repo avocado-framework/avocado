@@ -28,8 +28,7 @@ class VMImagePlugin(unittest.TestCase):
     @unittest.skipUnless(os.environ.get('AVOCADO_SELFTESTS_NETWORK_ENABLED', False),
                          "Network required to run these tests")
     def setUp(self):
-        (self.base_dir, self.mapping, self.config_file) = get_temporary_config(
-            __name__, self, 'setUp')
+        (self.base_dir, self.mapping, self.config_file) = get_temporary_config(self)
 
     @unittest.skipIf(missing_binary('qemu-img'),
                      "QEMU disk image utility is required by the vmimage utility ")

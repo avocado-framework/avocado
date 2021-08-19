@@ -152,7 +152,7 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
 class RunnableToRecipe(unittest.TestCase):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_runnable_to_recipe_noop(self):
@@ -278,7 +278,7 @@ class Runner(unittest.TestCase):
 class RunnerTmp(unittest.TestCase):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @skipUnlessPathExists('/bin/sh')

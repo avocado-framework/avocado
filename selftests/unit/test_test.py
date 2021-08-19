@@ -29,7 +29,7 @@ class TestClassTestUnit(unittest.TestCase):
             self.skipTest('dummy skip test')
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def _get_fake_filename_test(self, name):
@@ -177,7 +177,7 @@ class TestClassTest(unittest.TestCase):
                 self.assertTrue(variable)
                 self.whiteboard = 'foo'
 
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.base_logdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir.name)
         self.tst_instance_pass.run_avocado()
@@ -215,7 +215,7 @@ class TestClassTest(unittest.TestCase):
 class SimpleTestClassTest(unittest.TestCase):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.script = None
 
@@ -252,7 +252,7 @@ class SimpleTestClassTest(unittest.TestCase):
 class MockingTest(unittest.TestCase):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_init_minimal_params(self):

@@ -46,21 +46,20 @@ def setup_avocado_loggers():
             logger.handlers.append(logging.NullHandler())
 
 
-def temp_dir_prefix(module_name, klass, method):
+def temp_dir_prefix(klass):
     """
     Returns a standard name for the temp dir prefix used by the tests
     """
-    fmt = 'avocado__%s__%s__%s__'
-    return fmt % (module_name, klass.__class__.__name__, method)
+    return 'avocado_%s_' % klass.__class__.__name__
 
 
-def get_temporary_config(module_name, klass, method):
+def get_temporary_config(klass):
     """
     Creates a temporary bogus config file
     returns base directory, dictionary containing the temporary data dir
     paths and the configuration file contain those same settings
     """
-    prefix = temp_dir_prefix(module_name, klass, method)
+    prefix = temp_dir_prefix(klass)
     base_dir = tempfile.TemporaryDirectory(prefix=prefix)
     test_dir = os.path.join(base_dir.name, 'tests')
     os.mkdir(test_dir)
@@ -141,7 +140,7 @@ def skipUnlessPathExists(path):
 class TestCaseTmpDir(unittest.TestCase):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         os.chdir(BASEDIR)
 

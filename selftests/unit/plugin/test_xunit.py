@@ -37,7 +37,7 @@ class xUnitSucceedTest(unittest.TestCase):
                 pass
 
         self.tmpfile = tempfile.mkstemp()
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         config = {'job.run.result.xunit.output': self.tmpfile[1],
                   'run.results_dir': self.tmpdir.name,

@@ -235,8 +235,7 @@ class RunnerOperationTest(TestCaseTmpDir):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def test_runner_test_with_local_imports(self):
-        prefix = temp_dir_prefix(__name__, self,
-                                 'test_runner_test_with_local_imports')
+        prefix = temp_dir_prefix(self)
         with tempfile.TemporaryDirectory(prefix=prefix) as libdir:
             with script.Script(os.path.join(libdir, 'mylib.py'),
                                "def hello():\n    return 'Hello world'"):

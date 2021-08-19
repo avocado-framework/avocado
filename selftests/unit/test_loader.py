@@ -166,7 +166,7 @@ class LoaderTest(unittest.TestCase):
 
     def setUp(self):
         self.loader = loader.FileLoader(None, {})
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     def test_load_simple(self):

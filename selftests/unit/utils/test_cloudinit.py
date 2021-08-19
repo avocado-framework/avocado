@@ -24,7 +24,7 @@ class CloudInit(unittest.TestCase):
 class CloudInitISO(unittest.TestCase):
 
     def setUp(self):
-        prefix = temp_dir_prefix(__name__, self, 'setUp')
+        prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
     @unittest.skipUnless(has_iso_create_write(),
