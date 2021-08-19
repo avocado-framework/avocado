@@ -18,6 +18,8 @@ NRunner based implementation of job compliant runner
 
 import asyncio
 import multiprocessing
+import os
+import platform
 import random
 from copy import deepcopy
 
@@ -51,6 +53,16 @@ class RunnerInit(Init):
                                  default=False,
                                  help_msg=help_msg,
                                  key_type=bool)
+
+        help_msg = ('If the status server should automatically choose '
+                    'a "status_server_listen" and "status_server_uri" '
+                    'configuration. Default is to auto configure a '
+                    'status server.')
+        settings.register_option(section=section,
+                                 key='status_server_auto',
+                                 default=True,
+                                 key_type=bool,
+                                 help_msg=help_msg)
 
         help_msg = ('URI for listing the status server. Usually '
                     'a "HOST:PORT" string')
@@ -122,6 +134,12 @@ class RunnerCLI(CLI):
                                          action='store_true')
 
         settings.add_argparser_to_option(
+            namespace='nrunner.status_server_auto',
+            parser=parser,
+            long_arg='--nrunner-status-server-disable-auto',
+            action='store_false')
+
+        settings.add_argparser_to_option(
             namespace='nrunner.status_server_listen',
             parser=parser,
             long_arg='--nrunner-status-server-listen',
@@ -154,8 +172,7 @@ class Runner(RunnerInterface):
     name = 'nrunner'
     description = 'nrunner based implementation of job compliant runner'
 
-    @staticmethod
-    def _get_requirements_runtime_tasks(runnable, prefix, job_id):
+    def _get_requirements_runtime_tasks(self, runnable, prefix, job_id):
         if runnable.requirements is None:
             return
 
@@ -177,6 +194,7 @@ class Runner(RunnerInterface):
             # creates the requirement task
             requirement_task = nrunner.Task(requirement_runnable,
                                             identifier=task_id,
+                                            status_uris=[self.status_server.uri],
                                             category='requirement',
                                             job_id=job_id)
             # make sure we track the dependencies of a task
@@ -186,8 +204,7 @@ class Runner(RunnerInterface):
 
         return requirements_runtime_tasks
 
-    @staticmethod
-    def _create_runtime_tasks_for_test(test_suite, runnable, no_digits,
+    def _create_runtime_tasks_for_test(self, test_suite, runnable, no_digits,
                                        index, variant, job_id):
         """Creates runtime tasks for both tests, and for its requirements."""
         result = []
@@ -209,15 +226,16 @@ class Runner(RunnerInterface):
         task = nrunner.Task(runnable,
                             identifier=test_id,
                             known_runners=nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
+                            status_uris=[self.status_server.uri],
                             job_id=job_id)
         runtime_task = RuntimeTask(task)
         result.append(runtime_task)
 
         # handles the requirements
         requirements_runtime_tasks = (
-            Runner._get_requirements_runtime_tasks(runnable,
-                                                   prefix,
-                                                   job_id))
+            self._get_requirements_runtime_tasks(runnable,
+                                                 prefix,
+                                                 job_id))
         # extend the list of tasks with the requirements runtime tasks
         if requirements_runtime_tasks is not None:
             for requirement_runtime_task in requirements_runtime_tasks:
@@ -228,8 +246,7 @@ class Runner(RunnerInterface):
 
         return result
 
-    @staticmethod
-    def _get_all_runtime_tasks(test_suite, job_id):
+    def _get_all_runtime_tasks(self, test_suite, job_id):
         runtime_tasks = []
         test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
         no_digits = len(str(test_result_total))
@@ -250,7 +267,7 @@ class Runner(RunnerInterface):
         for index, (runnable, variant) in enumerate(test_variant, start=1):
             if copy_runnable:
                 runnable = deepcopy(runnable)
-            runtime_tasks.extend(Runner._create_runtime_tasks_for_test(
+            runtime_tasks.extend(self._create_runtime_tasks_for_test(
                 test_suite,
                 runnable,
                 no_digits,
@@ -259,13 +276,20 @@ class Runner(RunnerInterface):
                 job_id))
         return runtime_tasks
 
-    def _start_status_server(self, status_server_listen, job_id):
+    def _determine_status_server_uri(self, test_suite, job):
+        if test_suite.config.get('nrunner.status_server_auto'):
+            # no UNIX domain sockets on Windows
+            if platform.system() != 'Windows':
+                return os.path.join(job.logdir, '.status_server.sock')
+        return test_suite.config.get('nrunner.status_server_listen')
+
+    def _create_status_server(self, test_suite, job):
+        listen = self._determine_status_server_uri(test_suite, job)
         # pylint: disable=W0201
-        self.status_repo = StatusRepo(job_id)
+        self.status_repo = StatusRepo(job.unique_id)
         # pylint: disable=W0201
-        self.status_server = StatusServer(status_server_listen,
+        self.status_server = StatusServer(listen,
                                           self.status_repo)
-        asyncio.ensure_future(self.status_server.serve_forever())
 
     async def _update_status(self, job):
         tasks_by_id = {str(runtime_task.task.identifier): runtime_task.task
@@ -301,11 +325,14 @@ class Runner(RunnerInterface):
 
         job.result.tests_total = test_suite.variants.get_number_of_tests(test_suite.tests)
 
-        listen = test_suite.config.get('nrunner.status_server_listen')
-        self._start_status_server(listen, job.unique_id)
+        self._create_status_server(test_suite, job)
 
         # pylint: disable=W0201
         self.runtime_tasks = self._get_all_runtime_tasks(test_suite, job.unique_id)
+
+        # Start the status server
+        asyncio.ensure_future(self.status_server.serve_forever())
+
         if test_suite.config.get('nrunner.shuffle'):
             random.shuffle(self.runtime_tasks)
         test_ids = [rt.task.identifier for rt in self.runtime_tasks

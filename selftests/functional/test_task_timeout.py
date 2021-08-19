@@ -1,6 +1,5 @@
 from avocado.core.job import Job
 from avocado.utils import script
-from avocado.utils.network.ports import find_free_port
 from selftests.utils import TestCaseTmpDir, skipUnlessPathExists
 
 SCRIPT_CONTENT = """#!/bin/bash
@@ -20,10 +19,7 @@ class TaskTimeOutTest(TestCaseTmpDir):
 
     @skipUnlessPathExists('/bin/sleep')
     def test_sleep_longer_timeout(self):
-        status_server = '127.0.0.1:%u' % find_free_port()
         config = {'run.references': [self.script.path],
-                  'nrunner.status_server_listen': status_server,
-                  'nrunner.status_server_uri': status_server,
                   'run.results_dir': self.tmpdir.name,
                   'run.keep_tmp': True,
                   'task.timeout.running': 2,
