@@ -12,6 +12,7 @@ status_server = os.path.join(status_server_dir.name, 'status_server.socket')
 
 config = {
     'run.test_runner': 'nrunner',
+    'nrunner.status_server_auto': False,
     'nrunner.status_server_listen': status_server,
     'nrunner.status_server_uri': status_server,
     'run.references': [

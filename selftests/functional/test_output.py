@@ -168,38 +168,21 @@ from avocado.core.job import Job
 from avocado.core.task.runtime import RuntimeTask
 from avocado.core.test_id import TestID
 from avocado.plugins import runner_nrunner
-from avocado.utils.network.ports import find_free_port
 
 
 class RunnerNRunnerWithFixedTasks(runner_nrunner.Runner):
-    @staticmethod
-    def _get_all_runtime_tasks(test_suite, job_id):
-        runtime_tasks = []
-        no_digits = len(str(len(test_suite)))
-        status_uris = [test_suite.config.get('nrunner.status_server_uri')]
-        for index, runnable in enumerate(test_suite.tests, start=1):
-            prefix = index
-            test_id = TestID(prefix, runnable.uri, None, no_digits)
-            if '/bin/true' in runnable.uri:
-                task = nrunner.Task(
-                    runnable, test_id, status_uris,
-                    nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
-                    job_id=job_id)
-            else:
-                task = nrunner.Task(
-                    runnable, test_id, status_uris,
-                    nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
-                    'non-test',
-                    job_id=job_id)
-            runtime_tasks.append(RuntimeTask(task))
-        return runtime_tasks
+    def _create_runtime_tasks_for_test(self, test_suite, runnable, no_digits,
+                                       index, variant, job_id):
+        result = super(RunnerNRunnerWithFixedTasks, self)._create_runtime_tasks_for_test(
+            test_suite, runnable, no_digits, index, variant, job_id)
+        for rt_task in result:
+            if rt_task.task.runnable.uri != '/bin/true':
+                rt_task.task.category = 'non-test'
+        return result
 
 
 if __name__ == '__main__':
-    status_server = '127.0.0.1:%u' % find_free_port()
     config = {'run.test_runner': 'nrunner',
-              'nrunner.status_server_listen': status_server,
-              'nrunner.status_server_uri': status_server,
               'run.references': ['/bin/true', '/bin/false']}
     job = Job.from_config(config)
     job.setup()

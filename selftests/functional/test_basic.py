@@ -15,7 +15,6 @@ from avocado.core import exit_codes
 from avocado.utils import astring, genio
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
-from avocado.utils.network import find_free_port
 from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
                              python_module_available, skipOnLevelsInferiorThan,
                              skipUnlessPathExists, temp_dir_prefix)
@@ -588,24 +587,13 @@ class RunnerOperationTest(TestCaseTmpDir):
 
 class DryRunTest(TestCaseTmpDir):
 
-    def setUp(self):
-        super(DryRunTest, self).setUp()
-        status_server = '127.0.0.1:%u' % find_free_port()
-        self.config_file = script.TemporaryScript(
-            'avocado.conf',
-            ("[nrunner]\n"
-             "status_server_listen = %s\n"
-             "status_server_uri = %s\n") % (status_server, status_server))
-        self.config_file.save()
-
     def test_dry_run(self):
         examples_path = os.path.join('examples', 'tests')
         passtest = os.path.join(examples_path, 'passtest.py')
         failtest = os.path.join(examples_path, 'failtest.py')
         gendata = os.path.join(examples_path, 'gendata.py')
-        cmd = ("%s --config %s run --test-runner=nrunner --disable-sysinfo --dry-run "
+        cmd = ("%s run --test-runner=nrunner --disable-sysinfo --dry-run "
                "--dry-run-no-cleanup --json - -- %s %s %s " % (AVOCADO,
-                                                               self.config_file.path,
                                                                passtest,
                                                                failtest,
                                                                gendata))
@@ -617,10 +605,6 @@ class DryRunTest(TestCaseTmpDir):
             test = result['tests'][i]
             self.assertEqual(test['fail_reason'],
                              u'Test cancelled due to --dry-run')
-
-    def tearDown(self):
-        super(DryRunTest, self).tearDown()
-        self.config_file.remove()
 
 
 class RunnerHumanOutputTest(TestCaseTmpDir):

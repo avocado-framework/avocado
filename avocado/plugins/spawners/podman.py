@@ -87,6 +87,15 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         return out.startswith(b'Up ')
 
     async def spawn_task(self, runtime_task):
+
+        mount_status_server_socket = False
+        mounted_status_server_socket = '/tmp/.status_server.sock'
+        status_server_uri = runtime_task.task.status_services[0].uri
+        if ':' not in status_server_uri:
+            # a unix domain socket is being used
+            mount_status_server_socket = True
+            runtime_task.task.status_services[0].uri = mounted_status_server_socket
+
         task = runtime_task.task
         entry_point_cmd = '/tmp/avocado-runner'
         entry_point_args = task.get_command_args()
@@ -103,12 +112,20 @@ class PodmanSpawner(Spawner, SpawnerMixin):
             runtime_task.status = msg
             return False
 
+        if mount_status_server_socket:
+            status_server_opts = (
+                "--privileged",
+                "-v", "%s:%s" % (status_server_uri, mounted_status_server_socket)
+            )
+        else:
+            status_server_opts = ("--net=host", )
+
         image = self.config.get('spawner.podman.image')
         try:
             # pylint: disable=E1133
             proc = await asyncio.create_subprocess_exec(
                 podman_bin, "create",
-                "--net=host",
+                *status_server_opts,
                 entry_point_arg,
                 image,
                 stdout=asyncio.subprocess.PIPE,

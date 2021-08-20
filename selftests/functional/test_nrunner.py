@@ -4,7 +4,6 @@ import unittest
 
 from avocado.core.job import Job
 from avocado.utils import process
-from avocado.utils.network.ports import find_free_port
 from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
                              skipUnlessPathExists)
 
@@ -14,12 +13,9 @@ RUNNER = "%s -m avocado.core.nrunner" % sys.executable
 class NRunnerFeatures(unittest.TestCase):
     @skipUnlessPathExists('/bin/false')
     def test_custom_exit_codes(self):
-        status_server = "127.0.0.1:%u" % find_free_port()
         config = {'run.references': ['/bin/false'],
                   'run.test_runner': 'nrunner',
                   'runner.exectest.exitcodes.skip': [1],
-                  'nrunner.status_server_listen': status_server,
-                  'nrunner.status_server_uri': status_server,
                   'run.keep_tmp': True}
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 0)
@@ -27,7 +23,6 @@ class NRunnerFeatures(unittest.TestCase):
     @skipUnlessPathExists('/bin/false')
     @skipUnlessPathExists('/bin/true')
     def test_failfast(self):
-        status_server = "127.0.0.1:%u" % find_free_port()
         config = {'run.references': ['/bin/true',
                                      '/bin/false',
                                      '/bin/true',
@@ -35,8 +30,6 @@ class NRunnerFeatures(unittest.TestCase):
                   'run.test_runner': 'nrunner',
                   'run.failfast': True,
                   'nrunner.shuffle': False,
-                  'nrunner.status_server_listen': status_server,
-                  'nrunner.status_server_uri': status_server,
                   'nrunner.max_parallel_tasks': 1}
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 9)
