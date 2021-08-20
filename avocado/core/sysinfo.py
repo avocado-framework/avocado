@@ -18,7 +18,8 @@ import time
 
 from ..utils import genio
 from ..utils import path as utils_path
-from ..utils import software_manager, sysinfo
+from ..utils import sysinfo
+from ..utils.software_manager.backends import dpkg
 from . import output
 from .settings import settings
 
@@ -161,8 +162,8 @@ class SysInfo:
             log.debug(e.args[0])
 
     def _get_installed_packages(self):
-        sm = software_manager.SoftwareManager()
-        installed_pkgs = sm.list_all()
+        dpkg_backend = dpkg.DpkgBackend()
+        installed_pkgs = dpkg_backend.list_all()
         self._installed_pkgs = installed_pkgs
         return installed_pkgs
 
