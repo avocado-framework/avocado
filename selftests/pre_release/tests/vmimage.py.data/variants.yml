@@ -57,6 +57,7 @@ distro: !mux
   ubuntu:
     name: ubuntu
     !filter-out : /run/architectures/arm
+    !filter-out : /run/architectures/i386
     !filter-out : /run/architectures/ppc
     !filter-out : /run/architectures/ppc64
     ppc64le:
