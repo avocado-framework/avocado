@@ -23,7 +23,7 @@ from copy import deepcopy
 
 from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
-from avocado.core.exceptions import TestFailFast
+from avocado.core.exceptions import JobError, TestFailFast
 from avocado.core.messages import MessageHandler
 from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init
@@ -284,11 +284,21 @@ class Runner(RunnerInterface):
             task = tasks_by_id.get(task_id)
             message_handler.process_message(message, task, job)
 
+    @staticmethod
+    def _abort_if_missing_runners(runnables):
+        if runnables:
+            missing_kinds = set([runnable.kind for runnable in runnables])
+            msg = ("Could not find runners for runnable(s) of kind(s): %s"
+                   % ", ".join(missing_kinds))
+            raise JobError(msg)
+
     def run_suite(self, job, test_suite):
         summary = set()
 
-        test_suite.tests, _ = nrunner.check_runnables_runner_requirements(
+        test_suite.tests, missing_requirements = nrunner.check_runnables_runner_requirements(
             test_suite.tests)
+        self._abort_if_missing_runners(missing_requirements)
+
         job.result.tests_total = test_suite.variants.get_number_of_tests(test_suite.tests)
 
         listen = test_suite.config.get('nrunner.status_server_listen')
