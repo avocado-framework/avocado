@@ -300,7 +300,7 @@ class Plugin(SimpleCommand):
 if __name__ == '__main__':
     # Force "make develop" inside the "readthedocs.org" environment
     if os.environ.get("READTHEDOCS") and "install" in sys.argv:
-        os.system("make develop")
+        run(["/usr/bin/make", "develop"], check=True)
     setup(name='avocado-framework',
           version=VERSION,
           description='Avocado Test Framework',
