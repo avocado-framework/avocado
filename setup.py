@@ -207,7 +207,7 @@ class Test(SimpleCommand):
         ("jobs", None, "Run selftests/jobs/"),
         ("functional", None, "Run selftests/functional/"),
         ("optional-plugins", None, "Run optional_plugins/*/tests/"),
-        ("disable-plugin-checks", None, "Disable checks for a plugin (by directory name)"),
+        ("disable-plugin-checks=", None, "Disable checks for a plugin (by directory name)"),
         ("list-features", None, "Show the features tested by this test")
     ]
 
@@ -219,7 +219,7 @@ class Test(SimpleCommand):
         self.jobs = False  # pylint: disable=W0201
         self.functional = False  # pylint: disable=W0201
         self.optional_plugins = False  # pylint: disable=W0201
-        self.disable_plugin_checks = []  # pylint: disable=W0201
+        self.disable_plugin_checks = None  # pylint: disable=W0201
         self.list_features = False  # pylint: disable=W0201
 
     def run(self):
@@ -300,7 +300,7 @@ class Plugin(SimpleCommand):
 if __name__ == '__main__':
     # Force "make develop" inside the "readthedocs.org" environment
     if os.environ.get("READTHEDOCS") and "install" in sys.argv:
-        os.system("make develop")
+        run(["/usr/bin/make", "develop"], check=True)
     setup(name='avocado-framework',
           version=VERSION,
           description='Avocado Test Framework',
