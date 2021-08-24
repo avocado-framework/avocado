@@ -3,7 +3,6 @@ import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process, script
-from avocado.utils.network.ports import find_free_port
 from selftests.utils import AVOCADO, TestCaseTmpDir
 
 SINGLE_SUCCESS_CHECK = '''#!/usr/bin/env python3
@@ -79,10 +78,7 @@ class FailTest(Test):
 
 class BasicTest(TestCaseTmpDir):
 
-    status_server = '127.0.0.1:%u' % find_free_port()
-    command = ('%s run --test-runner=nrunner'
-               ' --nrunner-status-server-uri %s'
-               ' --nrunner-status-server-listen %s %s')
+    command = '%s run --test-runner=nrunner %s'
     skip_install_message = ("This test runs on CI environments only as it"
                             " installs packages to test the feature, which"
                             " may not be desired locally, in the user's"
@@ -97,8 +93,7 @@ class BasicTest(TestCaseTmpDir):
         with script.Script(os.path.join(self.tmpdir.name,
                                         'test_single_success.py'),
                            SINGLE_SUCCESS_CHECK) as test:
-            command = self.command % (AVOCADO, self.status_server,
-                                      self.status_server, test.path)
+            command = self.command % (AVOCADO, test.path)
             result = process.run(command, ignore_status=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertIn('PASS 1', result.stdout_text,)
@@ -109,8 +104,7 @@ class BasicTest(TestCaseTmpDir):
         with script.Script(os.path.join(self.tmpdir.name,
                                         'test_single_fail.py'),
                            SINGLE_FAIL_CHECK) as test:
-            command = self.command % (AVOCADO, self.status_server,
-                                      self.status_server, test.path)
+            command = self.command % (AVOCADO, test.path)
             result = process.run(command, ignore_status=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertIn('PASS 0', result.stdout_text,)
@@ -123,8 +117,7 @@ class BasicTest(TestCaseTmpDir):
         with script.Script(os.path.join(self.tmpdir.name,
                                         'test_multiple_success.py'),
                            MULTIPLE_SUCCESS) as test:
-            command = self.command % (AVOCADO, self.status_server,
-                                      self.status_server, test.path)
+            command = self.command % (AVOCADO, test.path)
             result = process.run(command, ignore_status=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertIn('PASS 3', result.stdout_text,)
@@ -136,8 +129,7 @@ class BasicTest(TestCaseTmpDir):
         with script.Script(os.path.join(self.tmpdir.name,
                                         'test_multiple_fail.py'),
                            MULTIPLE_FAIL) as test:
-            command = self.command % (AVOCADO, self.status_server,
-                                      self.status_server, test.path)
+            command = self.command % (AVOCADO, test.path)
             result = process.run(command, ignore_status=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertIn('PASS 1', result.stdout_text,)
