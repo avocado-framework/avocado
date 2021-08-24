@@ -1,3 +1,4 @@
+import collections
 import copy
 import itertools
 import os
@@ -441,7 +442,7 @@ class TestMultipleLoaders(unittest.TestCase):
         self.assertEqual(type(treenode.children[0]), mux.MuxTreeNode)
         # equivalent to yaml.load("...", Loader=yaml.SafeLoader)
         plain = yaml.safe_load("foo: bar")
-        self.assertEqual(type(plain), dict)
+        self.assertIn(type(plain), [dict, collections.OrderedDict])
 
 
 class TestInternalFilters(unittest.TestCase):
