@@ -23,10 +23,11 @@ import platform
 import random
 from copy import deepcopy
 
-from avocado.core import nrunner
+from avocado.core import nrunner, sysinfo
 from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.exceptions import JobError, TestFailFast
 from avocado.core.messages import MessageHandler
+from avocado.core.nrunner import Runnable
 from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
@@ -204,6 +205,35 @@ class Runner(RunnerInterface):
 
         return requirements_runtime_tasks
 
+    @staticmethod
+    def _create_sysinfo_runtime_tasks(suite, job_id):
+        """
+        Creates runtime tasks for gathering sysinfo before and after the testing.
+
+        :param suite: test suite
+        :type suite: avocado.core.suite.TestSuite
+        :param job_id: job unique ID
+        :type job_id: str
+        :return: pre and post sysinfo_runtime_tasks
+        :rtype: list
+        """
+        kwargs = {'sysinfo': sysinfo.gather_collectibles_config(suite.config)}
+        runtime_sysinfo = []
+        for sysinfo_id in ['pre', 'post']:
+            runnable = Runnable('sysinfo', sysinfo_id, **kwargs,
+                                config=suite.config)
+            task_id = TestID(0, "sysinfo-%s" % suite.name)
+            # with --dry-run we don't want to run sysinfo
+            if suite.config.get('run.dry_run.enabled'):
+                runnable.kind = 'noop'
+            category = "sysinfo-%s" % sysinfo_id
+            runtime_task = RuntimeTask(nrunner.Task(runnable,
+                                                    identifier=task_id,
+                                                    category=category,
+                                                    job_id=job_id))
+            runtime_sysinfo.append(runtime_task)
+        return runtime_sysinfo
+
     def _create_runtime_tasks_for_test(self, test_suite, runnable, no_digits,
                                        index, variant, job_id):
         """Creates runtime tasks for both tests, and for its requirements."""
@@ -335,6 +365,10 @@ class Runner(RunnerInterface):
 
         if test_suite.config.get('nrunner.shuffle'):
             random.shuffle(self.runtime_tasks)
+        sysinfo_pre_task, sysinfo_post_task = self._create_sysinfo_runtime_tasks(
+            test_suite, job.unique_id)
+        self.runtime_tasks.insert(0, sysinfo_pre_task)
+        self.runtime_tasks.append(sysinfo_post_task)
         test_ids = [rt.task.identifier for rt in self.runtime_tasks
                     if rt.task.category == 'test']
         tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)

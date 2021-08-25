@@ -26,6 +26,19 @@ log = logging.getLogger("avocado.sysinfo")
 
 
 def gather_collectibles_config(config):
+    """Gather the collectibles form sysinfo files.
+
+     Sysinfo collectibles are based on sysinfo configuration files. The path to
+     those files is in job configuration in `sysinfo.collectibles.*`.
+     This method reads those files, and it creates a dictionary with
+     configuration of collectibles.
+
+    :param config: job configuration
+    :type config: dict
+    :return: dict with commands and files for sysinfo
+    :rtype: dict
+    """
+
     sysinfo_files = {}
 
     for collectible in ['commands', 'files', 'fail_commands', 'fail_files']:

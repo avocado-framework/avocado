@@ -20,6 +20,7 @@ class TaskStateMachine:
         self._started = []
         self._finished = []
         self._lock = asyncio.Lock()
+        self._sysinfo_finished = False
 
     @property
     def requested(self):
@@ -46,11 +47,23 @@ class TaskStateMachine:
         return self._lock
 
     @property
+    def sysinfo_finished(self):
+        return self._sysinfo_finished
+
+    @property
     async def complete(self):
         async with self._lock:
             pending = any([self._requested, self._triaging,
                            self._ready, self._started])
         return not pending
+
+    def results(self):
+        """Results of already finished tests."""
+
+        test_ids = [rt.task.identifier for rt in self._finished
+                    if rt.task.category == 'test']
+        return [status.upper() for status in
+                self._status_repo.get_result_set_for_tasks(test_ids)]
 
     async def abort(self, status_reason=None):
         """Abort all non-started tasks.
@@ -109,6 +122,8 @@ class TaskStateMachine:
                 else:
                     LOG.debug('Task "%s" finished', runtime_task.task.identifier)
                 self.finished.append(runtime_task)
+                if runtime_task.task.category == "sysinfo-pre":
+                    self._sysinfo_finished = True
 
 
 class Worker:
@@ -218,6 +233,28 @@ class Worker:
                 LOG.debug('Task "%s" has failed dependencies',
                           runtime_task.task.identifier)
                 return
+
+        # check if sysinfo is finished
+        if (not self._state_machine.sysinfo_finished and
+                runtime_task.task.category != "sysinfo-pre"):
+            async with self._state_machine.lock:
+                self._state_machine.triaging.append(runtime_task)
+                runtime_task.status = 'WAITING FOR SYSINFO'
+            await asyncio.sleep(0.1)
+            return
+
+        if runtime_task.task.category == "sysinfo-post":
+            is_complete = await self._state_machine.complete
+            if not is_complete:
+                async with self._state_machine.lock:
+                    self._state_machine.triaging.append(runtime_task)
+                    runtime_task.status = 'WAITING FOR COMPLETION'
+                await asyncio.sleep(0.1)
+                return
+            else:
+                summary = self._state_machine.results()
+                test_fail = 'FAIL' in summary or 'ERROR' in summary
+                runtime_task.task.runnable.kwargs['test_fail'] = test_fail
 
         # the task is ready to run
         async with self._state_machine.lock:
