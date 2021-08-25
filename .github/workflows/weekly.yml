@@ -13,12 +13,13 @@ jobs:
   latest-python:
     name: Linux with Python ${{ matrix.python-version }}
     runs-on: ubuntu-20.04
-
     strategy:
       matrix:
         # see list of available Python versions at https://github.com/actions/python-versions/blob/main/versions-manifest.json
         python-version: [3.10.0-rc.1]
       fail-fast: false
+    outputs:
+      job_status: ${{ job.status }}
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
@@ -41,8 +42,57 @@ jobs:
       - name: Avocado smoketest
         run: python -m avocado run passtest.py
       - name: Tree static check, unittests and fast functional tests
-        env:
-          AVOCADO_LOG_DEBUG: "yes"
-          AVOCADO_CHECK_LEVEL: "1"
-        run: python selftests/check.py --disable-plugin-checks robot
+        run: |
+          export AVOCADO_LOG_DEBUG="yes"
+          export AVOCADO_CHECK_LEVEL="1"
+          python3 selftests/check.py
+      - name: Archive test logs
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: job-results-plugins
+          path: /home/runner/avocado/job-results/
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  without-plugins-latest-python:
+    name: Test with Python without plugins ${{ matrix.python-version }}
+    runs-on: ubuntu-20.04
+    needs: latest-python
+    if: "always()&&(needs.latest-python.outputs.job_status=='failure')"
+    strategy:
+      matrix:
+        # see list of available Python versions at https://github.com/actions/python-versions/blob/main/versions-manifest.json
+        python-version: [3.10.0-rc.1]
+      fail-fast: false
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user --skip-optional-plugins
+      - name: Avocado version
+        run: avocado --version
+      - name: Tree static check, unittests and fast functional tests without plugins
+        run: |
+          export AVOCADO_LOG_DEBUG="yes"
+          export AVOCADO_CHECK_LEVEL="1"
+          python selftests/check.py --disable-plugin-checks golang --disable-plugin-checks html --disable-plugin-checks resultsdb --disable-plugin-checks result_upload --disable-plugin-checks robot --disable-plugin-checks varianter_cit --disable-plugin-checks varianter_pict --disable-plugin-checks varianter_yaml_to_mux
+      - name: Archive test logs
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: job-results-without-plugins
+          path: /home/runner/avocado/job-results/
       - run: echo "🥑 This job's status is ${{ job.status }}."
