@@ -138,6 +138,7 @@ class Job:
             self.config['sysinfo.collect.enabled'] = 'off'
 
         self.test_suites = test_suites or []
+        self._check_test_suite_name_uniqueness()
 
         #: The log directory for this job, also known as the job results
         #: directory.  If it's set to None, it means that the job results
@@ -645,6 +646,17 @@ class Job:
             self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
 
         return self.exitcode
+
+    def _check_test_suite_name_uniqueness(self):
+        all_names = [suite.name for suite in self.test_suites]
+        duplicate_names = set([name for name in all_names
+                               if all_names.count(name) > 1])
+        if duplicate_names:
+            duplicate_names = ", ".join(duplicate_names)
+            msg = ('Job contains suites with the following duplicate name(s): '
+                   '%s. Test suite names must be unique to guarantee that '
+                   'results will not be overwritten' % duplicate_names)
+            raise exceptions.JobTestSuiteDuplicateNameError(msg)
 
     def setup(self):
         """

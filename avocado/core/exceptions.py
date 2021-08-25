@@ -52,6 +52,14 @@ class JobTestSuiteEmptyError(JobTestSuiteError):
     status = "ERROR"
 
 
+class JobTestSuiteDuplicateNameError(JobTestSuiteError):
+
+    """
+    Error raised when a test suite name is not unique in a job
+    """
+    status = "ERROR"
+
+
 class JobTestSuiteReferenceResolutionError(JobTestSuiteError):
 
     """
