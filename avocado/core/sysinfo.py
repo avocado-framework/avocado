@@ -25,6 +25,27 @@ from .settings import settings
 log = logging.getLogger("avocado.sysinfo")
 
 
+def gather_collectibles_config(config):
+    sysinfo_files = {}
+
+    for collectible in ['commands', 'files', 'fail_commands', 'fail_files']:
+        tmp_file = config.get('sysinfo.collectibles.%s' % collectible)
+        if os.path.isfile(tmp_file):
+            log.info('%s configured by file: %s', collectible.title(),
+                     tmp_file)
+            sysinfo_files[collectible] = genio.read_all_lines(tmp_file)
+        else:
+            log.debug('File %s does not exist.', tmp_file)
+            sysinfo_files[collectible] = []
+
+        if 'fail_' in collectible:
+            list1 = sysinfo_files[collectible]
+            list2 = sysinfo_files[collectible.split('_')[1]]
+            sysinfo_files[collectible] = [
+                tmp for tmp in list1 if tmp not in list2]
+    return sysinfo_files
+
+
 class SysInfo:
 
     """
@@ -73,25 +94,7 @@ class SysInfo:
         self._set_collectibles()
 
     def _get_collectibles(self, c_profiler):
-        self.sysinfo_files = {}
-
-        for collectible in ['commands', 'files', 'fail_commands', 'fail_files']:
-            tmp_file = self.config.get(
-                'sysinfo.collectibles.%s' % collectible)
-            if os.path.isfile(tmp_file):
-                log.info('%s configured by file: %s', collectible.title(),
-                         tmp_file)
-                self.sysinfo_files[collectible] = genio.read_all_lines(
-                    tmp_file)
-            else:
-                log.debug('File %s does not exist.', tmp_file)
-                self.sysinfo_files[collectible] = []
-
-            if 'fail_' in collectible:
-                list1 = self.sysinfo_files[collectible]
-                list2 = self.sysinfo_files[collectible.split('_')[1]]
-                self.sysinfo_files[collectible] = [
-                    tmp for tmp in list1 if tmp not in list2]
+        self.sysinfo_files = gather_collectibles_config(self.config)
 
         profiler = c_profiler
         if profiler is None:
