@@ -145,7 +145,7 @@ class SysinfoRunner(nrunner.BaseRunner):
                                       sysinfo_config,
                                       queue,
                                       test_fail)
-            sysinfo_process = multiprocessing.Process(target=sysinfo.collect())
+            sysinfo_process = multiprocessing.Process(target=sysinfo.collect)
 
             sysinfo_process.start()
 
