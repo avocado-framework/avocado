@@ -41,7 +41,7 @@ Users/Test Writers
 * The :mod:`avocado.utils.iso9660` module, gained "create" and "write"
   capabilities, currently implemented on the pycdlib based backend.
   This allows users of the :mod:`avocado.utils.iso9660` module to
-  create ISO images programatically - a task that was previously done
+  create ISO images programmatically - a task that was previously done
   by running ``mkisofs`` and similar tools.
 
 * The :func:`avocado.utils.vmimage.get` function now provides a

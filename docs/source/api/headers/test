@@ -10,5 +10,5 @@ The Test APIs are guaranteed to be stable across a single major version of
 Avocado.  That means that a test written for a given version of Avocado should
 not break on later minor versions because of Test API changes.
 
-This is the bare mininum set of APIs that users should use, and can rely on,
+This is the bare minimum set of APIs that users should use, and can rely on,
 while writing tests.

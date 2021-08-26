@@ -325,7 +325,7 @@ class Assets(CLICmd):
                                      parser=subparser)
 
             help_msg = ("Filter will be based on a overall system limit "
-                        "threshold in bytes (with assets orded by last "
+                        "threshold in bytes (with assets ordered by last "
                         "access) or with a suffix unit. Valid suffixes are: ")
             help_msg += ','.join(DataSize.MULTIPLIERS.keys())
 

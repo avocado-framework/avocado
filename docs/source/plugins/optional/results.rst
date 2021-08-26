@@ -54,7 +54,7 @@ Avocado logs will be available at following URL:
 
     http://avocadologs.example.com/job-2017-04-21T12.54-1cefe11/
 
-Such links may be refered by other plugins, such as the ResultsDB plugin
+Such links may be referred by other plugins, such as the ResultsDB plugin
 
 By default upload will be handled by following command ::
 

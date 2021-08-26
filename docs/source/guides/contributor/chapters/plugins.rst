@@ -143,8 +143,8 @@ file level. Considering the config for the hypothethical plugin ``salad``:
 .. code-block:: ini
 
     [salad.core]
-    base = ceasar
-    dressing = ceasar
+    base = caesar
+    dressing = caesar
 
 If you want, you may change ``dressing`` in your config file by simply adding a
 ``[salad.core]`` new section in your local config file, and set a different

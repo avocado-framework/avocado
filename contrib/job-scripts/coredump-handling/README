@@ -8,7 +8,7 @@ These are a set of scripts that will:
   stamps of the test directories and the coredump files.
 
 If your system lacks the prlimit utility, then you have to set core
-file size limits yourself.  Options to do so include runnning:
+file size limits yourself.  Options to do so include running:
 
  $ ulimit -c unlimited
 

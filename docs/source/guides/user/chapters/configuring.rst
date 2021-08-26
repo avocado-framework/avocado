@@ -150,7 +150,7 @@ Currently Avocado supports the following data types for the configuration option
 primitive data types Avocado also supports custom data types that can be used
 by a particular plugin.
 
-Bellow, you will find information on how to set options based on those basic
+Below, you will find information on how to set options based on those basic
 data types using both: configuration files and command-line arguments.
 
 Strings

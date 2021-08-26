@@ -27,7 +27,7 @@ class Base(Test):
                                                default=self.DEFAULTS.get('version'))
         self.vmimage_build = self.params.get('build',
                                              default=self.DEFAULTS.get('build'))
-        # This is the "standard" archtiecture name
+        # This is the "standard" architecture name
         arch = self.params.get('arch', path='*/architectures/*',
                                default=self.DEFAULTS.get('arch'))
         # Distros may use slightly different values for their architecture names.

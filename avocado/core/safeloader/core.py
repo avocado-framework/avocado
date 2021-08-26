@@ -55,7 +55,7 @@ def _examine_same_module(parents, info, disabled, match, module,
     for parent in parents[:]:
         # Looking for a 'class FooTest(Parent)'
         if not isinstance(parent, ast.Name):
-            # 'class FooTest(bar.Bar)' not supported withing
+            # 'class FooTest(bar.Bar)' not supported within
             # a module
             continue
         parent_class = parent.id
@@ -87,7 +87,7 @@ def _get_attributes_for_further_examination(parent, module):
     """Returns path, module and class for further examination.
 
     This looks at one of the parents of an interesting class, so for the
-    example class Test bellow:
+    example class Test below:
 
     >>> class Test(unittest.TestCase, MixIn):
     >>>   pass

@@ -131,7 +131,7 @@ class xUnitSucceedTest(unittest.TestCase):
         with open(xunit_output, 'rb') as fp:
             limited_but_fits = fp.read()
         self.assertLess(len(limited), len(unlimited) - 500,
-                        "Length of xunit limitted to 10 chars was greater "
+                        "Length of xunit limited to 10 chars was greater "
                         "than (unlimited - 500). Unlimited output:\n%s\n\n"
                         "Limited output:\n%s" % (unlimited, limited))
         unlimited_output = get_system_out(unlimited)

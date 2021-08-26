@@ -1,5 +1,5 @@
 # Install dependencies
-- name: Install Basic Depedencies on Red Hat (like) systems specific to pip method
+- name: Install Basic Dependencies on Red Hat (like) systems specific to pip method
   package:
     name:
       - python3-pip
@@ -9,7 +9,7 @@
     - ansible_facts['distribution_file_variety'] == "RedHat"
     - method == 'pip'
 
-- name: Install Avocado-VT Depedencies on Red Hat (like) systems
+- name: Install Avocado-VT Dependencies on Red Hat (like) systems
   dnf:
     name:
      - git

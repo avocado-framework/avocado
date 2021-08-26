@@ -151,7 +151,7 @@ class TAPResult(ResultEvents):
 class TAPInit(Init):
 
     name = 'TAP'
-    description = "TAP - Test Anything Protocol - result plugin initilization"
+    description = "TAP - Test Anything Protocol - result plugin initialization"
 
     def initialize(self):
         section = 'job.run.result.tap'

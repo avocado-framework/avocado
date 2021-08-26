@@ -22,7 +22,7 @@ class Parameters(unittest.TestCase):
                          '/foo/')
 
     def test_same_origin_of_different_nodes(self):
-        # ideally we have one tree, therefor shared key
+        # ideally we have one tree, therefore shared key
         # have identical origin (id of the origin env)
         foo = tree.TreeNode().get_node("/foo", True)
         root = foo.parent

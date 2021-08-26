@@ -144,7 +144,7 @@ installed plugin of type ``job.prepost`` will be called by the ``run`` command,
 that is, anytime an ``avocado run <valid_test_reference>`` command is executed.
 
 .. note:: Conditions such as the :exc:`SystemExit` or
-          :exc:`KeyboardInterrupt` execeptions being raised can
+          :exc:`KeyboardInterrupt` exceptions being raised can
           interrupt the execution of those plugins.
 
 Then, immediately after that, the job's :meth:`run

@@ -48,10 +48,10 @@ Utility APIs
 Internal Changes
 ================
 
-* The :class:`avocado.core.test.Test` class no longers require to
+* The :class:`avocado.core.test.Test` class no longer require to
   be given an :class:`avocado.core.job.Job` as an argument.  This
   breaks (in a good way) the circular relationship between those,
-  and opens up the possiblity for deprecation of legacy code.
+  and opens up the possibility for deprecation of legacy code.
 
 * A number of lint checks were added.
 

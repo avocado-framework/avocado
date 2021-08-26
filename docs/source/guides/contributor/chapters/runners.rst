@@ -460,7 +460,7 @@ Task
 
 A task is one specific instance/occurrence of the execution of a
 runnable with its respective runner.  They should have a unique
-identifier, although a task by itself wont't enforce its uniqueness in
+identifier, although a task by itself won't enforce its uniqueness in
 a process or any other type of collection.
 
 A task is responsible for producing and reporting status updates.

@@ -105,9 +105,9 @@ Using further categorization with keys and values
 
 All the examples given so far are limited to "flat" tags.  Sometimes, it's
 helpful to categorize tests with extra context.  For instance, if you have
-tests that are sensitive to the platform endianess, you may way to categorize
-them by endianess, while at the same time, specifying the exact type of
-endianess that is required.
+tests that are sensitive to the platform endianness, you may way to categorize
+them by endianness, while at the same time, specifying the exact type of
+endianness that is required.
 
 
 For instance, your tags can now have a key and value pair, like:
@@ -120,23 +120,23 @@ To list tests without any type of filtering would give you::
   INSTRUMENTED byteorder.py:ByteOrder.test_be
   INSTRUMENTED byteorder.py:Generic.test
 
-To list tests that are somehow related to endianess, you can use::
+To list tests that are somehow related to endianness, you can use::
 
-  $ avocado list byteorder.py --filter-by-tags endianess
+  $ avocado list byteorder.py --filter-by-tags endianness
   INSTRUMENTED byteorder.py:ByteOrder.test_le
   INSTRUMENTED byteorder.py:ByteOrder.test_be
 
 And to be even more specific, you can use::
 
-  $ avocado list byteorder.py --filter-by-tags endianess:big
+  $ avocado list byteorder.py --filter-by-tags endianness:big
   INSTRUMENTED byteorder.py:ByteOrder.test_be
 
 Now, suppose you intend to run tests on a little endian platform, but you'd
 still want to include tests that are generic enough to run on either little or
-big endian (but not tests that are specific to other types of endianess), you
+big endian (but not tests that are specific to other types of endianness), you
 could use::
 
-  $ avocado list byteorder.py --filter-by-tags endianess:big --filter-by-tags-include-empty-key
+  $ avocado list byteorder.py --filter-by-tags endianness:big --filter-by-tags-include-empty-key
   INSTRUMENTED byteorder.py:ByteOrder.test_be
   INSTRUMENTED byteorder.py:Generic.test
 

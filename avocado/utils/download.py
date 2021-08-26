@@ -46,7 +46,7 @@ def url_open(url, data=None, timeout=5):
     try:
         result = urlopen(url, data=data, timeout=timeout)
     except socket.timeout as ex:
-        msg = "Timeout was reach: {}".format(str(ex))
+        msg = "Timeout was reached: {}".format(str(ex))
         log.error(msg)
         return None
 
@@ -72,7 +72,7 @@ def url_download(url, filename, data=None, timeout=300):
     def download():
         src_file = url_open(url, data=data)
         if not src_file:
-            msg = ("Failed to get file. Probably timeout was reach when "
+            msg = ("Failed to get file. Probably timeout was reached when "
                    "connecting to the server.\n")
             sys.stderr.write(msg)
             sys.exit(1)
@@ -90,7 +90,7 @@ def url_download(url, filename, data=None, timeout=300):
     if process.is_alive():
         process.terminate()
         process.join()
-        raise OSError("Aborting downloading. Timeout was reach.")
+        raise OSError("Aborting downloading. Timeout was reached.")
 
 
 def url_download_interactive(url, output_file, title='', chunk_size=102400):

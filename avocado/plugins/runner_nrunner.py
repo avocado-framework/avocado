@@ -83,7 +83,7 @@ class RunnerInit(Init):
 
         help_msg = ('Buffer size that status server uses.  This should '
                     'generally not be a concern to most users, but '
-                    'it can be tunned in case a runner generates very large '
+                    'it can be tuned in case a runner generates very large '
                     'status messages, which is common if a test generates a '
                     'lot of output. Default is 33554432 (32MiB)')
         settings.register_option(section=section,

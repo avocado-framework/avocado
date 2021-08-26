@@ -18,7 +18,7 @@ Users/Test Writers
    These tags are given in docstrings, similar to the already existing
    docstring directives that force Avocado to either enable or disable
    the detection of a class as an Avocado INSTRUMENTED test.  With this
-   feature, you can now write your tests more freely accross Python files
+   feature, you can now write your tests more freely across Python files
    and choose to run only a subset of them, based on the their tag values.
    For more information, please take a look at :ref:`categorizing-tests`.
 

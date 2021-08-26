@@ -166,7 +166,7 @@ up having to implement these routines just to run they tests.
 Avocado has **more than 40** *utility modules* that helps you to perform basic
 operations.
 
-Bellow a small subset of our utility modules:
+Below a small subset of our utility modules:
 
 * **utils.vmimage**: This utility provides a API to download/cache VM images
   (QCOW) from the official distributions repositories.

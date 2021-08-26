@@ -18,7 +18,7 @@ Users/Test Writers
   ``--ignore-errors`` option that returns exit code 0 even when some
   of the assets could not be fetched.  This is useful in some
   unattended executions such as CI environments, in which the
-  ``avocado assets fetch`` is used in conjuntion with the canceling of
+  ``avocado assets fetch`` is used in conjunction with the canceling of
   tests that depend on assets not found.  Without this option, an
   entire CI job can be stopped at the initial failure.
 
@@ -89,7 +89,7 @@ Utility APIs
 Internal Changes
 ================
 
-* The experimental N(ext) Runner now produces less ambiguious state
+* The experimental N(ext) Runner now produces less ambiguous state
   messages, with a dedicated ``result`` field on the final state
   message, instead of reusing the ``status`` field.
 

@@ -109,7 +109,7 @@ Each node can define key/value pairs (lines 4,6,8,11,...). Additionally
 each children node inherits values of it's parent and the result is called
 node ``environment``.
 
-Given the node structure bellow:
+Given the node structure below:
 
 .. code-block:: yaml
 
@@ -166,7 +166,7 @@ those leaves. Intermediary or root nodes are available.
 The example above generates a single test execution with parameters separated
 by path. But the most powerful multiplexer feature is that it can generate
 multiple variants. To do that you need to tag a node whose children are
-ment to be multiplexed. Effectively it returns only leaves of one child at the
+meant to be multiplexed. Effectively it returns only leaves of one child at the
 time.In order to generate all possible variants multiplexer creates cartesian
 product of all of these variants:
 
@@ -351,7 +351,7 @@ results in:
     debug:
         CFLAGS: '-O0 -g'
     prod:
-        CFLAGS: '-Os'       # overriden
+        CFLAGS: '-Os'       # overridden
     fast:
         CFLAGS: '-Ofast'    # appended
 
