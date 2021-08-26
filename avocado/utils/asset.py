@@ -76,6 +76,8 @@ class Asset:
         self.name = name or ''
         self.asset_hash = asset_hash
 
+        self._uid = str(uuid.uuid4())
+
         if isinstance(locations, str):
             self.locations = [locations]
         else:
@@ -449,6 +451,12 @@ class Asset:
 
     @property
     def asset_name(self):
+        # When using an http url as name we have some problems. For instance:
+        # Some urls has the same name endpoint for multiple files, depending on
+        # GET parameters. So we don't have an 'unique asset identifier here'.
+        # Lets use self._uid then.
+        if self.name_scheme in ['http', 'https']:
+            return self._uid
         return os.path.basename(self.parsed_name.path)
 
     @classmethod
