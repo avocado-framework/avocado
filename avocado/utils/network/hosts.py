@@ -59,6 +59,9 @@ class Host:
         except Exception as ex:
             raise NWException("Failed to get interfaces: {}".format(ex))
 
+        if "bonding_masters" in names:
+            names.remove("bonding_masters")
+
         return [NetworkInterface(if_name=name, host=self) for name in names]
 
     def get_interface_by_ipaddr(self, ipaddr):
