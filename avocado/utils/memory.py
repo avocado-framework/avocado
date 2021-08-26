@@ -370,7 +370,7 @@ def _get_buddy_info_content():
 
 def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     """
-    Get the fragement status of the host.
+    Get the fragment status of the host.
 
     It uses the same method to get the page size in buddyinfo. The expression
     to evaluate it is::

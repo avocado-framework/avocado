@@ -46,7 +46,7 @@ The main changes in Avocado for this release are:
   be *enabled* by default in the upcoming releases.
 
 * Pre/Post Job hooks.  Avocado now defines a proper interface for
-  extension/plugin writers to execute actions while a Job is runnning.
+  extension/plugin writers to execute actions while a Job is running.
   Both Pre and Post hooks have access to the Job state (actually, the
   complete Job instance).  Pre job hooks are called before tests are
   run, and post job hooks are called at the very end of the job (after

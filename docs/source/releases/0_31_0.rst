@@ -35,7 +35,7 @@ For Avocado the main changes are:
   that the public and documented interfaces for plugins, at the
   moment, allows adding new commands to the avocado command line app,
   or adding new options to existing commands. Other functionality can
-  be achived by "abusing" the core avocado API from within
+  be achieved by "abusing" the core avocado API from within
   plugins. Our goal is to expand the interfaces so that other areas of
   the framework can be extended just as easily.
 

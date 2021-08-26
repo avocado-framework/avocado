@@ -177,7 +177,7 @@ When naming plugin options, we should try to use the following standard::
         [pluginx]
         foo = bar
 
-Becames::
+Becomes::
 
         avocado --pluginx-foo bar
 
@@ -248,7 +248,7 @@ list of what should expect when using other types:
 
         avocado run --disable-json-job-result
 
-   This is just an example, the name and syntax may be diferent.
+   This is just an example, the name and syntax may be different.
 
 .. note:: New Issue: Fix boolean command line options
 

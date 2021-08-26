@@ -6,7 +6,7 @@ The Avocado team is proud to present another release: Avocado 81.0,
 AKA "Avengers: Infinity War", is now available!
 
 This release introduces many exciting new features.  We can't even
-wait to get to the more specific sections bellow to talk about some
+wait to get to the more specific sections below to talk about some
 of the highlights:
 
 * A new test runner architecture, previously known as the "N(ext)

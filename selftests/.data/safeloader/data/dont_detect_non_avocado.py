@@ -15,7 +15,7 @@ from avocado import Test    # pylint: disable=W0404
 
 
 # On recursive discovery this should be imported from
-# avocado.core.test and not avocado.Test, therefor it should
+# avocado.core.test and not avocado.Test, therefore it should
 # not be detected (ditto for the Python unittest discover behavior)
 class NotTest(StaticallyNotAvocadoTest):
     def test2(self):

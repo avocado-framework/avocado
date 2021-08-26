@@ -351,7 +351,7 @@ Utility APIs
 * The :mod:`avocado.utils.iso9660` module, gained "create" and "write"
   capabilities, currently implemented on the pycdlib based backend.
   This allows users of the :mod:`avocado.utils.iso9660` module to
-  create ISO images programatically - a task that was previously done
+  create ISO images programmatically - a task that was previously done
   by running ``mkisofs`` and similar tools.
 
 * The :mod:`avocado.utils.download` module, and the various utility
@@ -522,7 +522,7 @@ Users
   such as the test file name (if one exists), its ``workdir``
   and its ``teststmpdir`` if one is set.
 
-* The test runner wil now log the test initialization (look for
+* The test runner will now log the test initialization (look for
   ``INIT`` in your test logs) in addition to the already existing
   start of test execution (logged as ``START``).
 

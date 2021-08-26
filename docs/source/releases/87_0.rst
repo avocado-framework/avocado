@@ -64,7 +64,7 @@ Internal Changes
 * The nrunner standalone runners are now on their own directory on the
   source code tree (``avocado/core/runners``).
 
-* The nrunner base class runner is now an abtract base class.
+* The nrunner base class runner is now an abstract base class.
 
 * The Job's Test suite for the nrunner architecture now contains
   Runnables instead of Tasks, which are a better fit at that stage.

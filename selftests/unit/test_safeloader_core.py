@@ -108,7 +108,7 @@ class Child(BaseClass):
 
 # The following definitions will be used while creating a directory
 # structure that contains a pre-defined set of modules that will be
-# used on tests bellow
+# used on tests below
 
 # A level 0 library containing a base test class
 L0_LIB = """

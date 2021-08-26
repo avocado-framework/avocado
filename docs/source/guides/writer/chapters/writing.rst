@@ -128,7 +128,7 @@ the failure in ``self.fail`` method::
     try:
         process.run("stress_my_feature")
     except process.CmdError as details:
-        self.fail("The stress comamnd failed: %s" % details)
+        self.fail("The stress command failed: %s" % details)
 
 If your test compounds of many executions and you can't get this exception
 in other case then expected failure, you can simplify the code by using
@@ -427,7 +427,7 @@ There are other options to influence the params so please check out
 Since an Avocado test inherits from :class:`unittest.TestCase`, you
 can use all the assertion methods that its parent.
 
-The code example bellow uses :meth:`assertEqual
+The code example below uses :meth:`assertEqual
 <unittest.TestCase.assertEqual>`, :meth:`assertTrue
 <unittest.TestCase.assertTrue>` and :meth:`assertIsInstace
 <unittest.TestCase.assertIsInstance>`::
@@ -1277,7 +1277,7 @@ The ``test.py:NotInheritedFromTest.test`` will not really work
 as it lacks several required methods, but still is discovered
 as an `INSTRUMENTED` test due to ``enable`` tag and the
 ``SpecificTests`` only looks at it's ``test*`` methods,
-ignoring the inheritance, therefor the
+ignoring the inheritance, therefore the
 ``test.py:SpecificTests.test_shared`` will not be discovered.
 
 
@@ -1286,7 +1286,7 @@ ignoring the inheritance, therefor the
 
 The ``:avocado: recursive`` tag was used to enable recursive
 discovery, but nowadays this is the default. By using this
-tag one explicitly sets the class as `INSTRUMENTED`, therefor
+tag one explicitly sets the class as `INSTRUMENTED`, therefore
 inheritance from `avocado.Test` is not required.
 
 

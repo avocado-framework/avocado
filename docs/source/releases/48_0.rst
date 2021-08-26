@@ -45,7 +45,7 @@ Users/Test Writers
 
 * Adjustments to the use of ``AVOCADO_JOB_FAIL`` and ``AVOCADO_FAIL``
   exit status code by Avocado.  This matters if you're checking the
-  exact exit status code that Avocado may return on error condtitions.
+  exact exit status code that Avocado may return on error conditions.
 
 Documentation / Contrib
 =======================

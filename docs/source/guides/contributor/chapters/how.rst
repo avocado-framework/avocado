@@ -25,7 +25,7 @@ bug report.
 Suggest enhancements
 --------------------
 
-.. warning:: TOOD: Describe how to suggest features
+.. warning:: TODO: Describe how to suggest features
 
 Contribute with code
 --------------------

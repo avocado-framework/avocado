@@ -11,7 +11,7 @@ Import ``vmimage`` module::
 
     >>> from avocado.utils import vmimage
 
-Get an image, which consists in an object with the path of the dowloaded/cached
+Get an image, which consists in an object with the path of the downloaded/cached
 base image and the path of the external snapshot created out of that base
 image::
 

@@ -21,7 +21,7 @@ ${PYLINT} ${PYLINT_OPTIONS} --disable=W0212,W0703 ${FILES}
 # This is just a Python 3 porting check. We are not still ready for a full
 # --py3k, so we are enabling just a few checks at this time.
 #
-# We are not using pylintrc here because this is a completly different type of check.
+# We are not using pylintrc here because this is a completely different type of check.
 # Maybe soon, we can have multiple pytlintrc files.
 FILES=$(git ls-files '*.py')
 ${PYLINT} ${PYLINT_OPTIONS} \

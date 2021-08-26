@@ -132,11 +132,11 @@ On the specific test type section, you can specify 3 options: ``uri``, ``args`` 
 .. note:: Some test types will convert ``kwargs`` into variable environments.
  Please check the documentation of the test type that you are using.
 
-You can also use the keyworkd ``$testpath`` in any of the options inside the test
+You can also use the keyword ``$testpath`` in any of the options inside the test
 type section. Avocado will replace ``$testpath`` with your test path, after the
 expansion.
 
-For instance, bellow you will find a hint file example where we have only one
+For instance, below you will find a hint file example where we have only one
 test type ``TAP``:
 
 .. literalinclude:: ../../../../../examples/hint-files/.avocado.hint.example

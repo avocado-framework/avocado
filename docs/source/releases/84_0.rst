@@ -51,7 +51,7 @@ Bug Fixes
 Utility APIs
 ============
 
-* :mod:`avocado.utils.pci` now accomodates newer slot names.
+* :mod:`avocado.utils.pci` now accommodates newer slot names.
 
 * :mod:`avocado.utils.memory` now properly handles the 16GB hugepages
   with both the HASH and Radix MMU (by removing the check in case

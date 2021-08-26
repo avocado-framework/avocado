@@ -950,7 +950,7 @@ network mirror.
 These files let Avocado pinpoint if a given installed package is part of
 the original Linux Distribution or something else that was installed
 from an external repository or even manually. This, in turn, can help
-detecting regressions in base system pacakges that affected a given test
+detecting regressions in base system packages that affected a given test
 result.
 
 To generate a definition file run::

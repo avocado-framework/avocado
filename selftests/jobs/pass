@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Minimal job that runs an also mininal executable test
+# Minimal job that runs an also minimal executable test
 
 import os
 import sys

@@ -74,7 +74,7 @@ Bug Fixes
 * A temporarily workaround for a stack overflow problem in Python 3.7
   has been addressed.
 
-* The pict plugin (a varianter implementaion) now properly yields the
+* The pict plugin (a varianter implementation) now properly yields the
   variants paths as a list.
 
 * A Python 3 related fix to mod:`avocado.utils.software_manager`, that

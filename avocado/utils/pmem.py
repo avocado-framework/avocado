@@ -431,7 +431,7 @@ class PMem:
         :raise: :class:`PMemException`, if command fails.
         """
         if not (namespace or stdout or output):
-            raise PMemException("Specify atleast one output medium")
+            raise PMemException("Specify at least one output medium")
 
         args_dict = {'region': '-r %s', 'bus': '-b %s', 'mode': '-m %s',
                      'memmap': '-M %s', 'size': '-s %s', 'align': '-a %s',

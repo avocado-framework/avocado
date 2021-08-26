@@ -505,7 +505,7 @@ class TestInternalFilters(unittest.TestCase):
                                              "/2/baz", ["/2/baz"], [])))
 
     def test_bad_filter(self):
-        # "bar" is missing the "/", therefor it's parent is not / but ""
+        # "bar" is missing the "/", therefore its parent is not / but ""
         self.assertTrue(self.check_scenario(("foo", ["bar"], []),))
         # Filter-out "foo" won't filter-out /foo as it's not parent of /
         self.assertTrue(self.check_scenario(("foo", [], ["foo"]),))
