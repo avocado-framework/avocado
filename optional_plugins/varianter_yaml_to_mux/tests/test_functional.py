@@ -135,7 +135,7 @@ class MultiplexTests(unittest.TestCase):
                             ('/run/medium', 'ASDFASDF'),
                             ('/run/long', 'This is very long\nmultiline\ntext.')):
             variant, msg = variant_msg
-            cmd_line = ('%s --show=test run --job-results-dir %s --disable-sysinfo '
+            cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                         'examples/tests/env_variables.sh '
                         '-m examples/tests/env_variables.sh.data/env_variables.yaml '
                         '--mux-filter-only %s'
@@ -143,17 +143,23 @@ class MultiplexTests(unittest.TestCase):
             expected_rc = exit_codes.AVOCADO_ALL_OK
             result = self.run_and_check(cmd_line, expected_rc)
 
+            log_files = glob.glob(os.path.join(self.tmpdir.name, 'latest',
+                                               'test-results', '*', 'debug.log'))
+            result = ''
+            for log_file in log_files:
+                result += genio.read_file(log_file)
+
             msg_lines = msg.splitlines()
             msg_header = '[stdout] Custom variable: %s' % msg_lines[0]
-            self.assertIn(msg_header, result.stdout_text,
+            self.assertIn(msg_header, result,
                           "Multiplexed variable should produce:"
                           "\n  %s\nwhich is not present in the output:\n  %s"
-                          % (msg_header, "\n  ".join(result.stdout_text.splitlines())))
+                          % (msg_header, "\n  ".join(result.splitlines())))
             for msg_remain in msg_lines[1:]:
-                self.assertIn('[stdout] %s' % msg_remain, result.stdout_text,
+                self.assertIn('[stdout] %s' % msg_remain, result,
                               "Multiplexed variable should produce:"
                               "\n  %s\nwhich is not present in the output:\n  %s"
-                              % (msg_remain, "\n  ".join(result.stdout_text.splitlines())))
+                              % (msg_remain, "\n  ".join(result.splitlines())))
 
     def tearDown(self):
         self.tmpdir.cleanup()
@@ -196,8 +202,10 @@ class DryRun(unittest.TestCase):
                "-- passtest.py failtest.py gendata.py " % AVOCADO)
         number_of_tests = 3
         result = json.loads(process.run(cmd).stdout_text)
-        debuglog = result['debuglog']
-        log = genio.read_file(debuglog)
+        log = ''
+        for test in result['tests']:
+            debuglog = test['logfile']
+            log += genio.read_file(debuglog)
         # Remove the result dir
         shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
         self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
