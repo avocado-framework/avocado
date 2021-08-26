@@ -183,7 +183,7 @@ class RunnerOperationTest(TestCaseTmpDir):
 
     def test_runner_phases(self):
         cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
-                    'phases.py' % (AVOCADO, self.tmpdir.name))
+                    'examples/tests/phases.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
