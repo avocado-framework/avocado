@@ -872,7 +872,7 @@ class Task:
 
     def setup_output_dir(self):
         self.output_dir = tempfile.mkdtemp(prefix='.avocado-task-')
-        env_var = {'AVOCADO_TEST_OUTPUT_DIR': self.output_dir}
+        env_var = {'AVOCADO_TEST_OUTPUTDIR': self.output_dir}
         self.runnable.kwargs.update(env_var)
 
     @classmethod
