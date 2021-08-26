@@ -11,7 +11,10 @@ class ReplayTests(TestCaseTmpDir):
 
     def setUp(self):
         super(ReplayTests, self).setUp()
-        cmd_line = ('%s run passtest.py passtest.py passtest.py passtest.py '
+        cmd_line = ('%s run examples/tests/passtest.py '
+                    'examples/tests/passtest.py '
+                    'examples/tests/passtest.py '
+                    'examples/tests/passtest.py '
                     '--job-results-dir %s --disable-sysinfo --json -'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
