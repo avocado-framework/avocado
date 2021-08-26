@@ -18,7 +18,7 @@ class SysInfoTest(TestCaseTmpDir):
 
     def test_sysinfo_enabled(self):
         cmd_line = ('%s run --job-results-dir %s '
-                    'passtest.py' % (AVOCADO, self.tmpdir.name))
+                    'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -45,7 +45,8 @@ class SysInfoTest(TestCaseTmpDir):
             self.assertTrue(os.path.exists(sysinfo_subdir), msg)
 
     def test_sysinfo_disabled(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo passtest.py'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    'examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -72,7 +73,7 @@ class SysInfoTest(TestCaseTmpDir):
         script.make_script(config_path,
                            COMMANDS_TIMEOUT_CONF % (timeout, commands_path))
         cmd_line = ("%s --show all --config %s run --job-results-dir %s "
-                    "passtest.py"
+                    "examples/tests/passtest.py"
                     % (AVOCADO, config_path, self.tmpdir.name))
         result = process.run(cmd_line)
         if timeout > 0:

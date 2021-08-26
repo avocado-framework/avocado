@@ -56,7 +56,7 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_passtest(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'passtest.py -m '
+                    'examples/tests/passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -70,7 +70,8 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_doublepass(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'passtest.py passtest.py -m '
+                    'examples/tests/passtest.py '
+                    'examples/tests/passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--mux-path /foo/\\* /bar/\\* /baz/\\*'
                     % (AVOCADO, self.tmpdir.name))
@@ -85,32 +86,38 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_failtest(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'passtest.py failtest.py -m '
+                    'examples/tests/passtest.py '
+                    'examples/tests/failtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn(b"(1/8) passtest.py:PassTest.test;run-short-beaf", result.stdout)
-        self.assertIn(b"(2/8) passtest.py:PassTest.test;run-medium-5595", result.stdout)
-        self.assertIn(b"(8/8) failtest.py:FailTest.test;run-longest-efc4",
+        self.assertIn(b"(1/8) examples/tests/passtest.py:PassTest.test;run-short-beaf",
+                      result.stdout)
+        self.assertIn(b"(2/8) examples/tests/passtest.py:PassTest.test;run-medium-5595",
+                      result.stdout)
+        self.assertIn(b"(8/8) examples/tests/failtest.py:FailTest.test;run-longest-efc4",
                       result.stdout)
 
     def test_run_mplex_failtest_tests_per_variant(self):
         cmd_line = ("%s run --job-results-dir %s --disable-sysinfo "
-                    "passtest.py failtest.py -m "
+                    "examples/tests/passtest.py "
+                    "examples/tests/failtest.py -m "
                     "examples/tests/sleeptest.py.data/sleeptest.yaml "
                     "--execution-order tests-per-variant"
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn(b"(1/8) passtest.py:PassTest.test;run-short-beaf", result.stdout)
-        self.assertIn(b"(2/8) failtest.py:FailTest.test;run-short-beaf", result.stdout)
-        self.assertIn(b"(8/8) failtest.py:FailTest.test;run-longest-efc4",
+        self.assertIn(b"(1/8) examples/tests/passtest.py:PassTest.test;run-short-beaf",
+                      result.stdout)
+        self.assertIn(b"(2/8) examples/tests/failtest.py:FailTest.test;run-short-beaf",
+                      result.stdout)
+        self.assertIn(b"(8/8) examples/tests/failtest.py:FailTest.test;run-longest-efc4",
                       result.stdout)
 
     def test_run_double_mplex(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'passtest.py -m '
+                    'examples/tests/passtest.py -m '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir.name))
@@ -119,8 +126,8 @@ class MultiplexTests(unittest.TestCase):
 
     def test_empty_file(self):
         cmd_line = ("%s run --job-results-dir %s -m optional_plugins/"
-                    "varianter_yaml_to_mux/tests/.data/empty_file -- "
-                    "passtest.py" % (AVOCADO, self.tmpdir.name))
+                    "varianter_yaml_to_mux/tests/.data/empty_file "
+                    "-- examples/tests/passtest.py" % (AVOCADO, self.tmpdir.name))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (1, 0))
 
     def test_run_mplex_params(self):

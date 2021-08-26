@@ -19,7 +19,11 @@ AVOCADO_QUOTED = "', '".join(shlex.split(AVOCADO))
 PERL_TAP_PARSER_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--disable-sysinfo', '--job-results-dir', '%%s'] } );
+my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'examples/tests/passtest.py',
+                                          'examples/tests/errortest.py',
+                                          'examples/tests/warntest.py',
+                                          '--tap', '-', '--disable-sysinfo',
+                                          '--job-results-dir', '%%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
@@ -33,7 +37,12 @@ $parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
 PERL_TAP_PARSER_FAILFAST_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'failtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--failfast', '--disable-sysinfo', '--job-results-dir', '%%s'] } );
+my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'examples/tests/failtest.py',
+                                          'examples/tests/errortest.py',
+                                          'examples/tests/warntest.py',
+                                          '--tap', '-', '--failfast',
+                                          '--disable-sysinfo', '--job-results-dir',
+                                          '%%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
@@ -393,7 +402,8 @@ class OutputPluginTest(TestCaseTmpDir):
 
     def test_output_incompatible_setup(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--xunit - --json - passtest.py' % (AVOCADO, self.tmpdir.name))
+                    '--xunit - --json - examples/tests/passtest.py'
+                    % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -409,7 +419,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--journal --xunit %s --json - passtest.py' %
+                    '--journal --xunit %s --json - examples/tests/passtest.py' %
                     (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -423,7 +433,8 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--xunit - --json %s --tap-include-logs passtest.py'
+                    '--xunit - --json %s --tap-include-logs '
+                    'examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -443,7 +454,8 @@ class OutputPluginTest(TestCaseTmpDir):
         # Verify --show=none can be supplied as app argument
         cmd_line = ('%s --show=none run --job-results-dir %s '
                     '--disable-sysinfo --xunit %s --json %s --tap-include-logs '
-                    'passtest.py' % (AVOCADO, self.tmpdir.name, tmpfile, tmpfile2))
+                    'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name,
+                                                    tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -480,7 +492,7 @@ class OutputPluginTest(TestCaseTmpDir):
 
     def test_show_test(self):
         cmd_line = ('%s --show=test run --job-results-dir %s --disable-sysinfo '
-                    'passtest.py' % (AVOCADO, self.tmpdir.name))
+                    'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -496,7 +508,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_silent_trumps_test(self):
         # Also verify --show=none can be supplied as run option
         cmd_line = ('%s --show=test --show=none run --job-results-dir %s '
-                    '--disable-sysinfo passtest.py'
+                    '--disable-sysinfo examples/tests/passtest.py'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -554,7 +566,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_redirect_output(self):
         redirected_output_path = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = ('%s run --job-results-dir %s '
-                    '--disable-sysinfo passtest.py > %s'
+                    '--disable-sysinfo examples/tests/passtest.py > %s'
                     % (AVOCADO, self.tmpdir.name, redirected_output_path))
         result = process.run(cmd_line, ignore_status=True, shell=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -589,7 +601,10 @@ class OutputPluginTest(TestCaseTmpDir):
             process.run("perl %s" % perl_script)
 
     def test_tap_totaltests(self):
-        cmd_line = ("%s run passtest.py passtest.py passtest.py passtest.py "
+        cmd_line = ("%s run examples/tests/passtest.py "
+                    "examples/tests/passtest.py "
+                    "examples/tests/passtest.py "
+                    "examples/tests/passtest.py "
                     "--job-results-dir %s --disable-sysinfo "
                     "--tap -" % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line)

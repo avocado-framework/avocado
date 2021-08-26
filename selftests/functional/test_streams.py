@@ -38,10 +38,12 @@ class StreamsTest(TestCaseTmpDir):
         variable `AVOCADO_LOG_EARLY` being set.
         """
         cmds = (('%s --show early run --disable-sysinfo '
-                 '--job-results-dir %s passtest.py' % (AVOCADO, self.tmpdir.name),
+                 '--job-results-dir %s examples/tests/passtest.py'
+                 % (AVOCADO, self.tmpdir.name),
                  {}),
                 ('%s run --disable-sysinfo --job-results-dir'
-                 ' %s passtest.py' % (AVOCADO, self.tmpdir.name),
+                 ' %s examples/tests/passtest.py'
+                 % (AVOCADO, self.tmpdir.name),
                  {'AVOCADO_LOG_EARLY': 'y'}))
         for cmd, env in cmds:
             result = process.run(cmd, env=env, shell=True)
@@ -56,23 +58,24 @@ class StreamsTest(TestCaseTmpDir):
         Checks that the test stream (early in this case) goes to stdout
         """
         cmd = ('%s --show=test run --disable-sysinfo --job-results-dir %s '
-               'passtest.py' % (AVOCADO, self.tmpdir.name))
+               'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         # Avocado will see the main module on the command line
         cmd_in_log = os.path.join(BASEDIR, 'avocado', '__main__.py')
         self.assertIn("Command line: %s" % cmd_in_log,
                       result.stdout_text)
-        self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
+        self.assertIn(b"\nSTART 1-examples/tests/passtest.py:PassTest.test",
                       result.stdout)
-        self.assertIn(b"PASS 1-passtest.py:PassTest.test", result.stdout)
+        self.assertIn(b"PASS 1-examples/tests/passtest.py:PassTest.test",
+                      result.stdout)
 
     def test_none_success(self):
         """
         Checks that only errors are output, and that they go to stderr
         """
         cmd = ('%s --show none run --disable-sysinfo --job-results-dir %s '
-               'passtest.py' % (AVOCADO, self.tmpdir.name))
+               'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(b'', result.stdout)

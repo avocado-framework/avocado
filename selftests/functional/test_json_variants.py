@@ -37,16 +37,16 @@ class VariantsDumpLoadTests(TestCaseTmpDir):
                    '  "variant_id": "bar-d06d"}]')
         with open(self.variants_file, 'w') as file_obj:
             file_obj.write(content)
-        cmd_line = ('%s run passtest.py --json-variants-load %s '
+        cmd_line = ('%s run examples/tests/passtest.py --json-variants-load %s '
                     '--job-results-dir %s --json -' %
                     (AVOCADO, self.variants_file, self.tmpdir.name))
         result = process.run(cmd_line)
         json_result = json.loads(result.stdout_text)
         self.assertEqual(json_result["pass"], 2)
         self.assertEqual(json_result["tests"][0]["id"],
-                         "1-passtest.py:PassTest.test;foo-0ead")
+                         "1-examples/tests/passtest.py:PassTest.test;foo-0ead")
         self.assertEqual(json_result["tests"][1]["id"],
-                         "2-passtest.py:PassTest.test;bar-d06d")
+                         "2-examples/tests/passtest.py:PassTest.test;bar-d06d")
 
 
 if __name__ == '__main__':
