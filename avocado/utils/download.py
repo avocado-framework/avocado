@@ -30,7 +30,7 @@ from . import aurl, crypto, output
 log = logging.getLogger('avocado.utils.download')
 
 
-def url_open(url, data=None, timeout=5):
+def url_open(url, data=None, timeout=30):
     """
     Wrapper to :func:`urllib2.urlopen` with timeout addition.
 
