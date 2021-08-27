@@ -549,16 +549,23 @@ class RunnerOperationTest(TestCaseTmpDir):
                          % result)
 
     def test_runner_test_parameters(self):
-        cmd_line = ('%s --show=test run --disable-sysinfo --job-results-dir %s '
+        cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     '-p "sleep_length=0.01" -- examples/tests/sleeptest.py '
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
+        json_path = os.path.join(self.tmpdir.name, 'latest', 'results.json')
+        with open(json_path) as json_file:
+            result_json = json.load(json_file)
+        with open(result_json['tests'][0]['logfile'], 'r+b') as test_log_file:
+            test_log = test_log_file.read()
+
         self.assertIn(b"PARAMS (key=sleep_length, path=*, default=1) => '0.01'",
-                      result.stdout)
-        self.assertIn(b"Sleeping for 0.01 seconds", result.stdout)
+                      test_log)
+        self.assertIn(b"Sleeping for 0.01 seconds", test_log)
 
     def test_other_loggers(self):
         with script.TemporaryScript(
