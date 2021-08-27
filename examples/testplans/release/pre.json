@@ -7,8 +7,8 @@
         {"name": "Check status of master branch",
          "description": "Navigate to:\n\n   https://github.com/avocado-framework/avocado#build-and-quality-status\n\nand make sure that all build and quality services report good indicators"},
 
-        {"name": "Set the readthedocs.org token",
-        "description": "Generate and export the content of a token (from https://readthedocs.org/accounts/tokens/) as the AVOCADO_READTHEDOCS_TOKEN environment variable. For this step you have to be admin of avocado-framework project on readthedocs.org."},
+        {"name": "Set the readthedocs.org token and check it",
+        "description": "Generate and export the content of a token (from https://readthedocs.org/accounts/tokens/) as the AVOCADO_READTHEDOCS_TOKEN environment variable. For this step you have to be admin of avocado-framework project on readthedocs.org: Run locally selftests/pre_release/tests/readthedocs.py and make sure it is passing."},
 
         {"name": "Run GitHub Action 'Pre-release tests'",
          "description": "Run the GitHub Action 'Pre-release tests' on the master branch at https://github.com/avocado-framework/avocado/actions/workflows/prerelease.yml and check all the tests pass. Make at least a quick visual check to the logs."},
@@ -17,6 +17,6 @@
          "description": "Download the HTML artifact from the previous step and on a web browser, open the HTML report. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`) or `debug.log` point to valid locations."},
 
         {"name": "Paginator",
-         "description": "Start new terminal and store the stty setting by running `stty -a > /tmp/tty_state_pre`. Then run `AVOCADO_LOG_EARLY=y avocado config` and verify paginator is enabled, colored output is produced and quit. Then run `stty -a > /tmp/tty_state_post` followed by `diff /tmp/tty_state_{pre,post}` and verify the setting was not changed (no output)."}
+         "description": "Start new terminal and store the stty setting by running `stty -a > /tmp/tty_state_pre`. Then run `AVOCADO_LOG_EARLY=y avocado --enable-paginator config` and verify paginator is enabled, colored output is produced and quit. Then run `stty -a > /tmp/tty_state_post` followed by `diff /tmp/tty_state_{pre,post}` and verify the setting was not changed (no output)."}
     ]
 }
