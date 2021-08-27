@@ -408,8 +408,12 @@ class RunnerOperationTest(TestCaseTmpDir):
 
     def test_runner_timeout(self):
         cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
-                    '--xunit - timeouttest.py' % (AVOCADO, self.tmpdir.name))
+                    'examples/tests/timeouttest.py'
+                    % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
+        json_path = os.path.join(self.tmpdir.name, 'latest', 'results.json')
+        with open(json_path) as json_file:
+            result_json = json.load(json_file)
         output = result.stdout
         expected_rc = exit_codes.AVOCADO_JOB_INTERRUPTED
         unexpected_rc = exit_codes.AVOCADO_FAIL
@@ -417,8 +421,7 @@ class RunnerOperationTest(TestCaseTmpDir):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn(b"Runner error occurred: Timeout reached", output,
-                      "Timeout reached message not found in the output:\n%s" % output)
+        self.assertIn("timeout", result_json["tests"][0]["fail_reason"])
         # Ensure no test aborted error messages show up
         self.assertNotIn(b"TestAbortError: Test aborted unexpectedly", output)
 
