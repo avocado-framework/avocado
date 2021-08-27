@@ -202,7 +202,8 @@ class RunnerOperationTest(TestCaseTmpDir):
     def test_runner_failfast(self):
         cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '
                     'examples/tests/passtest.py examples/tests/failtest.py '
-                    'examples/tests/passtest.py --failfast'
+                    'examples/tests/passtest.py --failfast '
+                    '--nrunner-max-parallel-tasks=1'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b'Interrupting job (failfast).', result.stdout)
