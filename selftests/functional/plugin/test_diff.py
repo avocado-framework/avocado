@@ -4,7 +4,7 @@ import tempfile
 import unittest
 
 from avocado.core import exit_codes
-from avocado.utils import process, script
+from avocado.utils import process
 from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir
 
 
@@ -12,20 +12,17 @@ class DiffTests(TestCaseTmpDir):
 
     def setUp(self):
         super(DiffTests, self).setUp()
-        test = script.make_script(os.path.join(self.tmpdir.name, 'test'), 'exit 0')
-        cmd_line = ('%s run %s '
-                    '--external-runner /bin/bash '
+        cmd_line = ('%s run examples/tests/passtest.py '
                     '--job-results-dir %s --disable-sysinfo --json -' %
-                    (AVOCADO, test, self.tmpdir.name))
+                    (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
         self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
 
         self.tmpdir2 = tempfile.TemporaryDirectory(prefix=self.tmpdir.name)
-        cmd_line = ('%s run %s '
-                    '--external-runner /bin/bash '
+        cmd_line = ('%s run examples/tests/warntest.py '
                     '--job-results-dir %s --disable-sysinfo --json -' %
-                    (AVOCADO, test, self.tmpdir2.name))
+                    (AVOCADO, self.tmpdir2.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
         self.jobdir2 = ''.join(glob.glob(os.path.join(self.tmpdir2.name, 'job-*')))
