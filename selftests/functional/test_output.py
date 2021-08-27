@@ -164,6 +164,7 @@ class PassTest(Test):
 
 if __name__ == '__main__':
     config = {'run.references': [__file__],
+              'run.test_runner': 'nrunner',
               'core.show': ['app']}
     suite = TestSuite.from_config(config)
     with Job(config, [suite]) as j:
@@ -348,10 +349,11 @@ class OutputTest(TestCaseTmpDir):
         """
         with script.Script(os.path.join(self.tmpdir.name, "test_show.py"),
                            OUTPUT_SHOW_TEST, script.READ_ONLY_MODE) as test:
-            cmd = "%s run --disable-sysinfo -- %s" % (AVOCADO, test.path)
+            cmd = ("%s run --test-runner=nrunner --disable-sysinfo -- %s"
+                   % (AVOCADO, test.path))
             result = process.run(cmd)
-            expected_job_id_number = 2
-            expected_bin_true_number = 1
+            expected_job_id_number = 1
+            expected_bin_true_number = 0
             job_id_number = result.stdout_text.count('JOB ID')
             bin_true_number = result.stdout_text.count('/bin/true')
             self.assertEqual(expected_job_id_number, job_id_number)
