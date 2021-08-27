@@ -20,6 +20,7 @@ class GetData(TestCaseTmpDir):
         test_variants_path = os.path.join(BASEDIR, "selftests", ".data",
                                           "get_data.py.data", "get_data.json")
         cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' "
+                    "--test-runner=runner "
                     "--json-variants-load %s -- %s")
         cmd_line %= (AVOCADO, self.tmpdir.name, test_variants_path, test_path)
         result = process.run(cmd_line)

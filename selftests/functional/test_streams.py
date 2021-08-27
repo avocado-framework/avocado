@@ -58,6 +58,7 @@ class StreamsTest(TestCaseTmpDir):
         Checks that the test stream (early in this case) goes to stdout
         """
         cmd = ('%s --show=test run --disable-sysinfo --job-results-dir %s '
+               '--test-runner=runner '
                'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)

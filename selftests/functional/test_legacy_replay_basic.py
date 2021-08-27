@@ -135,6 +135,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         cmd_line = ('%s run --replay %s --replay-test-status '
                     'FAIL --job-results-dir %s --disable-sysinfo'
+                    ' --test-runner=runner'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
