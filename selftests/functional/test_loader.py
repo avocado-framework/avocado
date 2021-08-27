@@ -146,7 +146,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
                                              'avocado_loader_test',
                                              mode=mode)
         test_script.save()
-        cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
+        cmd_line = ('%s -V list --loader %s' % (AVOCADO, test_script.path))
         result = process.run(cmd_line)
         self.assertIn('%s: %s' % (exp_str, count), result.stdout_text)
         test_script.remove()
@@ -191,7 +191,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
                                              'avocado_loader_test',
                                              mode=self.MODE_0664)
         test_script.save()
-        cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
+        cmd_line = ('%s -V list --loader %s' % (AVOCADO, test_script.path))
         initial_time = time.monotonic()
         result = process.run(cmd_line, ignore_status=True)
         test_script.remove()
@@ -233,7 +233,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES)
         os.chdir(BASEDIR)
         mytest.save()
-        cmd_line = "%s -V list %s" % (AVOCADO, mytest)
+        cmd_line = "%s -V list --loader %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
         self.assertIn(b'simple: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
@@ -290,7 +290,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
         Check whether the subtests filter works for both INSTRUMENTED
         and SIMPLE in a directory list.
         """
-        cmd = "%s list examples/tests/:fail" % AVOCADO
+        cmd = "%s list --loader examples/tests/:fail" % AVOCADO
         result = process.run(cmd)
         expected = (b"INSTRUMENTED examples/tests/assert.py:Assert.test_fails_to_raise\n"
                     b"INSTRUMENTED examples/tests/doublefail.py:DoubleFail.test\n"

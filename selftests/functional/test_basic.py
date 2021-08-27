@@ -615,7 +615,7 @@ class DryRunTest(TestCaseTmpDir):
         passtest = os.path.join(examples_path, 'passtest.py')
         failtest = os.path.join(examples_path, 'failtest.py')
         gendata = os.path.join(examples_path, 'gendata.py')
-        cmd = ("%s run --test-runner=nrunner --disable-sysinfo --dry-run "
+        cmd = ("%s run --disable-sysinfo --dry-run "
                "--dry-run-no-cleanup --json - -- %s %s %s " % (AVOCADO,
                                                                passtest,
                                                                failtest,
@@ -1146,13 +1146,14 @@ class PluginsTest(TestCaseTmpDir):
                          result.stdout)
 
     def test_list_error_output(self):
-        cmd_line = '%s list sbrubles' % AVOCADO
+        cmd_line = '%s list --loader sbrubles' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b"Unable to resolve reference", result.stderr)
 
     def test_list_no_file_loader(self):
-        cmd_line = ("%s --verbose list --loaders external -- "
-                    "this-wont-be-matched" % AVOCADO)
+        cmd_line = ("%s --verbose list --loaders external "
+                    "--loader "
+                    "-- this-wont-be-matched" % AVOCADO)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
                          "Avocado did not return rc %d:\n%s"
@@ -1171,8 +1172,9 @@ class PluginsTest(TestCaseTmpDir):
         """
         test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),
                                   VALID_PYTHON_TEST_WITH_TAGS)
-        cmd_line = ("%s --verbose list --loaders file -- %s" % (AVOCADO,
-                                                                test))
+        cmd_line = ("%s --verbose list "
+                    "--loader "
+                    "--loaders file -- %s" % (AVOCADO, test))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
                          "Avocado did not return rc %d:\n%s"
