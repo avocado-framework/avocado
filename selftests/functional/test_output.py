@@ -353,8 +353,7 @@ class OutputTest(TestCaseTmpDir):
         """
         with script.Script(os.path.join(self.tmpdir.name, "test_show.py"),
                            OUTPUT_SHOW_TEST, script.READ_ONLY_MODE) as test:
-            cmd = ("%s run --test-runner=nrunner --disable-sysinfo -- %s"
-                   % (AVOCADO, test.path))
+            cmd = "%s run --disable-sysinfo -- %s" % (AVOCADO, test.path)
             result = process.run(cmd)
             expected_job_id_number = 1
             expected_bin_true_number = 0
