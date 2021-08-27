@@ -14,6 +14,7 @@ class ReplayExtRunnerTests(TestCaseTmpDir):
         test = script.make_script(os.path.join(self.tmpdir.name, 'test'), 'exit 0')
         cmd_line = ('%s run %s '
                     '--external-runner /bin/bash '
+                    '--test-runner=runner '
                     '--job-results-dir %s --disable-sysinfo --json -'
                     % (AVOCADO, test, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -33,6 +34,7 @@ class ReplayExtRunnerTests(TestCaseTmpDir):
     def test_run_replay_external_runner(self):
         cmd_line = ('%s run --replay %s '
                     '--external-runner /bin/sh '
+                    '--test-runner=runner '
                     '--job-results-dir %s --disable-sysinfo'
                     % (AVOCADO, self.jobid, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK

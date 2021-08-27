@@ -253,6 +253,7 @@ class OutputTest(TestCaseTmpDir):
                              OUTPUT_TEST_CONTENT)
         test.save()
         result = process.run("%s run --job-results-dir %s --disable-sysinfo "
+                             "--test-runner=runner "
                              "--json - -- %s" % (AVOCADO, self.tmpdir.name, test))
         res = json.loads(result.stdout_text)
         joblog = res["debuglog"]
@@ -279,6 +280,7 @@ class OutputTest(TestCaseTmpDir):
         # But this change will come later
         result = process.run("%s run --job-results-dir %s --disable-sysinfo "
                              "--output-check-record=combined "
+                             "--test-runner=runner "
                              "--json - -- %s" % (AVOCADO, self.tmpdir.name, test))
         res = json.loads(result.stdout_text)
         testdir = res["tests"][0]["logdir"]
@@ -303,6 +305,7 @@ class OutputTest(TestCaseTmpDir):
                            OUTPUT_MODE_NONE_CONTENT,
                            script.READ_ONLY_MODE) as test:
             command = ("%s run --job-results-dir %s --disable-sysinfo "
+                       "--test-runner=runner "
                        "--json - --output-check-record none -- %s") % (AVOCADO,
                                                                        self.tmpdir.name,
                                                                        test.path)
@@ -327,6 +330,7 @@ class OutputTest(TestCaseTmpDir):
                            OUTPUT_CHECK_ON_OFF_CONTENT,
                            script.READ_ONLY_MODE) as test:
             command = ("%s run --job-results-dir %s --disable-sysinfo "
+                       "--test-runner=runner "
                        "--json - -- %s") % (AVOCADO, self.tmpdir.name, test.path)
             result = process.run(command)
             res = json.loads(result.stdout_text)
@@ -476,6 +480,7 @@ class OutputPluginTest(TestCaseTmpDir):
         cmd_line = ("%s run --external-runner /bin/ls "
                     "'NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
                     "--job-results-dir %s --disable-sysinfo --tap-include-logs"
+                    " --test-runner=runner"
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout_text + result.stderr_text
