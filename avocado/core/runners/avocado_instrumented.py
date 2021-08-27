@@ -1,4 +1,6 @@
+import glob
 import multiprocessing
+import os
 import tempfile
 import time
 import traceback
@@ -82,6 +84,11 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             instance.run_avocado()
             state = instance.get_state()
             fail_reason = state.get('fail_reason')
+            data_files = glob.glob(os.path.join(instance.outputdir, '*'))
+            for data_file in data_files:
+                path = os.path.join('data', os.path.basename(data_file))
+                with open(data_file, 'r+b') as data:
+                    queue.put(messages.FileMessage.get(data.read(), path))
             queue.put(messages.WhiteboardMessage.get(state['whiteboard']))
             queue.put(messages.FinishedMessage.get(state['status'].lower(),
                                                    fail_reason=fail_reason))
