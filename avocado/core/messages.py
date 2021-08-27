@@ -410,6 +410,6 @@ class FileMessageHandler(BaseRunningMessageHandler):
         filename = os.path.relpath(os.path.join("/", message['path']), "/")
         file = os.path.join(task.metadata['task_path'], filename)
         if not os.path.exists(file):
-            os.makedirs(os.path.dirname(file))
+            os.makedirs(os.path.dirname(file), exist_ok=True)
         self._save_message_to_file(filename, message['log'], task,
                                    message.get('encoding', None))
