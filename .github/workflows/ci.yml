@@ -35,7 +35,7 @@ jobs:
       - name: Avocado version
         run: avocado --version
       - name: Avocado smoketest
-        run: python -m avocado run passtest.py
+        run: python -m avocado run examples/tests/passtest.py
       - name: Tree static check, unittests and fast functional tests
         env:
           AVOCADO_LOG_DEBUG: "yes"

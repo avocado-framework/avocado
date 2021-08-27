@@ -218,7 +218,7 @@ class OutputTest(TestCaseTmpDir):
                      "C compiler is required by the underlying doublefree.py test")
     def test_output_doublefree(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'doublefree.py' % (AVOCADO, self.tmpdir.name))
+                    'examples/tests/doublefree.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         output = result.stdout + result.stderr
@@ -524,7 +524,8 @@ class OutputPluginTest(TestCaseTmpDir):
                    % os.path.relpath(self.tmpdir.name, "."))
         script.Script(config, content).save()
         cmd_line = ('%s --config %s --show all run '
-                    '--job-results-dir %s --disable-sysinfo whiteboard.py '
+                    '--job-results-dir %s --disable-sysinfo '
+                    'examples/tests/whiteboard.py '
                     '--json %s' % (AVOCADO, config, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -542,7 +543,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_gendata(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = ("%s run --job-results-dir %s "
-                    "--disable-sysinfo gendata.py --json %s" %
+                    "--disable-sysinfo examples/tests/gendata.py --json %s" %
                     (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
