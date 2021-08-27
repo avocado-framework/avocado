@@ -17,8 +17,8 @@ class HtmlResultTest(unittest.TestCase):
     def test_sysinfo_html_output(self):
         html_output = "{}/output.html".format(self.tmpdir.name)
         cmd_line = ('{} run --html {} --job-results-dir {} '
-                    'passtest.py'.format(AVOCADO, html_output,
-                                         self.tmpdir.name))
+                    'examples/tests/passtest.py'.format(AVOCADO, html_output,
+                                                        self.tmpdir.name))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

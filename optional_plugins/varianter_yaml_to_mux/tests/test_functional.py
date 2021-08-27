@@ -199,7 +199,9 @@ class DryRun(unittest.TestCase):
         cmd = ("%s run --disable-sysinfo --dry-run --dry-run-no-cleanup --json - "
                "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
                "foo:bar:b foo:baz:c bar:bar:bar "
-               "-- passtest.py failtest.py gendata.py " % AVOCADO)
+               "-- examples/tests/passtest.py "
+               "examples/tests/failtest.py "
+               "examples/tests/gendata.py " % AVOCADO)
         number_of_tests = 3
         result = json.loads(process.run(cmd).stdout_text)
         log = ''
