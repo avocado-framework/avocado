@@ -216,7 +216,6 @@ class RunnerOperationTest(TestCaseTmpDir):
                     'examples/tests/passtest.py badtest.py --ignore-missing-references'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
-        self.assertIn(b"Unable to resolve reference(s) 'badtest.py'", result.stderr)
         self.assertIn(b'PASS 1 | ERROR 0 | FAIL 0 | SKIP 0', result.stdout)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -227,8 +226,6 @@ class RunnerOperationTest(TestCaseTmpDir):
                     'badtest.py badtest2.py --ignore-missing-references'
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
-        self.assertIn(b"Unable to resolve reference(s) 'badtest.py', 'badtest2.py'",
-                      result.stderr)
         self.assertIn(b'Suite is empty. There is no tests to run.', result.stderr)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
