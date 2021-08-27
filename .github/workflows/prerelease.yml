@@ -73,8 +73,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: fedora:34
-      volumes:
-        - /tmp/artifact:/tmp/artifact
     env:
       GIT_URL: 'git://github.com/avocado-framework/avocado'
       INVENTORY: 'selftests/deployment/inventory'
@@ -87,13 +85,11 @@ jobs:
         run: dnf install -y git ansible
       - name: Run Ansible playbook
         run:  ansible-pull -v -U ${{env.GIT_URL}} -i ${{env.INVENTORY}} -c local ${{env.PLAYBOOK}} -e "method=copr"
-      - name: Create artifact directory
-        run: mkdir -p /tmp/artifact
       - name: Run test
-        run: avocado run /usr/bin/true --html /tmp/artifact/report.html
+        run: avocado run /usr/bin/true
       - name: Save artifacts
         uses: actions/upload-artifact@v2
         with:
           name: avocado-html
-          path: /tmp/artifact
+          path: ~/avocado/job-results/latest/
           retention-days: 1
