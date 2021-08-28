@@ -91,5 +91,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: avocado-html
-          path: ~/avocado/job-results/latest/
+          path: $HOME/avocado/job-results
           retention-days: 1
