@@ -8,7 +8,7 @@ from selftests.utils import AVOCADO, BASEDIR
 
 class List(unittest.TestCase):
 
-    list_command = 'list'
+    list_command = 'list --loader'
 
     def test_list_filter_by_tags(self):
         examples_dir = os.path.join(BASEDIR, 'examples', 'tests')

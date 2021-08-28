@@ -87,8 +87,9 @@ Options for subcommand `run` (`avocado run --help`)::
                             installed and active implementations. You can run
                             "avocado plugins" and find the list of valid runners
                             under the "Plugins that run test suites on a job
-                            (runners) section. Defaults to "runner", which is the
-                            conventional and traditional runner.
+                            (runners) section. Defaults to "nrunner", which is the
+                            new runner. To use the conventional and traditional
+                            runner, use "runner".
       -d, --dry-run         Instead of running the test only list them and log
                             their params.
       --dry-run-no-cleanup  Do not automatically clean up temporary directories
@@ -364,9 +365,15 @@ Options for subcommand `list` (`avocado list --help`)::
 
     optional arguments:
       -h, --help            show this help message and exit
-      --resolver            What is the method used to detect tests? If --resolver
-                            used, Avocado will use the Next Runner Resolver
-                            method. If not the legacy one will be used.
+      --resolver            Uses the Avocado resolver method (part of the nrunner
+                            architecture) to detect tests. This is enabled by
+                            default and exists only for compatibility purposes,
+                            and will be removed soon. To use the legacy (loader)
+                            method for finding tests, set the "--loader" option
+      --loader              Uses the Avocado legacy (loader) method for finding
+                            tests. This option will exist only for a transitional
+                            period until the legacy (loader) method is deprecated
+                            and removed
       --write-recipes-to-directory DIRECTORY
                             Writes runnable recipe files to a directory. Valid
                             only when using --resolver.

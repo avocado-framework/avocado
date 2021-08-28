@@ -164,6 +164,7 @@ class PassTest(Test):
 
 if __name__ == '__main__':
     config = {'run.references': [__file__],
+              'run.test_runner': 'nrunner',
               'core.show': ['app']}
     suite = TestSuite.from_config(config)
     with Job(config, [suite]) as j:
@@ -218,7 +219,7 @@ class OutputTest(TestCaseTmpDir):
                      "C compiler is required by the underlying doublefree.py test")
     def test_output_doublefree(self):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'doublefree.py' % (AVOCADO, self.tmpdir.name))
+                    'examples/tests/doublefree.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         output = result.stdout + result.stderr
@@ -252,6 +253,7 @@ class OutputTest(TestCaseTmpDir):
                              OUTPUT_TEST_CONTENT)
         test.save()
         result = process.run("%s run --job-results-dir %s --disable-sysinfo "
+                             "--test-runner=runner "
                              "--json - -- %s" % (AVOCADO, self.tmpdir.name, test))
         res = json.loads(result.stdout_text)
         joblog = res["debuglog"]
@@ -278,6 +280,7 @@ class OutputTest(TestCaseTmpDir):
         # But this change will come later
         result = process.run("%s run --job-results-dir %s --disable-sysinfo "
                              "--output-check-record=combined "
+                             "--test-runner=runner "
                              "--json - -- %s" % (AVOCADO, self.tmpdir.name, test))
         res = json.loads(result.stdout_text)
         testdir = res["tests"][0]["logdir"]
@@ -302,6 +305,7 @@ class OutputTest(TestCaseTmpDir):
                            OUTPUT_MODE_NONE_CONTENT,
                            script.READ_ONLY_MODE) as test:
             command = ("%s run --job-results-dir %s --disable-sysinfo "
+                       "--test-runner=runner "
                        "--json - --output-check-record none -- %s") % (AVOCADO,
                                                                        self.tmpdir.name,
                                                                        test.path)
@@ -326,6 +330,7 @@ class OutputTest(TestCaseTmpDir):
                            OUTPUT_CHECK_ON_OFF_CONTENT,
                            script.READ_ONLY_MODE) as test:
             command = ("%s run --job-results-dir %s --disable-sysinfo "
+                       "--test-runner=runner "
                        "--json - -- %s") % (AVOCADO, self.tmpdir.name, test.path)
             result = process.run(command)
             res = json.loads(result.stdout_text)
@@ -350,8 +355,8 @@ class OutputTest(TestCaseTmpDir):
                            OUTPUT_SHOW_TEST, script.READ_ONLY_MODE) as test:
             cmd = "%s run --disable-sysinfo -- %s" % (AVOCADO, test.path)
             result = process.run(cmd)
-            expected_job_id_number = 2
-            expected_bin_true_number = 1
+            expected_job_id_number = 1
+            expected_bin_true_number = 0
             job_id_number = result.stdout_text.count('JOB ID')
             bin_true_number = result.stdout_text.count('/bin/true')
             self.assertEqual(expected_job_id_number, job_id_number)
@@ -474,6 +479,7 @@ class OutputPluginTest(TestCaseTmpDir):
         cmd_line = ("%s run --external-runner /bin/ls "
                     "'NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
                     "--job-results-dir %s --disable-sysinfo --tap-include-logs"
+                    " --test-runner=runner"
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout_text + result.stderr_text
@@ -524,7 +530,8 @@ class OutputPluginTest(TestCaseTmpDir):
                    % os.path.relpath(self.tmpdir.name, "."))
         script.Script(config, content).save()
         cmd_line = ('%s --config %s --show all run '
-                    '--job-results-dir %s --disable-sysinfo whiteboard.py '
+                    '--job-results-dir %s --disable-sysinfo '
+                    'examples/tests/whiteboard.py '
                     '--json %s' % (AVOCADO, config, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -542,7 +549,8 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_gendata(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = ("%s run --job-results-dir %s "
-                    "--disable-sysinfo gendata.py --json %s" %
+                    "--test-runner=runner "
+                    "--disable-sysinfo examples/tests/gendata.py --json %s" %
                     (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK

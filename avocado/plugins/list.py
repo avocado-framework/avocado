@@ -234,16 +234,30 @@ class List(CLICmd):
                                  positional_arg=True)
         loader.add_loader_options(parser, 'list')
 
-        help_msg = ('What is the method used to detect tests? If --resolver '
-                    'used, Avocado will use the Next Runner Resolver method. '
-                    'If not the legacy one will be used.')
+        help_msg = ('Uses the Avocado resolver method (part of the nrunner '
+                    'architecture) to detect tests. This is enabled by '
+                    'default and exists only for compatibility purposes, '
+                    'and will be removed soon. To use the legacy (loader) '
+                    'method for finding tests, set the "--loader" option')
         settings.register_option(section='list',
-                                 key='resolver',
+                                 key='compatiblity_with_resolver_noop',
                                  key_type=bool,
-                                 default=False,
+                                 default=True,
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--resolver')
+
+        help_msg = ('Uses the Avocado legacy (loader) method for finding '
+                    'tests. This option will exist only for a transitional '
+                    'period until the legacy (loader) method is deprecated '
+                    'and removed')
+        settings.register_option(section='list',
+                                 key='resolver',
+                                 key_type=bool,
+                                 default=True,
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--loader')
 
         help_msg = ('Writes runnable recipe files to a directory. Valid only '
                     'when using --resolver.')

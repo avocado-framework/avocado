@@ -136,6 +136,7 @@ class MultiplexTests(unittest.TestCase):
                             ('/run/long', 'This is very long\nmultiline\ntext.')):
             variant, msg = variant_msg
             cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                        '--test-runner=runner '
                         'examples/tests/env_variables.sh '
                         '-m examples/tests/env_variables.sh.data/env_variables.yaml '
                         '--mux-filter-only %s'
@@ -197,9 +198,12 @@ class DryRun(unittest.TestCase):
 
     def test_dry_run(self):
         cmd = ("%s run --disable-sysinfo --dry-run --dry-run-no-cleanup --json - "
+               "--test-runner=runner "
                "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
                "foo:bar:b foo:baz:c bar:bar:bar "
-               "-- passtest.py failtest.py gendata.py " % AVOCADO)
+               "-- examples/tests/passtest.py "
+               "examples/tests/failtest.py "
+               "examples/tests/gendata.py " % AVOCADO)
         number_of_tests = 3
         result = json.loads(process.run(cmd).stdout_text)
         log = ''
