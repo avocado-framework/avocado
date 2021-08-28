@@ -201,7 +201,7 @@ class InterruptTest(TestCaseTmpDir):
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
+        cmd = ('%s run --test-runner=runner %s --disable-sysinfo --job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
