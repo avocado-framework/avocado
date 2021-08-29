@@ -764,7 +764,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         initial_time = time.monotonic()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.monotonic() - initial_time
-        self.assertLess(actual_time, 30.0)
+        self.assertLess(actual_time, 60.0)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
@@ -785,7 +785,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         initial_time = time.monotonic()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.monotonic() - initial_time
-        self.assertLess(actual_time, 33.0)
+        self.assertLess(actual_time, 63.0)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))

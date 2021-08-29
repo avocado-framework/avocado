@@ -25,6 +25,13 @@ jobs:
         run: python3 setup.py develop --user
       - name: Run make check
         run: make check
+      - name: Save artifacts
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: job-results
+          path: /home/runner/avocado/job-results/
+          retention-days: 1
 
   avocado-pre-release:
     name: Avocado pre-release job
@@ -39,7 +46,13 @@ jobs:
           sudo python3 setup.py develop
       - name: Avocado pre-release job
         run: ./selftests/pre_release/jobs/pre_release.py
-
+      - name: Save artifacts
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: job-results
+          path: /home/runner/avocado/job-results/
+          retention-days: 1
 
   # Re-implements ./selftests/pre_release/tests/check-copr-rpm-version.sh
   check-rpm-available-copr:
@@ -66,7 +79,13 @@ jobs:
           COMMIT_DATE=$(git log -n 1 --pretty='format:%cd' --date='format:%Y%m%d')
           SHORT_COMMIT=$(git rev-parse --short=9 master)
           dnf -y install python3-avocado-${VERSION}-${RPM_RELEASE_NUMBER}.${COMMIT_DATE}git${SHORT_COMMIT}.fc${{env.FEDORA_VERSION}}
-
+      - name: Save artifacts
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: job-results
+          path: /home/runner/avocado/job-results/
+          retention-days: 1
 
   avocado-deployment-copr:
     name: Avocado deployment
@@ -88,8 +107,9 @@ jobs:
       - name: Run test
         run: avocado run /usr/bin/true
       - name: Save artifacts
+        if: failure()
         uses: actions/upload-artifact@v2
         with:
-          name: avocado-html
-          path: $HOME/avocado/job-results
+          name: job-results
+          path: /home/runner/avocado/job-results/
           retention-days: 1
