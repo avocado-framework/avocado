@@ -1,0 +1,177 @@
+====================
+91.0 Thelma & Louise
+====================
+
+The Avocado team is proud to present another release: Avocado 91.0,
+AKA "Thelma & Louise", is now available!
+
+Release documentation: `Avocado 91.0
+<http://avocado-framework.readthedocs.io/en/91.0/>`_
+
+Important Announcement
+======================
+
+Avocado has switched the default runner, from the implementation most
+people currently use (internally simply called ``runner``), to the
+newer architecture and implementation called ``nrunner``.
+
+**Users installing and relying on the latest Avocado release will be
+impacted by this change and should act accordingly.**
+
+To keep using the current (soon to be legacy) runner, you **must** set
+the ``--test-runner=runner`` command line option (or the equivalent
+``test_runner`` configuration option, under section ``[run]``).
+
+Known issues are being tracked on our GitHub project page, with the
+``nrunner`` tag, and new issue reports are appreciated.
+
+Users/Test Writers
+==================
+
+* As per the previous section, the ``nrunner`` test runner
+  implementation is now the default on every ``avocado run`` command
+  (or equivalent Job API scripts).  Since the previous release,
+  ``nrunner`` supports:
+
+ 1. the "fail fast" (``run --failfast``) feature.
+
+ 2. :ref:`the varianter <varianter>` feature.
+
+ 3. UNIX domain sockets as the communication channel with runners (the
+    new default).
+
+ 4. a ``sysinfo`` runner, which will allow for sysinfo collection on
+    any supported spawner.
+
+ 5. early notification of missing runners for tasks in the requested
+    suite.
+
+* The assets plugin fetch command (``avocado assets fetch``) now supports:
+
+ 1. fetching assets defined in a Python list in ``INSTRUMENTED`` tests.
+
+ 2. setting a timeout for the download of assets.
+
+* Improved checks when users attempt to use the varianter and simple
+  parameters (``-p``) at the same time.
+
+* The Podman spawner (``--nrunner-spawner=podman``) will now attempt
+  to use a Container image (``--spawner-podman-image=``) that matches
+  the host Linux distribution.  If it's not possible to detect the
+  host distribution, the latest Fedora image will be used.
+
+Bug Fixes
+=========
+
+* The extraction of DEB packages by means of
+  :func:`avocado.utils.software_manager.SoftwareManager.extract_from_package`
+  was fixed and does not depend on ``ar`` utility anymore (as it now
+  uses the :mod:`avocado.utils.ar` module).
+
+* The ``--store-logging-stream`` parameter value was being incorrectly
+  parsed as a list of characters. If a ``bar`` value is given, it
+  would generate the ``b.INFO``, ``a.INFO``, and ``r.INFO`` file.  The
+  fix parses the command line arguments by treating the value as a
+  comma separated list (that becomes a set).
+
+* ``nrunner`` will now properly translate reference names with
+  absolute paths into Python unittest "dotted names".
+
+* The ``TAP`` parser (:mod:`avocado.core.tapparser`) will not choke on
+  unexpected content, ignoring it according to the standard.
+
+* :class:`avocado.core.nrunner.Runnables` created by suites will now
+  contain the full suite configuration.
+
+* If a job contains multiple test suites with the same name, and tests
+  within those suites also have the same name, test results would be
+  overwritten.  Now job name uniqueness is enforced and no test
+  results from a suite should be able to overwrite other's.
+
+* Some occurrences of the incorrect ``AVOCADO_TEST_OUTPUT_DIR``
+  environment variable name were renamed to the proper name
+  (``AVOCADO_TEST_OUTPUTDIR``).
+
+Utility APIs
+============
+
+* :class:`avocado.utils.network.interfaces.NetworkInterface` can now
+  access and present information on interfaces that do not have an IP
+  address assigned to them.
+
+* :mod:`avocado.utils.distro` can now detect the distribution on
+  remote machines.
+
+* A new :mod:`avocado.utils.ar` module was introduced that allows
+  extraction of UNIX ``ar`` archive contents.
+
+* A new :mod:`avocado.utils.sysinfo` module that powers the
+  ``sysinfo`` feature, but is now also accessible to job/test writers.
+
+* Times related to the duration of tasks are now limited to nanosecond
+  precision to improve readability.
+
+* The :mod:`avocado.utils.distro` will now correctly return a
+  :data:`avocado.utils.distro.UNKNOWN_DISTRO` on non UNIX systems,
+  instead of crashing.
+
+* The :mod:`avocado.utils.network.hosts` won't consider anymore
+  ``bonding_masters``, a file that may exist at ``/sys/class/net``, as
+  the name of an interface.
+
+Misc Changes
+============
+
+* Many documentation improvements.
+
+* The ``setup.py`` script received many improvements, including:
+
+ 1. A new ``test`` command implementation.
+
+ 2. A new ``plugin`` command.
+
+* Various logging related improvements, especially regarding the
+  elimination of Python's root logger usage.
+
+Internal Changes
+================
+
+* Major improvements to the CI, including:
+
+ 1. additional tests for ``setup.py``
+
+ 2. most of the "pre-release" test plan was migrated to a CI job
+
+* The :func:`avocado.Test.workdir` is now initialized lazily, which
+  prevents never used work directories from being created and kept in
+  the test results' directory.
+
+* A circular import condition was fixed related to the Settings
+  plugins initialized during avocado early initialization.
+
+* A rename of the ``requirements-selftests.txt`` file to
+  ``requirements-dev.txt`` to better capture the fact that the selftests
+  requirements are a subset of the requirements needed for development.
+
+* ``selftests/safeloader.sh`` now supports checking a single file.
+
+* Debugging aids were added to the Task/StateMachine/Repo systems of
+  the ``nrunner``.  These can be seen by default at the
+  ``avocado.core.DEBUG`` file in the job's result directory.
+
+* An ``nrunner`` based job its tasks are now better bound by the job
+  ID, with messages being logged in case the status server receives
+  messages destined for another job.
+
+* The very long and detailed temporary directory prefix used on
+  ``TestCaseTmpDir`` was shortened so that limitations on paths such
+  as socket names are not easily hit.
+
+* Clean up of duplicate methods in the
+  :class:`avocado.core.loader.FileLoader` class.
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/90.0...91.0>`_.
