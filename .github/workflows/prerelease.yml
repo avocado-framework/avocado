@@ -29,7 +29,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v2
         with:
-          name: job-results
+          name: job-results-make-check
           path: /home/runner/avocado/job-results/
           retention-days: 1
 
@@ -50,7 +50,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v2
         with:
-          name: job-results
+          name: job-results-pre-release
           path: /home/runner/avocado/job-results/
           retention-days: 1
 
@@ -79,13 +79,6 @@ jobs:
           COMMIT_DATE=$(git log -n 1 --pretty='format:%cd' --date='format:%Y%m%d')
           SHORT_COMMIT=$(git rev-parse --short=9 master)
           dnf -y install python3-avocado-${VERSION}-${RPM_RELEASE_NUMBER}.${COMMIT_DATE}git${SHORT_COMMIT}.fc${{env.FEDORA_VERSION}}
-      - name: Save artifacts
-        if: failure()
-        uses: actions/upload-artifact@v2
-        with:
-          name: job-results
-          path: /home/runner/avocado/job-results/
-          retention-days: 1
 
   avocado-deployment-copr:
     name: Avocado deployment
@@ -110,6 +103,6 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v2
         with:
-          name: job-results
-          path: /home/runner/avocado/job-results/
+          name: job-results-deployment
+          path: /github/home/avocado/job-results/
           retention-days: 1
