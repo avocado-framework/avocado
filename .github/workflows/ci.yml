@@ -188,3 +188,28 @@ jobs:
         path: /home/runner/work/avocado/avocado/dist/
         retention-days: 1
     - run: echo "🥑 This job's status is ${{ job.status }}."
+
+  experimental-checks:
+    name: Experimental checks
+    runs-on: ubuntu-20.04
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Run Codespell Check
+        uses: codespell-project/actions-codespell@master
+        with:
+          check_filenames: true
+          check_hidden: true
+          only_warn: 1
+      # https://github.com/codespell-project/codespell
+      # This run: codespell --check-filenames --check-hidden --skip ./.git
+      - name: Run bandit check
+        uses: tj-actions/bandit@v5
+        with:
+          options: '-r --exit-zero'
+      # https://github.com/PyCQA/bandit
+      # This run: bandit -r --exit-zero .
+      - run: echo "🥑 This job's status is ${{ job.status }}."
