@@ -436,9 +436,13 @@ class DryRunRunner(BaseRunner):
 RUNNERS_REGISTRY_PYTHON_CLASS['dry-run'] = DryRunRunner
 
 
-class ExecRunner(BaseRunner):
+class ExecTestRunner(BaseRunner):
     """
-    Runner for standalone executables with or without arguments
+    Runner for standalone executables treated as tests
+
+    This is similar in concept to the Avocado "SIMPLE" test type, in which an
+    executable returning 0 means that a test passed, and anything else means
+    that a test failed.
 
     Runnable attributes usage:
 
@@ -453,8 +457,21 @@ class ExecRunner(BaseRunner):
 
     def _process_final_status(self, process,
                               stdout=None, stderr=None):  # pylint: disable=W0613
-        return self.prepare_status('finished',
-                                   {'returncode': process.returncode})
+        # Since Runners are standalone, and could be executed on a remote
+        # machine in an "isolated" way, there is no way to assume a default
+        # value, at this moment.
+        skip_codes = self.runnable.config.get('runner.exectest.exitcodes.skip',
+                                              [])
+        final_status = {}
+        if process.returncode in skip_codes:
+            final_status['result'] = 'skip'
+        elif process.returncode == 0:
+            final_status['result'] = 'pass'
+        else:
+            final_status['result'] = 'fail'
+
+        final_status['returncode'] = process.returncode
+        return self.prepare_status('finished', final_status)
 
     def _create_params(self):
         """Create params for the test"""
@@ -518,39 +535,6 @@ class ExecRunner(BaseRunner):
         yield self.prepare_status('running', {'type': 'stdout', 'log': stdout})
         yield self.prepare_status('running', {'type': 'stderr', 'log': stderr})
         yield self._process_final_status(process, stdout, stderr)
-
-
-RUNNERS_REGISTRY_PYTHON_CLASS['exec'] = ExecRunner
-
-
-class ExecTestRunner(ExecRunner):
-    """
-    Runner for standalone executables treated as tests
-
-    This is similar in concept to the Avocado "SIMPLE" test type, in which an
-    executable returning 0 means that a test passed, and anything else means
-    that a test failed.
-
-    Runnable attributes usage is identical to :class:`ExecRunner`
-    """
-
-    def _process_final_status(self, process,
-                              stdout=None, stderr=None):  # pylint: disable=W0613
-        # Since Runners are standalone, and could be executed on a remote
-        # machine in an "isolated" way, there is no way to assume a default
-        # value, at this moment.
-        skip_codes = self.runnable.config.get('runner.exectest.exitcodes.skip',
-                                              [])
-        final_status = {}
-        if process.returncode in skip_codes:
-            final_status['result'] = 'skip'
-        elif process.returncode == 0:
-            final_status['result'] = 'pass'
-        else:
-            final_status['result'] = 'fail'
-
-        final_status['returncode'] = process.returncode
-        return self.prepare_status('finished', final_status)
 
 
 RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner

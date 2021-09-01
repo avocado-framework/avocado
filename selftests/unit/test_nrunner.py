@@ -198,7 +198,7 @@ class Runner(unittest.TestCase):
         self.assertIn('time', last_result)
 
     def test_runner_exec(self):
-        runnable = nrunner.Runnable('exec', sys.executable,
+        runnable = nrunner.Runnable('exec-test', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)

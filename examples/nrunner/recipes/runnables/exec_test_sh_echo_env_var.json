@@ -1,0 +1,1 @@
+{"kind": "exec-test", "uri": "/bin/sh", "args": ["-c", "/bin/echo $ENV_VAR"], "kwargs": {"ENV_VAR": "Hello world!"}}
