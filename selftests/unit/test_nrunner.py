@@ -197,23 +197,6 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['status'], 'finished')
         self.assertIn('time', last_result)
 
-    def test_runner_exec(self):
-        runnable = nrunner.Runnable('exec', sys.executable,
-                                    '-c', 'import time; time.sleep(0.01)')
-        runner_klass = runnable.pick_runner_class()
-        runner = runner_klass(runnable)
-        results = [status for status in runner.run()]
-        stdout_result = results[-3]
-        stderr_result = results[-2]
-        last_result = results[-1]
-        self.assertEqual(stdout_result['type'], 'stdout')
-        self.assertEqual(stdout_result['log'], b'')
-        self.assertEqual(stderr_result['type'], 'stderr')
-        self.assertEqual(stderr_result['log'], b'')
-        self.assertEqual(last_result['status'], 'finished')
-        self.assertEqual(last_result['returncode'], 0)
-        self.assertIn('time', last_result)
-
     def test_runner_exec_test_ok(self):
         runnable = nrunner.Runnable('exec-test', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')

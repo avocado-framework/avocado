@@ -185,7 +185,6 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-runner
 %{_bindir}/avocado-runner-noop
 %{_bindir}/avocado-runner-dry-run
-%{_bindir}/avocado-runner-exec
 %{_bindir}/avocado-runner-exec-test
 %{_bindir}/avocado-runner-python-unittest
 %{_bindir}/avocado-runner-avocado-instrumented
@@ -369,6 +368,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+
+* Fri Sep 17 2021 Beraldo Leal <bleal@redhat.com> - 91.0-3
+- Removed avocado-runner-exec since we have avocado-runner-exec-test.
+
 * Thu Sep 16 2021 Ana Guerrero Lopez <anguerre@redhat.com> - 91.0-2
 - Minor update to the selftest/check.py call
 
