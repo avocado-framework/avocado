@@ -109,10 +109,10 @@ jobs:
           python setup.py develop --user
       - name: Show avocado help
         run: python -m avocado --help
-      - name: nrunner example test
-        run: python -m avocado run --test-runner=nrunner examples/tests/passtest.py
-      - name: resolver test
-        run: python -m avocado --verbose list --resolver selftests/unit/* selftests/functional/* selftests/*sh
+      - name: Example test
+        run: python -m avocado run examples/tests/passtest.py
+      - name: List test
+        run: python -m avocado --verbose list selftests/unit/* selftests/functional/* selftests/*sh
       # This test is known NOT to work
       #- name: unittest test
       #  run: python -m unittest discover -v selftests.unit
@@ -144,8 +144,8 @@ jobs:
         run: python setup.py develop --user
       - name: Show avocado help
         run: python -m avocado --help
-      - name: nrunner example test
-        run: python -m avocado run --test-runner=nrunner examples\tests\passtest.py
+      - name: Example test
+        run: python -m avocado run examples\tests\passtest.py
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
