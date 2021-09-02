@@ -1,3 +1,11 @@
+avocado (91.0) buster; urgency=medium
+
+  * contrib/packages/debian/control: Fix debian package dependencies
+  * debian: Increment compat version
+  * debian: Update package version
+
+ -- Anton Mikanovich <amikan@ilbers.de>  Thu, 02 Sep 2021 10:09:44 +0000
+
 avocado (85.0) buster; urgency=medium
 
   * Non-maintainer upload.
