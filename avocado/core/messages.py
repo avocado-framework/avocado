@@ -284,7 +284,7 @@ class LogMessageHandler(BaseRunningMessageHandler):
              'time': 18405.55351474}
     """
 
-    _tag = b'[debug] '
+    _tag = b'[stdlog] '
 
     def handle(self, message, task, job):
         """Logs a textual message to a file.
