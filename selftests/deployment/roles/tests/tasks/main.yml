@@ -15,7 +15,7 @@
     - avocado_vt|default(false)|bool == true
 
 - name: Avocado-VT test 3/5 - dry-run execution
-  shell: avocado run --dry-run -- boot
+  shell: "{{ temporary_dir.path | default('/usr') }}/bin/avocado run --dry-run -- boot"
   changed_when: false
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"

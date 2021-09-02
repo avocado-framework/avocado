@@ -1,4 +1,4 @@
-# Official + Copr Modules disable
+# Copr Modules disable
 - name: Disable Fedora module to avoid conflict
   ini_file:
     path: /etc/yum.repos.d/fedora-modular.repo
@@ -6,7 +6,7 @@
     option: enabled
     value: '0'
   when:
-    - method == 'official' or method == 'copr'
+    - method == 'copr'
     - ansible_facts['distribution'] == "Fedora"
 
 - name: Disable Fedora module updates to avoid conflict
@@ -16,32 +16,23 @@
     option: enabled
     value: '0'
   when:
-    - method == 'official' or method == 'copr'
+    - method == 'copr'
     - ansible_facts['distribution'] == "Fedora"
 
-# Official repos
-- name: Install Avocado EPEL Official Releases repo
-  yum_repository:
-    name: avocado
-    description: Avocado EPEL Official Releases repo
-    baseurl: https://avocado-project.org/data/repos/epel-$releasever-noarch/
-    gpgcheck: yes
-    gpgkey: https://avocado-project.org/data/repos/crosa_redhat_com.gpg
+# Official repos (avocado)
+- name: enable avocado module
+  shell:
+    cmd: dnf module -y enable avocado:latest
   when:
     - method == 'official'
-    - ansible_facts['distribution_file_variety'] == "RedHat"
-    - ansible_facts['distribution_major_version'] == "7"
 
-- name: Install Avocado Fedora Official Releases repo
-  yum_repository:
-    name: avocado
-    description: Avocado Fedora Official Releases repo
-    baseurl: https://avocado-project.org/data/repos/fedora-$releasever-noarch/
-    gpgcheck: yes
-    gpgkey: https://avocado-project.org/data/repos/crosa_redhat_com.gpg
+# Official repos (avocado-vt)
+- name: enable avocado-vt module
+  shell:
+    cmd: dnf module -y enable avocado-vt:latest
   when:
     - method == 'official'
-    - ansible_facts['distribution'] == "Fedora"
+    - avocado_vt|default(false)|bool == true
 
 # Copr repos (Avocado)
 - name: Avocado EPEL Copr repo
@@ -70,13 +61,12 @@
   yum_repository:
     name: avocado-vt-latest
     description: Copr repo for avocado-vt-latest
-    baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-vt-latest/epel-7-$basearch/
+    baseurl: https://copr-be.cloud.fedoraproject.org/results/@avocado/avocado-vt-latest/epel-$releasever-$basearch/
     gpgcheck: no
   when:
     - method == 'copr'
     - ansible_facts['distribution_file_variety'] == "RedHat"
     - ansible_facts['distribution'] != "Fedora"
-    - ansible_facts['distribution_major_version'] == "7"
     - avocado_vt|default(false)|bool == true
 
 - name: Avocado-VT Fedora Copr repo
