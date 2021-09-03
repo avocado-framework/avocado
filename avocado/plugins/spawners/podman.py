@@ -6,7 +6,8 @@ import subprocess
 from avocado.core.plugin_interfaces import CLI, Init, Spawner
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
-from avocado.utils import distro
+from avocado.core.version import VERSION
+from avocado.utils import asset, distro
 
 
 class PodmanSpawnerInit(Init):
@@ -86,9 +87,41 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         # FIXME: check how podman 2.x is reporting valid "OK" states
         return out.startswith(b'Up ')
 
-    async def _get_python_version(self, podman_bin, image):
-        binaries = ['/usr/bin/python3', '/usr/bin/python',
-                    '/bin/python3', '/bin/python']
+    def _fetch_avocado_egg(self, python_major, python_minor):
+        egg_name = 'avocado_framework-%s-py%s.%s.egg' % (VERSION,
+                                                         python_major,
+                                                         python_minor)
+        url = os.path.join('https://cleber.fedorapeople.org/', egg_name)
+        cachedirs = self.config.get('datadir.paths.cache_dirs')
+        return asset.Asset(name=url, cache_dirs=cachedirs).fetch()
+
+    def _fetch_setuptools_egg(self, python_major, python_minor):
+        egg_name = 'setuptools-57.4.0-py%s.%s.egg' % (python_major,
+                                                      python_minor)
+        url = os.path.join('https://cleber.fedorapeople.org/', egg_name)
+        cachedirs = self.config.get('datadir.paths.cache_dirs')
+        return asset.Asset(name=url, cache_dirs=cachedirs).fetch()
+
+    @classmethod
+    async def _copy_to_container(cls, podman_bin, container_id, src, dst):
+
+        try:
+            # pylint: disable=E1133
+            proc = await asyncio.create_subprocess_exec(
+                podman_bin,
+                "cp",
+                src,
+                "%s:%s" % (container_id, dst))
+        except (FileNotFoundError, PermissionError):
+            return False
+
+        await proc.wait()
+        if proc.returncode != 0:
+            return False
+
+    @staticmethod
+    async def _get_python_and_version(podman_bin, image):
+        binaries = ['/usr/bin/python3', '/usr/bin/python']
         for binary in binaries:
             try:
                 ep = ('--entrypoint=["%s", "-c", "import sys; '
@@ -108,7 +141,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
 
             stdout = await proc.stdout.read()
             (major, minor) = stdout.decode().strip().split(' ')
-            return (major, minor)
+            return (binary, major, minor)
 
     async def spawn_task(self, runtime_task):
 
@@ -120,7 +153,17 @@ class PodmanSpawner(Spawner, SpawnerMixin):
             return False
 
         image = self.config.get('spawner.podman.image')
-        python_version = await self._get_python_version(podman_bin, image)
+        bin_major_minor = await self._get_python_and_version(podman_bin, image)
+        if bin_major_minor is None:
+            runtime_task.status = 'Could not find Python version on container image'
+            return False
+        (python_binary, python_major, python_minor) = bin_major_minor
+
+        avocado_egg_src = self._fetch_avocado_egg(python_major, python_minor)
+        avocado_egg_dst = os.path.join('/tmp', os.path.basename(avocado_egg_src))
+
+        setuptools_egg_src = self._fetch_setuptools_egg(python_major, python_minor)
+        setuptools_egg_dst = os.path.join('/tmp', os.path.basename(setuptools_egg_src))
 
         mount_status_server_socket = False
         mounted_status_server_socket = '/tmp/.status_server.sock'
@@ -131,10 +174,11 @@ class PodmanSpawner(Spawner, SpawnerMixin):
             runtime_task.task.status_services[0].uri = mounted_status_server_socket
 
         task = runtime_task.task
-        entry_point_cmd = '/tmp/avocado-runner'
         entry_point_args = task.get_command_args()
         entry_point_args.insert(0, "task-run")
-        entry_point_args.insert(0, entry_point_cmd)
+        entry_point_args.insert(0, "avocado.core.nrunner")
+        entry_point_args.insert(0, "-m")
+        entry_point_args.insert(0, python_binary)
         entry_point = json.dumps(entry_point_args)
         entry_point_arg = "--entrypoint=" + entry_point
 
@@ -152,6 +196,8 @@ class PodmanSpawner(Spawner, SpawnerMixin):
                 podman_bin, "create",
                 *status_server_opts,
                 entry_point_arg,
+                '--env=PYTHONPATH=%s:%s' % (avocado_egg_dst,
+                                            setuptools_egg_dst),
                 image,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE)
@@ -166,25 +212,10 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         container_id = stdout.decode().strip()
 
         runtime_task.spawner_handle = container_id
-
-        # Currently limited to avocado-runner, we'll expand on that
-        # when the runner requirements system is in place
-        this_path = os.path.abspath(__file__)
-        base_path = os.path.dirname(os.path.dirname(os.path.dirname(this_path)))
-        avocado_runner_path = os.path.join(base_path, 'core', 'nrunner.py')
-        try:
-            # pylint: disable=E1133
-            proc = await asyncio.create_subprocess_exec(
-                podman_bin,
-                "cp",
-                avocado_runner_path,
-                "%s:%s" % (container_id, entry_point_cmd))
-        except (FileNotFoundError, PermissionError):
-            return False
-
-        await proc.wait()
-        if proc.returncode != 0:
-            return False
+        await self._copy_to_container(podman_bin, container_id,
+                                      avocado_egg_src, avocado_egg_dst)
+        await self._copy_to_container(podman_bin, container_id,
+                                      setuptools_egg_src, setuptools_egg_dst)
 
         try:
             # pylint: disable=E1133
