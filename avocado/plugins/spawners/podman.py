@@ -86,6 +86,30 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         # FIXME: check how podman 2.x is reporting valid "OK" states
         return out.startswith(b'Up ')
 
+    async def _get_python_version(self, podman_bin, image):
+        binaries = ['/usr/bin/python3', '/usr/bin/python',
+                    '/bin/python3', '/bin/python']
+        for binary in binaries:
+            try:
+                ep = ('--entrypoint=["%s", "-c", "import sys; '
+                      'print(sys.version_info.major, '
+                      'sys.version_info.minor)"]' % binary)
+                # pylint: disable=E1133
+                proc = await asyncio.create_subprocess_exec(
+                    podman_bin, "run", "--rm", ep, image,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE)
+            except (FileNotFoundError, PermissionError):
+                continue
+
+            await proc.wait()
+            if proc.returncode != 0:
+                continue
+
+            stdout = await proc.stdout.read()
+            (major, minor) = stdout.decode().strip().split(' ')
+            return (major, minor)
+
     async def spawn_task(self, runtime_task):
 
         podman_bin = self.config.get('spawner.podman.bin')
@@ -94,6 +118,9 @@ class PodmanSpawner(Spawner, SpawnerMixin):
             msg %= podman_bin
             runtime_task.status = msg
             return False
+
+        image = self.config.get('spawner.podman.image')
+        python_version = await self._get_python_version(podman_bin, image)
 
         mount_status_server_socket = False
         mounted_status_server_socket = '/tmp/.status_server.sock'
@@ -119,7 +146,6 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         else:
             status_server_opts = ("--net=host", )
 
-        image = self.config.get('spawner.podman.image')
         try:
             # pylint: disable=E1133
             proc = await asyncio.create_subprocess_exec(
