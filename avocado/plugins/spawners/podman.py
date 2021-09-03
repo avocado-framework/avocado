@@ -88,6 +88,13 @@ class PodmanSpawner(Spawner, SpawnerMixin):
 
     async def spawn_task(self, runtime_task):
 
+        podman_bin = self.config.get('spawner.podman.bin')
+        if not os.path.exists(podman_bin):
+            msg = 'Podman binary "%s" is not available on the system'
+            msg %= podman_bin
+            runtime_task.status = msg
+            return False
+
         mount_status_server_socket = False
         mounted_status_server_socket = '/tmp/.status_server.sock'
         status_server_uri = runtime_task.task.status_services[0].uri
@@ -103,14 +110,6 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         entry_point_args.insert(0, entry_point_cmd)
         entry_point = json.dumps(entry_point_args)
         entry_point_arg = "--entrypoint=" + entry_point
-
-        podman_bin = self.config.get('spawner.podman.bin')
-
-        if not os.path.exists(podman_bin):
-            msg = 'Podman binary "%s" is not available on the system'
-            msg %= podman_bin
-            runtime_task.status = msg
-            return False
 
         if mount_status_server_socket:
             status_server_opts = (
