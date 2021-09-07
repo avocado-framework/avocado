@@ -16,7 +16,7 @@
 
 # PATH Workaround needed by method=pip, taken from https://github.com/avocado-framework/avocado-vt/pull/3204
 - name: Avocado-VT test 3/5 - dry-run execution
-  shell: "PATH={{ temporary_dir.path | default('/usr') }}/bin/:$PATH {{ temporary_dir.path | default('/usr') }}/bin/avocado run --dry-run -- boot"
+  shell: "PATH={{ temporary_dir.path | default('/usr') }}/bin/:$PATH {{ temporary_dir.path | default('/usr') }}/bin/avocado run --dry-run -- io-github-autotest-qemu.boot"
   changed_when: false
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
@@ -30,7 +30,7 @@
 
 # PATH Workaround needed by method=pip, taken from https://github.com/avocado-framework/avocado-vt/pull/3204
 - name: Avocado-VT test 5/5 - boot and migrate execution
-  shell: "PATH={{ temporary_dir.path | default('/usr') }}/bin/:$PATH {{ temporary_dir.path | default('/usr') }}/bin/avocado run --vt-extra-params='nettype=user' -- boot migrate.default.tcp.default"
+  shell: "PATH={{ temporary_dir.path | default('/usr') }}/bin/:$PATH {{ temporary_dir.path | default('/usr') }}/bin/avocado run --vt-extra-params='nettype=user' -- io-github-autotest-qemu.boot type_specific.io-github-autotest-qemu.migrate.default.tcp.default"
   changed_when: false
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
