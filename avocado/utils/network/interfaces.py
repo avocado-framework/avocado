@@ -132,7 +132,8 @@ class NetworkInterface:
     def vlans(self):
         """Return a dict of vlans"""
         vlans = {}
-        return vlans if not os.path.exists('/proc/net/vlan/config')
+        if not os.path.exists('/proc/net/vlan/config'):
+            return vlans
         with open('/proc/net/vlan/config', encoding="utf-8") as vlan_config_file:
             for line in vlan_config_file:
                 # entry is formatted as "vlan_name | vlan_id | parent_device"
