@@ -130,8 +130,9 @@ class NetworkInterface:
 
     @property
     def vlans(self):
-        """Return a list of vlans"""
+        """Return a dict of vlans"""
         vlans = {}
+        return vlans if not os.path.exists('/proc/net/vlan/config')
         with open('/proc/net/vlan/config', encoding="utf-8") as vlan_config_file:
             for line in vlan_config_file:
                 # entry is formatted as "vlan_name | vlan_id | parent_device"
@@ -171,7 +172,7 @@ class NetworkInterface:
         :return: True or False, True if it found the VLAN interface and removed
                  it successfully, otherwise it will return False.
         """
-        if int(vlan_num) in self.vlans.keys():
+        if int(vlan_num) in self.vlans:
             vlan_name = self.vlans[int(vlan_num)]
         else:
             return False
