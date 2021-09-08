@@ -41,6 +41,13 @@ jobs:
           AVOCADO_LOG_DEBUG: "yes"
           AVOCADO_CHECK_LEVEL: "1"
         run: make check
+      - name: Archive failed tests logs
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-logs-${{ matrix.python-version }}
+          path: /home/runner/avocado/job-results/
+          retention-days: 1
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
   code-coverage:
@@ -109,10 +116,10 @@ jobs:
           python setup.py develop --user
       - name: Show avocado help
         run: python -m avocado --help
-      - name: nrunner example test
-        run: python -m avocado run --test-runner=nrunner examples/tests/passtest.py
-      - name: resolver test
-        run: python -m avocado --verbose list --resolver selftests/unit/* selftests/functional/* selftests/*sh
+      - name: Example test
+        run: python -m avocado run examples/tests/passtest.py
+      - name: List test
+        run: python -m avocado --verbose list selftests/unit/* selftests/functional/* selftests/*sh
       # This test is known NOT to work
       #- name: unittest test
       #  run: python -m unittest discover -v selftests.unit
@@ -144,8 +151,8 @@ jobs:
         run: python setup.py develop --user
       - name: Show avocado help
         run: python -m avocado --help
-      - name: nrunner example test
-        run: python -m avocado run --test-runner=nrunner examples\tests\passtest.py
+      - name: Example test
+        run: python -m avocado run examples\tests\passtest.py
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
@@ -174,4 +181,10 @@ jobs:
       run: python -m build
     - name: Build eggs
       run: python setup.py bdist_egg
+    - name: Save eggs as artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: egg-${{ matrix.python-version }}
+        path: /home/runner/work/avocado/avocado/dist/
+        retention-days: 1
     - run: echo "🥑 This job's status is ${{ job.status }}."

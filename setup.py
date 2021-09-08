@@ -419,6 +419,14 @@ if __name__ == '__main__':
                   ('avocado-instrumented = avocado.core.'
                    'runners.avocado_instrumented:AvocadoInstrumentedTestRunner'),
                   'tap = avocado.core.runners.tap:TAPRunner',
+                  'noop = avocado.core.nrunner:NoOpRunner',
+                  'dry-run = avocado.core.nrunner:DryRunRunner',
+                  'exec = avocado.core.nrunner:ExecRunner',
+                  'exec-test = avocado.core.nrunner:ExecTestRunner',
+                  'python-unittest = avocado.core.nrunner:PythonUnittestRunner',
+                  'requirement-asset = avocado.core.runners.requirement_asset:RequirementAssetRunner',
+                  'requirement-package = avocado.core.runners.requirement_package:RequirementPackageRunner',
+                  'sysinfo = avocado.core.runners.sysinfo:SysinfoRunner',
                   ],
               'avocado.plugins.spawner': [
                   'process = avocado.plugins.spawners.process:ProcessSpawner',

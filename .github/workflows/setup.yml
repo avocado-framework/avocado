@@ -46,9 +46,9 @@ jobs:
       - name: Avocado smoketest legacy runner
         run: avocado run --test-runner=runner examples/tests/passtest.py
       - name: Avocado smoketest
-        run: avocado run --test-runner=nrunner examples/tests/passtest.py
+        run: avocado run examples/tests/passtest.py
       - name: Avocado two tests
-        run: avocado run --test-runner=nrunner /usr/bin/true examples/tests/passtest.py
+        run: avocado run /usr/bin/true examples/tests/passtest.py
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
@@ -88,9 +88,9 @@ jobs:
       - name: Avocado smoketest legacy runner
         run: avocado run --test-runner=runner examples/tests/passtest.py
       - name: Avocado smoketest
-        run: avocado run --test-runner=nrunner examples/tests/passtest.py
+        run: avocado run examples/tests/passtest.py
       - name: Avocado two tests
-        run: avocado run --test-runner=nrunner /usr/bin/true examples/tests/passtest.py
+        run: avocado run /usr/bin/true examples/tests/passtest.py
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 
@@ -122,7 +122,7 @@ jobs:
       - name: Avocado smoketest legacy runner
         run: avocado run --test-runner=runner examples/tests/passtest.py
       - name: Avocado smoketest
-        run: avocado run --test-runner=nrunner examples/tests/passtest.py
+        run: avocado run examples/tests/passtest.py
       - name: Avocado build manpage
         run: python3 setup.py man
       - name: Tree static check, unittests and fast functional tests
@@ -160,7 +160,7 @@ jobs:
       - name: Avocado smoketest legacy runner
         run: avocado run --test-runner=runner examples/tests/passtest.py
       - name: Avocado smoketest
-        run: avocado run --test-runner=nrunner examples/tests/passtest.py
+        run: avocado run examples/tests/passtest.py
       - name: Avocado build manpage
         run: python3 setup.py man
       - name: Tree static check, unittests and fast functional tests
@@ -199,7 +199,7 @@ jobs:
          python3 setup.py plugin --install=varianter_yaml_to_mux
          avocado --version
          avocado run --test-runner=runner examples/tests/passtest.py
-         avocado run --test-runner=nrunner examples/tests/passtest.py
+         avocado run examples/tests/passtest.py
          deactivate
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
@@ -224,7 +224,7 @@ jobs:
          python3 setup.py develop
          avocado --version
          avocado run --test-runner=runner examples/tests/passtest.py
-         avocado run --test-runner=nrunner examples/tests/passtest.py
+         avocado run examples/tests/passtest.py
          python3 setup.py test
          deactivate
       - run: echo "🥑 This job's status is ${{ job.status }}."

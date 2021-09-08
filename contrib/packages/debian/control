@@ -9,5 +9,5 @@ Package: avocado
 Architecture: all
 Homepage: http://avocado-framework.github.io/
 X-Python-Version: ${python:Versions}
-Depends: ${misc:Depends}, python3, python3-setuptools, gdebi-core
+Depends: ${misc:Depends}, ${python3:Depends}
 Description: Avocado is a framework for fully automated testing.
