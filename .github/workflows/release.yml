@@ -1,0 +1,136 @@
+name: Release tests
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        default: '0.0'
+      devel_name:
+        description: 'Developer Name'
+        required: true
+        default: 'Avocado Developer'
+      devel_mail:
+        description: 'Developer mail'
+        required: true
+        default: 'avocado@redhat.com'
+
+
+jobs:
+
+  release:
+    name: Release test pipeline
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:34
+
+    steps:
+      - name: install required packages
+        run:  dnf -y install rpmdevtools git
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0
+      - name: Add release notes initial template
+        run: |
+          version=`echo ${{ github.event.inputs.version }} | tr '.' '_'`
+          FILE=docs/source/releases/$version.rst
+          echo "====================" >> $FILE
+          echo "${{ github.event.inputs.version }}  RELEASE_NAME"  >> $FILE
+          echo "====================" >> $FILE
+          echo "" >> $FILE
+
+          echo "The Avocado team is proud to present another release: Avocado ${{ github.event.inputs.version }}," >> $FILE
+          echo "AKA RELEASE_NAME, is now available!" >> $FILE
+          echo "" >> $FILE
+          git add $FILE
+      - name: Update VERSION files
+        run: |
+          echo ${{ github.event.inputs.version }} > VERSION
+          for DIR in optional_plugins/*; do
+                if test -f $DIR/VERSION; then
+                        echo ${{ github.event.inputs.version }} > $DIR/VERSION
+                fi
+          done
+      - name: Update python-avocado.spec
+        run: |
+          rpmdev-bumpspec -n ${{ github.event.inputs.version }} -u "${{ github.event.inputs.devel_name }} <${{ github.event.inputs.devel_mail }}>" -c "New release" python-avocado.spec
+          sed -i 's/^Release:.*/Release: 1%{?gitrel}%{?dist}/' python-avocado.spec
+      - name: Commit files
+        run: |
+          git config --local user.email "${{ github.event.inputs.devel_mail }}"
+          git config --local user.name "${{ github.event.inputs.devel_name }}"
+          git commit -m "Changes for release ${{ github.event.inputs.version }}" -a
+      - name: Tag test version
+        run: git tag test-${{ github.event.inputs.version }} -m 'Release ${{ github.event.inputs.version }}'
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.RELEASE_TOKEN }}
+          branch: release-${{ github.event.inputs.version }}
+
+# TODO: update avocado-vt in its own pipeline!
+
+
+  build-rpm:
+    name: Build rpm ${{ matrix.mock-config }}
+    runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      matrix:
+        mock-config: ["fedora-34-x86_64", "epel-8-x86_64"]
+      fail-fast: false
+    container:
+      image: fedora:34
+      options: --privileged  # https://github.com/rpm-software-management/mock/wiki#mock-inside-podman-fedora-toolbox-or-docker-container
+
+    steps:
+      - name: install required packages
+        run:  dnf -y install git findutils make mock python3 python3-setuptools bash rpm-build
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0
+          ref: release-${{ github.event.inputs.version }}
+      - name: Build rpm
+        env:
+          rpm_base_name: python-avocado
+          archive_base_name: avocado
+          version: ${{ github.event.inputs.version }}
+        run: |
+          export PYTHON=/usr/bin/python3
+          export MOCK_CONFIG=${{ matrix.mock-config }}
+          export TAG_VERSION=test-${{ github.event.inputs.version }}
+          make rpm-release
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.RELEASE_TOKEN }}
+          branch: release-${{ github.event.inputs.version }}
+
+
+  build-wheel:
+    name: Build wheel
+    runs-on: ubuntu-latest
+    needs: release
+    container:
+      image: fedora:34
+
+    steps:
+      - name: install required packages
+        run:  dnf -y install git make mock python3 python3-setuptools
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0
+          ref: release-${{ github.event.inputs.version }}
+      - name: Build wheel
+        run: |
+          export PYTHON=/usr/bin/python3
+          make wheel
+      - name: Save wheel as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheel
+          path: /__w/avocado-test/avocado-test/PYPI_UPLOAD/
+          retention-days: 3
