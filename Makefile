@@ -57,7 +57,6 @@ all:
 	@echo "source-release:  Create source package for the latest tagged release"
 	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
 	@echo "rpm-release:        Generate binary RPMs for the latest tagged release"
-	@echo "propagate-version:  Propagate './VERSION' to all plugins/modules"
 	@echo
 
 include Makefile.include
@@ -151,11 +150,4 @@ variables:
 	@echo "PYTHON_MODULE_NAME: $(PYTHON_MODULE_NAME)"
 	@echo "RPM_BASE_NAME: $(RPM_BASE_NAME)"
 
-propagate-version:
-	for DIR in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f "$$DIR/VERSION"; then\
-			echo ">> Updating $$DIR"; echo "$(VERSION)" > "$$DIR/VERSION";\
-		else echo ">> Skipping $$DIR"; fi;\
-	done
-
-.PHONY: source source-pypi wheel pypi install clean uninstall requirements-plugins requirements-dev smokecheck check develop develop-external propagate-version variables
+.PHONY: source source-pypi wheel pypi install clean uninstall requirements-plugins requirements-dev smokecheck check develop develop-external variables
