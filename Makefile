@@ -2,6 +2,9 @@ ifndef PYTHON
 PYTHON=$(shell which python3 2>/dev/null || which python 2>/dev/null)
 endif
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
+ifndef TAG_VERSION
+TAG_VERSION=$VERSION
+endif
 PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell basename ${PWD})
@@ -11,7 +14,9 @@ RELEASE_SHORT_COMMIT=$(shell git rev-parse --short=9 $(VERSION))
 COMMIT=$(shell git log --pretty=format:'%H' -n 1)
 COMMIT_DATE=$(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
 SHORT_COMMIT=$(shell git rev-parse --short=9 HEAD)
+ifndef MOCK_CONFIG
 MOCK_CONFIG=default
+endif
 ARCHIVE_BASE_NAME=avocado
 PYTHON_MODULE_NAME=avocado-framework
 RPM_BASE_NAME=python-avocado

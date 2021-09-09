@@ -4,7 +4,7 @@ source: clean
 
 source-release: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="$(ARCHIVE_BASE_NAME)-$(VERSION)/" -o "SOURCES/$(ARCHIVE_BASE_NAME)-$(VERSION).tar.gz" $(VERSION)
+	git archive --prefix="$(ARCHIVE_BASE_NAME)-$(VERSION)/" -o "SOURCES/$(ARCHIVE_BASE_NAME)-$(VERSION).tar.gz" $(TAG_VERSION)
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
