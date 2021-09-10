@@ -130,14 +130,17 @@ class NetworkInterface:
 
     @property
     def vlans(self):
-        """Return a dict of vlans"""
+        """Return a dict of vlans
+
+        Key in the dictionary is the vlan number and the value is the name of the vlan interface
+        """
         vlans = {}
         if not os.path.exists('/proc/net/vlan/config'):
             return vlans
         with open('/proc/net/vlan/config', encoding="utf-8") as vlan_config_file:
             for line in vlan_config_file:
                 # entry is formatted as "vlan_name | vlan_id | parent_device"
-                line = line.strip().replace(" ", "")
+                line = line.replace(" ", "")
                 if line.endswith(self.name):
                     line = line.split('|')
                     vlans[line[1]] = line[0]
@@ -173,8 +176,8 @@ class NetworkInterface:
         :return: True or False, True if it found the VLAN interface and removed
                  it successfully, otherwise it will return False.
         """
-        if int(vlan_num) in self.vlans:
-            vlan_name = self.vlans[int(vlan_num)]
+        if vlan_num in self.vlans:
+            vlan_name = self.vlans[vlan_num]
         else:
             return False
         cmd = "ip link delete {}".format(vlan_name)
