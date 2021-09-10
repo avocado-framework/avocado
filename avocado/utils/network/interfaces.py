@@ -176,8 +176,8 @@ class NetworkInterface:
         :return: True or False, True if it found the VLAN interface and removed
                  it successfully, otherwise it will return False.
         """
-        if vlan_num in self.vlans:
-            vlan_name = self.vlans[vlan_num]
+        if str(vlan_num) in self.vlans:
+            vlan_name = self.vlans[str(vlan_num)]
         else:
             return False
         cmd = "ip link delete {}".format(vlan_name)
