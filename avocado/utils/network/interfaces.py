@@ -140,8 +140,7 @@ class NetworkInterface:
         with open('/proc/net/vlan/config', encoding="utf-8") as vlan_config_file:
             for line in vlan_config_file:
                 # entry is formatted as "vlan_name | vlan_id | parent_device"
-                line = line.replace(" ", "")
-                print(repr(line))
+                line = "".join(line.split())
                 if line.endswith(self.name):
                     line = line.split('|')
                     vlans[line[1]] = line[0]
