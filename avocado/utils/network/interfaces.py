@@ -160,7 +160,7 @@ class NetworkInterface:
         vlan_name = vlan_name or "{}.{}".format(self.name, vlan_num)
         cmd = "ip link add link {} name {} type vlan id {}".format(self.name,
                                                                    vlan_name,
-                                                                   str(vlan_num))
+                                                                   vlan_num)
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
