@@ -141,6 +141,7 @@ class NetworkInterface:
             for line in vlan_config_file:
                 # entry is formatted as "vlan_name | vlan_id | parent_device"
                 line = line.replace(" ", "")
+                print(repr(line))
                 if line.endswith(self.name):
                     line = line.split('|')
                     vlans[line[1]] = line[0]
