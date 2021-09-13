@@ -11,6 +11,7 @@ from avocado import Test
 from avocado.core import exit_codes
 from avocado.core.job import Job
 from avocado.core.suite import TestSuite
+from selftests.utils import python_module_available
 
 BOOLEAN_ENABLED = [True, 'true', 'on', 1]
 BOOLEAN_DISABLED = [False, 'false', 'off', 0]
@@ -429,7 +430,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
         ]
     }
 
-    if 'html' not in args.disable_plugin_checks:
+    if (python_module_available('avocado-framework-plugin-result-html') and
+            'html' not in args.disable_plugin_checks):
 
         config_check_file_exists['run.dict_variants'].append(
             {'namespace': 'job.run.result.html.enabled',
@@ -470,7 +472,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
         ]
     }
 
-    if 'html' not in args.disable_plugin_checks:
+    if (python_module_available('avocado-framework-plugin-result-html') and
+            'html' not in args.disable_plugin_checks):
 
         config_check_output_file['run.dict_variants'].append(
             {'namespace': 'job.run.result.html.output',
@@ -518,11 +521,13 @@ def create_suites(args):  # pylint: disable=W0621
         ]
     }
 
-    if 'golang' not in args.disable_plugin_checks:
+    if (python_module_available('avocado-framework-plugin-golang') and
+            'golang' not in args.disable_plugin_checks):
         config_nrunner_interface['run.dict_variants'].append({
             'runner': 'avocado-runner-golang'})
 
-    if 'robot' not in args.disable_plugin_checks:
+    if (python_module_available('avocado-framework-plugin-robot') and
+            'robot' not in args.disable_plugin_checks):
         config_nrunner_interface['run.dict_variants'].append({
             'runner': 'avocado-runner-robot'})
 
