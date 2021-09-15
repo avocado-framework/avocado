@@ -17,7 +17,28 @@ Human result UI
 
 from avocado.core import output
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import JobPost, JobPre, ResultEvents
+from avocado.core.plugin_interfaces import Init, JobPost, JobPre, ResultEvents
+from avocado.core.settings import settings
+from avocado.core.teststatus import STATUSES
+
+#: STATUSES contains the finished status, but lacks the novel concept
+#: of nrunner having tests STARTED (that is, in progress).  This contains
+#: a more complete list of statuses that includes "STARTED"
+COMPLETE_STATUSES = STATUSES + ['STARTED']
+
+
+class HumanInit(Init):
+
+    description = "Initialize human ui plugin settings"
+
+    def initialize(self):
+        help_msg = ("Status that will be ommited from the Human UI. "
+                    "Valid statuses: %s" % ", ".join(COMPLETE_STATUSES))
+        settings.register_option(section='human_ui.ommit',
+                                 key='statuses',
+                                 key_type=list,
+                                 default=[],
+                                 help_msg=help_msg)
 
 
 class Human(ResultEvents):
@@ -34,6 +55,7 @@ class Human(ResultEvents):
         stdout_claimed_by = config.get('stdout_claimed_by', None)
         self.owns_stdout = not stdout_claimed_by
         self.runner = config.get('run.test_runner')
+        self.ommit_statuses = config.get('human_ui.ommit.statuses')
 
     def pre_tests(self, job):
         if not self.owns_stdout:
@@ -53,6 +75,9 @@ class Human(ResultEvents):
     def start_test(self, result, state):
         if not self.owns_stdout:
             return
+        if "STARTED" in self.ommit_statuses:
+            return
+
         if "name" in state:
             name = state["name"]
             uid = name.str_uid
@@ -93,6 +118,9 @@ class Human(ResultEvents):
         if not self.owns_stdout:
             return
         status = state.get("status", "ERROR")
+        if status in self.ommit_statuses:
+            return
+
         if status == "TEST_NA":
             status = "SKIP"
         duration = (" (%.2f s)" % state.get('time_elapsed', -1)
