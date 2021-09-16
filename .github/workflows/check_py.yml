@@ -1,0 +1,71 @@
+name: check.py tests
+
+on:
+  push:
+    paths:
+      - 'setup.py'
+      - 'selftests/check.py'
+  pull_request:
+    paths:
+      - 'setup.py'
+      - 'selftests/check.py'
+  workflow_dispatch:
+
+jobs:
+
+  check_py:
+    name: Test selftests/check.py
+    runs-on: ubuntu-20.04
+
+    steps:
+      - run: echo "Triggered by a ${{ github.event_name }} event on branch ${{ github.ref }}, repository ${{ github.repository }}, with runner ${{ runner.os }}"
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user
+      - run: python3 selftests/check.py --help
+      - run: python3 selftests/check.py --skip --select  # not allowed, should give error message and exit with error
+        continue-on-error: True
+      - run: python3 selftests/check.py --skip --job-api --optional-plugins  # not allowed, should give error message
+      - run: python3 selftests/check.py --select --no-static-checks # not allowed, should give error message
+      - run: python3 selftests/check.py --select --job-api --unit
+      - run: python3 selftests/check.py --select --static-check
+      - run: python3 selftests/check.py --select --optional-plugins
+      - run: python3 selftests/check.py --skip --no-static-checks --no-functional
+      - run: python3 selftests/check.py --skip --no-optional-plugins --no-unit
+      - run: python3 selftests/check.py --select --job-api --nrunner-interface --disable-plugin-checks html,golang,robot
+      - run: python3 selftests/check.py --skip --no-unit --disable-plugin-checks robot
+      - run: python3 selftests/check.py # should run all tests
+      - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  setup_py:
+    name: Test setup.py tests
+    runs-on: ubuntu-20.04
+
+    steps:
+      - run: echo "Triggered by a ${{ github.event_name }} event on branch ${{ github.ref }}, repository ${{ github.repository }}, with runner ${{ runner.os }}"
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user
+      - run: python3 setup.py test --help
+      - run: python3 setup.py test --skip --select  # not allowed, should give error message and exit with error
+        continue-on-error: True
+      - run: python3 setup.py test --skip --job-api --optional-plugins  # not allowed, should give error message
+      - run: python3 setup.py test --select --no-static-checks # not allowed, should give error message
+      - run: python3 setup.py test --select --job-api --unit
+      - run: python3 setup.py test --select --static-check
+      - run: python3 setup.py test --select --optional-plugins
+      - run: python3 setup.py test --skip --no-static-checks --no-functional
+      - run: python3 setup.py test --skip --no-optional-plugins --no-unit
+      - run: python3 setup.py test --select --job-api --nrunner-interface --disable-plugin-checks html,golang,robot
+      - run: python3 setup.py test --skip --no-unit --disable-plugin-checks html
+      - run: python3 setup.py test # should run all tests
+      - run: echo "🥑 This job's status is ${{ job.status }}."
