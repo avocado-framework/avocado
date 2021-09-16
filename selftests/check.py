@@ -234,7 +234,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                                  % (__file__, test_class))
     config_check_archive_file_exists = {
         'run.references': [check_archive_file_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'run.results.archive',
              'value': True,
@@ -253,7 +252,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
         % (__file__, test_class))
     config_check_category_directory_exists = {
         'run.references': [check_category_directory_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'run.job_category',
              'value': 'foo',
@@ -271,7 +269,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                               % (__file__, test_class))
     config_check_directory_exists = {
         'run.references': [check_directory_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
              {'namespace': 'sysinfo.collect.enabled',
               'value': True,
@@ -295,7 +292,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                           % (__file__, test_class))
     config_check_file_content = {
         'run.references': [check_file_content],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             # finding the correct 'content' here is trick because any
             # simple string is added to the variant file name and is
@@ -375,7 +371,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                          % (__file__, test_class))
     config_check_file_exists = {
         'run.references': [check_file_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'job.run.result.json.enabled',
              'value': True,
@@ -455,7 +450,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                          % (__file__, test_class))
     config_check_output_file = {
         'run.references': [check_output_file],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'job.run.result.json.output',
              'file': 'custom.json',
@@ -490,7 +484,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                                   % (__file__, test_class))
     config_check_tmp_directory_exists = {
         'run.references': [check_tmp_directory_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'run.keep_tmp',
              'value': True,
