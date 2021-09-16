@@ -353,6 +353,7 @@ if __name__ == '__main__':
                   "podman = avocado.plugins.spawners.podman:PodmanSpawnerInit",
                   "nrunner = avocado.plugins.runner_nrunner:RunnerInit",
                   "testlogsui = avocado.plugins.testlogs:TestLogsUIInit",
+                  "human = avocado.plugins.human:HumanInit",
               ],
               'avocado.plugins.cli': [
                   'wrapper = avocado.plugins.wrapper:Wrapper',
