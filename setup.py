@@ -200,38 +200,65 @@ class Test(SimpleCommand):
 
     description = 'Run selftests'
     user_options = [
+        ("skip", None, "Run all tests and skip listed test with --no-X options"),
+        ("select", None, "Do not run any test, only these selected after with --X options"),
         ("job-api", None, "Run job API checks"),
+        ("no-job-api", None, "Do not run job API checks"),
         ("static-checks", None, "Run static checks (isort, lint, etc)"),
+        ("no-static-checks", None, "Do not run static checks (isort, lint, etc)"),
         ("nrunner-interface", None, "Run selftests/functional/test_nrunner_interface.py"),
+        ("no-nrunner-interface", None, "Do not run selftests/functional/test_nrunner_interface.py"),
         ("unit", None, "Run selftests/unit/"),
+        ("no-unit", None, "Do not run selftests/unit/"),
         ("jobs", None, "Run selftests/jobs/"),
+        ("no-jobs", None, "Do not run selftests/jobs/"),
         ("functional", None, "Run selftests/functional/"),
+        ("no-functional", None, "Do not run selftests/functional/"),
         ("optional-plugins", None, "Run optional_plugins/*/tests/"),
+        ("no-optional-plugins", None, "Do not run optional_plugins/*/tests/"),
         ("disable-plugin-checks=", None, "Disable checks for one or more plugins (by directory name), separated by comma"),
         ("list-features", None, "Show the features tested by this test")
     ]
 
     def initialize_options(self):
-        self.job_api = False  # pylint: disable=W0201
-        self.static_checks = False  # pylint: disable=W0201
-        self.nrunner_interface = False  # pylint: disable=W0201
-        self.unit = False  # pylint: disable=W0201
-        self.jobs = False  # pylint: disable=W0201
-        self.functional = False  # pylint: disable=W0201
-        self.optional_plugins = False  # pylint: disable=W0201
+        self.skip = None  # pylint: disable=W0201
+        self.select = None  # pylint: disable=W0201
+        self.job_api = None  # pylint: disable=W0201
+        self.no_job_api = None  # pylint: disable=W0201
+        self.static_checks = None  # pylint: disable=W0201
+        self.no_static_checks = None  # pylint: disable=W0201
+        self.nrunner_interface = None  # pylint: disable=W0201
+        self.no_nrunner_interface = None  # pylint: disable=W0201
+        self.unit = None  # pylint: disable=W0201
+        self.no_unit = None  # pylint: disable=W0201
+        self.jobs = None  # pylint: disable=W0201
+        self.no_jobs = None  # pylint: disable=W0201
+        self.functional = None  # pylint: disable=W0201
+        self.no_functional = None  # pylint: disable=W0201
+        self.optional_plugins = None  # pylint: disable=W0201
+        self.no_optional_plugins = None  # pylint: disable=W0201
         self.disable_plugin_checks = []  # pylint: disable=W0201
-        self.list_features = False  # pylint: disable=W0201
+        self.list_features = None  # pylint: disable=W0201
 
     def run(self):
 
         args = argparse.Namespace()
+        args.skip = self.skip
+        args.select = self.select
         args.static_checks = self.static_checks
+        args.no_static_checks = self.no_static_checks
         args.job_api = self.job_api
+        args.no_job_api = self.no_job_api
         args.nrunner_interface = self.nrunner_interface
+        args.no_nrunner_interface = self.no_nrunner_interface
         args.unit = self.unit
+        args.no_unit = self.no_unit
         args.jobs = self.jobs
+        args.no_jobs = self.no_jobs
         args.functional = self.functional
+        args.no_functional = self.no_functional
         args.optional_plugins = self.optional_plugins
+        args.no_optional_plugins = self.no_optional_plugins
         args.disable_plugin_checks = self.disable_plugin_checks
         args.list_features = self.list_features
 
