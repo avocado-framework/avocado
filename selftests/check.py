@@ -201,9 +201,6 @@ def parse_args():
     parser.add_argument('--job-api',
                         help='Run job API checks',
                         action='store_true')
-    parser.add_argument('--disable-plugin-checks',
-                        help='Disable checks for a plugin (by directory name)',
-                        action='append', default=[])
     parser.add_argument('--nrunner-interface',
                         help='Run selftests/functional/test_nrunner_interface.py',
                         action='store_true')
@@ -219,8 +216,15 @@ def parse_args():
     parser.add_argument('--optional-plugins',
                         help='Run optional_plugins/*/tests/',
                         action='store_true')
+    parser.add_argument('--disable-plugin-checks',
+                        help='Disable checks for one or more plugins (by directory name), separated by comma',
+                        action='append', default=[])
 
-    return parser.parse_args()
+    arg = parser.parse_args()
+    # Make a list of strings instead of a list with a single string
+    if len(arg.disable_plugin_checks) > 0:
+        arg.disable_plugin_checks = arg.disable_plugin_checks[0].split(",")
+    return arg
 
 
 def create_suite_job_api(args):  # pylint: disable=W0621

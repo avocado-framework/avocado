@@ -174,7 +174,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
     PYTHONPATH=%{buildroot}%{python3_sitelib}:. \
     LANG=en_US.UTF-8 \
     AVOCADO_CHECK_LEVEL=0 \
-    %{python3} selftests/check.py --job-api --nrunner-interface --unit --jobs --functional --optional-plugins --disable-plugin-checks=robot
+    %{python3} selftests/check.py --job-api --nrunner-interface --unit --jobs --functional --optional-plugins --disable-plugin-checks robot
 %endif
 
 %files -n python3-avocado
@@ -369,6 +369,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Sep 16 2021 Ana Guerrero Lopez <anguerre@redhat.com> - 91.0-2
+- Minor update to the selftest/check.py call
+
 * Mon Aug 30 2021 Cleber Rosa <crosa@redhat.com> - 91.0-1
 - New release
 
