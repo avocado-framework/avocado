@@ -16,6 +16,30 @@ from selftests.utils import python_module_available
 BOOLEAN_ENABLED = [True, 'true', 'on', 1]
 BOOLEAN_DISABLED = [False, 'false', 'off', 0]
 
+# The best solution would be BooleanOptionalAction, but it's only in Python3.9+
+# Using a custom action based on: https://stackoverflow.com/questions/9234258/in-python-argparse-is-it-possible-to-have-paired-no-something-something-arg/9236426
+
+
+class BooleanAction(argparse.Action):
+
+    def __init__(self, option_strings, dest, default=None, required=False, help=None):  # pylint: disable=W0622
+        if len(option_strings) != 1:
+            raise ValueError('Only single argument is allowed.')
+        opt = option_strings[0]
+        if not opt.startswith('--'):
+            raise ValueError('Boolean arguments must be prefixed with --')
+
+        opt = opt[2:]
+        opts = ['--' + opt, '--no-' + opt]
+        super(BooleanAction, self).__init__(opts, dest, nargs=0, const=None,
+                                            default=default, required=required, help=help)
+
+    def __call__(self, parser, namespace, values, option_strings=None):
+        if option_strings.startswith('--no-'):
+            setattr(namespace, self.dest, False)
+        else:
+            setattr(namespace, self.dest, True)
+
 
 class JobAPIFeaturesTest(Test):
 
@@ -191,31 +215,38 @@ class JobAPIFeaturesTest(Test):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
     parser.add_argument('-f',
                         '--list-features',
                         help='show the list of features tested by this test.',
                         action='store_true')
+    group.add_argument('--skip',
+                       help='Run all tests and skip listed test with --no-X options',
+                       action='store_true')
+    group.add_argument('--select',
+                       help='Do not run any test, only these selected after with --X options',
+                       action='store_true')
     parser.add_argument('--static-checks',
                         help='Run static checks (isort, lint, etc)',
-                        action='store_true')
+                        action=BooleanAction, default=None)
     parser.add_argument('--job-api',
                         help='Run job API checks',
-                        action='store_true')
+                        action=BooleanAction, default=None)
     parser.add_argument('--nrunner-interface',
                         help='Run selftests/functional/test_nrunner_interface.py',
-                        action='store_true')
+                        action=BooleanAction, default=None)
     parser.add_argument('--unit',
                         help='Run selftests/unit/',
-                        action='store_true')
+                        action=BooleanAction, default=None)
     parser.add_argument('--jobs',
                         help='Run selftests/jobs/',
-                        action='store_true')
+                        action=BooleanAction, default=None)
     parser.add_argument('--functional',
                         help='Run selftests/functional/',
-                        action='store_true')
+                        action=BooleanAction, default=None)
     parser.add_argument('--optional-plugins',
                         help='Run optional_plugins/*/tests/',
-                        action='store_true')
+                        action=BooleanAction, default=None)
     parser.add_argument('--disable-plugin-checks',
                         help='Disable checks for one or more plugins (by directory name), separated by comma',
                         action='append', default=[])
@@ -582,11 +613,50 @@ def enable_all_tests(args):   # pylint: disable=W0621
 
 def main(args):  # pylint: disable=W0621
 
-    if not any([args.static_checks, args.job_api, args.nrunner_interface,
-                args.unit, args.jobs, args.functional,
-                args.optional_plugins, args.list_features]):
+    # Will only run the test you select, --select must be followed by --options
+    if args.select:
+        if not any([args.static_checks, args.job_api, args.nrunner_interface,
+                    args.unit, args.jobs, args.functional, args.optional_plugins]):
+            print("Option --select must be followed by the tests you wish to run, "
+                  "adding --X options.\nFor example: --select --static-checks")
+            exit(0)
+
+    # Will run all the tests except these you skip, --skip must be followed by --no-options
+    elif args.skip:
+        if any([args.static_checks, args.job_api, args.nrunner_interface,
+                args.unit, args.jobs, args.functional, args.optional_plugins]):
+            print("Option --skip must be followed by the test you want to exclude adding "
+                  "--no-X options.\nFor example: --skip --no-static-checks")
+            exit(0)
+        else:
+            # Set to True the options we haven't selected to skip!
+            if args.static_checks is None:
+                args.static_checks = True
+            if args.job_api is None:
+                args.job_api = True
+            if args.nrunner_interface is None:
+                args.nrunner_interface = True
+            if args.unit is None:
+                args.unit = True
+            if args.jobs is None:
+                args.jobs = True
+            if args.functional is None:
+                args.functional = True
+            if args.optional_plugins is None:
+                args.optional_plugins = True
+
+    # If no option was selected, run all tests!
+    elif not any([args.list_features, args.skip, args.select,
+                 args.static_checks, args.job_api, args.nrunner_interface,
+                 args.unit, args.jobs, args.functional, args.optional_plugins]):
         print("No test were selected to run, running all of them.")
         enable_all_tests(args)
+    elif args.list_features:
+        # This will be handled later after all the suites have been created
+        pass
+    else:
+        print("Something went wrong, please report a bug!")
+        exit(1)
 
     suites = []
     if args.job_api:
