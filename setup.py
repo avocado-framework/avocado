@@ -207,7 +207,7 @@ class Test(SimpleCommand):
         ("jobs", None, "Run selftests/jobs/"),
         ("functional", None, "Run selftests/functional/"),
         ("optional-plugins", None, "Run optional_plugins/*/tests/"),
-        ("disable-plugin-checks", None, "Disable checks for a plugin (by directory name)"),
+        ("disable-plugin-checks=", None, "Disable checks for one or more plugins (by directory name), separated by comma"),
         ("list-features", None, "Show the features tested by this test")
     ]
 

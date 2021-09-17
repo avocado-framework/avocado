@@ -201,9 +201,6 @@ def parse_args():
     parser.add_argument('--job-api',
                         help='Run job API checks',
                         action='store_true')
-    parser.add_argument('--disable-plugin-checks',
-                        help='Disable checks for a plugin (by directory name)',
-                        action='append', default=[])
     parser.add_argument('--nrunner-interface',
                         help='Run selftests/functional/test_nrunner_interface.py',
                         action='store_true')
@@ -219,8 +216,15 @@ def parse_args():
     parser.add_argument('--optional-plugins',
                         help='Run optional_plugins/*/tests/',
                         action='store_true')
+    parser.add_argument('--disable-plugin-checks',
+                        help='Disable checks for one or more plugins (by directory name), separated by comma',
+                        action='append', default=[])
 
-    return parser.parse_args()
+    arg = parser.parse_args()
+    # Make a list of strings instead of a list with a single string
+    if len(arg.disable_plugin_checks) > 0:
+        arg.disable_plugin_checks = arg.disable_plugin_checks[0].split(",")
+    return arg
 
 
 def create_suite_job_api(args):  # pylint: disable=W0621
@@ -234,7 +238,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                                  % (__file__, test_class))
     config_check_archive_file_exists = {
         'run.references': [check_archive_file_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'run.results.archive',
              'value': True,
@@ -253,7 +256,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
         % (__file__, test_class))
     config_check_category_directory_exists = {
         'run.references': [check_category_directory_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'run.job_category',
              'value': 'foo',
@@ -271,7 +273,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                               % (__file__, test_class))
     config_check_directory_exists = {
         'run.references': [check_directory_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
              {'namespace': 'sysinfo.collect.enabled',
               'value': True,
@@ -295,7 +296,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                           % (__file__, test_class))
     config_check_file_content = {
         'run.references': [check_file_content],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             # finding the correct 'content' here is trick because any
             # simple string is added to the variant file name and is
@@ -375,7 +375,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                          % (__file__, test_class))
     config_check_file_exists = {
         'run.references': [check_file_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'job.run.result.json.enabled',
              'value': True,
@@ -455,7 +454,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                          % (__file__, test_class))
     config_check_output_file = {
         'run.references': [check_output_file],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'job.run.result.json.output',
              'file': 'custom.json',
@@ -490,7 +488,6 @@ def create_suite_job_api(args):  # pylint: disable=W0621
                                   % (__file__, test_class))
     config_check_tmp_directory_exists = {
         'run.references': [check_tmp_directory_exists],
-        'run.test_runner': 'runner',
         'run.dict_variants': [
             {'namespace': 'run.keep_tmp',
              'value': True,
