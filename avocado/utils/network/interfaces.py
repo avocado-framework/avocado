@@ -128,6 +128,73 @@ class NetworkInterface:
         except Exception as ex:
             raise NWException("Failed to add address {}".format(ex))
 
+    @property
+    def vlans(self):
+        """Return a dict of VLAN
+        Key in the dictionary is the VLAN number and the value is the name of the VLAN interface
+        """
+        vlans = {}
+        if not os.path.exists('/proc/net/vlan/config'):
+            return vlans
+        with open('/proc/net/vlan/config', encoding="utf-8") as vlan_config_file:
+            for line in vlan_config_file:
+                # entry is formatted as "vlan_name | vlan_id | parent_device"
+                line = "".join(line.split())
+                if line.endswith(self.name):
+                    line = line.split('|')
+                    vlans[line[1]] = line[0]
+        return vlans
+
+    def add_vlan_tag(self, vlan_num, vlan_name=None):
+        """Configure 802.1Q VLAN tagging to the interface.
+        This method will attempt to add a VLAN tag to this interface. If it
+        fails, the method will raise a NWException.
+        :param vlan_num: VLAN ID
+        :param vlan_name: option to name VLAN interface, by default it is named
+                          <interface_name>.<vlan_num>
+        """
+
+        vlan_name = vlan_name or "{}.{}".format(self.name, vlan_num)
+        cmd = "ip link add link {} name {} type vlan id {}".format(self.name,
+                                                                   vlan_name,
+                                                                   vlan_num)
+        try:
+            run_command(cmd, self.host, sudo=True)
+        except Exception as ex:
+            raise NWException("Failed to add VLAN tag: {}".format(ex))
+
+    def remove_vlan_by_tag(self, vlan_num):
+        """Remove the VLAN of the interface by tag number.
+        This method will try to remove the VLAN tag of this interface. If it fails,
+        the method will raise a NWException.
+        :param vlan_num: VLAN ID
+        :return: True or False, True if it found the VLAN interface and removed
+                 it successfully, otherwise it will return False.
+        """
+        if str(vlan_num) in self.vlans:
+            vlan_name = self.vlans[str(vlan_num)]
+        else:
+            return False
+        cmd = "ip link delete {}".format(vlan_name)
+
+        try:
+            run_command(cmd, self.host, sudo=True)
+            return True
+        except Exception as ex:
+            raise NWException("Failed to remove VLAN interface: {}".format(ex))
+
+    def remove_all_vlans(self):
+        """Remove all VLANs of the interface.
+        This method will remove all the VLAN interfaces associated by the
+        interface. If it fails, the method will raise a NWException.
+        """
+        try:
+            for v in self.vlans.values():
+                cmd = "ip link delete {}".format(v)
+                run_command(cmd, self.host, sudo=True)
+        except Exception as ex:
+            raise NWException("Failed to remove VLAN interface: {}".format(ex))
+
     def bring_down(self):
         """Shutdown the interface.
 
