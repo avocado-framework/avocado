@@ -71,7 +71,7 @@ debian_egg_task:
 fedora_selftests_task:
     selftests_script:
        - make develop
-       - PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 python3 selftests/check.py --job-api --nrunner-interface --unit --jobs --functional --optional-plugins
+       - PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 python3 selftests/check.py --skip --static-checks
     container:
         matrix:
           - image: quay.io/avocado-framework/avocado-ci-fedora-33
