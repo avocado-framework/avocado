@@ -130,8 +130,12 @@ class NetworkInterface:
 
     @property
     def vlans(self):
-        """Return a dict of VLAN
-        Key in the dictionary is the VLAN number and the value is the name of the VLAN interface
+        """Return all interface's VLAN.
+
+        This is a dict were key is the VLAN number and the value is the name of
+        the VLAN interface.
+
+        rtype: dict
         """
         vlans = {}
         if not os.path.exists('/proc/net/vlan/config'):
@@ -147,8 +151,10 @@ class NetworkInterface:
 
     def add_vlan_tag(self, vlan_num, vlan_name=None):
         """Configure 802.1Q VLAN tagging to the interface.
+
         This method will attempt to add a VLAN tag to this interface. If it
         fails, the method will raise a NWException.
+
         :param vlan_num: VLAN ID
         :param vlan_name: option to name VLAN interface, by default it is named
                           <interface_name>.<vlan_num>
@@ -165,8 +171,10 @@ class NetworkInterface:
 
     def remove_vlan_by_tag(self, vlan_num):
         """Remove the VLAN of the interface by tag number.
+
         This method will try to remove the VLAN tag of this interface. If it fails,
         the method will raise a NWException.
+
         :param vlan_num: VLAN ID
         :return: True or False, True if it found the VLAN interface and removed
                  it successfully, otherwise it will return False.
@@ -184,7 +192,8 @@ class NetworkInterface:
             raise NWException("Failed to remove VLAN interface: {}".format(ex))
 
     def remove_all_vlans(self):
-        """Remove all VLANs of the interface.
+        """Remove all VLANs of this interface.
+
         This method will remove all the VLAN interfaces associated by the
         interface. If it fails, the method will raise a NWException.
         """
