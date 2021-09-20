@@ -32,9 +32,9 @@ class HumanInit(Init):
     description = "Initialize human ui plugin settings"
 
     def initialize(self):
-        help_msg = ("Status that will be ommited from the Human UI. "
+        help_msg = ("Status that will be omitted from the Human UI. "
                     "Valid statuses: %s" % ", ".join(COMPLETE_STATUSES))
-        settings.register_option(section='human_ui.ommit',
+        settings.register_option(section='human_ui.omit',
                                  key='statuses',
                                  key_type=list,
                                  default=[],
@@ -55,7 +55,7 @@ class Human(ResultEvents):
         stdout_claimed_by = config.get('stdout_claimed_by', None)
         self.owns_stdout = not stdout_claimed_by
         self.runner = config.get('run.test_runner')
-        self.ommit_statuses = config.get('human_ui.ommit.statuses')
+        self.omit_statuses = config.get('human_ui.omit.statuses')
 
     def pre_tests(self, job):
         if not self.owns_stdout:
@@ -75,7 +75,7 @@ class Human(ResultEvents):
     def start_test(self, result, state):
         if not self.owns_stdout:
             return
-        if "STARTED" in self.ommit_statuses:
+        if "STARTED" in self.omit_statuses:
             return
 
         if "name" in state:
@@ -118,7 +118,7 @@ class Human(ResultEvents):
         if not self.owns_stdout:
             return
         status = state.get("status", "ERROR")
-        if status in self.ommit_statuses:
+        if status in self.omit_statuses:
             return
 
         if status == "TEST_NA":
