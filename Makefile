@@ -33,7 +33,6 @@ all:
 	@echo "requirements-dev:      Install development requirements"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
-	@echo "source:       Create single source package with commit info, suitable for RPMs"
 	@echo "source-pypi:  Create source packages suitable for PyPI"
 	@echo "wheel:        Create binary wheel packages suitable for PyPI"
 	@echo "pypi:         Create both source and binary wheel packages and show how to"
@@ -43,18 +42,15 @@ all:
 	@echo "uninstall:    Uninstall Avocado and also subprojects"
 	@echo "man:          Generate the avocado man page"
 	@echo
-	@echo "RPM related targets:"
-	@echo "srpm:  Generate a source RPM package (.srpm)"
-	@echo "rpm:   Generate binary RPMs"
-	@echo
 	@echo "Release related targets:"
-	@echo "source-release:  Create source package for the latest tagged release"
-	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
-	@echo "rpm-release:        Generate binary RPMs for the latest tagged release"
 	@echo "propagate-version:  Propagate './VERSION' to all plugins/modules"
 	@echo
 
-include Makefile.include
+pip:
+	$(PYTHON) -m pip --version || $(PYTHON) -m ensurepip $(PYTHON_DEVELOP_ARGS) || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
+
+install:
+	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
 source-pypi: python_build
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
@@ -144,4 +140,4 @@ propagate-version:
 		else echo ">> Skipping $$DIR"; fi;\
 	done
 
-.PHONY: source source-pypi wheel pypi install clean uninstall requirements-dev smokecheck check develop develop-external propagate-version variables
+.PHONY: source-pypi wheel pypi install clean uninstall requirements-dev smokecheck check develop develop-external propagate-version variables
