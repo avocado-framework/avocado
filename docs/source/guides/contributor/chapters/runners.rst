@@ -546,9 +546,9 @@ You can run a "noop" recipe with::
 
   avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/noop.json
 
-You can run an "exec" runner with::
+You can run an "exec-test" runner with::
 
-  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/exec_sleep_3.json
+  avocado-runner runnable-run-recipe examples/nrunner/recipes/runnables/exec_test_sleep_3.json
 
 You can run a "python-unittest" runner with::
 
