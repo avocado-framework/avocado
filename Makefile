@@ -6,15 +6,6 @@ PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | 
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell basename ${PWD})
 AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
-RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
-RELEASE_SHORT_COMMIT=$(shell git rev-parse --short=9 $(VERSION))
-COMMIT=$(shell git log --pretty=format:'%H' -n 1)
-COMMIT_DATE=$(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
-SHORT_COMMIT=$(shell git rev-parse --short=9 HEAD)
-MOCK_CONFIG=default
-ARCHIVE_BASE_NAME=avocado
-PYTHON_MODULE_NAME=avocado-framework
-RPM_BASE_NAME=python-avocado
 
 
 all:
@@ -123,15 +114,6 @@ variables:
 	@echo "DESTDIR: $(DESTDIR)"
 	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
 	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
-	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
-	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
-	@echo "COMMIT: $(COMMIT)"
-	@echo "COMMIT_DATE: $(COMMIT_DATE)"
-	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
-	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
-	@echo "ARCHIVE_BASE_NAME: $(ARCHIVE_BASE_NAME)"
-	@echo "PYTHON_MODULE_NAME: $(PYTHON_MODULE_NAME)"
-	@echo "RPM_BASE_NAME: $(RPM_BASE_NAME)"
 
 propagate-version:
 	for DIR in $(AVOCADO_OPTIONAL_PLUGINS); do\
