@@ -4,41 +4,17 @@
 
     "tests": [
          {
-	 "name": "Version Bump: Version number",
-         "description": "For the Avocado versioning, two files need to receive a manual version update: `VERSION` and `python-avocado.spec`."
-	 },
-         {
-	 "name": "Version Bump: Propagate to plugins",
-         "description": "Run the command: `make propagate-version` to propagate this change to all optional and “linkable” plugins sharing the parent dir (eg. avocado-vt)."
-	 },
-         {
 	 "name": "Write the release notes",
-         "description": "Under `docs/source/releases/` create a new .rst file describing the release changes. Also, update the `docs/source/releases/index.rst` file.  Look at the sprint issues and PRs on GitHub, specially the ones with the `comment-on-sprint-review` label."
+         "description": "Under `docs/source/releases/` create a new .rst file describing the release changes. Also, add the new release to the list of releases at `docs/source/releases/index.rst`. Look at the sprint issues and PRs on GitHub, specially the ones with the `comment-on-sprint-review` label. Commit your changes directly in the master branch."
 	 },
          {
-	 "name": "Version Bump: Commit the bump",
-         "description": "Commit the version bump, python-avocado.spec and release notes. Don't forget to commit the changes of 'linked' plugins as they live in different repositories."
+	 "name": "Check secrets are set in GitHub",
+         "description": "The secrets required by the GitHub Action must be set before running. Go to https://github.com/avocado-framework/avocado/settings/secrets/actions and check 'Repository secrets', there should be four tokens set and not expired: RELEASE_TOKEN, RTD_TOKEN and the tokens for twine/pypi.org PYPI_USER and PYPI_PASSWD."
 	 },
-         {
-	 "name": "Version Bump: Tag the repository",
-         "description": "Tagging the repository locally (but not pushing it yet), will let you do a `make rpm-release` in the next step. Run `git tag -u $(GPG_ID) -s $(RELEASE) -m 'Release $(RELEASE)'`"
-	 },
-         {
-	 "name": "Build RPMs",
-         "description": "Go to the source directory and do:\n\n`make rpm-release && echo $?`\n\nThis should be all. It will build packages using mock, targeting your default configuration. That usually means the same platform you’re currently on. Also make sure it builds on other supported distros, by setting the MOCK_CONFIG variable to values such as `epel-8-x86_64`."
-	 },
-         {
-	 "name": "Version Bump: Push the tag",
-         "description": "The tag should be pushed to the GIT repository with:\n\n`git push --tags`"
-	 },
-         {
-	 "name": "Upload package to PyPI",
-         "description": "Users may also want to get Avocado from the PyPI repository, so please upload there as well. To help with the process, please run:\n\n`make pypi`\n\nAnd follow the URL and brief instructions given."
-	 },
-         {
-	 "name": "Configure Read The Docs",
-         "description": "Visit the link below:\n\nhttps://readthedocs.org/dashboard/avocado-framework/edit/\n\n 1) Click in *Versions*. Under *Activate a Version*, find the version you're releasing and click the *Activate* button;\n 2) Click in *Admin*. Under *Advanced Settings*/*Global settings*/*Default Version*, select the new version you're releasing. Click the *Save* button at the bottom of the page."
-	 },
+        {
+    "name": "Run GitHub Action 'Release",
+        "description": "Run the GitHub Action 'Release' on the master branch at https://github.com/avocado-framework/avocado/actions/workflows/release.yml . All the jobs must pass. This action will update the `master` branch and a tag `VERSION`.\nIMPORTANT NOTE: the automatic tag won't be signed anymore by the release developer."
+    },
          {
 	 "name": "Update the Fedora and EPEL RPM packages and module",
          "description": "Follow the instructions on:\n\nhttps://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/releasing.html#how-to-refresh-fedora-epel-modules\n\nand work with the package maintainer by sending a PR to update the Avocado version on the `avocado:latest` stream."

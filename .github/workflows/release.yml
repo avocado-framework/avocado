@@ -1,0 +1,159 @@
+# must do before using this action:
+# - set up RELEASE_TOKEN in secrets of the repository avocado-framework/avocado
+# - set up RTD_TOKEN in secrets to update readthedocs
+# - set up two tokens for twine: PYPI_USER and PYPI_PASSWD
+
+name: Release tests
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        default: '0.0'
+      devel_name:
+        description: 'Developer Name'
+        required: true
+        default: 'Avocado Developer'
+      devel_mail:
+        description: 'Developer mail'
+        required: true
+        default: 'avocado@redhat.com'
+      rtd_project:
+        description: 'readthedocs project name'
+        required: true
+        default: 'avocado-framework'
+
+jobs:
+
+  release:
+    name: Update versions
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:34
+
+    steps:
+      - name: install required packages
+        run:  dnf -y install rpmdevtools git
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Update VERSION files
+        run: |
+          echo ${{ github.event.inputs.version }} > VERSION
+          for DIR in optional_plugins/*; do
+                if test -f $DIR/VERSION; then
+                        echo ${{ github.event.inputs.version }} > $DIR/VERSION
+                fi
+          done
+      - name: Update python-avocado.spec
+        run: |
+          rpmdev-bumpspec -n ${{ github.event.inputs.version }} -u "${{ github.event.inputs.devel_name }} <${{ github.event.inputs.devel_mail }}>" -c "New release" python-avocado.spec
+          sed -i 's/^Release:.*/Release: 1%{?gitrel}%{?dist}/' python-avocado.spec
+      - name: Commit files
+        run: |
+          git config --local user.email "${{ github.event.inputs.devel_mail }}"
+          git config --local user.name "${{ github.event.inputs.devel_name }}"
+          git commit -m "Changes for release ${{ github.event.inputs.version }}" -a
+      - name: Tag test version
+        run: git tag ${{ github.event.inputs.version }} -m 'Release ${{ github.event.inputs.version }}'
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.RELEASE_TOKEN }}
+          branch: ${{ github.ref }}
+
+  build-rtd:
+    name: Update readthedocs
+    runs-on: ubuntu-latest
+    needs: release
+
+    steps:
+      - name: Build documentation readthedocs
+        env:
+          token: ${{ secrets.RTD_TOKEN }}
+          url: "https://readthedocs.org/api/v3/projects/${{ github.event.inputs.rtd_project }}"
+          version: ${{ github.event.inputs.version }}
+        run: |
+          # Activate version
+          curl \
+            -X PATCH \
+            -H "Authorization: Token $token" $url/versions/$version/ \
+            -H "Content-Type: application/json" \
+            -d '{"active": true, "hidden": false }'
+          # Build new version
+          curl \
+            -X POST \
+            -H "Authorization: Token $token" $url/versions/$version/builds/
+      - run: echo "In a few minutes the release documentation will be available in https://${{ github.event.inputs.rtd_project }}.readthedocs.io/en/${{ github.event.inputs.version }}/"
+
+  build-wheel-update-pypi:
+    name: Build wheel and upload to pypi
+    runs-on: ubuntu-latest
+    needs: release
+
+    steps:
+      - name: install required packages
+        run: sudo apt-get -y install git python3-pip
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.version }}
+      - name: Build wheel
+        run: |
+          pip3 install --user build
+          mkdir PYPI_UPLOAD
+          python3 -m build -o PYPI_UPLOAD
+          for PLUGIN in optional_plugins/*; do
+                if test -f $PLUGIN/setup.py; then
+                        cd $PLUGIN;
+                        python3 -m build -o ../../PYPI_UPLOAD;
+                        cd -
+                fi
+          done
+      - name: Upload to pypi
+        env:
+          TWINE_USERNAME: '${{ secrets.PYPI_USER }}'
+          TWINE_PASSWORD: '${{ secrets.PYPI_PASSWD }}'
+          TWINE_NON_INTERACTIVE: true
+        run: |
+          pip install twine
+          twine upload PYPI_UPLOAD/*.{tar.gz,whl}
+      - name: Save wheel as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheel
+          path: /__w/avocado-test/avocado-test/PYPI_UPLOAD/
+          retention-days: 3
+
+  build-and-publish-eggs:
+    name: Build eggs and publish them
+    runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.version }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build eggs
+        run: python setup.py bdist_egg
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: ${{ github.workspace }}/dist/avocado_framework*
+          tag: ${{ github.event.inputs.version }}
+          overwrite: true
+          file_glob: true
