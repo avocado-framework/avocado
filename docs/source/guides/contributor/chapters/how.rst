@@ -17,15 +17,24 @@ Report a bug
 ------------
 
 If a test fails, congratulations, you have just found a bug. And If you have
-precise steps to reproduce,  awesome! You're on your way to reporting a useful
+precise steps to reproduce, awesome! You're on your way to reporting a useful
 bug report.
 
-.. warning:: TODO: Describe how to report a bug!
+Don't be afraid of reporting bugs that you are not sure if is valid. The most
+that can happen is that we find out together that this is a feature instead!
+
+Avocado is using Github's issue tracking system for collecting and discussing
+issues. If you have a possible candidate, do not hesitate, share with us by
+`creating a new issue<https://github.com/avocado-framework/avocado/issues/>`_.
 
 Suggest enhancements
 --------------------
 
-.. warning:: TODO: Describe how to suggest features
+The same is valid when suggesting a new feature or enhancements: Don't think
+twice, just `submit the feature
+request<https://github.com/avocado-framework/avocado/issues/>`_ using the same
+link.  Our community will see if and when it might become a part of the Avocado
+Framework.
 
 Contribute with code
 --------------------
