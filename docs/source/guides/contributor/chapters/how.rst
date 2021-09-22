@@ -17,15 +17,25 @@ Report a bug
 ------------
 
 If a test fails, congratulations, you have just found a bug. And If you have
-precise steps to reproduce,  awesome! You're on your way to reporting a useful
+precise steps to reproduce, awesome! You're on your way to reporting a useful
 bug report.
 
-.. warning:: TODO: Describe how to report a bug!
+Don't be afraid to report bugs, even if you're not sure if they're valid. The
+most that can happen is that we find out together that this is a feature
+instead!
+
+Avocado is using Github's issue tracking system for collecting and discussing
+issues. If you have a possible candidate, do not hesitate, share with us by
+`creating a new issue<https://github.com/avocado-framework/avocado/issues/>`_.
 
 Suggest enhancements
 --------------------
 
-.. warning:: TODO: Describe how to suggest features
+The same is valid when suggesting a new feature or enhancements: Don't think
+twice, just `submit the feature
+request<https://github.com/avocado-framework/avocado/issues/>`_ using the same
+link.  Our community will evaluate if the feature request is valid and when it
+might become a part of the Avocado Framework.
 
 Contribute with code
 --------------------
@@ -45,6 +55,10 @@ Mailing List, should you opt for that. Then a maintainer will collect the
 patches, integrate them on a branch, and then those patches will be submitted
 as a github Pull Request. This process tries to ensure that every contributed
 patch goes through the CI jobs before it is considered good for inclusion.
+
+Keep in mind that during our sprints, we do have a small "Feature Freeze"
+period right before the release day (usually no longer than one week). This
+means that during this time, no new feature can be merged into master.
 
 Git workflow
 ~~~~~~~~~~~~
