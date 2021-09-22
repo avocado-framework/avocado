@@ -263,7 +263,12 @@ class Asset:
                 base_url = self.locations[0]
         else:
             # the URI is on self.parsed_name
-            base_url = os.path.dirname(self.parsed_name.geturl())
+            if self.parsed_name.query:
+                base_url = "%s://%s%s" % (self.parsed_name.scheme,
+                                          self.parsed_name.netloc,
+                                          self.parsed_name.path)
+            else:
+                base_url = os.path.dirname(self.parsed_name.geturl())
 
         base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
                                     base_url.encode(astring.ENCODING))
@@ -449,6 +454,8 @@ class Asset:
 
     @property
     def asset_name(self):
+        if self.parsed_name.query:
+            return self.parsed_name.query
         return os.path.basename(self.parsed_name.path)
 
     @classmethod
