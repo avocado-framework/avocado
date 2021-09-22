@@ -124,6 +124,15 @@ class RemoteHost(Host):
         self.password = password
         self.remote_session = self._connect()
 
+    def __enter__(self):
+        if not self.remote_session:
+            self._connect()
+        return self
+
+    def __exit__(self, _type, _exc_value, _traceback):
+        if self.remote_session:
+            self.remote_session.quit()
+
     def _connect(self):
         session = Session(host=self.host,
                           port=self.port,
