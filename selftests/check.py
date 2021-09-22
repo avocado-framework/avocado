@@ -510,7 +510,6 @@ def create_suites(args):  # pylint: disable=W0621
         'run.dict_variants': [
             {'runner': 'avocado-runner'},
             {'runner': 'avocado-runner-noop'},
-            {'runner': 'avocado-runner-exec'},
             {'runner': 'avocado-runner-exec-test'},
             {'runner': 'avocado-runner-python-unittest'},
             {'runner': 'avocado-runner-avocado-instrumented'},

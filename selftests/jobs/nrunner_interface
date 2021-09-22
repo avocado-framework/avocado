@@ -7,7 +7,6 @@ from avocado.core.job import Job
 config = {'run.references': ['selftests/functional/test_nrunner_interface.py'],
           'run.dict_variants': [
               {'runner': 'avocado-runner-noop'},
-              {'runner': 'avocado-runner-exec'},
               {'runner': 'avocado-runner-exec-test'},
               {'runner': 'avocado-runner-python-unittest'},
               {'runner': 'avocado-runner-avocado-instrumented'},

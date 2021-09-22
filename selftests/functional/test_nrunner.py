@@ -49,10 +49,10 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'time': ", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
-    def test_exec(self):
+    def test_exec_test(self):
         # 'base64:LWM=' becomes '-c' and makes Python execute the
         # commands on the subsequent argument
-        cmd = ("%s runnable-run -k exec -u %s -a 'base64:LWM=' -a "
+        cmd = ("%s runnable-run -k exec-test -u %s -a 'base64:LWM=' -a "
                "'import sys; sys.exit(99)'" % (RUNNER, sys.executable))
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
@@ -60,9 +60,9 @@ class RunnableRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 0)
 
     @skipUnlessPathExists('/bin/sh')
-    def test_exec_echo(self):
+    def test_exec_test_echo(self):
         # 'base64:LW4=' becomes '-n' and prevents echo from printing a newline
-        cmd = ("%s runnable-run -k exec -u /bin/echo -a 'base64:LW4=' -a "
+        cmd = ("%s runnable-run -k exec-test -u /bin/echo -a 'base64:LW4=' -a "
                "_Avocado_Runner_" % RUNNER)
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
@@ -72,9 +72,9 @@ class RunnableRun(unittest.TestCase):
 
     @skipUnlessPathExists('/bin/sh')
     @skipUnlessPathExists('/bin/echo')
-    def test_recipe(self):
+    def test_exec_recipe(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
-                              "runnables", "exec_sh_echo_env_var.json")
+                              "runnables", "exec_test_sh_echo_env_var.json")
         cmd = "%s runnable-run-recipe %s" % (RUNNER, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -103,9 +103,9 @@ class RunnableRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 2)
 
     @skipUnlessPathExists('/bin/env')
-    def test_exec_kwargs(self):
-        res = process.run("%s runnable-run -k exec -u /bin/env X=Y" % RUNNER,
-                          ignore_status=True)
+    def test_exec_test_kwargs(self):
+        cmd = "%s runnable-run -k exec-test -u /bin/env X=Y" % RUNNER
+        res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"X=Y\\n", res.stdout)
         self.assertEqual(res.exit_status, 0)
@@ -121,9 +121,9 @@ class TaskRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 0)
 
     @skipUnlessPathExists('/bin/uname')
-    def test_recipe_exec_1(self):
+    def test_recipe_exec_test_1(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
-                              "tasks", "exec", "1-uname.json")
+                              "tasks", "exec-test", "1-uname.json")
         cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -139,9 +139,9 @@ class TaskRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 0)
 
     @skipUnlessPathExists('/bin/echo')
-    def test_recipe_exec_2(self):
+    def test_recipe_exec_test_2(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
-                              "tasks", "exec", "2-echo.json")
+                              "tasks", "exec-test", "2-echo.json")
         cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
@@ -159,9 +159,9 @@ class TaskRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 0)
 
     @skipUnlessPathExists('/bin/sleep')
-    def test_recipe_exec_3(self):
+    def test_recipe_exec_test_3(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
-                              "tasks", "exec", "3-sleep.json")
+                              "tasks", "exec-test", "3-sleep.json")
         cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()

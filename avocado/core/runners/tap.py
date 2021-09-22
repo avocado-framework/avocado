@@ -5,7 +5,7 @@ from ..tapparser import TapParser, TestResult
 from .utils.messages import FinishedMessage
 
 
-class TAPRunner(nrunner.ExecRunner):
+class TAPRunner(nrunner.ExecTestRunner):
     """Runner for standalone executables treated as TAP
 
     When creating the Runnable, use the following attributes:
