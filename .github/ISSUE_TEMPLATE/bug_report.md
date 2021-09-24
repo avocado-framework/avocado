@@ -16,7 +16,7 @@ Steps to reproduce the behavior with a reproducible whenever possible.
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Current behaviour**
+**Current behavior**
 What you are getting?
 
 **System information (please complete the following information):**
