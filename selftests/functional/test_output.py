@@ -198,6 +198,7 @@ if __name__ == '__main__':
     job.setup()
     job.test_suites[0]._runner = RunnerNRunnerWithFixedTasks()
     job.run()
+    job.cleanup()
 """
 
 
