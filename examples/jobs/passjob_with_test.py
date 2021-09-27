@@ -17,5 +17,5 @@ class PassTest(Test):
 
 
 if __name__ == '__main__':
-    with Job(config) as j:
+    with Job.from_config(job_config=config) as j:
         sys.exit(j.run())
