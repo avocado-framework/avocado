@@ -289,10 +289,9 @@ class JobTest(unittest.TestCase):
 
         # Manual/Custom method
         suite = TestSuite('foo-test', config=suite_config, job_config=config)
-        self.job = job.Job(config, [suite])
-        self.job.setup()
-        self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
-                         self.tmpdir.name)
+        with job.Job(config, [suite]) as self.job:
+            self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+                             self.tmpdir.name)
 
         # Automatic method passing suites
         self.job = job.Job.from_config(job_config=config,
