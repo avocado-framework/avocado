@@ -84,8 +84,6 @@ class JobTest(unittest.TestCase):
             self.assertNotEqual(job1.unique_id, job2.unique_id)
             self.assertNotEqual(job1.logdir, job2.logdir)
             self.assertNotEqual(job1.tmpdir, job2.tmpdir)
-            # tmpdirs should share the same base-dir per process
-            self.assertEqual(os.path.dirname(job1.tmpdir), os.path.dirname(job2.tmpdir))
             # due to config logdirs should share the same base-dir
             self.assertEqual(os.path.dirname(job1.logdir), os.path.dirname(job2.logdir))
 

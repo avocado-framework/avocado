@@ -147,6 +147,7 @@ class Job:
         self.logfile = None
         self.tmpdir = None
         self.__keep_tmpdir = True
+        self._base_tmpdir = None
         self.status = "RUNNING"
         self.result = None
         self.interrupted_reason = None
@@ -489,6 +490,7 @@ class Job:
         self.__stop_job_logging()
         if not self.__keep_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
+            shutil.rmtree(self._base_tmpdir)
         cleanup_conditionals = (
             self.config.get('run.dry_run.enabled'),
             not self.config.get('run.dry_run.no_cleanup')
@@ -674,9 +676,9 @@ class Job:
         self._setup_job_category()
         # Use "logdir" in case "keep_tmp" is enabled
         if self.config.get('run.keep_tmp'):
-            base_tmpdir = self.logdir
+            self._base_tmpdir = self.logdir
         else:
-            base_tmpdir = data_dir.get_tmp_dir()
+            self._base_tmpdir = tempfile.mkdtemp(prefix="avocado_tmp_")
             self.__keep_tmpdir = False
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_",
-                                       dir=base_tmpdir)
+                                       dir=self._base_tmpdir)
