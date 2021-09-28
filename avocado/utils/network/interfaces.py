@@ -477,6 +477,22 @@ class NetworkInterface:
             log.debug(msg)
             return False
 
+    def is_bond(self):
+        """Check if interface is a bonding device.
+
+        This method checks if the interface is a bonding device or not.
+
+        rtype: bool
+        """
+        cmd = 'cat /proc/net/bonding/{}'.format(self.name)
+        try:
+            run_command(cmd, self.host)
+            return True
+        except Exception as ex:
+            msg = "{} is not a bond device. {}".format(self.name, ex)
+            log.debug(msg)
+            return False
+
     def remove_cfg_file(self):
         """
         Remove any config files that is created as a part of the test
