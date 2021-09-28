@@ -27,8 +27,7 @@ class JSONResultTest(TestCaseTmpDir):
 
         json_output_path = os.path.join(self.tmpdir.name, 'results.json')
         config = {'run.results_dir': self.tmpdir.name,
-                  'job.run.result.json.output': json_output_path,
-                  'run.keep_tmp': True}
+                  'job.run.result.json.output': json_output_path}
         self.job = job.Job(config)
         self.job.setup()
         self.test_result = Result(UNIQUE_ID, LOGFILE)

@@ -40,8 +40,7 @@ class xUnitSucceedTest(unittest.TestCase):
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         config = {'job.run.result.xunit.output': self.tmpfile[1],
-                  'run.results_dir': self.tmpdir.name,
-                  'run.keep_tmp': True}
+                  'run.results_dir': self.tmpdir.name}
         self.job = job.Job(config)
         self.job.setup()
         self.test_result = Result(UNIQUE_ID, LOGFILE)

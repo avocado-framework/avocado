@@ -15,8 +15,7 @@ class NRunnerFeatures(unittest.TestCase):
     def test_custom_exit_codes(self):
         config = {'run.references': ['/bin/false'],
                   'run.test_runner': 'nrunner',
-                  'runner.exectest.exitcodes.skip': [1],
-                  'run.keep_tmp': True}
+                  'runner.exectest.exitcodes.skip': [1]}
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 0)
 
