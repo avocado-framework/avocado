@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import data_dir, exit_codes, job, nrunner, test
+from avocado.core import exit_codes, job, nrunner, test
 from avocado.core.exceptions import (JobBaseException,
                                      JobTestSuiteDuplicateNameError)
 from avocado.core.suite import TestSuite, TestSuiteStatus
@@ -17,7 +17,6 @@ class JobTest(unittest.TestCase):
 
     def setUp(self):
         self.job = None
-        data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
@@ -356,7 +355,6 @@ class JobTest(unittest.TestCase):
             _ = job.Job(config, [suite_1, suite_2])
 
     def tearDown(self):
-        data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         self.tmpdir.cleanup()
         if self.job is not None:
             self.job.cleanup()

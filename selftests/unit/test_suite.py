@@ -1,7 +1,6 @@
 import tempfile
 import unittest.mock
 
-from avocado.core import data_dir
 from avocado.core.suite import TestSuite
 from avocado.utils import path as utils_path
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
@@ -13,7 +12,6 @@ class TestSuiteTest(unittest.TestCase):
 
     def setUp(self):
         self.suite = None
-        data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
@@ -79,7 +77,6 @@ class TestSuiteTest(unittest.TestCase):
         self.assertEqual(self.suite.config.get('core.show'), ['none'])
 
     def tearDown(self):
-        data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         self.tmpdir.cleanup()
 
 
