@@ -1,13 +1,14 @@
 Results Specification
 =====================
 
-On a machine that executed tests, job results are available under
-``[job-results]/job-[timestamp]-[short job ID]``, where ``logdir`` is the configured Avocado
-logs directory (see the data dir plugin), and the directory name includes
-a timestamp, such as ``job-2014-08-12T15.44-565e8de``. A typical
+On a machine that executed Avocado, job results are available under
+``[job-results]/job-[timestamp]-[short job ID]``, where ``logdir`` is the
+configured Avocado logs directory (see the data dir plugin), and the directory
+name includes a timestamp, such as ``job-2021-09-28T14.21-e0775d9``. A typical
 results directory structure can be seen below ::
 
-    $HOME/avocado/job-results/job-2014-08-13T00.45-4a92bc0/
+    $HOME/avocado/job-results/job-2021-09-28T14.21-e0775d9/
+    ├── avocado.core.DEBUG
     ├── id
     ├── jobdata
     │   ├── args.json
@@ -23,84 +24,75 @@ results directory structure can be seen below ::
     ├── results.xml
     ├── sysinfo
     │   ├── post
-    │   │   ├── brctl_show
+    │   │   ├── brctl show
     │   │   ├── cmdline
     │   │   ├── cpuinfo
     │   │   ├── current_clocksource
-    │   │   ├── df_-mP
-    │   │   ├── dmesg_-c
+    │   │   ├── df -mP
+    │   │   ├── dmesg
     │   │   ├── dmidecode
-    │   │   ├── fdisk_-l
-    │   │   ├── gcc_--version
+    │   │   ├── fdisk -l
+    │   │   ├── gcc --version
     │   │   ├── hostname
-    │   │   ├── ifconfig_-a
+    │   │   ├── ifconfig -a
     │   │   ├── interrupts
-    │   │   ├── ip_link
+    │   │   ├── ip link
     │   │   ├── journalctl.gz
-    │   │   ├── ld_--version
+    │   │   ├── ld --version
     │   │   ├── lscpu
-    │   │   ├── lspci_-vvnn
+    │   │   ├── lspci -vvnn
     │   │   ├── meminfo
     │   │   ├── modules
-    │   │   ├── mount
     │   │   ├── mounts
-    │   │   ├── numactl_--hardware_show
+    │   │   ├── numactl --hardware show
     │   │   ├── partitions
+    │   │   ├── pci
     │   │   ├── scaling_governor
-    │   │   ├── uname_-a
+    │   │   ├── sched_features
+    │   │   ├── slabinfo
+    │   │   ├── uname -a
     │   │   ├── uptime
     │   │   └── version
     │   ├── pre
-    │   │   ├── brctl_show
-    │   │   ├── cmdline
-    │   │   ├── cpuinfo
-    │   │   ├── current_clocksource
-    │   │   ├── df_-mP
-    │   │   ├── dmesg_-c
-    │   │   ├── dmidecode
-    │   │   ├── fdisk_-l
-    │   │   ├── gcc_--version
-    │   │   ├── hostname
-    │   │   ├── ifconfig_-a
-    │   │   ├── interrupts
-    │   │   ├── ip_link
-    │   │   ├── ld_--version
-    │   │   ├── lscpu
-    │   │   ├── lspci_-vvnn
-    │   │   ├── meminfo
-    │   │   ├── modules
-    │   │   ├── mount
-    │   │   ├── mounts
-    │   │   ├── numactl_--hardware_show
-    │   │   ├── partitions
-    │   │   ├── scaling_governor
-    │   │   ├── uname_-a
-    │   │   ├── uptime
-    │   │   └── version
+    │   │   ├── brctl show
+    │   │   ├── cmdline
+    │   │   ├── cpuinfo
+    │   │   ├── current_clocksource
+    │   │   ├── df -mP
+    │   │   ├── dmesg
+    │   │   ├── dmidecode
+    │   │   ├── fdisk -l
+    │   │   ├── gcc --version
+    │   │   ├── hostname
+    │   │   ├── ifconfig -a
+    │   │   ├── interrupts
+    │   │   ├── ip link
+    │   │   ├── ld --version
+    │   │   ├── lscpu
+    │   │   ├── lspci -vvnn
+    │   │   ├── meminfo
+    │   │   ├── modules
+    │   │   ├── mounts
+    │   │   ├── numactl --hardware show
+    │   │   ├── partitions
+    │   │   ├── pci
+    │   │   ├── scaling_governor
+    │   │   ├── sched_features
+    │   │   ├── slabinfo
+    │   │   ├── uname -a
+    │   │   ├── uptime
+    │   │   └── version
     │   └── profile
     └── test-results
-        └── tests
-            ├── sleeptest.py.1
-            │   ├── data
-            │   ├── debug.log
-            │   └── sysinfo
-            │       ├── post
-            │       └── pre
-            ├── sleeptest.py.2
-            │   ├── data
-            │   ├── debug.log
-            │   └── sysinfo
-            │       ├── post
-            │       └── pre
-            └── sleeptest.py.3
-                ├── data
-                ├── debug.log
-                └── sysinfo
-                    ├── post
-                    └── pre
-    
-    22 directories, 65 files
-
+        ├── 1-examples_tests_sleeptest.py_SleepTest.test
+        │   ├── debug.log
+        │   └── whiteboard
+        ├── 2-examples_tests_sleeptest.py_SleepTest.test
+        │   ├── debug.log
+        │   └── whiteboard
+        └── 3-examples_tests_sleeptest.py_SleepTest.test
+            ├── debug.log
+            └── whiteboard
 
 From what you can see, the results directory has:
 
@@ -128,8 +120,8 @@ The instances should have:
 3) A ``data`` subdirectory, where the test can output a number of files if necessary.
 
 
-Test execution environment
---------------------------
+Test execution environment using the legacy runner
+--------------------------------------------------
 
 Each test is executed in a separate process.  Due to how the
 underlying operating system works, a lot of the attributes of the

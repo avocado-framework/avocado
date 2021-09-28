@@ -56,7 +56,7 @@ version 29.  To subscribe to the latest version stream, run::
 
 Or, to use the LTS (Long Term Stability) version stream, run::
 
-  $ dnf module enable avocado:69lts
+  $ dnf module enable avocado:82lts
 
 Then proceed to install a module profile or individual packages.  If you're
 unsure about what to do, simply run::
@@ -91,7 +91,7 @@ If you're interested in using the very latest development version of Avocado
 from RPM packages, you can do so by running::
 
   $ dnf copr enable @avocado/avocado-latest
-  $ dnf install python*-avocado*
+  $ dnf install python3-avocado*
 
 The following image shows the status of the Avocado packages building on COPR:
 
