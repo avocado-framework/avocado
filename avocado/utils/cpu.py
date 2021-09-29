@@ -35,6 +35,8 @@ VENDORS_MAP = {
     'ibm': (rb"POWER\d", rb"IBM/S390", ),
 }
 
+LOG = logging.getLogger('avocado.test')
+
 
 class FamilyException(Exception):
     pass
@@ -128,7 +130,7 @@ def get_version():
     try:
         version_pattern[arch]
     except KeyError as Err:
-        logging.warning("No pattern string for arch: %s\n Error: %s", arch, Err)
+        LOG.warning("No pattern string for arch: %s\n Error: %s", arch, Err)
         return None
     for line in cpu_info:
         version_out = re.findall(version_pattern[arch], line)
@@ -200,7 +202,7 @@ def get_family():
                 family = mico_arch.read().decode('utf-8').strip('\n').lower()
         except FileNotFoundError as err:
             msg = "Could not find micro-architecture/family, Error: %s" % err
-            logging.warning(msg)
+            LOG.warning(msg)
             raise FamilyException(msg)
     elif arch == 'powerpc':
         res = []
@@ -212,7 +214,7 @@ def get_family():
             family = res[0].decode('utf-8').lower()
         except IndexError as err:
             msg = "Unable to parse cpu family %s" % err
-            logging.warning(msg)
+            LOG.warning(msg)
             raise FamilyException(msg)
     elif arch == 's390':
         zfamily_map = {'2964': 'z13',
@@ -223,7 +225,7 @@ def get_family():
             family = zfamily_map[get_version()].lower()
         except KeyError as err:
             msg = "Could not find family for %s\nError: %s" % (get_version(), err)
-            logging.warning(msg)
+            LOG.warning(msg)
             raise FamilyException(msg)
     else:
         raise NotImplementedError
@@ -292,8 +294,8 @@ def get_idle_state():
             try:
                 cpu_idlestate[cpu][state_no] = bool(int(open(state_file, 'rb').read()))
             except IOError as err:
-                logging.warning("Failed to read idle state on cpu %s "
-                                "for state %s:\n%s", cpu, state_no, err)
+                LOG.warning("Failed to read idle state on cpu %s "
+                            "for state %s:\n%s", cpu, state_no, err)
     return cpu_idlestate
 
 
@@ -336,8 +338,8 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                 try:
                     open(state_file, "wb").write(disable)
                 except IOError as err:
-                    logging.warning("Failed to set idle state on cpu %s "
-                                    "for state %s:\n%s", cpu, state_no, err)
+                    LOG.warning("Failed to set idle state on cpu %s "
+                                "for state %s:\n%s", cpu, state_no, err)
     else:
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
@@ -346,8 +348,8 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                 try:
                     open(state_file, "wb").write(disable)
                 except IOError as err:
-                    logging.warning("Failed to set idle state on cpu %s "
-                                    "for state %s:\n%s", cpu, state_no, err)
+                    LOG.warning("Failed to set idle state on cpu %s "
+                                "for state %s:\n%s", cpu, state_no, err)
 
 
 def set_freq_governor(governor="random"):
@@ -364,8 +366,8 @@ def set_freq_governor(governor="random"):
     if not cur_gov:
         return False
     if not (os.access(avl_gov_file, os.R_OK) and os.access(cur_gov_file, os.W_OK)):
-        logging.error("Could not locate frequency governor sysfs entries or\n"
-                      " No proper permissions to read/write sysfs entries")
+        LOG.error("Could not locate frequency governor sysfs entries or\n"
+                  " No proper permissions to read/write sysfs entries")
         return False
     cpus_list = total_count()
     with open(avl_gov_file, 'r') as fl:
@@ -373,21 +375,21 @@ def set_freq_governor(governor="random"):
     if governor == "random":
         avl_govs.remove(cur_gov)
         if not avl_govs:
-            logging.error("No other frequency governors to pick from...")
+            LOG.error("No other frequency governors to pick from...")
             return False
         governor = random.choice(avl_govs)
     if governor not in avl_govs:
-        logging.warning("Trying to change unknown frequency "
-                        "governor: %s", governor)
+        LOG.warning("Trying to change unknown frequency "
+                    "governor: %s", governor)
     for cpu in range(cpus_list):
         cur_gov_file = "/sys/devices/system/cpu/cpu%s/cpufreq/scaling_governor" % cpu
         try:
             with open(cur_gov_file, 'w') as fl:
                 fl.write(governor)
         except IOError as err:
-            logging.warning("Unable to write a given frequency "
-                            "governor %s profile for cpu "
-                            "%s\n %s", governor, cpu, err)
+            LOG.warning("Unable to write a given frequency "
+                        "governor %s profile for cpu "
+                        "%s\n %s", governor, cpu, err)
     return True
 
 
@@ -398,7 +400,7 @@ def get_freq_governor():
         with open(cur_gov_file, 'r') as fl:
             return fl.read().strip()
     except IOError as err:
-        logging.error("Unable to get the current governor\n %s", err)
+        LOG.error("Unable to get the current governor\n %s", err)
         return ""
 
 
