@@ -23,6 +23,8 @@ from . import astring, path, process
 
 __all__ = ["GitRepoHelper", "get_repo"]
 
+LOG = logging.getLogger('avocado.test')
+
 
 class GitRepoHelper:
 
@@ -74,20 +76,20 @@ class GitRepoHelper:
         the repo
         """
         if not os.path.exists(self.destination_dir):
-            logging.debug('Creating directory %s for git repo %s',
-                          self.destination_dir, self.uri)
+            LOG.debug('Creating directory %s for git repo %s',
+                      self.destination_dir, self.uri)
             os.makedirs(self.destination_dir)
 
         os.chdir(self.destination_dir)
         if os.path.exists('.git'):
-            logging.debug('Resetting previously existing git repo at %s for '
-                          'receiving git repo %s',
-                          self.destination_dir, self.uri)
+            LOG.debug('Resetting previously existing git repo at %s for '
+                      'receiving git repo %s',
+                      self.destination_dir, self.uri)
             self.git_cmd('reset --hard')
         else:
-            logging.debug('Initializing new git repo at %s for receiving '
-                          'git repo %s',
-                          self.destination_dir, self.uri)
+            LOG.debug('Initializing new git repo at %s for receiving '
+                      'git repo %s',
+                      self.destination_dir, self.uri)
             self.git_cmd('init')
 
     def git_cmd(self, cmd, ignore_status=False):
@@ -108,8 +110,8 @@ class GitRepoHelper:
         """
         Performs a git fetch from the remote repo
         """
-        logging.info("Fetching git [REP '%s' BRANCH '%s'] -> %s",
-                     uri, self.branch, self.destination_dir)
+        LOG.info("Fetching git [REP '%s' BRANCH '%s'] -> %s",
+                 uri, self.branch, self.destination_dir)
         self.git_cmd("fetch -q -f -u -t %s %s:%s" %
                      (uri, self.branch, self.lbranch))
 
@@ -142,17 +144,17 @@ class GitRepoHelper:
         if branch is None:
             branch = self.branch
 
-        logging.debug('Checking out branch %s', branch)
+        LOG.debug('Checking out branch %s', branch)
         self.git_cmd("checkout %s" % branch)
 
         if commit is None:
             commit = self.commit
 
         if commit is not None:
-            logging.debug('Checking out commit %s', self.commit)
+            LOG.debug('Checking out commit %s', self.commit)
             self.git_cmd("checkout %s" % self.commit)
         else:
-            logging.debug('Specific commit not specified')
+            LOG.debug('Specific commit not specified')
 
         top_commit = self.get_top_commit()
         top_tag = self.get_top_tag()
@@ -160,7 +162,7 @@ class GitRepoHelper:
             top_tag_desc = 'no tag found'
         else:
             top_tag_desc = 'tag %s' % top_tag
-        logging.info("git commit ID is %s (%s)", top_commit, top_tag_desc)
+        LOG.info("git commit ID is %s (%s)", top_commit, top_tag_desc)
 
     def execute(self):
         """

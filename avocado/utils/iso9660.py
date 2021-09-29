@@ -40,6 +40,8 @@ try:
 except ImportError:
     pycdlib = None
 
+LOG = logging.getLogger('avocado.test')
+
 
 def has_userland_tool(executable):
     """
@@ -100,12 +102,12 @@ def can_mount():
     :rtype: bool
     """
     if not process.can_sudo():
-        logging.debug('Can not use mount: current user is not "root" and '
-                      "sudo is not configured.")
+        LOG.debug('Can not use mount: current user is not "root" and '
+                  'sudo is not configured.')
         return False
 
     if not has_userland_tool('mount'):
-        logging.debug('Can not use mount: missing "mount" tool')
+        LOG.debug('Can not use mount: missing "mount" tool')
         return False
 
     with open('/proc/filesystems') as proc_filesystems:
@@ -113,7 +115,7 @@ def can_mount():
             process.system("modprobe iso9660", ignore_status=True, sudo=True)
     with open('/proc/filesystems') as proc_filesystems:
         if 'iso9660' not in proc_filesystems.read():
-            logging.debug('Can not use mount: lack of iso9660 kernel support')
+            LOG.debug('Can not use mount: lack of iso9660 kernel support')
             return False
 
     return True
@@ -260,7 +262,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         else:
             fname = self._get_filename_in_iso(path)
             if not fname:
-                logging.warning(
+                LOG.warning(
                     "Could not find '%s' in iso '%s'", path, self.path)
                 return ""
 
@@ -491,7 +493,7 @@ def iso9660(path, capabilities=None):
         if capabilities is not None and not set(capabilities).issubset(cap):
             continue
         if check():
-            logging.debug('Automatically chosen class for iso9660: %s', name)
+            LOG.debug('Automatically chosen class for iso9660: %s', name)
             return klass(path)
 
     return None
