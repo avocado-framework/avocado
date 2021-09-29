@@ -23,6 +23,8 @@ import time
 
 from . import distro, process, service, wait
 
+LOG = logging.getLogger('avocado.test')
+
 
 class MPException(Exception):
     """
@@ -58,7 +60,7 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
             mpath_fp.write("blacklist {\n")
             mpath_fp.write("    %s\n" % blacklist)
             mpath_fp.write("}\n")
-    logging.debug(open(conf_file, "r").read())
+    LOG.debug(open(conf_file, "r").read())
     # The reason for sleep here is to give some time for change in
     # multipath.conf file to take effect.
     time.sleep(5)

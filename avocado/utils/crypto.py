@@ -17,6 +17,8 @@ import io
 import logging
 import os
 
+LOG = logging.getLogger('avocado.test')
+
 
 def hash_file(filename, size=None, algorithm="md5"):
     """
@@ -42,8 +44,8 @@ def hash_file(filename, size=None, algorithm="md5"):
     try:
         hash_obj = hashlib.new(algorithm)
     except ValueError as detail:
-        logging.error('Returning "None" due to inability to create hash '
-                      'object: "%s"', detail)
+        LOG.error('Returning "None" due to inability to create hash '
+                  'object: "%s"', detail)
         return None
 
     with open(filename, 'rb') as file_to_hash:
@@ -52,7 +54,7 @@ def hash_file(filename, size=None, algorithm="md5"):
                 chunksize = size
             data = file_to_hash.read(chunksize)
             if len(data) == 0:
-                logging.debug("Nothing left to read but size=%d", size)
+                LOG.debug("Nothing left to read but size=%d", size)
                 break
             hash_obj.update(data)
             size -= len(data)

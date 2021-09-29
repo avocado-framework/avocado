@@ -31,6 +31,8 @@ from grp import getgrgid, getgrnam
 from pwd import getpwnam, getpwuid
 from stat import S_IMODE
 
+LOG = logging.getLogger('avocado.test')
+
 
 def check_owner(owner, group, file_name_pattern, check_recursive=False):
     """
@@ -55,8 +57,8 @@ def check_owner(owner, group, file_name_pattern, check_recursive=False):
             raise RuntimeError(
                 'file {0} has wrong group {1} (should be {2})'
                 .format(file_name, getgrgid(actual_id).gr_name, group))
-        logging.debug('checked owner %s:%s of file %s',
-                      owner, group, file_name)
+        LOG.debug('checked owner %s:%s of file %s',
+                  owner, group, file_name)
 
         if check_recursive and os.path.isdir(file_name):
             new_pattern = os.path.join(file_name,
@@ -78,5 +80,5 @@ def check_permissions(perms, file_name_pattern):
             raise RuntimeError(
                 'file {0} has permissions {1} (should be {2})!'
                 .format(file_name, oct(actual_perms), oct(perms)))
-        logging.debug('checked permissions %s of file %s',
-                      oct(perms), file_name)
+        LOG.debug('checked permissions %s of file %s',
+                  oct(perms), file_name)
