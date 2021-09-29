@@ -6,7 +6,7 @@ from ... import path as utils_path
 from ... import process
 from .base import BaseBackend
 
-log = logging.getLogger('avocado.test')
+LOG = logging.getLogger('avocado.test')
 
 
 class RpmBackend(BaseBackend):
@@ -76,7 +76,7 @@ class RpmBackend(BaseBackend):
         :param software_components: log in a format suitable for the
                                     SoftwareComponent schema
         """
-        log.debug("Listing all system packages (may take a while)")
+        LOG.debug("Listing all system packages (may take a while)")
 
         if software_components:
             cmd_format = "rpm -qa --qf '%s' | sort"
@@ -126,7 +126,7 @@ class RpmBackend(BaseBackend):
         :rtype: bool
         """
         if not os.path.isfile(file_path):
-            log.warning('Please provide proper rpm path')
+            LOG.warning('Please provide proper rpm path')
             return False
 
         nodeps = "--nodeps " if no_dependencies else ""
@@ -137,7 +137,7 @@ class RpmBackend(BaseBackend):
             process.system(cmd)
             return True
         except process.CmdError as details:
-            log.error(details)
+            LOG.error(details)
             return False
 
     @staticmethod
@@ -149,7 +149,7 @@ class RpmBackend(BaseBackend):
         :returns: whether the verification was successful
         :rtype: bool
         """
-        logging.info("Verifying package information.")
+        LOG.info("Verifying package information.")
         cmd = "rpm -V " + package_name
         result = process.run(cmd, ignore_status=True)
 
@@ -158,10 +158,10 @@ class RpmBackend(BaseBackend):
         # match = re.search(installed_pattern, result)
         match = (result.exit_status == 0)
         if match:
-            logging.info("Verification successful.")
+            LOG.info("Verification successful.")
             return True
         else:
-            logging.info(result.stdout_text.rstrip())
+            LOG.info(result.stdout_text.rstrip())
             return False
 
     @staticmethod
@@ -173,7 +173,7 @@ class RpmBackend(BaseBackend):
         :returns: whether file is erased properly
         :rtype: bool
         """
-        logging.warning("Erasing rpm package %s", package_name)
+        LOG.warning("Erasing rpm package %s", package_name)
         cmd = "rpm -e " + package_name
         result = process.run(cmd, ignore_status=True)
         if result.exit_status:
@@ -193,13 +193,13 @@ class RpmBackend(BaseBackend):
         if dest_path is not None:
             build_option += " --define '_builddir %s'" % dest_path
         else:
-            log.error("Please provide a valid path")
+            LOG.error("Please provide a valid path")
             return ""
         try:
             process.system("rpmbuild %s %s" % (build_option, spec_file))
             return os.path.join(dest_path, os.listdir(dest_path)[0])
         except process.CmdError as details:
-            log.error(details)
+            LOG.error(details)
             return ""
 
     def find_rpm_packages(self, rpm_dir):
@@ -216,10 +216,10 @@ class RpmBackend(BaseBackend):
             if subpath == "." or subpath == "..":
                 continue
             new_filepath = rpm_dir + "/" + subpath
-            logging.debug("Checking path for rpm %s", new_filepath)
+            LOG.debug("Checking path for rpm %s", new_filepath)
             # if path is file validate name and inject
             if os.path.isfile(new_filepath) and re.search(r"\s*.rpm$", os.path.basename(new_filepath)):
-                logging.info("Marking package %s for setup", new_filepath)
+                LOG.info("Marking package %s for setup", new_filepath)
                 subpacks.append(new_filepath)
             elif os.path.isdir(new_filepath):
                 subpacks += self.find_rpm_packages(new_filepath)
@@ -273,12 +273,12 @@ class RpmBackend(BaseBackend):
         :rtype: bool
         """
         while len(packages) > 0:
-            logging.debug("Trying to install: %s", packages)
+            LOG.debug("Trying to install: %s", packages)
             failed_packages = []
             for package_path in packages:
                 package_file = os.path.basename(package_path)
                 package_name = "-".join(package_file.split('-')[0:-2])
-                logging.debug("%s -> %s", package_file, package_name)
+                LOG.debug("%s -> %s", package_file, package_name)
                 installed = self.check_installed(package_name)
                 verified = self.rpm_verify(package_name) if installed else False
                 if installed and not verified:
@@ -288,8 +288,8 @@ class RpmBackend(BaseBackend):
                     if not success:
                         failed_packages.append(package_path)
             if len(packages) == len(failed_packages) > 0:
-                logging.warning("Some of the rpm packages could not be "
-                                "installed: %s", ", ".join(failed_packages))
+                LOG.warning("Some of the rpm packages could not be "
+                            "installed: %s", ", ".join(failed_packages))
                 return False
             packages = failed_packages
         return True

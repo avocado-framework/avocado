@@ -601,7 +601,7 @@ class Test(unittest.TestCase, TestData):
         self.log.addHandler(self._file_handler)
         self.log.propagate = False
 
-        # Adding the test log FileHandler to the Avocado's main logger so
+        # Adding the the test log FileHandler to the Avocado's main logger so
         # that everything logged while the test is running, for every logger,
         # also makes its way into the test log file
         logger = logging.getLogger('avocado')
