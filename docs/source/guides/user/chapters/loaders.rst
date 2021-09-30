@@ -6,10 +6,7 @@ Understanding the test discovery (Avocado Loaders)
 In this section you can learn how tests are being discovered and how to
 customize this process.
 
-.. note:: Some definitions here may be out of date. The current runner can
-   still be using some of these definitions in its design, however, we are
-   working on an improved version of the runner, the NextRunner that will use
-   an alternative strategy.
+.. note:: The definitions here apply to the legacy runner.
 
 Test Loaders
 ------------
@@ -63,12 +60,12 @@ injects into that position all the remaining unused loaders.
 Example of how ``--loaders`` affects the produced tests (manually gathered as
 some of them result in error)::
 
-    $ avocado run passtest.py boot this_does_not_exist /bin/echo
+    $ avocado run --test-runner=runner passtest.py boot this_does_not_exist /bin/echo
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
         > MISSING      this_does_not_exist
         > SIMPLE       /bin/echo
-    $ avocado run passtest.py boot this_does_not_exist /bin/echo --loaders @DEFAULT "external:/bin/echo -e"
+    $ avocado run --test-runner=runner passtest.py boot this_does_not_exist /bin/echo --loaders @DEFAULT "external:/bin/echo -e"
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
         > EXTERNAL     this_does_not_exist
@@ -115,7 +112,7 @@ expression.
 For instance, if you want to list all tests that are present in the
 ``gdbtest.py`` file, you can use the list command below::
 
-    $ avocado list examples/tests/gdbtest.py
+    $ avocado list --loader examples/tests/gdbtest.py
     INSTRUMENTED examples/tests/gdbtest.py:GdbTest.test_start_exit
     INSTRUMENTED examples/tests/gdbtest.py:GdbTest.test_existing_commands_raw
     INSTRUMENTED examples/tests/gdbtest.py:GdbTest.test_existing_commands
@@ -137,7 +134,7 @@ For instance, if you want to list all tests that are present in the
 To filter the results, listing only the tests that have ``test_disconnect`` in
 their test method names, you can execute::
 
-    $ avocado list examples/tests/gdbtest.py:test_disconnect
+    $ avocado list --loader examples/tests/gdbtest.py:test_disconnect
     INSTRUMENTED examples/tests/gdbtest.py:GdbTest.test_disconnect_raw
     INSTRUMENTED examples/tests/gdbtest.py:GdbTest.test_disconnect
 
@@ -145,13 +142,13 @@ As the string after the ``:`` is a regular expression, two tests were
 filtered in. You can manipulate the regular expression to have only the
 test with that exact name::
 
-    $ avocado list examples/tests/gdbtest.py:test_disconnect$
+    $ avocado list --loader examples/tests/gdbtest.py:test_disconnect$
     INSTRUMENTED examples/tests/gdbtest.py:GdbTest.test_disconnect
 
 The regular expression enables you to have more complex filters.
 Example::
 
-    $ avocado list examples/tests/gdbtest.py:GdbTest.test_[le].*raw
+    $ avocado list --loader examples/tests/gdbtest.py:GdbTest.test_[le].*raw
     INSTRUMENTED examples/tests/gdbtest.py:GdbTest.test_existing_commands_raw
     INSTRUMENTED examples/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw
 
@@ -159,7 +156,7 @@ Once the test reference is providing you the expected outcome, you can
 replace the ``list`` subcommand with the ``run`` subcommand to execute your
 tests::
 
-    $ avocado run examples/tests/gdbtest.py:GdbTest.test_[le].*raw
+    $ avocado run --test-runner=runner examples/tests/gdbtest.py:GdbTest.test_[le].*raw
     JOB ID     : 333912fb02698ed5339a400b832795a80757b8af
     JOB LOG    : $HOME/avocado/job-results/job-2017-06-14T14.54-333912f/job.log
      (1/2) examples/tests/gdbtest.py:GdbTest.test_existing_commands_raw: PASS (0.59 s)
@@ -182,7 +179,7 @@ be in place and so Avocado doesn't really need to resolve the references.
 Instead, Avocado will pass the references as parameters to the External Runner.
 Example::
 
-    $ avocado run 20
+    $ avocado run --test-runner=runner 20
     Unable to resolve reference(s) '20' with plugins(s) 'file', 'robot',
     'vt', 'external', try running 'avocado -V list 20' to see the details.
 
@@ -190,7 +187,7 @@ In the command above, no loaders can resolve ``20`` as a test. But running
 the command above with the External Runner ``/bin/sleep`` will make Avocado
 to actually execute ``/bin/sleep 20`` and check for its return code::
 
-    $ avocado run 20 --loaders external:/bin/sleep
+    $ avocado run --test-runner=runner 20 --loaders external:/bin/sleep
     JOB ID     : 42215ece2894134fb9379ee564aa00f1d1d6cb91
     JOB LOG    : $HOME/avocado/job-results/job-2017-06-19T11.17-42215ec/job.log
      (1/1) 20: PASS (20.03 s)
@@ -213,7 +210,7 @@ their `Test Anything Protocol <https://testanything.org>`_ output.
 
 The tests can be run as usual::
 
-    $ avocado run --loaders tap -- ./mytaptest
+    $ avocado run --test-runner=runner --loaders tap -- ./mytaptest
 
 Notice that you have to be explicit about the test loader you're
 using, otherwise, since the test files are executable binaries, the

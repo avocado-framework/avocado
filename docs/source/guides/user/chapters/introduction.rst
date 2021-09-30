@@ -31,17 +31,19 @@ Running a job with multiple tests
 You can run any number of test in an arbitrary order, as well as mix and match
 instrumented and simple tests::
 
-    $ avocado run failtest.py sleeptest.py synctest.py failtest.py synctest.py /tmp/simple_test.sh
-    JOB ID    : 86911e49b5f2c36caeea41307cee4fecdcdfa121
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
-     (1/6) failtest.py:FailTest.test: FAIL (0.00 s)
-     (2/6) sleeptest.py:SleepTest.test: PASS (1.00 s)
-     (3/6) synctest.py:SyncTest.test: PASS (2.43 s)
-     (4/6) failtest.py:FailTest.test: FAIL (0.00 s)
-     (5/6) synctest.py:SyncTest.test: PASS (2.44 s)
-     (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
-    RESULTS    : PASS 4 | ERROR 0 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 5.98 s
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py /tmp/simple_test.sh 
+    JOB ID     : 2391dddf53b950631589bd1d44a5a6fdd023b400
+    JOB LOG    : $HOME/avocado/job-results/job-2021-09-27T16.35-2391ddd/job.log
+     (1/4) examples/tests/sleeptest.py:SleepTest.test: STARTED
+     (2/4) examples/tests/failtest.py:FailTest.test: STARTED
+     (3/4) examples/tests/synctest.py:SyncTest.test: STARTED
+     (4/4) /tmp/simple_test.sh: STARTED
+     (4/4) /tmp/simple_test.sh: PASS (0.01 s)
+     (2/4) examples/tests/failtest.py:FailTest.test: FAIL: This test is supposed to fail (0.05 s)
+     (1/4) examples/tests/sleeptest.py:SleepTest.test: PASS (1.02 s)
+     (3/4) examples/tests/synctest.py:SyncTest.test: PASS (1.39 s)
+    RESULTS    : PASS 3 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB TIME   : 3.25 s
 
 .. note:: Although in most cases running ``avocado run $test1 $test3 ...`` is
           fine, it can lead to argument vs. test name clashes. The safest
@@ -64,9 +66,9 @@ Currently Avocado has two test runners: ``nrunner`` (the new runner) and
   runner  The conventional test runner
 
 During the test execution, you can select the runner using the option
-``--test-runner``, where the default is the legacy one::
+``--test-runner``, where the default is the nrunner one::
 
-  $ avocado run --test-runner='nrunner' /bin/true
+  $ avocado run --test-runner='runner' /bin/true
 
 
 Interrupting tests
@@ -94,7 +96,8 @@ Interrupting the job on first fail (failfast)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Avocado ``run`` command has the option ``--failfast`` to exit the job on
-first failed test::
+first failed test. The legacy runner runs tests sequentially, with the behavior
+of ``--failfast`` as follows::
 
     $ avocado run --failfast /bin/true /bin/false /bin/true /bin/true
     JOB ID     : eaf51b8c7d6be966bdf5562c9611b1ec2db3f68a
@@ -104,6 +107,23 @@ first failed test::
     Interrupting job (failfast).
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 0.12 s
+
+With the nrunner runner, tests are executed in parallel. The ``--failfast``
+option work on the best effort to cancel tests that have not started yet. To
+replicate the same behavior as the legacy runner, use
+``--nrunner-max-parallel-tasks=1`` to limit the number of tasks executed in
+parallel::
+
+    $ avocado run --failfast --nrunner-max-parallel-tasks=1 /bin/true /bin/false /bin/true /bin/true
+    JOB ID     : 76bfe0e5cfa5efac3ab6881ee501cc5d4b69f913
+    JOB LOG    : $HOME/avocado/job-results/job-2021-09-27T16.41-76bfe0e/job.log
+     (1/4) /bin/true: STARTED
+     (1/4) /bin/true: PASS (0.01 s)
+     (2/4) /bin/false: STARTED
+     (2/4) /bin/false: FAIL (0.01 s)
+    Interrupting job (failfast).
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB TIME   : 1.57 s
 
 The default behavior, that is, when ``--failfast`` is **not** set, is
 to try to execute all tests in a job, regardless individual of test failures.
@@ -168,26 +188,27 @@ When you provide a list of test references, Avocado will try to resolve all of
 them to tests. If one or more test references can not be resolved to tests, the
 Job will not be created. Example::
 
-    $ avocado run passtest.py badtest.py
+    $ avocado run examples/tests/passtest.py badtest.py
     Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', 'external', try running 'avocado -V list badtest.py' to see the details.
 
 But if you want to execute the Job anyway, with the tests that could be
 resolved, you can use ``--ignore-missing-references``, a boolean command-line
 option. The same message will appear in the UI, but the Job will be executed::
 
-    $ avocado run passtest.py badtest.py --ignore-missing-references
-    Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', 'external', try running 'avocado list -V badtest.py' to see the details.
-    JOB ID     : 85927c113074b9defd64ea595d6d1c3fdfc1f58f
-    JOB LOG    : $HOME/avocado/job-results/job-2017-05-17T10.54-85927c1/job.log
-     (1/1) passtest.py:PassTest.test: PASS (0.02 s)
+    $ avocado run examples/tests/passtest.py badtest.py --ignore-missing-references
+    JOB ID     : e6d1f4d21d6a5e2e039f1acd1670a6882144c189
+    JOB LOG    : $HOME/avocado/job-results/job-2021-09-27T16.50-e6d1f4d/job.log
+     (1/1) examples/tests/passtest.py:PassTest.test: STARTED
+     (1/1) examples/tests/passtest.py:PassTest.test: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 0.11 s
-    JOB HTML   : $HOME/avocado/job-results/job-2017-05-17T10.54-85927c1/html/results.html
+    JOB TIME   : 1.49 s
 
 .. _running-external-runner:
 
 Running tests with an external runner
 -------------------------------------
+
+.. note:: This feature is supported with the legacy runner only.
 
 It's quite common to have organically grown test suites in most
 software projects. These usually include a custom built, very specific
@@ -202,7 +223,7 @@ more.
 Avocado makes that possible by means of its "external runner" feature. The
 most basic way of using it is::
 
-    $ avocado run --external-runner=/path/to/external_runner foo bar baz
+    $ avocado run --test-runner=runner --external-runner=/path/to/external_runner foo bar baz
 
 In this example, Avocado will report individual test results for tests
 ``foo``, ``bar`` and ``baz``. The actual results will be based on the return
@@ -217,14 +238,13 @@ files with shell code could be considered tests::
 
     $ echo "exit 0" > /tmp/pass
     $ echo "exit 1" > /tmp/fail
-    $ avocado run --external-runner=/bin/sh /tmp/pass /tmp/fail
+    $ avocado run --test-runner=runner --external-runner=/bin/sh /tmp/pass /tmp/fail
     JOB ID     : 4a2a1d259690cc7b226e33facdde4f628ab30741
-    JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG    : $HOME/avocado/job-results/job-<date>-<shortid>/job.log
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 0.11 s
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This example is pretty obvious, and could be achieved by giving
 ``/tmp/pass`` and ``/tmp/fail`` shell "shebangs" (``#!/bin/sh``), making
@@ -233,13 +253,12 @@ them executable (``chmod +x /tmp/pass /tmp/fail)``, and running them as
 
 But now consider the following example::
 
-    $ avocado run --external-runner=/bin/curl https://google.com/
+    $ avocado run --test-runner=runner --external-runner=/bin/curl https://google.com/
     JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
-    JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG    : $HOME/avocado/job-results/job-<date>-<shortid>/job.log
     (1/1) https://google.com/: PASS (0.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 3.14 s
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This effectively makes ``/bin/curl`` an "external test runner", responsible for
 trying to fetch those URLs, and reporting PASS or FAIL for each of them.
@@ -272,15 +291,18 @@ Avocado has two different result formats that are intended for human beings:
 A regular run of Avocado will present the test results in a live fashion, that
 is, the job and its test(s) results are constantly updated::
 
-    $ avocado run sleeptest.py failtest.py synctest.py
-    JOB ID    : 5ffe479262ea9025f2e4e84c4e92055b5c79bdc9
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/job.log
-     (1/3) sleeptest.py:SleepTest.test: PASS (1.01 s)
-     (2/3) failtest.py:FailTest.test: FAIL (0.00 s)
-     (3/3) synctest.py:SyncTest.test: PASS (1.98 s)
-    RESULTS    : PASS 1 | ERROR 1 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 3.27 s
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py
+    JOB ID     : 2e83086e5d3f82dd68bdc8885e7cce1cebec5f27
+    JOB LOG    : $HOME/wrampazz/avocado/job-results/job-2021-09-27T17.00-2e83086/job.log
+     (3/3) examples/tests/synctest.py:SyncTest.test: STARTED
+     (1/3) examples/tests/sleeptest.py:SleepTest.test: STARTED
+     (2/3) examples/tests/failtest.py:FailTest.test: STARTED
+     (2/3) examples/tests/failtest.py:FailTest.test: FAIL: This test is supposed to fail (0.02 s)
+     (1/3) examples/tests/sleeptest.py:SleepTest.test: PASS (1.01 s)
+     (3/3) examples/tests/synctest.py:SyncTest.test: PASS (1.24 s)
+    RESULTS    : PASS 2 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB HTML   : $HOME/avocado/job-results/job-2021-09-27T17.00-2e83086/results.html
+    JOB TIME   : 2.80 s
 
 The most important thing is to remember that programs should never need to
 parse human output to figure out what happened to a test job run.
@@ -314,31 +336,39 @@ used by other test automation projects, such as `jenkins
 <http://jenkins-ci.org/>`__. If you want to make Avocado to generate xunit
 output in the standard output of the runner, simply use::
 
-   $ avocado run sleeptest.py failtest.py synctest.py --xunit -
-   <?xml version="1.0" encoding="UTF-8"?>
-   <testsuite name="avocado" tests="3" errors="0" failures="1" skipped="0" time="3.5769162178" timestamp="2016-05-04 14:46:52.803365">
-           <testcase classname="SleepTest" name="1-sleeptest.py:SleepTest.test" time="1.00204920769"/>
-           <testcase classname="FailTest" name="2-failtest.py:FailTest.test" time="0.00120401382446">
-                   <failure type="TestFail" message="This test is supposed to fail"><![CDATA[Traceback (most recent call last):
-     File "$HOME/Work/Projekty/avocado/avocado/avocado/core/test.py", line 490, in _run_avocado
-       raise test_exception
-   TestFail: This test is supposed to fail
-   ]]></failure>
-                   <system-out><![CDATA[14:46:53 ERROR| 
-   14:46:53 ERROR| Reproduced traceback from: $HOME/Work/Projekty/avocado/avocado/avocado/core/test.py:435
-   14:46:53 ERROR| Traceback (most recent call last):
-   14:46:53 ERROR|   File "$HOME/Work/Projekty/avocado/avocado/examples/tests/failtest.py", line 17, in test
-   14:46:53 ERROR|     self.fail('This test is supposed to fail')
-   14:46:53 ERROR|   File "$HOME/Work/Projekty/avocado/avocado/avocado/core/test.py", line 585, in fail
-   14:46:53 ERROR|     raise exceptions.TestFail(message)
-   14:46:53 ERROR| TestFail: This test is supposed to fail
-   14:46:53 ERROR| 
-   14:46:53 ERROR| FAIL 2-failtest.py:FailTest.test -> TestFail: This test is supposed to fail
-   14:46:53 INFO | 
-   ]]></system-out>
-           </testcase>
-           <testcase classname="SyncTest" name="3-synctest.py:SyncTest.test" time="2.57366299629"/>
-   </testsuite>
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py --xunit -
+    <?xml version="1.0" encoding="UTF-8"?>
+    <testsuite name="job-2021-09-27T17.01-2dd7837" tests="3" errors="0" failures="1" skipped="0" time="2.340" timestamp="2021-09-27T17:01:36.455763">
+    	<testcase classname="&lt;unknown&gt;" name="2-examples/tests/failtest.py:FailTest.test" time="0.026">
+    		<failure type="&lt;unknown&gt;" message="This test is supposed to fail"><![CDATA[<unknown>]]></failure>
+    		<system-out><![CDATA[[stdlog] 2021-09-27 17:01:34,722 test             L0312 INFO | INIT 1-FailTest.test
+    [stdlog] 2021-09-27 17:01:34,723 parameters       L0142 DEBUG| PARAMS (key=timeout, path=*, default=None) => None
+    [stdlog] 2021-09-27 17:01:34,723 test             L0340 DEBUG| Test metadata:
+    [stdlog] 2021-09-27 17:01:34,723 test             L0342 DEBUG|   filename: $HOME/src/avocado/avocado.dev/examples/tests/failtest.py
+    [stdlog] 2021-09-27 17:01:34,723 test             L0348 DEBUG|   teststmpdir: /var/tmp/avocado_vi1xpequ
+    [stdlog] 2021-09-27 17:01:34,723 test             L0538 INFO | START 1-FailTest.test
+    [stdlog] 2021-09-27 17:01:34,724 test             L0207 DEBUG| DATA (filename=output.expected) => NOT FOUND (data sources: variant, test, file)
+    [stdlog] 2021-09-27 17:01:34,724 stacktrace       L0039 ERROR|
+    [stdlog] 2021-09-27 17:01:34,724 stacktrace       L0041 ERROR| Reproduced traceback from: $HOME/src/avocado/avocado.dev/avocado/core/test.py:794
+    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR| Traceback (most recent call last):
+    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR|   File "$HOME/src/avocado/avocado.dev/examples/tests/failtest.py", line 16, in test
+    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR|     self.fail('This test is supposed to fail')
+    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR|   File "$HOME/src/avocado/avocado.dev/avocado/core/test.py", line 980, in fail
+    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR|     raise exceptions.TestFail(message)
+    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0045 ERROR| avocado.core.exceptions.TestFail: This test is supposed to fail
+    [stdlog] 2021-09-27 17:01:34,725 stacktrace       L0046 ERROR|
+    [stdlog] 2021-09-27 17:01:34,725 test             L0799 DEBUG| Local variables:
+    [stdlog] 2021-09-27 17:01:34,740 test             L0802 DEBUG|  -> self <class 'failtest.FailTest'>: 1-FailTest.test
+    [stdlog] 2021-09-27 17:01:34,741 test             L0207 DEBUG| DATA (filename=output.expected) => NOT FOUND (data sources: variant, test, file)
+    [stdlog] 2021-09-27 17:01:34,741 test             L0207 DEBUG| DATA (filename=stdout.expected) => NOT FOUND (data sources: variant, test, file)
+    [stdlog] 2021-09-27 17:01:34,741 test             L0207 DEBUG| DATA (filename=stderr.expected) => NOT FOUND (data sources: variant, test, file)
+    [stdlog] 2021-09-27 17:01:34,741 test             L0957 ERROR| FAIL 1-FailTest.test -> TestFail: This test is supposed to fail
+    [stdlog] 2021-09-27 17:01:34,741 test             L0949 INFO |
+    ]]></system-out>
+    	</testcase>
+    	<testcase classname="&lt;unknown&gt;" name="1-examples/tests/sleeptest.py:SleepTest.test" time="1.010"/>
+    	<testcase classname="&lt;unknown&gt;" name="3-examples/tests/synctest.py:SyncTest.test" time="1.304"/>
+    </testsuite>
 
 
 .. note:: The dash ``-`` in the option ``--xunit``, it means that the xunit result
@@ -357,52 +387,57 @@ output in the standard output of the runner, simply use::
 `JSON <https://www.json.org/>`__ is a widely used data exchange format. The JSON
 Avocado plugin outputs job information, similarly to the xunit output plugin::
 
-    $ avocado run sleeptest.py failtest.py synctest.py --json -
+    $ avocado run examples/tests/sleeptest.py examples/tests/failtest.py examples/tests/synctest.py --json -
     {
         "cancel": 0,
-        "debuglog": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/job.log",
+        "debuglog": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/job.log",
         "errors": 0,
         "failures": 1,
-        "job_id": "10715c4645d2d2b57889d7a4317fcd01451b600e",
+        "interrupt": 0,
+        "job_id": "fd073c26a1e1aacee59bc9e1914b7110e7ac3f8b",
         "pass": 2,
         "skip": 0,
         "tests": [
             {
-                "end": 1470761623.176954,
-                "fail_reason": "None",
-                "logdir": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test",
-                "logfile": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test/debug.log",
-                "start": 1470761622.174918,
-                "status": "PASS",
-                "id": "1-sleeptest.py:SleepTest.test",
-                "time": 1.0020360946655273,
-                "whiteboard": ""
-            },
-            {
-                "end": 1470761623.193472,
+                "end": 30759.486869323,
                 "fail_reason": "This test is supposed to fail",
-                "logdir": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test",
-                "logfile": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test/debug.log",
-                "start": 1470761623.192334,
+                "id": "2-examples/tests/failtest.py:FailTest.test",
+                "logdir": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/2-examples_tests_failtest.py_FailTest.test",
+                "logfile": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/2-examples_tests_failtest.py_FailTest.test/debug.log",
+                "start": 30759.456017671,
                 "status": "FAIL",
-                "id": "2-failtest.py:FailTest.test",
-                "time": 0.0011379718780517578,
+                "tags": {},
+                "time": 0.030851651998091256,
                 "whiteboard": ""
             },
             {
-                "end": 1470761625.656061,
-                "fail_reason": "None",
-                "logdir": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test",
-                "logfile": "/home/user/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test/debug.log",
-                "start": 1470761623.208165,
+                "end": 30760.472274292,
+                "fail_reason": "<unknown>",
+                "id": "1-examples/tests/sleeptest.py:SleepTest.test",
+                "logdir": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/1-examples_tests_sleeptest.py_SleepTest.test",
+                "logfile": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/1-examples_tests_sleeptest.py_SleepTest.test/debug.log",
+                "start": 30759.455787493,
                 "status": "PASS",
-                "id": "3-synctest.py:SyncTest.test",
-                "time": 2.4478960037231445,
+                "tags": {},
+                "time": 1.0164867989988124,
+                "whiteboard": ""
+            },
+            {
+                "end": 30760.690585313,
+                "fail_reason": "<unknown>",
+                "id": "3-examples/tests/synctest.py:SyncTest.test",
+                "logdir": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/3-examples_tests_synctest.py_SyncTest.test",
+                "logfile": "$HOME/avocado/job-results/job-2021-09-27T17.05-fd073c2/test-results/3-examples_tests_synctest.py_SyncTest.test/debug.log",
+                "start": 30759.459244923,
+                "status": "PASS",
+                "tags": {},
+                "time": 1.231340390000696,
                 "whiteboard": ""
             }
         ],
-        "time": 3.4510700702667236,
-        "total": 3
+        "time": 2.2786788409975998,
+        "total": 3,
+        "warn": 0
     }
 
 .. note:: The dash ``-`` in the option ``--json``, it means that the xunit result
@@ -420,14 +455,9 @@ Provides the basic `TAP <https://testanything.org/>`__ (Test Anything Protocol)
 results, currently in v12. Unlike most existing Avocado machine readable
 outputs this one is streamlined (per test results)::
 
-    $ avocado run sleeptest.py --tap -
+    $ avocado run examples/tests/sleeptest.py --tap -
     1..1
-    # debug.log of sleeptest.py:SleepTest.test:
-    #   12:04:38 DEBUG| PARAMS (key=sleep_length, path=*, default=1) => 1
-    #   12:04:38 DEBUG| Sleeping for 1.00 seconds
-    #   12:04:39 INFO | PASS 1-sleeptest.py:SleepTest.test
-    #   12:04:39 INFO |
-    ok 1 sleeptest.py:SleepTest.test
+    ok 1 examples/tests/sleeptest.py:SleepTest.test
 
 
 Using the option --show
@@ -458,7 +488,7 @@ It's possible to silence all output to stdout (while keeping the error messages
 being printed to stderr). One can then use the return code to learn about the
 result::
 
-    $ avocado --show=none run failtest.py
+    $ avocado --show=none run examples/tests/failtest.py
     $ echo $?
     1
 
@@ -482,27 +512,32 @@ You can have multiple results formats at once, as long as only one of them uses
 the standard output. For example, it is fine to use the xunit result on stdout
 and the JSON result to output to a file::
 
-   $ avocado run sleeptest.py synctest.py --xunit - --json /tmp/result.json
-   <?xml version="1.0" encoding="UTF-8"?>
-   <testsuite name="avocado" tests="2" errors="0" failures="0" skipped="0" time="3.64848303795" timestamp="2016-05-04 17:26:05.645665">
-           <testcase classname="SleepTest" name="1-sleeptest.py:SleepTest.test" time="1.00270605087"/>
-           <testcase classname="SyncTest" name="2-synctest.py:SyncTest.test" time="2.64577698708"/>
-   </testsuite>
+    $ avocado run examples/tests/sleeptest.py examples/tests/synctest.py --xunit - --json /tmp/result.json
+    <?xml version="1.0" encoding="UTF-8"?>
+    <testsuite name="job-2021-09-27T17.10-b37e5fe" tests="2" errors="0" failures="0" skipped="0" time="2.220" timestamp="2021-09-27T17:10:28.757207">
+    	<testcase classname="&lt;unknown&gt;" name="1-examples/tests/sleeptest.py:SleepTest.test" time="1.011"/>
+    	<testcase classname="&lt;unknown&gt;" name="2-examples/tests/synctest.py:SyncTest.test" time="1.209"/>
+    </testsuite>
 
-   $ cat /tmp/result.json
-   {
-        "debuglog": "/home/user/avocado/job-results/job-2016-08-09T13.55-1a94ad6/job.log",
+    $ cat /tmp/result.json
+    {
+        "cancel": 0,
+        "debuglog": "$HOME/avocado/job-results/job-2021-09-27T17.10-b37e5fe/job.log",
         "errors": 0,
-        ...
-   }
+        "failures": 0,
+        "interrupt": 0,
+        "job_id": "b37e5fee226e3806c4d73fef180d7d2cee56464e",
+        "pass": 2,
+        "skip": 0,
+    }
 
 But you won't be able to do the same without the ``--json`` flag passed to
 the program::
 
-   $ avocado run sleeptest.py synctest.py --xunit - --json -
-   avocado run: error: argument --json: Options --xunit --json are trying to
-   use stdout simultaneously. Please set at least one of them to a file to
-   avoid conflicts
+    avocado run examples/tests/sleeptest.py examples/tests/synctest.py --xunit - --json  -
+    avocado run: error: argument --json: Options --xunit --json are trying to
+    use stdout simultaneously. Please set at least one of them to a file to
+    avoid conflicts
 
 That's basically the only rule, and a sane one, that you need to follow.
 
@@ -512,6 +547,8 @@ That's basically the only rule, and a sane one, that you need to follow.
 
 Running simple tests with arguments
 -----------------------------------
+
+.. note:: This feature is supported with the legacy runner only.
 
 This used to be supported out of the box by running ``avocado run "test arg1
 arg2"`` but it was quite confusing and removed.  It is still possible to
@@ -527,6 +564,8 @@ executed with ``/bin/sh``.
 
 Sysinfo collection
 ------------------
+
+.. note:: This feature is not fully supported on nrunner runner yet.
 
 Avocado comes with a ``sysinfo`` plugin, which automatically gathers some
 system information per each job or even between tests. This is very useful

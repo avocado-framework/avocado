@@ -15,9 +15,9 @@ Runner choices can be seen by running ``avocado plugins``::
   nrunner nrunner based implementation of job compliant runner
   runner  The conventional test runner
 
-And to select a different test runner, say, ``nrunner``::
+And to select a different test runner, say, the legacy ``runner``::
 
-  avocado run --test-runner=nrunner ...
+  avocado run --test-runner=runner ...
 
 Wrap executables run by tests
 -----------------------------

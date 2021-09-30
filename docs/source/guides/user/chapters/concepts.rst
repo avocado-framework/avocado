@@ -43,7 +43,7 @@ The Job ID is a random SHA1 string that uniquely identifies a given job.
 
 The full form of the SHA1 string is used is most references to a job::
 
-  $ avocado run sleeptest.py
+  $ avocado run examples/tests/sleeptest.py
   JOB ID     : 49ec339a6cca73397be21866453985f88713ac34
   ...
 

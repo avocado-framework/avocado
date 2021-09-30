@@ -3,8 +3,7 @@
 Managing Requirements
 =====================
 
-.. note:: Test requirements are supported only on the nrunner runner. To use
-  this feature, remember to use ``--test-runner=nrunner`` argument.
+.. note:: Test requirements are supported only on the nrunner runner.
 
 A test's requirement can be fulfilled by the Requirements Resolver feature.
 
