@@ -197,12 +197,20 @@ def start_logging(config, queue):
            'levelname)-5.5s| %(message)s')
     formatter = logging.Formatter(fmt=fmt)
     log_handler.setFormatter(formatter)
+
+    # main log = 'avocado'
+    logger = logging.getLogger('avocado')
+    logger.addHandler(log_handler)
+    logger.setLevel(log_level)
+    logger.propagate = False
+
+    # LOG_JOB = 'avocado.test'
     log = output.LOG_JOB
     log.addHandler(log_handler)
     log.setLevel(log_level)
     log.propagate = False
-    root_logger = logging.getLogger('avocado')
-    root_logger.addHandler(log_handler)
+
+    # LOG_UI = 'avocado.app'
     output.LOG_UI.addHandler(RunnerLogHandler(queue, 'stdout'))
 
     sys.stdout = StreamToQueue(queue, "stdout")
