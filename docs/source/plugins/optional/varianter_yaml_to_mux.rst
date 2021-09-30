@@ -8,7 +8,7 @@ Yaml_to_mux plugin
 This plugin utilizes the ``multiplexation`` mechanism to
 produce variants out of a yaml file. This section is example-based,
 if you are interested in test parameters and/or ``multiplexation``
-overview, please take a look at :ref:`test-parameters`.
+overview, please take a look at :ref:`test-parameter`.
 
 As mentioned earlier, it inherits from the
 :class:`avocado_varianter_yaml_to_mux.mux.MuxPlugin`
@@ -57,7 +57,7 @@ they are not part of the multiplex file format):
    disable CYaml import in Avocado sources. For details check
    out the `Github issue <https://github.com/avocado-framework/avocado/issues/1190>`_
 
-There are couple of key=>value pairs (lines 4,6,8,11,13,...) and there are
+There are couple of ``key=>value`` pairs (lines 4,6,8,11,13,...) and there are
 named nodes which define scope (lines 1,2,3,5,7,9,...). There are also additional
 flags (lines 2, 9, 14, 19) which modifies the behavior.
 
@@ -65,13 +65,13 @@ flags (lines 2, 9, 14, 19) which modifies the behavior.
 Nodes
 -----
 
-They define context of the key=>value pairs allowing us to easily identify
+They define context of the ``key=>value`` pairs allowing us to easily identify
 for what this values might be used for and also it makes possible to define
 multiple values of the same keys with different scope.
 
 Due to their purpose the YAML automatic type conversion for nodes names
 is disabled, so the value of node name is always as written in the YAML
-file (unlike values, where `yes` converts to `True` and such).
+file (unlike values, where ``yes`` converts to ``True`` and such).
 
 Nodes are organized in parent-child relationship and together they create
 a tree. To view this structure use ``avocado variants --tree -m <file>``::

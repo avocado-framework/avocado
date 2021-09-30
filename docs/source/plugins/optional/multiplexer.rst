@@ -36,7 +36,7 @@ And some support classes and methods eg. for filtering and so on.
 Multiplex domains
 ~~~~~~~~~~~~~~~~~
 
-A default `avocado-params` tree with variables could look like this::
+A default ``avocado-params`` tree with variables could look like this::
 
    Multiplex tree representation:
     ┣━━ paths
@@ -50,7 +50,7 @@ to define not just one variant, but to define all possible combinations
 and then report the slices as variants. We use the term
 `Multiplex domains`_ to define that children of this node are not just
 different paths, but they are different values and we only want one at
-a time. In the representation we use double-line to visibily distinguish
+a time. In the representation we use double-line to visibly distinguish
 between normal relation and multiplexed relation. Let's modify our
 example a bit::
 
@@ -105,7 +105,7 @@ other variant with ``/paths``, ``/environ/debug/system`` and
 As mentioned earlier the power is not in producing one variant, but
 in defining huge scenarios with all possible variants. By using
 tree-structure with multiplex domains you can avoid most of the
-ugly filters you might know from Jenkin's sparse matrix jobs.
+ugly filters you might know from Jenkins sparse matrix jobs.
 For comparison let's have a look at the same example in Avocado::
 
    Multiplex tree representation:
@@ -141,7 +141,7 @@ Which produces::
    Variant 11:    /os/distro/redhat/rhel/6, /os/arch/i386
    Variant 12:    /os/distro/redhat/rhel/6, /os/arch/x86_64
 
-Versus Jenkin's sparse matrix::
+Versus Jenkins sparse matrix::
 
    os_version = fedora20 fedora21 rhel5 rhel6
    os_flavor = none workstation cloud
@@ -184,10 +184,10 @@ MuxTree
 ~~~~~~~
 
 This is the core feature where the hard work happens. It walks the tree
-and remembers all leaf nodes or uses list of `MuxTrees` when another
+and remembers all leaf nodes or uses list of ``MuxTrees`` when another
 multiplex domain is reached while searching for a leaf.
 
 When it's asked to report variants, it combines one variant of each
-remembered item (leaf node always stays the same, but `MuxTree` circles
+remembered item (leaf node always stays the same, but ``MuxTree`` circles
 through it's values) which recursively produces all possible variants
 of different `multiplex domains`_.
