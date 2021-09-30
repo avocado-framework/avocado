@@ -601,10 +601,11 @@ class Test(unittest.TestCase, TestData):
         self.log.addHandler(self._file_handler)
         self.log.propagate = False
 
-        # add the test log handler to the root logger so that
-        # everything logged while the test is running, for every
-        # logger, also makes its way into the test log file
-        logging.root.addHandler(self._file_handler)
+        # Adding the the test log FileHandler to the Avocado's root logger so
+        # that everything logged while the test is running, for every logger,
+        # also makes its way into the test log file
+        root = logging.getLogger('avocado')
+        root.addHandler(self._file_handler)
 
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
