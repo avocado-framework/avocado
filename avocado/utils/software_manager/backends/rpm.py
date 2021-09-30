@@ -6,7 +6,7 @@ from ... import path as utils_path
 from ... import process
 from .base import BaseBackend
 
-log = logging.getLogger('avocado.utils.software_manager')
+log = logging.getLogger('avocado.test')
 
 
 class RpmBackend(BaseBackend):
