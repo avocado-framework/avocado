@@ -202,6 +202,7 @@ def start_logging(config, queue):
     log.setLevel(log_level)
     log.propagate = False
     root_logger = logging.getLogger('avocado')
+    root_logger.setLevel(log_level)
     root_logger.addHandler(log_handler)
     output.LOG_UI.addHandler(RunnerLogHandler(queue, 'stdout'))
 
