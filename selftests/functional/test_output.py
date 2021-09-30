@@ -232,62 +232,95 @@ class OutputTest(TestCaseTmpDir):
                          "Libc double free can be seen in avocado "
                          "doublefree output:\n%s" % output)
 
-    def test_print_to_std(self):
-        def _check_output(path, exps, name):
-            i = 0
-            end = len(exps)
-            with open(path, 'rb') as output_file:
-                output_file_content = output_file.read()
-                output_file.seek(0)
-                for line in output_file:
-                    if exps[i] in line:
-                        i += 1
-                        if i == end:
-                            break
-                exps_text = "\n".join([exp.decode() for exp in exps])
-                error_msg = ("Failed to find message in position %s from\n%s\n"
-                             "\nin the %s. Either it's missing or in wrong "
-                             "order.\n%s" % (i, exps_text, name,
-                                             output_file_content))
-                self.assertEqual(i, end, error_msg)
+    def test_log_to_debug(self):
         test = script.Script(os.path.join(self.tmpdir.name, "output_test.py"),
                              OUTPUT_TEST_CONTENT)
         test.save()
         result = process.run("%s run --job-results-dir %s --disable-sysinfo "
-                             "--test-runner=runner "
-                             "--json - -- %s" % (AVOCADO, self.tmpdir.name, test))
+                             "--json - -- %s" % (AVOCADO,
+                                                 self.tmpdir.name,
+                                                 test))
         res = json.loads(result.stdout_text)
-        joblog = res["debuglog"]
+        logfile = res["tests"][0]["logfile"]
+        # Today, process.run() calls are not part of the test stdout or stderr.
+        # Instead those are registered as part of avocado.utils.process logging
+        # system. Let's just add a "DEBUG| " to make sure this will not get
+        # confused with [stdout].
+        expected = [b" DEBUG| [stdout] top_process",
+                    b" DEBUG| [stdout] init_process",
+                    b" DEBUG| [stdout] test_process",
+                    b" DEBUG| [stderr] __test_stderr__",
+                    b" DEBUG| [stdout] __test_stdout__"]
+
+        self._check_output(logfile, expected)
+
+    def _check_output(self, path, exps):
+        i = 0
+        end = len(exps)
+        with open(path, 'rb') as output_file:
+            output_file_content = output_file.read()
+            output_file.seek(0)
+            for line in output_file:
+                if exps[i] in line:
+                    i += 1
+                    if i == end:
+                        break
+            exps_text = "\n".join([exp.decode() for exp in exps])
+            error_msg = ("Failed to find message in position %s from\n%s\n"
+                         "\nin the %s. Either it's missing or in wrong "
+                         "order.\n%s" % (i, exps_text, path,
+                                         output_file_content))
+            self.assertEqual(i, end, error_msg)
+
+    def test_print_to_std(self):
+        test = script.Script(os.path.join(self.tmpdir.name, "output_test.py"),
+                             OUTPUT_TEST_CONTENT)
+        test.save()
+        result = process.run("%s run --job-results-dir %s --disable-sysinfo "
+                             "--json - -- %s" % (AVOCADO,
+                                                 self.tmpdir.name,
+                                                 test))
+        res = json.loads(result.stdout_text)
+        logfile = res["tests"][0]["logfile"]
         exps = [b"[stdout] top_print", b"[stdout] top_stdout",
-                b"[stderr] top_stderr", b"[stdout] top_process",
-                b"[stdout] init_print", b"[stdout] init_stdout",
-                b"[stderr] init_stderr", b"[stdout] init_process",
+                b"[stderr] top_stderr", b"[stdout] init_print",
+                b"[stdout] init_stdout", b"[stderr] init_stderr",
                 b"[stdout] test_print", b"[stdout] test_stdout",
-                b"[stderr] test_stderr", b"[stdout] test_process"]
-        _check_output(joblog, exps, "job.log")
+                b"[stderr] test_stderr"]
+
+        self._check_output(logfile, exps)
         testdir = res["tests"][0]["logdir"]
         with open(os.path.join(testdir, "stdout"), 'rb') as stdout_file:
-            self.assertEqual(b"test_print\ntest_stdout\ntest_process__test_stdout__",
-                             stdout_file.read())
+            expected = b"top_print\n\ntop_stdout\ninit_print\n\ninit_stdout\ntest_print\n\ntest_stdout\n"
+            self.assertEqual(expected, stdout_file.read())
         with open(os.path.join(testdir, "stderr"), 'rb') as stderr_file:
-            self.assertEqual(b"test_stderr\n__test_stderr__",
-                             stderr_file.read())
+            expected = b"top_stderr\ninit_stderr\ntest_stderr\n"
+            self.assertEqual(expected, stderr_file.read())
 
-        # Now run the same test, but with combined output
-        # combined output can not keep track of sys.stdout and sys.stdout
-        # writes, as they will eventually be out of sync.  In fact,
-        # the correct fix is to run the entire test process with redirected
-        # stdout and stderr, and *not* play with sys.stdout and sys.stderr.
-        # But this change will come later
+        # With the nrunner, output combined result are inside job.log
         result = process.run("%s run --job-results-dir %s --disable-sysinfo "
-                             "--output-check-record=combined "
-                             "--test-runner=runner "
-                             "--json - -- %s" % (AVOCADO, self.tmpdir.name, test))
+                             "--json - -- %s" % (AVOCADO,
+                                                 self.tmpdir.name,
+                                                 test))
         res = json.loads(result.stdout_text)
-        testdir = res["tests"][0]["logdir"]
-        with open(os.path.join(testdir, "output")) as output_file:
-            self.assertEqual("test_process__test_stderr____test_stdout__",
-                             output_file.read())
+        with open(logfile, 'rb') as output_file:
+            expected = [b'[stdout] top_print\n',
+                        b'[stdout] \n',
+                        b'[stdout] top_stdout\n',
+                        b'[stderr] top_stderr\n',
+                        b'[stdout] init_print\n',
+                        b'[stdout] \n',
+                        b'[stdout] init_stdout\n',
+                        b'[stderr] init_stderr\n',
+                        b'[stdout] test_print\n',
+                        b'[stdout] \n',
+                        b'[stdout] test_stdout\n',
+                        b'[stderr] test_stderr\n']
+
+            result = list(filter(lambda x: x.startswith((b'[stdout]',
+                                                         b'[stderr]')),
+                          output_file.readlines()))
+            self.assertEqual(expected, result)
 
     def test_check_record_no_module_default(self):
         """
