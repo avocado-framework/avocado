@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import data_dir, exit_codes, job, nrunner, test
+from avocado.core import exit_codes, job, nrunner, test
 from avocado.core.exceptions import (JobBaseException,
                                      JobTestSuiteDuplicateNameError)
 from avocado.core.suite import TestSuite, TestSuiteStatus
@@ -17,7 +17,6 @@ class JobTest(unittest.TestCase):
 
     def setUp(self):
         self.job = None
-        data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
@@ -84,8 +83,6 @@ class JobTest(unittest.TestCase):
             self.assertNotEqual(job1.unique_id, job2.unique_id)
             self.assertNotEqual(job1.logdir, job2.logdir)
             self.assertNotEqual(job1.tmpdir, job2.tmpdir)
-            # tmpdirs should share the same base-dir per process
-            self.assertEqual(os.path.dirname(job1.tmpdir), os.path.dirname(job2.tmpdir))
             # due to config logdirs should share the same base-dir
             self.assertEqual(os.path.dirname(job1.logdir), os.path.dirname(job2.logdir))
 
@@ -289,10 +286,9 @@ class JobTest(unittest.TestCase):
 
         # Manual/Custom method
         suite = TestSuite('foo-test', config=suite_config, job_config=config)
-        self.job = job.Job(config, [suite])
-        self.job.setup()
-        self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
-                         self.tmpdir.name)
+        with job.Job(config, [suite]) as self.job:
+            self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+                             self.tmpdir.name)
 
         # Automatic method passing suites
         self.job = job.Job.from_config(job_config=config,
@@ -359,7 +355,6 @@ class JobTest(unittest.TestCase):
             _ = job.Job(config, [suite_1, suite_2])
 
     def tearDown(self):
-        data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         self.tmpdir.cleanup()
         if self.job is not None:
             self.job.cleanup()
