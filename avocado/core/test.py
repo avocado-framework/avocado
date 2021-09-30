@@ -589,7 +589,7 @@ class Test(unittest.TestCase, TestData):
 
     def _start_logging(self):
         """
-        Simple helper for adding a file logger to the root logger.
+        Simple helper for adding a file logger to the main logger.
         """
         self._file_handler = logging.FileHandler(filename=self.logfile)
         self._file_handler.setLevel(logging.DEBUG)
@@ -601,10 +601,11 @@ class Test(unittest.TestCase, TestData):
         self.log.addHandler(self._file_handler)
         self.log.propagate = False
 
-        # add the test log handler to the root logger so that
-        # everything logged while the test is running, for every
-        # logger, also makes its way into the test log file
-        logging.root.addHandler(self._file_handler)
+        # Adding the test log FileHandler to the Avocado's main logger so
+        # that everything logged while the test is running, for every logger,
+        # also makes its way into the test log file
+        logger = logging.getLogger('avocado')
+        logger.addHandler(self._file_handler)
 
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)

@@ -110,7 +110,7 @@ from avocado import Test
 
 class My(Test):
     def test(self):
-        logging.getLogger("some.other.logger").info("SHOULD BE ON debug.log")
+        logging.getLogger("some.other.logger").info("SHOULD NOT BE ON debug.log")
 '''
 
 
@@ -595,7 +595,7 @@ class RunnerOperationTest(TestCaseTmpDir):
                                                   'test-results', '1-*'))[0]
             test_log_path = os.path.join(test_log_dir, 'debug.log')
             with open(test_log_path, 'rb') as test_log:
-                self.assertIn(b'SHOULD BE ON debug.log', test_log.read())
+                self.assertNotIn(b'SHOULD NOT BE ON debug.log', test_log.read())
 
     def test_store_logging_stream(self):
         cmd = ("%s run --job-results-dir %s --store-logging-stream=progress "
