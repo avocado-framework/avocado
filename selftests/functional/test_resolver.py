@@ -1,3 +1,4 @@
+import os
 import stat
 import unittest
 
@@ -7,7 +8,7 @@ from avocado.utils import process, script
 from selftests.functional.test_loader import \
     AVOCADO_TEST_OK as AVOCADO_INSTRUMENTED_TEST
 from selftests.functional.test_loader import SIMPLE_TEST as EXEC_TEST
-from selftests.utils import AVOCADO
+from selftests.utils import AVOCADO, BASEDIR
 
 
 class ResolverFunctional(unittest.TestCase):
@@ -43,6 +44,14 @@ class ResolverFunctional(unittest.TestCase):
             cmd_line = ('%s --verbose list %s' % (AVOCADO, test_file.path))
             result = process.run(cmd_line)
         self.assertIn('passtest.py:PassTest.test', result.stdout_text)
+        self.assertIn('avocado-instrumented: 1', result.stdout_text)
+
+    def test_property(self):
+        test_path = os.path.join(BASEDIR, 'examples', 'tests', 'property.py')
+        cmd_line = ('%s --verbose list %s' % (AVOCADO, test_path))
+        result = process.run(cmd_line)
+        self.assertIn('examples/tests/property.py:Property.test',
+                      result.stdout_text)
         self.assertIn('avocado-instrumented: 1', result.stdout_text)
 
 

@@ -24,6 +24,11 @@ def get_methods_info(statement_body, class_tags, class_requirements):
         if not (isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef))):
             continue
 
+        decorators = getattr(st, 'decorator_list', [])
+        decorator_names = [getattr(_, 'id', None) for _ in decorators]
+        if 'property' in decorator_names:
+            continue
+
         if not st.name.startswith('test'):
             continue
 
