@@ -5,73 +5,82 @@ Golang Plugin
 =============
 
 This optional plugin enables Avocado to list and run tests written using
-the `Go testing package <https://golang.org/pkg/testing/>`_.
+the `Go programming language`_.
+
+.. _Go programming language: https://golang.org/
 
 To install the Golang plugin from pip, use::
 
     $ sudo pip install avocado-framework-plugin-golang
 
-After installed, you can list/run Golang tests providing the package name::
+If you're running Fedora, you can install the package ``golang-tests`` and run any of the tests
+included there. You can try running the ``math`` or ``bufio`` tests like this::
 
-    ~$ avocado list golang.org/x/text/unicode/norm
-    GOLANG golang.org/x/text/unicode/norm:TestFlush
-    GOLANG golang.org/x/text/unicode/norm:TestInsert
-    GOLANG golang.org/x/text/unicode/norm:TestDecomposition
-    GOLANG golang.org/x/text/unicode/norm:TestComposition
-    GOLANG golang.org/x/text/unicode/norm:TestProperties
-    GOLANG golang.org/x/text/unicode/norm:TestIterNext
-    GOLANG golang.org/x/text/unicode/norm:TestIterSegmentation
-    GOLANG golang.org/x/text/unicode/norm:TestPlaceHolder
-    GOLANG golang.org/x/text/unicode/norm:TestDecomposeSegment
-    GOLANG golang.org/x/text/unicode/norm:TestFirstBoundary
-    GOLANG golang.org/x/text/unicode/norm:TestNextBoundary
-    GOLANG golang.org/x/text/unicode/norm:TestDecomposeToLastBoundary
-    GOLANG golang.org/x/text/unicode/norm:TestLastBoundary
-    GOLANG golang.org/x/text/unicode/norm:TestSpan
-    GOLANG golang.org/x/text/unicode/norm:TestIsNormal
-    GOLANG golang.org/x/text/unicode/norm:TestIsNormalString
-    GOLANG golang.org/x/text/unicode/norm:TestAppend
-    GOLANG golang.org/x/text/unicode/norm:TestAppendString
-    GOLANG golang.org/x/text/unicode/norm:TestBytes
-    GOLANG golang.org/x/text/unicode/norm:TestString
-    GOLANG golang.org/x/text/unicode/norm:TestLinking
-    GOLANG golang.org/x/text/unicode/norm:TestReader
-    GOLANG golang.org/x/text/unicode/norm:TestWriter
-    GOLANG golang.org/x/text/unicode/norm:TestTransform
-    GOLANG golang.org/x/text/unicode/norm:TestTransformNorm
-    GOLANG golang.org/x/text/unicode/norm:TestCharacterByCharacter
-    GOLANG golang.org/x/text/unicode/norm:TestStandardTests
-    GOLANG golang.org/x/text/unicode/norm:TestPerformance
+    $ GOPATH=/usr/lib/golang avocado list math
+    golang math:TestNaN
+    golang math:TestAcos
+    golang math:TestAcosh
+    golang math:TestAsin
+    ... skip ...
 
-And the Avocado test reference syntax to filter the tests you want to
-execute is also available in this plugin::
+And::
 
-    ~$ avocado list golang.org/x/text/unicode/norm:TestTransform
-    GOLANG golang.org/x/text/unicode/norm:TestTransform
-    GOLANG golang.org/x/text/unicode/norm:TestTransformNorm
+    $ GOPATH=/usr/lib/golang avocado run math
+    JOB ID     : 9453e09dc5a035e465de6abd570947909d6be228
+    JOB LOG    : $HOME/avocado/job-results/job-2021-10-01T13.11-9453e09/job.log
+     (001/417) math:TestNaN: STARTED
+     (002/417) math:TestAcos: STARTED
+     (001/417) math:TestNaN: PASS (0.50 s)
+     (002/417) math:TestAcos: PASS (0.51 s)
+     (003/417) math:TestAcosh: STARTED
+     (004/417) math:TestAsin: STARTED
+     (003/417) math:TestAcosh: PASS (0.50 s)
+     (004/417) math:TestAsin: PASS (0.51 s)
+     (005/417) math:TestAsinh: STARTED
+     (006/417) math:TestAtan: STARTED
+    ^C
+    RESULTS    : PASS 4 | ERROR 0 | FAIL 0 | SKIP 413 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB HTML   : $HOME/avocado/job-results/job-2021-10-01T13.11-9453e09/results.html
+    JOB TIME   : 2.76 s
 
-To run the tests, just switch from `list` to `run`::
+Another option is to try the countavocados examples provided with avocado.
+Please fetch the avocado code where this example is included. ::
 
-    ~$ avocado run golang.org/x/text/unicode/norm:TestTransform
-    JOB ID     : aa6e36547ba304fd724779eff741b6180ee78a54
-    JOB LOG    : $HOME/avocado/job-results/job-2017-10-06T16.06-aa6e365/job.log
-     (1/2) golang.org/x/text/unicode/norm:TestTransform: PASS (1.89 s)
-     (2/2) golang.org/x/text/unicode/norm:TestTransformNorm: PASS (1.87 s)
-    RESULTS    : PASS 2 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 4.61 s
-    JOB HTML   : $HOME/avocado/job-results/job-2017-10-06T16.06-aa6e365/results.html
+    $ git clone https://github.com/avocado-framework/avocado.git
 
-The content of the individual tests output is recorded in the default location::
+Also, disable the `Module-aware mode`_, this can be done with the GO111MODULE environment variable::
 
-    ~$ head  ~/avocado/job-results/latest/test-results/1-golang.org_x_text_unicode_norm_TestTransform/debug.log
-    16:06:53 INFO | Running '/usr/bin/go test -v golang.org/x/text/unicode/norm -run TestTransform'
-    16:06:55 DEBUG| [stdout] === RUN   TestTransform
-    16:06:55 DEBUG| [stdout] --- PASS: TestTransform (0.00s)
-    16:06:55 DEBUG| [stdout] === RUN   TestTransformNorm
-    16:06:55 DEBUG| [stdout] === RUN   TestTransformNorm/NFC/0
-    16:06:55 DEBUG| [stdout] === RUN   TestTransformNorm/NFC/0/fn
-    16:06:55 DEBUG| [stdout] === RUN   TestTransformNorm/NFC/0/NFD
-    16:06:55 DEBUG| [stdout] === RUN   TestTransformNorm/NFC/0/NFKC
-    16:06:55 DEBUG| [stdout] === RUN   TestTransformNorm/NFC/0/NFKD
-    16:06:55 DEBUG| [stdout] === RUN   TestTransformNorm/NFC/1
+    $ go env -w GO111MODULE=off
 
+.. _Module-aware mode: https://golang.org/ref/mod#mod-commands
+
+Then you can ``list`` and ``run`` the countavocados tests provided with the plugin::
+
+    $ GOPATH=$PWD/avocado/optional_plugins/golang/tests  avocado -V list countavocados
+    Type   Test                              Tag(s)
+    golang countavocados:TestEmptyContainers
+    golang countavocados:TestNoContainers
+    golang countavocados:ExampleContainers
+
+    Resolver             Reference     Info
+    avocado-instrumented countavocados File "countavocados" does not end with ".py"
+    exec-test            countavocados File "countavocados" does not exist or is not a executable file
+
+    TEST TYPES SUMMARY
+    ==================
+    golang: 3
+
+And ::
+
+    $ GOPATH=$PWD/avocado/optional_plugins/golang/tests  avocado run countavocados
+    JOB ID     : c4284429a1ff97cd737b6e6fe1c5a83f91007317
+    JOB LOG    : $HOME/avocado/job-results/job-2021-10-01T13.35-c428442/job.log
+    (1/3) countavocados:TestEmptyContainers: STARTED
+    (2/3) countavocados:TestNoContainers: STARTED
+    (1/3) countavocados:TestEmptyContainers: PASS (0.50 s)
+    (2/3) countavocados:TestNoContainers: PASS (0.50 s)
+    (3/3) countavocados:ExampleContainers: STARTED
+    (3/3) countavocados:ExampleContainers: PASS (0.50 s)
+   RESULTS    : PASS 3 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+   JOB HTML   : $HOME/avocado/job-results/job-2021-10-01T13.35-c428442/results.html
+   JOB TIME   : 2.12 s
