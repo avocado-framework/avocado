@@ -403,17 +403,25 @@ which are defined by ``!mux`` tag in the YAML file and displayed as single
 lines in tree view (compare to double lines which are individual nodes with
 values). In total it'll produce 8 variants of each test::
 
-      $ avocado run --mux-yaml examples/tests/sleeptenmin.py.data/sleeptenmin.yaml -- passtest.py
+      $ avocado run --mux-yaml examples/tests/sleeptenmin.py.data/sleeptenmin.yaml -- examples/tests/passtest.py
       JOB ID     : cc7ef22654c683b73174af6f97bc385da5a0f02f
       JOB LOG    : $HOME/avocado/job-results/job-2017-01-22T11.26-cc7ef22/job.log
-       (1/8) passtest.py:PassTest.test;builtin-one_cycle-f659: PASS (0.01 s)
-       (2/8) passtest.py:PassTest.test;builtin-six_cycles-723b: PASS (0.01 s)
-       (3/8) passtest.py:PassTest.test;builtin-one_hundred_cycles-633a: PASS (0.01 s)
-       (4/8) passtest.py:PassTest.test;builtin-six_hundred_cycles-a570: PASS (0.01 s)
-       (5/8) passtest.py:PassTest.test;shell-one_cycle-55f5: PASS (0.01 s)
-       (6/8) passtest.py:PassTest.test;shell-six_cycles-9e23: PASS (0.01 s)
-       (7/8) passtest.py:PassTest.test;shell-one_hundred_cycles-586f: PASS (0.01 s)
-       (8/8) passtest.py:PassTest.test;shell-six_hundred_cycles-1e84: PASS (0.01 s)
+        (1/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-builtin-variants-one_cycle-0aae: STARTED
+        (1/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-builtin-variants-one_cycle-0aae: PASS (0.01 s)
+        (2/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-builtin-variants-six_cycles-ca95: STARTED
+        (2/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-builtin-variants-six_cycles-ca95: PASS (0.01 s)
+        (3/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-builtin-variants-one_hundred_cycles-e897: STARTED
+        (3/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-builtin-variants-one_hundred_cycles-e897: PASS (0.01 s)
+        (4/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-builtin-variants-six_hundred_cycles-b0b0: STARTED
+        (4/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-builtin-variants-six_hundred_cycles-b0b0: PASS (0.01 s)
+        (5/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-shell-variants-one_cycle-f35d: STARTED
+        (5/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-shell-variants-one_cycle-f35d: PASS (0.01 s)
+        (6/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-shell-variants-six_cycles-56b6: STARTED
+        (6/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-shell-variants-six_cycles-56b6: PASS (0.01 s)
+        (7/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-shell-variants-one_hundred_cycles-ec04: STARTED
+        (7/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-shell-variants-one_hundred_cycles-ec04: PASS (0.01 s)
+        (8/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-shell-variants-six_hundred_cycles-8fff: STARTED
+        (8/8) examples/tests/passtest.py:PassTest.test;run-sleeptenmin-shell-variants-six_hundred_cycles-8fff: PASS (0.01 s)
       RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
       JOB TIME   : 0.16 s
 
@@ -728,6 +736,10 @@ The expected ``return`` of the method is the asset file path or an exception.
 Test Output Check and Output Record Mode
 ----------------------------------------
 
+.. warning:: The `--output-check-record` feature is legacy feature and it's works
+             only with the legacy runner. For using legacy runner you have to
+             use `--test-runner=runner`
+
 In a lot of occasions, you want to go simpler: just check if the output of a
 given test matches an expected output.  In order to help with this common
 use case, Avocado provides the ``--output-check-record`` option:
@@ -786,7 +798,7 @@ This means that during a previous test execution, output was recorded
 with option ``--output-check-record both`` and content was generated
 on the ``STDOUT`` stream only::
 
-  $ avocado run --output-check-record both synctest.py
+  $ avocado run --test-runner=runner --output-check-record both synctest.py
   JOB ID     : b6306504351b037fa304885c0baa923710f34f4a
   JOB LOG    : $JOB_RESULTS_DIR/job-2017-11-26T16.42-b630650/job.log
    (1/1) examples/tests/synctest.py:SyncTest.test: PASS (2.03 s)
@@ -813,13 +825,24 @@ passing ``--disable-output-check`` to the test runner.
 This process works fine also with simple tests, which are programs or shell scripts
 that returns 0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
 
-    $ cat output_check.sh
-    #!/bin/bash
+    $ cat examples/tests/output_check.sh
+    #!/bin/sh
+
+    # if you execute this script with avocado, avocado will check its stdout
+    # against the file stdout.expected and its stderr with the file stderr.expected,
+    # both located in output_check.sh.data, in the same directory as this source
+    # file.
+
+    # The expected files were generated using the option --output-check-record all
+    # of the avocado runner:
+    # avocado run output_check.sh --output-check-record all
+
     echo "Hello, world!"
+
 
 Let's record the output for this one::
 
-    $ avocado run output_check.sh --output-check-record all
+    $ avocado run --test-runner=runner output_check.sh --output-check-record all
     JOB ID    : 25c4244dda71d0570b7f849319cd71fe1722be8b
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
      (1/1) output_check.sh: PASS (0.01 s)
@@ -843,7 +866,7 @@ Now, every time this test runs, it'll take into account the expected files that
 were recorded, no need to do anything else but run the test. Let's see what
 happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!``::
 
-    $ avocado run output_check.sh
+    $ avocado run --test-runner=runner output_check.sh
     JOB ID    : f0521e524face93019d7cb99c5765aedd933cb2e
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
      (1/1) output_check.sh: FAIL (0.02 s)
@@ -973,10 +996,11 @@ the test parameters, as shown below.
 
 ::
 
-    $ avocado run sleeptest.py --mux-yaml /tmp/sleeptest-example.yaml
+    $ avocado run examples/tests/sleeptest.py --mux-yaml /tmp/sleeptest-example.yaml
     JOB ID     : c78464bde9072a0b5601157989a99f0ba32a288e
     JOB LOG    : $HOME/avocado/job-results/job-2016-11-02T11.13-c78464b/job.log
-     (1/1) sleeptest.py:SleepTest.test: INTERRUPTED (3.04 s)
+        (1/1) examples/tests/sleeptest.py:SleepTest.test;run-0fc1: STARTED
+        (1/1) examples/tests/sleeptest.py:SleepTest.test;run-0fc1: INTERRUPTED: timeout (3.01 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 1
     JOB TIME   : 3.14 s
     JOB HTML   : $HOME/avocado/job-results/job-2016-11-02T11.13-c78464b/html/results.html
@@ -985,41 +1009,21 @@ the test parameters, as shown below.
 ::
 
 	$ cat $HOME/avocado/job-results/job-2016-11-02T11.13-c78464b/job.log
-	2016-11-02 11:13:01,133 job              L0384 INFO | Multiplex tree representation:
-	2016-11-02 11:13:01,133 job              L0386 INFO |  \-- run
-	2016-11-02 11:13:01,133 job              L0386 INFO |         -> sleep_length: 5
-	2016-11-02 11:13:01,133 job              L0386 INFO |         -> timeout: 3
-	2016-11-02 11:13:01,133 job              L0387 INFO | 
-	2016-11-02 11:13:01,134 job              L0391 INFO | Temporary dir: /var/tmp/avocado_PqDEyC
-	2016-11-02 11:13:01,134 job              L0392 INFO | 
-	2016-11-02 11:13:01,134 job              L0399 INFO | Variant 1:    /run
-	2016-11-02 11:13:01,134 job              L0402 INFO | 
-	2016-11-02 11:13:01,134 job              L0311 INFO | Job ID: c78464bde9072a0b5601157989a99f0ba32a288e
-	2016-11-02 11:13:01,134 job              L0314 INFO | 
-	2016-11-02 11:13:01,345 sysinfo          L0107 DEBUG| Not logging /proc/pci (file does not exist)
-	2016-11-02 11:13:01,351 sysinfo          L0105 DEBUG| Not logging /proc/slabinfo (lack of permissions)
-	2016-11-02 11:13:01,355 sysinfo          L0107 DEBUG| Not logging /sys/kernel/debug/sched_features (file does not exist)
-	2016-11-02 11:13:01,388 sysinfo          L0388 INFO | Commands configured by file: /etc/avocado/sysinfo/commands
-	2016-11-02 11:13:01,388 sysinfo          L0399 INFO | Files configured by file: /etc/avocado/sysinfo/files
-	2016-11-02 11:13:01,388 sysinfo          L0419 INFO | Profilers configured by file: /etc/avocado/sysinfo/profilers
-	2016-11-02 11:13:01,388 sysinfo          L0427 INFO | Profiler disabled
-	2016-11-02 11:13:01,394 multiplexer      L0166 DEBUG| PARAMS (key=timeout, path=*, default=None) => 3
-	2016-11-02 11:13:01,395 test             L0216 INFO | START 1-sleeptest.py:SleepTest.test
-	2016-11-02 11:13:01,396 multiplexer      L0166 DEBUG| PARAMS (key=sleep_length, path=*, default=1) => 5
-	2016-11-02 11:13:01,396 sleeptest        L0022 DEBUG| Sleeping for 5.00 seconds
-	2016-11-02 11:13:04,411 stacktrace       L0038 ERROR| 
-	2016-11-02 11:13:04,412 stacktrace       L0041 ERROR| Reproduced traceback from: $HOME/src/avocado/avocado/core/test.py:454
-	2016-11-02 11:13:04,412 stacktrace       L0044 ERROR| Traceback (most recent call last):
-	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|   File "/usr/share/doc/avocado/tests/sleeptest.py", line 23, in test
-	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|     time.sleep(sleep_length)
-	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|   File "$HOME/src/avocado/avocado/core/runner.py", line 293, in sigterm_handler
-	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|     raise SystemExit("Test interrupted by SIGTERM")
-	2016-11-02 11:13:04,414 stacktrace       L0044 ERROR| SystemExit: Test interrupted by SIGTERM
-	2016-11-02 11:13:04,414 stacktrace       L0045 ERROR| 
-	2016-11-02 11:13:04,414 test             L0459 DEBUG| Local variables:
-	2016-11-02 11:13:04,440 test             L0462 DEBUG|  -> self <class 'sleeptest.SleepTest'>: 1-sleeptest.py:SleepTest.test
-	2016-11-02 11:13:04,440 test             L0462 DEBUG|  -> sleep_length <type 'int'>: 5
-	2016-11-02 11:13:04,440 test             L0592 ERROR| ERROR 1-sleeptest.py:SleepTest.test -> TestError: SystemExit('Test interrupted by SIGTERM',): Test interrupted by SIGTERM
+	2021-10-01 15:44:53,622 job              L0319 INFO | Multiplex tree representation:
+    2021-10-01 15:44:53,622 job              L0319 INFO |  \-- run
+    2021-10-01 15:44:53,622 job              L0319 INFO |
+    2021-10-01 15:44:53,622 job              L0319 INFO | Multiplex variants (1):
+    2021-10-01 15:44:53,622 job              L0319 INFO | Variant run-0fc1:    /run
+    2021-10-01 15:44:53,622 job              L0312 INFO | Temporary dir: /tmp/avocado_tmp_hp4cswyn/avocado_job_pmn___6i
+    2021-10-01 15:44:53,622 job              L0313 INFO |
+    2021-10-01 15:44:53,622 job              L0306 INFO | Job ID: 927fdc4143e9e093a485319820825faacc0f36a3
+    2021-10-01 15:44:53,622 job              L0309 INFO |
+    2021-10-01 15:44:54,165 selector_events  L0059 DEBUG| Using selector: EpollSelector
+    2021-10-01 15:44:54,622 testlogs         L0094 INFO | examples/tests/sleeptest.py:SleepTest.test;run-0fc1: STARTED
+    2021-10-01 15:44:57,653 testlogs         L0101 INFO | examples/tests/sleeptest.py:SleepTest.test;run-0fc1: INTERRUPTED
+    2021-10-01 15:44:57,654 testlogs         L0103 INFO | More information in /home/jarichte/avocado/job-results/job-2021-10-01T15.44-927fdc4/test-results/1-examples_tests_sleeptest.py_SleepTest.test_run-0fc1
+    2021-10-01 15:44:57,762 job              L0643 INFO | Test results available in /home/jarichte/avocado/job-results/job-2021-10-01T15.44-927fdc4
+
 
 
 The YAML file defines a test parameter ``timeout`` which overrides
@@ -1062,9 +1066,12 @@ Will produce the following result::
     $ avocado run  test_skip_decorators.py
     JOB ID     : 59c815f6a42269daeaf1e5b93e52269fb8a78119
     JOB LOG    : $HOME/avocado/job-results/job-2017-02-03T17.41-59c815f/job.log
-     (1/3) test_skip_decorators.py:MyTest.test1: SKIP
-     (2/3) test_skip_decorators.py:MyTest.test2: SKIP
-     (3/3) test_skip_decorators.py:MyTest.test3: PASS (0.02 s)
+        (1/3) /tmp/test_skip_decorators.py:MyTest.test1: STARTED
+        (1/3) /tmp/test_skip_decorators.py:MyTest.test1: SKIP: Skipping on True condition.
+        (2/3) /tmp/test_skip_decorators.py:MyTest.test2: STARTED
+        (2/3) /tmp/test_skip_decorators.py:MyTest.test2: SKIP: Don't want this test now.
+        (3/3) /tmp/test_skip_decorators.py:MyTest.test3: STARTED
+        (3/3) /tmp/test_skip_decorators.py:MyTest.test3: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 2 | WARN 0 | INTERRUPT 0
     JOB TIME   : 0.13 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.41-59c815f/html/results.html
@@ -1100,16 +1107,26 @@ are actually checked for execution, in the ``BareMetal`` and
 
     JOB ID     : 77d636c93ed3b5e6fef9c7b6c8d9fe0c84af1518
     JOB LOG    : $HOME/avocado/job-results/job-2021-03-17T20.10-77d636c/job.log
-     (01/10) skip_conditional.py:BareMetal.test_specific: PASS (0.00 s)
-     (02/10) skip_conditional.py:BareMetal.test_bare_metal: PASS (0.00 s)
-     (03/10) skip_conditional.py:BareMetal.test_large_memory: SKIP: Not enough memory for test
-     (04/10) skip_conditional.py:BareMetal.test_nested_virtualization: SKIP: Virtual Machine environment is required
-     (05/10) skip_conditional.py:BareMetal.test_container: SKIP: Container environment is required
-     (06/10) skip_conditional.py:NonBareMetal.test_specific: PASS (0.00 s)
-     (07/10) skip_conditional.py:NonBareMetal.test_bare_metal: SKIP: Bare metal environment is required
-     (08/10) skip_conditional.py:NonBareMetal.test_large_memory: SKIP: Not enough memory for test
-     (09/10) skip_conditional.py:NonBareMetal.test_nested_virtualization: PASS (0.00 s)
-     (10/10) skip_conditional.py:NonBareMetal.test_container: PASS (0.00 s)
+     (01/10) examples/tests/skip_conditional.py:BareMetal.test_specific: STARTED
+     (01/10) examples/tests/skip_conditional.py:BareMetal.test_specific: PASS (0.01 s)
+     (02/10) examples/tests/skip_conditional.py:BareMetal.test_bare_metal: STARTED
+     (02/10) examples/tests/skip_conditional.py:BareMetal.test_bare_metal: PASS (0.01 s)
+     (03/10) examples/tests/skip_conditional.py:BareMetal.test_large_memory: STARTED
+     (03/10) examples/tests/skip_conditional.py:BareMetal.test_large_memory: SKIP: Not enough memory for test
+     (04/10) examples/tests/skip_conditional.py:BareMetal.test_nested_virtualization: STARTED
+     (04/10) examples/tests/skip_conditional.py:BareMetal.test_nested_virtualization: SKIP: Virtual Machine environment is required
+     (05/10) examples/tests/skip_conditional.py:BareMetal.test_container: STARTED
+     (05/10) examples/tests/skip_conditional.py:BareMetal.test_container: SKIP: Container environment is required
+     (06/10) examples/tests/skip_conditional.py:NonBareMetal.test_specific: STARTED
+     (06/10) examples/tests/skip_conditional.py:NonBareMetal.test_specific: PASS (0.01 s)
+     (07/10) examples/tests/skip_conditional.py:NonBareMetal.test_bare_metal: STARTED
+     (07/10) examples/tests/skip_conditional.py:NonBareMetal.test_bare_metal: SKIP: Bare metal environment is required
+     (08/10) examples/tests/skip_conditional.py:NonBareMetal.test_large_memory: STARTED
+     (08/10) examples/tests/skip_conditional.py:NonBareMetal.test_large_memory: SKIP: Not enough memory for test
+     (09/10) examples/tests/skip_conditional.py:NonBareMetal.test_nested_virtualization: STARTED
+     (09/10) examples/tests/skip_conditional.py:NonBareMetal.test_nested_virtualization: PASS (0.01 s)
+     (10/10) examples/tests/skip_conditional.py:NonBareMetal.test_container: STARTED
+     (10/10) examples/tests/skip_conditional.py:NonBareMetal.test_container: PASS (0.01 s)
     RESULTS    : PASS 5 | ERROR 0 | FAIL 0 | SKIP 5 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB HTML   : $HOME/avocado/job-results/job-2021-03-17T20.10-77d636c/results.html
     JOB TIME   : 0.82 s
@@ -1119,45 +1136,20 @@ Canceling Tests
 
 You can cancel a test calling `self.cancel()` at any phase of the test
 (`setUp()`, test method or `tearDown()`). Test will finish with `CANCEL`
-status and will not make the Job to exit with a non-0 status. Example::
+status and will not make the Job to exit with a non-0 status. Example:
 
-
-    from avocado import Test
-
-    from avocado.utils.process import run
-    from avocado.utils.software_manager import SoftwareManager
-
-
-    class CancelTest(Test):
-
-        """
-        Example tests that cancel the current test from inside the test.
-        """
-
-        def setUp(self):
-            sm = SoftwareManager()
-            self.pkgs = sm.list_all(software_components=False)
-
-        def test_iperf(self):
-            if 'iperf-2.0.8-6.fc25.x86_64' not in self.pkgs:
-                self.cancel('iperf is not installed or wrong version')
-            self.assertIn('pthreads',
-                          run('iperf -v', ignore_status=True).stderr)
-
-        def test_gcc(self):
-            if 'gcc-6.3.1-1.fc25.x86_64' not in self.pkgs:
-                self.cancel('gcc is not installed or wrong version')
-            self.assertIn('enable-gnu-indirect-function',
-                          run('gcc -v', ignore_status=True).stderr)
+.. literalinclude:: ../../../../../examples/tests/cancel_test.py
 
 In a system missing the `iperf` package but with `gcc` installed in
 the correct version, the result will be::
 
-    $ avocado run cancel_test.py
+    $ avocado run examples/tests/cancel_test.py
     JOB ID     : 39c1f120830b9769b42f5f70b6b7bad0b1b1f09f
     JOB LOG    : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/job.log
-     (1/2) /home/user/avocado/tests/test_cancel.py:CancelTest.test_iperf: CANCEL (1.15 s)
-     (2/2) /home/user/avocado/tests/test_cancel.py:CancelTest.test_gcc: PASS (1.13 s)
+        (1/2) /tmp/cancel_test.py:CancelTest.test_iperf: STARTED
+        (1/2) /tmp/cancel_test.py:CancelTest.test_iperf: CANCEL: iperf is not installed or wrong version (2.76 s)
+        (2/2) /tmp/cancel_test.py:CancelTest.test_gcc: STARTED
+        (2/2) /tmp/cancel_test.py:CancelTest.test_gcc: PASS (1.59 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
     JOB TIME   : 2.38 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/html/results.html
@@ -1577,6 +1569,10 @@ starting with string ``WARNING:``, the configuration file will look like this::
 
 Job Cleanup
 -----------
+
+.. warning:: The Job Cleanup feature is legacy feature and it's works
+             only with the legacy runner. For using legacy runner you have to
+             use `--test-runner=runner`
 
 It's possible to register a callback function that will be called when
 all the tests have finished running. This effectively allows for a
