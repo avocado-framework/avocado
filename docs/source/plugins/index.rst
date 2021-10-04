@@ -5,7 +5,6 @@ Optional plugins
 .. toctree::
    :maxdepth: 2
 
-   optional/avocado_ec2
    optional/golang
    optional/results
    optional/robot
