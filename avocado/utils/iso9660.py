@@ -100,7 +100,7 @@ def can_mount():
     :rtype: bool
     """
     if not process.can_sudo():
-        logging.debug('Can not use mount: current user is not "root" and'
+        logging.debug('Can not use mount: current user is not "root" and '
                       "sudo is not configured.")
         return False
 
