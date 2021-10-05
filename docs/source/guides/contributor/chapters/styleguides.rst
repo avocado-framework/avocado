@@ -22,9 +22,9 @@ Signing commits
 Optionally you can sign the commits using GPG signatures. Doing
 it is simple and it helps from unauthorized code being merged without notice.
 
-All you need is a valid GPG signature, git configuration, slightly modified
-workflow to use the signature and eventually even setup in github so one
-benefits from the "nice" UI.
+All you need is a valid GPG signature, git configuration, and slightly modified
+workflow to use the signature. Eventually, set it up in GitHub; hence, benefiting
+from the “nice” UI.
 
 Get a GPG signature::
 
@@ -52,10 +52,10 @@ Use it::
     $ git merge -S
 
 .. warning::
-   You can not use the merge button on github to do signed merges as github
+   You can not use the merge button on GitHub to do signed merges as GitHub
    does not have your private key.
-
-
 
 Code style guide
 ----------------
+
+.. warning:: TODO: Add the Code Style Guide.

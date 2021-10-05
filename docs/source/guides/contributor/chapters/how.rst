@@ -26,14 +26,14 @@ instead!
 
 Avocado is using Github's issue tracking system for collecting and discussing
 issues. If you have a possible candidate, do not hesitate, share with us by
-`creating a new issue<https://github.com/avocado-framework/avocado/issues/>`_.
+`creating a new issue <https://github.com/avocado-framework/avocado/issues/>`_.
 
 Suggest enhancements
 --------------------
 
 The same is valid when suggesting a new feature or enhancements: Don't think
 twice, just `submit the feature
-request<https://github.com/avocado-framework/avocado/issues/>`_ using the same
+request <https://github.com/avocado-framework/avocado/issues/>`_ using the same
 link.  Our community will evaluate if the feature request is valid and when it
 might become a part of the Avocado Framework.
 
@@ -44,21 +44,21 @@ Avocado uses Github and the Github pull request development model. You can find
 a primer on how to use github pull requests `here
 <https://help.github.com/articles/using-pull-requests>`_.
 
-Every Pull Request you send will be automatically tested by `Travis CI
-<https://travis-ci.org/avocado-framework/avocado>`_ and review will take place
-in the Pull Request as well.
+Every Pull Request you send will be automatically tested by the
+`CI system <https://github.com/avocado-framework/avocado/actions>`_ and review
+will take place in the Pull Request as well.
 
-For people who don't like the Github development model, there is the option of
-sending the patches to the Mailing List, following a workflow more traditional
-in Open Source development communities. The patches will be reviewed in the
-Mailing List, should you opt for that. Then a maintainer will collect the
-patches, integrate them on a branch, and then those patches will be submitted
-as a github Pull Request. This process tries to ensure that every contributed
-patch goes through the CI jobs before it is considered good for inclusion.
+For people who don’t like the Github development model, there is an option to
+send the patches to the Mailing List, following a more traditional workflow in
+Open Source development communities. The patches are reviewed in the Mailing
+List, should you opt for that. Then a maintainer will collect the patches,
+integrate them on a branch, and submit it as a GitHub Pull Request. This
+process ensures that every contributed patch goes through the CI jobs before
+being considered suitable for inclusion.
 
-Keep in mind that during our sprints, we do have a small "Feature Freeze"
-period right before the release day (usually no longer than one week). This
-means that during this time, no new feature can be merged into master.
+Remember that we do have a small “Feature Freeze” period right before the
+release day (usually no longer than one week). It means that during this time,
+no new feature can be merged into the master branch.
 
 Git workflow
 ~~~~~~~~~~~~
@@ -122,7 +122,7 @@ Git workflow
 - In the Pull Request discussion page, comment with the link to the
   job.log output/file.
 
-- Check if your Pull Request passes the CI (travis). Your Pull Request will
+- Check if your Pull Request passes the CI system. Your Pull Request will
   probably be ignored until it's all green.
 
 Now you're waiting for feedback on github Pull Request page. Once you get some,
@@ -180,8 +180,7 @@ Code Review
 
 Every single Pull Request in Avocado has to be reviewed by at least one other
 developer. All members of the core team have permission to merge a Pull
-Request, but there are some conditions that have to be fulfilled before merging
-the code:
+Request, but some conditions have to be fulfilled before merging the code:
 
 - Pull Request has to pass the CI tests.
 - One 'Approved' code review should be given.
@@ -248,11 +247,6 @@ List of known community and third party maintained repositories:
   will find, among others, performance tests like ``lmbench``,
   ``stress``, cpu tests like ``ebizzy`` and generic tests like ``ltp``.
   Some of them were ported from Autotest Client Tests repository.
-
-- https://github.com/scylladb/scylla-cluster-tests:
-  Avocado tests for Scylla Clusters. Those tests can automatically create
-  a scylla cluster, some loader machines and then run operations defined by
-  the test writers, such as database workloads.
 
 Documentation
 -------------

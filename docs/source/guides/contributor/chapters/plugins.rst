@@ -43,7 +43,7 @@ You, as a plugin writer, don’t need to handle this configuration by yourself.
 Avocado provides a common API that can be used by plugins in order to register
 options and get values.
 
-If your plugin has options available to the users, it can register it using the
+If your plugin has options available to the users, register it using the
 :meth:`.Settings.register_option()` method during your plugin configuration
 stage. The options are parsed and provided to the plugin as a config dictionary.
 
@@ -52,17 +52,18 @@ option:
 
 .. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello_option/hello_option.py
 
-This registration will register a “configuration namespace" (“hello.message”)
-inside the configuration file only. A namespace is a “section” (“hello”)
-followed by a “key” (“message”). In other words, the following entry in your
-configuration file is valid and will be parsed::
+The code in the example above registers a **configuration namespace**
+(*hello.message*) inside the configuration file only. A namespace is a
+**section** (*hello*) followed by a **key** (*message*). In other words, the
+following entry in your configuration file is also valid and will be parsed::
 
   [hello]
   message = My custom message
 
-As you can see in the example above, you need to set a “default” value and this
-value will be used if the option is not present in the configuration file. This
-means that you can have a very small configuration file or even an empty one.
+As you can see in the example above, you need to set a **default** value and
+this value will be used if the option is not present in the configuration file.
+This means that you can have a very small configuration file or even an empty
+one.
 
 This is a very basic example of how to configure options inside your plugin.
 
@@ -71,7 +72,7 @@ Adding command-line options
 
 Now, let’s say you would like to also allow this change via the command-line
 option of your plugin (if your plugin is a command-line plugin). You need to
-register in any case and use the same method to connect your “option namespace”
+register in any case and use the same method to connect your **option namespace**
 with your command-line option.
 
 .. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello_parser/hello_parser.py
@@ -113,7 +114,7 @@ Take for instance, the Job Pre/Post plugins are defined on ``setup.py``::
   ]
 
 The setuptools entry point namespace is composed of the mentioned prefix
-``avocado.plugins.``, which is is then followed by the Avocado plugin type, in
+``avocado.plugins.``, which is then followed by the Avocado plugin type, in
 this case, ``job.prepost``.
 
 Inside Avocado itself, the fully qualified name for a plugin is the plugin
@@ -185,28 +186,28 @@ available).
 New test type plugin example
 ============================
 
-For a new test type to be recognized and executed by Avocado's "nrunner"
+For a new test type to be recognized and executed by Avocado's NRunner
 architecture, there needs to be two types of plugins and one optional:
 
  * resolvers: they resolve references into proper test descriptions
-   that Avocado can run
+   that Avocado can run.
 
  * discoverers (optional): They are doing the same job as resolvers but
    without a reference. They are used when the tests can be created from
-   different data e.g.  config files.
+   different data e.g. *config files*.
 
  * runners: these make use of the resolutions made by resolvers and
    actually execute the tests, reporting the results back to Avocado
 
 The following example shows real code for a resolver and a runner for
-a "magic" test type.  This "magic" test simply passes or fails
+a *magic* test type.  This *magic* test simply passes or fails
 depending on the test reference.
 
 Resolver and Discoverer example
 -------------------------------
 
-The resolver implementation will simply set the test type ("magic")
-and transform the reference given into its "url":
+The resolver implementation will simply set the test type (*magic*)
+and transform the reference given into its **url**:
 
 .. literalinclude:: ../../../../../examples/plugins/tests/magic/avocado_magic/resolver.py
 
