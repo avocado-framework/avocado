@@ -282,6 +282,9 @@ class Run(CLICmd):
             check_record = config.get('run.output_check_record')
             process.OUTPUT_CHECK_RECORD_MODE = check_record
 
+        if config.get('run.test_runner') == 'runner':
+            process.NRUNNER_MODE = False
+
         unique_job_id = config.get('run.unique_job_id')
         if unique_job_id is not None:
             try:
