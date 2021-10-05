@@ -65,6 +65,11 @@ UNDEFINED_BEHAVIOR_EXCEPTION = None
 #: setting defines the mode.
 OUTPUT_CHECK_RECORD_MODE = None
 
+#: When using the nrunner architecture we don't need to log messages into the
+#: stream_logger as well. By setting this to True, we will set stream_logger to
+#: None.
+NRUNNER_MODE = True
+
 # variable=value bash assignment
 _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
 
@@ -682,7 +687,7 @@ class SubProcess:
                 self._combined_drainer.start()
 
             else:
-                if self.allow_output_check == 'none':
+                if self.allow_output_check == 'none' or NRUNNER_MODE:
                     stdout_stream_logger = None
                     stderr_stream_logger = None
                 else:
