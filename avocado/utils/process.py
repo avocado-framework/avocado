@@ -65,6 +65,12 @@ UNDEFINED_BEHAVIOR_EXCEPTION = None
 #: setting defines the mode.
 OUTPUT_CHECK_RECORD_MODE = None
 
+#: This is a workaround just for LTS. After LTS this variable and all
+#: relationship between OUTPUT_CHECK_RECORD_MODE + legacy runner, can be
+#: removed. Currently we have two different modes depending on the runner. This
+#: will determine how we collect the stdout|stderr files.
+NRUNNER_MODE = True
+
 # variable=value bash assignment
 _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
 
@@ -682,7 +688,7 @@ class SubProcess:
                 self._combined_drainer.start()
 
             else:
-                if self.allow_output_check == 'none':
+                if self.allow_output_check == 'none' or NRUNNER_MODE:
                     stdout_stream_logger = None
                     stderr_stream_logger = None
                 else:
