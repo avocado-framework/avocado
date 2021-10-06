@@ -631,12 +631,16 @@ class PythonUnittestRunner(BaseRunner):
         runner = TextTestRunner(stream=stream, verbosity=0)
         unittest_result = runner.run(suite)
 
+        unittest_result_entries = None
         if len(unittest_result.errors) > 0:
             result = 'error'
+            unittest_result_entries = unittest_result.errors
         elif len(unittest_result.failures) > 0:
             result = 'fail'
+            unittest_result_entries = unittest_result.failures
         elif len(unittest_result.skipped) > 0:
             result = 'skip'
+            unittest_result_entries = unittest_result.skipped
         else:
             result = 'pass'
 
@@ -644,6 +648,13 @@ class PythonUnittestRunner(BaseRunner):
         output = {'status': 'finished',
                   'result': result,
                   'output': stream.read()}
+
+        if unittest_result_entries is not None:
+            last_entry = unittest_result_entries[-1]
+            lines = last_entry[1].splitlines()
+            fail_reason = lines[-1]
+            output['fail_reason'] = fail_reason
+
         stream.close()
         queue.put(output)
 
