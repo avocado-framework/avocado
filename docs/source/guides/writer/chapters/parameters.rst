@@ -167,7 +167,7 @@ There are two ways to acquire the JSON serialized variants file:
 - Getting the auto-generated JSON serialized variants file after a Avocado Job
   execution::
 
-    $ avocado run passtest.py --mux-yaml examples/yaml_to_mux/hw/hw.yaml
+    $ avocado run examples/tests/passtest.py --mux-yaml examples/yaml_to_mux/hw/hw.yaml
     ...
 
     $ file $HOME/avocado/job-results/latest/jobdata/variants.json
@@ -176,15 +176,21 @@ There are two ways to acquire the JSON serialized variants file:
 Once you have the ``variants.json`` file, you can load it on the system where
 the Job will take place::
 
-   $ avocado run passtest.py --json-variants-load variants.json
+   $ avocado run examples/tests/passtest.py --json-variants-load variants.json
    JOB ID     : f2022736b5b89d7f4cf62353d3fb4d7e3a06f075
    JOB LOG    : $HOME/avocado/job-results/job-2018-02-09T14.39-f202273/job.log
-    (1/6) passtest.py:PassTest.test;intel-scsi-56d0: PASS (0.04 s)
-    (2/6) passtest.py:PassTest.test;intel-virtio-3d4e: PASS (0.02 s)
-    (3/6) passtest.py:PassTest.test;amd-scsi-fa43: PASS (0.02 s)
-    (4/6) passtest.py:PassTest.test;amd-virtio-a59a: PASS (0.02 s)
-    (5/6) passtest.py:PassTest.test;arm-scsi-1c14: PASS (0.03 s)
-    (6/6) passtest.py:PassTest.test;arm-virtio-5ce1: PASS (0.04 s)
+      (1/6) examples/tests/passtest.py:PassTest.test;run-cpu-intel-disk-scsi-d340: STARTED
+      (1/6) examples/tests/passtest.py:PassTest.test;run-cpu-intel-disk-scsi-d340: PASS (0.01 s)
+      (2/6) examples/tests/passtest.py:PassTest.test;run-cpu-intel-disk-virtio-40ba: STARTED
+      (2/6) examples/tests/passtest.py:PassTest.test;run-cpu-intel-disk-virtio-40ba: PASS (0.01 s)
+      (3/6) examples/tests/passtest.py:PassTest.test;run-cpu-amd-disk-scsi-b3e2: STARTED
+      (3/6) examples/tests/passtest.py:PassTest.test;run-cpu-amd-disk-scsi-b3e2: PASS (0.01 s)
+      (4/6) examples/tests/passtest.py:PassTest.test;run-cpu-amd-disk-virtio-9d9f: STARTED
+      (4/6) examples/tests/passtest.py:PassTest.test;run-cpu-amd-disk-virtio-9d9f: PASS (0.01 s)
+      (5/6) examples/tests/passtest.py:PassTest.test;run-cpu-arm-disk-scsi-0ceb: STARTED
+      (5/6) examples/tests/passtest.py:PassTest.test;run-cpu-arm-disk-scsi-0ceb: PASS (0.01 s)
+      (6/6) examples/tests/passtest.py:PassTest.test;run-cpu-arm-disk-virtio-0254: STARTED
+      (6/6) examples/tests/passtest.py:PassTest.test;run-cpu-arm-disk-virtio-0254: PASS (0.01 s)
    RESULTS    : PASS 6 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
    JOB TIME   : 0.51 s
    JOB HTML   : $HOME/avocado/job-results/job-2018-02-09T14.39-f202273/results.html
@@ -203,7 +209,7 @@ only allows querying for values, number of variants and such.
 
 Example workflow of `avocado run passtest.py -m example.yaml` is::
 
-   avocado run passtest.py -m example.yaml
+   avocado run examples/tests/passtest.py -m example.yaml
      |
      + parser.finish -> Varianter.__init__  // dispatcher initializes all plugins
      |

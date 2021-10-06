@@ -115,7 +115,8 @@ And to run your test::
     ~/git/apricot$ avocado run tests/test_example.py
     JOB ID     : 02c663eb77e0ae6ce67462a398da6972791793bf
     JOB LOG    : $HOME/avocado/job-results/job-2017-11-16T12.44-02c663e/job.log
-     (1/1) tests/test_example.py:MyTest.test: PASS (0.03 s)
+        (1/1) tests/test_example.py:MyTest.test: STARTED
+        (1/1) tests/test_example.py:MyTest.test: PASS (0.03 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 0.95 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-11-16T12.44-02c663e/results.html
