@@ -8,7 +8,7 @@ class Plant(Test):
     """Logs parts of the test progress in an specific logging stream."""
 
     def test_plant_organic(self):
-        progress_log = logging.getLogger("progress")
+        progress_log = logging.getLogger("avocado.test.progress")
         rows = int(self.params.get("rows", default=3))
 
         # Preparing soil
