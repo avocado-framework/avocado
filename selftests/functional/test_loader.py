@@ -270,7 +270,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
         self.assertEqual(result.exit_status, 1, result)
         exps = [("unittests.Second.test_fail", "FAIL"),
                 ("unittests.Second.test_error", "ERROR"),
-                ("unittests.Second.test_skip", "CANCEL"),
+                ("unittests.Second.test_skip", "SKIP"),
                 ("unittests.First.test_pass", "PASS")]
         for test in jres["tests"]:
             for exp in exps:
