@@ -12,30 +12,27 @@ clear stages on a single test:
 
 .. note:: TODO: Improve how we show the logs on the console.
 
-The custom ``progress`` stream is combined with the application output, which
-may or may not suit your needs or preferences. If you want the ``progress``
-stream to be sent to a separate file, both for clarity and for persistence,
-you can run Avocado like this::
+Currently Avocado will store any log information that is part of the
+'avocado.*' namespaces. You just need to choose a namespace when setting up
+your logger.
 
-    $ avocado run --store-logging-stream=progress -- logging_streams.py
+The result is that, besides all the other log files commonly generated, as part
+of the `debug.log` file at the job results dir, you can get your logging
+information.  During the test run, one could watch the progress with::
 
-The result is that, besides all the other log files commonly generated, there
-will be another log file named ``progress.INFO`` at the job results
-dir. During the test run, one could watch the progress with::
+        $ tail -f ~/avocado/job-results/latest/test-results/1-_tmp_plant.py_Plant.test_plant_organic/debug.log
+        [stdlog] 2021-10-06 09:18:57,989 avocado.test.progress L0018 INFO | 1-Plant.test_plant_organic: preparing soil on row 1
+        [stdlog] 2021-10-06 09:18:57,989 avocado.test.progress L0018 INFO | 1-Plant.test_plant_organic: preparing soil on row 2
+        [stdlog] 2021-10-06 09:18:57,989 avocado.test.progress L0022 INFO | 1-Plant.test_plant_organic: letting soil rest before throwing seeds
+        [stdlog] 2021-10-06 09:18:58,990 avocado.test.progress L0028 INFO | 1-Plant.test_plant_organic: throwing seeds on row 0
+        [stdlog] 2021-10-06 09:18:58,991 avocado.test.progress L0028 INFO | 1-Plant.test_plant_organic: throwing seeds on row 1
+        [stdlog] 2021-10-06 09:18:58,991 avocado.test.progress L0028 INFO | 1-Plant.test_plant_organic: throwing seeds on row 2
+        [stdlog] 2021-10-06 09:18:58,992 avocado.test.progress L0032 INFO | 1-Plant.test_plant_organic: waiting for Avocados to grow
+        [stdlog] 2021-10-06 09:19:00,995 avocado.test.progress L0038 INFO | 1-Plant.test_plant_organic: harvesting organic avocados on row 0
+        [stdlog] 2021-10-06 09:19:00,995 avocado.test.progress L0038 INFO | 1-Plant.test_plant_organic: harvesting organic avocados on row 1
+        [stdlog] 2021-10-06 09:19:00,996 avocado.test.progress L0038 INFO | 1-Plant.test_plant_organic: harvesting organic avocados on row 2
 
-    $ tail -f ~/avocado/job-results/latest/progress.INFO
-    10:36:59 INFO | 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 0
-    10:36:59 INFO | 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 1
-    10:36:59 INFO | 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 2
-    10:36:59 INFO | 1-logging_streams.py:Plant.test_plant_organic: letting soil rest before throwing seeds
-    10:37:01 INFO | 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 0
-    10:37:01 INFO | 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 1
-    10:37:01 INFO | 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 2
-    10:37:01 INFO | 1-logging_streams.py:Plant.test_plant_organic: waiting for Avocados to grow
-    10:37:06 INFO | 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 0
-    10:37:06 INFO | 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 1
-    10:37:06 INFO | 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 2
 
-The very same ``progress`` logger, could be used across multiple test methods
-and across multiple test modules.  In the example given, the test name is used
-to give extra context.
+The very same namespace for the logger (``avocado.test.progress``), could be used
+across multiple test methods and across multiple test modules.  In the example
+given, the test name is used to give extra context.
