@@ -1307,7 +1307,7 @@ class PythonUnittest(ExternalRunnerTest):
                 self.error("Unknown failure executing the unittest")
         status = self._find_result("OK")
         if "skipped" in status:
-            self.cancel("Unittest reported skip")
+            raise exceptions.TestSkipError("Unittest reported skip")
 
 
 class TapTest(SimpleTest):
