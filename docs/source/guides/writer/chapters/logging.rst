@@ -10,30 +10,7 @@ clear stages on a single test:
 
 .. literalinclude:: ../../../../../examples/tests/logging_streams.py
 
-From this point on, you can ask Avocado to show your logging stream, either
-exclusively or in addition to other builtin streams::
-
-    $ avocado --show app,progress run -- logging_streams.py
-
-The outcome should be similar to::
-
-    JOB ID     : af786f86db530bff26cd6a92c36e99bedcdca95b
-    JOB LOG    : /home/user/avocado/job-results/job-2016-03-18T10.29-af786f8/job.log
-     (1/1) logging_streams.py:Plant.test_plant_organic: progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 0
-    progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 1
-    progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 2
-    progress: 1-logging_streams.py:Plant.test_plant_organic: letting soil rest before throwing seeds
-    -progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 0
-    progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 1
-    progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 2
-    progress: 1-logging_streams.py:Plant.test_plant_organic: waiting for Avocados to grow
-    \progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 0
-    progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 1
-    progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 2
-    PASS (7.01 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB TIME   : 7.11 s
-    JOB HTML   : /home/user/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
+.. note:: TODO: Improve how we show the logs on the console.
 
 The custom ``progress`` stream is combined with the application output, which
 may or may not suit your needs or preferences. If you want the ``progress``
@@ -62,3 +39,31 @@ dir. During the test run, one could watch the progress with::
 The very same ``progress`` logger, could be used across multiple test methods
 and across multiple test modules.  In the example given, the test name is used
 to give extra context.
+
+Showing custom log streams
+--------------------------
+
+Alternatively, you can ask Avocado to show your logging stream, either
+exclusively or in addition to other builtin streams::
+
+    $ avocado --show app,progress run --test-runner='runner' -- logging_streams.py
+
+The outcome should be similar to::
+
+    JOB ID     : af786f86db530bff26cd6a92c36e99bedcdca95b
+    JOB LOG    : /home/user/avocado/job-results/job-2016-03-18T10.29-af786f8/job.log
+     (1/1) logging_streams.py:Plant.test_plant_organic: progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 0
+    progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 1
+    progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 2
+    progress: 1-logging_streams.py:Plant.test_plant_organic: letting soil rest before throwing seeds
+    progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 0
+    progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 1
+    progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 2
+    progress: 1-logging_streams.py:Plant.test_plant_organic: waiting for Avocados to grow
+    progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 0
+    progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 1
+    progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 2
+    PASS (7.01 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    JOB TIME   : 7.11 s
+    JOB HTML   : /home/user/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
