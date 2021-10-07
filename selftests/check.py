@@ -537,6 +537,7 @@ def create_suites(args):  # pylint: disable=W0621
     selftests = []
     if args.unit:
         selftests.append('selftests/unit/')
+        selftests.append('selftests/.data/unittests.py')
     if args.jobs:
         selftests.append('selftests/jobs/')
     if args.functional:
