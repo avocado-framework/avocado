@@ -545,8 +545,7 @@ def create_suites(args):  # pylint: disable=W0621
     config_check = {
         'run.references': selftests,
         'run.test_runner': 'nrunner',
-        'run.ignore_missing_references': True,
-        'job.output.testlogs.statuses': ['FAIL']
+        'run.ignore_missing_references': True
     }
 
     if args.static_checks:
@@ -613,7 +612,9 @@ def main(args):  # pylint: disable=W0621
     # Job execution
     # ========================================================================
     config = {'core.show': ['app'],
-              'run.test_runner': 'nrunner'}
+              'run.test_runner': 'nrunner',
+              'job.output.testlogs.statuses': ['FAIL', 'ERROR', 'INTERRUPT'],
+              'job.output.testlogs.logfiles': ['debug.log']}
 
     # Workaround for travis problem on arm64 - https://github.com/avocado-framework/avocado/issues/4768
     if (platform.machine() == 'aarch64'):
