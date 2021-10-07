@@ -34,7 +34,7 @@ from io import BytesIO, UnsupportedOperation
 from . import astring, path
 from .wait import wait_for
 
-log = logging.getLogger('avocado.test')
+LOG = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
 stderr_log = logging.getLogger('avocado.test.stderr')
 output_log = logging.getLogger('avocado.test.output')
@@ -64,6 +64,11 @@ UNDEFINED_BEHAVIOR_EXCEPTION = None
 #: in the right order, the combined 'output' stream.  So this
 #: setting defines the mode.
 OUTPUT_CHECK_RECORD_MODE = None
+
+#: When using the nrunner architecture we don't need to log messages into the
+#: stream_logger as well. By setting this to True, we will set stream_logger to
+#: None.
+NRUNNER_MODE = True
 
 # variable=value bash assignment
 _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
@@ -294,9 +299,9 @@ def kill_process_by_pattern(pattern):
     cmd = "pkill -f %s" % pattern
     result = run(cmd, ignore_status=True)
     if result.exit_status:
-        logging.error("Failed to run '%s': %s", cmd, result)
+        LOG.error("Failed to run '%s': %s", cmd, result)
     else:
-        logging.info("Succeed to run '%s'.", cmd)
+        LOG.info("Succeed to run '%s'.", cmd)
 
 
 def process_in_ptree_is_defunct(ppid):
@@ -632,8 +637,8 @@ class SubProcess:
             try:
                 sudo_cmd = '%s -n' % path.find_command('sudo', check_exec=False)
             except path.CmdNotFoundError as details:
-                log.error(details)
-                log.error('Parameter sudo=True provided, but sudo was '
+                LOG.error(details)
+                LOG.error('Parameter sudo=True provided, but sudo was '
                           'not found. Please consider adding sudo to '
                           'your OS image')
                 return cmd
@@ -646,7 +651,7 @@ class SubProcess:
     def _init_subprocess(self):
         if self._popen is None:
             if self.verbose:
-                log.info("Running '%s'", self.cmd)
+                LOG.info("Running '%s'", self.cmd)
             if self.shell is False:
                 cmd = shlex.split(self.cmd)
             else:
@@ -673,7 +678,7 @@ class SubProcess:
                     self._popen.stdout.fileno(),
                     self.result,
                     name="%s-combined" % self.cmd,
-                    logger=log,
+                    logger=LOG,
                     logger_prefix="[output] %s",
                     # FIXME, in fact, a new log has to be used here
                     stream_logger=output_log,
@@ -682,7 +687,7 @@ class SubProcess:
                 self._combined_drainer.start()
 
             else:
-                if self.allow_output_check == 'none':
+                if self.allow_output_check == 'none' or NRUNNER_MODE:
                     stdout_stream_logger = None
                     stderr_stream_logger = None
                 else:
@@ -692,7 +697,7 @@ class SubProcess:
                     self._popen.stdout.fileno(),
                     self.result,
                     name="%s-stdout" % self.cmd,
-                    logger=log,
+                    logger=LOG,
                     logger_prefix="[stdout] %s",
                     stream_logger=stdout_stream_logger,
                     ignore_bg_processes=self._ignore_bg_processes,
@@ -701,7 +706,7 @@ class SubProcess:
                     self._popen.stderr.fileno(),
                     self.result,
                     name="%s-stderr" % self.cmd,
-                    logger=log,
+                    logger=LOG,
                     logger_prefix="[stderr] %s",
                     stream_logger=stderr_stream_logger,
                     ignore_bg_processes=self._ignore_bg_processes,
@@ -719,7 +724,7 @@ class SubProcess:
                 signal.signal(signal.SIGINT, signal_handler)
             except ValueError:
                 if self.verbose:
-                    log.info("Command %s running on a thread", self.cmd)
+                    LOG.info("Command %s running on a thread", self.cmd)
 
     def _fill_results(self, rc):
         self._init_subprocess()
@@ -727,7 +732,7 @@ class SubProcess:
         if self.result.duration == 0:
             self.result.duration = time.monotonic() - self.start_time
         if self.verbose:
-            log.info("Command '%s' finished with %s after %.9fs", self.cmd, rc,
+            LOG.info("Command '%s' finished with %s after %.9fs", self.cmd, rc,
                      self.result.duration)
         self.result.pid = self._popen.pid
         self._fill_streams()
@@ -851,11 +856,11 @@ class SubProcess:
                 try:
                     kill_process_tree(self.get_pid(), signal.SIGKILL,
                                       timeout=1)
-                    log.warning("Process '%s' refused to die in 1s after "
+                    LOG.warning("Process '%s' refused to die in 1s after "
                                 "sending %s to, destroyed it successfully "
                                 "using SIGKILL.", self.cmd, sig)
                 except RuntimeError:
-                    log.error("Process '%s' refused to die in 1s after "
+                    LOG.error("Process '%s' refused to die in 1s after "
                               "sending %s, followed by SIGKILL, probably "
                               "dealing with a zombie process.", self.cmd,
                               sig)
