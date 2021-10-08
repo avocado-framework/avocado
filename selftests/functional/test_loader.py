@@ -263,15 +263,14 @@ class LoaderTestFunctional(TestCaseTmpDir):
     def test_python_unittest(self):
         test_path = os.path.join(BASEDIR, "selftests", ".data", "unittests.py")
         cmd = ("%s run --disable-sysinfo --job-results-dir %s --json - "
-               "--test-runner=runner "
                "-- %s" % (AVOCADO, self.tmpdir.name, test_path))
         result = process.run(cmd, ignore_status=True)
         jres = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, 1, result)
-        exps = [("unittests.Second.test_fail", "FAIL"),
-                ("unittests.Second.test_error", "ERROR"),
-                ("unittests.Second.test_skip", "CANCEL"),
-                ("unittests.First.test_pass", "PASS")]
+        exps = [("unittests.py:Second.test_fail", "FAIL"),
+                ("unittests.py:Second.test_error", "ERROR"),
+                ("unittests.py:Second.test_skip", "SKIP"),
+                ("unittests.py:First.test_pass", "PASS")]
         for test in jres["tests"]:
             for exp in exps:
                 if exp[0] in test["id"]:
