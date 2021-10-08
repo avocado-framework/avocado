@@ -20,10 +20,9 @@ import logging
 import re
 
 from robot import run
+from robot.api import TestSuite, get_model
 from robot.errors import DataError
-from robot.model import SuiteNamePatterns
 from robot.output.logger import LOGGER
-from robot.parsing.model import TestData
 
 from avocado.core import loader, output, test
 from avocado.core.nrunner import Runnable
@@ -73,14 +72,15 @@ class NotRobotTest:
 
 
 def find_tests(reference, test_suite):
-    data = TestData(parent=None,
-                    source=reference,
-                    include_suites=SuiteNamePatterns())
+
+    model = get_model(reference)
+    data = TestSuite.from_model(model)
+
     test_suite[data.name] = []
-    for test_case in data.testcase_table:
-        test_suite[data.name].append({'test_name': test_case.name,
-                                      'test_source': test_case.source})
-    for child_data in data.children:
+    for test_case in data.tests:
+        test_suite[data.name].append({'test_name': test_case,
+                                      'test_source': data.source})
+    for child_data in data.suites:
         find_tests(child_data, test_suite)
     return test_suite
 

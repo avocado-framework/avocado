@@ -26,7 +26,7 @@ setup(name='avocado-framework-plugin-robot',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION,
-                        'robotframework<=3.1.2'],
+                        'robotframework>=4.1'],
       test_suite='tests',
       entry_points={
           'console_scripts': [
