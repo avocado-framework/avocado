@@ -561,6 +561,14 @@ class PythonUnittestRunner(BaseRunner):
 
     @property
     def unittest(self):
+        """Returns the unittest part of an uri as tuple.
+
+        Ex:
+
+        uri = './avocado.dev/selftests/.data/unittests/test.py:Class.test_foo'
+        It will return ("test", "Class", "test_foo")
+        """
+
         uri = self.runnable.uri
         if ':' in uri:
             module, class_method = uri.rsplit(':', 1)
@@ -569,21 +577,10 @@ class PythonUnittestRunner(BaseRunner):
 
         if module.endswith('.py'):
             module = module[:-3]
-        if module.startswith(os.path.curdir):
-            module = module[1:]
-            if module.startswith(os.path.sep):
-                module = module[1:]
-        module = module.replace(os.path.sep, ".")
+        module = module.rsplit(os.path.sep, 1)[-1]
+
         klass, method = class_method.rsplit('.', maxsplit=1)
         return module, klass, method
-
-    @property
-    def unittest_name(self):
-        """Convert a test reference (uri) to an unittest name reference."""
-        unittest = self.unittest
-        if not unittest:
-            return None
-        return "{}.{}.{}".format(*unittest)
 
     @property
     def module_path(self):
@@ -610,11 +607,7 @@ class PythonUnittestRunner(BaseRunner):
         if not unittest:
             return None
 
-        full_module, klass, method = unittest
-        # Lets split the full_module and get the module_path + module it self
-        # We care here only about the module (without the path)
-        _, module = full_module.rsplit(".", maxsplit=1)
-        return ".".join((module, klass, method))
+        return ".".join(unittest)
 
     @classmethod
     def _run_unittest(cls, module_path, module_class_method, queue):
@@ -651,7 +644,7 @@ class PythonUnittestRunner(BaseRunner):
         queue.put(output)
 
     def run(self):
-        if not self.unittest_name:
+        if not self.module_class_method:
             error_msg = ("Invalid URI: could not be converted to an unittest "
                          "dotted name.")
             yield self.prepare_status('finished', {'result': 'error',
