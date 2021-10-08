@@ -1,0 +1,48 @@
+========
+82.1 LTS
+========
+
+The Avocado team is proud to present a minor release in the 82.0 LTS (Long Term Stability)
+series, version 81.1 LTS, is now available!
+
+LTS Release
+===========
+
+For more information on what a LTS release means, please read
+:ref:`rfc-long-term-stability`.
+
+Upgrading from 82.x to 82.1
+===========================
+
+Upgrading should be smooth, and there are no additional instructions
+besides the steps on the installation method used.  For instance,
+if using pip, it should be as simple as::
+
+  $ pip install avocado-framework==82.1
+
+To use the latest 82.x release, you can also always do::
+
+  $ pip install avocado-framework<83.0
+
+Changes from 82.0
+=================
+
+* The :mod:`avocado.utils.software_manager` RPM backend now properly
+  uses the right type when checking the installed version of a
+  package.
+
+* The :mod:`avocado.utils.cpu` library now properly handles s390x z13
+  family of CPUs.
+
+* Build fixes for the RPM packages on Fedora 34 and newer, by not
+  making use of ``make`` without an explicit requirement.
+
+* A workaround for Travis-CI on arm64 (aarch64) was included, using
+  only one CPU avoid job's processes being killed.
+
+Complete list of changes
+------------------------
+
+For a complete list of changes between the last LTS release (82.0) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/82.0...82.1>`_.

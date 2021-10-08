@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      ff35265f889bbfca9257713ff25de0e08d776593
+        %global commit      ee4335bb7e8a5aa70323f6685b5017f0df6f43a3
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20200911
+        %global commit_date 20211011
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:9})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -33,8 +33,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 82.0
-Release: 2%{?gitrel}%{?dist}
+Version: 82.1
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -431,6 +431,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Oct  8 2021 Cleber Rosa <cleber@redhat.com> - 82.1-1
+- New release
+
 * Mon May 24 2021 Cleber Rosa <cleber@redhat.com> - 82.0-2
 - Do not depend on make to build man page
 
