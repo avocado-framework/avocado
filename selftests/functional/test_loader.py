@@ -261,7 +261,7 @@ class LoaderTestFunctional(TestCaseTmpDir):
         self._run_with_timeout(cmd_line, 5)
 
     def test_python_unittest(self):
-        test_path = os.path.join(BASEDIR, "selftests", ".data", "unittests.py")
+        test_path = os.path.join("selftests", ".data", "unittests.py")
         cmd = ("%s run --disable-sysinfo --job-results-dir %s --json - "
                "--test-runner=runner "
                "-- %s" % (AVOCADO, self.tmpdir.name, test_path))
