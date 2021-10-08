@@ -587,14 +587,17 @@ class PythonUnittestRunner(BaseRunner):
 
     @property
     def module_path(self):
-        unittest = self.unittest
-        if not unittest:
+        """Path where the module is located.
+
+        Ex:
+        uri = './avocado.dev/selftests/.data/unittests/test.py:Class.test_foo'
+        It will return './avocado.dev/selftests/.data/unittests/'
+        """
+        uri = self.runnable.uri
+        if not uri:
             return None
-        module, _, _ = unittest
-        path = module.replace('.', os.path.sep)
-        # This will fix adding support to hidden directories
-        path = path.replace('//', '/.')
-        return os.path.dirname(path)
+        module_path = uri.rsplit(':', 1)[0]
+        return os.path.dirname(module_path)
 
     @property
     def module_class_method(self):
