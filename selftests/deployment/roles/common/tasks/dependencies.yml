@@ -24,6 +24,7 @@
      - tcpdump
      - iproute
      - iputils
+     - xz
     state: latest
   when:
     - ansible_facts['distribution_file_variety'] == "RedHat"
