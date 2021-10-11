@@ -143,12 +143,16 @@ check: clean develop
 	PYTHON=$(PYTHON) $(PYTHON) selftests/job_api/test_features.py
 	selftests/check_tmp_dirs
 
+ifndef PYTHON_DEVELOP_CMD_ARGS
+PYTHON_DEVELOP_CMD_ARGS=setup.py develop $(PYTHON_DEVELOP_ARGS)
+endif
+
 develop:
 	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS)
 	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$PLUGIN/Makefile -o -f $$PLUGIN/setup.py; then echo ">> LINK $$PLUGIN";\
 			if test -f $$PLUGIN/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN PYTHON="$(PYTHON)" link &>/dev/null;\
-			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
+			elif test -f $$PLUGIN/setup.py; then cd $$PLUGIN; $(PYTHON) $(PYTHON_DEVELOP_CMD_ARGS); cd -; fi;\
 		else echo ">> SKIP $$PLUGIN"; fi;\
 	done
 
