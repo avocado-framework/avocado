@@ -130,9 +130,16 @@ smokecheck: clean develop
 ifndef AVOCADO_OPTIONAL_PLUGINS_TESTS
 AVOCADO_OPTIONAL_PLUGINS_TESTS=$(patsubst %,%/tests/, $(AVOCADO_OPTIONAL_PLUGINS))
 endif
+
+ifeq ($(TRAVIS_CI_ARCH), arm64)
+PARALLEL_ARG=--nrunner-max-parallel-tasks=1
+else
+PARALLEL_ARG=
+endif
+
 check: clean develop
 	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
-	PYTHON=$(PYTHON) $(PYTHON) -m avocado run --test-runner=nrunner --ignore-missing-references -- selftests/*.sh selftests/jobs/* selftests/unit/ selftests/functional/ $(AVOCADO_OPTIONAL_PLUGINS_TESTS)
+	PYTHON=$(PYTHON) $(PYTHON) -m avocado run --test-runner=nrunner $(PARALLEL_ARG) --ignore-missing-references -- selftests/*.sh selftests/jobs/* selftests/unit/ selftests/functional/ $(AVOCADO_OPTIONAL_PLUGINS_TESTS)
 	PYTHON=$(PYTHON) $(PYTHON) selftests/job_api/test_features.py
 	selftests/check_tmp_dirs
 
