@@ -207,7 +207,7 @@ class DebianImageProvider(unittest.TestCase):
         urlread_mocked = unittest.mock.Mock(return_value=self.VERSION_LISTING)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
         provider = vmimage.DebianImageProvider()
-        self.assertEqual(provider.get_versions(), ['9.12.0', '10.3.0'])
+        self.assertEqual(provider.get_versions(), ['9', '10'])
 
 
 class OpenSUSEImageProvider(unittest.TestCase):

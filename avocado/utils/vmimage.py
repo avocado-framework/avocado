@@ -304,8 +304,7 @@ class DebianImageProvider(ImageProviderBase):
 
     name = 'Debian'
 
-    def __init__(self, version='[0-9]+.[0-9]+.[0-9]+.*', build=None,
-                 arch=DEFAULT_ARCH):
+    def __init__(self, version='[0-9]+', build=None, arch=DEFAULT_ARCH):
         # Debian uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = 'amd64'
@@ -315,8 +314,25 @@ class DebianImageProvider(ImageProviderBase):
 
         super(DebianImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://cdimage.debian.org/cdimage/openstack/'
-        self.url_images = self.url_versions + '{version}/'
+        self.url_images = self.url_versions + 'current-{version}/'
         self.image_pattern = 'debian-(?P<version>{version})-openstack-(?P<arch>{arch}).qcow2$'
+
+    @property
+    def version_pattern(self):
+        return '^current-%s' % self._version
+
+    @staticmethod
+    def _convert_version_numbers(versions):
+        """
+        Remove current- prefix and return only the version numbers
+        """
+        pattern = r'(^current-)?([0-9]+)'
+        replace = r'\2'
+        return [re.sub(pattern, replace, str(v)) for v in versions]
+
+    def get_versions(self):
+        versions = super().get_versions()
+        return self._convert_version_numbers(versions)
 
 
 class JeosImageProvider(ImageProviderBase):
