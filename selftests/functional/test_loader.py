@@ -267,16 +267,23 @@ class LoaderTestFunctional(TestCaseTmpDir):
         result = process.run(cmd, ignore_status=True)
         jres = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, 1, result)
-        exps = [("unittests.py:Second.test_fail", "FAIL"),
-                ("unittests.py:Second.test_error", "ERROR"),
-                ("unittests.py:Second.test_skip", "SKIP"),
-                ("unittests.py:First.test_pass", "PASS")]
+        exps = [("unittests.py:Second.test_fail", "FAIL",
+                 "AssertionError: this is suppose to fail"),
+                ("unittests.py:Second.test_error", "ERROR",
+                 "RuntimeError: This is suppose to error"),
+                ("unittests.py:Second.test_skip", "SKIP",
+                 "This is suppose to be skipped"),
+                ("unittests.py:First.test_pass", "PASS", None)]
         for test in jres["tests"]:
             for exp in exps:
                 if exp[0] in test["id"]:
                     self.assertEqual(test["status"], exp[1], "Status of %s not"
-                                     " as expected\n%s" % (exp, result))
+                                     " as expected: %s" % (exp, result))
                     exps.remove(exp)
+                    if exp[2] is not None:
+                        self.assertEqual(test["fail_reason"], exp[2],
+                                         'Fail reason "%s" not as expected: %s'
+                                         % (exp, result))
                     break
             else:
                 self.fail("No expected result for %s\n%s\n\nexps = %s"
