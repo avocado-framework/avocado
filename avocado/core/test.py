@@ -215,8 +215,6 @@ class Test(unittest.TestCase, TestData):
 
     You'll inherit from this to write your own tests. Typically you'll want
     to implement setUp(), test*() and tearDown() methods on your own tests.
-
-    :avocado: disable
     """
     #: Arbitrary string which will be stored in `$logdir/whiteboard` location
     #: when the test finishes.

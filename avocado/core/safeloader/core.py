@@ -220,7 +220,7 @@ def _examine_class(target_module, target_class, determine_match, path,
         docstring = ast.get_docstring(klass)
 
         if match is False:
-            match = determine_match(module, klass, docstring)
+            match = module.is_matching_klass(klass)
 
         info = get_methods_info(klass.body,
                                 get_docstring_directives_tags(docstring),
