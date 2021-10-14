@@ -86,6 +86,10 @@ class CmdError(Exception):
                 (self.command, self.result.stdout, self.result.stderr, self.additional_text))
 
 
+class CmdInputError(Exception):
+    """Raised when the command given is invalid, such as an empty command."""
+
+
 def can_sudo(cmd=None):
     """
     Check whether sudo is available (or running as root)
@@ -1074,6 +1078,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
+    if not cmd:
+        raise CmdInputError("Invalid empty command")
     if encoding is None:
         encoding = astring.ENCODING
     klass = get_sub_process_klass(cmd)

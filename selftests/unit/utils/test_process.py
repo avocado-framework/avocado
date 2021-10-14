@@ -502,6 +502,10 @@ class MiscProcessTests(unittest.TestCase):
                          process.kill_process_tree(31))
         self.assertEqual(sleep.call_count, 0)
 
+    def test_empty_command(self):
+        with self.assertRaises(process.CmdInputError):
+            process.run("")
+
 
 class CmdResultTests(unittest.TestCase):
 
