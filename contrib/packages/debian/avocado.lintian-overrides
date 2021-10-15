@@ -1,0 +1,3 @@
+# Those files describes the purpose of the directory they are in
+avocado: package-contains-documentation-outside-usr-share-doc usr/lib/python3/dist-packages/avocado/etc/avocado/scripts/job/post.d/README
+avocado: package-contains-documentation-outside-usr-share-doc usr/lib/python3/dist-packages/avocado/etc/avocado/scripts/job/pre.d/README
