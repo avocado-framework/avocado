@@ -1218,7 +1218,7 @@ classes might inherit it's ``test*`` methods (useful for base-classes)::
 
 Results in::
 
-   $ avocado list test.py
+   $ avocado list --loader test.py
    INSTRUMENTED test.py:SpecificTests.test_specific
    INSTRUMENTED test.py:SpecificTests.test_shared
 
@@ -1261,7 +1261,7 @@ class::
 
 Results in::
 
-   $ avocado list test.py
+   $ avocado list --loader test.py
    INSTRUMENTED test.py:NotInheritedFromTest.test
    INSTRUMENTED test.py:SpecificTests.test_specific
 
@@ -1370,13 +1370,13 @@ all methods, being merged with method local tags. Example::
 
 If you use the tag ``furious``, all tests will be included::
 
-    $ avocado list furious_tests.py --filter-by-tags=furious
+    $ avocado list --loader furious_tests.py --filter-by-tags=furious
     INSTRUMENTED test_tags.py:MyClass.test1
     INSTRUMENTED test_tags.py:MyClass.test2
 
 But using ``fast`` and ``furious`` will include only ``test1``::
 
-    $ avocado list furious_tests.py --filter-by-tags=fast,furious
+    $ avocado list --loader furious_tests.py --filter-by-tags=fast,furious
     INSTRUMENTED test_tags.py:MyClass.test1
 
 

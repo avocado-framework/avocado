@@ -301,7 +301,7 @@ The other way is to use ``list`` subcommand that lists the discovered tests If
 no arguments provided, Avocado lists "default" tests per each plugin.  The
 output might look like this::
 
-    $ avocado list
+    $ avocado list --loader
     INSTRUMENTED /usr/share/doc/avocado/tests/abort.py
     INSTRUMENTED /usr/share/doc/avocado/tests/datadir.py
     INSTRUMENTED /usr/share/doc/avocado/tests/doublefail.py
@@ -326,7 +326,7 @@ These Python files are considered by Avocado to contain ``INSTRUMENTED`` tests.
 
 Let's now list only the executable shell scripts::
 
-    $ avocado list | grep ^SIMPLE
+    $ avocado list --loader | grep ^SIMPLE
     SIMPLE       /usr/share/doc/avocado/tests/env_variables.sh
     SIMPLE       /usr/share/doc/avocado/tests/output_check.sh
     SIMPLE       /usr/share/doc/avocado/tests/simplewarning.sh

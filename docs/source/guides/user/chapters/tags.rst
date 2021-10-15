@@ -11,7 +11,7 @@ test resolver (also known as test loader).
 Usually, listing and executing tests with the Avocado test runner
 would reveal all three tests::
 
-  $ avocado list perf.py
+  $ avocado list --loader perf.py
   INSTRUMENTED perf.py:Disk.test_device
   INSTRUMENTED perf.py:Network.test_latency
   INSTRUMENTED perf.py:Network.test_throughput
@@ -20,7 +20,7 @@ would reveal all three tests::
 If you want to list or run only the network based tests, you can do so
 by requesting only tests that are tagged with ``net``::
 
-  $ avocado list perf.py --filter-by-tags=net
+  $ avocado list --loader perf.py --filter-by-tags=net
   INSTRUMENTED perf.py:Network.test_latency
   INSTRUMENTED perf.py:Network.test_throughput
 
@@ -30,14 +30,14 @@ development workstation).  You know that some tests are tagged
 with ``safe`` while others are tagged with ``unsafe``.  To only
 select the "safe" tests you can run::
 
-  $ avocado list perf.py --filter-by-tags=safe
+  $ avocado list --loader perf.py --filter-by-tags=safe
   INSTRUMENTED perf.py:Network.test_latency
   INSTRUMENTED perf.py:Network.test_throughput
 
 But you could also say that you do **not** want the "unsafe" tests
 (note the *minus* sign before the tag)::
 
-  $ avocado list perf.py --filter-by-tags=-unsafe
+  $ avocado list --loader perf.py --filter-by-tags=-unsafe
   INSTRUMENTED perf.py:Network.test_latency
   INSTRUMENTED perf.py:Network.test_throughput
 
@@ -52,13 +52,13 @@ But you could also say that you do **not** want the "unsafe" tests
 If you require tests to be tagged with **multiple** tags, just add
 them separate by commas.  Example::
 
-  $ avocado list perf.py --filter-by-tags=disk,slow,superuser,unsafe
+  $ avocado list --loader perf.py --filter-by-tags=disk,slow,superuser,unsafe
   INSTRUMENTED perf.py:Disk.test_device
 
 If no test contains **all tags** given on a single ``--filter-by-tags``
 parameter, no test will be included::
 
-  $ avocado list perf.py --filter-by-tags=disk,slow,superuser,safe | wc -l
+  $ avocado list --loader perf.py --filter-by-tags=disk,slow,superuser,safe | wc -l
   0
 
 Multiple tags (AND vs OR)
@@ -72,7 +72,7 @@ operation).
 For instance To include all tests that have the ``disk`` tag and all
 tests that have the ``net`` tag, you can run::
 
-  $ avocado list perf.py --filter-by-tags=disk --filter-by-tags=net
+  $ avocado list --loader perf.py --filter-by-tags=disk --filter-by-tags=net
   INSTRUMENTED perf.py:Disk.test_device
   INSTRUMENTED perf.py:Network.test_latency
   INSTRUMENTED perf.py:Network.test_throughput
@@ -88,14 +88,14 @@ For instance, you may want to include tests of certain types that do
 not have support for tags (such as SIMPLE tests) or tests that have
 not (yet) received tags.  Consider this command::
 
-  $ avocado list perf.py /bin/true --filter-by-tags=disk
+  $ avocado list --loader perf.py /bin/true --filter-by-tags=disk
   INSTRUMENTED perf.py:Disk.test_device
 
 Since it requires the ``disk`` tag, only one test was returned.  By
 using the ``--filter-by-tags-include-empty`` option, you can force the
 inclusion of tests without tags::
 
-  $ avocado list perf.py /bin/true --filter-by-tags=disk --filter-by-tags-include-empty
+  $ avocado list --loader perf.py /bin/true --filter-by-tags=disk --filter-by-tags-include-empty
   SIMPLE       /bin/true
   INSTRUMENTED perf.py:Idle.test_idle
   INSTRUMENTED perf.py:Disk.test_device
@@ -115,20 +115,20 @@ For instance, your tags can now have a key and value pair, like:
 
 To list tests without any type of filtering would give you::
 
-  $ avocado list byteorder.py
+  $ avocado list --loader byteorder.py
   INSTRUMENTED byteorder.py:ByteOrder.test_le
   INSTRUMENTED byteorder.py:ByteOrder.test_be
   INSTRUMENTED byteorder.py:Generic.test
 
 To list tests that are somehow related to endianness, you can use::
 
-  $ avocado list byteorder.py --filter-by-tags endianness
+  $ avocado list --loader byteorder.py --filter-by-tags endianness
   INSTRUMENTED byteorder.py:ByteOrder.test_le
   INSTRUMENTED byteorder.py:ByteOrder.test_be
 
 And to be even more specific, you can use::
 
-  $ avocado list byteorder.py --filter-by-tags endianness:big
+  $ avocado list --loader byteorder.py --filter-by-tags endianness:big
   INSTRUMENTED byteorder.py:ByteOrder.test_be
 
 Now, suppose you intend to run tests on a little endian platform, but you'd
@@ -136,7 +136,7 @@ still want to include tests that are generic enough to run on either little or
 big endian (but not tests that are specific to other types of endianness), you
 could use::
 
-  $ avocado list byteorder.py --filter-by-tags endianness:big --filter-by-tags-include-empty-key
+  $ avocado list --loader byteorder.py --filter-by-tags endianness:big --filter-by-tags-include-empty-key
   INSTRUMENTED byteorder.py:ByteOrder.test_be
   INSTRUMENTED byteorder.py:Generic.test
 
