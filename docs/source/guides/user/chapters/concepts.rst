@@ -200,10 +200,8 @@ Python unittest
 
 The discovery of classical Python unittest is also supported, although unlike
 Python unittest we still use static analysis to get individual tests so
-dynamically created cases are not recognized. Also note that test result SKIP
-is reported as CANCEL in Avocado as SKIP test meaning differs from our
-definition. Apart from that there should be no surprises when running unittests
-via Avocado.
+dynamically created cases are not recognized. Apart from that there should be
+no surprises when running unittests via Avocado.
 
 .. _Instrumented:
 
