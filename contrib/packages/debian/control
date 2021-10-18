@@ -2,12 +2,18 @@ Source: avocado
 Section: python
 Priority: optional
 Maintainer: Lucas Meneghel Rodrigues (lmr) <lookkas@gmail.com>
-Build-Depends: debhelper (>=7.0.50~), python3, python3-setuptools, dh-python, python3-docutils
-Standards-Version: 3.8.4
+Build-Depends: debhelper (>= 10), python3, python3-setuptools, dh-python, python3-docutils
+Standards-Version: 4.6.0
 
 Package: avocado
 Architecture: all
 Homepage: http://avocado-framework.github.io/
 X-Python-Version: ${python:Versions}
 Depends: ${misc:Depends}, ${python3:Depends}
-Description: Avocado is a framework for fully automated testing.
+Description: Framework with tools and libraries for Automated Testing
+ It is a set of tools and libraries to help with automated testing.
+ One can call it a test framework with benefits. Native tests are written
+ in Python and they follow the unittest pattern, but any executable can serve
+ as a test.
+ .
+ This package contains tools and libraries for avocado automated testing.
