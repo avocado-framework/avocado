@@ -7,7 +7,7 @@ SYNOPSIS
 ========
 
 avocado [-h] [-v] [--config [CONFIG_FILE]] [--show [STREAM[:LVL]]] [-s]
- {config,diff,distro,exec-path,list,multiplex,plugins,run,sysinfo} ...
+{config,diff,distro,exec-path,list,multiplex,plugins,run,sysinfo} ...
 
 DESCRIPTION
 ===========
@@ -305,8 +305,8 @@ Options for subcommand `diff` (`avocado diff --help`)::
                             temporary file.
       --diff-filter DIFF_FILTER
                             Comma separated filter of diff sections:
-                            (no)cmdline,(no)time,(no)variants,(no)results,
-                            (no)config,(no)sysinfo (defaults to all enabled).
+                            (no)cmdline, (no)time, (no)variants, (no)results,
+                            (no)config, (no)sysinfo (defaults to all enabled).
       --diff-strip-id       Strip the "id" from "id-name;variant" when comparing
                             test results.
       --create-reports      Create temporary files with job reports to be used by
@@ -841,7 +841,7 @@ them executable (`chmod +x /tmp/pass /tmp/fail)`, and running them as
 But now consider the following example::
 
     $ avocado run --external-runner=/bin/curl http://local-avocado-server:9405/jobs/ \
-                                              http://remote-avocado-server:9405/jobs/
+    http://remote-avocado-server:9405/jobs/
     JOB ID    : <id>
     JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
     TESTS      : 2
