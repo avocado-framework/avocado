@@ -1,5 +1,6 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
+export PYBUILD_AFTER_BUILD={interpreter} setup.py man
 
 clean::
 	rm -rf build build-stamp configure-stamp build/ MANIFEST
