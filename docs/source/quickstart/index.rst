@@ -188,7 +188,7 @@ create custom jobs and test suites:
 
   from avocado.core.job import Job
 
-  with Job.from_config({'run.references': ['/bin/true']}) as job:
+  with Job.from_config({'resolver.references': ['/bin/true']}) as job:
       sys.exit(job.run())
 
 How to install

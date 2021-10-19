@@ -8,12 +8,12 @@ from avocado.core.suite import TestSuite
 JOB_CONFIG = {'run.test_runner': 'nrunner'}
 
 ORDERLY_CONFIG = {'run.test_runner': 'nrunner',
-                  'run.references': ['/bin/true', '/bin/true', '/bin/last'],
+                  'resolver.references': ['/bin/true', '/bin/true', '/bin/last'],
                   'nrunner.max_parallel_tasks': 1}
 
 RANDOM_CONFIG = {'run.test_runner': 'nrunner',
-                 'run.references': ['/bin/true', '/bin/true', '/bin/true',
-                                    '/bin/true', '/bin/true', '/bin/last'],
+                 'resolver.references': ['/bin/true', '/bin/true', '/bin/true',
+                                         '/bin/true', '/bin/true', '/bin/last'],
                  'nrunner.shuffle': True,
                  'nrunner.max_parallel_tasks': 3}
 

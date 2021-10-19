@@ -5,7 +5,7 @@ import sys
 from avocado.core.job import Job
 from avocado.core.suite import TestSuite
 
-config = {'run.references': ['examples/tests/passtest.py:PassTest.test'],
+config = {'resolver.references': ['examples/tests/passtest.py:PassTest.test'],
           'cit_parameter_file': 'examples/varianter_cit/test_params.cit'}
 
 suite = TestSuite.from_config(config)

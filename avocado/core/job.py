@@ -625,8 +625,8 @@ class Job:
         jobdata.record(self, sys.argv)
 
         if self.size == 0:
-            msg = ("Unable to resolve any reference or 'run.references' is "
-                   "empty.")
+            msg = ('Unable to resolve any reference or "resolver.references"'
+                   "is empty.")
             LOG_UI.error(msg)
 
         if not self.test_suites:

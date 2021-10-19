@@ -9,7 +9,7 @@ from avocado.core.job import Job
 from avocado.core.suite import TestSuite
 
 config = {
-    'run.references': [
+    'resolver.references': [
         os.path.join(os.path.dirname(__file__), 'tests', 'pass'),
         os.path.join(os.path.dirname(__file__), 'tests', 'passtest.py')
         ]

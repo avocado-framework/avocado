@@ -150,7 +150,7 @@ class TestSuite:
 
     @classmethod
     def _from_config_with_loader(cls, config, name=None):
-        references = config.get('run.references')
+        references = config.get('resolver.references')
         ignore_missing = config.get('run.ignore_missing_references')
         verbose = config.get('core.verbose')
         subcommand = config.get('subcommand')
@@ -186,7 +186,7 @@ class TestSuite:
     @classmethod
     def _from_config_with_resolver(cls, config, name=None):
         ignore_missing = config.get('run.ignore_missing_references')
-        references = config.get('run.references')
+        references = config.get('resolver.references')
         try:
             hint = None
             hint_filepath = '.avocado.hint'
@@ -250,7 +250,7 @@ class TestSuite:
     @property
     def references(self):
         if self._references is None:
-            self._references = self.config.get('run.references')
+            self._references = self.config.get('resolver.references')
         return self._references
 
     @property
