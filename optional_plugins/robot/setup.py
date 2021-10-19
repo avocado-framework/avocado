@@ -32,9 +32,6 @@ setup(name='avocado-framework-plugin-robot',
           'console_scripts': [
               'avocado-runner-robot = avocado_robot.runner:main',
           ],
-          'avocado.plugins.cli': [
-              'robot = avocado_robot:RobotCLI',
-          ],
           'avocado.plugins.resolver': [
               'robot = avocado_robot:RobotResolver'
           ]}
