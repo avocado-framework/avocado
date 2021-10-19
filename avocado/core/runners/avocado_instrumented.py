@@ -3,9 +3,10 @@ import tempfile
 import time
 import traceback
 
-from .. import loader, nrunner
+from .. import nrunner
 from ..test import TestID
 from ..tree import TreeNode, TreeNodeEnvOnly
+from ..utils import loader
 from ..varianter import is_empty_variant
 from .utils import messages
 
@@ -75,7 +76,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                              }]
 
             messages.start_logging(runnable.config, queue)
-            instance = loader.loader.load_test(test_factory)
+            instance = loader.load_test(test_factory)
             early_state = instance.get_state()
             early_state['type'] = "early_state"
             queue.put(early_state)
