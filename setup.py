@@ -65,6 +65,16 @@ class Clean(clean):
             "./build",
             "./dist",
             "./man/avocado.1",
+            "./man/avocado-runner-avocado-instrumented.1",
+            "./man/avocado-runner-dry-run.1",
+            "./man/avocado-runner-exec-test.1",
+            "./man/avocado-runner-noop.1",
+            "./man/avocado-runner-python-unittest.1",
+            "./man/avocado-runner-requirement-asset.1",
+            "./man/avocado-runner-requirement-package.1",
+            "./man/avocado-runner-sysinfo.1",
+            "./man/avocado-runner-tap.1",
+            "./man/avocado-software-manager.1",
             "./docs/build",
         ]
 
@@ -281,6 +291,71 @@ class Man(SimpleCommand):
 
         try:
             run([cmd, "man/avocado.rst", "man/avocado.1"], check=True)
+            run(
+                [
+                    cmd,
+                    "man/avocado-runner-avocado-instrumented.rst",
+                    "man/avocado-runner-avocado-instrumented.1",
+                ],
+                check=True,
+            )
+            run(
+                [cmd, "man/avocado-runner-dry-run.rst", "man/avocado-runner-dry-run.1"],
+                check=True,
+            )
+            run(
+                [
+                    cmd,
+                    "man/avocado-runner-exec-test.rst",
+                    "man/avocado-runner-exec-test.1",
+                ],
+                check=True,
+            )
+            run(
+                [cmd, "man/avocado-runner-noop.rst", "man/avocado-runner-noop.1"],
+                check=True,
+            )
+            run(
+                [
+                    cmd,
+                    "man/avocado-runner-python-unittest.rst",
+                    "man/avocado-runner-python-unittest.1",
+                ],
+                check=True,
+            )
+            run(
+                [
+                    cmd,
+                    "man/avocado-runner-requirement-asset.rst",
+                    "man/avocado-runner-requirement-asset.1",
+                ],
+                check=True,
+            )
+            run(
+                [
+                    cmd,
+                    "man/avocado-runner-requirement-package.rst",
+                    "man/avocado-runner-requirement-package.1",
+                ],
+                check=True,
+            )
+            run(
+                [cmd, "man/avocado-runner-sysinfo.rst", "man/avocado-runner-sysinfo.1"],
+                check=True,
+            )
+            run(
+                [cmd, "man/avocado-runner-tap.rst", "man/avocado-runner-tap.1"],
+                check=True,
+            )
+            run([cmd, "man/avocado-runner.rst", "man/avocado-runner.1"], check=True)
+            run(
+                [
+                    cmd,
+                    "man/avocado-software-manager.rst",
+                    "man/avocado-software-manager.1",
+                ],
+                check=True,
+            )
         except CalledProcessError as e:
             print("Failed manpage build: ", e)
             sys.exit(128)
