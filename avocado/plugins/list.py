@@ -285,7 +285,7 @@ class List(CLICmd):
         write_to_json_file = config.get('list.write_to_json_file')
         resolver = config.get('list.resolver')
         runner = 'nrunner' if resolver else 'runner'
-        config['run.references'] = config.get('list.references')
+        config['resolver.references'] = config.get('list.references')
         config['run.ignore_missing_references'] = True
         config['run.test_runner'] = runner
         try:

@@ -7,7 +7,7 @@ from avocado.core.suite import TestSuite
 
 config = {
     'run.test_runner': 'nrunner',
-    'run.references': [
+    'resolver.references': [
         'selftests/unit/plugin/test_resolver.py',
         'selftests/functional/test_argument_parsing.py',
         '/bin/true',

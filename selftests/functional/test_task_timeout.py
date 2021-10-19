@@ -19,7 +19,7 @@ class TaskTimeOutTest(TestCaseTmpDir):
 
     @skipUnlessPathExists('/bin/sleep')
     def test_sleep_longer_timeout(self):
-        config = {'run.references': [self.script.path],
+        config = {'resolver.references': [self.script.path],
                   'run.results_dir': self.tmpdir.name,
                   'task.timeout.running': 2,
                   'run.test_runner': 'nrunner'}

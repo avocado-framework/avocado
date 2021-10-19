@@ -188,6 +188,13 @@ def register_core_options():
                          key_type=list,
                          help_msg=help_msg)
 
+    help_msg = 'List of test references (aliases or paths)'
+    stgs.register_option(section='resolver',
+                         key='references',
+                         key_type=list,
+                         default=[],
+                         help_msg=help_msg)
+
 
 def initialize_plugin_infrastructure():
     help_msg = 'Plugins that will not be loaded and executed'

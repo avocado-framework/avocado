@@ -51,7 +51,7 @@ class JobAPIFeaturesTest(Test):
         reference = self.params.get('reference', default=['/bin/true'])
         config = {'core.show': ['none'],
                   'run.results_dir': self.workdir,
-                  'run.references': reference}
+                  'resolver.references': reference}
         namespace = self.params.get('namespace')
         config[namespace] = value
 
@@ -237,7 +237,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     check_archive_file_exists = ('%s:%s.test_check_archive_file_exists'
                                  % (__file__, test_class))
     config_check_archive_file_exists = {
-        'run.references': [check_archive_file_exists],
+        'resolver.references': [check_archive_file_exists],
         'run.dict_variants': [
             {'namespace': 'run.results.archive',
              'value': True,
@@ -255,7 +255,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
         '%s:%s.test_check_category_directory_exists'
         % (__file__, test_class))
     config_check_category_directory_exists = {
-        'run.references': [check_category_directory_exists],
+        'resolver.references': [check_category_directory_exists],
         'run.dict_variants': [
             {'namespace': 'run.job_category',
              'value': 'foo',
@@ -272,7 +272,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     check_directory_exists = ('%s:%s.test_check_directory_exists'
                               % (__file__, test_class))
     config_check_directory_exists = {
-        'run.references': [check_directory_exists],
+        'resolver.references': [check_directory_exists],
         'run.dict_variants': [
              {'namespace': 'sysinfo.collect.enabled',
               'value': True,
@@ -295,7 +295,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     check_file_content = ('%s:%s.test_check_file_content'
                           % (__file__, test_class))
     config_check_file_content = {
-        'run.references': [check_file_content],
+        'resolver.references': [check_file_content],
         'run.dict_variants': [
             # finding the correct 'content' here is trick because any
             # simple string is added to the variant file name and is
@@ -374,7 +374,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     check_file_exists = ('%s:%s.test_check_file_exists'
                          % (__file__, test_class))
     config_check_file_exists = {
-        'run.references': [check_file_exists],
+        'resolver.references': [check_file_exists],
         'run.dict_variants': [
             {'namespace': 'job.run.result.json.enabled',
              'value': True,
@@ -453,7 +453,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     check_output_file = ('%s:%s.test_check_output_file'
                          % (__file__, test_class))
     config_check_output_file = {
-        'run.references': [check_output_file],
+        'resolver.references': [check_output_file],
         'run.dict_variants': [
             {'namespace': 'job.run.result.json.output',
              'file': 'custom.json',
@@ -487,7 +487,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     check_tmp_directory_exists = ('%s:%s.test_check_tmp_directory_exists'
                                   % (__file__, test_class))
     config_check_tmp_directory_exists = {
-        'run.references': [check_tmp_directory_exists],
+        'resolver.references': [check_tmp_directory_exists],
         'run.dict_variants': [
             {'namespace': 'run.keep_tmp',
              'value': True,
@@ -506,7 +506,7 @@ def create_suites(args):  # pylint: disable=W0621
     # Run nrunner interface checks for all available runners
     # ========================================================================
     config_nrunner_interface = {
-        'run.references': ['selftests/functional/test_nrunner_interface.py'],
+        'resolver.references': ['selftests/functional/test_nrunner_interface.py'],
         'run.dict_variants': [
             {'runner': 'avocado-runner'},
             {'runner': 'avocado-runner-noop'},
@@ -543,21 +543,21 @@ def create_suites(args):  # pylint: disable=W0621
         selftests.append('selftests/functional/')
 
     config_check = {
-        'run.references': selftests,
+        'resolver.references': selftests,
         'run.test_runner': 'nrunner',
         'run.ignore_missing_references': True,
         'job.output.testlogs.statuses': ['FAIL']
     }
 
     if args.static_checks:
-        config_check['run.references'] += glob.glob('selftests/*.sh')
+        config_check['resolver.references'] += glob.glob('selftests/*.sh')
 
     if args.optional_plugins:
         for optional_plugin in glob.glob('optional_plugins/*'):
             plugin_name = os.path.basename(optional_plugin)
             if plugin_name not in args.disable_plugin_checks:
                 pattern = '%s/tests/*' % optional_plugin
-                config_check['run.references'] += glob.glob(pattern)
+                config_check['resolver.references'] += glob.glob(pattern)
 
     suites.append(TestSuite.from_config(config_check, "check"))
 

@@ -16,7 +16,7 @@ class Test(TestCaseTmpDir):
         super(Test, self).setUp()
         self.base_config = {'core.show': ['none'],
                             'run.results_dir': self.tmpdir.name,
-                            'run.references': ['examples/tests/passtest.py']}
+                            'resolver.references': ['examples/tests/passtest.py']}
 
     def test_job_run_result_json_enabled(self):
         self.base_config['job.run.result.json.enabled'] = True
