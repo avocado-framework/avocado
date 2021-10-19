@@ -701,17 +701,6 @@ class RunnerHumanOutputTest(TestCaseTmpDir):
         self.assertEqual(os.path.basename(test_dirs[0]),
                          "1-foo__n_'____nbar_baz")
 
-    def test_replay_skip_skipped(self):
-        cmd = ("%s run --job-results-dir %s --json - "
-               "examples/tests/cancelonsetup.py" % (AVOCADO, self.tmpdir.name))
-        result = process.run(cmd)
-        result = json.loads(result.stdout_text)
-        jobid = str(result["job_id"])
-        cmd = ("%s run --job-results-dir %s --replay %s "
-               "--test-runner=runner "
-               "--replay-test-status PASS" % (AVOCADO, self.tmpdir.name, jobid))
-        process.run(cmd)
-
 
 class RunnerSimpleTest(TestCaseTmpDir):
 
