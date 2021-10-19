@@ -31,9 +31,6 @@ setup(name='avocado-framework-plugin-golang',
           'console_scripts': [
               'avocado-runner-golang = avocado_golang.runner:main',
           ],
-          'avocado.plugins.cli': [
-              'golang = avocado_golang:GolangCLI',
-          ],
           'avocado.plugins.resolver': [
               'golang = avocado_golang:GolangResolver',
           ],
