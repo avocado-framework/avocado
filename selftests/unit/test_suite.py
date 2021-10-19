@@ -31,12 +31,12 @@ class TestSuiteTest(unittest.TestCase):
         """Custom suites should assume custom tests.
 
         When using custom suites (from constructor) we are assuming no
-        magic, no tests should be created from run.references.
+        magic, no tests should be created from resolver.references.
         """
         tests = self._find_simple_test_candidates()
         config = {'run.results_dir': self.tmpdir.name,
                   'core.show': ['none'],
-                  'run.references': tests}
+                  'resolver.references': tests}
 
         self.suite = TestSuite(name='foo', config=config)
         self.assertEqual(0, self.suite.size)
@@ -45,12 +45,12 @@ class TestSuiteTest(unittest.TestCase):
         """Automatic suites should create tests.
 
         When using automatic suites we are assuming magic,
-        and, tests should be created from run.references.
+        and, tests should be created from resolver.references.
         """
         tests = self._find_simple_test_candidates()
         config = {'run.results_dir': self.tmpdir.name,
                   'core.show': ['none'],
-                  'run.references': tests}
+                  'resolver.references': tests}
 
         self.suite = TestSuite.from_config(config=config)
         self.assertEqual(1, self.suite.size)
@@ -60,7 +60,7 @@ class TestSuiteTest(unittest.TestCase):
         tests = self._find_simple_test_candidates()
         job_config = {'run.results_dir': self.tmpdir.name,
                       'core.show': ['none']}
-        suite_config = {'run.references': tests}
+        suite_config = {'resolver.references': tests}
         self.suite = TestSuite(name='foo',
                                config=suite_config,
                                job_config=job_config)
@@ -71,7 +71,7 @@ class TestSuiteTest(unittest.TestCase):
         tests = self._find_simple_test_candidates()
         job_config = {'run.results_dir': self.tmpdir.name,
                       'core.show': ['none']}
-        suite_config = {'run.references': tests}
+        suite_config = {'resolver.references': tests}
         self.suite = TestSuite.from_config(config=suite_config,
                                            job_config=job_config)
         self.assertEqual(self.suite.config.get('core.show'), ['none'])

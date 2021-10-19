@@ -993,7 +993,7 @@ class RunnerReferenceFromConfig(TestCaseTmpDir):
     def setUp(self):
         super(RunnerReferenceFromConfig, self).setUp()
         self.config_file = script.TemporaryScript('avocado.conf',
-                                                  "[run]\n"
+                                                  "[resolver]\n"
                                                   "references = ['/bin/true']\n")
         self.config_file.save()
 

@@ -218,20 +218,13 @@ class List(CLICmd):
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
         parser = super(List, self).configure(parser)
-        help_msg = ('List of test references (aliases or paths). If empty, '
-                    'Avocado will list tests on the configured test source, '
-                    '(see "avocado config --datadir") Also, if there are '
-                    'other test loader plugins active, tests from those '
-                    'plugins might also show up (behavior may vary among '
-                    'plugins)')
-        settings.register_option(section='list',
-                                 key='references',
-                                 default=[],
-                                 nargs='*',
-                                 key_type=list,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 positional_arg=True)
+        settings.add_argparser_to_option(namespace='resolver.references',
+                                         nargs='*',
+                                         metavar='TEST_REFERENCE',
+                                         parser=parser,
+                                         positional_arg=True,
+                                         long_arg=None,
+                                         allow_multiple=True)
         loader.add_loader_options(parser, 'list')
 
         help_msg = ('Uses the Avocado resolver method (part of the nrunner '
@@ -285,7 +278,6 @@ class List(CLICmd):
         write_to_json_file = config.get('list.write_to_json_file')
         resolver = config.get('list.resolver')
         runner = 'nrunner' if resolver else 'runner'
-        config['run.references'] = config.get('list.references')
         config['run.ignore_missing_references'] = True
         config['run.test_runner'] = runner
         try:

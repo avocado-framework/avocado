@@ -124,4 +124,4 @@ class FilesMerge(JobPost):
 
     def post(self, job):
         if job.config.get('run.output_check_record'):
-            merge_expected_files(job.config.get('run.references'))
+            merge_expected_files(job.config.get('resolver.references'))
