@@ -1,0 +1,115 @@
+===================
+92.0 Monsters, Inc.
+===================
+
+The Avocado team is proud to present another release: Avocado 92.0,
+AKA "Monsters, Inc.", is now available!
+
+Release documentation: `Avocado 92.0
+<http://avocado-framework.readthedocs.io/en/92.0/>`_
+
+Important Announcement
+======================
+
+On the previous version (91.0), Avocado has switched the default
+runner, from the implementation most people currently use (internally
+simply called ``runner``), to the newer architecture and
+implementation called ``nrunner``).
+
+**Users migrating from Avocado 90.0 or earlier versions will be
+impacted by this change and should act accordingly.**
+
+To keep using the current (soon to be legacy) runner, you **must** set
+the ``--test-runner=runner`` command line option (or the equivalent
+``test_runner`` configuration option, under section ``[run]``).
+
+Known issues are being tracked on our GitHub project page, with the
+``nrunner`` tag, and new issue reports are appreciated.
+
+Users/Test Writers
+==================
+
+* The Human UI plugin can now be configured to omit certain statuses
+  from being show in a new line.  This can be used, for instance, to
+  prevent the ``STARTED`` lines to be shown, showing only the final
+  test result.
+
+* The nrunner ``exec`` runnable kind does not exist anymore, and its
+  functionality was consolidated into the ``exec-test``.
+
+* Executing Python's unittest that are skipped are now always shown as
+  having status ``SKIP``, instead of the previous ``CANCEL``.
+
+* Avocado will no longer incorporate log messages coming from any
+  logger (including the "root logger") into the test's and job's log
+  files.  Only loggers that under the ``avocado.`` namespace will be
+  included.  Users are encouraged to continue to follow the pattern::
+
+    self.log.info("message goes here")
+
+  When logging from a test.  When logging from somewhere else, the
+  following pattern is advised (replace ``my.namespace``
+  accordingly)::
+
+    import logging
+    LOG = logging.getLogger('avocado.my.namespace')
+    LOG.info('your message')
+
+* Python 3.10 is now fully supported.
+
+* The reason for fail/error/skip tests in Python unittest are now
+  given on the various test result formats (including on the UI).
+
+Bug Fixes
+=========
+
+* Properties, that is, methods decorated with ``@property`` are no
+  longer seen as tests.
+
+* If a path to a Python unittest file contained dots, the conversion
+  to a unittest "dotted name" would fail.
+
+* Tests on classes that inherit from one marked with ``:avocado:
+  disable`` were not being detected.
+
+Utility APIs
+============
+
+* A specific exception, and thus a clearer error message, is now used
+  when a command with an empty string is given to
+  :func:`avocado.utils.process.run`.
+
+Misc Changes
+============
+
+* Added example jobs for ``exec-test`` runnables, and for YAML to Mux.
+
+* The test logs on the nrunner generated ``debug.log`` file are now
+  prefixed with ``[stdlog]`` instead of ``[debug]`` to avoid confusion
+  with the log level of same name.
+
+* Added setuptools entrypoints for all nrunner implementations under
+  ``avocado.plugins.runnable.runner``.
+
+* The Podman spawner now checks for the existence of the ``podman``
+  binary earlier.
+
+* Misc documentation improvements.
+
+Internal Changes
+================
+
+* CI deployment checks with different installation methods (sources)
+  were added.
+
+* The ``--disble-plugin-check`` argument to ``selftests/check.py`` now
+  properly accepts multiple plugin names.
+
+* Templates for GitHub issues for bugs and feature requests were
+  added.
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/91.0...92.0>`_.
