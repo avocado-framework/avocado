@@ -30,7 +30,7 @@ Users/Test Writers
 ==================
 
 * The Human UI plugin can now be configured to omit certain statuses
-  from being show in a new line.  This can be used, for instance, to
+  from being shown in a new line.  This can be used, for instance, to
   prevent the ``STARTED`` lines to be shown, showing only the final
   test result.
 
@@ -88,7 +88,7 @@ Misc Changes
   prefixed with ``[stdlog]`` instead of ``[debug]`` to avoid confusion
   with the log level of same name.
 
-* Added setuptools entrypoints for all nrunner implementations under
+* Added setuptools entry-points for all nrunner implementations under
   ``avocado.plugins.runnable.runner``.
 
 * The Podman spawner now checks for the existence of the ``podman``
@@ -102,7 +102,7 @@ Internal Changes
 * CI deployment checks with different installation methods (sources)
   were added.
 
-* The ``--disble-plugin-check`` argument to ``selftests/check.py`` now
+* The ``--disable-plugin-check`` argument to ``selftests/check.py`` now
   properly accepts multiple plugin names.
 
 * Templates for GitHub issues for bugs and feature requests were
