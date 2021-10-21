@@ -22,7 +22,8 @@
 # the functional tests are time and resource sensitive and can
 # cause race conditions and random build failures. They are
 # enabled by default.
-%global with_tests 1
+# You can disable them with rpmbuild ... --without tests
+%bcond_without tests
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
@@ -51,7 +52,7 @@ BuildRequires: python3-resultsdb_api
 BuildRequires: python3-pycdlib
 %endif
 
-%if %{with_tests}
+%if %{with tests}
 BuildRequires: genisoimage
 BuildRequires: libcdio
 BuildRequires: psmisc
@@ -163,7 +164,7 @@ mv %{buildroot}%{python3_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/a
 # spawning tasks in podman containers
 chmod -c +x %{buildroot}%{python3_sitelib}/avocado/core/nrunner.py
 
-%if %{with_tests}
+%if %{with tests}
 %check
 # LANG: to make the results predictable, we pin the language
 # that is used during test execution.
@@ -368,6 +369,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Oct 20 2021 Ana Guerrero Lopez <anguerre@redhat.com> - 92.0-2
+- Replace the %global with_tests macro with %bcond_without to allow
+  disable the tests directly in the command line.
+
 * Tue Oct 19 2021 Cleber Rosa <cleber@redhat.com> - 92.0-1
 - New release
 
