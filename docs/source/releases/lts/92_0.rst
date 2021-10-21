@@ -58,8 +58,8 @@ Utility API compatibility
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The changes in the utility APIs (those that live under the
-``avocado.utils`` namespace are too many to present porting
-suggestion.  Please refer to the :ref:`lts_92_0_utility_apis` section
+``avocado.utils`` namespace) are too many to present porting
+suggestions.  Please refer to the :ref:`lts_92_0_utility_apis` section
 for a comprehensive list of changes, including new features your test
 may be able to leverage.
 
@@ -172,7 +172,7 @@ Users / Test Writers
   2. setting a timeout for the download of assets.
 
 * :func:`avocado.skipIf` and :func:`avocado.skipUnless` now allow the
-  condition to be a callable, to be evaluate much later, and also
+  condition to be a callable, to be evaluated much later, and also
   gives them access to the test class.  For more information, please
   refer to the documentation: :ref:`skip-advanced-conditionals`.
 
@@ -221,7 +221,7 @@ Users / Test Writers
   now limits itself to ``avocado.*`` loggers).
 
 * The Podman spawner (``--nrunner-spawner=podman``) will now attempt
-  to use a Container image (``--spawner-podman-image=``) that matches
+  to use a container image (``--spawner-podman-image=``) that matches
   the host Linux distribution. If it’s not possible to detect the host
   distribution, the latest Fedora image will be used.
 
@@ -257,8 +257,8 @@ Users / Test Writers
 * The Requirements Resolver feature has been introduced, and it's
   available for general use.  It allows users to describe requirements
   tests may have, and will attempt to fulfill those before the test is
-  executed.  It has support for “package” requirements, meaning
-  operating system level packages such as RPM, DEB, etc, and "asset"
+  executed.  It has support for **package** requirements, meaning
+  operating system level packages such as RPM, DEB, etc, and **asset**
   requirements, allowing users to declare any asset obtainable with
   :mod:`avocado.utils.asset` to be downloaded, cached and thus be
   available to tests.
@@ -440,7 +440,7 @@ nrunner stabilization
   runner and this is now fixed.
 
 * The ``avocado-runner-avocado-instrumented`` was producing duplicate
-  log entries because of Avocado’s log handler for the
+  log entries because Avocado’s log handler for the
   :class:`avocado.core.test.Test` was previously configured to
   propagate the logged messages.
 
@@ -455,12 +455,12 @@ nrunner stabilization
 
 * Some occurrences of the incorrect ``AVOCADO_TEST_OUTPUT_DIR``
   environment variable name were renamed to the proper name
-  (``AVOCADO_TEST_OUTPUTDIR``).
+  ``AVOCADO_TEST_OUTPUTDIR``.
 
 * The selection of an nrunner based runner, from its Python module
   name/path, has been fixed.
 
-* The nrunner now properly sets all test status to the suite summary,
+* The ``nrunner`` now properly sets all test status to the suite summary,
   making sure that errors are communicated to the end-user through,
   among other means, the avocado execution exit code.
 
@@ -498,7 +498,7 @@ Utility APIs
 
 * :meth:`avocado.utils.software_manager.SoftwareManager.extract_from_package`
   is a new method that lets users extract the content of supported
-  package types (currently RPM and deb).
+  package types (currently RPM and DEB).
 
 * :mod:`avocado.utils.pci` now accommodates newer slot names.
 
@@ -544,7 +544,7 @@ Utility APIs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * The :mod:`avocado.utils.network.interfaces` now supports setting
-  configuration for SuSE-based systems.
+  configuration for SUSE-based systems.
 
 * :class:`avocado.utils.network.interfaces.NetworkInterface` can now
   access and present information on interfaces that do not have an IP
@@ -555,7 +555,7 @@ Utility APIs
   ``/sys/class/net``, as the name of an interface.
 
 * The :mod:`avocado.utils.network.interfaces` now support
-  configuration files compatible with SuSE distros.
+  configuration files compatible with SUSE distributions.
 
 * :meth:`avocado.utils.network.interfaces.NetworkInterface.remove_link`
   is a new utility method that allows one to delete a virtual
@@ -580,11 +580,11 @@ Utility APIs
 :mod:`avocado.utils.distro`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* avocado.utils.distro can now detect the distribution on remote
+* :mod:`avocado.utils.distro: can now detect the distribution on remote
   machines.
 
-* The avocado.utils.distro will now correctly return a
-  avocado.utils.distro.UNKNOWN_DISTRO on non UNIX systems, instead of
+* The :mod:`avocado.utils.distro: will now correctly return a
+  ``avocado.utils.distro.UNKNOWN_DISTRO`` on non UNIX systems, instead of
   crashing.
 
 Complete list of changes
