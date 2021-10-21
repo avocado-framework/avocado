@@ -1,0 +1,182 @@
+BP004
+#####
+
+:Number: BP004
+:Title: Dependency graph
+:Author: Willian Rampazzo <willianr@redhat.com>
+:Discussions-To: https://github.com/avocado-framework/avocado/issues/XXXX
+:Reviewers:
+:Created: 21-Oct-2021
+:Type: Architecture Blueprint
+:Status: Draft
+
+.. contents:: Table of Contents
+
+TL;DR
+*****
+
+The current implementation of the Requirement Resolver handles requirements individually for each test. When two different tests depend on the same requirement, each is resolved separately, creating two different tasks. Each duplicated requirement task runs before each of the tests depending on them. This is not desired as the requirements tasks may conflict.
+
+This blueprint proposes to expand the Requirements Resolver to a Dependency Graph architecture, where the resolution of the same requirement for multiple tests creates one requirement task and makes all the tests tasks depend on it. This mechanism also allows complex dependency structures, like pre and post dependency tasks.
+
+Motivation
+**********
+
+The current implementation of the Requirements Resolver (see BP002) handles each test with its requirements separately. When multiple tests have the same requirement, the Requirements Resolver creates one requirement task for each test.
+
+This behavior is not desired and can cause problems. For example, two requirement tasks running the same package installation waste one task cycle in the state machine, checking if the package installation happened correctly. Another example, two requirement tasks for the same remote file may download the file twice. The diagram below illustrates the current behavior.
+
+.. image:: images/BP004/current_requirements_resolver.png
+   :width: 400
+   :alt: Current requirement resolver behavior
+
+The straightforward solution to this problem is to identify the same requirement for multiple tests and create one single task for this requirement. This solution is limited to tests and their requirements. Another idea, and the proposal of this blueprint, is to expand the Requirements Resolver to a Dependency Graph.
+
+A Dependency Graph is a directed graph describing the dependencies between the nodes. In a Dependency Graph, each arc of a node connects to the node on which it depends. The diagram below illustrates a dependency graph:
+
+.. image:: images/BP004/dependency_graph.png
+   :width: 400
+   :alt: A dependency graph
+
+In the example above, node A depends on nodes B and C; node B depends on nodes D and E; node C depends on nodes E and F. Nodes D, E and F are the independent nodes and take the initial positions. A Dependency Graph may have multiple topological orders. Some valid topological orders for the graph above are:
+
+1. A, C, B, F, E, D;
+
+2. A, C, F, B, E, D;
+
+3. A, B, D, C, F, E.
+
+The inverse topological order represents the execution order for the tasks, where independent nodes can execute in parallel. The algorithm to create the topological order removes the source nodes (those nodes with in-degree equal to zero) while enumerating them. With the removal of a source node, new source nodes may be created. The algorithm ends when there are no more nodes to remove, meaning the graph is empty or the remaining nodes are not sources. In the latter case, the graph has cycles and cannot be handled as a dependency graph.
+
+A dependency graph allows the construction and control of more elaborated structures representing the dependencies between the tests, requirements, and others. One example covered by the dependency graph is a test depending on a plugin, like SysInfo, which can run before and after a test or before and after a job.
+
+Specification
+*************
+
+On nrunner, the requirements resolution happens during the creation of the test task. The nrunner runner plugin creates a requirement task when a test has a requirement listed on its structure and sets the new test task to depend on this requirement task. As mentioned, different tests with the same requirement will depend on different requirements tasks that perform the same activity. See https://github.com/avocado-framework/avocado/blob/09221f33ac2ff974a076f93601e8bd7fd6738e7a/avocado/plugins/runner_nrunner.py#L207 for more details on how it happens.
+
+Dependency representation
+=========================
+
+This section describes how to represent a dependency graph in a way that Avocado can use.
+
+Extend representations from BP002
+---------------------------------
+
+The current implementation for representing the requirements of a test uses the test docstring. There are other types of representations for requirements specified in the Requirements Resolver blueprint (BP002), like JSON and Python executable that produces a JSON file, but those are still not implemented.
+
+When a test has a requirement, the test task depends on the requirement task. When the execution of the requirement task fails, the test is skipped.
+
+The proposal here is to extend the representations defined at BP002, adding a parameter to state when a requirement should be satisfied, before or after the test execution. The following example represents the additional parameter "stage" to the JSON representation::
+
+	[
+		{"type": "file", "uri": "https://cabort.com/cabort.c", "hash": "deadbeefdeadbeef", "stage": "pre"},
+		{"type": "sysinfo", "stage": "['pre', 'post']"},
+		{"type": "ansible", "stage": "['post']"},
+	]
+
+The same approach of adding a new parameter "stage" to the requirement specification applies to other representation formats.
+
+One limitation of this representation is to restrict the definition of dependencies to the test definitions.
+
+Represent the dependency graph using DOT files
+----------------------------------------------
+
+DOT is a graph description language. The DOT language is a powerful way of representing complex graphs. For Avocado, using DOT is limited to digraphs with nodes representing runnables, like test references or requirements, and arcs representing the dependencies.
+
+The support of DOT files for Python is available thru third-party libraries, like graphviz (https://github.com/xflr6/graphviz) and pydot (https://github.com/pydot/pydot). For this reason, the proposal is to add the support for DOT files as an optional plugin.
+
+Following is the DOT representation of the same graph shown on section "Motivation"::
+
+    digraph G {
+        A -> B;
+        B -> D;
+        B -> E;
+        A -> C;
+        C -> E;
+        C -> F;
+    }
+
+In a DOT file, the nodes are defined with any representation, like strings, for example. Avocado can translate the node information into a task and set the dependencies. Following is an example of a valid DOT file for Avocado::
+
+    digraph G {
+        ansible: {"type": "ansible", "stage": "pre"};
+        package: {"type": "package", "name": "lvm"};
+        test1: examples/tests/passtest.py:PassTest.test;
+        test2: examples/tests/sleeptest.py:SleepTest.test;
+        sysinfo_pre: {"type": "sysinfo", "stage": "pre"};
+        sysinfo_post: {"type": "sysinfo", "stage": "post"};
+
+        sysinfo_post -> test2;
+        test2 -> test1;
+        test1 -> sysinfo_pre;
+        test1 -> package;
+        test1 -> ansible;
+    }
+
+The representation of the DOT file above is shown below.
+
+.. image:: images/BP004/dot_representation.png
+   :width: 400
+   :alt: Representation of the DOT file
+
+High-level workflow
+===================
+
+The current workflow needs some adjustments to support a workflow using the dependency graph. In the current implementation, the dependency of tasks is set during the test task creation process. During the test task creation, the code inspects for test requirements and starts a new process of requirements tasks creation. The output of this process is a list of tasks that serves as the input for the state machine.
+
+In the current workflow, there is a direct and restricted link between a test and its requirements, meaning that the tests are not aware of the requirements of other tests. This is one of the causes of multiple requirements tasks related to different tests trying to fulfill the same requirement.
+
+In a workflow considering a dependency graph, ideally, data structures related to all types of runnable should be available before creating the dependency graph. This way, the duplication of tasks for the same activity (like a requirement fulfillment) is avoided. One key factor in avoiding unneeded duplication of tasks is making the structure representing the runnable comparable.
+
+After all the data structures related to the runnables are available, the dependency graph can be built and also the topological order.
+
+The state machine will handle the same list of tasks, but this time in topological order.
+
+Internal representation
+=======================
+
+There are two ways of representing the dependency graph: implicit, using the structures already available, or explicit, creating a new graph structure.
+
+In an implicit representation, the graph arcs are defined in the runnable overlay as a doubly linked list. It is necessary to evaluate whether the doubly linked list should be part of the runnable structure, the task structure, or the runtime task structure.
+
+The advantage of this approach is that the dependency information is within the object (the runnable, task, or runtime task object). The disadvantage of this approach is that all the objects should be consulted to discover the graph structure and change it.
+
+In an explicit representation, the graph is represented in a new data structure. It can be an adjacency matrix or an adjacency list. Considering the sparsity of graphs dealt with here, the adjacency list structure should be a better choice.
+
+The advantage of an explicit representation is that the information about the graph structure is straightforward. One more data structure to handle may be considered a disadvantage, but the benefits outweigh the disadvantages.
+
+Backward Compatibility
+***********************
+
+This blueprint proposes a new feature. When it is not used, it will not affect the current behavior of the execution of the tests.
+
+As this blueprint extends the Requirements Resolver, the current behavior of a requirement is not changed.
+
+Security Implications
+*********************
+
+As far as analyzed, this feature does not introduce new security implications.
+
+It is important to note that the security implication described on BP002 for Python executable to build the requirements file is also valid in this blueprint.
+
+How to Teach This
+*****************
+
+One of the steps in developing this feature, and as soon as it replaces the current Requirements Resolver, should be to extend the documentation at https://avocado-framework.readthedocs.io/en/latest/guides/user/chapters/requirements.html.
+
+The addition of more complex examples is another way to spread the new feature.
+
+Related Issues
+**************
+
+Here is a list of all issues related to this blueprint:
+
+#.
+
+References
+**********
+
+[1] - Reference 1
+
+[2] - Reference 2
