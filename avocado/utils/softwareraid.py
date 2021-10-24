@@ -109,7 +109,7 @@ class SoftwareRaid:
         :return: True if raid is created. False otherwise.
         :rtype: bool
         """
-        cmd = "mdadm --create --assume-clean %s" % self.name
+        cmd = "yes | mdadm --create --assume-clean %s" % self.name
         cmd += " --level=%s" % self.level
         cmd += " --raid-devices=%d %s" % (len(self.disks),
                                           " ".join(self.disks))
