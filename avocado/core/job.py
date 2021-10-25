@@ -38,7 +38,7 @@ from .job_id import create_unique_job_id
 from .output import LOG_JOB, LOG_UI, STD_OUTPUT
 from .settings import settings
 from .suite import TestSuite, TestSuiteError
-from .utils import get_avocado_git_version
+from .utils.version import get_avocado_git_version
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 

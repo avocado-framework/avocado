@@ -20,7 +20,7 @@ import pkg_resources
 from .dispatcher import InitDispatcher
 from .settings import settings as stgs
 from .streams import BUILTIN_STREAM_SETS, BUILTIN_STREAMS
-from .utils import prepend_base_path
+from .utils.path import prepend_base_path
 
 
 def register_core_options():

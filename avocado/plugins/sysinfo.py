@@ -19,7 +19,7 @@ from avocado.core import sysinfo
 from avocado.core.plugin_interfaces import (CLICmd, Init, JobPostTests,
                                             JobPreTests)
 from avocado.core.settings import settings
-from avocado.core.utils import prepend_base_path, system_wide_or_base_path
+from avocado.core.utils.path import prepend_base_path, system_wide_or_base_path
 from avocado.utils import path
 
 
