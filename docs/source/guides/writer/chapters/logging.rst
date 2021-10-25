@@ -46,24 +46,25 @@ Using --show
 Alternatively, you can ask Avocado to show your logging stream, either
 exclusively or in addition to other builtin streams::
 
-    $ avocado --show app,avocado.test.progress run --test-runner='runner' -- logging_streams.py
+    $ avocado --show app,avocado.test.progress run -- examples/tests/logging_streams.py
 
 The outcome should be similar to::
 
     JOB ID     : af786f86db530bff26cd6a92c36e99bedcdca95b
     JOB LOG    : /home/user/avocado/job-results/job-2016-03-18T10.29-af786f8/job.log
-     (1/1) logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 0
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 1
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 2
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: letting soil rest before throwing seeds
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 0
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 1
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 2
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: waiting for Avocados to grow
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 0
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 1
-    avocado.test.progress: 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 2
-    PASS (7.01 s)
+    (1/1) examples/tests/logging_streams.py:Plant.test_plant_organic: STARTED
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: preparing soil on row 0
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: preparing soil on row 1
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: preparing soil on row 2
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: letting soil rest before throwing seeds
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: throwing seeds on row 0
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: throwing seeds on row 1
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: throwing seeds on row 2
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: waiting for Avocados to grow
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: harvesting organic avocados on row 0
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: harvesting organic avocados on row 1
+    1-examples/tests/logging_streams.py:Plant.test_plant_organic: avocado.test.progress: 1-Plant.test_plant_organic: harvesting organic avocados on row 2
+     (1/1) examples/tests/logging_streams.py:Plant.test_plant_organic: PASS (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB TIME   : 7.11 s
     JOB HTML   : /home/user/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
