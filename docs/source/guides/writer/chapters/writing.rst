@@ -1473,38 +1473,65 @@ Environment Variables for Tests
 Avocado exports some information, including test parameters, as environment
 variables to the running test.
 
-While these variables are available to all tests, they are usually
-more interesting to SIMPLE tests.  The reason is that SIMPLE tests can
-not make direct use of Avocado API.  INSTRUMENTED tests will usually
-have more powerful ways, to access the same information.
+The availability of the variable depends on the test type. A greater set of
+variables are available to INSTRUMENTED tests, while a reduced number of
+variables are available to EXEC tests. Although the availability of the
+variable, they are usually more interesting to EXEC tests. The reason is that
+EXEC tests can not make direct use of Avocado API. INSTRUMENTED tests will
+usually have more powerful ways to access the same information.
 
-Here is a list of the variables that Avocado currently exports to
+Here is a list of the variables that Avocado currently exports to INSTRUMENTED
 tests:
 
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | Environment Variable        | Meaning                               | Example                                                                                             |
 +=============================+=======================================+=====================================================================================================+
-| AVOCADO_VERSION             | Version of Avocado test runner        | 0.12.0                                                                                              |
+| AVOCADO_VERSION             | Version of Avocado test runner        | 92.0                                                                                                |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests       | $HOME/Downloads/avocado-source/avocado                                                              |
+| AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests       | $HOME/src/avocado/avocado.dev/examples/tests                                                        |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/avocado_Bjr_rd/my_test.sh                                                                  |
+| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-taskcx8of8di/test-results/tmp_dirfgqrnbu_/1-Env.test                              |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_cp07qzd9                                                                           |
+|                             | `teststmpdir` plugin. The directory   |                                                                                                     |
+|                             | is persistent throughout the tests    |                                                                                                     |
+|                             | in the same Job                       |                                                                                                     |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_LOGDIR         | Log directory for the test            | /var/tmp/.avocado-task_5t_srpn/test-results/1-Env.test                                              |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_LOGFILE        | Log file for the test                 | /var/tmp/.avocado-taskcx8of8di/test-results/1-Env.test/debug.log                                    |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_OUTPUTDIR      | Output directory for the test         | /var/tmp/.avocado-taskcx8of8di/test-results/1-Env.test/data                                         |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_SYSINFODIR     | The system information directory      | $HOME/avocado/job-results/job-2021-10-26T17.23-98f17a2/sysinfo/pre                                  |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+
+Here is a list of the variables that Avocado currently exports to exec-test
+tests:
+
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| Environment Variable        | Meaning                               | Example                                                                                             |
++=============================+=======================================+=====================================================================================================+
+| AVOCADO_VERSION             | Version of Avocado test runner        | 92.0                                                                                                |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/.avocado-task-_4qquwyq/workdir                                                             |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_XhEdo/                                                                             |
 |                             | `teststmpdir` plugin. The directory   |                                                                                                     |
 |                             | is persistent throughout the tests    |                                                                                                     |
 |                             | in the same Job                       |                                                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_LOGDIR         | Log directory for the test            | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1                 |
+| AVOCADO_TEST_OUTPUTDIR      | Output directory for the test         | /var/tmp/.avocado-task-_4qquwyq                                                                     |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_LOGFILE        | Log file for the test                 | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/debug.log       |
-+-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_OUTPUTDIR      | Output directory for the test         | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/data            |
-+-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_SYSINFODIR     | The system information directory      | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/sysinfo         |
+| AVOCADO_TEST_SYSINFODIR     | The system information directory      | $HOME/avocado/job-results/job-2021-10-26T17.03-d09ca41/sysinfo/pre                                  |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+
+.. note:: The same variables listed for the INSTRUMENTED tests above are
+   available to all the test types when using the legacy runner.
 
 SIMPLE Tests BASH extensions
 ----------------------------
