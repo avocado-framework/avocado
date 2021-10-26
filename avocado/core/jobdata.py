@@ -49,7 +49,7 @@ def record(job, cmdline=None):
     path_job_config = os.path.join(base_dir, JOB_CONFIG_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
-    references = job.config.get('run.references')
+    references = job.config.get('resolver.references')
     if references:
         with open(path_references, 'w') as references_file:
             references_file.write('%s' % references)

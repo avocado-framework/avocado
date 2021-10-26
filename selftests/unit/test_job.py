@@ -98,12 +98,12 @@ class JobTest(unittest.TestCase):
         self.assertEqual(suite.status, TestSuiteStatus.RESOLUTION_NOT_STARTED)
 
     def test_suite_tests_found(self):
-        suite = TestSuite.from_config({'run.references': ['/bin/true'],
+        suite = TestSuite.from_config({'resolver.references': ['/bin/true'],
                                        'run.test_runner': 'nrunner'})
         self.assertEqual(suite.status, TestSuiteStatus.TESTS_FOUND)
 
     def test_suite_tests_not_found(self):
-        suite = TestSuite.from_config({'run.references': ['/bin/not-found'],
+        suite = TestSuite.from_config({'resolver.references': ['/bin/not-found'],
                                        'run.test_runner': 'nrunner',
                                        'run.ignore_missing_references': True})
         self.assertEqual(suite.status, TestSuiteStatus.TESTS_NOT_FOUND)
@@ -120,7 +120,7 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.references': simple_tests_found}
+                  'resolver.references': simple_tests_found}
         self.job = job.Job.from_config(config)
         self.job.setup()
         self.assertEqual(len(simple_tests_found), len(self.job.test_suites[0]))
@@ -143,7 +143,7 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.references': simple_tests_found}
+                  'resolver.references': simple_tests_found}
         self.job = JobFilterTime.from_config(config)
         self.job.setup()
         try:
@@ -156,7 +156,7 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates(['true'])
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.references': simple_tests_found}
+                  'resolver.references': simple_tests_found}
         self.job = job.Job.from_config(config)
         self.job.setup()
         self.assertEqual(self.job.run_tests(),
@@ -171,7 +171,7 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.references': simple_tests_found}
+                  'resolver.references': simple_tests_found}
         self.job = JobLogPost(config)
         self.job.setup()
         self.job.create_test_suite()
@@ -208,7 +208,7 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
-                  'run.references': simple_tests_found}
+                  'resolver.references': simple_tests_found}
         self.job = JobFilterLog.from_config(config)
         self.job.setup()
         self.assertEqual(self.job.run(),
@@ -252,12 +252,12 @@ class JobTest(unittest.TestCase):
     def test_job_suites_config(self):
         config = {'run.results_dir': self.tmpdir.name,
                   'core.show': ['none'],
-                  'run.references': ['/bin/true']}
+                  'resolver.references': ['/bin/true']}
 
-        suite_config = {'run.references': ['/bin/false']}
+        suite_config = {'resolver.references': ['/bin/false']}
         self.job = job.Job.from_config(config, [suite_config])
         self.job.setup()
-        self.assertEqual(self.job.config.get('run.references'), ['/bin/true'])
+        self.assertEqual(self.job.config.get('resolver.references'), ['/bin/true'])
 
     def test_job_dryrun_no_unique_job_id(self):
         config = {'run.results_dir': self.tmpdir.name,
@@ -282,7 +282,7 @@ class JobTest(unittest.TestCase):
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name}
 
-        suite_config = {'run.references': ['/bin/true']}
+        suite_config = {'resolver.references': ['/bin/true']}
 
         # Manual/Custom method
         suite = TestSuite('foo-test', config=suite_config, job_config=config)
@@ -297,7 +297,7 @@ class JobTest(unittest.TestCase):
                          self.tmpdir.name)
 
         # Automatic method passing only one config
-        config.update({'run.references': ['/bin/true']})
+        config.update({'resolver.references': ['/bin/true']})
         self.job = job.Job.from_config(job_config=config)
         self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
                          self.tmpdir.name)
@@ -314,7 +314,7 @@ class JobTest(unittest.TestCase):
     def test_job_make_test_suite_resolver(self):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'run.results_dir': self.tmpdir.name,
-                  'run.references': simple_tests_found,
+                  'resolver.references': simple_tests_found,
                   'run.test_runner': 'nrunner',
                   'core.show': ['none']}
         self.job = job.Job.from_config(config)
@@ -324,7 +324,7 @@ class JobTest(unittest.TestCase):
             self.assertIsInstance(self.job.test_suite.tests[0], nrunner.Runnable)
 
     def test_job_get_failed_tests(self):
-        config = {'run.references': ['/bin/true', '/bin/false'],
+        config = {'resolver.references': ['/bin/true', '/bin/false'],
                   'run.results_dir': self.tmpdir.name,
                   'core.show': ['none']}
         suite = TestSuite.from_config(config)
@@ -334,7 +334,7 @@ class JobTest(unittest.TestCase):
         self.assertEqual(len(self.job.get_failed_tests()), 1)
 
     def test_job_dryrun(self):
-        config = {'run.references': ['/bin/true', '/bin/false'],
+        config = {'resolver.references': ['/bin/true', '/bin/false'],
                   'run.results_dir': self.tmpdir.name,
                   'run.dry_run.enabled': True,
                   'core.show': ['none']}
@@ -348,7 +348,7 @@ class JobTest(unittest.TestCase):
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
                   'run.test_runner': 'nrunner'}
-        suite_config = {'run.references': ['/bin/true']}
+        suite_config = {'resolver.references': ['/bin/true']}
         suite_1 = TestSuite('suite', config=suite_config)
         suite_2 = TestSuite('suite', config=suite_config)
         with self.assertRaises(JobTestSuiteDuplicateNameError):

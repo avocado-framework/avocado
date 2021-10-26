@@ -142,28 +142,28 @@ from avocado.core.suite import TestSuite
 class PassTest(Test):
     def test1(self):
         config = {'core.show': ['none'],
-                  'run.references': ['/bin/true']}
+                  'resolver.references': ['/bin/true']}
         suite = TestSuite.from_config(config)
         with Job(config, [suite]) as j:
             j.run()
 
     def test2(self):
         config = {'core.show': ['app'],
-                  'run.references': ['/bin/true']}
+                  'resolver.references': ['/bin/true']}
         suite = TestSuite.from_config(config)
         with Job(config, [suite]) as j:
             j.run()
 
     def test3(self):
         config = {'core.show': ['none'],
-                  'run.references': ['/bin/true']}
+                  'resolver.references': ['/bin/true']}
         suite = TestSuite.from_config(config)
         with Job(config, [suite]) as j:
             j.run()
 
 
 if __name__ == '__main__':
-    config = {'run.references': [__file__],
+    config = {'resolver.references': [__file__],
               'run.test_runner': 'nrunner',
               'core.show': ['app']}
     suite = TestSuite.from_config(config)
@@ -193,7 +193,7 @@ class RunnerNRunnerWithFixedTasks(runner_nrunner.Runner):
 
 if __name__ == '__main__':
     config = {'run.test_runner': 'nrunner',
-              'run.references': ['/bin/true', '/bin/false']}
+              'resolver.references': ['/bin/true', '/bin/false']}
     job = Job.from_config(config)
     job.setup()
     job.test_suites[0]._runner = RunnerNRunnerWithFixedTasks()

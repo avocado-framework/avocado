@@ -15,7 +15,7 @@ config = {
     'nrunner.status_server_auto': False,
     'nrunner.status_server_listen': status_server,
     'nrunner.status_server_uri': status_server,
-    'run.references': [
+    'resolver.references': [
         'examples/tests/passtest.py'
     ],
     }

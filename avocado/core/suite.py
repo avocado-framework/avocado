@@ -150,7 +150,7 @@ class TestSuite:
 
     @classmethod
     def _from_config_with_loader(cls, config, name=None):
-        references = config.get('run.references')
+        references = config.get('resolver.references')
         ignore_missing = config.get('run.ignore_missing_references')
         verbose = config.get('core.verbose')
         subcommand = config.get('subcommand')
@@ -186,7 +186,7 @@ class TestSuite:
     @classmethod
     def _from_config_with_resolver(cls, config, name=None):
         ignore_missing = config.get('run.ignore_missing_references')
-        references = config.get('run.references')
+        references = config.get('resolver.references')
         try:
             hint = None
             hint_filepath = '.avocado.hint'
@@ -209,7 +209,7 @@ class TestSuite:
     def _get_stats_from_nrunner(self):
         stats = {}
         for test in self.tests:
-            stats = self._increment_dict_key_counter(stats, test.kind)
+            self._increment_dict_key_counter(stats, test.kind)
         return stats
 
     def _get_stats_from_runner(self):
@@ -219,7 +219,7 @@ class TestSuite:
         for cls, _ in self.tests:
             if isinstance(cls, str):
                 cls = Test
-            stats = self._increment_dict_key_counter(stats, mapping[cls])
+            self._increment_dict_key_counter(stats, mapping[cls])
         return stats
 
     def _get_tags_stats_from_nrunner(self):
@@ -229,7 +229,7 @@ class TestSuite:
                 continue
             tags = runnable.tags or {}
             for tag in tags:
-                stats = self._increment_dict_key_counter(stats, tag)
+                self._increment_dict_key_counter(stats, tag)
         return stats
 
     def _get_tags_stats_from_runner(self):
@@ -237,7 +237,7 @@ class TestSuite:
         for test in self.tests:
             params = test[1]
             for tag in params.get('tags', {}):
-                stats = self._increment_dict_key_counter(stats, tag)
+                self._increment_dict_key_counter(stats, tag)
         return stats
 
     @staticmethod
@@ -246,12 +246,11 @@ class TestSuite:
             dict_object[key.lower()] += 1
         except KeyError:
             dict_object[key.lower()] = 1
-        return dict_object
 
     @property
     def references(self):
         if self._references is None:
-            self._references = self.config.get('run.references')
+            self._references = self.config.get('resolver.references')
         return self._references
 
     @property

@@ -20,7 +20,7 @@ import pkg_resources
 from .dispatcher import InitDispatcher
 from .settings import settings as stgs
 from .streams import BUILTIN_STREAM_SETS, BUILTIN_STREAMS
-from .utils import prepend_base_path
+from .utils.path import prepend_base_path
 
 
 def register_core_options():
@@ -186,6 +186,13 @@ def register_core_options():
                          key='skip',
                          default=[],
                          key_type=list,
+                         help_msg=help_msg)
+
+    help_msg = 'List of test references (aliases or paths)'
+    stgs.register_option(section='resolver',
+                         key='references',
+                         key_type=list,
+                         default=[],
                          help_msg=help_msg)
 
 

@@ -8,7 +8,7 @@ from avocado.core.job import Job
 # When using __file__, you need to protect Job.run() within a
 # conditional block so that it doesn't get executed *again* and
 # generates a loop when loading this file at test execution time.
-config = {'run.references': [__file__]}
+config = {'resolver.references': [__file__]}
 
 
 class PassTest(Test):
