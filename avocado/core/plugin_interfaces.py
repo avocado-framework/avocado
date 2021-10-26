@@ -284,11 +284,9 @@ class Runner(Plugin):
 class Spawner(Plugin):
     """Base plugin interface spawners of tasks.
 
-    A spawner implementation will spawn a runner in its intended
-    location, and isolation model.  It's supposed to be generic enough
-    that it can perform that in the local machine using a process as an
-    isolation model, or in a virtual machine, using the virtual
-    machine itself as the isolation model.
+    A spawner implementation will spawn Avocado in its intended location, and
+    isolation model. Spawners that run on the same machine as Avocado is
+    originally installed are possible children of this.
     """
 
     @staticmethod
@@ -296,7 +294,8 @@ class Spawner(Plugin):
     def is_task_alive(runtime_task):
         """Determines if a task is alive or not.
 
-        :param runtime_task: wrapper for a Task with additional runtime information
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
         """
 
@@ -304,7 +303,8 @@ class Spawner(Plugin):
     async def spawn_task(self, runtime_task):
         """Spawns a task return whether the spawning was successful.
 
-        :param runtime_task: wrapper for a Task with additional runtime information
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
         """
 
@@ -312,7 +312,8 @@ class Spawner(Plugin):
     async def wait_task(self, runtime_task):
         """Waits for a task to finish.
 
-        :param runtime_task: wrapper for a Task with additional runtime information
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
         """
 
@@ -321,6 +322,35 @@ class Spawner(Plugin):
     async def check_task_requirements(runtime_task):
         """Checks if the requirements described within a task are available.
 
-        :param runtime_task: wrapper for a Task with additional runtime information
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        """
+
+
+class DeploymentSpawner(Spawner):
+    """Spawners that needs basic deployment are based on this class.
+
+    Spawners that uses any type of isolation model would be a possible children
+    of this.
+    """
+
+    @abc.abstractmethod
+    def deploy_avocado(self):
+        """Avocado deployment for the isolated environment.
+
+        This method should be executed before spawning the task.
+        """
+
+    @abc.abstractmethod
+    def deploy_artifacts(self):
+        """Basic artifacts deployment for the isolated environment.
+
+        During this stage test references (i.e: mytest.py), data files (i.e:
+        mytest.py.data/), and any other basic requirement should be deployed to
+        the isolated environment. Please keep in mind that test requirements
+        defined at the requirements resolver level are not part of this
+        deployment and it will be fulfilled by the requirement resolver.
+
+        This method should also be executed before spawning the task.
         """

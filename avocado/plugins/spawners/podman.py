@@ -3,7 +3,7 @@ import json
 import os
 import subprocess
 
-from avocado.core.plugin_interfaces import CLI, Init, Spawner
+from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 from avocado.utils import distro
@@ -67,7 +67,7 @@ class PodmanCLI(CLI):
         pass
 
 
-class PodmanSpawner(Spawner, SpawnerMixin):
+class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     description = 'Podman (container) based spawner'
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
@@ -85,6 +85,12 @@ class PodmanSpawner(Spawner, SpawnerMixin):
         out, _ = process.communicate()
         # FIXME: check how podman 2.x is reporting valid "OK" states
         return out.startswith(b'Up ')
+
+    def deploy_artifacts(self):
+        pass
+
+    def deploy_avocado(self):
+        pass
 
     async def spawn_task(self, runtime_task):
 

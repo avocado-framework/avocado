@@ -1,8 +1,8 @@
 import asyncio
 import random
 
-from ...core.plugin_interfaces import Spawner
-from .common import SpawnMethod
+from avocado.core.plugin_interfaces import Spawner
+from avocado.core.spawners.common import SpawnMethod
 
 
 class MockSpawner(Spawner):
