@@ -54,7 +54,7 @@ class Human(ResultEvents):
         self.__throbber = output.Throbber()
         stdout_claimed_by = config.get('stdout_claimed_by', None)
         self.owns_stdout = not stdout_claimed_by
-        self.runner = config.get('run.test_runner')
+        self.runner = config.get('run.test_runner') or 'nrunner'
         self.omit_statuses = config.get('human_ui.omit.statuses')
 
     def pre_tests(self, job):

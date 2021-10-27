@@ -98,7 +98,8 @@ class TestSuite:
             self.config.update(config)
 
         # Update the config of runnables.
-        if config.get('run.test_runner') == 'nrunner' and self.tests:
+        test_runner = self.config.get('run.test_runner') or 'nrunner'
+        if test_runner == 'nrunner' and self.tests:
             for test in self.tests:
                 test.config.update(self.config)
 
@@ -141,7 +142,8 @@ class TestSuite:
         return self.size
 
     def _convert_to_dry_run(self):
-        if self.config.get('run.test_runner') == 'nrunner':
+        test_runner = self.config.get('run.test_runner') or 'nrunner'
+        if test_runner == 'nrunner':
             for runnable in self.tests:
                 runnable.kind = 'dry-run'
         else:
@@ -256,7 +258,7 @@ class TestSuite:
     @property
     def runner(self):
         if self._runner is None:
-            runner_name = self.config.get('run.test_runner') or 'runner'
+            runner_name = self.config.get('run.test_runner') or 'nrunner'
             try:
                 runner_extension = RunnerDispatcher()[runner_name]
                 self._runner = runner_extension.obj
@@ -274,7 +276,7 @@ class TestSuite:
     @property
     def stats(self):
         """Return a statistics dict with the current tests."""
-        runner_name = self.config.get('run.test_runner') or 'runner'
+        runner_name = self.config.get('run.test_runner') or 'nrunner'
         if runner_name == 'runner':
             return self._get_stats_from_runner()
         elif runner_name == 'nrunner':
@@ -295,7 +297,7 @@ class TestSuite:
     @property
     def tags_stats(self):
         """Return a statistics dict with the current tests tags."""
-        runner_name = self.config.get('run.test_runner') or 'runner'
+        runner_name = self.config.get('run.test_runner') or 'nrunner'
         if runner_name == 'runner':
             return self._get_tags_stats_from_runner()
         elif runner_name == 'nrunner':
@@ -363,7 +365,7 @@ class TestSuite:
         config.update(suite_config)
         if job_config:
             config.update(job_config)
-        runner = config.get('run.test_runner') or 'runner'
+        runner = config.get('run.test_runner') or 'nrunner'
         if runner == 'nrunner':
             suite = cls._from_config_with_resolver(config, name)
         else:
