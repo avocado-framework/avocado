@@ -354,6 +354,7 @@ if __name__ == '__main__':
                   "nrunner = avocado.plugins.runner_nrunner:RunnerInit",
                   "testlogsui = avocado.plugins.testlogs:TestLogsUIInit",
                   "human = avocado.plugins.human:HumanInit",
+                  "exec-test-resolver = avocado.plugins.resolvers:ExecTestResolverInit",
               ],
               'avocado.plugins.cli': [
                   'wrapper = avocado.plugins.wrapper:Wrapper',

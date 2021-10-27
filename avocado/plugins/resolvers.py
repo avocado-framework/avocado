@@ -20,11 +20,27 @@ import os
 import re
 
 from avocado.core.nrunner import Runnable
-from avocado.core.plugin_interfaces import Resolver
+from avocado.core.plugin_interfaces import Init, Resolver
 from avocado.core.references import reference_split
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult, check_file)
 from avocado.core.safeloader import find_avocado_tests, find_python_unittests
+from avocado.core.settings import settings
+
+
+class ExecTestResolverInit(Init):
+
+    name = 'exec-test-resolver'
+    description = 'Initializes the exec-test resolver options'
+
+    def initialize(self):
+        help_msg = ('Defines a fixed command to be used for the exec-tests '
+                    'and have the references become the positional argument '
+                    'to that command')
+        settings.register_option(section='resolver.exec_test',
+                                 key='command',
+                                 default=None,
+                                 help_msg=help_msg)
 
 
 class ExecTestResolver(Resolver):
@@ -34,14 +50,24 @@ class ExecTestResolver(Resolver):
 
     def resolve(self, reference):
 
-        criteria_check = check_file(reference, reference, suffix=None,
+        command = self.config.get('resolver.exec_test.command')
+        if not command:
+            command = reference
+            args = ()
+            id_attr = 'uri'
+        else:
+            args = ((reference,))
+            id_attr = 'args'
+
+        criteria_check = check_file(command, reference, suffix=None,
                                     type_name='executable file',
                                     access_check=os.R_OK | os.X_OK,
                                     access_name='executable')
         if criteria_check is not True:
             return criteria_check
 
-        runnable = Runnable('exec-test', reference, config=self.config)
+        runnable = Runnable('exec-test', command, *args, id_attr=id_attr,
+                            config=self.config)
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
                                    [runnable])
