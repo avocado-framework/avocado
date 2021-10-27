@@ -74,7 +74,7 @@ class Runnable(unittest.TestCase):
         runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2')
         actual_args = runnable.get_command_args()
         exp_args = ['-k', 'noop', '-u', 'uri', '-c', '{}', '-a', 'arg1',
-                    '-a', 'arg2']
+                    '-a', 'arg2', '-d', 'uri']
         self.assertEqual(actual_args, exp_args)
 
     def test_get_dict(self):
@@ -82,6 +82,7 @@ class Runnable(unittest.TestCase):
         self.assertEqual(runnable.get_dict(),
                          {'kind': 'noop', 'uri': '_uri_',
                           'args': ('arg1', 'arg2'),
+                          'id_attr': 'uri',
                           'config': {}})
 
     def test_get_json(self):
@@ -89,7 +90,8 @@ class Runnable(unittest.TestCase):
         expected = ('{"kind": "noop", '
                     '"uri": "_uri_", '
                     '"config": {}, '
-                    '"args": ["arg1", "arg2"]}')
+                    '"args": ["arg1", "arg2"], '
+                    '"id_attr": "uri"}')
         self.assertEqual(runnable.get_json(), expected)
 
     def test_runner_from_runnable_error(self):
@@ -98,6 +100,15 @@ class Runnable(unittest.TestCase):
             runnable.pick_runner_class()
         except ValueError as e:
             self.assertEqual(str(e), 'Unsupported kind of runnable: unsupported_kind')
+
+    def test_runnable_identifier_uri(self):
+        runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2')
+        self.assertEqual(runnable.identifier, 'uri')
+
+    def test_runnable_identifier_args(self):
+        runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2',
+                                    id_attr='args')
+        self.assertEqual(runnable.identifier, 'arg1-arg2')
 
 
 class RunnableFromCommandLineArgs(unittest.TestCase):

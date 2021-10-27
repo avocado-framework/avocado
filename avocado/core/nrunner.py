@@ -113,11 +113,12 @@ class Runnable:
     execute a runnable.
     """
 
-    def __init__(self, kind, uri, *args, config=None, **kwargs):
+    def __init__(self, kind, uri, *args, id_attr=None, config=None, **kwargs):
         self.kind = kind
         self.uri = uri
         self.config = config or {}
         self.args = args
+        self.id_attr = id_attr or 'uri'
         self.tags = kwargs.pop('tags', None)
         self.requirements = kwargs.pop('requirements', None)
         self.variant = kwargs.pop('variant', None)
@@ -137,6 +138,7 @@ class Runnable:
         return cls(args.get('kind'),
                    args.get('uri'),
                    *decoded_args,
+                   id_attr=args.get('id_attr'),
                    config=json.loads(args.get('config', '{}'),
                                      cls=ConfigDecoder),
                    **_key_val_args_to_kwargs(args.get('kwargs', [])))
@@ -184,6 +186,10 @@ class Runnable:
                 arg = 'base64:%s' % base64.b64encode(arg.encode()).decode('ascii')
             args.append(arg)
 
+        if self.id_attr is not None:
+            args.append('-d')
+            args.append(self.id_attr)
+
         if self.tags is not None:
             args.append('tags=json:%s' % json.dumps(self.get_serializable_tags()))
 
@@ -212,6 +218,8 @@ class Runnable:
         recipe['config'] = self.config
         if self.args is not None:
             recipe['args'] = self.args
+        if self.id_attr is not None:
+            recipe['id_attr'] = self.id_attr
         kwargs = self.kwargs.copy()
         if self.tags is not None:
             kwargs['tags'] = self.get_serializable_tags()
@@ -353,6 +361,19 @@ class Runnable:
         if runner is not None:
             return runner
         raise ValueError('Unsupported kind of runnable: %s' % self.kind)
+
+    @property
+    def identifier(self):
+        """How this runnable should identify itself.
+
+        The :attr:`id_attr` should be set with the name of the attribute
+        that will be used as the identifier.  If :attr:`id_attr` is set
+        to "args", it will be converted into a dash separated string.
+        """
+        identity = getattr(self, self.id_attr)
+        if self.id_attr == 'args':
+            identity = "-".join(identity)
+        return identity
 
 
 class BaseRunner(abc.ABC):
@@ -968,6 +989,11 @@ class BaseRunnerApp:
         (('-a', '--arg'),
          {'action': 'append', 'default': [],
           'help': 'Simple arguments to runnable'}),
+
+        (('-d', '--id-attr'),
+         {'type': str, 'default': 'uri',
+          'choices': ('uri', 'args'),
+          'help': 'The attribute that will be this runnable identifier'}),
 
         (('kwargs',),
          {'default': [], 'type': _parse_key_val, 'nargs': '*',
