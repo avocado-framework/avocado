@@ -21,6 +21,7 @@ import multiprocessing
 import os
 import platform
 import random
+import tempfile
 from copy import deepcopy
 
 from avocado.core import nrunner
@@ -276,15 +277,20 @@ class Runner(RunnerInterface):
                 job_id))
         return runtime_tasks
 
-    def _determine_status_server_uri(self, test_suite, job):
+    def _determine_status_server_uri(self, test_suite):
+        # pylint: disable=W0201
+        self.status_server_dir = None
         if test_suite.config.get('nrunner.status_server_auto'):
             # no UNIX domain sockets on Windows
             if platform.system() != 'Windows':
-                return os.path.join(job.logdir, '.status_server.sock')
+                self.status_server_dir = tempfile.TemporaryDirectory(
+                    prefix='avocado_')
+                return os.path.join(self.status_server_dir.name,
+                                    '.status_server.sock')
         return test_suite.config.get('nrunner.status_server_listen')
 
     def _create_status_server(self, test_suite, job):
-        listen = self._determine_status_server_uri(test_suite, job)
+        listen = self._determine_status_server_uri(test_suite)
         # pylint: disable=W0201
         self.status_repo = StatusRepo(job.unique_id)
         # pylint: disable=W0201
@@ -368,6 +374,8 @@ class Runner(RunnerInterface):
 
         job.result.end_tests()
         self.status_server.close()
+        if self.status_server_dir is not None:
+            self.status_server_dir.cleanup()
 
         # Update the overall summary with found test statuses, which will
         # determine the Avocado command line exit status
