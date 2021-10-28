@@ -225,16 +225,16 @@ def parse_args():
 
 
 def create_suite_job_api(args):  # pylint: disable=W0621
-    test_class = 'JobAPIFeaturesTest'
     suites = []
+
+    def get_ref(method_short_name):
+        return ['%s:JobAPIFeaturesTest.test_%s' % (__file__, method_short_name)]
 
     # ========================================================================
     # Test if the archive file was created
     # ========================================================================
-    check_archive_file_exists = ('%s:%s.test_check_archive_file_exists'
-                                 % (__file__, test_class))
     config_check_archive_file_exists = {
-        'resolver.references': [check_archive_file_exists],
+        'resolver.references': get_ref('check_archive_file_exists'),
         'run.dict_variants.variant_id_keys': ['namespace', 'value'],
         'run.dict_variants': [
             {'namespace': 'run.results.archive',
@@ -249,11 +249,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     # ========================================================================
     # Test if the category directory was created
     # ========================================================================
-    check_category_directory_exists = (
-        '%s:%s.test_check_category_directory_exists'
-        % (__file__, test_class))
     config_check_category_directory_exists = {
-        'resolver.references': [check_category_directory_exists],
+        'resolver.references': get_ref('check_category_directory_exists'),
         'run.dict_variants.variant_id_keys': ['namespace', 'value'],
         'run.dict_variants': [
             {'namespace': 'run.job_category',
@@ -268,10 +265,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     # ========================================================================
     # Test if a directory was created
     # ========================================================================
-    check_directory_exists = ('%s:%s.test_check_directory_exists'
-                              % (__file__, test_class))
     config_check_directory_exists = {
-        'resolver.references': [check_directory_exists],
+        'resolver.references': get_ref('check_directory_exists'),
         'run.dict_variants.variant_id_keys': ['namespace', 'value'],
         'run.dict_variants': [
              {'namespace': 'sysinfo.collect.enabled',
@@ -292,10 +287,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     # ========================================================================
     # Test the content of a file
     # ========================================================================
-    check_file_content = ('%s:%s.test_check_file_content'
-                          % (__file__, test_class))
     config_check_file_content = {
-        'resolver.references': [check_file_content],
+        'resolver.references': get_ref('check_file_content'),
         'run.dict_variants.variant_id_keys': ['namespace', 'value', 'file'],
         'run.dict_variants': [
             # finding the correct 'content' here is trick because any
@@ -372,10 +365,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     # ========================================================================
     # Test if the result file was created
     # ========================================================================
-    check_file_exists = ('%s:%s.test_check_file_exists'
-                         % (__file__, test_class))
     config_check_file_exists = {
-        'resolver.references': [check_file_exists],
+        'resolver.references': get_ref('check_file_exists'),
         'run.dict_variants.variant_id_keys': ['namespace', 'value'],
         'run.dict_variants': [
             {'namespace': 'job.run.result.json.enabled',
@@ -452,10 +443,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     # ========================================================================
     # Test if a file was created
     # ========================================================================
-    check_output_file = ('%s:%s.test_check_output_file'
-                         % (__file__, test_class))
     config_check_output_file = {
-        'resolver.references': [check_output_file],
+        'resolver.references': get_ref('check_output_file'),
         'run.dict_variants.variant_id_keys': ['namespace', 'file'],
         'run.dict_variants': [
             {'namespace': 'job.run.result.json.output',
@@ -487,10 +476,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     # ========================================================================
     # Test if the temporary directory was created
     # ========================================================================
-    check_tmp_directory_exists = ('%s:%s.test_check_tmp_directory_exists'
-                                  % (__file__, test_class))
     config_check_tmp_directory_exists = {
-        'resolver.references': [check_tmp_directory_exists],
+        'resolver.references': get_ref('check_tmp_directory_exists'),
         'run.dict_variants.variant_id_keys': ['namespace', 'value'],
         'run.dict_variants': [
             {'namespace': 'run.keep_tmp',
