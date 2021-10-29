@@ -165,12 +165,12 @@ There are two ways to acquire the JSON serialized variants file:
     variants.json: ASCII text, with very long lines, with no line terminators
 
 - Getting the auto-generated JSON serialized variants file after a Avocado Job
-  execution::
+  execution (named with a numeric index for each of the job's suites)::
 
     $ avocado run examples/tests/passtest.py --mux-yaml examples/yaml_to_mux/hw/hw.yaml
     ...
 
-    $ file $HOME/avocado/job-results/latest/jobdata/variants.json
+    $ file $HOME/avocado/job-results/latest/jobdata/variants-1.json
     $HOME/avocado/job-results/latest/jobdata/variants.json: ASCII text, with very long lines, with no line terminators
 
 Once you have the ``variants.json`` file, you can load it on the system where

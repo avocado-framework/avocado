@@ -195,9 +195,9 @@ class RunnerOperationTest(TestCaseTmpDir):
         process.run(cmd_line)
         # Also check whether jobdata contains correct parameter paths
         variants = open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                                     "variants.json")).read()
-        self.assertIn('["/run/*"]', variants, "paths stored in jobdata "
-                      "does not contains [\"/run/*\"]\n%s" % variants)
+                                     "variants-1.json")).read()
+        expected = '[{"paths": ["/run/*"], "variant_id": null, "variant": [["/", []]]}]'
+        self.assertEqual(variants, expected)
 
     def test_runner_failfast(self):
         cmd_line = ('%s run --disable-sysinfo --job-results-dir %s '

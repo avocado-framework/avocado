@@ -33,18 +33,28 @@ JOB_CONFIG_FILENAME = 'args.json'
 CMDLINE_FILENAME = 'cmdline'
 
 
+def json_bad_variants_obj(item):
+    for log in [LOG_UI, LOG_JOB]:
+        log.warning("jobdata.variants: Unable to serialize '%s'", item)
+    return str(item)
+
+
+def record_suite_variant(path_variants, suite):
+    with open(path_variants, 'w') as variants_file:
+        variants = []
+        variants += suite.variants.dump()
+        json.dump(variants, variants_file, default=json_bad_variants_obj)
+        variants_file.flush()
+        os.fsync(variants_file)
+
+
 def record(job, cmdline=None):
     """
     Records all required job information.
     """
-    def json_bad_variants_obj(item):
-        for log in [LOG_UI, LOG_JOB]:
-            log.warning("jobdata.variants: Unable to serialize '%s'", item)
-        return str(item)
     base_dir = init_dir(job.logdir, JOB_DATA_DIR)
     path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
-    path_variants = os.path.join(base_dir, VARIANTS_FILENAME)
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
     path_job_config = os.path.join(base_dir, JOB_CONFIG_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
@@ -61,13 +71,13 @@ def record(job, cmdline=None):
         config_file.flush()
         os.fsync(config_file)
 
-    with open(path_variants, 'w') as variants_file:
-        variants = []
-        for suite in job.test_suites:
-            variants.append(suite.variants.dump())
-        json.dump(variants, variants_file, default=json_bad_variants_obj)
-        variants_file.flush()
-        os.fsync(variants_file)
+    for idx, suite in enumerate(job.test_suites, 1):
+        if suite.name:
+            suite_var_name = "variants-{}-{}.json".format(idx, suite.name)
+        else:
+            suite_var_name = "variants-{}.json".format(idx)
+        path_suite_variant = os.path.join(base_dir, suite_var_name)
+        record_suite_variant(path_suite_variant, suite)
 
     with open(path_pwd, 'w') as pwd_file:
         pwd_file.write('%s' % os.getcwd())

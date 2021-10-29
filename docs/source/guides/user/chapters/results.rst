@@ -16,7 +16,7 @@ results directory structure can be seen below ::
     │   ├── config
     │   ├── pwd
     │   ├── test_references
-    │   └── variants.json
+    │   └── variants-1.json
     ├── job.log
     ├── results.html
     ├── results.json
