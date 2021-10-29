@@ -31,6 +31,14 @@ class DictVariantsInit(Init):
                                  key_type=list,
                                  help_msg=help_msg)
 
+        help_msg = ('Configure the key that will be used to name the '
+                    'variant ID. If not set, will use all keys.')
+        settings.register_option(section='run.dict_variants',
+                                 key='variant_id_keys',
+                                 default=[],
+                                 key_type=list,
+                                 help_msg=help_msg)
+
 
 class DictVariants(Varianter):
 
@@ -47,6 +55,8 @@ class DictVariants(Varianter):
         if self.variants:
             # pylint: disable=W0201
             self.headers = [key for key in self.variants[0].keys()]
+            self.headers_for_id = config.get('run.dict_variants.variant_id_keys',
+                                             self.headers)
 
     def __iter__(self):
         if self.variants is None:
@@ -55,7 +65,7 @@ class DictVariants(Varianter):
         variant_ids = []
         for variant in self.variants:
             variant_ids.append("-".join([str(variant.get(key))
-                                         for key in self.headers]))
+                                         for key in self.headers_for_id]))
 
         for vid, variant in zip(variant_ids, self.variants):
             yield {"variant_id": vid,
