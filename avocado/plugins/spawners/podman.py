@@ -7,6 +7,10 @@ from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 from avocado.utils import distro
+from avocado.utils.podman import Podman, PodmanException
+
+
+ENTRY_POINT_CMD = "/tmp/avocado-runner"
 
 
 class PodmanSpawnerInit(Init):
@@ -90,17 +94,21 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         pass
 
     async def deploy_avocado(self, where):
-        pass
-
-    async def spawn_task(self, runtime_task):
-
-        podman_bin = self.config.get('spawner.podman.bin')
-        if not os.path.exists(podman_bin):
-            msg = 'Podman binary "%s" is not available on the system'
-            msg %= podman_bin
-            runtime_task.status = msg
+        # Currently limited to avocado-runner, we'll expand on that
+        # when the runner requirements system is in place
+        this_path = os.path.abspath(__file__)
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(this_path)))
+        avocado_runner_path = os.path.join(base_path, 'core', 'nrunner.py')
+        try:
+            # pylint: disable=W0201
+            await self.podman.execute("cp",
+                                      avocado_runner_path,
+                                      "%s:%s" % (where,
+                                                 ENTRY_POINT_CMD))
+        except PodmanException:
             return False
 
+    async def _create_container_for_task(self, runtime_task):
         mount_status_server_socket = False
         mounted_status_server_socket = '/tmp/.status_server.sock'
         status_server_uri = runtime_task.task.status_services[0].uri
@@ -110,75 +118,58 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             runtime_task.task.status_services[0].uri = mounted_status_server_socket
 
         task = runtime_task.task
-        entry_point_cmd = '/tmp/avocado-runner'
-        entry_point_args = task.get_command_args()
-        entry_point_args.insert(0, "task-run")
-        entry_point_args.insert(0, entry_point_cmd)
+        entry_point_args = [ENTRY_POINT_CMD, "task-run"]
+        entry_point_args.extend(task.get_command_args())
         entry_point = json.dumps(entry_point_args)
         entry_point_arg = "--entrypoint=" + entry_point
 
         if mount_status_server_socket:
             status_server_opts = (
                 "--privileged",
-                "-v", "%s:%s" % (status_server_uri, mounted_status_server_socket)
+                "-v", "%s:%s" % (status_server_uri,
+                                 mounted_status_server_socket)
             )
         else:
             status_server_opts = ("--net=host", )
 
         image = self.config.get('spawner.podman.image')
+
         try:
-            # pylint: disable=E1133
-            proc = await asyncio.create_subprocess_exec(
-                podman_bin, "create",
-                *status_server_opts,
-                entry_point_arg,
-                image,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE)
-        except (FileNotFoundError, PermissionError):
+            # pylint: disable=W0201
+            _, stdout, _ = await self.podman.execute("create",
+                                                     *status_server_opts,
+                                                     entry_point_arg, image)
+        except PodmanException as ex:
+            msg = f"Could not create podman container: {ex}"
+            runtime_task.status = msg
             return False
 
-        await proc.wait()
-        if proc.returncode != 0:
+        return stdout.decode().strip()
+
+    async def spawn_task(self, runtime_task):
+
+        podman_bin = self.config.get('spawner.podman.bin')
+        try:
+            # pylint: disable=W0201
+            self.podman = Podman(podman_bin)
+        except PodmanException as ex:
+            runtime_task.status = str(ex)
             return False
 
-        stdout = await proc.stdout.read()
-        container_id = stdout.decode().strip()
+        container_id = await self._create_container_for_task(runtime_task)
 
         runtime_task.spawner_handle = container_id
 
-        # Currently limited to avocado-runner, we'll expand on that
-        # when the runner requirements system is in place
-        this_path = os.path.abspath(__file__)
-        base_path = os.path.dirname(os.path.dirname(os.path.dirname(this_path)))
-        avocado_runner_path = os.path.join(base_path, 'core', 'nrunner.py')
-        try:
-            # pylint: disable=E1133
-            proc = await asyncio.create_subprocess_exec(
-                podman_bin,
-                "cp",
-                avocado_runner_path,
-                "%s:%s" % (container_id, entry_point_cmd))
-        except (FileNotFoundError, PermissionError):
-            return False
-
-        await proc.wait()
-        if proc.returncode != 0:
-            return False
+        await self.deploy_avocado(container_id)
 
         try:
-            # pylint: disable=E1133
-            proc = await asyncio.create_subprocess_exec(
-                podman_bin,
-                "start",
-                container_id,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE)
-        except (FileNotFoundError, PermissionError):
+            # pylint: disable=W0201
+            returncode, _, _ = await self.podman.start(container_id)
+        except PodmanException as ex:
+            runtime_task.status = str(ex)
             return False
 
-        await proc.wait()
-        return proc.returncode == 0
+        return returncode == 0
 
     async def wait_task(self, runtime_task):
         while True:
