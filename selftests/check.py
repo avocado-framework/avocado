@@ -13,9 +13,6 @@ from avocado.core.job import Job
 from avocado.core.suite import TestSuite
 from selftests.utils import python_module_available
 
-BOOLEAN_ENABLED = [True, 'true', 'on', 1]
-BOOLEAN_DISABLED = [False, 'false', 'off', 0]
-
 
 class JobAPIFeaturesTest(Test):
 
