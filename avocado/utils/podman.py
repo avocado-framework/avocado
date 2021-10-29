@@ -23,9 +23,7 @@ consuming this API.
 import json
 import logging
 import os
-
 from asyncio import create_subprocess_exec, subprocess
-
 
 LOG = logging.getLogger(__name__)
 
