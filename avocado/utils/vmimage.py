@@ -290,11 +290,10 @@ class UbuntuImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + 'releases/{version}/release/'
         self.image_pattern = 'ubuntu-(?P<version>{version})-server-cloudimg-(?P<arch>{arch}).img'
 
-    def get_versions(self):
-        """Return all available versions for the current parameters."""
-        parser = VMImageHtmlParser(self.version_pattern)
-        self._feed_html_parser(self.url_versions, parser)
-        return parser.items
+    def get_best_version(self, versions):
+        """ Return best (more recent) version """
+        max_float = max([float(item) for item in versions])
+        return str(f'{max_float:2.2f}')
 
 
 class DebianImageProvider(ImageProviderBase):
