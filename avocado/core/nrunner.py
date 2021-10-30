@@ -360,6 +360,10 @@ class BaseRunner(abc.ABC):
     Base interface for a Runner
     """
 
+    #: The "main Avocado" configuration keys (AKA namespaces) that
+    #: this runners makes use of.
+    CONFIGURATION_USED = []
+
     def __init__(self, runnable):
         self.runnable = runnable
 
@@ -454,6 +458,9 @@ class ExecTestRunner(BaseRunner):
      * kwargs: key=val to be set as environment variables to the
        process
     """
+
+    CONFIGURATION_USED = ['run.test_parameters',
+                          'runner.exectest.exitcodes.skip']
 
     def _process_final_status(self, process,
                               stdout=None, stderr=None):  # pylint: disable=W0613
@@ -1083,8 +1090,11 @@ class BaseRunnerApp:
 
         :rtype: dict
         """
-        return {"runnables": list(self.RUNNABLE_KINDS_CAPABLE.keys()),
-                "commands": self.get_commands()}
+        return {
+            "runnables": list(self.RUNNABLE_KINDS_CAPABLE.keys()),
+            "commands": self.get_commands(),
+            "configuration_used": self.get_configuration_by_runners(),
+        }
 
     def get_runner_from_runnable(self, runnable):
         """
@@ -1097,6 +1107,17 @@ class BaseRunnerApp:
         if runner is not None:
             return runner(runnable)
         raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
+
+    def get_configuration_used_by_runners(self):
+        """Returns the configuration keys used by capable runners.
+
+        :returns: the configuration keys (aka namespaces) used by known runners
+        :rtype: list
+        """
+        config_used = []
+        for runner in self.RUNNABLE_KINDS_CAPABLE.values():
+            config_used += runner.CONFIGURATION_USED
+        return list(set(config_used))
 
     def command_capabilities(self, _):
         """

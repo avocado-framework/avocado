@@ -28,6 +28,8 @@ class RequirementAssetRunner(nrunner.BaseRunner):
         - expire: time in seconds for the asset to expire (optional)
     """
 
+    CONFIGURATION_USED = ['datadir.paths.cache_dirs']
+
     @staticmethod
     def _fetch_asset(name, asset_hash, algorithm, locations, cache_dirs,
                      expire, queue):

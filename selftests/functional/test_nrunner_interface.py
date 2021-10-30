@@ -28,3 +28,4 @@ class Interface(Test):
         result = process.run(cmd)
         capabilities = json.loads(result.stdout_text)
         self.assertIn("runnables", capabilities)
+        self.assertIn("configuration_used", capabilities)

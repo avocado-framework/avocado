@@ -26,6 +26,8 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
     """
     DEFAULT_TIMEOUT = 86400
 
+    CONFIGURATION_USED = ['run.test_parameters']
+
     @staticmethod
     def _create_params(runnable):
         """Create params for the test"""
