@@ -41,13 +41,13 @@ class ExecTestResolver(Resolver):
         if criteria_check is not True:
             return criteria_check
 
-        runnable = Runnable('exec-test', reference, config=self.config)
+        runnable = Runnable('exec-test', reference)
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
                                    [runnable])
 
 
-def python_resolver(name, reference, find_tests, config):
+def python_resolver(name, reference, find_tests):
     module_path, tests_filter = reference_split(reference)
     if tests_filter is not None:
         tests_filter = re.compile(tests_filter)
@@ -68,8 +68,7 @@ def python_resolver(name, reference, find_tests, config):
             runnables.append(Runnable(name,
                                       uri=uri,
                                       tags=tags,
-                                      requirements=reqs,
-                                      config=config))
+                                      requirements=reqs))
     if runnables:
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
@@ -92,8 +91,7 @@ class PythonUnittestResolver(Resolver):
     def resolve(self, reference):
         return python_resolver(PythonUnittestResolver.name,
                                reference,
-                               PythonUnittestResolver._find_compat,
-                               self.config)
+                               PythonUnittestResolver._find_compat)
 
 
 class AvocadoInstrumentedResolver(Resolver):
@@ -104,8 +102,7 @@ class AvocadoInstrumentedResolver(Resolver):
     def resolve(self, reference):
         return python_resolver(AvocadoInstrumentedResolver.name,
                                reference,
-                               find_avocado_tests,
-                               self.config)
+                               find_avocado_tests)
 
 
 class TapResolver(Resolver):
@@ -122,7 +119,7 @@ class TapResolver(Resolver):
         if criteria_check is not True:
             return criteria_check
 
-        runnable = Runnable('tap', reference, cofig=self.config)
+        runnable = Runnable('tap', reference)
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,
                                    [runnable])
