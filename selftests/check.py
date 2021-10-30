@@ -498,25 +498,47 @@ def create_suites(args):  # pylint: disable=W0621
     # ========================================================================
     config_nrunner_interface = {
         'resolver.references': ['selftests/functional/test_nrunner_interface.py'],
+        'run.dict_variants.variant_id_keys': ['runner'],
         'run.dict_variants': [
-            {'runner': 'avocado-runner'},
-            {'runner': 'avocado-runner-noop'},
-            {'runner': 'avocado-runner-exec-test'},
-            {'runner': 'avocado-runner-python-unittest'},
-            {'runner': 'avocado-runner-avocado-instrumented'},
-            {'runner': 'avocado-runner-tap'},
+            {'runner': 'avocado-runner',
+             'runnable-run-no-args-exit-code': 2,
+             'runnable-run-uri-only-exit-code': 2},
+
+            {'runner': 'avocado-runner-noop',
+             'runnable-run-no-args-exit-code': 0,
+             'runnable-run-uri-only-exit-code': 0},
+
+            {'runner': 'avocado-runner-exec-test',
+             'runnable-run-no-args-exit-code': 0,
+             'runnable-run-uri-only-exit-code': 0},
+
+            {'runner': 'avocado-runner-python-unittest',
+             'runnable-run-no-args-exit-code': 0,
+             'runnable-run-uri-only-exit-code': 0},
+
+            {'runner': 'avocado-runner-avocado-instrumented',
+             'runnable-run-no-args-exit-code': 0,
+             'runnable-run-uri-only-exit-code': 0},
+
+            {'runner': 'avocado-runner-tap',
+             'runnable-run-no-args-exit-code': 0,
+             'runnable-run-uri-only-exit-code': 0},
         ]
     }
 
     if (python_module_available('avocado-framework-plugin-golang') and
             'golang' not in args.disable_plugin_checks):
         config_nrunner_interface['run.dict_variants'].append({
-            'runner': 'avocado-runner-golang'})
+            'runner': 'avocado-runner-golang',
+            'runnable-run-no-args-exit-code': 0,
+            'runnable-run-uri-only-exit-code': 0})
 
     if (python_module_available('avocado-framework-plugin-robot') and
             'robot' not in args.disable_plugin_checks):
         config_nrunner_interface['run.dict_variants'].append({
-            'runner': 'avocado-runner-robot'})
+            'runner': 'avocado-runner-robot',
+            'runnable-run-no-args-exit-code': 0,
+            'runnable-run-uri-only-exit-code': 0})
 
     if args.nrunner_interface:
         suites.append(TestSuite.from_config(config_nrunner_interface, "nrunner-interface"))

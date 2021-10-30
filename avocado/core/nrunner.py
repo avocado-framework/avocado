@@ -569,7 +569,7 @@ class PythonUnittestRunner(BaseRunner):
         It will return ("test", "Class", "test_foo")
         """
 
-        uri = self.runnable.uri
+        uri = self.runnable.uri or ''
         if ':' in uri:
             module, class_method = uri.rsplit(':', 1)
         else:

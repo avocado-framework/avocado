@@ -29,12 +29,27 @@ from avocado.core.runners.utils import messages
 
 class RobotRunner(nrunner.BaseRunner):
 
-    def _run(self, uri, queue):
+    def _uri_to_file_suite_test(self):
+        """Converts the uri to a file name, suit name and test name"""
+        if not self.runnable.uri:
+            return (None, None, None)
+
+        file_name_suite_test = self.runnable.uri.split(':', 1)
+        if len(file_name_suite_test) == 1:
+            return (file_name_suite_test[0], None, None)
+
+        file_name, suite_test = file_name_suite_test
+        suite_name_test_name = suite_test.split('.', 1)
+        if len(suite_name_test_name) == 1:
+            return (file_name, suite_test, None)
+        suite_name, test_name = suite_name_test_name
+
+        return (file_name, suite_name, test_name)
+
+    def _run(self, file_name, suite_name, test_name, queue):
         stdout = io.StringIO()
         stderr = io.StringIO()
         output_dir = tempfile.mkdtemp(prefix=".avocado-robot")
-        file_name, suit_test = uri.split(':', 1)
-        suite_name, test_name = suit_test.split('.', 1)
         native_robot_result = run(file_name,
                                   suite=suite_name,
                                   test=test_name,
@@ -57,15 +72,17 @@ class RobotRunner(nrunner.BaseRunner):
         queue.put(output)
 
     def run(self):
-        if not self.runnable.uri:
+        file_name, suite_name, test_name = self._uri_to_file_suite_test()
+        if not all([file_name, suite_name, test_name]):
+
             yield messages.FinishedMessage.get('error',
-                                               fail_reason='uri is required '
-                                                           'but was not given')
+                                               fail_reason='Invalid URI given')
             return
 
         queue = multiprocessing.SimpleQueue()
         process = multiprocessing.Process(target=self._run,
-                                          args=(self.runnable.uri, queue))
+                                          args=(file_name, suite_name,
+                                                test_name, queue))
         process.start()
         yield messages.StartedMessage.get()
 
