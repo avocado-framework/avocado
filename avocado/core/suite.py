@@ -77,7 +77,6 @@ def resolutions_to_runnables(resolutions, config):
                                                  include_empty,
                                                  include_empty_key):
                     continue
-            runnable.config = config
             result.append(runnable)
     return result
 
@@ -96,11 +95,6 @@ class TestSuite:
             self.config.update(job_config)
         if config:
             self.config.update(config)
-
-        # Update the config of runnables.
-        if config.get('run.test_runner') == 'nrunner' and self.tests:
-            for test in self.tests:
-                test.config.update(self.config)
 
         self._variants = None
         self._references = None

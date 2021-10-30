@@ -79,6 +79,41 @@ def check_runnables_runner_requirements(runnables, runners_registry=None):
     return (ok, missing)
 
 
+def update_avocado_configuration_used_on_runnables(runnables, config,
+                                                   runners_registry=None,
+                                                   config_registry=None):
+    """Checks if runnables have runner requirements fulfilled
+
+    :param runnables: the tasks whose runner requirements will be checked
+    :type runnables: list of :class:`Runnable`
+    :param config: A config dict to be used on the desired test suite.
+    :type config: dict
+    :param runners_registry: a registry with previously found (and not found)
+                             runners keyed by a task's runnable kind. Defaults
+                             to :attr:`RUNNERS_REGISTRY_STANDALONE_EXECUTABLE`
+    :type runners_registry: dict
+    :param config_registry: a registry with previously recorded configuration
+                            used based on the standalone runner commands.
+                            Defaults to :attr:`STANDALONE_EXECUTABLE_CONFIG_USED`.
+    :type registry: dict
+    """
+    if runners_registry is None:
+        runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
+
+    if config_registry is None:
+        config_registry = STANDALONE_EXECUTABLE_CONFIG_USED
+
+    for runnable in runnables:
+        command = runners_registry.get(runnable.kind)
+        if command is None:
+            continue
+        command = " ".join(command)
+        configuration_used = config_registry.get(command)
+        for config_item in configuration_used:
+            if config_item in config:
+                runnable.config[config_item] = config.get(config_item)
+
+
 class ConfigDecoder(json.JSONDecoder):
     """
     JSON Decoder for config options.

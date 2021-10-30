@@ -329,6 +329,9 @@ class Runner(RunnerInterface):
             test_suite.tests)
         self._abort_if_missing_runners(missing_requirements)
 
+        nrunner.update_avocado_configuration_used_on_runnables(test_suite.tests,
+                                                               test_suite.config)
+
         job.result.tests_total = test_suite.variants.get_number_of_tests(test_suite.tests)
 
         self._create_status_server(test_suite, job)
