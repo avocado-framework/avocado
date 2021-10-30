@@ -36,6 +36,9 @@ RUNNER_RUN_STATUS_INTERVAL = 0.5
 #: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
 RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 
+#: The configuration that is known to be used by standalone runners
+STANDALONE_EXECUTABLE_CONFIG_USED = {}
+
 #: All known runner Python classes.  This is a dictionary keyed by a
 #: runnable kind, and value is a class that inherits from
 #: :class:`BaseRunner`.  Suitable for spawners compatible with
@@ -262,9 +265,15 @@ class Runnable:
         out, _ = process.communicate()
 
         try:
-            return json.loads(out.decode())
+            capabilities = json.loads(out.decode())
         except json.decoder.JSONDecodeError:
-            return {}
+            capabilities = {}
+
+        # lists are not hashable, and here it'd make more sense to have
+        # a command as it'd be seen in a command line anyway
+        cmd = " ".join(runner_command)
+        STANDALONE_EXECUTABLE_CONFIG_USED[cmd] = capabilities.get('configuration_used', [])
+        return capabilities
 
     def is_kind_supported_by_runner_command(self, runner_command,
                                             capabilities=None):
