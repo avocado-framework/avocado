@@ -114,7 +114,8 @@ class TaskStateMachine:
 class Worker:
 
     def __init__(self, state_machine, spawner,
-                 max_triaging=None, max_running=None, task_timeout=None):
+                 max_triaging=None, max_running=None, task_timeout=None,
+                 failfast=False):
         self._state_machine = state_machine
         self._spawner = spawner
         if max_triaging is None:
@@ -124,6 +125,7 @@ class Worker:
             max_running = 2 * multiprocessing.cpu_count() - 1
         self._max_running = max_running
         self._task_timeout = task_timeout
+        self._failfast = failfast
         LOG.debug("%s has been initialized", self)
 
     def __repr__(self):
@@ -279,9 +281,8 @@ class Worker:
                 runtime_task.status = 'FINISHED'
             except asyncio.TimeoutError:
                 runtime_task.status = 'FINISHED W/ TIMEOUT'
-        failfast = runtime_task.task.runnable.config.get('run.failfast')
         result_stats = self._state_machine._status_repo.result_stats
-        if failfast and 'fail' in result_stats:
+        if self._failfast and 'fail' in result_stats:
             await self._state_machine.abort("FAILFAST is enabled")
             raise TestFailFast("Interrupting job (failfast).")
 
