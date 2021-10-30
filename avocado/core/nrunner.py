@@ -174,7 +174,7 @@ class Runnable:
             args.append('-u')
             args.append(self.uri)
 
-        if self.config is not None:
+        if self.config:
             args.append('-c')
             args.append(json.dumps(self.config, cls=ConfigEncoder))
 
