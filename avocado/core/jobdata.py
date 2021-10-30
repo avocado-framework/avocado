@@ -21,6 +21,7 @@ import json
 import os
 
 from ..utils.path import init_dir
+from .nrunner import ConfigDecoder, ConfigEncoder
 from .output import LOG_JOB, LOG_UI
 from .settings import settings
 from .varianter import VARIANTS_FILENAME
@@ -86,8 +87,7 @@ def record(job, cmdline=None):
 
     with open(path_job_config, 'w') as job_config_file:
         json.dump(job.config, job_config_file,
-                  default=lambda x:
-                  {"__set__": list(x)} if isinstance(x, set) else None)
+                  cls=ConfigEncoder)
         job_config_file.flush()
         os.fsync(job_config_file)
 
@@ -140,9 +140,7 @@ def retrieve_job_config(resultsdir):
     recorded_job_config = _retrieve(resultsdir, JOB_CONFIG_FILENAME)
     if recorded_job_config:
         with open(recorded_job_config, 'r') as job_config_file:
-            return json.load(job_config_file,
-                             object_hook=lambda x:
-                             set(x['__set__']) if '__set__' in x else x)
+            return json.load(job_config_file, cls=ConfigDecoder)
 
 
 def retrieve_config(resultsdir):
