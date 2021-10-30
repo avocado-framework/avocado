@@ -245,8 +245,12 @@ class Runnable:
         with open(recipe_path, 'w') as recipe_file:
             recipe_file.write(self.get_json())
 
-    def is_kind_supported_by_runner_command(self, runner_command):
-        """Checks if a runner command that seems a good fit declares support."""
+    @staticmethod
+    def get_capabilities_from_runner_command(runner_command):
+        """Returns the capabilities of a given runner from a command.
+
+        In case of failures, an empty capabilities dictionary is returned.
+        """
         cmd = runner_command + ['capabilities']
         try:
             process = subprocess.Popen(cmd,
@@ -254,14 +258,19 @@ class Runnable:
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.DEVNULL)
         except (FileNotFoundError, PermissionError):
-            return False
+            return {}
         out, _ = process.communicate()
 
         try:
-            capabilities = json.loads(out.decode())
+            return json.loads(out.decode())
         except json.decoder.JSONDecodeError:
-            return False
+            return {}
 
+    def is_kind_supported_by_runner_command(self, runner_command,
+                                            capabilities=None):
+        """Checks if a runner command that seems a good fit declares support."""
+        if capabilities is None:
+            capabilities = self.get_capabilities_from_runner_command(runner_command)
         return self.kind in capabilities.get('runnables', [])
 
     def pick_runner_command(self, runners_registry=None):
@@ -1093,7 +1102,7 @@ class BaseRunnerApp:
         return {
             "runnables": list(self.RUNNABLE_KINDS_CAPABLE.keys()),
             "commands": self.get_commands(),
-            "configuration_used": self.get_configuration_by_runners(),
+            "configuration_used": self.get_configuration_used_by_runners(),
         }
 
     def get_runner_from_runnable(self, runnable):
