@@ -29,7 +29,7 @@ class GenericMessage:
 
     @classmethod
     def get(cls, **kwargs):
-        """Creates message base on it's type with  all necessary information.
+        """Creates message base on it's type with all necessary information.
 
         :return: message dict which can be send to avocado server
         :rtype: dict
@@ -53,7 +53,7 @@ class FinishedMessage(GenericMessage):
 
     @classmethod
     def get(cls, result, fail_reason=None, returncode=None):  # pylint: disable=W0221
-        """Creates finished message with  all necessary information.
+        """Creates finished message with all necessary information.
 
         :param result: test result
         :type result values for the statuses defined in
@@ -92,7 +92,7 @@ class GenericRunningMessage(GenericMessage):
 
     @classmethod
     def get(cls, msg, **kwargs):  # pylint: disable=W0221
-        """Creates running message with  all necessary information.
+        """Creates running message with all necessary information.
 
         :param msg: log of running message
         :type msg: str
@@ -108,22 +108,22 @@ class LogMessage(GenericRunningMessage):
 
 
 class StdoutMessage(GenericRunningMessage):
-    """Creates stdout message with  all necessary information."""
+    """Creates stdout message with all necessary information."""
     message_type = 'stdout'
 
 
 class StderrMessage(GenericRunningMessage):
-    """Creates stderr message with  all necessary information."""
+    """Creates stderr message with all necessary information."""
     message_type = 'stderr'
 
 
 class WhiteboardMessage(GenericRunningMessage):
-    """Creates whiteboard message with  all necessary information."""
+    """Creates whiteboard message with all necessary information."""
     message_type = 'whiteboard'
 
 
 class FileMessage(GenericRunningMessage):
-    """Creates file message with  all necessary information."""
+    """Creates file message with all necessary information."""
     message_type = 'file'
 
     @classmethod
