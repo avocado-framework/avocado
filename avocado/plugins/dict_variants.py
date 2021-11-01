@@ -55,8 +55,9 @@ class DictVariants(Varianter):
         if self.variants:
             # pylint: disable=W0201
             self.headers = [key for key in self.variants[0].keys()]
-            self.headers_for_id = config.get('run.dict_variants.variant_id_keys',
-                                             self.headers)
+            self.headers_for_id = config.get('run.dict_variants.variant_id_keys')
+            if not self.headers_for_id:
+                self.headers_for_id = self.headers
 
     def __iter__(self):
         if self.variants is None:
