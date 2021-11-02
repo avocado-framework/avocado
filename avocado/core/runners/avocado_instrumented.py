@@ -66,7 +66,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                 runnable)
 
             test_factory = [klass,
-                            {'name': TestID(1, klass_method),
+                            {'name': TestID(1, runnable.uri),
                              'methodName': method,
                              'config': runnable.config,
                              'modulePath': module_path,
