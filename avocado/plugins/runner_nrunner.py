@@ -349,10 +349,12 @@ class Runner(RunnerInterface):
         max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
                           len(self.runtime_tasks))
         timeout = test_suite.config.get('task.timeout.running')
+        failfast = test_suite.config.get('run.failfast')
         workers = [Worker(state_machine=tsm,
                           spawner=spawner,
                           max_running=max_running,
-                          task_timeout=timeout).run()
+                          task_timeout=timeout,
+                          failfast=failfast).run()
                    for _ in range(max_running)]
         asyncio.ensure_future(self._update_status(job))
         loop = asyncio.get_event_loop()

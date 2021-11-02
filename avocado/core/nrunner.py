@@ -52,7 +52,7 @@ def check_runnables_runner_requirements(runnables, runners_registry=None):
     Checks if runnables have runner requirements fulfilled
 
     :param runnables: the tasks whose runner requirements will be checked
-    :type runnable: list of :class:`Runnable`
+    :type runnables: list of :class:`Runnable`
     :param runners_registry: a registry with previously found (and not found)
                              runners keyed by a task's runnable kind. Defaults
                              to :attr:`RUNNERS_REGISTRY_STANDALONE_EXECUTABLE`
@@ -174,7 +174,7 @@ class Runnable:
             args.append('-u')
             args.append(self.uri)
 
-        if self.config is not None:
+        if self.config:
             args.append('-c')
             args.append(json.dumps(self.config, cls=ConfigEncoder))
 
