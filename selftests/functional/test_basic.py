@@ -611,8 +611,9 @@ class RunnerOperationTest(TestCaseTmpDir):
         self.assertTrue(os.path.exists(progress_info))
         with open(progress_info) as file:
             stream_line = file.readline()
-            self.assertIn('INFO | 1-Plant.test_plant_organic: '
-                          'preparing soil on row 0', stream_line)
+            self.assertIn('INFO | 1-examples/tests/logging_streams.py:'
+                          'Plant.test_plant_organic: preparing soil on row 0',
+                          stream_line)
 
 
 class DryRunTest(TestCaseTmpDir):
