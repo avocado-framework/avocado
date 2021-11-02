@@ -79,7 +79,7 @@ class JobAPIFeaturesTest(Test):
         """Run a Job"""
         config = self.create_config()
 
-        suite = TestSuite.from_config(config)
+        suite = TestSuite.from_config(config, '')
 
         # run the job
         with Job(config, [suite]) as j:
@@ -305,7 +305,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             {'namespace': 'job.run.result.tap.include_logs',
              'value': True,
              'file': 'results.tap',
-             'content': "Command '/bin/true' finished with 0",
+             'reference': ['examples/tests/passtest.py:PassTest.test'],
+             'content': 'PASS 1-examples/tests/passtest.py:PassTest.test',
              'assert': True},
 
             {'namespace': 'job.run.result.tap.include_logs',
@@ -325,7 +326,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
              'file': 'results.xml',
              'content': '--[ CUT DUE TO XML PER TEST LIMIT ]--',
              'assert': True,
-             'reference': ['/bin/false'],
+             'reference': ['examples/tests/failtest.py:FailTest.test'],
              'exit_code': 1},
 
             {'namespace': 'run.failfast',
