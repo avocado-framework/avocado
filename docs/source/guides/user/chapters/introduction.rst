@@ -189,7 +189,7 @@ them to tests. If one or more test references can not be resolved to tests, the
 Job will not be created. Example::
 
     $ avocado run examples/tests/passtest.py badtest.py
-    Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', 'external', try running 'avocado -V list badtest.py' to see the details.
+    Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', try running 'avocado -V list badtest.py' to see the details.
 
 But if you want to execute the Job anyway, with the tests that could be
 resolved, you can use ``--ignore-missing-references``, a boolean command-line
@@ -202,70 +202,6 @@ option. The same message will appear in the UI, but the Job will be executed::
      (1/1) examples/tests/passtest.py:PassTest.test: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 1.49 s
-
-.. _running-external-runner:
-
-Running tests with an external runner
--------------------------------------
-
-.. note:: This feature is supported with the legacy runner only.
-
-It's quite common to have organically grown test suites in most
-software projects. These usually include a custom built, very specific
-test runner that knows how to find and run their own tests.
-
-Still, running those tests inside Avocado may be a good idea for
-various reasons, including being able to have results in different
-human and machine readable formats, collecting system information
-alongside those tests (the Avocado's ``sysinfo`` functionality), and
-more.
-
-Avocado makes that possible by means of its "external runner" feature. The
-most basic way of using it is::
-
-    $ avocado run --test-runner=runner --external-runner=/path/to/external_runner foo bar baz
-
-In this example, Avocado will report individual test results for tests
-``foo``, ``bar`` and ``baz``. The actual results will be based on the return
-code of individual executions of ``/path/to/external_runner foo``,
-``/path/to/external_runner bar`` and finally ``/path/to/external_runner baz``.
-
-As another way to explain and show how this feature works, think of the
-"external runner" as some kind of interpreter and the individual tests as
-anything that this interpreter recognizes and is able to execute. A
-UNIX shell, say ``/bin/sh`` could be considered an external runner, and
-files with shell code could be considered tests::
-
-    $ echo "exit 0" > /tmp/pass
-    $ echo "exit 1" > /tmp/fail
-    $ avocado run --test-runner=runner --external-runner=/bin/sh /tmp/pass /tmp/fail
-    JOB ID     : 4a2a1d259690cc7b226e33facdde4f628ab30741
-    JOB LOG    : $HOME/avocado/job-results/job-<date>-<shortid>/job.log
-    (1/2) /tmp/pass: PASS (0.01 s)
-    (2/2) /tmp/fail: FAIL (0.01 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 0.11 s
-
-This example is pretty obvious, and could be achieved by giving
-``/tmp/pass`` and ``/tmp/fail`` shell "shebangs" (``#!/bin/sh``), making
-them executable (``chmod +x /tmp/pass /tmp/fail)``, and running them as
-"SIMPLE" tests.
-
-But now consider the following example::
-
-    $ avocado run --test-runner=runner --external-runner=/bin/curl https://google.com/
-    JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
-    JOB LOG    : $HOME/avocado/job-results/job-<date>-<shortid>/job.log
-    (1/1) https://google.com/: PASS (0.02 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 3.14 s
-
-This effectively makes ``/bin/curl`` an "external test runner", responsible for
-trying to fetch those URLs, and reporting PASS or FAIL for each of them.
-
-.. warning:: The external runner is incompatible with loaders from
-   :ref:`test-loaders`. If you use external runner and loader together
-   the job will use the external runner and ignore the loader.
 
 Runner outputs
 --------------
@@ -544,23 +480,6 @@ That's basically the only rule, and a sane one, that you need to follow.
 .. note:: Avocado support "paginator" option, which, on compatible
   terminals, basically pipes the colored output to ``less`` to simplify
   browsing of the produced output. You an enable it with ``--enable-paginator``.
-
-Running simple tests with arguments
------------------------------------
-
-.. note:: This feature is supported with the legacy runner only.
-
-This used to be supported out of the box by running ``avocado run "test arg1
-arg2"`` but it was quite confusing and removed.  It is still possible to
-achieve that by using shell and one can even combine normal tests and the
-parametrized ones::
-
-    $ avocado run --loaders file external:/bin/sh -- existing_file.py existing-file nonexisting-file
-
-This will run 3 tests, the first one is a normal test defined by
-``existing_file.py`` (most probably an instrumented test) and will be executed
-by the "file" loader.  Then we have two script files which are going to be
-executed with ``/bin/sh``.
 
 Sysinfo collection
 ------------------

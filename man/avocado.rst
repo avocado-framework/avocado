@@ -185,28 +185,6 @@ Options for subcommand `run` (`avocado run --help`)::
                             specify either @loader_name or TEST_TYPE. By default
                             it tries all available loaders according to priority
                             set in settings->plugins.loaders.
-      --external-runner EXTERNAL_RUNNER
-                            Path to an specific test runner that allows the use of
-                            its own tests. This should be used for running tests
-                            that do not conform to Avocado's SIMPLE test interface
-                            and can not run standalone. Note: the use of
-                            --external-runner overwrites the --loaders to
-                            'external_runner'
-      --external-runner-chdir {runner,test}
-                            Change directory before executing tests. This option
-                            may be necessary because of requirements and/or
-                            limitations of the external test runner. If the
-                            external runner requires to be run from its own base
-                            directory, use 'runner' here. If the external runner
-                            runs tests based on files and requires to be run from
-                            the directory where those files are located, use
-                            'test' here and specify the test directory with the
-                            option '--external-runner-testdir'.
-      --external-runner-testdir DIRECTORY
-                            Where test files understood by the external test
-                            runner are located in the filesystem. Obviously this
-                            assumes and only applies to external test runners that
-                            run tests from files
 
     filtering parameters:
       -t TAGS, --filter-by-tags TAGS
@@ -385,28 +363,6 @@ Options for subcommand `list` (`avocado list --help`)::
                             specify either @loader_name or TEST_TYPE. By default
                             it tries all available loaders according to priority
                             set in settings->plugins.loaders.
-      --external-runner EXTERNAL_RUNNER
-                            Path to an specific test runner that allows the use of
-                            its own tests. This should be used for running tests
-                            that do not conform to Avocado's SIMPLE test interface
-                            and can not run standalone. Note: the use of
-                            --external-runner overwrites the --loaders to
-                            'external_runner'
-      --external-runner-chdir {runner,test}
-                            Change directory before executing tests. This option
-                            may be necessary because of requirements and/or
-                            limitations of the external test runner. If the
-                            external runner requires to be run from its own base
-                            directory, use 'runner' here. If the external runner
-                            runs tests based on files and requires to be run from
-                            the directory where those files are located, use
-                            'test' here and specify the test directory with the
-                            option '--external-runner-testdir'.
-      --external-runner-testdir DIRECTORY
-                            Where test files understood by the external test
-                            runner are located in the filesystem. Obviously this
-                            assumes and only applies to external test runners that
-                            run tests from files
 
     filtering parameters:
       -t TAGS, --filter-by-tags TAGS
@@ -791,68 +747,6 @@ Any command created by the test datadir will be wrapped on
 Any command that matches the pattern `*make` will be wrapper on
 ``ltrace.sh`` and the pattern ``*datadir`` will trigger the execution of
 ``perf.sh``.
-
-RUNNING TESTS WITH AN EXTERNAL RUNNER
-=====================================
-
-It's quite common to have organically grown test suites in most
-software projects. These usually include a custom built, very specific
-test runner that knows how to find and run their own tests.
-
-Still, running those tests inside Avocado may be a good idea for
-various reasons, including being able to have results in different
-human and machine readable formats, collecting system information
-alongside those tests (the Avocado's `sysinfo` functionality), and
-more.
-
-Avocado makes that possible by means of its "external runner" feature.
-The most basic way of using it is::
-
-    $ avocado run --external-runner=/path/to/external_runner foo bar baz
-
-In this example, Avocado will report individual test results for tests
-`foo`, `bar` and `baz`. The actual results will be based on the return
-code of individual executions of `/path/to/external_runner foo`,
-`/path/to/external_runner bar` and finally
-`/path/to/external_runner baz`.
-
-As another way to explain an show how this feature works, think of the
-"external runner" as some kind of interpreter and the individual tests
-as anything that this interpreter recognizes and is able to execute. A
-UNIX shell, say `/bin/sh` could be considered an external runner, and
-files with shell code could be considered tests::
-
-    $ echo "exit 0" > /tmp/pass
-    $ echo "exit 1" > /tmp/fail
-    $ avocado run --external-runner=/bin/sh /tmp/pass /tmp/fail
-    JOB ID    : <id>
-    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
-    TESTS      : 2
-    (1/2) /tmp/pass: PASS (0.01 s)
-    (2/2) /tmp/fail: FAIL: Exited with status: '1', stdout: '' stderr: '' (0.02 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 0.11 s
-
-This example is pretty obvious, and could be achieved by giving
-`/tmp/pass` and `/tmp/fail` shell "shebangs" (`#!/bin/sh`), making
-them executable (`chmod +x /tmp/pass /tmp/fail)`, and running them as
-"SIMPLE" tests.
-
-But now consider the following example::
-
-    $ avocado run --external-runner=/bin/curl http://local-avocado-server:9405/jobs/ \
-                                              http://remote-avocado-server:9405/jobs/
-    JOB ID    : <id>
-    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
-    TESTS      : 2
-    (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
-    (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 3.14 s
-
-This effectively makes `/bin/curl` an "external test runner",
-responsible for trying to fetch those URLs, and reporting PASS or FAIL
-for each of them.
 
 RECORDING TEST REFERENCE OUTPUT
 ===============================

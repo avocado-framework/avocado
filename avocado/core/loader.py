@@ -19,9 +19,7 @@ Test loader module.
 
 import os
 import re
-import shlex
 import sys
-import warnings
 from enum import Enum
 
 from ..utils import stacktrace
@@ -121,24 +119,9 @@ class TestLoaderProxy:
         # When running from the JobAPI there is no subcommand
         subcommand = config.get('subcommand') or 'run'
         self.register_plugin(TapLoader)
-        # Register external runner when --external-runner is used
-        external_runner = config.get("{}.external_runner".format(subcommand))
-        if external_runner:
-            self.register_plugin(ExternalLoader)
-            key = "{}.loaders".format(subcommand)
-            default_loaders = {'file', '@DEFAULT'}
-            loaders = config.get(key) or default_loaders
-            if set(loaders) != default_loaders:
-                warnings.warn("The loaders and external-runner are incompatible."
-                              "The values in loaders will be ignored.",
-                              RuntimeWarning)
-            config[key] = ["external:{}".format(external_runner)]
-        else:
-            # Add (default) file loader if not already registered
-            if FileLoader not in self.registered_plugins:
-                self.register_plugin(FileLoader)
-            if ExternalLoader not in self.registered_plugins:
-                self.register_plugin(ExternalLoader)
+        # Add (default) file loader if not already registered
+        if FileLoader not in self.registered_plugins:
+            self.register_plugin(FileLoader)
         supported_loaders = [_.name for _ in self.registered_plugins]
         supported_types = []
         for plugin in self.registered_plugins:
@@ -370,47 +353,6 @@ def add_loader_options(parser, section='run'):
                              parser=arggrp,
                              long_arg='--loaders',
                              metavar='LOADER_NAME_OR_TEST_TYPE')
-
-    help_msg = ("Path to an specific test runner that allows the use of its "
-                "own tests. This should be used for running tests that do not "
-                "conform to Avocado\'s SIMPLE test interface and can not run "
-                "standalone. Note: the use of --external-runner overwrites "
-                "the --loaders to 'external_runner'")
-    settings.register_option(section=section,
-                             key='external_runner',
-                             default=None,
-                             help_msg=help_msg,
-                             parser=arggrp,
-                             long_arg='--external-runner',
-                             metavar='EXTERNAL_RUNNER')
-
-    help_msg = ("Change directory before executing tests. This option may be "
-                "necessary because of requirements and/or limitations of the "
-                "external test runner. If the external runner requires to be "
-                "run from its own base directory, use 'runner' here. If the "
-                "external runner runs tests based  on files and requires to "
-                "be run from the directory where those files are located, "
-                "use 'test' here and specify the test directory with the "
-                "option '--external-runner-testdir'.")
-    settings.register_option(section=section,
-                             key='external_runner_chdir',
-                             help_msg=help_msg,
-                             default=None,
-                             parser=arggrp,
-                             choices=('runner', 'test'),
-                             long_arg='--external-runner-chdir')
-
-    help_msg = ("Where test files understood by the external test runner "
-                "are located in the filesystem. Obviously this assumes and "
-                "only applies to external test runners that run tests from "
-                "files")
-    settings.register_option(section=section,
-                             key='external_runner_testdir',
-                             metavar='DIRECTORY',
-                             default=None,
-                             help_msg=help_msg,
-                             parser=arggrp,
-                             long_arg='--external-runner-testdir')
 
 
 class NotATest:
@@ -686,22 +628,6 @@ class FileLoader(SimpleFileLoader):
                                                 'tags': tags})
                             test_factories.append(tst)
                 return test_factories
-            # Python unittests
-            old_dir = os.getcwd()
-            try:
-                py_test_dir = os.path.abspath(os.path.dirname(test_path))
-                py_test_name = os.path.basename(test_path)
-                os.chdir(py_test_dir)
-                python_unittests = self._find_python_unittests(py_test_name,
-                                                               disabled,
-                                                               subtests_filter)
-            finally:
-                os.chdir(old_dir)
-            if python_unittests:
-                return [(test.PythonUnittest, {"name": name,
-                                               "test_dir": py_test_dir,
-                                               "tags": tags})
-                        for (name, tags) in python_unittests]
             else:
                 # Module does not have an avocado test or pyunittest class inside,
                 # but maybe it's a Python executable.
@@ -751,81 +677,6 @@ class FileLoader(SimpleFileLoader):
                                                         test_name)
             return make_broken(NotATest, test_name, "File not found "
                                "('%s'; '%s')" % (test_name, test_path))
-
-
-class ExternalLoader(TestLoader):
-
-    """
-    External-runner loader class
-    """
-    name = 'external'
-
-    def __init__(self, config, extra_params):
-        loader_options = extra_params.pop('loader_options', None)
-        super(ExternalLoader, self).__init__(config, extra_params)
-        if loader_options == '?':
-            raise LoaderError("File loader accepts an option to set the "
-                              "external-runner executable.")
-        self._external_runner = self._process_external_runner(
-            config, loader_options)
-
-    @staticmethod
-    def _process_external_runner(config, runner):
-        """ Enables the external_runner when asked for """
-        subcommand = config.get('subcommand')
-        chdir = config.get("{}.external_runner_chdir".format(subcommand))
-        test_dir = config.get("{}.external_runner_testdir".format(subcommand))
-
-        if runner:
-            external_runner_and_args = shlex.split(runner)
-            executable = os.path.abspath(external_runner_and_args[0])
-            runner = " ".join([executable] + external_runner_and_args[1:])
-            if not os.path.exists(executable):
-                msg = ('Could not find the external runner executable "%s"'
-                       % executable)
-                raise LoaderError(msg)
-            if chdir == 'test':
-                if not test_dir:
-                    msg = ('Option "--external-runner-chdir=test" requires '
-                           '"--external-runner-testdir" to be set.')
-                    raise LoaderError(msg)
-            elif test_dir:
-                msg = ('Option "--external-runner-testdir" requires '
-                       '"--external-runner-chdir=test".')
-                raise LoaderError(msg)
-
-            return test.ExternalRunnerSpec(runner, chdir, test_dir)
-        elif chdir:
-            msg = ('Option "--external-runner-chdir" requires '
-                   '"--external-runner" to be set.')
-            raise LoaderError(msg)
-        elif test_dir:
-            msg = ('Option "--external-runner-testdir" requires '
-                   '"--external-runner" to be set.')
-            raise LoaderError(msg)
-        return None  # Skip external runner
-
-    def discover(self, reference, which_tests=DiscoverMode.DEFAULT):
-        """
-        :param reference: arguments passed to the external_runner
-        :param which_tests: Limit tests to be displayed
-        :type which_tests: :class:`DiscoverMode`
-        :return: list of matching tests
-        """
-        if (not self._external_runner) or (reference is None):
-            return []
-        return [(test.ExternalRunnerTest, {'name': reference, 'external_runner':
-                                           self._external_runner,
-                                           'external_runner_argument':
-                                           reference})]
-
-    @staticmethod
-    def get_type_label_mapping():
-        return {test.ExternalRunnerTest: 'EXTERNAL'}
-
-    @staticmethod
-    def get_decorator_mapping():
-        return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
 
 
 class TapLoader(SimpleFileLoader):

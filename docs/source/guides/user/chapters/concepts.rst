@@ -74,10 +74,6 @@ This command will resolve all tests (methods) that starts with `test_foo`. For
 more information about this type of tests, please visit the :ref:`Instrumented`
 section of this document.
 
-.. note:: Mapping the Test References to tests can be affected
-   by command-line switches like ``--external-runner``, which
-   completely changes the meaning of the given strings.
-
 Conventions
 ~~~~~~~~~~~
 
