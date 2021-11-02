@@ -72,37 +72,30 @@ The outcome should be similar to::
 Using --store-logging-stream
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The custom ``progress`` stream is combined with the application output, which
-may or may not suit your needs or preferences. If you want the ``progress``
+The custom ``avocado.test.progress`` stream is combined with the application output, which
+may or may not suit your needs or preferences. If you want the ``avocado.test.progress``
 stream to be sent to a separate file, both for clarity and for persistence,
 you can run Avocado like this::
 
-     $ avocado run --store-logging-stream=progress --test-runner=runner -- logging_streams.py
+     $ avocado run --store-logging-stream=avocado.test.progress -- examples/tests/logging_streams.py
 
 The result is that, besides all the other log files commonly generated, there
-will be another log file named ``progress.INFO`` at the job results
+will be another log file named ``avocado.test.progress`` at the test results
 dir. During the test run, one could watch the progress with::
 
-    $ tail -f ~/avocado/job-results/latest/progress.INFO
-    10:36:59 INFO | 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 0
-    10:36:59 INFO | 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 1
-    10:36:59 INFO | 1-logging_streams.py:Plant.test_plant_organic: preparing soil on row 2
-    10:36:59 INFO | 1-logging_streams.py:Plant.test_plant_organic: letting soil rest before throwing seeds
-    10:37:01 INFO | 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 0
-    10:37:01 INFO | 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 1
-    10:37:01 INFO | 1-logging_streams.py:Plant.test_plant_organic: throwing seeds on row 2
-    10:37:01 INFO | 1-logging_streams.py:Plant.test_plant_organic: waiting for Avocados to grow
-    10:37:06 INFO | 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 0
-    10:37:06 INFO | 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 1
-    10:37:06 INFO | 1-logging_streams.py:Plant.test_plant_organic: harvesting organic avocados on row 2
+    $ tail -f ~/avocado/job-results/latest/test-results/1-examples_tests_logging_streams.py_Plant.test_plant_organic/avocado.test.progress 
+    2021-11-02 11:42:19,148 logging_streams  L0016 INFO | 1-Plant.test_plant_organic: preparing soil on row 1
+    2021-11-02 11:42:19,148 logging_streams  L0016 INFO | 1-Plant.test_plant_organic: preparing soil on row 2
+    2021-11-02 11:42:19,148 logging_streams  L0020 INFO | 1-Plant.test_plant_organic: letting soil rest before throwing seeds
+    2021-11-02 11:42:20,149 logging_streams  L0026 INFO | 1-Plant.test_plant_organic: throwing seeds on row 0
+    2021-11-02 11:42:20,149 logging_streams  L0026 INFO | 1-Plant.test_plant_organic: throwing seeds on row 1
+    2021-11-02 11:42:20,149 logging_streams  L0026 INFO | 1-Plant.test_plant_organic: throwing seeds on row 2
+    2021-11-02 11:42:20,149 logging_streams  L0030 INFO | 1-Plant.test_plant_organic: waiting for Avocados to grow
+    2021-11-02 11:42:22,151 logging_streams  L0036 INFO | 1-Plant.test_plant_organic: harvesting organic avocados on row 0
+    2021-11-02 11:42:22,152 logging_streams  L0036 INFO | 1-Plant.test_plant_organic: harvesting organic avocados on row 1
+    2021-11-02 11:42:22,152 logging_streams  L0036 INFO | 1-Plant.test_plant_organic: harvesting organic avocados on row 2
 
-The very same ``progress`` logger, could be used across multiple test methods
+The very same ``avocado.test.progress`` logger, could be used across multiple test methods
 and across multiple test modules.  In the example given, the test name is used
 to give extra context.
 
-.. note:: Keep in mind that the above example it is trying to bring to the job
-   level, a test level message. This is a legacy feature, and you need to run
-   with --test-runner='runner'. Since the new NRunner architecture is running
-   the tests in a much more isolated process, Avocado keeps test's log messages
-   inside the individual test folder at `test-results/test-id/debug.log` as
-   mentioned before.

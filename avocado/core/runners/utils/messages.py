@@ -140,7 +140,7 @@ _supported_types = {LogMessage.message_type: LogMessage,
 
 class RunnerLogHandler(logging.Handler):
 
-    def __init__(self, queue, message_type):
+    def __init__(self, queue, message_type, kwargs=None):
         """
         Runner logger which will put every log to the runner queue
 
@@ -152,10 +152,11 @@ class RunnerLogHandler(logging.Handler):
         super().__init__()
         self.queue = queue
         self.message = _supported_types[message_type]
+        self.kwargs = kwargs or {}
 
     def emit(self, record):
         msg = self.format(record)
-        self.queue.put(self.message.get(msg))
+        self.queue.put(self.message.get(msg, **self.kwargs))
 
 
 class StreamToQueue:
@@ -215,3 +216,13 @@ def start_logging(config, queue):
 
     sys.stdout = StreamToQueue(queue, "stdout")
     sys.stderr = StreamToQueue(queue, "stderr")
+
+    # store custom test loggers
+    enabled_loggers = config.get('job.run.store_logging_stream')
+    for enabled_logger in enabled_loggers:
+        store_stream_handler = RunnerLogHandler(queue, 'file',
+                                                {'path': enabled_logger})
+        store_stream_handler.setFormatter(formatter)
+        output_logger = logging.getLogger(enabled_logger)
+        output_logger.addHandler(store_stream_handler)
+        output_logger.setLevel(log_level)

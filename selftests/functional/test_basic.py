@@ -597,14 +597,22 @@ class RunnerOperationTest(TestCaseTmpDir):
                 self.assertNotIn(b'SHOULD NOT BE ON debug.log', test_log.read())
 
     def test_store_logging_stream(self):
-        cmd = ("%s run --job-results-dir %s --store-logging-stream=progress "
+        cmd = ("%s run --job-results-dir %s "
+               "--store-logging-stream=avocado.test.progress "
                "--disable-sysinfo -- examples/tests/logging_streams.py"
                % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
 
-        progress_info = os.path.join(self.tmpdir.name, 'latest', 'progress.INFO')
+        progress_info = os.path.join(self.tmpdir.name, 'latest', 'test-results',
+                                     '1-examples_tests_logging_streams.py_Plant'
+                                     '.test_plant_organic',
+                                     'avocado.test.progress')
         self.assertTrue(os.path.exists(progress_info))
+        with open(progress_info) as file:
+            stream_line = file.readline()
+            self.assertIn('INFO | 1-Plant.test_plant_organic: '
+                          'preparing soil on row 0', stream_line)
 
 
 class DryRunTest(TestCaseTmpDir):
