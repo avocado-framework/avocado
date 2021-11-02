@@ -5,6 +5,7 @@ import glob
 import multiprocessing
 import os
 import platform
+import re
 import sys
 
 from avocado import Test
@@ -39,7 +40,8 @@ class JobAPIFeaturesTest(Test):
         """Check if `content` exists or not in a file."""
         content = self.params.get('content')
         assert_func = self.get_assert_function()
-        assert_func(self.file_has_content(file_path, content))
+        regex = self.params.get('regex', default=False)
+        assert_func(self.file_has_content(file_path, content, regex))
 
     def create_config(self, value=None):
         """Creates the Job config."""
@@ -51,17 +53,25 @@ class JobAPIFeaturesTest(Test):
                   'resolver.references': reference}
         namespace = self.params.get('namespace')
         config[namespace] = value
+        extra_job_config = self.params.get('extra_job_config')
+        if extra_job_config is not None:
+            config.update(extra_job_config)
 
         return config
 
     @staticmethod
-    def file_has_content(file_path, content):
+    def file_has_content(file_path, content, regex):
         """Check if a file has `content`."""
         if os.path.isfile(file_path):
             with open(file_path, "r") as f:
-                source_content = f.read()
-            if content in source_content:
-                return True
+                lines = f.readlines()
+            for line in lines:
+                if regex:
+                    if re.match(content, line):
+                        return True
+                else:
+                    if content in line:
+                        return True
         return False
 
     def get_assert_function(self):
@@ -79,7 +89,7 @@ class JobAPIFeaturesTest(Test):
         """Run a Job"""
         config = self.create_config()
 
-        suite = TestSuite.from_config(config)
+        suite = TestSuite.from_config(config, '')
 
         # run the job
         with Job(config, [suite]) as j:
@@ -299,13 +309,15 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             {'namespace': 'job.output.loglevel',
              'value': 'INFO',
              'file': 'job.log',
-             'content': 'DEBUG| Test metadata',
-             'assert': False},
+             'content': r'DEBUG\| Test metadata:$',
+             'assert': False,
+             'regex': True},
 
             {'namespace': 'job.run.result.tap.include_logs',
              'value': True,
              'file': 'results.tap',
-             'content': "Command '/bin/true' finished with 0",
+             'reference': ['examples/tests/passtest.py:PassTest.test'],
+             'content': 'PASS 1-examples/tests/passtest.py:PassTest.test',
              'assert': True},
 
             {'namespace': 'job.run.result.tap.include_logs',
@@ -325,7 +337,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
              'file': 'results.xml',
              'content': '--[ CUT DUE TO XML PER TEST LIMIT ]--',
              'assert': True,
-             'reference': ['/bin/false'],
+             'reference': ['examples/tests/failtest.py:FailTest.test'],
              'exit_code': 1},
 
             {'namespace': 'run.failfast',
@@ -334,7 +346,8 @@ def create_suite_job_api(args):  # pylint: disable=W0621
              'content': '"skip": 1',
              'assert': True,
              'reference': ['/bin/false', '/bin/true'],
-             'exit_code': 9},
+             'exit_code': 9,
+             'extra_job_config': {'nrunner.max_parallel_tasks': 1}},
 
             {'namespace': 'run.ignore_missing_references',
              'value': 'on',

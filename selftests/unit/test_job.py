@@ -135,8 +135,8 @@ class JobTest(unittest.TestCase):
                             if not test_factory[1].get('name', '').endswith('time'):
                                 filtered_test_suite.append(test_factory)
                     elif self.config.get('run.test_runner') == 'nrunner':
-                        task = test_factory
-                        if not task.runnable.uri.endswith('time'):
+                        runnable = test_factory
+                        if not runnable.uri.endswith('time'):
                             filtered_test_suite.append(test_factory)
                 self.test_suite.tests = filtered_test_suite
                 super(JobFilterTime, self).pre_tests()
@@ -195,8 +195,8 @@ class JobTest(unittest.TestCase):
                                 if not test_factory[1].get('name', '').endswith('time'):
                                     filtered_test_suite.append(test_factory)
                         elif self.config.get('run.test_runner') == 'nrunner':
-                            task = test_factory
-                            if not task.runnable.uri.endswith('time'):
+                            runnable = test_factory
+                            if not runnable.uri.endswith('time'):
                                 filtered_test_suite.append(test_factory)
                     suite.tests = filtered_test_suite
                     super(JobFilterLog, self).pre_tests()
