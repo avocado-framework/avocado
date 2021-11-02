@@ -5,6 +5,7 @@ import glob
 import multiprocessing
 import os
 import platform
+import re
 import sys
 
 from avocado import Test
@@ -39,7 +40,8 @@ class JobAPIFeaturesTest(Test):
         """Check if `content` exists or not in a file."""
         content = self.params.get('content')
         assert_func = self.get_assert_function()
-        assert_func(self.file_has_content(file_path, content))
+        regex = self.params.get('regex', default=False)
+        assert_func(self.file_has_content(file_path, content, regex))
 
     def create_config(self, value=None):
         """Creates the Job config."""
@@ -55,13 +57,18 @@ class JobAPIFeaturesTest(Test):
         return config
 
     @staticmethod
-    def file_has_content(file_path, content):
+    def file_has_content(file_path, content, regex):
         """Check if a file has `content`."""
         if os.path.isfile(file_path):
             with open(file_path, "r") as f:
-                source_content = f.read()
-            if content in source_content:
-                return True
+                lines = f.readlines()
+            for line in lines:
+                if regex:
+                    if re.match(content, line):
+                        return True
+                else:
+                    if content in line:
+                        return True
         return False
 
     def get_assert_function(self):
@@ -299,8 +306,9 @@ def create_suite_job_api(args):  # pylint: disable=W0621
             {'namespace': 'job.output.loglevel',
              'value': 'INFO',
              'file': 'job.log',
-             'content': 'DEBUG| Test metadata',
-             'assert': False},
+             'content': r'DEBUG\| Test metadata:$',
+             'assert': False,
+             'regex': True},
 
             {'namespace': 'job.run.result.tap.include_logs',
              'value': True,
