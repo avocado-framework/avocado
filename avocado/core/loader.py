@@ -624,8 +624,7 @@ class FileLoader(SimpleFileLoader):
         mapping = SimpleFileLoader.get_type_label_mapping()
         mapping.update(
             {test.SimpleTest: 'SIMPLE',
-             test.Test: 'INSTRUMENTED',
-             test.PythonUnittest: 'PyUNITTEST'})
+             test.Test: 'INSTRUMENTED'})
         return mapping
 
     @staticmethod
@@ -633,8 +632,7 @@ class FileLoader(SimpleFileLoader):
         mapping = SimpleFileLoader.get_decorator_mapping()
         mapping.update(
             {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
-             test.Test: output.TERM_SUPPORT.healthy_str,
-             test.PythonUnittest: output.TERM_SUPPORT.healthy_str})
+             test.Test: output.TERM_SUPPORT.healthy_str})
         return mapping
 
     @staticmethod
@@ -671,7 +669,7 @@ class FileLoader(SimpleFileLoader):
             test_name = test_path
         try:
             # Avocado tests
-            avocado_tests, disabled = safeloader.find_avocado_tests(test_path)
+            avocado_tests, _ = safeloader.find_avocado_tests(test_path)
             if avocado_tests:
                 test_factories = []
                 for test_class, info in avocado_tests.items():
