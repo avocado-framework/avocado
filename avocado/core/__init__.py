@@ -195,6 +195,18 @@ def register_core_options():
                          default=[],
                          help_msg=help_msg)
 
+    help_msg = ('Selects the runner implementation from one of the '
+                'installed and active implementations.  You can run '
+                '"avocado plugins" and find the list of valid runners '
+                'under the "Plugins that run test suites on a job '
+                '(runners) section.  Defaults to "nrunner", which is '
+                'the new runner.  To use the conventional and traditional '
+                'runner, use "runner".')
+    stgs.register_option(section='run',
+                         key='test_runner',
+                         default='nrunner',
+                         help_msg=help_msg)
+
 
 def initialize_plugin_infrastructure():
     help_msg = 'Plugins that will not be loaded and executed'
