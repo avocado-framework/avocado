@@ -29,3 +29,17 @@ class Interface(Test):
         capabilities = json.loads(result.stdout_text)
         self.assertIn("runnables", capabilities)
         self.assertIn("commands", capabilities)
+
+    def test_runnable_run_no_args(self):
+        cmd = "%s runnable-run" % self.get_runner()
+        result = process.run(cmd, ignore_status=True)
+        expected = self.params.get('runnable-run-no-args-exit-code',
+                                   default=2)
+        self.assertEqual(result.exit_status, expected)
+
+    def test_runnable_run_uri_only(self):
+        cmd = "%s runnable-run -u some_uri" % self.get_runner()
+        result = process.run(cmd, ignore_status=True)
+        expected = self.params.get('runnable-run-uri-only-exit-code',
+                                   default=2)
+        self.assertEqual(result.exit_status, expected)

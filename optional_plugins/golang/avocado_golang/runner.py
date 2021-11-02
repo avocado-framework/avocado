@@ -27,8 +27,26 @@ class GolangRunner(nrunner.BaseRunner):
     """
 
     def run(self):
+        error_msgs = []
+        if not GO_BIN:
+            error_msgs.append('"go" binary is not available')
+
+        if not self.runnable.uri:
+            error_msgs.append("an empty URI was given")
+
+        if error_msgs:
+            yield self.prepare_status('finished',
+                                      {'result': 'error',
+                                       'output': "and , ".join(error_msgs)})
+            return
+
         yield messages.StartedMessage.get()
-        module, test = self.runnable.uri.split(':', 1)
+        module_test = self.runnable.uri.split(':', 1)
+        module = module_test[0]
+        try:
+            test = module_test[1]
+        except IndexError:
+            test = None
 
         cmd = [GO_BIN, 'test', '-v', module]
         if test is not None:
