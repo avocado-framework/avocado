@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 import subprocess
 
@@ -8,6 +9,8 @@ from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 from avocado.utils import distro
 from avocado.utils.podman import Podman, PodmanException
+
+LOG = logging.getLogger(__name__)
 
 
 ENTRY_POINT_CMD = "/tmp/avocado-runner"
@@ -166,7 +169,9 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             # pylint: disable=W0201
             returncode, _, _ = await self.podman.start(container_id)
         except PodmanException as ex:
-            runtime_task.status = str(ex)
+            msg = f"Could not start container: {ex}"
+            runtime_task.status = msg
+            LOG.error(msg)
             return False
 
         return returncode == 0
