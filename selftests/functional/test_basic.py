@@ -2,17 +2,13 @@ import glob
 import json
 import os
 import re
-import signal
 import tempfile
 import time
 import unittest
 import xml.dom.minidom
 import zipfile
 
-import psutil
-
 from avocado.core import exit_codes
-from avocado.utils import astring, genio
 from avocado.utils import path as utils_path
 from avocado.utils import process, script
 from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
@@ -24,12 +20,6 @@ try:
     SCHEMA_CAPABLE = True
 except ImportError:
     SCHEMA_CAPABLE = False
-
-try:
-    import aexpect
-    AEXPECT_CAPABLE = True
-except ImportError:
-    AEXPECT_CAPABLE = False
 
 
 UNSUPPORTED_STATUS_TEST_CONTENTS = '''
@@ -692,33 +682,6 @@ class RunnerHumanOutputTest(TestCaseTmpDir):
                       b'INTERRUPT 0 | CANCEL 1',
                       result.stdout)
 
-    @unittest.skipIf(not GNU_ECHO_BINARY,
-                     'GNU style echo binary not available')
-    def test_ugly_echo_cmd(self):
-        cmd_line = ('%s --show=test run --external-runner "%s -ne" '
-                    '"foo\\\\\\n\\\'\\\\\\"\\\\\\nbar/baz" --job-results-dir %s'
-                    ' --test-runner=runner '
-                    ' --disable-sysinfo' %
-                    (AVOCADO, GNU_ECHO_BINARY, self.tmpdir.name))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %s:\n%s" %
-                         (expected_rc, result))
-        self.assertIn(b'[stdout] foo', result.stdout, result)
-        self.assertIn(b'[stdout] \'"', result.stdout, result)
-        self.assertIn(b'[stdout] bar/baz', result.stdout, result)
-        self.assertIn(b'PASS 1-foo\\\\n\\\'\\"\\\\nbar/baz',
-                      result.stdout, result)
-        # logdir name should escape special chars (/)
-        test_dirs = glob.glob(os.path.join(self.tmpdir.name, 'latest',
-                                           'test-results', '*'))
-        self.assertEqual(len(test_dirs), 1, "There are multiple directories in"
-                         " test-results dir, but only one test was executed: "
-                         "%s" % (test_dirs))
-        self.assertEqual(os.path.basename(test_dirs[0]),
-                         "1-foo__n_'____nbar_baz")
-
 
 class RunnerSimpleTest(TestCaseTmpDir):
 
@@ -825,43 +788,6 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self.assertIn(b'Test passed but there were warnings', result.stdout,
                       result)
 
-    @unittest.skipIf(not GNU_ECHO_BINARY, "Uses echo as test")
-    def test_fs_unfriendly_run(self):
-        os.chdir(BASEDIR)
-        commands_path = os.path.join(self.tmpdir.name, "commands")
-        script.make_script(commands_path, "echo '\"\\/|?*<>'")
-        config_path = os.path.join(self.tmpdir.name, "config.conf")
-        script.make_script(config_path,
-                           "[sysinfo.collectibles]\ncommands = %s"
-                           % commands_path)
-        cmd_line = ("%s --show all --config %s run --job-results-dir %s "
-                    "--test-runner=runner "
-                    "--external-runner %s -- \"'\\\"\\/|?*<>'\""
-                    % (AVOCADO, config_path, self.tmpdir.name, GNU_ECHO_BINARY))
-        process.run(cmd_line)
-        self.assertTrue(os.path.exists(os.path.join(self.tmpdir.name, "latest",
-                                                    "test-results",
-                                                    "1-\'________\'/")))
-        self.assertTrue(os.path.exists(os.path.join(self.tmpdir.name, "latest",
-                                                    "sysinfo", "pre",
-                                                    "echo \'________\'")))
-
-        if python_module_available('avocado-framework-plugin-result-html'):
-            with open(os.path.join(self.tmpdir.name, "latest",
-                                   "results.html")) as html_res:
-                html_results = html_res.read()
-            # test results should replace odd chars with "_"
-            # HTML could contain either the literal char, or an entity reference
-            test1_href = (os.path.join("test-results",
-                                       "1-'________'") in html_results or
-                          os.path.join("test-results",
-                                       "1-&#39;________&#39;") in html_results)
-            self.assertTrue(test1_href)
-            # sysinfo replaces "_" with " "
-            sysinfo = ("echo '________'" in html_results or
-                       "echo &#39;________&#39;" in html_results)
-            self.assertTrue(sysinfo)
-
     def test_non_absolute_path(self):
         test_base_dir = os.path.dirname(self.pass_script.path)
         os.chdir(test_base_dir)
@@ -875,58 +801,6 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-
-    @unittest.skipIf(not SLEEP_BINARY, 'sleep binary not available')
-    @skipOnLevelsInferiorThan(2)
-    @unittest.skipUnless(AEXPECT_CAPABLE, 'aexpect package not available')
-    def test_kill_stopped_sleep(self):
-        """
-        :avocado: tags=parallel:1
-        """
-        proc = aexpect.Expect("%s run 60 --job-results-dir %s "
-                              "--test-runner=runner "
-                              "--external-runner %s --disable-sysinfo "
-                              "--job-timeout 3"
-                              % (AVOCADO, self.tmpdir.name, SLEEP_BINARY))
-        proc.read_until_output_matches([r"\(1/1\)"], timeout=3,
-                                       internal_timeout=0.01)
-        # We need pid of the avocado process, not the shell executing it
-        avocado_shell = psutil.Process(proc.get_pid())
-        avocado_proc = avocado_shell.children()[0]
-        pid = avocado_proc.pid
-        os.kill(pid, signal.SIGTSTP)   # This freezes the process
-        # The deadline is 3s timeout + 10s test postprocess before kill +
-        # 10s reserve for additional steps (still below 60s)
-        deadline = time.monotonic() + 20
-        while time.monotonic() < deadline:
-            if not proc.is_alive():
-                break
-            time.sleep(0.1)
-        else:
-            proc.kill(signal.SIGKILL)
-            self.fail("Avocado process still alive 17s after "
-                      "job-timeout:\n%s" % proc.get_output())
-        output = proc.get_output()
-        self.assertIn("ctrl+z pressed, stopping test", output, "SIGTSTP "
-                      "message not in the output, test was probably not "
-                      "stopped.")
-        self.assertIn("TIME", output, "TIME not in the output, avocado "
-                      "probably died unexpectadly")
-        self.assertEqual(proc.get_status(), 8, "Avocado did not finish with "
-                         "1.")
-
-        sleep_dir = astring.string_to_safe_path("1-60")
-        debug_log_path = os.path.join(self.tmpdir.name, "latest", "test-results",
-                                      sleep_dir, "debug.log")
-
-        debug_log = genio.read_file(debug_log_path)
-        self.assertIn("Runner error occurred: Timeout reached", debug_log,
-                      "Runner error occurred: Timeout reached message not "
-                      "in the test's debug.log:\n%s" % debug_log)
-        self.assertNotIn("Traceback (most recent", debug_log, "Traceback "
-                         "present in the test's debug.log file, but it was "
-                         "suppose to be stopped and unable to produce it.\n"
-                         "%s" % debug_log)
 
     def tearDown(self):
         self.pass_script.remove()
@@ -1045,90 +919,6 @@ class RunnerSimpleTestFailureFields(TestCaseTmpDir):
         self.config_file.remove()
 
 
-class ExternalRunnerTest(TestCaseTmpDir):
-
-    def setUp(self):
-        super(ExternalRunnerTest, self).setUp()
-        self.pass_script = script.TemporaryScript(
-            'pass',
-            "exit 0",
-            'avocado_externalrunner_functional')
-        self.pass_script.save()
-        self.fail_script = script.TemporaryScript(
-            'fail',
-            "exit 1",
-            'avocado_externalrunner_functional')
-        self.fail_script.save()
-
-    def test_externalrunner_pass(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--test-runner=runner '
-                    '--external-runner=/bin/sh %s'
-                    % (AVOCADO, self.tmpdir.name, self.pass_script.path))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-
-    def test_externalrunner_fail(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--test-runner=runner '
-                    '--external-runner=/bin/sh %s'
-                    % (AVOCADO, self.tmpdir.name, self.fail_script.path))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-
-    def test_externalrunner_chdir_no_testdir(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--test-runner=runner '
-                    '--external-runner=/bin/sh --external-runner-chdir=test %s'
-                    % (AVOCADO, self.tmpdir.name, self.pass_script.path))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_output = (b'Option "--external-runner-chdir=test" requires '
-                           b'"--external-runner-testdir" to be set')
-        self.assertIn(expected_output, result.stderr)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-
-    @unittest.skipIf(os.environ.get("RUNNING_COVERAGE"), "Running coverage")
-    def test_externalrunner_chdir_runner_relative(self):
-        pass_abs = os.path.abspath(self.pass_script.path)
-        os.chdir('/')
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--test-runner=runner '
-                    '--external-runner=bin/sh --external-runner-chdir=runner -- %s'
-                    % (AVOCADO, self.tmpdir.name, pass_abs))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-
-    def test_externalrunner_no_url(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--test-runner=runner '
-                    '--external-runner=%s' % (AVOCADO, self.tmpdir.name, TRUE_CMD))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_output = (b'No test references provided nor any other '
-                           b'arguments resolved into tests')
-        self.assertIn(expected_output, result.stderr)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-
-    def tearDown(self):
-        super(ExternalRunnerTest, self).tearDown()
-        self.pass_script.remove()
-        self.fail_script.remove()
-
-
 class PluginsTest(TestCaseTmpDir):
 
     def test_sysinfo_plugin(self):
@@ -1157,7 +947,7 @@ class PluginsTest(TestCaseTmpDir):
         self.assertIn(b"Unable to resolve reference", result.stderr)
 
     def test_list_no_file_loader(self):
-        cmd_line = ("%s --verbose list --loaders external "
+        cmd_line = ("%s --verbose list --loaders tap.TAP "
                     "--loader "
                     "-- this-wont-be-matched" % AVOCADO)
         result = process.run(cmd_line, ignore_status=True)
@@ -1406,12 +1196,10 @@ class ParseJSONError(Exception):
 class PluginsJSONTest(TestCaseTmpDir):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
-                      e_nfailures, e_nskip, e_ncancel=0, external_runner=None):
+                      e_nfailures, e_nskip, e_ncancel=0):
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
                     '--test-runner=runner '
                     '--json - --archive %s' % (AVOCADO, self.tmpdir.name, testname))
-        if external_runner is not None:
-            cmd_line += " --external-runner '%s'" % external_runner
         result = process.run(cmd_line, ignore_status=True)
         json_output = result.stdout_text
         self.assertEqual(result.exit_status, e_rc,
@@ -1460,18 +1248,6 @@ class PluginsJSONTest(TestCaseTmpDir):
         self.run_and_check('examples/tests/errortest.py',
                            exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
-
-    @unittest.skipIf(not GNU_ECHO_BINARY, 'echo binary not available')
-    def test_ugly_echo_cmd(self):
-        data = self.run_and_check('"-ne foo\\\\\\n\\\'\\\\\\"\\\\\\'
-                                  'nbar/baz"', exit_codes.AVOCADO_ALL_OK, 1, 0,
-                                  0, 0, external_runner=GNU_ECHO_BINARY)
-        # The executed test should be this
-        self.assertEqual(data['tests'][0]['id'],
-                         '1--ne foo\\\\n\\\'\\"\\\\nbar/baz')
-        # logdir name should escape special chars (/)
-        self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
-                         "1--ne foo__n_'____nbar_baz")
 
 
 if __name__ == '__main__':

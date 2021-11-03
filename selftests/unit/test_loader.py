@@ -338,23 +338,6 @@ class LoaderTest(unittest.TestCase):
         self.assertTrue(test_class == 'Second', test_class)
         avocado_multiple_imp_test.remove()
 
-    def test_python_unittest(self):
-        disabled_test = script.TemporaryScript("disabled.py",
-                                               AVOCADO_TEST_OK_DISABLED,
-                                               mode=DEFAULT_NON_EXEC_MODE)
-        python_unittest = script.TemporaryScript("python_unittest.py",
-                                                 PYTHON_UNITTEST)
-        disabled_test.save()
-        python_unittest.save()
-        tests = self.loader.discover(disabled_test.path)
-        self.assertEqual(tests, [])
-        tests = self.loader.discover(python_unittest.path)
-        exp = [(test.PythonUnittest,
-                {"name": "python_unittest.SampleTest.test",
-                 "tags": {"flattag": None, "foo": {"bar"}},
-                 "test_dir": os.path.dirname(python_unittest.path)})]
-        self.assertEqual(tests, exp)
-
     def test_mod_import_and_classes(self):
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                             '.data', 'safeloader', 'data', 'dont_crash.py')
@@ -376,18 +359,6 @@ class LoaderTest(unittest.TestCase):
                 ('Test6', 'selftests/.data/safeloader/data/imports.py:Test6.test'),
                 ('Test8', 'selftests/.data/safeloader/data/imports.py:Test8.test'),
                 ('Test10', 'selftests/.data/safeloader/data/imports.py:Test10.test')]
-        self._check_discovery(exps, tests)
-
-    def test_dont_detect_non_avocado(self):
-        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                            '.data', 'safeloader', 'data', 'dont_detect_non_avocado.py')
-        tests = self.loader.discover(path)
-        exps = [(test.PythonUnittest,
-                 'dont_detect_non_avocado.StaticallyNotAvocadoTest.test'),
-                (test.PythonUnittest,
-                 'dont_detect_non_avocado.NotTest.test2'),
-                (test.PythonUnittest,
-                 'dont_detect_non_avocado.NotTest.test')]
         self._check_discovery(exps, tests)
 
     def test_infinite_recurse(self):

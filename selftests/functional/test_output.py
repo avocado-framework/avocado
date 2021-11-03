@@ -509,27 +509,6 @@ class OutputPluginTest(TestCaseTmpDir):
             self.check_output_files(debug_log)
         minidom.parse(tmpfile)
 
-    def test_nonprintable_chars(self):
-        cmd_line = ("%s run --external-runner /bin/ls "
-                    "'NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
-                    "--job-results-dir %s --disable-sysinfo --tap-include-logs"
-                    " --test-runner=runner"
-                    % (AVOCADO, self.tmpdir.name))
-        result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout_text + result.stderr_text
-        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        debug_log = None
-        for line in output.splitlines():
-            if "JOB LOG" in line:
-                debug_log = line.split(':', 1)[-1].strip()
-                break
-        self.assertTrue(debug_log, "Unable to get JOB LOG from output:\n%s"
-                        % output)
-        self.check_output_files(debug_log)
-
     def test_show_test(self):
         cmd_line = ('%s --show=test run --job-results-dir %s --disable-sysinfo '
                     'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
