@@ -1341,20 +1341,6 @@ class DryRunTest(MockingTest):
             return None
 
 
-class ReplaySkipTest(MockingTest):
-
-    """
-    Skip test due to job replay filter.
-
-    This test is skipped due to a job replay filter.
-    It will never have a chance to execute.
-    """
-
-    @skip('Test skipped due to a job replay filter!')
-    def test(self):
-        pass
-
-
 class TestError(Test):
     """
     Generic test error.
