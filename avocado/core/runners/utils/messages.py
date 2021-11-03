@@ -3,6 +3,7 @@ import sys
 import time
 
 from ... import output
+from ...streams import BUILTIN_STREAMS
 
 
 class GenericMessage:
@@ -29,7 +30,7 @@ class GenericMessage:
 
     @classmethod
     def get(cls, **kwargs):
-        """Creates message base on it's type with  all necessary information.
+        """Creates message base on it's type with all necessary information.
 
         :return: message dict which can be send to avocado server
         :rtype: dict
@@ -53,7 +54,7 @@ class FinishedMessage(GenericMessage):
 
     @classmethod
     def get(cls, result, fail_reason=None, returncode=None):  # pylint: disable=W0221
-        """Creates finished message with  all necessary information.
+        """Creates finished message with all necessary information.
 
         :param result: test result
         :type result values for the statuses defined in
@@ -92,7 +93,7 @@ class GenericRunningMessage(GenericMessage):
 
     @classmethod
     def get(cls, msg, **kwargs):  # pylint: disable=W0221
-        """Creates running message with  all necessary information.
+        """Creates running message with all necessary information.
 
         :param msg: log of running message
         :type msg: str
@@ -108,22 +109,27 @@ class LogMessage(GenericRunningMessage):
 
 
 class StdoutMessage(GenericRunningMessage):
-    """Creates stdout message with  all necessary information."""
+    """Creates stdout message with all necessary information."""
     message_type = 'stdout'
 
 
 class StderrMessage(GenericRunningMessage):
-    """Creates stderr message with  all necessary information."""
+    """Creates stderr message with all necessary information."""
     message_type = 'stderr'
 
 
 class WhiteboardMessage(GenericRunningMessage):
-    """Creates whiteboard message with  all necessary information."""
+    """Creates whiteboard message with all necessary information."""
     message_type = 'whiteboard'
 
 
+class OutputMessage(GenericRunningMessage):
+    """Creates output message with all necessary information."""
+    message_type = 'output'
+
+
 class FileMessage(GenericRunningMessage):
-    """Creates file message with  all necessary information."""
+    """Creates file message with all necessary information."""
     message_type = 'file'
 
     @classmethod
@@ -135,6 +141,7 @@ _supported_types = {LogMessage.message_type: LogMessage,
                     StdoutMessage.message_type: StdoutMessage,
                     StderrMessage.message_type: StderrMessage,
                     WhiteboardMessage.message_type: WhiteboardMessage,
+                    OutputMessage.message_type: OutputMessage,
                     FileMessage.message_type: FileMessage}
 
 
@@ -216,6 +223,16 @@ def start_logging(config, queue):
 
     sys.stdout = StreamToQueue(queue, "stdout")
     sys.stderr = StreamToQueue(queue, "stderr")
+
+    # output custom test loggers
+    enabled_loggers = config.get('core.show')
+    output_handler = RunnerLogHandler(queue, 'output')
+    output_handler.setFormatter(logging.Formatter(fmt='%(name)s: %(message)s'))
+    for user_stream in [user_streams for user_streams in enabled_loggers
+                        if user_streams not in BUILTIN_STREAMS]:
+        custom_logger = logging.getLogger(user_stream)
+        custom_logger.addHandler(output_handler)
+        custom_logger.setLevel(log_level)
 
     # store custom test loggers
     enabled_loggers = config.get('job.run.store_logging_stream')

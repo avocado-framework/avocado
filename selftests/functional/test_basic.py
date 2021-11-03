@@ -455,6 +455,15 @@ class RunnerOperationTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(result.stdout, b'')
 
+    def test_show_user_stream(self):
+        cmd_line = ('%s --show=app,avocado.test.progress run --disable-sysinfo '
+                    '--job-results-dir %s examples/tests/logging_streams.py' %
+                    (AVOCADO, self.tmpdir.name))
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertIn(b'Plant.test_plant_organic: preparing soil on row 0',
+                      result.stdout)
+
     def test_empty_args_list(self):
         cmd_line = AVOCADO
         result = process.run(cmd_line, ignore_status=True)
