@@ -1210,63 +1210,6 @@ class SimpleTest(Test):
         self._execute_cmd()
 
 
-class ExternalRunnerSpec:
-    """
-    Defines the basic options used by ExternalRunner
-    """
-
-    def __init__(self, runner, chdir=None, test_dir=None):
-        self.runner = runner
-        self.chdir = chdir
-        self.test_dir = test_dir
-
-
-class ExternalRunnerTest(SimpleTest):
-
-    def __init__(self, name, params=None, base_logdir=None, config=None,
-                 external_runner=None, external_runner_argument=None):
-        if external_runner_argument is None:
-            external_runner_argument = name.name
-        if external_runner is None:
-            raise ValueError("External runner test requires a valid "
-                             "external_runner parameter, got None instead.")
-        self.external_runner = external_runner
-        super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
-                                                 config)
-        self._command = "%s %s" % (external_runner.runner,
-                                   external_runner_argument)
-
-    @property
-    def filename(self):
-        return None
-
-    def test(self):
-        pre_cwd = os.getcwd()
-        new_cwd = None
-        try:
-            self.log.info('Running test with the external test runner: "%s"',
-                          self.external_runner.runner)
-
-            # Change work directory if needed by the external runner
-            if self.external_runner.chdir == 'runner':
-                new_cwd = os.path.dirname(self.external_runner.runner)
-            elif self.external_runner.chdir == 'test':
-                new_cwd = self.external_runner.test_dir
-            else:
-                new_cwd = None
-            if new_cwd is not None:
-                self.log.debug('Changing working directory to "%s" '
-                               'because of external runner requirements ',
-                               new_cwd)
-                os.chdir(new_cwd)
-
-            self._execute_cmd()
-
-        finally:
-            if new_cwd is not None:
-                os.chdir(pre_cwd)
-
-
 class TapTest(SimpleTest):
 
     """

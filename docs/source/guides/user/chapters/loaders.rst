@@ -54,8 +54,8 @@ settings (``/etc/avocado/``), or temporarily using ``--loaders`` (option of
 This option allows you to specify order and some params of the available test
 loaders. You can specify either loader_name (``file``), loader_name + TEST_TYPE
 (``file.SIMPLE``) and for some loaders even additional params passed after
-``:`` (``external:/bin/echo -e``. You can also supply ``@DEFAULT``, which
-injects into that position all the remaining unused loaders.
+``:``. You can also supply ``@DEFAULT``, which injects into that position all
+the remaining unused loaders.
 
 Example of how ``--loaders`` affects the produced tests (manually gathered as
 some of them result in error)::
@@ -65,15 +65,9 @@ some of them result in error)::
         > VT           io-github-autotest-qemu.boot
         > MISSING      this_does_not_exist
         > SIMPLE       /bin/echo
-    $ avocado run --test-runner=runner passtest.py boot this_does_not_exist /bin/echo --loaders @DEFAULT "external:/bin/echo -e"
+    $ avocado run passtest.py boot this_does_not_exist /bin/echo --loaders file.SIMPLE file.INSTRUMENTED @DEFAULT
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
-        > EXTERNAL     this_does_not_exist
-        > SIMPLE       /bin/echo
-    $ avocado run passtest.py boot this_does_not_exist /bin/echo --loaders file.SIMPLE file.INSTRUMENTED @DEFAULT external.EXTERNAL:/bin/echo
-        > INSTRUMENTED passtest.py:PassTest.test
-        > VT           io-github-autotest-qemu.boot
-        > EXTERNAL     this_does_not_exist
         > SIMPLE       /bin/echo
 
 Test References
@@ -82,9 +76,8 @@ Test References
 A Test Reference is a string that can be resolved into (interpreted as) one or
 more tests by the Avocado Test Resolver.
 
-Each resolver (a.k.a. loader) can handle the Test References differently. For
-example, External Loader will use the Test Reference as an argument for the
-external command, while the File Loader will expect a file path.
+Each loader can handle the Test References differently. For example,
+the File Loader will expect the test reference to be a file path.
 
 If you don't specify the loader that you want to use, all of the available
 loaders will be used to resolve the provided Test References.  One by one, the
@@ -170,37 +163,6 @@ tests::
    of corrupting them. In that case, the command from the example above
    would be:
    ``avocado run "examples/tests/gdbtest.py:GdbTest.test_[le].*raw"``
-
-External Loader
-~~~~~~~~~~~~~~~
-
-Using the External Loader, Avocado will consider that and External Runner will
-be in place and so Avocado doesn't really need to resolve the references.
-Instead, Avocado will pass the references as parameters to the External Runner.
-Example::
-
-    $ avocado run --test-runner=runner 20
-    Unable to resolve reference(s) '20' with plugins(s) 'file', 'robot',
-    'vt', 'external', try running 'avocado -V list 20' to see the details.
-
-In the command above, no loaders can resolve ``20`` as a test. But running
-the command above with the External Runner ``/bin/sleep`` will make Avocado
-to actually execute ``/bin/sleep 20`` and check for its return code::
-
-    $ avocado run --test-runner=runner 20 --loaders external:/bin/sleep
-    JOB ID     : 42215ece2894134fb9379ee564aa00f1d1d6cb91
-    JOB LOG    : $HOME/avocado/job-results/job-2017-06-19T11.17-42215ec/job.log
-     (1/1) 20: PASS (20.03 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 20.13 s
-    JOB HTML   : $HOME/avocado/job-results/job-2017-06-19T11.17-42215ec/html/results.html
-
-.. warning:: It's safer to put your Test References at the end of the
-   command line, after a `--`. That will avoid argument vs. Test
-   References clashes. In that case, everything after the `--` will
-   be considered positional arguments, therefore Test References.
-   Considering that syntax, the command for the example above would be:
-   ``avocado run --loaders external:/bin/sleep -- 20``
 
 TAP Loader
 ~~~~~~~~~~
