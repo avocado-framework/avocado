@@ -7,6 +7,20 @@ from ...utils import stacktrace
 from .. import test
 
 
+class TestError(test.Test):
+    """
+    Generic test error.
+    """
+
+    def __init__(self, *args, **kwargs):
+        exception = kwargs.pop('exception')
+        test.Test.__init__(self, *args, **kwargs)
+        self.exception = exception
+
+    def test(self):
+        self.error(self.exception)
+
+
 def load_test(test_factory):
     """
     Load test from the test factory.
@@ -34,7 +48,7 @@ def load_test(test_factory):
             test_parameters['methodName'] = 'test'
             exception = stacktrace.prepare_exc_info(sys.exc_info())
             test_parameters['exception'] = exception
-            return test.TestError(**test_parameters)
+            return TestError(**test_parameters)
         finally:
             if test_module_dir in sys.path:
                 sys.path.remove(test_module_dir)

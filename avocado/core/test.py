@@ -1339,17 +1339,3 @@ class DryRunTest(MockingTest):
                 return None
         except AttributeError:
             return None
-
-
-class TestError(Test):
-    """
-    Generic test error.
-    """
-
-    def __init__(self, *args, **kwargs):
-        exception = kwargs.pop('exception')
-        Test.__init__(self, *args, **kwargs)
-        self.exception = exception
-
-    def test(self):
-        self.error(self.exception)
