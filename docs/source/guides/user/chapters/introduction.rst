@@ -171,9 +171,6 @@ Avocado will run each one as a ``TAP`` test, as you desired.
 .. note:: Please, keep in mind that hint files needs absolute paths when
    defining tests inside the ``[kinds]`` section.
 
-.. note:: Also, note that hint files are only supported when using the next
-   runner (``--test-runner='nrunner'``).
-
 Since Avocado's next runner is capable of running tests not only in a
 subprocess but also in more isolated environments such as Podman containers,
 sending custom environment variables to the task executor can be achieved by
