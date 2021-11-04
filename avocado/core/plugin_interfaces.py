@@ -336,14 +336,19 @@ class DeploymentSpawner(Spawner):
     """
 
     @abc.abstractmethod
-    def deploy_avocado(self):
+    async def deploy_avocado(self, where):
         """Avocado deployment for the isolated environment.
 
         This method should be executed before spawning the task.
+
+        :param where: wrapper for where the spawner should deploy avocado.
+                      You can use this parameter to pass any valid argument,
+                      like a container, vm, or any other isolated environment
+                      object or identifier.
         """
 
     @abc.abstractmethod
-    def deploy_artifacts(self):
+    async def deploy_artifacts(self):
         """Basic artifacts deployment for the isolated environment.
 
         During this stage test references (i.e: mytest.py), data files (i.e:
