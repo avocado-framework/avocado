@@ -264,6 +264,18 @@ class Runnable:
 
         return self.kind in capabilities.get('runnables', [])
 
+    @staticmethod
+    def _module_exists(module_name):
+        """Returns whether a nrunner "runner" module exists."""
+        module_filename = '%s.py' % module_name
+        if PKG_RESOURCES_AVAILABLE:
+            mod_path = os.path.join('core', 'runners', module_filename)
+            return pkg_resources.resource_exists('avocado', mod_path)
+
+        core_dir = os.path.dirname(os.path.abspath(__file__))
+        mod_path = os.path.join(core_dir, 'runners', module_filename)
+        return os.path.exists(mod_path)
+
     def pick_runner_command(self, runners_registry=None):
         """Selects a runner command based on the runner.
 
@@ -299,10 +311,8 @@ class Runnable:
         # runner convention within the avocado.core namespace dir.
         # Looking for the file only avoids an attempt to load the module
         # and should be a lot faster
-        core_dir = os.path.dirname(os.path.abspath(__file__))
         module_name = self.kind.replace('-', '_')
-        module_filename = '%s.py' % module_name
-        if os.path.exists(os.path.join(core_dir, 'runners', module_filename)):
+        if self._module_exists(module_name):
             full_module_name = 'avocado.core.runners.%s' % module_name
             candidate_cmd = [sys.executable, '-m', full_module_name]
             if self.is_kind_supported_by_runner_command(candidate_cmd):
