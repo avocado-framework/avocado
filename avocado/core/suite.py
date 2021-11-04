@@ -98,7 +98,7 @@ class TestSuite:
             self.config.update(config)
 
         # Update the config of runnables.
-        if config.get('run.test_runner') == 'nrunner' and self.tests:
+        if self.config.get('run.test_runner') == 'nrunner' and self.tests:
             for test in self.tests:
                 test.config.update(self.config)
 
