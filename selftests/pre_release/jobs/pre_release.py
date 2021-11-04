@@ -14,7 +14,6 @@ cirrus_ci = {
     }
 
 parallel_1 = {
-    'run.test_runner': 'nrunner',
     'resolver.references': [os.path.join('selftests', 'unit'),
                             os.path.join('selftests', 'functional')],
     'filter.by_tags.tags': ['parallel:1'],

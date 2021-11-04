@@ -164,7 +164,6 @@ class PassTest(Test):
 
 if __name__ == '__main__':
     config = {'resolver.references': [__file__],
-              'run.test_runner': 'nrunner',
               'core.show': ['app']}
     suite = TestSuite.from_config(config)
     with Job(config, [suite]) as j:
@@ -192,8 +191,7 @@ class RunnerNRunnerWithFixedTasks(runner_nrunner.Runner):
 
 
 if __name__ == '__main__':
-    config = {'run.test_runner': 'nrunner',
-              'resolver.references': ['/bin/true', '/bin/false']}
+    config = {'resolver.references': ['/bin/true', '/bin/false']}
     job = Job.from_config(config)
     job.setup()
     job.test_suites[0]._runner = RunnerNRunnerWithFixedTasks()

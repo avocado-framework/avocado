@@ -570,7 +570,6 @@ def create_suites(args):  # pylint: disable=W0621
 
     config_check = {
         'resolver.references': selftests,
-        'run.test_runner': 'nrunner',
         'run.ignore_missing_references': True
     }
 
@@ -638,7 +637,6 @@ def main(args):  # pylint: disable=W0621
     # Job execution
     # ========================================================================
     config = {'core.show': ['app'],
-              'run.test_runner': 'nrunner',
               'job.output.testlogs.statuses': ['FAIL', 'ERROR', 'INTERRUPT'],
               'job.output.testlogs.logfiles': ['debug.log']}
 

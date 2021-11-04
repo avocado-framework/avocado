@@ -94,17 +94,15 @@ class JobTest(unittest.TestCase):
         self.assertIsNone(self.job.test_suite)
 
     def test_suite_not_started(self):
-        suite = TestSuite('empty-suite', {'run.test_runner': 'nrunner'})
+        suite = TestSuite('empty-suite', {})
         self.assertEqual(suite.status, TestSuiteStatus.RESOLUTION_NOT_STARTED)
 
     def test_suite_tests_found(self):
-        suite = TestSuite.from_config({'resolver.references': ['/bin/true'],
-                                       'run.test_runner': 'nrunner'})
+        suite = TestSuite.from_config({'resolver.references': ['/bin/true']})
         self.assertEqual(suite.status, TestSuiteStatus.TESTS_FOUND)
 
     def test_suite_tests_not_found(self):
         suite = TestSuite.from_config({'resolver.references': ['/bin/not-found'],
-                                       'run.test_runner': 'nrunner',
                                        'run.ignore_missing_references': True})
         self.assertEqual(suite.status, TestSuiteStatus.TESTS_NOT_FOUND)
 
@@ -315,7 +313,6 @@ class JobTest(unittest.TestCase):
         simple_tests_found = self._find_simple_test_candidates()
         config = {'run.results_dir': self.tmpdir.name,
                   'resolver.references': simple_tests_found,
-                  'run.test_runner': 'nrunner',
                   'core.show': ['none']}
         self.job = job.Job.from_config(config)
         self.job.setup()
@@ -346,8 +343,7 @@ class JobTest(unittest.TestCase):
 
     def test_job_duplicate_suite_names(self):
         config = {'core.show': ['none'],
-                  'run.results_dir': self.tmpdir.name,
-                  'run.test_runner': 'nrunner'}
+                  'run.results_dir': self.tmpdir.name}
         suite_config = {'resolver.references': ['/bin/true']}
         suite_1 = TestSuite('suite', config=suite_config)
         suite_2 = TestSuite('suite', config=suite_config)

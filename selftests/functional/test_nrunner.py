@@ -14,7 +14,6 @@ class NRunnerFeatures(unittest.TestCase):
     @skipUnlessPathExists('/bin/false')
     def test_custom_exit_codes(self):
         config = {'resolver.references': ['/bin/false'],
-                  'run.test_runner': 'nrunner',
                   'runner.exectest.exitcodes.skip': [1]}
         with Job.from_config(job_config=config) as job:
             self.assertEqual(job.run(), 0)
@@ -26,7 +25,6 @@ class NRunnerFeatures(unittest.TestCase):
                                           '/bin/false',
                                           '/bin/true',
                                           '/bin/true'],
-                  'run.test_runner': 'nrunner',
                   'run.failfast': True,
                   'nrunner.shuffle': False,
                   'nrunner.max_parallel_tasks': 1}
