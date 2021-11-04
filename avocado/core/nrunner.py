@@ -245,14 +245,15 @@ class Runnable:
         with open(recipe_path, 'w') as recipe_file:
             recipe_file.write(self.get_json())
 
-    def is_kind_supported_by_runner_command(self, runner_command):
+    def is_kind_supported_by_runner_command(self, runner_command, env=None):
         """Checks if a runner command that seems a good fit declares support."""
         cmd = runner_command + ['capabilities']
         try:
             process = subprocess.Popen(cmd,
                                        stdin=subprocess.DEVNULL,
                                        stdout=subprocess.PIPE,
-                                       stderr=subprocess.DEVNULL)
+                                       stderr=subprocess.DEVNULL,
+                                       env=env)
         except (FileNotFoundError, PermissionError):
             return False
         out, _ = process.communicate()
@@ -263,6 +264,18 @@ class Runnable:
             return False
 
         return self.kind in capabilities.get('runnables', [])
+
+    @staticmethod
+    def _module_exists(module_name):
+        """Returns whether a nrunner "runner" module exists."""
+        module_filename = '%s.py' % module_name
+        if PKG_RESOURCES_AVAILABLE:
+            mod_path = os.path.join('core', 'runners', module_filename)
+            return pkg_resources.resource_exists('avocado', mod_path)
+
+        core_dir = os.path.dirname(os.path.abspath(__file__))
+        mod_path = os.path.join(core_dir, 'runners', module_filename)
+        return os.path.exists(mod_path)
 
     def pick_runner_command(self, runners_registry=None):
         """Selects a runner command based on the runner.
@@ -290,6 +303,11 @@ class Runnable:
         if runner_cmd is not None:
             return runner_cmd
 
+        # When running Avocado Python modules, the interpreter on the new
+        # process needs to know where Avocado can be found.
+        env = os.environ.copy()
+        env['PYTHONPATH'] = ':'.join(p for p in sys.path)
+
         standalone_executable_cmd = ['avocado-runner-%s' % self.kind]
         if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
             runners_registry[self.kind] = standalone_executable_cmd
@@ -299,15 +317,21 @@ class Runnable:
         # runner convention within the avocado.core namespace dir.
         # Looking for the file only avoids an attempt to load the module
         # and should be a lot faster
-        core_dir = os.path.dirname(os.path.abspath(__file__))
         module_name = self.kind.replace('-', '_')
-        module_filename = '%s.py' % module_name
-        if os.path.exists(os.path.join(core_dir, 'runners', module_filename)):
+        if self._module_exists(module_name):
             full_module_name = 'avocado.core.runners.%s' % module_name
             candidate_cmd = [sys.executable, '-m', full_module_name]
-            if self.is_kind_supported_by_runner_command(candidate_cmd):
+            if self.is_kind_supported_by_runner_command(candidate_cmd,
+                                                        env):
                 runners_registry[self.kind] = candidate_cmd
                 return candidate_cmd
+
+        # look for the runner commands implemented in the base nrunner module
+        candidate_cmd = [sys.executable, '-m', 'avocado.core.nrunner']
+        if self.is_kind_supported_by_runner_command(candidate_cmd,
+                                                    env):
+            runners_registry[self.kind] = candidate_cmd
+            return candidate_cmd
 
         # exhausted probes, let's save the negative on the cache and avoid
         # future similar problems
