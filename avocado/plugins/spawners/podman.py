@@ -86,10 +86,10 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         # FIXME: check how podman 2.x is reporting valid "OK" states
         return out.startswith(b'Up ')
 
-    def deploy_artifacts(self):
+    async def deploy_artifacts(self):
         pass
 
-    def deploy_avocado(self):
+    async def deploy_avocado(self, where):
         pass
 
     async def spawn_task(self, runtime_task):
