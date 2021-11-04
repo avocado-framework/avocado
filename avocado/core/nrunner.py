@@ -319,6 +319,12 @@ class Runnable:
                 runners_registry[self.kind] = candidate_cmd
                 return candidate_cmd
 
+        # look for the runner commands implemented in the base nrunner module
+        candidate_cmd = [sys.executable, '-m', 'avocado.core.nrunner']
+        if self.is_kind_supported_by_runner_command(candidate_cmd):
+            runners_registry[self.kind] = candidate_cmd
+            return candidate_cmd
+
         # exhausted probes, let's save the negative on the cache and avoid
         # future similar problems
         runners_registry[self.kind] = False
