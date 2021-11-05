@@ -161,6 +161,30 @@ class MultiplexTests(unittest.TestCase):
                               "\n  %s\nwhich is not present in the output:\n  %s"
                               % (msg_remain, "\n  ".join(result.splitlines())))
 
+    def test_mux_inject(self):
+        cmd = ("%s run --disable-sysinfo --json - "
+               "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
+               "foo:bar:b foo:baz:c bar:bar:bar "
+               "-- examples/tests/params.py "
+               "examples/tests/params.py "
+               "examples/tests/params.py " % AVOCADO)
+        number_of_tests = 3
+        result = json.loads(process.run(cmd).stdout_text)
+        log = ''
+        for test in result['tests']:
+            debuglog = test['logfile']
+            log += genio.read_file(debuglog)
+        # Remove the result dir
+        shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
+        self.assertIn(tempfile.gettempdir(), log)   # Use tmp dir, not default location
+        # Check if all params are listed
+        # The "/:bar ==> 2 is in the tree, but not in any leave so inaccessible
+        # from test.
+        for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
+                     "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
+            self.assertEqual(log.count(line), number_of_tests,
+                             "Avocado log count for param '%s' not as expected:\n%s" % (line, log))
+
     def tearDown(self):
         self.tmpdir.cleanup()
 
@@ -191,41 +215,6 @@ class ReplayTests(unittest.TestCase):
 
     def tearDown(self):
         self.tmpdir.cleanup()
-
-
-class DryRun(unittest.TestCase):
-
-    def test_dry_run(self):
-        cmd = ("%s run --disable-sysinfo --dry-run --dry-run-no-cleanup --json - "
-               "--test-runner=runner "
-               "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
-               "foo:bar:b foo:baz:c bar:bar:bar "
-               "-- examples/tests/passtest.py "
-               "examples/tests/failtest.py "
-               "examples/tests/gendata.py " % AVOCADO)
-        number_of_tests = 3
-        result = json.loads(process.run(cmd).stdout_text)
-        log = ''
-        for test in result['tests']:
-            debuglog = test['logfile']
-            log += genio.read_file(debuglog)
-        # Remove the result dir
-        shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
-        self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
-        self.assertEqual(result['job_id'], u'0' * 40)
-        # Check if all tests were skipped
-        self.assertEqual(result['cancel'], number_of_tests)
-        for i in range(number_of_tests):
-            test = result['tests'][i]
-            self.assertEqual(test['fail_reason'],
-                             u'Test cancelled due to --dry-run')
-        # Check if all params are listed
-        # The "/:bar ==> 2 is in the tree, but not in any leave so inaccessible
-        # from test.
-        for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
-                     "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
-            self.assertEqual(log.count(line), number_of_tests,
-                             "Avocado log count for param '%s' not as expected:\n%s" % (line, log))
 
 
 if __name__ == '__main__':
