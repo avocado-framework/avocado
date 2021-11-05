@@ -637,6 +637,7 @@ def main(args):  # pylint: disable=W0621
     # Job execution
     # ========================================================================
     config = {'core.show': ['app'],
+              'run.job_category': 'avocado-selftests',
               'job.output.testlogs.statuses': ['FAIL', 'ERROR', 'INTERRUPT'],
               'job.output.testlogs.logfiles': ['debug.log']}
 

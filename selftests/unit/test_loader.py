@@ -3,8 +3,7 @@ import stat
 import tempfile
 import unittest.mock
 
-from avocado.core import loader, test
-from avocado.core.test_id import TestID
+from avocado.core import loader
 from avocado.utils import script
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
@@ -43,23 +42,6 @@ class PassTest(Test):
 
 if __name__ == "__main__":
     main()
-"""
-
-NOT_A_TEST = """
-def hello():
-    print('Hello World!')
-"""
-
-PY_SIMPLE_TEST = """#!/usr/bin/env python
-def hello():
-    print('Hello World!')
-
-if __name__ == "__main__":
-    hello()
-"""
-
-SIMPLE_TEST = """#!/bin/sh
-true
 """
 
 AVOCADO_MULTIPLE_TESTS = """from avocado import Test
@@ -168,90 +150,6 @@ class LoaderTest(unittest.TestCase):
         self.loader = loader.FileLoader(None, {})
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-
-    def test_load_simple(self):
-        simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
-                                             'avocado_loader_unittest')
-        simple_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(simple_test.path, loader.DiscoverMode.ALL)[0])
-        self.assertTrue(test_class == test.SimpleTest, test_class)
-        test_parameters['name'] = TestID(0, test_parameters['name'])
-        test_parameters['base_logdir'] = self.tmpdir.name
-        tc = test_class(**test_parameters)
-        tc.run_avocado()
-        suite = self.loader.discover(simple_test.path, loader.DiscoverMode.ALL)
-        self.assertEqual(len(suite), 1)
-        self.assertEqual(suite[0][1]["name"], simple_test.path)
-        simple_test.remove()
-
-    def test_load_simple_not_exec(self):
-        simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
-                                             'avocado_loader_unittest',
-                                             mode=DEFAULT_NON_EXEC_MODE)
-        simple_test.save()
-        test_class, _ = self.loader.discover(simple_test.path, loader.DiscoverMode.ALL)[0]
-        self.assertTrue(test_class == loader.NotATest, test_class)
-        simple_test.remove()
-
-    def test_load_pass(self):
-        avocado_pass_test = script.TemporaryScript('passtest.py',
-                                                   AVOCADO_TEST_OK,
-                                                   'avocado_loader_unittest')
-        avocado_pass_test.save()
-        test_class, _ = self.loader.discover(avocado_pass_test.path,
-                                             loader.DiscoverMode.ALL)[0]
-        self.assertTrue(test_class == 'PassTest', test_class)
-        avocado_pass_test.remove()
-
-    def test_load_not_a_test(self):
-        avocado_not_a_test = script.TemporaryScript('notatest.py',
-                                                    NOT_A_TEST,
-                                                    'avocado_loader_unittest',
-                                                    mode=DEFAULT_NON_EXEC_MODE)
-        avocado_not_a_test.save()
-        test_class, _ = self.loader.discover(avocado_not_a_test.path,
-                                             loader.DiscoverMode.ALL)[0]
-        self.assertTrue(test_class == loader.NotATest, test_class)
-        avocado_not_a_test.remove()
-
-    def test_load_not_a_test_exec(self):
-        avocado_not_a_test = script.TemporaryScript('notatest.py', NOT_A_TEST,
-                                                    'avocado_loader_unittest')
-        avocado_not_a_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(avocado_not_a_test.path, loader.DiscoverMode.ALL)[0])
-        self.assertTrue(test_class == test.SimpleTest, test_class)
-        test_parameters['name'] = TestID(0, test_parameters['name'])
-        test_parameters['base_logdir'] = self.tmpdir.name
-        tc = test_class(**test_parameters)
-        # The test can't be executed (no shebang), raising an OSError
-        # (OSError: [Errno 8] Exec format error)
-        self.assertRaises(OSError, tc.test)
-        avocado_not_a_test.remove()
-
-    def test_py_simple_test(self):
-        with script.TemporaryScript(
-                'simpletest.py',
-                PY_SIMPLE_TEST,
-                'avocado_loader_unittest') as avocado_simple_test:
-            test_class, test_parameters = (
-                self.loader.discover(avocado_simple_test.path, loader.DiscoverMode.ALL)[0])
-            self.assertTrue(test_class == test.SimpleTest)
-            test_parameters['name'] = TestID(0, test_parameters['name'])
-            test_parameters['base_logdir'] = self.tmpdir.name
-            tc = test_class(**test_parameters)
-            tc.run_avocado()
-
-    def test_py_simple_test_notexec(self):
-        with script.TemporaryScript(
-                'simpletest.py',
-                PY_SIMPLE_TEST,
-                'avocado_loader_unittest',
-                mode=DEFAULT_NON_EXEC_MODE) as avocado_simple_test:
-            test_class, _ = self.loader.discover(avocado_simple_test.path,
-                                                 loader.DiscoverMode.ALL)[0]
-        self.assertTrue(test_class == loader.NotATest)
 
     def test_multiple_methods(self):
         avocado_multiple_tests = script.TemporaryScript('multipletests.py',
@@ -380,11 +278,11 @@ class LoaderTest(unittest.TestCase):
         self._check_discovery(exps, tests)
 
     def test_list_raising_exception(self):
-        with script.TemporaryScript('simpletest.py', PY_SIMPLE_TEST) as simple_test:
+        with script.TemporaryScript('test.py', AVOCADO_TEST_OK) as avocado_test:
             with unittest.mock.patch('avocado.core.loader.safeloader.find_avocado_tests') as _mock:
                 _mock.side_effect = BaseException()
-                tests = self.loader.discover(simple_test.path)
-                self.assertEqual(tests[0][1]["name"], simple_test.path)
+                tests = self.loader.discover(avocado_test.path)
+                self.assertEqual(tests[0][1]["name"], avocado_test.path)
 
     def tearDown(self):
         self.tmpdir.cleanup()

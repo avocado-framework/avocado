@@ -111,17 +111,26 @@ class ExecTest(unittest.TestCase):
 
     def test_exec_test(self):
         with script.TemporaryScript('exec-test.sh', "#!/bin/sh\ntrue",
-                                    'test_resolver_exec_test') as simple_test:
-            res = ExecTestResolver().resolve(simple_test.path)
-            self.assertEqual(res.reference, simple_test.path)
-            self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
-            self.assertEqual(len(res.resolutions), 1)
-            resolution = res.resolutions[0]
-            self.assertEqual(resolution.kind, 'exec-test')
-            self.assertEqual(resolution.uri, simple_test.path)
-            self.assertEqual(resolution.args, ())
-            self.assertEqual(resolution.kwargs, {})
-            self.assertEqual(resolution.tags, None)
+                                    'test_resolver_exec_test') as exec_test:
+            res = ExecTestResolver().resolve(exec_test.path)
+        self.assertEqual(res.reference, exec_test.path)
+        self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
+        self.assertEqual(len(res.resolutions), 1)
+        resolution = res.resolutions[0]
+        self.assertEqual(resolution.kind, 'exec-test')
+        self.assertEqual(resolution.uri, exec_test.path)
+        self.assertEqual(resolution.args, ())
+        self.assertEqual(resolution.kwargs, {})
+        self.assertEqual(resolution.tags, None)
+
+    def test_not_exec(self):
+        with script.TemporaryScript('exec-test.sh', "#!/bin/sh\ntrue",
+                                    'test_resolver_exec_test',
+                                    mode=DEFAULT_NON_EXEC_MODE) as exec_test:
+            res = ExecTestResolver().resolve(exec_test.path)
+        self.assertEqual(res.reference, exec_test.path)
+        self.assertEqual(res.result, resolver.ReferenceResolutionResult.NOTFOUND)
+        self.assertEqual(len(res.resolutions), 0)
 
 
 class PythonUnittest(unittest.TestCase):
