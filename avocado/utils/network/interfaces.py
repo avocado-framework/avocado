@@ -61,6 +61,28 @@ class NetworkInterface:
             raise NWException(msg)
         return "{}/ifcfg-{}".format(path, self.name)
 
+    @property
+    def config_file_path(self):
+        current_distro = distro_detect()
+        if current_distro.name in ['rhel', 'fedora']:
+            return "/etc/sysconfig/network-scripts"
+        elif current_distro.name == 'SuSE':
+            return "/etc/sysconfig/network"
+        else:
+            msg = 'Distro not supported by API. Could get interface filename.'
+            log.error(msg)
+
+    @property
+    def slave_config_filename(self):
+        try:
+            slave_dict = self._get_bondinterface_details()
+            return ["{}/ifcfg-{}".format(self.config_file_path,
+                    slave) for slave in slave_dict['slaves']]
+        except Exception:
+            msg = "Slave config filename not available"
+            log.debug(msg)
+            return
+
     def _get_interface_details(self, version=None):
         cmd = "ip -j link show {}".format(self.name)
         if version:
@@ -76,6 +98,16 @@ class NetworkInterface:
             msg = "Unable to get the details of interface {}".format(self.name)
             log.error(msg)
             raise NWException(msg)
+
+    def _get_bondinterface_details(self):
+        cmd = "cat /sys/class/net/{}/bonding/mode \
+               /sys/class/net/{}/bonding/slaves".format(self.name, self.name)
+        try:
+            mode, slaves = run_command(cmd, self.host).splitlines()
+            return {'mode': mode.split(),
+                    'slaves': slaves.split()}
+        except Exception:
+            raise NWException("Slave interface not found for the Bond {}".format(self.name))
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
         destination = "{}.backup".format(filename)
@@ -391,6 +423,35 @@ class NetworkInterface:
                       'IPV6_DEFROUTE': 'yes'}
         if current_distro.name == 'SuSE':
             ifcfg_dict.pop('BOOTPROTO')
+
+        if self.if_type == 'Bond':
+            ifcfg_dict['BONDING_MASTER'] = 'yes'
+            bond_dict = self._get_bondinterface_details()
+            ifcfg_slave_dict = {'SLAVE': 'yes',
+                                'ONBOOT': 'yes',
+                                'MASTER': self.name}
+            if current_distro.name == 'SuSE':
+                ifcfg_dict['BONDING_MODULE_OPTS'] = 'mode=' \
+                           + bond_dict['mode'][0]
+                for index, slave in enumerate(bond_dict['slaves']):
+                    bonding_slave = 'BONDING_SLAVE{}'.format(index)
+                    ifcfg_dict[bonding_slave] = slave
+                    ifcfg_slave_dict.update({'NAME': slave,
+                                             'DEVICE': slave})
+                    self._write_to_file("{}/ifcfg-{}".format(path, slave),
+                                        ifcfg_slave_dict)
+            elif current_distro.name in ['rhel', 'fedora']:
+                ifcfg_dict['BONDING_OPTS'] = 'mode='+bond_dict['mode'][0]
+                for index, slave in enumerate(bond_dict['slaves']):
+                    ifcfg_slave_dict.update({'NAME': slave,
+                                             'DEVICE': slave,
+                                             'TYPE': 'Ethernet'})
+                    self._write_to_file("{}/ifcfg-{}".format(path, slave),
+                                        ifcfg_slave_dict)
+            else:
+                msg = 'Distro not supported by API. Could not save ipaddr.'
+                raise NWException(msg)
+
         self._write_to_file("{}/{}".format(path, filename), ifcfg_dict)
 
     def set_mtu(self, mtu, timeout=30):
@@ -499,3 +560,20 @@ class NetworkInterface:
         """
         if os.path.isfile(self.config_filename):
             os.remove(self.config_filename)
+
+    def restore_slave_cfg_file(self):
+        """
+        Restore or delete slave config files.
+        """
+        if self.if_type != 'Bond':
+            return
+        for slave_config in self.slave_config_filename:
+            backup_slave_config = "{}.backup".format(slave_config)
+            try:
+                if os.path.exists(backup_slave_config):
+                    shutil.move(backup_slave_config, slave_config)
+                else:
+                    os.remove(slave_config)
+            except Exception as ex:
+                raise NWException("Could not restore \
+                                  the config file {}".format(ex))
