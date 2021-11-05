@@ -3,8 +3,7 @@ import stat
 import tempfile
 import unittest.mock
 
-from avocado.core import loader, test
-from avocado.core.test_id import TestID
+from avocado.core import loader
 from avocado.utils import script
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
@@ -43,11 +42,6 @@ class PassTest(Test):
 
 if __name__ == "__main__":
     main()
-"""
-
-NOT_A_TEST = """
-def hello():
-    print('Hello World!')
 """
 
 AVOCADO_MULTIPLE_TESTS = """from avocado import Test
@@ -156,32 +150,6 @@ class LoaderTest(unittest.TestCase):
         self.loader = loader.FileLoader(None, {})
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-
-    def test_load_not_a_test(self):
-        avocado_not_a_test = script.TemporaryScript('notatest.py',
-                                                    NOT_A_TEST,
-                                                    'avocado_loader_unittest',
-                                                    mode=DEFAULT_NON_EXEC_MODE)
-        avocado_not_a_test.save()
-        test_class, _ = self.loader.discover(avocado_not_a_test.path,
-                                             loader.DiscoverMode.ALL)[0]
-        self.assertTrue(test_class == loader.NotATest, test_class)
-        avocado_not_a_test.remove()
-
-    def test_load_not_a_test_exec(self):
-        avocado_not_a_test = script.TemporaryScript('notatest.py', NOT_A_TEST,
-                                                    'avocado_loader_unittest')
-        avocado_not_a_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(avocado_not_a_test.path, loader.DiscoverMode.ALL)[0])
-        self.assertTrue(test_class == test.SimpleTest, test_class)
-        test_parameters['name'] = TestID(0, test_parameters['name'])
-        test_parameters['base_logdir'] = self.tmpdir.name
-        tc = test_class(**test_parameters)
-        # The test can't be executed (no shebang), raising an OSError
-        # (OSError: [Errno 8] Exec format error)
-        self.assertRaises(OSError, tc.test)
-        avocado_not_a_test.remove()
 
     def test_multiple_methods(self):
         avocado_multiple_tests = script.TemporaryScript('multipletests.py',
