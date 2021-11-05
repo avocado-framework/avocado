@@ -639,6 +639,7 @@ def main(args):  # pylint: disable=W0621
     # ========================================================================
     config = {'core.show': ['app'],
               'run.test_runner': 'nrunner',
+              'run.job_category': 'avocado-selftests',
               'job.output.testlogs.statuses': ['FAIL', 'ERROR', 'INTERRUPT'],
               'job.output.testlogs.logfiles': ['debug.log']}
 
