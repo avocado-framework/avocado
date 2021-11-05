@@ -84,10 +84,11 @@ def resolutions_to_runnables(resolutions, config):
 
 class TestSuite:
     def __init__(self, name, config=None, tests=None, job_config=None,
-                 resolutions=None):
+                 resolutions=None, enabled=True):
         self.name = name
         self.tests = tests
         self.resolutions = resolutions
+        self.enabled = enabled
 
         # Create a complete config dict with all registered options + custom
         # config

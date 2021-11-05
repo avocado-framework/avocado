@@ -13,6 +13,8 @@ from avocado.core.suite import TestSuite
 
 suite1 = TestSuite(name='suite1', tests=[Runnable("noop", "noop")])
 suite2 = TestSuite(name='suite2', tests=[Runnable("noop", "noop")])
+suite3 = TestSuite(name='suite3', enabled=False,
+                   tests=[Runnable("noop", "noop")])
 
-with Job(test_suites=[suite1, suite2]) as j:
+with Job(test_suites=[suite1, suite2, suite3]) as j:
     sys.exit(j.run())

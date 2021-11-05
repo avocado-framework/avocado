@@ -325,6 +325,10 @@ class Runner(RunnerInterface):
     def run_suite(self, job, test_suite):
         summary = set()
 
+        if not test_suite.enabled:
+            job.interrupted_reason = f"Suite {test_suite.name} is disabled."
+            return summary
+
         test_suite.tests, missing_requirements = nrunner.check_runnables_runner_requirements(
             test_suite.tests)
         self._abort_if_missing_runners(missing_requirements)
