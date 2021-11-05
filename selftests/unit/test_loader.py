@@ -157,16 +157,6 @@ class LoaderTest(unittest.TestCase):
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
 
-    def test_load_pass(self):
-        avocado_pass_test = script.TemporaryScript('passtest.py',
-                                                   AVOCADO_TEST_OK,
-                                                   'avocado_loader_unittest')
-        avocado_pass_test.save()
-        test_class, _ = self.loader.discover(avocado_pass_test.path,
-                                             loader.DiscoverMode.ALL)[0]
-        self.assertTrue(test_class == 'PassTest', test_class)
-        avocado_pass_test.remove()
-
     def test_load_not_a_test(self):
         avocado_not_a_test = script.TemporaryScript('notatest.py',
                                                     NOT_A_TEST,
