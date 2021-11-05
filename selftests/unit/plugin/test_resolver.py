@@ -123,6 +123,16 @@ class ExecTest(unittest.TestCase):
         self.assertEqual(resolution.kwargs, {})
         self.assertEqual(resolution.tags, None)
 
+    def test_not_exec(self):
+        with script.TemporaryScript('exec-test.sh', "#!/bin/sh\ntrue",
+                                    'test_resolver_exec_test',
+                                    mode=DEFAULT_NON_EXEC_MODE) as exec_test:
+            res = ExecTestResolver().resolve(exec_test.path)
+        self.assertEqual(res.reference, exec_test.path)
+        self.assertEqual(res.result, resolver.ReferenceResolutionResult.NOTFOUND)
+        self.assertEqual(len(res.resolutions), 0)
+
+
 class PythonUnittest(unittest.TestCase):
 
     def test_disabled(self):
