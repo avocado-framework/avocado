@@ -66,7 +66,7 @@ class TestLogging(TestCaseTmpDir):
 
     def test_job_log(self):
         pass_test = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
-        cmd_line = ('%s run --job-results-dir %s --test-runner=nrunner %s' %
+        cmd_line = ('%s run --job-results-dir %s %s' %
                     (AVOCADO, self.tmpdir.name, pass_test))
         process.run(cmd_line)
         log_file = os.path.join(self.tmpdir.name, 'latest', 'job.log')
