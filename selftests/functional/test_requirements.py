@@ -78,7 +78,7 @@ class FailTest(Test):
 
 class BasicTest(TestCaseTmpDir):
 
-    command = '%s run --test-runner=nrunner %s'
+    command = '%s run %s'
     skip_install_message = ("This test runs on CI environments only as it"
                             " installs packages to test the feature, which"
                             " may not be desired locally, in the user's"

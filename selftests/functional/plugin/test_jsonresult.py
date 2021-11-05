@@ -8,8 +8,7 @@ from selftests.utils import AVOCADO, TestCaseTmpDir
 class JsonResultTest(TestCaseTmpDir):
 
     def test_logfile(self):
-        cmd_line = ('%s run --test-runner=nrunner '
-                    'examples/tests/failtest.py '
+        cmd_line = ('%s run examples/tests/failtest.py '
                     '--job-results-dir %s --disable-sysinfo ' %
                     (AVOCADO, self.tmpdir.name))
         process.run(cmd_line, ignore_status=True)
@@ -22,8 +21,7 @@ class JsonResultTest(TestCaseTmpDir):
             self.assertEqual(expected_logfile, test_data['logfile'])
 
     def test_fail_reason(self):
-        cmd_line = ('%s run --test-runner=nrunner '
-                    'examples/tests/failtest.py '
+        cmd_line = ('%s run examples/tests/failtest.py '
                     '--job-results-dir %s --disable-sysinfo ' %
                     (AVOCADO, self.tmpdir.name))
         process.run(cmd_line, ignore_status=True)
