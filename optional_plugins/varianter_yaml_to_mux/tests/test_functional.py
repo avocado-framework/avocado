@@ -136,9 +136,8 @@ class MultiplexTests(unittest.TestCase):
                             ('/run/long', 'This is very long\nmultiline\ntext.')):
             variant, msg = variant_msg
             cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                        '--test-runner=runner '
-                        'examples/tests/env_variables.sh '
-                        '-m examples/tests/env_variables.sh.data/env_variables.yaml '
+                        'examples/tests/custom_env_variable.sh '
+                        '-m examples/tests/custom_env_variable.sh.data/variants.yaml '
                         '--mux-filter-only %s'
                         % (AVOCADO, self.tmpdir.name, variant))
             expected_rc = exit_codes.AVOCADO_ALL_OK
