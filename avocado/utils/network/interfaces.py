@@ -57,7 +57,7 @@ class NetworkInterface:
         elif current_distro.name == 'SuSE':
             path = "/etc/sysconfig/network"
         else:
-            msg = 'Distro not supported by API. Could get interface filename.'
+            msg = 'Distro not supported by API. Could not get interface filename.'
             raise NWException(msg)
         return "{}/ifcfg-{}".format(path, self.name)
 
@@ -69,7 +69,7 @@ class NetworkInterface:
         elif current_distro.name == 'SuSE':
             return "/etc/sysconfig/network"
         else:
-            msg = 'Distro not supported by API. Could get interface filename.'
+            msg = 'Distro not supported by API. Could not get interface filename.'
             log.error(msg)
 
     @property
@@ -107,7 +107,7 @@ class NetworkInterface:
             return {'mode': mode.split(),
                     'slaves': slaves.split()}
         except Exception:
-            raise NWException("Slave interface not found for the Bond {}".format(self.name))
+            raise NWException("Slave interface not found for the bond {}".format(self.name))
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
         destination = "{}.backup".format(filename)
