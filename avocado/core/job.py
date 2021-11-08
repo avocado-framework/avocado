@@ -203,10 +203,10 @@ class Job:
         test_handler = output.add_log_handler(LOG_JOB,
                                               logging.FileHandler,
                                               self.logfile, self.loglevel, fmt)
-        root_logger = logging.getLogger()
-        self._old_root_level = root_logger.level
-        root_logger.addHandler(test_handler)
-        root_logger.setLevel(self.loglevel)
+        main_logger = logging.getLogger('avocado')
+        self._old_root_level = main_logger.level
+        main_logger.addHandler(test_handler)
+        main_logger.setLevel(self.loglevel)
         self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
         # Add --store-logging-streams
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
@@ -247,7 +247,7 @@ class Job:
                                                   STD_OUTPUT.stdout,
                                                   logging.DEBUG,
                                                   fmt="%(message)s")
-            root_logger.addHandler(test_handler)
+            main_logger.addHandler(test_handler)
             self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
 
     def __stop_job_logging(self):
