@@ -26,7 +26,7 @@ setup(name='avocado-framework-plugin-resultsdb',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION,
-                        'resultsdb-api'],
+                        'resultsdb-api==2.1.3'],
       entry_points={
           'avocado.plugins.cli': [
               'resultsdb = avocado_resultsdb:ResultsdbCLI',
