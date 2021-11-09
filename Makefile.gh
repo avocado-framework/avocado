@@ -1,0 +1,14 @@
+# This Makefile contains targets used by GitHub Actions
+
+all:
+	@echo
+	@echo "This file contains targets used by GitHub Actions."
+	@echo
+
+codespell:
+	pip install codespell
+	codespell --check-filenames --check-hidden --skip ".git,*.js,./selftests/unit/utils/test_cpu.py.data/*"
+
+bandit:
+	pip install bandit
+	bandit -o bandit-output.txt -r --skip B101,B105,B311,B404,B603 .
