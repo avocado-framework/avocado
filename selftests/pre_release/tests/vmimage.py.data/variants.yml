@@ -37,10 +37,10 @@ distro: !mux
     x86_64:
       arch: amd64
     version: !mux
-      9.13.28:
-        version: 9.13.28-20211002
-      10.11.0:
-        version: 10.11.0
+      9.13.30:
+        version: 9.13.30-20211105
+      10.11.1:
+        version: 10.11.1-20211029
   fedora:
     name: fedora
     !filter-out : /run/architectures/arm
@@ -52,6 +52,8 @@ distro: !mux
         version: 33
       34:
         version: 34
+      35:
+        version: 35
   ubuntu:
     name: ubuntu
     !filter-out : /run/architectures/arm
@@ -67,6 +69,8 @@ distro: !mux
         version: '20.10'
       21.04:
         version: '21.04'
+      21.10:
+        version: '21.10'
   opensuse:
     name: opensuse
     !filter-out : /run/architectures/arm
