@@ -393,6 +393,15 @@ outputs this one is streamlined (per test results)::
     ok 1 examples/tests/sleeptest.py:SleepTest.test
 
 
+ **4. Beaker:**
+
+When avocaodo finds itself running inside a beaker task the
+beaker_report plugin will send the test results and log files to the
+beaker lab controller.  Happens automatically, no configuration
+required.  Check the `project website <https://beaker-project.org/>`__
+for more information on beaker.
+
+
 Using the option --show
 ~~~~~~~~~~~~~~~~~~~~~~~
 
