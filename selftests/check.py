@@ -607,21 +607,12 @@ def enable_all_tests(args):   # pylint: disable=W0621
 
 def main(args):  # pylint: disable=W0621
 
-    if not any([args.static_checks, args.job_api, args.nrunner_interface,
-                args.unit, args.jobs, args.functional,
-                args.optional_plugins, args.list_features]):
-        print("No test were selected to run, running all of them.")
-        enable_all_tests(args)
-
-    suites = []
-    if args.job_api:
-        suites += create_suite_job_api(args)
-    suites += create_suites(args)
-
     # ========================================================================
     # Print features covered in this test
     # ========================================================================
     if args.list_features:
+        suites = create_suite_job_api(args)
+        suites += create_suites(args)
         features = []
         for suite in suites:
             for variants in suite.config['run.dict_variants']:
@@ -632,6 +623,17 @@ def main(args):  # pylint: disable=W0621
         print('Features covered (%i):' % len(unique_features))
         print('\n'.join(unique_features))
         exit(0)
+
+    if not any([args.static_checks, args.job_api, args.nrunner_interface,
+                args.unit, args.jobs, args.functional,
+                args.optional_plugins, args.list_features]):
+        print("No test were selected to run, running all of them.")
+        enable_all_tests(args)
+
+    suites = []
+    if args.job_api:
+        suites += create_suite_job_api(args)
+    suites += create_suites(args)
 
     # ========================================================================
     # Job execution
