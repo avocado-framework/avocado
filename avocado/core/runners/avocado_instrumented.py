@@ -93,7 +93,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
     def run(self):
         yield messages.StartedMessage.get()
         try:
-            queue = multiprocessing.SimpleQueue()
+            queue = multiprocessing.Queue()
             process = multiprocessing.Process(target=self._run_avocado,
                                               args=(self.runnable, queue))
 
