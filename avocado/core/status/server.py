@@ -1,6 +1,5 @@
 import asyncio
 import os
-import sys
 
 from ..settings import settings
 
@@ -45,9 +44,7 @@ class StatusServer:
         if self._server_task is None:
             await self.create_server()
 
-        # TODO: Delete this after deprecation of python 3.6
-        if sys.version_info >= (3, 7):
-            await self._server_task.serve_forever()
+        await self._server_task.serve_forever()
 
     def close(self):
         self._server_task.close()
