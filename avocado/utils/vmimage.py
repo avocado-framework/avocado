@@ -295,6 +295,18 @@ class UbuntuImageProvider(ImageProviderBase):
         max_float = max([float(item) for item in versions])
         return str(f'{max_float:2.2f}')
 
+    def get_versions(self):
+        """Return all available versions for the current parameters."""
+        parser = VMImageHtmlParser(self.version_pattern)
+        self._feed_html_parser(self.url_versions, parser)
+
+        resulting_versions = []
+        if parser.items:
+            for version in parser.items:
+                max_float = float(version)
+                resulting_versions.append(str(f'{max_float:2.2f}'))
+        return resulting_versions
+
 
 class DebianImageProvider(ImageProviderBase):
     """
