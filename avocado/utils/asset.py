@@ -317,8 +317,7 @@ class Asset:
         If asset_hash is None then will consider a valid asset.
         """
         if asset_hash is None:
-            LOG.warning("No hash provided. Cannot check the asset file"
-                        " integrity.")
+            LOG.info("No hash provided. Cannot check the asset file integrity.")
             return True
 
         hash_path = cls._get_hash_file(asset_path)
