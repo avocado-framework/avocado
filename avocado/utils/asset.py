@@ -36,7 +36,7 @@ from . import path as utils_path
 from .download import url_download
 from .filelock import FileLock
 
-LOG = logging.getLogger('avocado.test')
+LOG = logging.getLogger(__name__)
 #: The default hash algorithm to use on asset cache operations
 DEFAULT_HASH_ALGORITHM = 'sha1'
 
