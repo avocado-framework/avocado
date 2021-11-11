@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 92.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -48,7 +48,9 @@ BuildRequires: python3-psutil
 BuildRequires: python3-setuptools
 
 %if ! 0%{?rhel}
+%if ! 0%{?fedora} > 35
 BuildRequires: python3-resultsdb_api
+%endif
 BuildRequires: python3-pycdlib
 %endif
 
@@ -97,9 +99,11 @@ pushd optional_plugins/html
 %py3_build
 popd
 %if ! 0%{?rhel}
+%if ! 0%{?fedora} > 35
 pushd optional_plugins/resultsdb
 %py3_build
 popd
+%endif
 %endif
 pushd optional_plugins/varianter_yaml_to_mux
 %py3_build
@@ -125,9 +129,11 @@ pushd optional_plugins/html
 %py3_install
 popd
 %if ! 0%{?rhel}
+%if ! 0%{?fedora} > 35
 pushd optional_plugins/resultsdb
 %py3_install
 popd
+%endif
 %endif
 pushd optional_plugins/varianter_yaml_to_mux
 %py3_install
@@ -250,6 +256,7 @@ arbitrary filesystem location.
 %{python3_sitelib}/avocado_framework_plugin_result_html*
 
 %if ! 0%{?rhel}
+%if ! 0%{?fedora} > 35
 %package -n python3-avocado-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
 License: GPLv2+
@@ -263,6 +270,7 @@ server.
 %files -n python3-avocado-plugins-resultsdb
 %{python3_sitelib}/avocado_resultsdb*
 %{python3_sitelib}/avocado_framework_plugin_resultsdb*
+%endif
 %endif
 
 %package -n python3-avocado-plugins-varianter-yaml-to-mux
@@ -369,6 +377,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Nov 11 2021 Cleber Rosa <cleber@redhat.com> - 92.0-2
+- Skip resultsdb plugin build on Fedora 36 due to broken resultsdb-api
+  release
+
 * Wed Oct 20 2021 Ana Guerrero Lopez <anguerre@redhat.com> - 92.0-2
 - Replace the %global with_tests macro with %bcond_without to allow
   disable the tests directly in the command line.
