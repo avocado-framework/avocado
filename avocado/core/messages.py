@@ -106,6 +106,13 @@ class StartMessageHandler(BaseMessageHandler):
         task_path = os.path.join(base_path, task_id.str_filesystem)
         logfile = os.path.join(task_path, DEFAULT_LOG_FILE)
         os.makedirs(task_path, exist_ok=True)
+        params = []
+        if task.runnable.variant is not None:
+            # convert variant into the list of parameters
+            params = [param for params in
+                      task.runnable.variant.get('variant', [])
+                      for param in params[1]]
+
         open(logfile, 'w').close()
         metadata = {'job_logdir': job.logdir,
                     'job_unique_id': job.unique_id,
@@ -114,7 +121,8 @@ class StartMessageHandler(BaseMessageHandler):
                     'task_path': task_path,
                     'time_start': message['time'],
                     'actual_time_start': time.time(),
-                    'name': task_id}
+                    'name': task_id,
+                    'params': params}
         if task.category == TASK_DEFAULT_CATEGORY:
             job.result.start_test(metadata)
             job.result_events_dispatcher.map_method('start_test', job.result,
