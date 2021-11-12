@@ -499,17 +499,11 @@ class ExecTestRunner(BaseRunner):
 
     def _create_params(self):
         """Create params for the test"""
-        # inject the -p command-line / run.test_parameters option in the
-        # environment variables
-        params = dict(self.runnable.config.get('run.test_parameters', []))
+        if self.runnable.variant is None:
+            return {}
 
-        if self.runnable.variant is not None:
-            params_from_variant = dict([(str(key), str(val)) for _, key, val in
-                                        self.runnable.variant['variant'][0][1]])
-            # if we have params from the variant, replace the original params
-            if params_from_variant:
-                params = params_from_variant
-
+        params = dict([(str(key), str(val)) for _, key, val in
+                       self.runnable.variant['variant'][0][1]])
         return params
 
     def run(self):

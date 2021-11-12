@@ -5,7 +5,7 @@ import traceback
 
 from .. import nrunner
 from ..test import TestID
-from ..tree import TreeNode, TreeNodeEnvOnly
+from ..tree import TreeNodeEnvOnly
 from ..utils import loader
 from ..varianter import is_empty_variant
 from .utils import messages
@@ -29,23 +29,17 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
     @staticmethod
     def _create_params(runnable):
         """Create params for the test"""
-        # inject the -p command-line / run.test_parameters option
-        # in the Test params
-        paths = ['/']
-        tree_nodes = TreeNode().get_node(paths[0], True)
-        tree_nodes.value = dict(runnable.config.get('run.test_parameters',
-                                                    []))
+        if runnable.variant is None:
+            return None
 
-        if runnable.variant is not None:
-            # rebuild the variant tree
-            variant_tree_nodes = [TreeNodeEnvOnly(path, env) for path, env
-                                  in runnable.variant['variant']]
+        # rebuild the variant tree
+        variant_tree_nodes = [TreeNodeEnvOnly(path, env) for path, env
+                              in runnable.variant['variant']]
 
-            if not is_empty_variant(variant_tree_nodes):
-                tree_nodes = variant_tree_nodes
-                paths = runnable.variant['paths']
-
-        return paths, tree_nodes
+        if not is_empty_variant(variant_tree_nodes):
+            tree_nodes = variant_tree_nodes
+            paths = runnable.variant['paths']
+            return tree_nodes, paths
 
     @staticmethod
     def _run_avocado(runnable, queue):
@@ -62,15 +56,13 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
             klass, method = klass_method.split('.', 1)
 
-            paths, tree_nodes = AvocadoInstrumentedTestRunner._create_params(
-                runnable)
-
+            params = AvocadoInstrumentedTestRunner._create_params(runnable)
             test_factory = [klass,
                             {'name': TestID(1, runnable.uri),
                              'methodName': method,
                              'config': runnable.config,
                              'modulePath': module_path,
-                             'params': (tree_nodes, paths),
+                             'params': params,
                              'tags': runnable.tags,
                              'run.results_dir': tempfile.mkdtemp(prefix=".avocado-task"),
                              }]

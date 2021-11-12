@@ -38,6 +38,7 @@ from avocado.core.status.server import StatusServer
 from avocado.core.task.runtime import RuntimeTask
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 from avocado.core.test_id import TestID
+from avocado.core.tree import TreeNode
 from avocado.core.varianter import dump_variant
 
 
@@ -251,15 +252,24 @@ class Runner(RunnerInterface):
         runtime_tasks = []
         test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
         no_digits = len(str(test_result_total))
-        # define execution order
-        execution_order = test_suite.config.get('run.execution_order')
-        if execution_order == "variants-per-test":
-            test_variant = [(test, variant) for test in test_suite.tests
-                            for variant in test_suite.variants.itertests()]
-        elif execution_order == "tests-per-variant":
-            test_variant = [(test, variant)
-                            for variant in test_suite.variants.itertests()
-                            for test in test_suite.tests]
+        if test_suite.test_parameters:
+            paths = ['/']
+            tree_nodes = TreeNode().get_node(paths[0], True)
+            tree_nodes.value = test_suite.test_parameters
+            variant = {"variant": tree_nodes, "variant_id": None, "paths": paths}
+            test_variant = [(test, variant) for test in test_suite.tests]
+
+        else:
+            # let's use variants when parameters are not available
+            # define execution order
+            execution_order = test_suite.config.get('run.execution_order')
+            if execution_order == "variants-per-test":
+                test_variant = [(test, variant) for test in test_suite.tests
+                                for variant in test_suite.variants.itertests()]
+            elif execution_order == "tests-per-variant":
+                test_variant = [(test, variant)
+                                for variant in test_suite.variants.itertests()
+                                for test in test_suite.tests]
 
         # decide if a copy of the runnable is needed, in case of more
         # variants than tests
