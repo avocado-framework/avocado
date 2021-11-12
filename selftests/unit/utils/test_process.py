@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+import platform
 import sys
 import time
 import unittest.mock
@@ -351,6 +352,9 @@ class MiscProcessTests(unittest.TestCase):
 
     @unittest.skipUnless(sys.platform.startswith('linux'),
                          'Linux specific feature and test')
+    @unittest.skipIf(platform.machine() == 's390x',
+                     ('Tested feature has issues under s390x, see: ',
+                      'https://github.com/avocado-framework/avocado/issues/5022'))
     def test_get_children_pids(self):
         '''
         Gets the list of children process.  Linux only.
