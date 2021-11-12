@@ -36,9 +36,6 @@ all:
 	@echo "Platform independent distribution/installation related targets:"
 	@echo "source:       Create single source package with commit info, suitable for RPMs"
 	@echo "source-pypi:  Create source packages suitable for PyPI"
-	@echo "wheel:        Create binary wheel packages suitable for PyPI"
-	@echo "pypi:         Create both source and binary wheel packages and show how to"
-	@echo "              upload them to PyPI"
 	@echo "python_build: Installs the build package, needed for source-pypi and wheel"
 	@echo "install:      Install on local system"
 	@echo "uninstall:    Uninstall Avocado and also subprojects"
@@ -52,7 +49,6 @@ all:
 	@echo "source-release:  Create source package for the latest tagged release"
 	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
 	@echo "rpm-release:        Generate binary RPMs for the latest tagged release"
-	@echo "propagate-version:  Propagate './VERSION' to all plugins/modules"
 	@echo
 
 include Makefile.include
@@ -68,24 +64,6 @@ source-pypi: python_build
 			cd -;\
                 fi;\
 	done
-
-wheel: python_build
-	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	$(PYTHON) -m build -o PYPI_UPLOAD
-	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$PLUGIN/setup.py; then\
-			echo ">> Creating wheel distribution for $$PLUGIN";\
-			cd $$PLUGIN;\
-			$(PYTHON) -m build -o ../../PYPI_UPLOAD;\
-			cd -;\
-                fi;\
-	done
-
-pypi: wheel
-	@echo
-	@echo "Please upload your packages running a command like: "
-	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/*.{tar.gz,whl}"
-	@echo
 
 python_build: pip
 	$(PYTHON) -m pip install $(PYTHON_DEVELOP_ARGS) build
@@ -146,11 +124,4 @@ variables:
 	@echo "PYTHON_MODULE_NAME: $(PYTHON_MODULE_NAME)"
 	@echo "RPM_BASE_NAME: $(RPM_BASE_NAME)"
 
-propagate-version:
-	for DIR in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f "$$DIR/VERSION"; then\
-			echo ">> Updating $$DIR"; echo "$(VERSION)" > "$$DIR/VERSION";\
-		else echo ">> Skipping $$DIR"; fi;\
-	done
-
-.PHONY: source source-pypi wheel pypi install clean uninstall requirements-plugins requirements-dev smokecheck check develop develop-external propagate-version variables
+.PHONY: source source-pypi install clean uninstall requirements-plugins requirements-dev smokecheck check develop develop-external variables

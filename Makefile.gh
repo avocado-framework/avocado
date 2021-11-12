@@ -1,5 +1,22 @@
 # This Makefile contains targets used by GitHub Actions
 
+ifndef PYTHON
+PYTHON=$(shell which python3 2>/dev/null)
+endif
+ifndef VERSION
+VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
+endif
+ifndef AVOCADO_OPTIONAL_PLUGINS
+AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
+endif
+ifndef DEVEL_NAME
+DEVEL_NAME=$(shell git config --get user.name)
+endif
+ifndef DEVEL_MAIL
+DEVEL_NAME=$(shell git config --get user.email)
+endif
+
+
 all:
 	@echo
 	@echo "This file contains targets used by GitHub Actions."
@@ -12,3 +29,65 @@ codespell:
 bandit:
 	pip install bandit
 	bandit -o bandit-output.txt -r --skip B101,B105,B311,B404,B603 .
+
+
+propagate-version:
+	for DIR in $(AVOCADO_OPTIONAL_PLUGINS); do\
+		if test -f "$$DIR/VERSION"; then\
+			echo ">> Updating $$DIR"; echo "$(VERSION)" > "$$DIR/VERSION";\
+		else echo ">> Skipping $$DIR"; fi;\
+	done
+
+release-update-spec:
+	rpmdev-bumpspec -n "$(VERSION)" -u "$(DEVEL_NAME) <$(DEVEL_MAIL)>" -c "New release" python-avocado.spec
+	sed -i 's/^Release:.*/Release: 1%{?gitrel}%{?dist}/' python-avocado.spec
+
+release-commit-tag:
+	git commit -m "Changes for release $(VERSION)" -a
+	git tag "$(VERSION)" -m "Release $(VERSION)"
+
+build-update-readthedocs:
+ifndef TOKEN
+	$(error TOKEN is undefined)
+endif
+ifndef URL
+	$(error URL is undefined)
+endif
+	# Activate version
+	curl -X PATCH \
+		-H "Authorization: Token $(TOKEN)" "$(URL)/versions/$(VERSION)/" \
+		-H "Content-Type: application/json" -d '{"active": true, "hidden": false }'
+
+	# Build new version
+	curl -X POST \
+		-H "Authorization: Token $(TOKEN)" "$(URL)/versions/$(VERSION)/builds/"
+
+build-wheel:
+	pip3 install --user build
+	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
+	$(PYTHON) -m build -o PYPI_UPLOAD
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
+		if test -f $$PLUGIN/setup.py; then\
+			cd $$PLUGIN;\
+			$(PYTHON) -m build -o ../../PYPI_UPLOAD;\
+			cd -;\
+		fi;\
+	done
+
+update-pypi:
+ifndef TWINE_USERNAME
+	$(error TWINE_USERNAME is undefined)
+endif
+ifndef TWINE_PASSWORD
+	$(error TWINE_PASSWORD is undefined)
+endif
+	pip install twine
+	export TWINE_NON_INTERACTIVE=true
+	twine upload PYPI_UPLOAD/*.{tar.gz,whl}
+
+variables:
+	@echo "PYTHON: $(PYTHON)"
+	@echo "VERSION: $(VERSION)"
+	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
+	@echo "DEVEL_NAME: $(DEVEL_NAME)"
+	@echo "DEVEL_MAIL: $(DEVEL_MAIL)"
