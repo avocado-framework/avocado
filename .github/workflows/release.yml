@@ -87,3 +87,33 @@ jobs:
           export TWINE_USERNAME=$TWINE_USERNAME
           export TWINE_PASSWORD=$TWINE_PASSWORD
           make -f Makefile.gh update-pypi
+
+  build-and-publish-eggs:
+    name: Build eggs and publish them
+    runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9, 3.10]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.version }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build eggs
+        run: python setup.py bdist_egg
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: ${{ github.workspace }}/dist/avocado_framework*
+          tag: ${{ github.event.inputs.version }}
+          overwrite: true
+          file_glob: true
