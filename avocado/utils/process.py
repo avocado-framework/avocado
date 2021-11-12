@@ -34,10 +34,7 @@ from io import BytesIO, UnsupportedOperation
 from . import astring, path
 from .wait import wait_for
 
-LOG = logging.getLogger('avocado.test')
-stdout_log = logging.getLogger('avocado.test.stdout')
-stderr_log = logging.getLogger('avocado.test.stderr')
-output_log = logging.getLogger('avocado.test.output')
+LOG = logging.getLogger(__name__)
 
 #: The active wrapper utility script.
 CURRENT_WRAPPER = None
@@ -533,7 +530,7 @@ class SubProcess:
 
     def __init__(self, cmd, verbose=True, allow_output_check=None,
                  shell=False, env=None, sudo=False,
-                 ignore_bg_processes=False, encoding=None):
+                 ignore_bg_processes=False, encoding=None, logger=None):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -581,6 +578,10 @@ class SubProcess:
                          of the command result stdout and stderr, by default
                          :data:`avocado.utils.astring.ENCODING`
         :type encoding: str
+        :param logger: User's custom logger, which will be logging the subprocess
+                       outputs. When this parameter is not set, the
+                       `avocado.utils.process` logger will be used.
+        :type logger: logging.Logger
         :raises: ValueError if incorrect values are given to parameters
         """
         if encoding is None:
@@ -609,6 +610,10 @@ class SubProcess:
             self.env = None
         self._popen = None
 
+        self.logger = logger or LOG
+        self.stdout_logger = self.logger.getChild('stdout')
+        self.stderr_logger = self.logger.getChild('stderr')
+        self.output_logger = self.logger.getChild('output')
         # Drainers used when reading from the PIPEs and writing to
         # files and logs
         self._stdout_drainer = None
@@ -682,10 +687,10 @@ class SubProcess:
                     self._popen.stdout.fileno(),
                     self.result,
                     name="%s-combined" % self.cmd,
-                    logger=LOG,
+                    logger=self.logger,
                     logger_prefix="[output] %s",
                     # FIXME, in fact, a new log has to be used here
-                    stream_logger=output_log,
+                    stream_logger=self.output_logger,
                     ignore_bg_processes=self._ignore_bg_processes,
                     verbose=self.verbose)
                 self._combined_drainer.start()
@@ -695,13 +700,13 @@ class SubProcess:
                     stdout_stream_logger = None
                     stderr_stream_logger = None
                 else:
-                    stdout_stream_logger = stdout_log
-                    stderr_stream_logger = stderr_log
+                    stdout_stream_logger = self.stdout_logger
+                    stderr_stream_logger = self.stderr_logger
                 self._stdout_drainer = FDDrainer(
                     self._popen.stdout.fileno(),
                     self.result,
                     name="%s-stdout" % self.cmd,
-                    logger=LOG,
+                    logger=self.logger,
                     logger_prefix="[stdout] %s",
                     stream_logger=stdout_stream_logger,
                     ignore_bg_processes=self._ignore_bg_processes,
@@ -710,7 +715,7 @@ class SubProcess:
                     self._popen.stderr.fileno(),
                     self.result,
                     name="%s-stderr" % self.cmd,
-                    logger=LOG,
+                    logger=self.logger,
                     logger_prefix="[stderr] %s",
                     stream_logger=stderr_stream_logger,
                     ignore_bg_processes=self._ignore_bg_processes,
@@ -972,7 +977,7 @@ class WrapSubProcess(SubProcess):
     def __init__(self, cmd, verbose=True,
                  allow_output_check=None,
                  shell=False, env=None, wrapper=None, sudo=False,
-                 ignore_bg_processes=False, encoding=None):
+                 ignore_bg_processes=False, encoding=None, logger=None):
         if wrapper is None and CURRENT_WRAPPER is not None:
             wrapper = CURRENT_WRAPPER
         self.wrapper = wrapper
@@ -982,7 +987,8 @@ class WrapSubProcess(SubProcess):
             cmd = wrapper + ' ' + cmd
         super(WrapSubProcess, self).__init__(cmd, verbose, allow_output_check,
                                              shell, env, sudo,
-                                             ignore_bg_processes, encoding)
+                                             ignore_bg_processes, encoding,
+                                             logger)
 
 
 def should_run_inside_wrapper(cmd):
@@ -1026,7 +1032,7 @@ def get_sub_process_klass(cmd):
 def run(cmd, timeout=None, verbose=True, ignore_status=False,
         allow_output_check=None, shell=False,
         env=None, sudo=False, ignore_bg_processes=False,
-        encoding=None):
+        encoding=None, logger=None):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -1074,6 +1080,10 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
                      of the command result stdout and stderr, by default
                      :data:`avocado.utils.astring.ENCODING`
     :type encoding: str
+    :param logger: User's custom logger, which will be logging the subprocess
+                   outputs. When this parameter is not set, the
+                   `avocado.utils.process` logger will be used.
+    :type logger: logging.Logger
 
     :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
@@ -1086,7 +1096,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     sp = klass(cmd=cmd, verbose=verbose,
                allow_output_check=allow_output_check, shell=shell, env=env,
                sudo=sudo, ignore_bg_processes=ignore_bg_processes,
-               encoding=encoding)
+               encoding=encoding, logger=logger)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -1097,7 +1107,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
 def system(cmd, timeout=None, verbose=True, ignore_status=False,
            allow_output_check=None, shell=False,
            env=None, sudo=False, ignore_bg_processes=False,
-           encoding=None):
+           encoding=None, logger=None):
     """
     Run a subprocess, returning its exit code.
 
@@ -1145,6 +1155,10 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
                      of the command result stdout and stderr, by default
                      :data:`avocado.utils.astring.ENCODING`
     :type encoding: str
+    :param logger: User's custom logger, which will be logging the subprocess
+                   outputs. When this parameter is not set, the
+                   `avocado.utils.process` logger will be used.
+    :type logger: logging.Logger
 
     :return: Exit code.
     :rtype: int
@@ -1153,14 +1167,14 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
                      sudo=sudo, ignore_bg_processes=ignore_bg_processes,
-                     encoding=encoding)
+                     encoding=encoding, logger=logger)
     return cmd_result.exit_status
 
 
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                   allow_output_check=None, shell=False,
                   env=None, sudo=False, ignore_bg_processes=False,
-                  strip_trail_nl=True, encoding=None):
+                  strip_trail_nl=True, encoding=None, logger=None):
     """
     Run a subprocess, returning its output.
 
@@ -1212,6 +1226,10 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                      of the command result stdout and stderr, by default
                      :data:`avocado.utils.astring.ENCODING`
     :type encoding: str
+    :param logger: User's custom logger, which will be logging the subprocess
+                   outputs. When this parameter is not set, the
+                   `avocado.utils.process` logger will be used.
+    :type logger: logging.Logger
 
     :return: Command output.
     :rtype: bytes
@@ -1220,7 +1238,7 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
                      sudo=sudo, ignore_bg_processes=ignore_bg_processes,
-                     encoding=encoding)
+                     encoding=encoding, logger=logger)
     if strip_trail_nl:
         return cmd_result.stdout.rstrip(b'\n\r')
     return cmd_result.stdout
@@ -1228,7 +1246,7 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
 
 def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
               allow_output_check='combined', shell=True,
-              env=None, sudo=False, ignore_bg_processes=False):
+              env=None, sudo=False, ignore_bg_processes=False, logger=None):
     """
     Because commands module is removed in Python3 and it redirect stderr
     to stdout, we port commands.getoutput to make code compatible
@@ -1276,19 +1294,25 @@ def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     :type sudo: bool
     :param ignore_bg_processes: Whether to ignore background processes
     :type ignore_bg_processes: bool
+    :param logger: User's custom logger, which will be logging the subprocess
+                   outputs. When this parameter is not set, the
+                   `avocado.utils.process` logger will be used.
+    :type logger: logging.Logger
 
     :return: Command output(stdout or stderr).
     :rtype: str
     """
     return getstatusoutput(cmd=cmd, timeout=timeout, verbose=verbose,
                            ignore_status=ignore_status,
-                           allow_output_check=allow_output_check, shell=shell, env=env,
-                           sudo=sudo, ignore_bg_processes=ignore_bg_processes)[1]
+                           allow_output_check=allow_output_check, shell=shell,
+                           env=env, sudo=sudo,
+                           ignore_bg_processes=ignore_bg_processes,
+                           logger=logger)[1]
 
 
 def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
                     allow_output_check='combined', shell=True,
-                    env=None, sudo=False, ignore_bg_processes=False):
+                    env=None, sudo=False, ignore_bg_processes=False, logger=None):
     """
     Because commands module is removed in Python3 and it redirect stderr
     to stdout, we port commands.getstatusoutput to make code compatible
@@ -1336,13 +1360,19 @@ def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     :type sudo: bool
     :param ignore_bg_processes: Whether to ignore background processes
     :type ignore_bg_processes: bool
+    :param logger: User's custom logger, which will be logging the subprocess
+                   outputs. When this parameter is not set, the
+                   `avocado.utils.process` logger will be used.
+    :type logger: logging.Logger
 
     :return: Exit status and command output(stdout and stderr).
     :rtype: tuple
     """
-    cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo, ignore_bg_processes=ignore_bg_processes)
+    cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose,
+                     ignore_status=ignore_status,
+                     allow_output_check=allow_output_check,
+                     shell=shell, env=env, sudo=sudo,
+                     ignore_bg_processes=ignore_bg_processes, logger=logger)
     text = cmd_result.stdout_text
     sts = cmd_result.exit_status
     if text[-1:] == '\n':
