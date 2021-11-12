@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 92.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -377,7 +377,7 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
-* Thu Nov 11 2021 Cleber Rosa <cleber@redhat.com> - 92.0-2
+* Thu Nov 11 2021 Cleber Rosa <cleber@redhat.com> - 92.0-3
 - Skip resultsdb plugin build on Fedora 36 due to broken resultsdb-api
   release
 
