@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 92.0
-Release: 3%{?gitrel}%{?dist}
+Release: 4%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -55,7 +55,9 @@ BuildRequires: python3-pycdlib
 %endif
 
 %if %{with tests}
+%if ! 0%{?rhel} >= 9
 BuildRequires: genisoimage
+%endif
 BuildRequires: libcdio
 BuildRequires: psmisc
 BuildRequires: python3-yaml
@@ -377,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Nov 12 2021 Cleber Rosa <crosa@redhat.com> - 92.0-4
+- Do not require genisoimage on EL9
+
 * Thu Nov 11 2021 Cleber Rosa <cleber@redhat.com> - 92.0-3
 - Skip resultsdb plugin build on Fedora 36 due to broken resultsdb-api
   release
