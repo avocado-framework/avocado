@@ -60,10 +60,6 @@ jobs:
         with:
           github_token: ${{ secrets.RELEASE_TOKEN }}
           branch: ${{ github.ref }}
-      - name: Build documentation readthedocs
-        run: |
-          make -f Makefile.gh build-update-readthedocs
-      - run: echo "In a few minutes the release documentation will be available in https://${{ github.event.inputs.rtd_project }}.readthedocs.io/en/${{ github.event.inputs.version }}/"
       - name: Build wheel
         run: make -f Makefile.gh build-wheel
       - name: Save wheel as artifact
@@ -72,6 +68,10 @@ jobs:
           name: wheel
           path: ${{github.workspace}}/PYPI_UPLOAD/
           retention-days: 3
+      - name: Build documentation readthedocs
+        run: |
+          make -f Makefile.gh build-update-readthedocs
+      - run: echo "In a few minutes the release documentation will be available in https://${{ github.event.inputs.rtd_project }}.readthedocs.io/en/${{ github.event.inputs.version }}/"
       - name: Upload to pypi
         continue-on-error: true
         env:
