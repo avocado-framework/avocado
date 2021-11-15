@@ -447,6 +447,18 @@ class UnionTechProbe(Probe):
     CHECK_VERSION_REGEX = re.compile(r'uos release (\d+)\.(\d+).*')
 
 
+class UnionTechProbe(Probe):
+
+    """
+    Simple probe for uos systems in general
+    """
+
+    CHECK_FILE = '/etc/UnionTech-release'
+    CHECK_FILE_CONTAINS = 'uos release'
+    CHECK_FILE_DISTRO_NAME = 'uos'
+    CHECK_VERSION_REGEX = re.compile(r'uos release (\d+)\.(\d+).*')
+
+
 #: the complete list of probes that have been registered
 REGISTERED_PROBES = []
 
