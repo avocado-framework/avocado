@@ -438,7 +438,7 @@ class OpenEulerProbe(Probe):
 class UnionTechProbe(Probe):
 
     """
-    Simple probe for uos systems in general
+    Simple probe for UnionTech systems in general
     """
 
     CHECK_FILE = '/etc/UnionTech-release'
