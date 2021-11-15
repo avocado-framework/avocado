@@ -31,6 +31,13 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: fedora:34
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+      DEVEL_NAME: ${{ github.event.inputs.devel_name }}
+      DEVEL_MAIL: ${{ github.event.inputs.devel_mail }}
+      PYTHON: /usr/bin/python3
+      TOKEN_RTD: ${{ secrets.RTD_TOKEN }}
+      URL: "https://readthedocs.org/api/v3/projects/${{ github.event.inputs.rtd_project }}"
 
     steps:
       - name: install required packages
@@ -41,16 +48,10 @@ jobs:
           fetch-depth: 0
       - name: Update VERSION files and python-avocado.spec
         run: |
-          export VERSION=${{ github.event.inputs.version }}
-          export DEVEL_NAME=${{ github.event.inputs.devel_name }}
-          export DEVEL_MAIL=${{ github.event.inputs.devel_mail }}
           make -f Makefile.gh propagate-version
           make -f Makefile.gh release-update-spec
       - name: Commit files and tag
         run: |
-          export VERSION=${{ github.event.inputs.version }}
-          export DEVEL_NAME=${{ github.event.inputs.devel_name }}
-          export DEVEL_MAIL=${{ github.event.inputs.devel_mail }}
           git config --local user.email "${{ github.event.inputs.devel_mail }}"
           git config --local user.name "${{ github.event.inputs.devel_name }}"
           make -f Makefile.gh release-commit-tag
@@ -60,33 +61,23 @@ jobs:
           github_token: ${{ secrets.RELEASE_TOKEN }}
           branch: ${{ github.ref }}
       - name: Build documentation readthedocs
-        env:
-          token: ${{ secrets.RTD_TOKEN }}
-          url: "https://readthedocs.org/api/v3/projects/${{ github.event.inputs.rtd_project }}"
-          version: ${{ github.event.inputs.version }}
         run: |
-          export VERSION=$version
-          export URL=$url
-          export TOKEN=$token
           make -f Makefile.gh build-update-readthedocs
       - run: echo "In a few minutes the release documentation will be available in https://${{ github.event.inputs.rtd_project }}.readthedocs.io/en/${{ github.event.inputs.version }}/"
       - name: Build wheel
-        run: |
-          make -f Makefile.gh build-wheel
+        run: make -f Makefile.gh build-wheel
       - name: Save wheel as artifact
         uses: actions/upload-artifact@v2
         with:
           name: wheel
-          path: /__w/avocado-test/avocado-test/PYPI_UPLOAD/
+          path: ${{github.workspace}}/PYPI_UPLOAD/
           retention-days: 3
       - name: Upload to pypi
+        continue-on-error: true
         env:
-          TWINE_USERNAME: '${{ secrets.PYPI_USER }}'
-          TWINE_PASSWORD: '${{ secrets.PYPI_PASSWD }}'
-        run: |
-          export TWINE_USERNAME=$TWINE_USERNAME
-          export TWINE_PASSWORD=$TWINE_PASSWORD
-          make -f Makefile.gh update-pypi
+          TWINE_USERNAME: ${{ secrets.PYPI_USER }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWD }}
+        run: make -f Makefile.gh update-pypi
 
   build-and-publish-eggs:
     name: Build eggs and publish them
@@ -94,7 +85,7 @@ jobs:
     needs: release
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, 3.10]
+        python-version: [3.6, 3.7, 3.8, 3.9, 3.10.0]
       fail-fast: false
 
     steps:
