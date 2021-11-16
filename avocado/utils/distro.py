@@ -435,6 +435,17 @@ class OpenEulerProbe(Probe):
     CHECK_FILE_DISTRO_NAME = 'openEuler'
     CHECK_VERSION_REGEX = re.compile(r'openEuler release (\d+)\.(\d+).*')
 
+class UnionTechProbe(Probe):
+
+    """
+    Simple probe for UnionTech systems in general
+    """
+
+    CHECK_FILE = '/etc/UnionTech-release'
+    CHECK_FILE_CONTAINS = 'uos release'
+    CHECK_FILE_DISTRO_NAME = 'uos'
+    CHECK_VERSION_REGEX = re.compile(r'uos release (\d+)\.(\d+).*')
+
 
 #: the complete list of probes that have been registered
 REGISTERED_PROBES = []
@@ -456,6 +467,7 @@ register_probe(DebianProbe)
 register_probe(SUSEProbe)
 register_probe(UbuntuProbe)
 register_probe(OpenEulerProbe)
+register_probe(UnionTechProbe)
 
 
 def detect(session=None):
