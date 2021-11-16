@@ -47,20 +47,20 @@ release-commit-tag:
 	git tag "$(VERSION)" -m "Release $(VERSION)"
 
 build-update-readthedocs:
-ifndef TOKEN
-	$(error TOKEN is undefined)
+ifndef TOKEN_RTD
+	$(error TOKEN_RTD is undefined)
 endif
 ifndef URL
 	$(error URL is undefined)
 endif
 	# Activate version
 	curl -X PATCH \
-		-H "Authorization: Token $(TOKEN)" "$(URL)/versions/$(VERSION)/" \
+		-H "Authorization: Token $(TOKEN_RTD)" "$(URL)/versions/$(VERSION)/" \
 		-H "Content-Type: application/json" -d '{"active": true, "hidden": false }'
 
 	# Build new version
 	curl -X POST \
-		-H "Authorization: Token $(TOKEN)" "$(URL)/versions/$(VERSION)/builds/"
+		-H "Authorization: Token $(TOKEN_RTD)" "$(URL)/versions/$(VERSION)/builds/"
 
 build-wheel:
 	pip3 install --user build
