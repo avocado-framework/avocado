@@ -122,6 +122,7 @@ class Runnable:
         self.tags = kwargs.pop('tags', None)
         self.requirements = kwargs.pop('requirements', None)
         self.variant = kwargs.pop('variant', None)
+        self.output_dir = kwargs.pop('output_dir', None)
         self.kwargs = kwargs
 
     def __repr__(self):
@@ -191,6 +192,9 @@ class Runnable:
         if self.variant is not None:
             args.append('variant=json:%s' % json.dumps(self.variant))
 
+        if self.output_dir is not None:
+            args.append('output_dir=json:%s' % json.dumps(self.output_dir))
+
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):
                 val = "json:%s" % json.dumps(val)
@@ -218,6 +222,8 @@ class Runnable:
             kwargs['tags'] = self.get_serializable_tags()
         if self.variant is not None:
             kwargs['variant'] = self.variant
+        if self.output_dir is not None:
+            kwargs['output_dir'] = self.output_dir
         if kwargs:
             recipe['kwargs'] = kwargs
         return recipe
@@ -928,10 +934,9 @@ class Task:
             runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
         return self.runnable.pick_runner_command(runners_registry)
 
-    def setup_output_dir(self):
-        self.output_dir = tempfile.mkdtemp(prefix='.avocado-task-')
-        env_var = {'AVOCADO_TEST_OUTPUTDIR': self.output_dir}
-        self.runnable.kwargs.update(env_var)
+    def setup_output_dir(self, output_dir):
+        self.output_dir = output_dir or tempfile.mkdtemp(prefix='.avocado-task-')
+        self.runnable.output_dir = self.output_dir
 
     @classmethod
     def from_recipe(cls, task_path, known_runners):
@@ -977,7 +982,6 @@ class Task:
         return args
 
     def run(self):
-        self.setup_output_dir()
         runner_klass = self.runnable.pick_runner_class(self.known_runners)
         runner = runner_klass(self.runnable)
         for status in runner.run():
