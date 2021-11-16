@@ -435,6 +435,7 @@ class OpenEulerProbe(Probe):
     CHECK_FILE_DISTRO_NAME = 'openEuler'
     CHECK_VERSION_REGEX = re.compile(r'openEuler release (\d+)\.(\d+).*')
 
+
 class UnionTechProbe(Probe):
 
     """
