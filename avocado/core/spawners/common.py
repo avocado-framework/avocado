@@ -31,6 +31,7 @@ class SpawnerMixin:
         if config is None:
             config = settings.as_dict()
         self.config = config
+        self.job_output_dir = None
 
     @staticmethod
     def bytes_from_file(filename):
