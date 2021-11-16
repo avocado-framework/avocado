@@ -122,6 +122,7 @@ class Runnable:
         self.tags = kwargs.pop('tags', None)
         self.requirements = kwargs.pop('requirements', None)
         self.variant = kwargs.pop('variant', None)
+        self.output_dir = kwargs.pop('output_dir', None)
         self.kwargs = kwargs
 
     def __repr__(self):
@@ -242,6 +243,9 @@ class Runnable:
         if self.variant is not None:
             args.append('variant=json:%s' % json.dumps(self.variant))
 
+        if self.output_dir is not None:
+            args.append('output_dir=%s' % self.output_dir)
+
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):
                 val = "json:%s" % json.dumps(val)
@@ -269,6 +273,8 @@ class Runnable:
             kwargs['tags'] = self.get_serializable_tags()
         if self.variant is not None:
             kwargs['variant'] = self.variant
+        if self.output_dir is not None:
+            kwargs['output_dir'] = self.output_dir
         if kwargs:
             recipe['kwargs'] = kwargs
         return recipe
@@ -592,6 +598,9 @@ class ExecTestRunner(BaseRunner):
             'AVOCADO_VERSION': self._get_avocado_version(),
             'AVOCADO_TEST_WORKDIR': workdir,
         }
+        if self.runnable.output_dir:
+            avocado_test_env_variables['AVOCADO_TEST_OUTPUTDIR'] = \
+                self.runnable.output_dir
         return avocado_test_env_variables
 
     def run(self):
@@ -959,7 +968,6 @@ class Task:
         self.known_runners = known_runners
         self.dependencies = set()
         self.spawn_handle = None
-        self.output_dir = None
         self.metadata = {}
 
     def __repr__(self):
@@ -979,10 +987,10 @@ class Task:
             runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
         return self.runnable.pick_runner_command(runners_registry)
 
-    def setup_output_dir(self):
-        self.output_dir = tempfile.mkdtemp(prefix='.avocado-task-')
-        env_var = {'AVOCADO_TEST_OUTPUTDIR': self.output_dir}
-        self.runnable.kwargs.update(env_var)
+    def setup_output_dir(self, output_dir=None):
+        if not self.runnable.output_dir:
+            output_dir = output_dir or tempfile.mkdtemp(prefix='.avocado-task-')
+            self.runnable.output_dir = output_dir
 
     @classmethod
     def from_recipe(cls, task_path, known_runners):
@@ -1033,7 +1041,7 @@ class Task:
         runner = runner_klass(self.runnable)
         for status in runner.run():
             if status['status'] == 'started':
-                status.update({'output_dir': self.output_dir})
+                status.update({'output_dir': self.runnable.output_dir})
             status.update({"id": self.identifier})
             if self.job_id is not None:
                 status.update({"job_id": self.job_id})
