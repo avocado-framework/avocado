@@ -6,15 +6,6 @@ PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | 
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell basename ${PWD})
 AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
-RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
-RELEASE_SHORT_COMMIT=$(shell git rev-parse --short=9 $(VERSION))
-COMMIT=$(shell git log --pretty=format:'%H' -n 1)
-COMMIT_DATE=$(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
-SHORT_COMMIT=$(shell git rev-parse --short=9 HEAD)
-MOCK_CONFIG=default
-ARCHIVE_BASE_NAME=avocado
-PYTHON_MODULE_NAME=avocado-framework
-RPM_BASE_NAME=python-avocado
 
 
 all:
@@ -31,27 +22,18 @@ all:
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements-dev:      Install development requirements"
-	@echo "requirements-plugins:  Install plugins requirements"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
-	@echo "source:       Create single source package with commit info, suitable for RPMs"
 	@echo "source-pypi:  Create source packages suitable for PyPI"
 	@echo "python_build: Installs the build package, needed for source-pypi and wheel"
 	@echo "install:      Install on local system"
 	@echo "uninstall:    Uninstall Avocado and also subprojects"
 	@echo "man:          Generate the avocado man page"
-	@echo
-	@echo "RPM related targets:"
-	@echo "srpm:  Generate a source RPM package (.srpm)"
-	@echo "rpm:   Generate binary RPMs"
-	@echo
-	@echo "Release related targets:"
-	@echo "source-release:  Create source package for the latest tagged release"
-	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
-	@echo "rpm-release:        Generate binary RPMs for the latest tagged release"
+	@echo "pip:          Auxiliary target to install pip. (It's not recommended to run this directly)"
 	@echo
 
-include Makefile.include
+pip:
+	$(PYTHON) -m pip --version || $(PYTHON) -m ensurepip $(PYTHON_DEVELOP_ARGS) || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
 
 source-pypi: python_build
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
@@ -71,16 +53,11 @@ python_build: pip
 clean:
 	$(PYTHON) setup.py clean --all
 
+install:
+	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
+
 uninstall:
 	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
-
-requirements-plugins:
-	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS);do\
-		if test -f $$PLUGIN/Makefile; then echo ">> REQUIREMENTS (Makefile) $$PLUGIN"; AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$PLUGIN requirements &>/dev/null;\
-		elif test -f $$PLUGIN/requirements.txt; then echo ">> REQUIREMENTS (requirements.txt) $$PLUGIN"; pip install $(PYTHON_DEVELOP_ARGS) -r $$PLUGIN/requirements.txt;\
-		else echo ">> SKIP $$PLUGIN";\
-		fi;\
-	done;
 
 requirements-dev: pip
 	- $(PYTHON) -m pip install -r requirements-dev.txt
@@ -114,14 +91,5 @@ variables:
 	@echo "DESTDIR: $(DESTDIR)"
 	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
 	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
-	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
-	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
-	@echo "COMMIT: $(COMMIT)"
-	@echo "COMMIT_DATE: $(COMMIT_DATE)"
-	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
-	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
-	@echo "ARCHIVE_BASE_NAME: $(ARCHIVE_BASE_NAME)"
-	@echo "PYTHON_MODULE_NAME: $(PYTHON_MODULE_NAME)"
-	@echo "RPM_BASE_NAME: $(RPM_BASE_NAME)"
 
-.PHONY: source source-pypi install clean uninstall requirements-plugins requirements-dev smokecheck check develop develop-external variables
+.PHONY: pip source-pypi python_build install clean uninstall requirements-dev smokecheck check develop develop-external variables man
