@@ -24,7 +24,7 @@ from functools import wraps
 
 from . import genio, process
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger('avocado.test')
 
 
 class TestFail(AssertionError, Exception):

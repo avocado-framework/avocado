@@ -27,7 +27,7 @@ import warnings
 
 from . import process
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger('avocado.test')
 
 
 class LVException(Exception):

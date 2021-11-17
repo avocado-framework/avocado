@@ -31,7 +31,7 @@ from grp import getgrgid, getgrnam
 from pwd import getpwnam, getpwuid
 from stat import S_IMODE
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger('avocado.test')
 
 
 def check_owner(owner, group, file_name_pattern, check_recursive=False):

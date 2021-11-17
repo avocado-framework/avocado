@@ -28,7 +28,7 @@ from tempfile import mkstemp
 
 from . import process
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger('avocado.test')
 
 _COMMAND_TABLE_DOC = """
 Taken from http://fedoraproject.org/wiki/SysVinit_to_Systemd_Cheatsheet

@@ -29,7 +29,7 @@ from ..wait import wait_for
 from .common import run_command
 from .exceptions import NWException
 
-LOG = logging.getLogger(__name__)
+log = logging.getLogger('avocado.test')
 
 
 class NetworkInterface:
@@ -70,7 +70,7 @@ class NetworkInterface:
             return "/etc/sysconfig/network"
         else:
             msg = 'Distro not supported by API. Could not get interface filename.'
-            LOG.error(msg)
+            log.error(msg)
 
     @property
     def slave_config_filename(self):
@@ -80,7 +80,7 @@ class NetworkInterface:
                     slave) for slave in slave_dict['slaves']]
         except Exception:
             msg = "Slave config filename not available"
-            LOG.debug(msg)
+            log.debug(msg)
             return
 
     def _get_interface_details(self, version=None):
@@ -96,7 +96,7 @@ class NetworkInterface:
             raise NWException("Interface not found")
         except (NWException, json.JSONDecodeError):
             msg = "Unable to get the details of interface {}".format(self.name)
-            LOG.error(msg)
+            log.error(msg)
             raise NWException(msg)
 
     def _get_bondinterface_details(self):
@@ -318,7 +318,7 @@ class NetworkInterface:
                 return [x.get('local') for x in addr_info]
         except (NWException, IndexError):
             msg = "Could not get ip addresses for {}".format(self.name)
-            LOG.debug(msg)
+            log.debug(msg)
             return []
 
     def get_hwaddr(self):
@@ -535,7 +535,7 @@ class NetworkInterface:
             return True
         except Exception as ex:
             msg = "Interface {} is not available. {}".format(self.name, ex)
-            LOG.debug(msg)
+            log.debug(msg)
             return False
 
     def is_bond(self):
@@ -551,7 +551,7 @@ class NetworkInterface:
             return True
         except Exception as ex:
             msg = "{} is not a bond device. {}".format(self.name, ex)
-            LOG.debug(msg)
+            log.debug(msg)
             return False
 
     def remove_cfg_file(self):
