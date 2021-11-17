@@ -24,7 +24,7 @@ import tempfile
 
 _RAND_POOL = random.SystemRandom()
 
-LOG = logging.getLogger(__name__)
+log = logging.getLogger('avocado.test')
 
 
 def generate_random_string(length, ignore=string.punctuation,
@@ -81,7 +81,7 @@ def make_dir_and_populate(basedir='/tmp'):
             os.close(fd)
     except OSError as details:
         log_msg = "Failed to generate dir in '%s' and populate: %s"
-        LOG.error(log_msg, basedir, details)
+        log.error(log_msg, basedir, details)
         return None
 
     return path

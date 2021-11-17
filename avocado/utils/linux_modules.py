@@ -28,7 +28,7 @@ from enum import Enum
 
 from . import astring, data_structures, process
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger('avocado.test')
 
 
 class ModuleConfig(Enum):

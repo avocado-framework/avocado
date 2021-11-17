@@ -26,7 +26,7 @@ import re
 from . import data_structures, genio, process, wait
 from .data_structures import DataSize
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger('avocado.test')
 
 
 class MemError(Exception):

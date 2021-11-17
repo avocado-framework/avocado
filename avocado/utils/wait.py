@@ -1,7 +1,7 @@
 import logging
 import time
 
-LOG = logging.getLogger(__name__)
+log = logging.getLogger('avocado.test')
 
 
 def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=None, kwargs=None):
@@ -29,7 +29,7 @@ def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=None, kwargs=No
 
     while time.monotonic() < end_time:
         if text:
-            LOG.debug("%s (%.9f secs)", text, (time.monotonic() - start_time))
+            log.debug("%s (%.9f secs)", text, (time.monotonic() - start_time))
 
         output = func(*args, **kwargs)
         if output:

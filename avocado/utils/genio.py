@@ -22,7 +22,7 @@ import re
 
 from . import crypto
 
-LOG = logging.getLogger(__name__)
+log = logging.getLogger('avocado.test')
 
 
 class GenIOError(Exception):
@@ -44,7 +44,7 @@ def ask(question, auto=False):
     :rtype: str
     """
     if auto:
-        LOG.info("%s (y/n) y", question)
+        log.info("%s (y/n) y", question)
         return "y"
     return input("%s (y/n) " % question)
 

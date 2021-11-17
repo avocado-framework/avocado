@@ -29,7 +29,7 @@ import tempfile
 
 from . import filelock, process
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger("avocado.test")
 
 
 class PartitionError(Exception):

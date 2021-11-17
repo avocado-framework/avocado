@@ -40,7 +40,7 @@ try:
 except ImportError:
     pycdlib = None
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger('avocado.test')
 
 
 def has_userland_tool(executable):

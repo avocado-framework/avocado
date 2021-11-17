@@ -35,7 +35,7 @@ VENDORS_MAP = {
     'ibm': (rb"POWER\d", rb"IBM/S390", ),
 }
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger('avocado.test')
 
 
 class FamilyException(Exception):
