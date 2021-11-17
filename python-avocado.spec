@@ -27,8 +27,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 92.0
-Release: 4%{?gitrel}%{?dist}
+Version: 93.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -379,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Nov 17 2021 Cleber Rosa <crosa@redhat.com> - 93.0-1
+- New release
+
 * Fri Nov 12 2021 Cleber Rosa <crosa@redhat.com> - 92.0-4
 - Do not require genisoimage on EL9
 
