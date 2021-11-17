@@ -1,0 +1,119 @@
+====================
+93.0 The Book of Eli
+====================
+
+The Avocado team is proud to present another release: Avocado 93.0,
+AKA "The Book of Eli", is now available!
+
+Release documentation: `Avocado 93.0
+<http://avocado-framework.readthedocs.io/en/93.0/>`_
+
+Users/Test Writers
+==================
+
+* The ``dict_variants`` plugin now allows the configuration of the
+  keys that will determine the variant ID.
+
+* The legacy runner (``--test-runner=runner``) is being dismantled.
+  In this release, the following features have removed:
+
+  1. The ``PYTHON_UNITTEST`` test type
+
+  2. The ``--external-runner`` feature and its underlying test type.
+
+  3. The ``ROBOT`` test type
+
+  4. The ``GOLANG`` test type
+
+* When using the Job API, test suites can be enabled or disabled.
+  Having a disabled test suite means it won't be executed.  This eases
+  the creation of custom jobs where the user can choose to run a
+  subset of suites.
+
+Bug Fixes
+=========
+
+* The :mod:`avocado.core.job` code was using the root logger, instead
+  of the logger at the ``avocado`` namespace.
+
+* The automatic status server was very prone to failures due to
+  ``AF_UNIX``'s limitation on the length of paths, because it was
+  created inside a job's result directory.  Now it's created on the
+  base system temporary directory, which makes it very hard to exceed
+  the path length limit.
+
+* The :mod:`avocado.utils.vmimage` library received the following
+  improvements:
+
+  1. Ubuntu's provider now properly handles the version number when it
+     compares versions with trailing zeroes.
+
+  2. Ubuntu and OpenSUSE providers can now fetch the best (latest)
+     version available when no version is given.
+
+  3. OpenSUSE provider will now use OpenStack images starting from
+     version 15.3, due to the other images having been discontinued.
+
+* The ``variants.json`` file, saved at the ``jobdata`` directory
+  inside a job's result directory, now takes into consideration the
+  possible multiple suites in a job.  The files are now named after
+  named with a numeric suffix and, if a name was given to the suite, a
+  name suffix as well.
+
+* The serialization of the job configuration file, also saved in the
+  ``jobdata`` directory, has been updated to support ``set`` data
+  types.
+
+* ``avocado replay`` executions with a ``--show`` (which takes a set
+  of builtin loggers) now work properly due to the previous fix.
+
+* Various fixes to the ``runnable-run`` interface behavior of all
+  shipped runners (detected as part of an improvement in functional
+  test coverage).
+
+* When using the Job API, some code paths would still resort to using
+  the legacy runner.
+
+* ``nrunner`` based jobs (the default) can now run from Python egg
+  based deployments (meaning zero installation steps are required).
+
+* The ``resultsdb`` plugin is now pinned to a known working version
+  due to a broken release.
+
+* Test parameters given with the command line argument ``-p`` are now
+  internally converted into variants values.  This fixes the issue
+  with those parameters not being displayed in the ``results.html``
+  files.
+
+Utility APIs
+============
+
+* The new method
+  `avocado.utils.network.interfaces.NetworkInterface.is_bond` that
+  allows users to check if a given interface is a bonding device.
+
+Misc Changes
+============
+
+* A few portability improvements for macOS systems.
+
+* Misc documentation improvements.
+
+Internal Changes
+================
+
+* The RPM packages can now be built without the execution of tests.
+
+* The spawner plugin interface now define two different types of
+  implementations, with the new one being a spawner that is capable of
+  deploying itself to the environments that will run the tasks.
+
+* Avocado is now also being tested under Python 3.11.
+
+* Various CI improvements.
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/92.0...93.0>`_.
