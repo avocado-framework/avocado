@@ -130,6 +130,52 @@ class Runnable:
                           self.kwargs, self.tags, self.requirements,
                           self.variant)
 
+    @property
+    def identifier(self):
+        """Runnable identifier respecting user's format string.
+
+        This is still experimental and we have room for improvements.
+
+        This property it will return an unique identifier for this runnable.
+        Please use this property in order to respect user's customization.
+
+        By default runnables has its '{uri}' as identifier.
+
+        Custom formatter can be configured and currently we accept the
+        following values as normal f-strings replacements: {uri}, {args},
+        and {kwargs}. "args" and "kwargs" are special cases.
+
+        For args, since it is a list, you can use in two different ways:
+        "{args}" for the entire list, or "{args[n]}" for a specific element
+        inside this list.  The same is valid when using "{kwargs}". With
+        kwargs, since it is a dictionary, you have to specify a key as index
+        and then the values are used. For instance if you have a kwargs value
+        named 'DEBUG', a valid usage could be: "{kwargs[DEBUG]}" and this will
+        print the current value to this variable (i.e: True or False).
+
+        Since this is formatter, combined values can be used. Example:
+        "{uri}-{args}".
+        """
+        fmt = self.config.get("runner.identifier_fmt")
+
+        # For args we can use the entire list of arguments or with a specific
+        # index.
+        args = '-'.join(self.args)
+        if 'args' in fmt and '[' in fmt:
+            args = self.args
+
+        # For kwargs we can use the entire list of values or with a specific
+        # index.
+        kwargs = '-'.join(self.kwargs.values())
+        if 'kwargs' in fmt and '[' in fmt:
+            kwargs = self.kwargs
+
+        options = {'uri': self.uri,
+                   'args': args,
+                   'kwargs': kwargs}
+
+        return fmt.format(**options)
+
     @classmethod
     def from_args(cls, args):
         """Returns a runnable from arguments"""

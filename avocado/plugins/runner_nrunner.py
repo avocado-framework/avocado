@@ -218,7 +218,7 @@ class Runner(RunnerInterface):
         else:
             prefix = index
         test_id = TestID(prefix,
-                         runnable.uri,
+                         runnable.identifier,
                          variant,
                          no_digits)
         # inject variant on runnable
