@@ -23,7 +23,7 @@ from . import astring, path, process
 
 __all__ = ["GitRepoHelper", "get_repo"]
 
-LOG = logging.getLogger('avocado.test')
+LOG = logging.getLogger(__name__)
 
 
 class GitRepoHelper:

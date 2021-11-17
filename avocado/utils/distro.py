@@ -22,7 +22,7 @@ import os
 import platform
 import re
 
-LOGGER = logging.getLogger('avocado.test')
+LOGGER = logging.getLogger(__name__)
 
 __all__ = ['LinuxDistro',
            'UNKNOWN_DISTRO_NAME',
