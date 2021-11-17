@@ -17,12 +17,9 @@
 
 import glob
 import json
-import logging
 import re
 
 from . import genio, path, process
-
-log = logging.getLogger('avocado.test')
 
 
 class PMemException(Exception):

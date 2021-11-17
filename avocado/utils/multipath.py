@@ -23,7 +23,7 @@ import time
 
 from . import distro, process, service, wait
 
-LOG = logging.getLogger('avocado.test')
+LOG = logging.getLogger(__name__)
 
 
 class MPException(Exception):
