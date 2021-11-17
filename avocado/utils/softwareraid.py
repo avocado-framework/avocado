@@ -23,7 +23,7 @@ import time
 
 from . import process
 
-log = logging.getLogger('avocado.test')
+LOG = logging.getLogger(__name__)
 
 
 class SoftwareRaid:
@@ -138,7 +138,7 @@ class SoftwareRaid:
         :return: True if recovering, False otherwise.
         :rtype: bool
         """
-        log.debug("RECOVERY")
+        LOG.debug("RECOVERY")
         for line in self.get_detail().splitlines():
             if 'State' in line and 'recovering' in line:
                 return True
