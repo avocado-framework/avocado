@@ -24,7 +24,7 @@ import stat
 import tarfile
 import zipfile
 
-LOG = logging.getLogger("avocado.test")
+LOG = logging.getLogger(__name__)
 
 
 #: The first two bytes that all gzip files start with
