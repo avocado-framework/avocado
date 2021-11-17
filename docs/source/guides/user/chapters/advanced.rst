@@ -1,6 +1,72 @@
 Advanced usage
 ==============
 
+Custom Runnable Identifier
+--------------------------
+
+In some cases, you might have a wrapper as an entry point for the tests, so
+Avocado will use only the wrapper as test id. For instance, imagine a Makefile
+with some targets ('foo', 'bar') and each target is one test. Having a single
+test suite with a test calling `foo`, it will make Avocado print something like
+this:
+
+
+```
+JOB ID     : b6e5bdf2c891382bbde7f24e906a168af351154a
+JOB LOG    : ~/avocado/job-results/job-2021-09-24T17.39-b6e5bdf/job.log
+ (1/1) make: STARTED
+ (1/1) make: PASS (2.72 s)
+RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+JOB HTML   : ~/avocado/job-results/job-2021-09-24T17.39-b6e5bdf/results.html
+JOB TIME   : 5.49 s
+```
+
+This is happening because Avocado is using the 'uri' as identifier with in the
+current Runnables.
+
+You can change that by setting a custom format with the option
+`runner.identifier_format` in you `avocado.conf` file. For instance:
+
+```
+[runner]
+identifier_format = "{uri}-{args[0]}"
+```
+
+With the above adjustment, running the same suite it will produce something
+like this:
+
+```
+JOB ID     : 577b70b079e9a6f325ff3e73fd9b93f80ee7f221
+JOB LOG    : /home/local/avocado/job-results/job-2021-11-23T13.12-577b70b/job.log
+ (1/1) "/usr/bin/make-foo": STARTED
+ (1/1) "/usr/bin/make-foo": PASS (0.01 s)
+RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+JOB HTML   : ~/avocado/job-results/job-2021-11-23T13.12-577b70b/results.html
+JOB TIME   : 0.97 s
+```
+
+For the `identifier_format` you can use any f-string that it will use `{uri}`,
+`{args}` or `{kwargs}`. By default it will use `{uri}`.
+
+When using args, since it is a list, you can use in two different ways:
+"{args}" for the entire list, or "{args[n]}" for a specific element inside this
+list.  The same is valid when using "{kwargs}". With kwargs, since it is a
+dictionary, you have to specify a key as index and then the values are used.
+
+For instance if you have a kwargs value named 'DEBUG', a valid usage could be:
+"{kwargs[DEBUG]}" and this will print the current value to this variable (i.e:
+True or False).
+
+
+.. note:: Please, keep in mind this is an experimental feature, and for now you
+   have to use it in combination with :ref:`documentation<the_hint_files>`.
+
+.. note:: Also, be aware this feature it is meant to set custom Runnable
+   identifiers strings only. Due some current limitations on hint files, this
+   will not fully solve the 'external runner' problem. For that, we have a
+   `pending Feature Request
+   <https://github.com/avocado-framework/avocado/issues/5137>`_
+
 Test Runner Selection
 ---------------------
 

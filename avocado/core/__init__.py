@@ -188,6 +188,14 @@ def register_core_options():
                          key_type=list,
                          help_msg=help_msg)
 
+    help_msg = ('By default Avocado runners will use the {uri} of a test as '
+                'its identifier. Use a custom f-string identifier in order to '
+                'change it.')
+    stgs.register_option(section='runner',
+                         key='identifier_format',
+                         default="{uri}",
+                         help_msg=help_msg)
+
     help_msg = 'List of test references (aliases or paths)'
     stgs.register_option(section='resolver',
                          key='references',
