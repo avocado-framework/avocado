@@ -20,11 +20,9 @@ import json
 import logging
 import os
 import shutil
-import warnings
 from ipaddress import ip_interface
 
 from ..distro import detect as distro_detect
-from ..process import CmdError
 from ..wait import wait_for
 from .common import run_command
 from .exceptions import NWException
@@ -332,23 +330,6 @@ class NetworkInterface:
             return run_command(cmd, self.host)
         except Exception as ex:
             raise NWException("Failed to get hw address: {}".format(ex))
-
-    def get_link_state(self):
-        """Method used to get the current link state of this interface.
-
-        This method will return 'up', 'down' or 'unknown', based on the
-        network interface state. Or it will raise a NWException if is
-        unable to get the interface state.
-        """
-        warnings.warn("deprecated, use existing methods: is_operational_link_up,\
-                       is_admin_link_up", DeprecationWarning)
-        cmd = "cat /sys/class/net/{}/operstate".format(self.name)
-        try:
-            return run_command(cmd, self.host)
-        except CmdError as e:
-            msg = ('Failed to get link state. Maybe the interface is '
-                   'missing. {}'.format(e))
-            raise NWException(msg)
 
     def get_mtu(self):
         """Return the current MTU value of this interface.
