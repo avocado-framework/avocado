@@ -349,6 +349,7 @@ if __name__ == '__main__':
                   'json_variants = avocado.plugins.json_variants:JsonVariantsCLI',
                   'nrunner = avocado.plugins.runner_nrunner:RunnerCLI',
                   'podman = avocado.plugins.spawners.podman:PodmanCLI',
+                  'spawner = avocado.plugins.spawners.common:SpawnerCLI',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',

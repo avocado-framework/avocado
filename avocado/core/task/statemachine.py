@@ -283,6 +283,10 @@ class Worker:
             except asyncio.TimeoutError:
                 runtime_task.status = 'FINISHED W/ TIMEOUT'
         result_stats = self._state_machine._status_repo.result_stats
+
+        if runtime_task.task.runnable.config.get('test.output.enabled', True):
+            await self._spawner.save_task_output_dir(runtime_task)
+
         if self._failfast and 'fail' in result_stats:
             await self._state_machine.abort("FAILFAST is enabled")
             raise TestFailFast("Interrupting job (failfast).")

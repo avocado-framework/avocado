@@ -47,6 +47,9 @@ class MockSpawner(Spawner):
     async def create_task_output_dir(self, runtime_task):
         pass
 
+    async def save_task_output_dir(self, runtime_task):
+        pass
+
 
 class MockRandomAliveSpawner(MockSpawner):
     """A mocking spawner that simulates randomness about tasks being alive."""

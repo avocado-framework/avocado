@@ -44,6 +44,9 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         os.makedirs(output_dir_path, exist_ok=True)
         task.setup_output_dir(output_dir_path)
 
+    async def save_task_output_dir(self, runtime_task):
+        pass
+
     @staticmethod
     async def wait_task(runtime_task):
         await runtime_task.spawner_handle.wait()

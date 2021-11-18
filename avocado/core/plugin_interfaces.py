@@ -321,6 +321,18 @@ class Spawner(Plugin):
         """
 
     @abc.abstractmethod
+    async def save_task_output_dir(self, runtime_task):
+        """Save the files from task output directory to the job-results.
+
+        It saves the output directory content and cleans it from the spawners
+        environment.
+
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        """
+
+    @abc.abstractmethod
     async def wait_task(self, runtime_task):
         """Waits for a task to finish.
 

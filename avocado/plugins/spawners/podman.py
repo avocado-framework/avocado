@@ -194,6 +194,9 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         runtime_task.task.setup_output_dir(output_podman_path)
         await self._create_container_for_task(runtime_task, output_dir_path)
 
+    async def save_task_output_dir(self, runtime_task):
+        pass
+
     async def wait_task(self, runtime_task):
         while True:
             if not self.is_task_alive(runtime_task):
