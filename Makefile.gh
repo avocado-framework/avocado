@@ -32,6 +32,7 @@ bandit:
 
 
 propagate-version:
+	echo "$(VERSION)" > VERSION
 	for DIR in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f "$$DIR/VERSION"; then\
 			echo ">> Updating $$DIR"; echo "$(VERSION)" > "$$DIR/VERSION";\
