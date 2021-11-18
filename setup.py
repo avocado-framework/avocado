@@ -104,6 +104,30 @@ class Develop(setuptools.command.develop.develop):
             walk_plugins_setup_py(action=["develop"] + self.action_options,
                                   action_name=self.action_name)
 
+    def _fetch_eggs(self):
+        """This method it will fetch eggs and register into the cache.
+
+        Those will be necessary to deploy avocado inside a container.
+        """
+        # TODO: We need to avoid this hard coded version.
+        py_version = "3.10"
+        asset_name = f"avocado_framework-{VERSION}-py{py_version}.egg"
+        print(f"Downloading egg: {asset_name}...")
+        url = f"https://github.com/avocado-framework/avocado/releases/download/{VERSION}/{asset_name}"
+        command = [sys.executable, '-m', 'avocado', 'assets', 'register', asset_name, url]
+        try:
+            run(command, check=True)
+        except CalledProcessError as ex:
+            # Skip AVOCADO_GRACEFULL_INTERRUPTED errors
+            if ex.returncode == 22:
+                return
+
+            msg = ("Probably Avocado it was installed, however an needed egg "
+                   "file couldn't be download. Please, try register it "
+                   "manually with the following command, at any time: \n $ " +
+                   " ".join(command))
+            print(msg)
+
     @property
     def action_options(self):
         result = []
@@ -144,6 +168,7 @@ class Develop(setuptools.command.develop.develop):
         """When installing, we install plugins after installing Avocado."""
         super().run()
         self._walk_develop_plugins()
+        self._fetch_eggs()
 
     def handle_external(self):
         """Handles only external plugins.
