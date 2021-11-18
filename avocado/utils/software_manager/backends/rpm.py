@@ -6,7 +6,7 @@ from ... import path as utils_path
 from ... import process
 from .base import BaseBackend
 
-LOG = logging.getLogger('avocado.test')
+LOG = logging.getLogger(__name__)
 
 
 class RpmBackend(BaseBackend):

@@ -17,7 +17,7 @@ import io
 import logging
 import os
 
-LOG = logging.getLogger('avocado.test')
+LOG = logging.getLogger(__name__)
 
 
 def hash_file(filename, size=None, algorithm="md5"):

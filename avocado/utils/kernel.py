@@ -27,7 +27,7 @@ from pkg_resources import packaging
 
 from . import archive, asset, build, distro, process
 
-LOG = logging.getLogger('avocado.test')
+LOG = logging.getLogger(__name__)
 
 
 class KernelBuild:
