@@ -86,7 +86,7 @@ class Asset:
         else:
             self.algorithm = algorithm
 
-        self.cache_dirs = cache_dirs
+        self.cache_dirs = cache_dirs or []
         self.expire = expire
         self.metadata = metadata
 
