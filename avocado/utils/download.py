@@ -23,6 +23,7 @@ import shutil
 import socket
 import sys
 from multiprocessing import Process
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from . import aurl, crypto, output
@@ -45,8 +46,8 @@ def url_open(url, data=None, timeout=5):
     """
     try:
         result = urlopen(url, data=data, timeout=timeout)
-    except socket.timeout as ex:
-        msg = "Timeout was reached: {}".format(str(ex))
+    except (socket.timeout, HTTPError) as ex:
+        msg = "Failed downloading file: {}".format(str(ex))
         log.error(msg)
         return None
 
