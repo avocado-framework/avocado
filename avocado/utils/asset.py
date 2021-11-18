@@ -353,7 +353,7 @@ class Asset:
         """
         # First let's search for the file in each one of the cache locations
         asset_file = None
-        error = "unknown"
+        error = "Can't fetch: 'urls' is not defined."
         timeout = timeout or DOWNLOAD_TIMEOUT
         try:
             return self.find_asset_file(create_metadata=True)
