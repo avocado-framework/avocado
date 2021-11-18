@@ -537,7 +537,7 @@ class Assets(CLICmd):
         try:
             asset.find_asset_file()
             LOG_UI.error("Asset with name %s already registered.", name)
-            return exit_codes.AVOCADO_FAIL
+            return exit_codes.AVOCADO_GRACEFULL_INTERRUPTED
         except OSError:
             try:
                 asset.fetch()
