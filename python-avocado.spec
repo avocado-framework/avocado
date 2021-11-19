@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 93.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -183,7 +183,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
     PYTHONPATH=%{buildroot}%{python3_sitelib}:. \
     LANG=en_US.UTF-8 \
     AVOCADO_CHECK_LEVEL=0 \
-    %{python3} selftests/check.py --job-api --nrunner-interface --unit --jobs --functional --optional-plugins --disable-plugin-checks robot
+    %{python3} selftests/check.py --skip static-checks --disable-plugin-checks robot
 %endif
 
 %files -n python3-avocado
@@ -379,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Nov 17 2021 Ana Guerrero Lopez <anguerre@redhat.com> - 93.0-2
+- Adjust selftest/check.py to use new --skip option
+
 * Wed Nov 17 2021 Cleber Rosa <crosa@redhat.com> - 93.0-1
 - New release
 

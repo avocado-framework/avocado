@@ -200,39 +200,23 @@ class Test(SimpleCommand):
 
     description = 'Run selftests'
     user_options = [
-        ("job-api", None, "Run job API checks"),
-        ("static-checks", None, "Run static checks (isort, lint, etc)"),
-        ("nrunner-interface", None, "Run selftests/functional/test_nrunner_interface.py"),
-        ("unit", None, "Run selftests/unit/"),
-        ("jobs", None, "Run selftests/jobs/"),
-        ("functional", None, "Run selftests/functional/"),
-        ("optional-plugins", None, "Run optional_plugins/*/tests/"),
+        ("skip=", None, "Run all tests and skip listed tests, separated by comma"),
+        ("select=", None, "Do not run any test, only these listed after, separated by comma"),
         ("disable-plugin-checks=", None, "Disable checks for one or more plugins (by directory name), separated by comma"),
         ("list-features", None, "Show the features tested by this test")
     ]
 
     def initialize_options(self):
-        self.job_api = False  # pylint: disable=W0201
-        self.static_checks = False  # pylint: disable=W0201
-        self.nrunner_interface = False  # pylint: disable=W0201
-        self.unit = False  # pylint: disable=W0201
-        self.jobs = False  # pylint: disable=W0201
-        self.functional = False  # pylint: disable=W0201
-        self.optional_plugins = False  # pylint: disable=W0201
+        self.skip = []  # pylint: disable=W0201
+        self.select = []  # pylint: disable=W0201
         self.disable_plugin_checks = []  # pylint: disable=W0201
         self.list_features = False  # pylint: disable=W0201
 
     def run(self):
-
         args = argparse.Namespace()
-        args.static_checks = self.static_checks
-        args.job_api = self.job_api
-        args.nrunner_interface = self.nrunner_interface
-        args.unit = self.unit
-        args.jobs = self.jobs
-        args.functional = self.functional
-        args.optional_plugins = self.optional_plugins
-        args.disable_plugin_checks = self.disable_plugin_checks
+        args.skip = self.skip if len(self.skip) == 0 else [self.skip]
+        args.select = self.select if len(self.select) == 0 else [self.select]
+        args.disable_plugin_checks = self.disable_plugin_checks if len(self.disable_plugin_checks) == 0 else [self.disable_plugin_checks]
         args.list_features = self.list_features
 
         # Import here on purpose, otherwise it'll mess with install/develop commands

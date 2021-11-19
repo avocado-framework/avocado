@@ -197,40 +197,38 @@ class JobAPIFeaturesTest(Test):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''\
+The list of test availables for --skip and --select are:
+
+  static-checks      Run static checks (isort, lint, etc)
+  job-api            Run job API checks
+  nrunner-interface  Run selftests/functional/test_nrunner_interface.py
+  unit               Run selftests/unit/
+  jobs               Run selftests/jobs/
+  functional         Run selftests/functional/
+  optional-plugins   Run optional_plugins/*/tests/
+        ''')
+    group = parser.add_mutually_exclusive_group()
     parser.add_argument('-f',
                         '--list-features',
                         help='show the list of features tested by this test.',
                         action='store_true')
-    parser.add_argument('--static-checks',
-                        help='Run static checks (isort, lint, etc)',
-                        action='store_true')
-    parser.add_argument('--job-api',
-                        help='Run job API checks',
-                        action='store_true')
-    parser.add_argument('--nrunner-interface',
-                        help='Run selftests/functional/test_nrunner_interface.py',
-                        action='store_true')
-    parser.add_argument('--unit',
-                        help='Run selftests/unit/',
-                        action='store_true')
-    parser.add_argument('--jobs',
-                        help='Run selftests/jobs/',
-                        action='store_true')
-    parser.add_argument('--functional',
-                        help='Run selftests/functional/',
-                        action='store_true')
-    parser.add_argument('--optional-plugins',
-                        help='Run optional_plugins/*/tests/',
-                        action='store_true')
+    group.add_argument('--skip',
+                       help='Run all tests and skip listed tests',
+                       action='append', default=[])
+    group.add_argument('--select',
+                       help='Do not run any test, only these listed after',
+                       action='append', default=[])
+    # Hidden argument to have the list of tests
+    group.add_argument('--dict-tests',
+                       default={}, help=argparse.SUPPRESS)
     parser.add_argument('--disable-plugin-checks',
                         help='Disable checks for one or more plugins (by directory name), separated by comma',
                         action='append', default=[])
 
     arg = parser.parse_args()
-    # Make a list of strings instead of a list with a single string
-    if len(arg.disable_plugin_checks) > 0:
-        arg.disable_plugin_checks = arg.disable_plugin_checks[0].split(",")
     return arg
 
 
@@ -553,37 +551,41 @@ def create_suites(args):  # pylint: disable=W0621
             'runnable-run-no-args-exit-code': 0,
             'runnable-run-uri-only-exit-code': 0})
 
-    if args.nrunner_interface:
+    if args.dict_tests['nrunner-interface']:
         suites.append(TestSuite.from_config(config_nrunner_interface, "nrunner-interface"))
 
     # ========================================================================
     # Run all static checks, unit and functional tests
     # ========================================================================
 
-    selftests = []
-    if args.unit:
-        selftests.append('selftests/unit/')
-    if args.jobs:
-        selftests.append('selftests/jobs/')
-    if args.functional:
-        selftests.append('selftests/functional/')
-
     config_check = {
-        'resolver.references': selftests,
-        'run.ignore_missing_references': True
+        'run.ignore_missing_references': True,
     }
 
-    if args.static_checks:
-        config_check['resolver.references'] += glob.glob('selftests/*.sh')
+    if args.dict_tests['unit']:
+        config_check['resolver.references'] = ['selftests/unit/']
+        suites.append(TestSuite.from_config(config_check, "unit"))
 
-    if args.optional_plugins:
+    if args.dict_tests['jobs']:
+        config_check['resolver.references'] = ['selftests/jobs/']
+        suites.append(TestSuite.from_config(config_check, "jobs"))
+
+    if args.dict_tests['functional']:
+        config_check['resolver.references'] = ['selftests/functional/']
+        suites.append(TestSuite.from_config(config_check, "functional"))
+
+    if args.dict_tests['static-checks']:
+        config_check['resolver.references'] = glob.glob('selftests/*.sh')
+        suites.append(TestSuite.from_config(config_check, "static-checks"))
+
+    if args.dict_tests['optional-plugins']:
         for optional_plugin in glob.glob('optional_plugins/*'):
             plugin_name = os.path.basename(optional_plugin)
             if plugin_name not in args.disable_plugin_checks:
                 pattern = '%s/tests/*' % optional_plugin
                 config_check['resolver.references'] += glob.glob(pattern)
 
-    suites.append(TestSuite.from_config(config_check, "check"))
+        suites.append(TestSuite.from_config(config_check, "optional-plugins"))
 
     return suites
 
@@ -595,21 +597,27 @@ def print_failed_tests(tests):
             print(test.get('name'), test.get('status'))
 
 
-def enable_all_tests(args):   # pylint: disable=W0621
-    args.static_checks = True
-    args.job_api = True
-    args.nrunner_interface = True
-    args.unit = True
-    args.jobs = True
-    args.functional = True
-    args.optional_plugins = True
-
-
 def main(args):  # pylint: disable=W0621
 
-    # ========================================================================
+    args.dict_tests = {
+        'static-checks': False,
+        'job-api': False,
+        'nrunner-interface': False,
+        'unit': False,
+        'jobs': False,
+        'functional': False,
+        'optional-plugins': False,
+        }
+
+    # Make a list of strings instead of a list with a single string
+    if len(args.disable_plugin_checks) > 0:
+        args.disable_plugin_checks = args.disable_plugin_checks[0].split(",")
+    if len(args.select) > 0:
+        args.select = args.select[0].split(",")
+    if len(args.skip) > 0:
+        args.skip = args.skip[0].split(",")
+
     # Print features covered in this test
-    # ========================================================================
     if args.list_features:
         suites = create_suite_job_api(args)
         suites += create_suites(args)
@@ -624,14 +632,38 @@ def main(args):  # pylint: disable=W0621
         print('\n'.join(unique_features))
         exit(0)
 
-    if not any([args.static_checks, args.job_api, args.nrunner_interface,
-                args.unit, args.jobs, args.functional,
-                args.optional_plugins, args.list_features]):
+    # Will only run the test you select, --select must be followed by list of tests
+    elif args.select:
+        for elem in args.select:
+            if elem not in args.dict_tests.keys():
+                print(elem, "is not in the list of valid tests.")
+                exit(0)
+            else:
+                args.dict_tests[elem] = True
+
+    # Will run all the tests except these you skip, --skip must be followed by list of tests
+    elif args.skip:
+        # Make all the values True, so later we set to False the tests we don't want to run
+        args.dict_tests = {x: True for x in args.dict_tests}
+
+        for elem in args.skip:
+            if elem not in args.dict_tests.keys():
+                print(elem, "is not in the list of valid tests.")
+                exit(0)
+            else:
+                args.dict_tests[elem] = False
+
+    # If no option was selected, run all tests!
+    elif not (args.skip or args.select):
         print("No test were selected to run, running all of them.")
-        enable_all_tests(args)
+        args.dict_tests = {x: True for x in args.dict_tests}
+
+    else:
+        print("Something went wrong, please report a bug!")
+        exit(1)
 
     suites = []
-    if args.job_api:
+    if args.dict_tests['job-api']:
         suites += create_suite_job_api(args)
     suites += create_suites(args)
 
@@ -647,7 +679,7 @@ def main(args):  # pylint: disable=W0621
     if (platform.machine() == 'aarch64'):
         max_parallel = int(multiprocessing.cpu_count()/2)
         for suite in suites:
-            if suite.name == 'check':
+            if suite.name == 'functional':
                 suite.config['nrunner.max_parallel_tasks'] = max_parallel
 
     with Job(config, suites) as j:
