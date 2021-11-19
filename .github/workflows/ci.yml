@@ -5,6 +5,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  static-checks:
+
+    name: Static checks
+    runs-on: ubuntu-20.04
+
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Installing Avocado in develop mode
+        run: python3 setup.py develop --user
+      - name: Run static checks
+        run: python3 setup.py test --select=static-checks
+      - name: Archive failed tests logs
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: static-checks-logs
+          path: /home/runner/avocado/job-results/
+          retention-days: 1
+      - run: echo "🥑 This job's status is ${{ job.status }}."
 
   full-smokecheck-linux:
 
@@ -36,11 +61,8 @@ jobs:
         run: avocado --version
       - name: Avocado smoketest
         run: python -m avocado run examples/tests/passtest.py
-      - name: Tree static check, unittests and fast functional tests
-        env:
-          AVOCADO_LOG_DEBUG: "yes"
-          AVOCADO_CHECK_LEVEL: "1"
-        run: make check
+      - name: Unittests and fast functional tests
+        run: python3 setup.py test --skip=static-checks
       - name: Archive failed tests logs
         if: failure()
         uses: actions/upload-artifact@v2
