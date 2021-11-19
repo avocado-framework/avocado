@@ -141,7 +141,7 @@ class Asset:
                     self.find_asset_file(create_metadata=True)
                     return True
                 except OSError:
-                    LOG.info("Asset not in cache after lock, fetching it.")
+                    LOG.debug("Asset not in cache after lock, fetching it.")
 
                 url_download(url_obj.geturl(), temp, timeout=timeout)
                 shutil.copy(temp, asset_path)
@@ -317,8 +317,8 @@ class Asset:
         If asset_hash is None then will consider a valid asset.
         """
         if asset_hash is None:
-            LOG.warning("No hash provided. Cannot check the asset file"
-                        " integrity.")
+            LOG.debug("No hash provided. Cannot check the asset file"
+                      " integrity.")
             return True
 
         hash_path = cls._get_hash_file(asset_path)
