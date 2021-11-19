@@ -355,6 +355,8 @@ class Asset:
         asset_file = None
         error = "Can't fetch: 'urls' is not defined."
         timeout = timeout or DOWNLOAD_TIMEOUT
+
+        LOG.info("Fetching asset %s", self.name)
         try:
             return self.find_asset_file(create_metadata=True)
         except OSError:
@@ -387,6 +389,7 @@ class Asset:
                 os.makedirs(dirname, exist_ok=True)
             try:
                 if fetch(urlobj, asset_file, timeout):
+                    LOG.info("Asset downloaded.")
                     if self.metadata is not None:
                         self._create_metadata_file(asset_file)
                     return asset_file
@@ -429,6 +432,7 @@ class Asset:
             if create_metadata:
                 self._create_metadata_file(asset_file)
 
+            LOG.info("Asset already exists in cache.")
             return asset_file
 
         raise OSError("File %s not found in the cache." % self.asset_name)
