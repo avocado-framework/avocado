@@ -550,11 +550,9 @@ class ExecTestRunner(BaseRunner):
         return avocado_test_env_variables
 
     def run(self):
-        env = None
+        env = dict(os.environ)
         if self.runnable.kwargs:
-            current = dict(os.environ)
-            current.update(self.runnable.kwargs)
-            env = current
+            env.update(self.runnable.kwargs)
 
         # set default Avocado environment variables if running on a valid Task
         if self.runnable.uri is not None:
