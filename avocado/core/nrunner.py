@@ -10,6 +10,7 @@ import json
 import multiprocessing
 import os
 import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -497,6 +498,15 @@ class ExecTestRunner(BaseRunner):
         final_status['returncode'] = process.returncode
         return self.prepare_status('finished', final_status)
 
+    def _cleanup(self):
+        """Cleanup method for the exec-test tests"""
+        # cleanup temporary directories
+        workdir = self.runnable.kwargs.get('AVOCADO_TEST_WORKDIR')
+        if (workdir is not None and
+                self.runnable.config.get('run.keep_tmp') is not None and
+                os.path.exists(workdir)):
+            shutil.rmtree(workdir)
+
     def _create_params(self):
         """Create params for the test"""
         if self.runnable.variant is None:
@@ -506,12 +516,49 @@ class ExecTestRunner(BaseRunner):
                        self.runnable.variant['variant'][0][1]])
         return params
 
+    @staticmethod
+    def _get_avocado_version():
+        """Return the Avocado package version, if installed"""
+        version = "unknown.unknown"
+        if PKG_RESOURCES_AVAILABLE:
+            try:
+                version = pkg_resources.get_distribution(
+                    'avocado-framework').version
+            except pkg_resources.DistributionNotFound:
+                pass
+        return version
+
+    def _get_env_variables(self):
+        """Get the default AVOCADO_* environment variables
+
+        These variables are available to the test environment during the test
+        execution.
+        """
+        # create the temporary work dir
+        workdir = tempfile.mkdtemp(prefix='.avocado-workdir-')
+        # create the avocado environment variable dictionary
+        avocado_test_env_variables = {
+            'AVOCADO_VERSION': self._get_avocado_version(),
+            'AVOCADO_TEST_WORKDIR': workdir,
+        }
+        return avocado_test_env_variables
+
     def run(self):
         env = None
         if self.runnable.kwargs:
             current = dict(os.environ)
             current.update(self.runnable.kwargs)
             env = current
+
+        # set default Avocado environment variables if running on a valid Task
+        if self.runnable.uri is not None:
+            avocado_test_env_variables = self._get_env_variables()
+            # save environment variables for further cleanup
+            self.runnable.kwargs.update(avocado_test_env_variables)
+            if env is None:
+                env = avocado_test_env_variables
+            else:
+                env.update(avocado_test_env_variables)
 
         params = self._create_params()
         if params:
@@ -530,6 +577,7 @@ class ExecTestRunner(BaseRunner):
             yield self.prepare_status('started')
             yield self.prepare_status('finished', {'result': 'error',
                                                    'fail_reason': str(e)})
+            self._cleanup()
             return
 
         yield self.prepare_status('started')
@@ -553,6 +601,7 @@ class ExecTestRunner(BaseRunner):
         yield self.prepare_status('running', {'type': 'stdout', 'log': stdout})
         yield self.prepare_status('running', {'type': 'stderr', 'log': stderr})
         yield self._process_final_status(process, stdout, stderr)
+        self._cleanup()
 
 
 RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner
