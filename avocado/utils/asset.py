@@ -86,7 +86,7 @@ class Asset:
         else:
             self.algorithm = algorithm
 
-        self.cache_dirs = cache_dirs
+        self.cache_dirs = cache_dirs or []
         self.expire = expire
         self.metadata = metadata
 
@@ -141,7 +141,7 @@ class Asset:
                     self.find_asset_file(create_metadata=True)
                     return True
                 except OSError:
-                    LOG.info("Asset not in cache after lock, fetching it.")
+                    LOG.debug("Asset not in cache after lock, fetching it.")
 
                 url_download(url_obj.geturl(), temp, timeout=timeout)
                 shutil.copy(temp, asset_path)
@@ -317,8 +317,8 @@ class Asset:
         If asset_hash is None then will consider a valid asset.
         """
         if asset_hash is None:
-            LOG.warning("No hash provided. Cannot check the asset file"
-                        " integrity.")
+            LOG.debug("No hash provided. Cannot check the asset file"
+                      " integrity.")
             return True
 
         hash_path = cls._get_hash_file(asset_path)
@@ -353,8 +353,10 @@ class Asset:
         """
         # First let's search for the file in each one of the cache locations
         asset_file = None
-        error = "unknown"
+        error = "Can't fetch: 'urls' is not defined."
         timeout = timeout or DOWNLOAD_TIMEOUT
+
+        LOG.info("Fetching asset %s", self.name)
         try:
             return self.find_asset_file(create_metadata=True)
         except OSError:
@@ -387,6 +389,7 @@ class Asset:
                 os.makedirs(dirname, exist_ok=True)
             try:
                 if fetch(urlobj, asset_file, timeout):
+                    LOG.info("Asset downloaded.")
                     if self.metadata is not None:
                         self._create_metadata_file(asset_file)
                     return asset_file
@@ -429,6 +432,7 @@ class Asset:
             if create_metadata:
                 self._create_metadata_file(asset_file)
 
+            LOG.info("Asset already exists in cache.")
             return asset_file
 
         raise OSError("File %s not found in the cache." % self.asset_name)

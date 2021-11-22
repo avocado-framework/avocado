@@ -38,5 +38,10 @@ AVOCADO_FAIL = 0x0004
 #: hit CTRL+C while the job was still running.
 AVOCADO_JOB_INTERRUPTED = 0x0008
 
+#: Some internal avocado routine has not completed and probably it wasn't at
+#: the JOB level. Usually this means that something it was skipped but it is
+#: safe to ignore.
+AVOCADO_WARNING = 0x0016
+
 #: Avocado generic crash
 AVOCADO_GENERIC_CRASH = -1

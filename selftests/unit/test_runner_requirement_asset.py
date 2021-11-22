@@ -36,7 +36,7 @@ class BasicTests(unittest.TestCase):
                 break
         result = 'error'
         self.assertIn(result, messages[-1]['result'])
-        stderr = b"Failed to fetch foo (unknown)."
+        stderr = b"Failed to fetch foo ("
         self.assertIn(stderr, messages[-2]['log'])
 
 
