@@ -25,3 +25,9 @@ STATUSES_MAPPING = {"SKIP": True,
 #: Valid test statuses, if a returned status is not listed here, it
 #: should be handled as error condition.
 STATUSES = [key for key in STATUSES_MAPPING.keys()]
+
+#: List of status that are considered OK (should not cause a job failure)
+STATUSES_OK = [key for (key, value) in STATUSES_MAPPING.items() if value]
+
+#: List of status that are NOT considered OK (should cause a job failure)
+STATUSES_NOT_OK = [key for (key, value) in STATUSES_MAPPING.items() if not value]
