@@ -247,6 +247,7 @@ class Worker:
             await asyncio.sleep(0.1)
             return
 
+        await self._spawner.create_task_output_dir(runtime_task)
         LOG.debug('Task "%s": about to be spawned with "%s"',
                   runtime_task.task.identifier, self._spawner)
         start_ok = await self._spawner.spawn_task(runtime_task)

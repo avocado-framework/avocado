@@ -79,6 +79,14 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     description = 'Podman (container) based spawner'
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
+    def __init__(self, config=None):
+        super().__init__(config)
+        podman_bin = self.config.get('spawner.podman.bin')
+        try:
+            self.podman = Podman(podman_bin)
+        except PodmanException as ex:
+            raise ImportError(ex)
+
     def is_task_alive(self, runtime_task):
         if runtime_task.spawner_handle is None:
             return False
@@ -111,7 +119,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         except PodmanException:
             return False
 
-    async def _create_container_for_task(self, runtime_task):
+    async def _create_container_for_task(self, runtime_task, test_output=None):
         mount_status_server_socket = False
         mounted_status_server_socket = '/tmp/.status_server.sock'
         status_server_uri = runtime_task.task.status_services[0].uri
@@ -135,33 +143,33 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         else:
             status_server_opts = ("--net=host", )
 
+        output_opts = ()
+        if test_output:
+            podman_output = runtime_task.task.runnable.output_dir
+            output_opts = ("-v", "%s:%s" % (test_output, podman_output))
+
         image = self.config.get('spawner.podman.image')
 
         try:
             # pylint: disable=W0201
             _, stdout, _ = await self.podman.execute("create",
                                                      *status_server_opts,
+                                                     *output_opts,
                                                      entry_point_arg, image)
         except PodmanException as ex:
             msg = f"Could not create podman container: {ex}"
             runtime_task.status = msg
             return False
 
-        return stdout.decode().strip()
+        runtime_task.spawner_handle = stdout.decode().strip()
 
     async def spawn_task(self, runtime_task):
-
-        podman_bin = self.config.get('spawner.podman.bin')
-        try:
-            # pylint: disable=W0201
-            self.podman = Podman(podman_bin)
-        except PodmanException as ex:
-            runtime_task.status = str(ex)
+        container_id = runtime_task.spawner_handle
+        if not container_id:
+            msg = "The container for %s couldn't be found" % runtime_task
+            runtime_task.status = msg
+            LOG.error(msg)
             return False
-
-        container_id = await self._create_container_for_task(runtime_task)
-
-        runtime_task.spawner_handle = container_id
 
         await self.deploy_avocado(container_id)
 
@@ -175,6 +183,16 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             return False
 
         return returncode == 0
+
+    async def create_task_output_dir(self, runtime_task):
+        task = runtime_task.task
+        output_dir_path = os.path.join(self.job_output_dir,
+                                       task.identifier.str_filesystem)
+        output_podman_path = os.path.join('/tmp', 'avocado-results')
+
+        os.makedirs(output_dir_path, exist_ok=True)
+        runtime_task.task.setup_output_dir(output_podman_path)
+        await self._create_container_for_task(runtime_task, output_dir_path)
 
     async def wait_task(self, runtime_task):
         while True:

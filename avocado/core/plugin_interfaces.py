@@ -309,6 +309,18 @@ class Spawner(Plugin):
         """
 
     @abc.abstractmethod
+    async def create_task_output_dir(self, runtime_task):
+        """Creates output directory in the intended location.
+
+        The output directory path will be saved to the `task.runnable.config`
+        for the usage by runners.
+
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        """
+
+    @abc.abstractmethod
     async def wait_task(self, runtime_task):
         """Waits for a task to finish.
 

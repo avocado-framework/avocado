@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from avocado.core.plugin_interfaces import Spawner
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
@@ -35,6 +36,13 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             return False
         asyncio.ensure_future(self._collect_task(runtime_task.spawner_handle))
         return True
+
+    async def create_task_output_dir(self, runtime_task):
+        task = runtime_task.task
+        output_dir_path = os.path.join(self.job_output_dir,
+                                       task.identifier.str_filesystem)
+        os.makedirs(output_dir_path, exist_ok=True)
+        task.setup_output_dir(output_dir_path)
 
     @staticmethod
     async def wait_task(runtime_task):
