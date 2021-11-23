@@ -276,12 +276,15 @@ class Test(unittest.TestCase, TestData):
             self.__base_logdir_tmp = tempfile.TemporaryDirectory(prefix=prefix)
             self.__base_logdir = self.__base_logdir_tmp.name
 
-        self.__base_logdir = os.path.join(self.__base_logdir, 'test-results')
-        logdir = os.path.join(self.__base_logdir, self.name.str_filesystem)
-        if os.path.exists(logdir):
-            raise exceptions.TestSetupFail("Log dir already exists, this "
-                                           "should never happen: %s"
-                                           % logdir)
+        if self._config.get("run.test_runner", 'nrunner') == 'nrunner':
+            logdir = self.__base_logdir
+        else:
+            self.__base_logdir = os.path.join(self.__base_logdir, 'test-results')
+            logdir = os.path.join(self.__base_logdir, self.name.str_filesystem)
+            if os.path.exists(logdir):
+                raise exceptions.TestSetupFail("Log dir already exists, this "
+                                               "should never happen: %s"
+                                               % logdir)
         self.__logdir = utils_path.init_dir(logdir)
         self.__logfile = os.path.join(self.logdir, 'debug.log')
 
@@ -740,7 +743,8 @@ class Test(unittest.TestCase, TestData):
             process.OUTPUT_CHECK_RECORD_MODE = 'combined'
 
         testMethod = getattr(self, self._testMethodName)
-        self._start_logging()
+        if self._config.get("run.test_runner", 'nrunner') != 'nrunner':
+            self._start_logging()
         if self.__sysinfo_enabled:
             self.__sysinfo_logger.start()
         test_exception = None
