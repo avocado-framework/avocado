@@ -1,4 +1,5 @@
 import enum
+import os
 from mmap import ACCESS_READ, mmap
 from pathlib import Path
 
@@ -32,6 +33,10 @@ class SpawnerMixin:
             config = settings.as_dict()
         self.config = config
         self.job_output_dir = None
+
+    def task_output_dir(self, runtime_task):
+        return os.path.join(self.job_output_dir,
+                            runtime_task.task.identifier.str_filesystem)
 
     @staticmethod
     def bytes_from_file(filename):
