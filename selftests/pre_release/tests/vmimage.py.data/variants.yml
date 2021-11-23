@@ -37,10 +37,12 @@ distro: !mux
     x86_64:
       arch: amd64
     version: !mux
-      9.13.30:
-        version: 9.13.30-20211105
-      10.11.1:
-        version: 10.11.1-20211029
+      # Debian 10 is codenamed buster
+      buster:
+        version: buster
+      # Debian 11 is codenamed bullseye
+      bullseye:
+        version: bullseye
   fedora:
     name: fedora
     !filter-out : /run/architectures/arm
