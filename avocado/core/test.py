@@ -276,13 +276,18 @@ class Test(unittest.TestCase, TestData):
             self.__base_logdir_tmp = tempfile.TemporaryDirectory(prefix=prefix)
             self.__base_logdir = self.__base_logdir_tmp.name
 
-        self.__base_logdir = os.path.join(self.__base_logdir, 'test-results')
-        logdir = os.path.join(self.__base_logdir, self.name.str_filesystem)
-        if os.path.exists(logdir):
-            raise exceptions.TestSetupFail("Log dir already exists, this "
-                                           "should never happen: %s"
-                                           % logdir)
-        self.__logdir = utils_path.init_dir(logdir)
+        if self._config.get("run.test_runner") == 'nrunner':
+            logdir = self.__base_logdir
+            self.__logdir = logdir
+        else:
+            self.__base_logdir = os.path.join(self.__base_logdir, 'test-results')
+            logdir = os.path.join(self.__base_logdir, self.name.str_filesystem)
+
+            if os.path.exists(logdir):
+                raise exceptions.TestSetupFail("Log dir already exists, this "
+                                               "should never happen: %s"
+                                               % logdir)
+            self.__logdir = utils_path.init_dir(logdir)
         self.__logfile = os.path.join(self.logdir, 'debug.log')
 
         self._stdout_file = os.path.join(self.logdir, 'stdout')
@@ -703,7 +708,8 @@ class Test(unittest.TestCase, TestData):
         Auxiliary method to run_avocado.
         """
         testMethod = getattr(self, self._testMethodName)
-        self._start_logging()
+        if self._config.get("run.test_runner") != 'nrunner':
+            self._start_logging()
         if self.__sysinfo_enabled:
             self.__sysinfo_logger.start()
         test_exception = None
