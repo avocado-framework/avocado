@@ -24,8 +24,6 @@ all:
 	@echo "requirements-dev:      Install development requirements"
 	@echo
 	@echo "Platform independent distribution/installation related targets:"
-	@echo "source-pypi:  Create source packages suitable for PyPI"
-	@echo "python_build: Installs the build package, needed for source-pypi and wheel"
 	@echo "install:      Install on local system"
 	@echo "uninstall:    Uninstall Avocado and also subprojects"
 	@echo "man:          Generate the avocado man page"
@@ -34,21 +32,6 @@ all:
 
 pip:
 	$(PYTHON) -m pip --version || $(PYTHON) -m ensurepip $(PYTHON_DEVELOP_ARGS) || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
-
-source-pypi: python_build
-	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	$(PYTHON) -m build --sdist -o PYPI_UPLOAD
-	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
-		if test -f $$PLUGIN/setup.py; then\
-			echo ">> Creating source distribution for $$PLUGIN";\
-			cd $$PLUGIN;\
-			$(PYTHON) -m build --sdist -o ../../PYPI_UPLOAD;\
-			cd -;\
-                fi;\
-	done
-
-python_build: pip
-	$(PYTHON) -m pip install $(PYTHON_DEVELOP_ARGS) build
 
 clean:
 	$(PYTHON) setup.py clean --all
@@ -92,4 +75,4 @@ variables:
 	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
 	@echo "AVOCADO_OPTIONAL_PLUGINS: $(AVOCADO_OPTIONAL_PLUGINS)"
 
-.PHONY: pip source-pypi python_build install clean uninstall requirements-dev smokecheck check develop develop-external variables man
+.PHONY: pip install clean uninstall requirements-dev smokecheck check develop develop-external variables man
