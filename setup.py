@@ -59,9 +59,7 @@ class Clean(clean):
 
     def run(self):
         super().run()
-        cleaning_list = ["MANIFEST", "BUILD", "BUILDROOT", "SPECS",
-                         "RPMS", "SRPMS", "SOURCES", "PYPI_UPLOAD",
-                         "./build", "./dist",
+        cleaning_list = ["PYPI_UPLOAD", "./build", "./dist",
                          "./man/avocado.1", "./docs/build"]
 
         cleaning_list += list(Path('/tmp/').glob(".avocado-*"))
