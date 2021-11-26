@@ -1,7 +1,7 @@
 avocado.utils.vmimage
 =====================
 
-This utility provides a API to download/cache VM images (QCOW) from the
+This utility provides an API to download/cache VM images (QCOW) from the
 official distributions repositories.
 
 Basic Usage
@@ -15,45 +15,41 @@ Get an image, which consists in an object with the path of the downloaded/cached
 base image and the path of the external snapshot created out of that base
 image::
 
-    >>> image = vmimage.get()
+    >>> image = vmimage.Image.from_parameters()
     >>> image
-    <Image name=Fedora version=26 arch=x86_64>
+    <Image name=Fedora version=35 arch=x86_64>
     >>> image.name
     'Fedora'
     >>> image.path
-    '/tmp/Fedora-Cloud-Base-26-1.5.x86_64-d369c285.qcow2'
-    >>> image.get()
-    '/tmp/Fedora-Cloud-Base-26-1.5.x86_64-e887c743.qcow2'
-    >>> image.path
-    '/tmp/Fedora-Cloud-Base-26-1.5.x86_64-e887c743.qcow2'
+    '/tmp/by_location/951337e4bd3f30b584623d46f1745147cb32aca5/Fedora-Cloud-Base-35-1.2.x86_64-54d81da8.qcow2'
     >>> image.version
-    26
+    35
     >>> image.base_image
-    '/tmp/Fedora-Cloud-Base-26-1.5.x86_64.qcow2'
+    '/tmp/by_location/951337e4bd3f30b584623d46f1745147cb32aca5/Fedora-Cloud-Base-35-1.2.x86_64.qcow2'
 
 If you provide more details about the image, the object is expected to
 reflect those details::
 
-    >>> image = vmimage.get(arch='aarch64')
+    >>> image = vmimage.Image.from_parameters(arch='aarch64)
     >>> image
-    <Image name=FedoraSecondary version=26 arch=aarch64>
+    <Image name=Fedora version=35 arch=aarch64>
     >>> image.name
-    'FedoraSecondary'
+    'Fedora'
     >>> image.path
-    '/tmp/Fedora-Cloud-Base-26-1.5.aarch64-07b8fbda.qcow2'
+    '/tmp/by_location/3f1d3b1b568ad908eb003d1012ba79e1f3bb0d57/Fedora-Cloud-Base-35-1.2.aarch64-dab7007f.qcow2'
 
-    >>> image = vmimage.get(version=7)
+    >>> image = vmimage.Image.from_parameters(version=34,name='fedora')
     >>> image
-    <Image name=CentOS version=7 arch=x86_64>
+    <Image name=Fedora version=34 arch=x86_64>
     >>> image.path
-    '/tmp/CentOS-7-x86_64-GenericCloud-1708-dd8139c5.qcow2'
+    '/tmp/by_location/def0ea887952961473cfbfda268e77d66f9bcd14/Fedora-Cloud-Base-34-1.2.x86_64-0ed30cd9.qcow2'
 
 Notice that, unlike the ``base_image`` attribute, the ``path`` attribute
 will be always different in each instance, as it actually points to an
 external snapshot created out of the base image::
 
-    >>> i1 = vmimage.get()
-    >>> i2 = vmimage.get()
+    >>> i1 = vmimage.Image.from_parameters()
+    >>> i2 = vmimage.Image.from_parameters()
     >>> i1.path == i2.path
     False
 
