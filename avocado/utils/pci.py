@@ -127,11 +127,14 @@ def get_interfaces_in_pci_address(pci_address, pci_class):
     :return: list of generic interfaces in a PCI address.
     """
     pci_class_path = "/sys/class/%s/" % pci_class
+    ifaces = []
     if not os.path.isdir(pci_class_path):
         raise ValueError("Please provide valid class name")
-    return [interface for interface in os.listdir(pci_class_path)
-            if pci_address in os.readlink(os.path.join(pci_class_path,
-                                                       interface))]
+    for interface in os.listdir(pci_class_path):
+        pci_path = os.path.join(pci_class_path, interface)
+        if os.path.isdir(pci_path) and pci_address in os.readlink(pci_path):
+            ifaces.append(interface)
+    return ifaces
 
 
 def get_pci_class_name(pci_address):
