@@ -19,7 +19,7 @@ APIs to download/update git repositories from inside python scripts.
 import logging
 import os
 
-from . import astring, path, process
+from avocado.utils import astring, path, process
 
 __all__ = ["GitRepoHelper", "get_repo"]
 

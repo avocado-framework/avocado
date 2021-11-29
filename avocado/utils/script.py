@@ -21,7 +21,7 @@ import shutil
 import stat
 import tempfile
 
-from . import path as utils_path
+from avocado.utils import path as utils_path
 
 #: What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |

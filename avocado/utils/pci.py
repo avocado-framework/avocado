@@ -24,7 +24,7 @@ Module for all PCI devices related functions.
 import os
 import re
 
-from . import genio, process
+from avocado.utils import genio, process
 
 
 def get_domains():

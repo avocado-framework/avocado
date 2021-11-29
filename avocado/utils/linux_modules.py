@@ -26,7 +26,7 @@ import platform
 import re
 from enum import Enum
 
-from . import astring, data_structures, process
+from avocado.utils import astring, data_structures, process
 
 LOG = logging.getLogger(__name__)
 

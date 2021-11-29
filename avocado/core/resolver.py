@@ -19,8 +19,8 @@ Test resolver module.
 import os
 from enum import Enum
 
-from .enabled_extension_manager import EnabledExtensionManager
-from .exceptions import JobTestSuiteReferenceResolutionError
+from avocado.core.enabled_extension_manager import EnabledExtensionManager
+from avocado.core.exceptions import JobTestSuiteReferenceResolutionError
 
 
 class ReferenceResolutionResult(Enum):

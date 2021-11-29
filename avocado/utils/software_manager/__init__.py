@@ -31,5 +31,6 @@ and multiple high level package managers (here called backends).
 __all__ = ['install_distro_packages', 'SoftwareManager']
 
 
-from .distro_packages import install_distro_packages
-from .manager import SoftwareManager
+from avocado.utils.software_manager.distro_packages import \
+    install_distro_packages
+from avocado.utils.software_manager.manager import SoftwareManager

@@ -45,7 +45,7 @@ import re
 
 from pkg_resources import resource_exists, resource_filename
 
-from .settings_dispatcher import SettingsDispatcher
+from avocado.core.settings_dispatcher import SettingsDispatcher
 
 
 def sorted_dict(dict_object):

@@ -26,9 +26,9 @@ import subprocess
 import tempfile
 import time
 
-from .external import gdbmi_parser
-from .network import ports
-from .path import find_command
+from avocado.utils.external import gdbmi_parser
+from avocado.utils.network import ports
+from avocado.utils.path import find_command
 
 #: Contains a list of binary names that should be run via the GNU debugger
 #: and be stopped at a given point. That means that a breakpoint will be set

@@ -21,7 +21,7 @@ This module provides APIs to work with software raid.
 import logging
 import time
 
-from . import process
+from avocado.utils import process
 
 LOG = logging.getLogger(__name__)
 

@@ -1,8 +1,8 @@
 import io
 
-from .. import nrunner
-from ..tapparser import TapParser, TestResult
-from .utils.messages import FinishedMessage
+from avocado.core import nrunner
+from avocado.core.runners.utils.messages import FinishedMessage
+from avocado.core.tapparser import TapParser, TestResult
 
 
 class TAPRunner(nrunner.ExecTestRunner):

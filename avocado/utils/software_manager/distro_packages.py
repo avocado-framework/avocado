@@ -1,8 +1,8 @@
 import logging
 import os
 
-from .. import distro
-from .manager import SoftwareManager
+from avocado.utils import distro
+from avocado.utils.software_manager.manager import SoftwareManager
 
 log = logging.getLogger('avocado.utils.software_manager')
 

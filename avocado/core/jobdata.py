@@ -20,11 +20,11 @@ import ast
 import json
 import os
 
-from ..utils.path import init_dir
-from .nrunner import ConfigDecoder, ConfigEncoder
-from .output import LOG_JOB, LOG_UI
-from .settings import settings
-from .varianter import VARIANTS_FILENAME
+from avocado.core.nrunner import ConfigDecoder, ConfigEncoder
+from avocado.core.output import LOG_JOB, LOG_UI
+from avocado.core.settings import settings
+from avocado.core.varianter import VARIANTS_FILENAME
+from avocado.utils.path import init_dir
 
 JOB_DATA_DIR = 'jobdata'
 CONFIG_FILENAME = 'config'

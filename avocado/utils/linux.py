@@ -25,7 +25,7 @@ Linux OS utilities
 
 import os
 
-from . import genio
+from avocado.utils import genio
 
 
 def get_proc_sys(key):

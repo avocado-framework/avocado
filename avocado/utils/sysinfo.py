@@ -20,7 +20,7 @@ import subprocess
 import tempfile
 from abc import ABC, abstractmethod
 
-from . import astring, process
+from avocado.utils import astring, process
 
 DATA_SIZE = 200000
 

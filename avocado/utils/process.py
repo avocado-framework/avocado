@@ -31,8 +31,8 @@ import threading
 import time
 from io import BytesIO, UnsupportedOperation
 
-from . import astring, path
-from .wait import wait_for
+from avocado.utils import astring, path
+from avocado.utils.wait import wait_for
 
 LOG = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')

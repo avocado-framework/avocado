@@ -25,7 +25,7 @@ import sys
 
 import pkg_resources
 
-from ..utils import stacktrace
+from avocado.utils import stacktrace
 
 # This is also defined in avocado.core.output, but this avoids a
 # circular import

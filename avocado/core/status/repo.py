@@ -1,6 +1,6 @@
 import logging
 
-from .utils import json_loads
+from avocado.core.status.utils import json_loads
 
 LOG = logging.getLogger(__name__)
 

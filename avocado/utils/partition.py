@@ -27,7 +27,7 @@ import logging
 import os
 import tempfile
 
-from . import filelock, process
+from avocado.utils import filelock, process
 
 LOG = logging.getLogger(__name__)
 

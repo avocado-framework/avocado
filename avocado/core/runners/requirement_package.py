@@ -1,10 +1,10 @@
 import time
 from multiprocessing import Process, SimpleQueue
 
-from ...utils.software_manager.main import MESSAGES
-from ...utils.software_manager.manager import SoftwareManager
-from .. import nrunner
-from .utils import messages
+from avocado.core import nrunner
+from avocado.core.runners.utils import messages
+from avocado.utils.software_manager.main import MESSAGES
+from avocado.utils.software_manager.manager import SoftwareManager
 
 
 class RequirementPackageRunner(nrunner.BaseRunner):

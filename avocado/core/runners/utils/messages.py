@@ -2,8 +2,8 @@ import logging
 import sys
 import time
 
-from ... import output
-from ...streams import BUILTIN_STREAMS
+from avocado.core import output
+from avocado.core.streams import BUILTIN_STREAMS
 
 
 class GenericMessage:

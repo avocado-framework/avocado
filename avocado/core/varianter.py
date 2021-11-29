@@ -23,8 +23,8 @@ import hashlib
 import json
 import os
 
-from ..utils import astring
-from . import dispatcher, output, tree
+from avocado.core import dispatcher, output, tree
+from avocado.utils import astring
 
 VARIANTS_FILENAME = 'variants.json'
 

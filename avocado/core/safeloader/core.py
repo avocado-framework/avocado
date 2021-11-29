@@ -3,10 +3,10 @@ import collections
 import sys
 from importlib.machinery import PathFinder
 
-from .docstring import (check_docstring_directive, get_docstring_directives,
-                        get_docstring_directives_requirements,
-                        get_docstring_directives_tags)
-from .module import PythonModule
+from avocado.core.safeloader.docstring import (
+    check_docstring_directive, get_docstring_directives,
+    get_docstring_directives_requirements, get_docstring_directives_tags)
+from avocado.core.safeloader.module import PythonModule
 
 
 def get_methods_info(statement_body, class_tags, class_requirements):

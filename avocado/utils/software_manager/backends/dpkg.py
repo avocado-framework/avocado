@@ -4,10 +4,10 @@ import os
 import re
 import tarfile
 
-from ... import ar
-from ... import path as utils_path
-from ... import process
-from .base import BaseBackend
+from avocado.utils import ar
+from avocado.utils import path as utils_path
+from avocado.utils import process
+from avocado.utils.software_manager.backends.base import BaseBackend
 
 log = logging.getLogger('avocado.utils.software_manager')
 

@@ -22,7 +22,7 @@ import tempfile
 import time
 from functools import wraps
 
-from . import genio, process
+from avocado.utils import genio, process
 
 LOGGER = logging.getLogger(__name__)
 

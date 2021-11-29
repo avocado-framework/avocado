@@ -1,8 +1,8 @@
 import argparse
 import logging
 
-from .. import exit_codes
-from .manager import SoftwareManager
+from avocado.utils import exit_codes
+from avocado.utils.software_manager.manager import SoftwareManager
 
 log = logging.getLogger('avocado.utils.software_manager')
 

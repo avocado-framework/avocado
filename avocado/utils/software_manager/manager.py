@@ -1,4 +1,5 @@
-from .inspector import SUPPORTED_PACKAGE_MANAGERS, SystemInspector
+from avocado.utils.software_manager.inspector import (
+    SUPPORTED_PACKAGE_MANAGERS, SystemInspector)
 
 
 class SoftwareManager:

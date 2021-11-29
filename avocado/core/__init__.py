@@ -17,10 +17,10 @@ import os
 
 import pkg_resources
 
-from .dispatcher import InitDispatcher
-from .settings import settings as stgs
-from .streams import BUILTIN_STREAM_SETS, BUILTIN_STREAMS
-from .utils.path import prepend_base_path
+from avocado.core.dispatcher import InitDispatcher
+from avocado.core.settings import settings as stgs
+from avocado.core.streams import BUILTIN_STREAM_SETS, BUILTIN_STREAMS
+from avocado.core.utils.path import prepend_base_path
 
 
 def register_core_options():

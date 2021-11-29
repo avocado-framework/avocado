@@ -26,7 +26,7 @@ import os
 import re
 from tempfile import mkstemp
 
-from . import process
+from avocado.utils import process
 
 LOG = logging.getLogger(__name__)
 

@@ -19,7 +19,7 @@ Test requirements module.
 import os
 import sqlite3
 
-from ....data_dir import get_datafile_path
+from avocado.core.data_dir import get_datafile_path
 
 #: The location of the requirements cache database
 CACHE_DATABASE_PATH = get_datafile_path('cache', 'requirements.sqlite')

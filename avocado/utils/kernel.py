@@ -25,7 +25,7 @@ import tempfile
 
 from pkg_resources import packaging
 
-from . import archive, asset, build, distro, process
+from avocado.utils import archive, asset, build, distro, process
 
 LOG = logging.getLogger(__name__)
 

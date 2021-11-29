@@ -20,12 +20,13 @@ import argparse
 from configparser import ConfigParser, NoOptionError
 from glob import glob
 
-from . import exit_codes
-from .nrunner import Runnable
-from .output import LOG_UI
-from .resolver import ReferenceResolution, ReferenceResolutionResult
-from .settings import ConfigFileNotFound, SettingsError, settings
-from .version import VERSION
+from avocado.core import exit_codes
+from avocado.core.nrunner import Runnable
+from avocado.core.output import LOG_UI
+from avocado.core.resolver import (ReferenceResolution,
+                                   ReferenceResolutionResult)
+from avocado.core.settings import ConfigFileNotFound, SettingsError, settings
+from avocado.core.version import VERSION
 
 PROG = 'avocado'
 DESCRIPTION = 'Avocado Test Runner'

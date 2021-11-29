@@ -26,7 +26,7 @@ need pycdlib module installed in your environment.
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from . import astring, iso9660
+from avocado.utils import astring, iso9660
 
 #: The meta-data file template
 #:

@@ -26,7 +26,7 @@ from multiprocessing import Process
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
-from . import aurl, crypto, output
+from avocado.utils import aurl, crypto, output
 
 log = logging.getLogger('avocado.utils.download')
 

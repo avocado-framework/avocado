@@ -2,10 +2,10 @@ import enum
 from mmap import ACCESS_READ, mmap
 from pathlib import Path
 
-from ...core.data_dir import get_job_results_dir
-from ...core.settings import settings
-from ...utils.astring import string_to_safe_path
-from .exceptions import SpawnerException
+from avocado.core.data_dir import get_job_results_dir
+from avocado.core.settings import settings
+from avocado.core.spawners.exceptions import SpawnerException
+from avocado.utils.astring import string_to_safe_path
 
 
 class SpawnMethod(enum.Enum):

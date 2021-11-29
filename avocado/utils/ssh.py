@@ -18,8 +18,8 @@ import subprocess
 import sys
 import tempfile
 
-from . import path as path_utils
-from . import process
+from avocado.utils import path as path_utils
+from avocado.utils import process
 
 try:
     #: The SSH client binary to use, if one is found in the system

@@ -21,7 +21,7 @@ import ast
 import logging
 import time
 
-from . import distro, process, service, wait
+from avocado.utils import distro, process, service, wait
 
 LOG = logging.getLogger(__name__)
 

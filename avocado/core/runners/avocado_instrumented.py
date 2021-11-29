@@ -3,12 +3,12 @@ import tempfile
 import time
 import traceback
 
-from .. import nrunner
-from ..test import TestID
-from ..tree import TreeNodeEnvOnly
-from ..utils import loader
-from ..varianter import is_empty_variant
-from .utils import messages
+from avocado.core import nrunner
+from avocado.core.runners.utils import messages
+from avocado.core.test import TestID
+from avocado.core.tree import TreeNodeEnvOnly
+from avocado.core.utils import loader
+from avocado.core.varianter import is_empty_variant
 
 
 class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):

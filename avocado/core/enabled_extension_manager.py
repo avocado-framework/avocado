@@ -16,8 +16,8 @@
 Extension manager with disable/ordering support
 """
 
-from .extension_manager import ExtensionManager
-from .settings import settings
+from avocado.core.extension_manager import ExtensionManager
+from avocado.core.settings import settings
 
 
 class EnabledExtensionManager(ExtensionManager):

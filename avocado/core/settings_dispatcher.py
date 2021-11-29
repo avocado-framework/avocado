@@ -20,7 +20,7 @@ will be read by the other dispatchers, while still being a dispatcher
 for configuration sources.
 """
 
-from .extension_manager import ExtensionManager
+from avocado.core.extension_manager import ExtensionManager
 
 
 class SettingsDispatcher(ExtensionManager):

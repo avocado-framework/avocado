@@ -12,7 +12,7 @@
 # Copyright: Red Hat Inc. 2021
 # Authors: Willian Rampazzo <willianr@redhat.com>
 
-from ..nrunner import Runnable
+from avocado.core.nrunner import Runnable
 
 
 class RequirementsResolver:

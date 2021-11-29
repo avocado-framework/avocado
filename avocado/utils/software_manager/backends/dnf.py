@@ -1,7 +1,7 @@
 import logging
 
-from ... import process
-from .yum import YumBackend
+from avocado.utils import process
+from avocado.utils.software_manager.backends.yum import YumBackend
 
 log = logging.getLogger('avocado.utils.software_manager')
 

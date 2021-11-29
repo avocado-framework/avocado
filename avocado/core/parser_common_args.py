@@ -12,7 +12,7 @@
 # Copyright: Red Hat Inc. 2019
 # Author: Cleber Rosa <crosa@redhat.com>
 
-from .settings import settings
+from avocado.core.settings import settings
 
 
 def add_tag_filter_args(parser):
