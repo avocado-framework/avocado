@@ -579,6 +579,7 @@ def create_suites(args):  # pylint: disable=W0621
         suites.append(TestSuite.from_config(config_check, "static-checks"))
 
     if args.dict_tests['optional-plugins']:
+        config_check['resolver.references'] = []
         for optional_plugin in glob.glob('optional_plugins/*'):
             plugin_name = os.path.basename(optional_plugin)
             if plugin_name not in args.disable_plugin_checks:
