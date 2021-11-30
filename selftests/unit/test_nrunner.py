@@ -70,6 +70,12 @@ class Runnable(unittest.TestCase):
         self.assertEqual(runnable.args, ("/etc/profile",))
         self.assertEqual(runnable.kwargs, {"TERM": "vt3270"})
 
+    def test_identifier_args(self):
+        config = {'runner.identifier_format': '{uri}-{args[0]}'}
+        runnable = nrunner.Runnable('exec-text', 'uri', 'arg1', 'arg2',
+                                    config=config)
+        self.assertEqual(runnable.identifier, 'uri-arg1')
+
     def test_runnable_command_args(self):
         runnable = nrunner.Runnable('noop', 'uri', 'arg1', 'arg2')
         actual_args = runnable.get_command_args()
