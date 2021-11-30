@@ -10,9 +10,6 @@ arch:
 python:
     - "3.9"
 
-env:
-    - AVOCADO_PARALLEL_LINT_JOBS=1
-
 addons:
   apt:
     packages:
@@ -22,6 +19,7 @@ addons:
 
 install:
     - pip install -r requirements-dev.txt
+    - python3 setup.py develop
 
 script:
-    - make check
+    - python3 selftests/check.py --skip static-checks
