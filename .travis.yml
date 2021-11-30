@@ -7,14 +7,9 @@ arch:
   - ppc64le
   - arm64
 
-python:
-    - "3.9"
-
 addons:
   apt:
     packages:
-    - enchant
-    - hunspell-en-us
     - golang
 
 install:
