@@ -10,18 +10,9 @@ arch:
 python:
     - "3.9"
 
-env:
-    - AVOCADO_PARALLEL_LINT_JOBS=1
-
-addons:
-  apt:
-    packages:
-    - enchant
-    - hunspell-en-us
-    - golang
-
 install:
     - pip install -r requirements-dev.txt
+    - python3 setup.py develop --user
 
 script:
-    - make check
+    - python3 selftests/check.py --skip static-checks
