@@ -15,7 +15,7 @@
 import types
 from functools import wraps
 
-from . import exceptions as core_exceptions
+from avocado.core import exceptions as core_exceptions
 
 
 def deco_factory(behavior, signal):

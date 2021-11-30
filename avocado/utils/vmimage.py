@@ -25,9 +25,9 @@ from html.parser import HTMLParser
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
-from . import archive, asset, astring
-from . import path as utils_path
-from . import process
+from avocado.utils import archive, asset, astring
+from avocado.utils import path as utils_path
+from avocado.utils import process
 
 # pylint: disable=C0401
 #: The "qemu-img" binary used when creating the snapshot images.  If

@@ -2,7 +2,7 @@ import asyncio
 import os
 import sys
 
-from ..settings import settings
+from avocado.core.settings import settings
 
 
 class StatusServer:

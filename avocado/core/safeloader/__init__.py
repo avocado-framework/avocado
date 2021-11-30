@@ -17,6 +17,7 @@
 Safe (AST based) test loader module utilities
 """
 
-from .core import find_avocado_tests, find_python_unittests
+from avocado.core.safeloader.core import (find_avocado_tests,
+                                          find_python_unittests)
 
 __all__ = ['find_avocado_tests', 'find_python_unittests']

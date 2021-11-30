@@ -5,10 +5,10 @@ import re
 import shutil
 import tempfile
 
-from ... import data_factory
-from ... import path as utils_path
-from ... import process
-from .rpm import RpmBackend
+from avocado.utils import data_factory
+from avocado.utils import path as utils_path
+from avocado.utils import process
+from avocado.utils.software_manager.backends.rpm import RpmBackend
 
 try:
     import yum

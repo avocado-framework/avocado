@@ -1,8 +1,8 @@
 import ast
 import os
 
-from .imported import ImportedSymbol
-from .utils import get_statement_import_as
+from avocado.core.safeloader.imported import ImportedSymbol
+from avocado.core.safeloader.utils import get_statement_import_as
 
 
 class PythonModule:

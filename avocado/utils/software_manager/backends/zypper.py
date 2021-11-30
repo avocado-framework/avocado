@@ -1,9 +1,9 @@
 import logging
 import re
 
-from ... import path as utils_path
-from ... import process
-from .rpm import RpmBackend
+from avocado.utils import path as utils_path
+from avocado.utils import process
+from avocado.utils.software_manager.backends.rpm import RpmBackend
 
 log = logging.getLogger('avocado.utils.software_manager')
 

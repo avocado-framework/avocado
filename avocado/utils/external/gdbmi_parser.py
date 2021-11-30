@@ -27,7 +27,7 @@
 import pprint
 import re
 
-from . import spark
+from avocado.utils.external import spark
 
 
 class Token:

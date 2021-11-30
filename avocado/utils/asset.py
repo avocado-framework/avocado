@@ -31,10 +31,10 @@ import uuid
 from datetime import datetime
 from urllib.parse import urlparse
 
-from . import astring, crypto
-from . import path as utils_path
-from .download import url_download
-from .filelock import FileLock
+from avocado.utils import astring, crypto
+from avocado.utils import path as utils_path
+from avocado.utils.download import url_download
+from avocado.utils.filelock import FileLock
 
 LOG = logging.getLogger(__name__)
 #: The default hash algorithm to use on asset cache operations

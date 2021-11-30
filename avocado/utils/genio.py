@@ -20,7 +20,7 @@ import logging
 import os
 import re
 
-from . import crypto
+from avocado.utils import crypto
 
 LOG = logging.getLogger(__name__)
 

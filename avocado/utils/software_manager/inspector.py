@@ -20,12 +20,12 @@
 # client/shared/software_manager.py
 
 
-from .. import distro
-from .. import path as utils_path
-from .backends.apt import AptBackend
-from .backends.dnf import DnfBackend
-from .backends.yum import YumBackend
-from .backends.zypper import ZypperBackend
+from avocado.utils import distro
+from avocado.utils import path as utils_path
+from avocado.utils.software_manager.backends.apt import AptBackend
+from avocado.utils.software_manager.backends.dnf import DnfBackend
+from avocado.utils.software_manager.backends.yum import YumBackend
+from avocado.utils.software_manager.backends.zypper import ZypperBackend
 
 #: Mapping of package manager name to implementation class.
 SUPPORTED_PACKAGE_MANAGERS = {

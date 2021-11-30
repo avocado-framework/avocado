@@ -15,9 +15,9 @@
 import os
 import time
 
-from .nrunner import TASK_DEFAULT_CATEGORY
-from .output import LOG_UI
-from .test_id import TestID
+from avocado.core.nrunner import TASK_DEFAULT_CATEGORY
+from avocado.core.output import LOG_UI
+from avocado.core.test_id import TestID
 
 DEFAULT_LOG_FILE = 'debug.log'
 

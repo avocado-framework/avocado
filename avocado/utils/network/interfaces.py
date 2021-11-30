@@ -22,10 +22,10 @@ import os
 import shutil
 from ipaddress import ip_interface
 
-from ..distro import detect as distro_detect
-from ..wait import wait_for
-from .common import run_command
-from .exceptions import NWException
+from avocado.utils.distro import detect as distro_detect
+from avocado.utils.network.common import run_command
+from avocado.utils.network.exceptions import NWException
+from avocado.utils.wait import wait_for
 
 LOG = logging.getLogger(__name__)
 

@@ -19,10 +19,10 @@ This module provides an useful API for hosts in a network.
 
 import json
 
-from ..ssh import Session
-from .common import run_command
-from .exceptions import NWException
-from .interfaces import NetworkInterface
+from avocado.utils.network.common import run_command
+from avocado.utils.network.exceptions import NWException
+from avocado.utils.network.interfaces import NetworkInterface
+from avocado.utils.ssh import Session
 
 
 class Host:

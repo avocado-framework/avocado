@@ -20,7 +20,7 @@ dispatcher that these depend upon:
 :class:`avocado.core.settings_dispatcher.SettingsDispatcher`
 """
 
-from .enabled_extension_manager import EnabledExtensionManager
+from avocado.core.enabled_extension_manager import EnabledExtensionManager
 
 
 class CLIDispatcher(EnabledExtensionManager):

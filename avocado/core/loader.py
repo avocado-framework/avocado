@@ -22,11 +22,11 @@ import re
 import sys
 from enum import Enum
 
-from ..utils import stacktrace
-from . import data_dir, output, safeloader, test
-from .output import LOG_UI
-from .references import reference_split
-from .settings import settings
+from avocado.core import data_dir, output, safeloader, test
+from avocado.core.output import LOG_UI
+from avocado.core.references import reference_split
+from avocado.core.settings import settings
+from avocado.utils import stacktrace
 
 
 class DiscoverMode(Enum):

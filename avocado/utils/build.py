@@ -15,7 +15,7 @@
 import multiprocessing
 import os
 
-from . import process
+from avocado.utils import process
 
 
 def configure(path, configure=None):  # pylint: disable=W0621

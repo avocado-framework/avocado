@@ -3,8 +3,8 @@ import inspect
 import os
 import sys
 
-from ...utils import stacktrace
-from .. import test
+from avocado.core import test
+from avocado.utils import stacktrace
 
 
 class TestError(test.Test):

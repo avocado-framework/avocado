@@ -23,8 +23,8 @@ import math
 import os
 import re
 
-from . import data_structures, genio, process, wait
-from .data_structures import DataSize
+from avocado.utils import data_structures, genio, process, wait
+from avocado.utils.data_structures import DataSize
 
 LOG = logging.getLogger(__name__)
 

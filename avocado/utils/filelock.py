@@ -20,7 +20,7 @@ via PID lock files.
 import os
 import time
 
-from .process import pid_exists
+from avocado.utils.process import pid_exists
 
 
 class AlreadyLocked(Exception):

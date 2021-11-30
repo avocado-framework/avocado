@@ -32,15 +32,15 @@ import time
 import unittest
 from difflib import unified_diff
 
-from ..utils import asset, astring, data_structures, genio
-from ..utils import path as utils_path
-from ..utils import process, stacktrace
-from . import exceptions, output, parameters, sysinfo, tapparser
-from .decorators import skip
-from .output import LOG_JOB
-from .settings import settings
-from .test_id import TestID
-from .version import VERSION
+from avocado.core import exceptions, output, parameters, sysinfo, tapparser
+from avocado.core.decorators import skip
+from avocado.core.output import LOG_JOB
+from avocado.core.settings import settings
+from avocado.core.test_id import TestID
+from avocado.core.version import VERSION
+from avocado.utils import asset, astring, data_structures, genio
+from avocado.utils import path as utils_path
+from avocado.utils import process, stacktrace
 
 #: Environment variable used to store the location of a temporary
 #: directory which is preserved across all tests execution (usually in

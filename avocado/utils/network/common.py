@@ -1,4 +1,4 @@
-from .. import process
+from avocado.utils import process
 
 
 # Probably this will be replaced by aexpect

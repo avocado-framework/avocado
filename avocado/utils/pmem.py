@@ -19,7 +19,7 @@ import glob
 import json
 import re
 
-from . import genio, path, process
+from avocado.utils import genio, path, process
 
 
 class PMemException(Exception):

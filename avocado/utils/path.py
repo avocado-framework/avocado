@@ -20,7 +20,7 @@ import os
 import stat
 import tempfile
 
-from . import aurl
+from avocado.utils import aurl
 
 SHEBANG = '#!'
 

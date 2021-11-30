@@ -15,8 +15,19 @@ unset LIST
 unset COUNT
 
 echo -n "* Checking for avocado imports from avocado/utils: "
-LIST=`git grep -E '^(import avocado\\.*|from avocado(.*)import)' avocado/utils`
-COUNT=`git grep -E '^(import avocado\\.*|from avocado(.*)import)' avocado/utils | wc -l`
+LIST=`git grep -E '^(import avocado\\.*|from avocado(.*)import)' avocado/utils | grep -v 'avocado\.utils'`
+COUNT=`git grep -E '^(import avocado\\.*|from avocado(.*)import)' avocado/utils | grep -v 'avocado\.utils' | wc -l`
+(( RESULT = RESULT + COUNT ))
+echo "$COUNT"
+if [ -n "$LIST" ]; then
+   echo "$LIST"
+fi
+unset LIST
+unset COUNT
+
+echo -n "* Checking for avocado relative imports: "
+LIST=`git grep -E '^(from \\.(.*)import)' avocado`
+COUNT=`git grep -E '^(from \\.(.*)import)' avocado | wc -l`
 (( RESULT = RESULT + COUNT ))
 echo "$COUNT"
 if [ -n "$LIST" ]; then

@@ -1,6 +1,6 @@
 import os
 
-from ...utils import path, process
+from avocado.utils import path, process
 
 
 def get_avocado_git_version():

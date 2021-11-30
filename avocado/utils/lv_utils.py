@@ -25,7 +25,7 @@ import shutil
 import time
 import warnings
 
-from . import process
+from avocado.utils import process
 
 LOGGER = logging.getLogger(__name__)
 

@@ -27,7 +27,7 @@ import json
 import os
 import re
 
-from . import process
+from avocado.utils import process
 
 
 class DiskError(Exception):

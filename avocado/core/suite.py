@@ -16,17 +16,17 @@ import os
 from enum import Enum
 from uuid import uuid4
 
-from .dispatcher import RunnerDispatcher
-from .exceptions import (JobTestSuiteReferenceResolutionError,
-                         OptionValidationError)
-from .loader import (DiscoverMode, LoaderError, LoaderUnhandledReferenceError,
-                     loader)
-from .parser import HintParser
-from .resolver import ReferenceResolutionResult, resolve
-from .settings import settings
-from .tags import filter_test_tags, filter_test_tags_runnable
-from .test import DryRunTest, Test
-from .varianter import Varianter, is_empty_variant
+from avocado.core.dispatcher import RunnerDispatcher
+from avocado.core.exceptions import (JobTestSuiteReferenceResolutionError,
+                                     OptionValidationError)
+from avocado.core.loader import (DiscoverMode, LoaderError,
+                                 LoaderUnhandledReferenceError, loader)
+from avocado.core.parser import HintParser
+from avocado.core.resolver import ReferenceResolutionResult, resolve
+from avocado.core.settings import settings
+from avocado.core.tags import filter_test_tags, filter_test_tags_runnable
+from avocado.core.test import DryRunTest, Test
+from avocado.core.varianter import Varianter, is_empty_variant
 
 
 class TestSuiteError(Exception):

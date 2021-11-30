@@ -33,7 +33,7 @@ import string
 import sys
 import tempfile
 
-from . import process
+from avocado.utils import process
 
 try:
     import pycdlib
