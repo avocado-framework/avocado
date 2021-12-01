@@ -346,21 +346,18 @@ class OutputTest(TestCaseTmpDir):
                            OUTPUT_CHECK_ON_OFF_CONTENT,
                            script.READ_ONLY_MODE) as test:
             command = ("%s run --job-results-dir %s --disable-sysinfo "
-                       "--test-runner=runner "
                        "--json - -- %s") % (AVOCADO, self.tmpdir.name, test.path)
             result = process.run(command)
             res = json.loads(result.stdout_text)
             testdir = res["tests"][0]["logdir"]
-            stdout_path = os.path.join(testdir, 'stdout')
-            self.assertTrue(os.path.exists(stdout_path))
-            with open(stdout_path, 'r') as stdout:
-                self.assertEqual(stdout.read(),
-                                 '__STDOUT_CONTENT____STDOUT_DO_RECORD_CONTENT__')
-            stderr_path = os.path.join(testdir, 'stderr')
-            self.assertTrue(os.path.exists(stderr_path))
-            with open(stderr_path, 'r') as stderr:
-                self.assertEqual(stderr.read(),
-                                 '__STDERR_CONTENT____STDERR_DO_RECORD_CONTENT__')
+            log_path = os.path.join(testdir, 'debug.log')
+            self.assertTrue(os.path.exists(log_path))
+            with open(log_path, 'r') as stdout:
+                content = stdout.read()
+            self.assertIn('[stdout] __STDOUT_CONTENT__', content)
+            self.assertIn('[stdout] __STDOUT_DO_RECORD_CONTENT__', content)
+            self.assertIn('[stderr] __STDERR_CONTENT__', content)
+            self.assertIn('[stderr] __STDERR_DO_RECORD_CONTENT__', content)
 
     @skipUnlessPathExists('/bin/true')
     def test_show(self):
