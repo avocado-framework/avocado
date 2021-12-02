@@ -49,11 +49,15 @@ class Podman:
         :rtype: tuple with returncode, stdout and stderr.
         """
         try:
+            LOG.debug("Executing %s", args[0])
             proc = await create_subprocess_exec(self.podman_bin,
                                                 *args,
                                                 stdout=subprocess.PIPE,
                                                 stderr=subprocess.PIPE)
             stdout, stderr = await proc.communicate()
+            LOG.debug("Return code: %s", proc.returncode)
+            LOG.debug("Stdout: %s", stdout.decode("utf-8", "replace"))
+            LOG.debug("Stderr: %s", stderr.decode("utf-8", "replace"))
         except (FileNotFoundError, PermissionError) as ex:
             # Since this method is also used by other methods, let's
             # log here as well.
