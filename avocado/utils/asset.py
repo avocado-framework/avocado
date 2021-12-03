@@ -98,6 +98,7 @@ class Asset:
         :param asset_path: full path of the asset file.
         """
         result = crypto.hash_file(asset_path, algorithm=self.algorithm)
+        self.asset_hash = result
         hash_file = self._get_hash_file(asset_path)
         with FileLock(hash_file, 30):
             with open(hash_file, 'w') as fp:
@@ -426,6 +427,7 @@ class Asset:
                 continue
 
             # Ignore mismatch hash
+            self.asset_hash = Asset.read_hash_from_file(asset_file)
             if not self._has_valid_hash(asset_file, self.asset_hash):
                 continue
 
