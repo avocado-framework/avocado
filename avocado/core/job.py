@@ -166,7 +166,6 @@ class Job:
         self.time_elapsed = -1
         self.funcatexit = CallbackRegister("JobExit %s" % self.unique_id, LOG_JOB)
         self._stdout_stderr = None
-        self._old_root_level = None
         self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
 
@@ -203,7 +202,6 @@ class Job:
                                               logging.FileHandler,
                                               self.logfile, self.loglevel, fmt)
         main_logger = logging.getLogger('avocado')
-        self._old_root_level = main_logger.level
         main_logger.addHandler(test_handler)
         main_logger.setLevel(self.loglevel)
         self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
@@ -257,7 +255,6 @@ class Job:
         for handler, loggers in self.__logging_handlers.items():
             for logger in loggers:
                 logging.getLogger(logger).removeHandler(handler)
-        logging.root.level = self._old_root_level
 
     def _log_avocado_config(self):
         LOG_JOB.info('Avocado config:')
