@@ -114,6 +114,8 @@ class DiskSpace(unittest.TestCase):
                      'macOS does not support scsi_debug module')
     @unittest.skipIf(not process.can_sudo(), "This test requires root or "
                      "passwordless sudo configured.")
+    @unittest.skipIf(process.system("which modprobe", ignore_status=True),
+                     "kmod not installed (command modprobe is missing)")
     def test_get_diskspace(self):
         """
         Use scsi_debug device to check disk size
