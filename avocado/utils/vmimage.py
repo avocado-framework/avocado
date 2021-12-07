@@ -315,8 +315,7 @@ class DebianImageProvider(ImageProviderBase):
 
     name = 'Debian'
 
-    def __init__(self, version='[0-9]+.[0-9]+.[0-9]+.*', build=None,
-                 arch=DEFAULT_ARCH):
+    def __init__(self, version=None, build=r'[\d{8}\-\d{3}]', arch=DEFAULT_ARCH):
         # Debian uses 'amd64' instead of 'x86_64'
         if arch == 'x86_64':
             arch = 'amd64'
@@ -324,10 +323,41 @@ class DebianImageProvider(ImageProviderBase):
         elif arch == 'aarch64':
             arch = 'arm64'
 
+        table_version = {
+            'buster': '10',
+            'bullseye': '11',
+        }
+
+        table_codename = {
+            '10': 'buster',
+            '11': 'bullseye',
+        }
+
+        # Default version if none was selected, should work at least until 2023 Q3
+        if version is None:
+            version = "bullseye"
+
+        # User provided a numerical version
+        if version in table_codename.keys():
+            version = table_codename[version]
+
+        # If version is not a codename by now, it's wrong or unknown,
+        # so let's fail early
+        if (version not in table_version.keys()):
+            raise ImageProviderError("Unknown version", version)
+
         super(DebianImageProvider, self).__init__(version, build, arch)
-        self.url_versions = 'https://cdimage.debian.org/cdimage/openstack/'
-        self.url_images = self.url_versions + '{version}/'
-        self.image_pattern = 'debian-(?P<version>{version})-openstack-(?P<arch>{arch}).qcow2$'
+        self.url_versions = 'https://cloud.debian.org/images/cloud/'
+        self.url_images = self.url_versions + version + '/{build}/'
+        self.image_pattern = 'debian-'+table_version[version]+'-generic-(?P<arch>{arch})-{build}.qcow2$'
+
+    def get_image_url(self):
+        # Find out the build first
+        parserbuild = VMImageHtmlParser(self.build)
+        self._feed_html_parser(self.url_versions+self._version+"/", parserbuild)
+        self.build = max(parserbuild.items)
+
+        return super(DebianImageProvider, self).get_image_url()
 
 
 class JeosImageProvider(ImageProviderBase):
