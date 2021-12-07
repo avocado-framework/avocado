@@ -29,8 +29,9 @@ class HtmlResultTest(unittest.TestCase):
 
         # Try to find some strings on HTML
         self.assertNotEqual(output.find('Filesystem'), -1)
-        self.assertNotEqual(output.find('root='), -1)
         self.assertNotEqual(output.find('MemAvailable'), -1)
+        self.assertRegex(output, r'(BOOT_IMAGE|root)\=',
+                         '/proc/cmdline content not found')
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)
