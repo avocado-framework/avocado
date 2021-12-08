@@ -28,7 +28,7 @@ from urllib.request import urlopen
 
 from avocado.utils import aurl, crypto, output
 
-log = logging.getLogger('avocado.utils.download')
+log = logging.getLogger(__name__)
 
 
 def url_open(url, data=None, timeout=5):

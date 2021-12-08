@@ -20,7 +20,7 @@ import os
 import time
 
 # Use this for debug logging
-LOGGER = logging.getLogger("avocado.app.debug")
+LOGGER = logging.getLogger(__name__)
 
 # measure_duration global storage
 __MEASURE_DURATION = {}
