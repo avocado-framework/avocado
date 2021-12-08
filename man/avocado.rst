@@ -113,9 +113,7 @@ Options for subcommand `run` (`avocado run --help`)::
       --keep-tmp            Keep job temporary files (useful for avocado
                             debugging).
       --ignore-missing-references
-                            Force the job execution, even if some of the test
-                            references are not resolved to tests. "on" and "off"
-                            will be deprecated soon.
+                            Force the job execution, even if some of the test.
       --disable-sysinfo     Enable or disable sysinfo information. Like hardware
                             details, profiles, etc.
       --execution-order RUN.EXECUTION_ORDER

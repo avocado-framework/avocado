@@ -177,8 +177,7 @@ class Run(CLICmd):
                                  long_arg='--keep-tmp')
 
         help_msg = ('Force the job execution, even if some of the test '
-                    'references are not resolved to tests. "on" and '
-                    '"off" will be deprecated soon.')
+                    'references are not resolved to tests.')
         settings.register_option(section='run',
                                  key='ignore_missing_references',
                                  default=False,
