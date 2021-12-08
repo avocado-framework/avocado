@@ -5,7 +5,7 @@ redhat_version_task:
        - python3 -m avocado --version
     container:
         matrix:
-          - image: fedora:33
+          - image: fedora:35
           - image: fedora:34
           - image: registry.access.redhat.com/ubi8/ubi
 
@@ -22,7 +22,7 @@ fedora_develop_install_uninstall_task:
        - test `python3 -m avocado plugins | grep ^html | wc -l` -eq "0"
        - test `python3 -m avocado plugins | grep ^robot | wc -l` -eq "0"
     container:
-      image: fedora:34
+      image: fedora:35
 
 redhat_egg_task:
     egg_script:
@@ -35,7 +35,7 @@ redhat_egg_task:
        - python3 -c 'import sys; from pkg_resources import require; require("avocado-framework"); from avocado.core.main import main; sys.exit(main())' run /bin/true
     container:
         matrix:
-          - image: fedora:33
+          - image: fedora:35
           - image: fedora:34
           - image: registry.access.redhat.com/ubi8/ubi
 
@@ -70,8 +70,8 @@ debian_egg_task:
 
 fedora_selftests_task:
     selftests_script:
-       - make develop
+       - python3 setup.py develop --user
        - PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 python3 selftests/check.py  --skip static-checks
     container:
         matrix:
-          - image: quay.io/avocado-framework/avocado-ci-fedora-33
+          - image: quay.io/avocado-framework/avocado-ci-fedora-35
