@@ -383,13 +383,13 @@ def early_start():
         add_log_handler(LOG_UI.getChild("debug"), logging.StreamHandler,
                         sys.stdout, logging.DEBUG)
     if os.environ.get('AVOCADO_LOG_EARLY'):
-        add_log_handler("", logging.StreamHandler, sys.stdout, logging.DEBUG)
+        add_log_handler("avocado", logging.StreamHandler, sys.stdout, logging.DEBUG)
         add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout,
                         logging.DEBUG)
     else:
         STD_OUTPUT.fake_outputs()
-        add_log_handler("", MemStreamHandler, None, logging.DEBUG)
-    logging.root.level = logging.DEBUG
+        add_log_handler("avocado", MemStreamHandler, None, logging.DEBUG)
+    logging.getLogger("avocado").level = logging.DEBUG
 
 
 CONFIG = []
@@ -470,9 +470,9 @@ def reconfigure(args):
         LOG_JOB.getChild("stdout").propagate = False
         LOG_JOB.getChild("stderr").propagate = False
         if "early" in enabled:
-            handler = add_log_handler("", logging.StreamHandler,
+            handler = add_log_handler("avocado", logging.StreamHandler,
                                       STD_OUTPUT.stdout, logging.DEBUG)
-            save_handler("", handler, configuration)
+            save_handler("avocado", handler, configuration)
             handler = add_log_handler(LOG_JOB, logging.StreamHandler,
                                       STD_OUTPUT.stdout, logging.DEBUG)
             save_handler(LOG_JOB.name, handler, configuration)
@@ -505,9 +505,9 @@ def reconfigure(args):
                          name, level, details)
             sys.exit(exit_codes.AVOCADO_FAIL)
     # Remove the in-memory handlers
-    for handler in logging.root.handlers:
+    for handler in logging.getLogger('avocado').handlers:
         if isinstance(handler, MemStreamHandler):
-            logging.root.handlers.remove(handler)
+            logging.getLogger('avocado').handlers.remove(handler)
 
     # Log early_messages
     for record in MemStreamHandler.log:
