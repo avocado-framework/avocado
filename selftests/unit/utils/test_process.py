@@ -39,10 +39,6 @@ while time.monotonic() < end:
 
 class TestSubProcess(unittest.TestCase):
 
-    def test_allow_output_check_parameter(self):
-        self.assertRaises(ValueError, process.SubProcess,
-                          FICTIONAL_CMD, False, "invalid")
-
     @unittest.mock.patch('avocado.utils.process.SubProcess._init_subprocess')
     @unittest.mock.patch('avocado.utils.process.SubProcess.is_sudo_enabled')
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')

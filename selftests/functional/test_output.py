@@ -105,30 +105,6 @@ class OutputCheckNone(Test):
         process.run(cmd % ('stderr', '__STDERR_DONT_RECORD_CONTENT__'))
 """
 
-OUTPUT_CHECK_ON_OFF_CONTENT = r"""
-import sys
-
-from avocado import Test
-from avocado.utils import process
-
-
-class OutputCheckOnOff(Test):
-
-    def test(self):
-        cmd = "%s -c \"import sys; sys.%%s.write('%%s')\"" % sys.executable
-        # start with the default behavior
-        process.run(cmd % ('stdout', '__STDOUT_CONTENT__'))
-        process.run(cmd % ('stderr', '__STDERR_CONTENT__'))
-        # now shift to no recording
-        process.run(cmd % ('stdout', '__STDOUT_DONT_RECORD_CONTENT__'),
-                    allow_output_check='none')
-        process.run(cmd % ('stderr', '__STDERR_DONT_RECORD_CONTENT__'),
-                    allow_output_check='none')
-        # now check that the default behavior (recording) is effective
-        process.run(cmd % ('stdout', '__STDOUT_DO_RECORD_CONTENT__'))
-        process.run(cmd % ('stderr', '__STDERR_DO_RECORD_CONTENT__'))
-"""
-
 OUTPUT_SHOW_TEST = """
 #!/usr/bin/env python3
 
@@ -303,61 +279,6 @@ class OutputTest(TestCaseTmpDir):
                                                          b'[stderr]')),
                           output_file.readlines()))
             self.assertEqual(expected, result)
-
-    def test_check_record_no_module_default(self):
-        """
-        Checks that the `avocado.utils.process` module won't have a output
-        check record mode (`OUTPUT_CHECK_RECORD_MODE`) set by default.
-
-        The reason is that, if this is always set from the command
-        line runner, we can't distinguish from a situation where the
-        module level configuration should be applied as a fallback to
-        the API parameter.  By leaving it unset by default, the command line
-        option parameter value `none` will slightly change its behavior,
-        meaning that it will explicitly disable output check record when
-        asked to do so.
-        """
-        with script.Script(os.path.join(self.tmpdir.name, "output_mode_none.py"),
-                           OUTPUT_MODE_NONE_CONTENT,
-                           script.READ_ONLY_MODE) as test:
-            command = ("%s run --job-results-dir %s --disable-sysinfo "
-                       "--test-runner=runner "
-                       "--json - --output-check-record none -- %s") % (AVOCADO,
-                                                                       self.tmpdir.name,
-                                                                       test.path)
-            result = process.run(command)
-            res = json.loads(result.stdout_text)
-            testdir = res["tests"][0]["logdir"]
-            for output_file in ('stdout', 'stderr', 'output'):
-                output_file_path = os.path.join(testdir, output_file)
-                self.assertTrue(os.path.exists(output_file_path))
-                with open(output_file_path, 'r') as output:
-                    self.assertEqual(output.read(), '')
-
-    def test_check_on_off(self):
-        """
-        Checks that output will always be kept, but it will only make into
-        the *test* stdout/stderr/output files when it's not explicitly disabled
-
-        This control is defined as an API parameter, `allow_output_check`, so
-        it should be possible to enable/disable it on each call.
-        """
-        with script.Script(os.path.join(self.tmpdir.name, "test_check_on_off.py"),
-                           OUTPUT_CHECK_ON_OFF_CONTENT,
-                           script.READ_ONLY_MODE) as test:
-            command = ("%s run --job-results-dir %s --disable-sysinfo "
-                       "--json - -- %s") % (AVOCADO, self.tmpdir.name, test.path)
-            result = process.run(command)
-            res = json.loads(result.stdout_text)
-            testdir = res["tests"][0]["logdir"]
-            log_path = os.path.join(testdir, 'debug.log')
-            self.assertTrue(os.path.exists(log_path))
-            with open(log_path, 'r') as stdout:
-                content = stdout.read()
-            self.assertIn('[stdout] __STDOUT_CONTENT__', content)
-            self.assertIn('[stdout] __STDOUT_DO_RECORD_CONTENT__', content)
-            self.assertIn('[stderr] __STDERR_CONTENT__', content)
-            self.assertIn('[stderr] __STDERR_DO_RECORD_CONTENT__', content)
 
     @skipUnlessPathExists('/bin/true')
     def test_show(self):

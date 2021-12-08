@@ -56,12 +56,6 @@ WRAP_PROCESS_NAMES_EXPR = []
 #: undefined, this situation will be flagged by an exception.
 UNDEFINED_BEHAVIOR_EXCEPTION = None
 
-#: The current output record mode.  It's not possible to record
-#: both the 'stdout' and 'stderr' streams, and at the same time
-#: in the right order, the combined 'output' stream.  So this
-#: setting defines the mode.
-OUTPUT_CHECK_RECORD_MODE = None
-
 #: When using the nrunner architecture we don't need to log messages into the
 #: stream_logger as well. By setting this to True, we will set stream_logger to
 #: None.
@@ -528,8 +522,7 @@ class SubProcess:
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
-    def __init__(self, cmd, verbose=True, allow_output_check=None,
-                 shell=False, env=None, sudo=False,
+    def __init__(self, cmd, verbose=True, shell=False, env=None, sudo=False,
                  ignore_bg_processes=False, encoding=None, logger=None):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
@@ -538,24 +531,6 @@ class SubProcess:
         :type cmd: str
         :param verbose: Whether to log the command run and stdout/stderr.
         :type verbose: bool
-        :param allow_output_check: Whether to record the output from this
-                                   process (from stdout and stderr) in the
-                                   test's output record files. Valid values:
-                                   'stdout', for standard output *only*,
-                                   'stderr' for standard error *only*,
-                                   'both' for both standard output and error
-                                   in separate files, 'combined' for
-                                   standard output and error in a single file,
-                                   and 'none' to disable all recording. 'all'
-                                   is also a valid, but deprecated, option that
-                                   is a synonym of 'both'.  If an explicit value
-                                   is not given to this parameter, that is, if
-                                   None is given, it defaults to using the module
-                                   level configuration, as set by
-                                   :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
-                                   module level configuration itself is not set,
-                                   it defaults to 'none'.
-        :type allow_output_check: str
         :param shell: Whether to run the subprocess in a subshell.
         :type shell: bool
         :param env: Use extra environment variables.
@@ -591,16 +566,6 @@ class SubProcess:
         else:
             self.cmd = cmd
         self.verbose = verbose
-        if allow_output_check is None:
-            allow_output_check = OUTPUT_CHECK_RECORD_MODE
-        if allow_output_check is None:
-            allow_output_check = 'both'
-        if allow_output_check not in ('stdout', 'stderr', 'both',
-                                      'combined', 'none', 'all'):
-            msg = ("Invalid value (%s) set in allow_output_check" %
-                   allow_output_check)
-            raise ValueError(msg)
-        self.allow_output_check = allow_output_check
         self.result = CmdResult(self.cmd, encoding=encoding)
         self.shell = shell
         if env:
@@ -618,7 +583,6 @@ class SubProcess:
         # files and logs
         self._stdout_drainer = None
         self._stderr_drainer = None
-        self._combined_drainer = None
 
         self._ignore_bg_processes = ignore_bg_processes
 
@@ -666,13 +630,9 @@ class SubProcess:
             else:
                 cmd = self.cmd
             try:
-                if self.allow_output_check == 'combined':
-                    stderr = subprocess.STDOUT
-                else:
-                    stderr = subprocess.PIPE
                 self._popen = subprocess.Popen(cmd,
                                                stdout=subprocess.PIPE,
-                                               stderr=stderr,
+                                               stderr=subprocess.PIPE,
                                                shell=self.shell,
                                                env=self.env)
             except OSError as details:
@@ -682,48 +642,34 @@ class SubProcess:
             self.start_time = time.monotonic()  # pylint: disable=W0201
 
             # prepare fd drainers
-            if self.allow_output_check == 'combined':
-                self._combined_drainer = FDDrainer(
-                    self._popen.stdout.fileno(),
-                    self.result,
-                    name="%s-combined" % self.cmd,
-                    logger=self.logger,
-                    logger_prefix="[output] %s",
-                    # FIXME, in fact, a new log has to be used here
-                    stream_logger=self.output_logger,
-                    ignore_bg_processes=self._ignore_bg_processes,
-                    verbose=self.verbose)
-                self._combined_drainer.start()
-
+            if NRUNNER_MODE:
+                stdout_stream_logger = None
+                stderr_stream_logger = None
             else:
-                if self.allow_output_check == 'none' or NRUNNER_MODE:
-                    stdout_stream_logger = None
-                    stderr_stream_logger = None
-                else:
-                    stdout_stream_logger = self.stdout_logger
-                    stderr_stream_logger = self.stderr_logger
-                self._stdout_drainer = FDDrainer(
-                    self._popen.stdout.fileno(),
-                    self.result,
-                    name="%s-stdout" % self.cmd,
-                    logger=self.logger,
-                    logger_prefix="[stdout] %s",
-                    stream_logger=stdout_stream_logger,
-                    ignore_bg_processes=self._ignore_bg_processes,
-                    verbose=self.verbose)
-                self._stderr_drainer = FDDrainer(
-                    self._popen.stderr.fileno(),
-                    self.result,
-                    name="%s-stderr" % self.cmd,
-                    logger=self.logger,
-                    logger_prefix="[stderr] %s",
-                    stream_logger=stderr_stream_logger,
-                    ignore_bg_processes=self._ignore_bg_processes,
-                    verbose=self.verbose)
+                stdout_stream_logger = self.stdout_logger
+                stderr_stream_logger = self.stderr_logger
+            self._stdout_drainer = FDDrainer(
+                self._popen.stdout.fileno(),
+                self.result,
+                name="%s-stdout" % self.cmd,
+                logger=self.logger,
+                logger_prefix="[stdout] %s",
+                stream_logger=stdout_stream_logger,
+                ignore_bg_processes=self._ignore_bg_processes,
+                verbose=self.verbose)
+            self._stderr_drainer = FDDrainer(
+                self._popen.stderr.fileno(),
+                self.result,
+                name="%s-stderr" % self.cmd,
+                logger=self.logger,
+                logger_prefix="[stderr] %s",
+                stream_logger=stderr_stream_logger,
+                ignore_bg_processes=self._ignore_bg_processes,
+                verbose=self.verbose)
 
-                # start stdout/stderr threads
-                self._stdout_drainer.start()
-                self._stderr_drainer.start()
+            # start stdout/stderr threads
+            self._stdout_drainer.start()
+            self._stderr_drainer.start()
 
             def signal_handler(signum, frame):  # pylint: disable=W0613
                 self.result.interrupted = "signal/ctrl+c"
@@ -751,8 +697,6 @@ class SubProcess:
         Close subprocess stdout and stderr, and put values into result obj.
         """
         # Cleaning up threads
-        if self._combined_drainer is not None:
-            self._combined_drainer.flush()
         if self._stdout_drainer is not None:
             self._stdout_drainer.flush()
         if self._stderr_drainer is not None:
@@ -782,8 +726,6 @@ class SubProcess:
         :rtype: str
         """
         self._init_subprocess()
-        if self._combined_drainer is not None:
-            return self._combined_drainer.data.getvalue()
         return self._stdout_drainer.data.getvalue()
 
     def get_stderr(self):
@@ -794,8 +736,6 @@ class SubProcess:
         :rtype: str
         """
         self._init_subprocess()
-        if self._combined_drainer is not None:
-            return ''
         return self._stderr_drainer.data.getvalue()
 
     def terminate(self):
@@ -975,7 +915,6 @@ class WrapSubProcess(SubProcess):
     """
 
     def __init__(self, cmd, verbose=True,
-                 allow_output_check=None,
                  shell=False, env=None, wrapper=None, sudo=False,
                  ignore_bg_processes=False, encoding=None, logger=None):
         if wrapper is None and CURRENT_WRAPPER is not None:
@@ -985,7 +924,7 @@ class WrapSubProcess(SubProcess):
             if not os.path.exists(self.wrapper):
                 raise IOError("No such wrapper: '%s'" % self.wrapper)
             cmd = wrapper + ' ' + cmd
-        super(WrapSubProcess, self).__init__(cmd, verbose, allow_output_check,
+        super(WrapSubProcess, self).__init__(cmd, verbose,
                                              shell, env, sudo,
                                              ignore_bg_processes, encoding,
                                              logger)
@@ -1030,8 +969,7 @@ def get_sub_process_klass(cmd):
 
 
 def run(cmd, timeout=None, verbose=True, ignore_status=False,
-        allow_output_check=None, shell=False,
-        env=None, sudo=False, ignore_bg_processes=False,
+        shell=False, env=None, sudo=False, ignore_bg_processes=False,
         encoding=None, logger=None):
     """
     Run a subprocess, returning a CmdResult object.
@@ -1048,24 +986,6 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
     :type ignore_status: bool
-    :param allow_output_check: Whether to record the output from this
-                               process (from stdout and stderr) in the
-                               test's output record files. Valid values:
-                               'stdout', for standard output *only*,
-                               'stderr' for standard error *only*,
-                               'both' for both standard output and error
-                               in separate files, 'combined' for
-                               standard output and error in a single file,
-                               and 'none' to disable all recording. 'all'
-                               is also a valid, but deprecated, option that
-                               is a synonym of 'both'.  If an explicit value
-                               is not given to this parameter, that is, if
-                               None is given, it defaults to using the module
-                               level configuration, as set by
-                               :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
-                               module level configuration itself is not set,
-                               it defaults to 'none'.
-    :type allow_output_check: str
     :param shell: Whether to run the command on a subshell
     :type shell: bool
     :param env: Use extra environment variables
@@ -1094,7 +1014,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
         encoding = astring.ENCODING
     klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
-               allow_output_check=allow_output_check, shell=shell, env=env,
+               shell=shell, env=env,
                sudo=sudo, ignore_bg_processes=ignore_bg_processes,
                encoding=encoding, logger=logger)
     cmd_result = sp.run(timeout=timeout)
@@ -1105,8 +1025,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
 
 
 def system(cmd, timeout=None, verbose=True, ignore_status=False,
-           allow_output_check=None, shell=False,
-           env=None, sudo=False, ignore_bg_processes=False,
+           shell=False, env=None, sudo=False, ignore_bg_processes=False,
            encoding=None, logger=None):
     """
     Run a subprocess, returning its exit code.
@@ -1123,24 +1042,6 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
     :type ignore_status: bool
-    :param allow_output_check: Whether to record the output from this
-                               process (from stdout and stderr) in the
-                               test's output record files. Valid values:
-                               'stdout', for standard output *only*,
-                               'stderr' for standard error *only*,
-                               'both' for both standard output and error
-                               in separate files, 'combined' for
-                               standard output and error in a single file,
-                               and 'none' to disable all recording. 'all'
-                               is also a valid, but deprecated, option that
-                               is a synonym of 'both'.  If an explicit value
-                               is not given to this parameter, that is, if
-                               None is given, it defaults to using the module
-                               level configuration, as set by
-                               :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
-                               module level configuration itself is not set,
-                               it defaults to 'none'.
-    :type allow_output_check: str
     :param shell: Whether to run the command on a subshell
     :type shell: bool
     :param env: Use extra environment variables.
@@ -1165,15 +1066,13 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo, ignore_bg_processes=ignore_bg_processes,
+                     shell=shell, env=env, sudo=sudo, ignore_bg_processes=ignore_bg_processes,
                      encoding=encoding, logger=logger)
     return cmd_result.exit_status
 
 
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
-                  allow_output_check=None, shell=False,
-                  env=None, sudo=False, ignore_bg_processes=False,
+                  shell=False, env=None, sudo=False, ignore_bg_processes=False,
                   strip_trail_nl=True, encoding=None, logger=None):
     """
     Run a subprocess, returning its output.
@@ -1189,24 +1088,6 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
-    :param allow_output_check: Whether to record the output from this
-                               process (from stdout and stderr) in the
-                               test's output record files. Valid values:
-                               'stdout', for standard output *only*,
-                               'stderr' for standard error *only*,
-                               'both' for both standard output and error
-                               in separate files, 'combined' for
-                               standard output and error in a single file,
-                               and 'none' to disable all recording. 'all'
-                               is also a valid, but deprecated, option that
-                               is a synonym of 'both'.  If an explicit value
-                               is not given to this parameter, that is, if
-                               None is given, it defaults to using the module
-                               level configuration, as set by
-                               :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
-                               module level configuration itself is not set,
-                               it defaults to 'none'.
-    :type allow_output_check: str
     :param shell: Whether to run the command on a subshell
     :type shell: bool
     :param env: Use extra environment variables
@@ -1236,8 +1117,7 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo, ignore_bg_processes=ignore_bg_processes,
+                     shell=shell, env=env, sudo=sudo, ignore_bg_processes=ignore_bg_processes,
                      encoding=encoding, logger=logger)
     if strip_trail_nl:
         return cmd_result.stdout.rstrip(b'\n\r')
@@ -1245,8 +1125,8 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
 
 
 def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
-              allow_output_check='combined', shell=True,
-              env=None, sudo=False, ignore_bg_processes=False, logger=None):
+              shell=True, env=None, sudo=False, ignore_bg_processes=False,
+              logger=None):
     """
     Because commands module is removed in Python3 and it redirect stderr
     to stdout, we port commands.getoutput to make code compatible
@@ -1263,24 +1143,6 @@ def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
-    :param allow_output_check: Whether to record the output from this
-                               process (from stdout and stderr) in the
-                               test's output record files. Valid values:
-                               'stdout', for standard output *only*,
-                               'stderr' for standard error *only*,
-                               'both' for both standard output and error
-                               in separate files, 'combined' for
-                               standard output and error in a single file,
-                               and 'none' to disable all recording. 'all'
-                               is also a valid, but deprecated, option that
-                               is a synonym of 'both'.  If an explicit value
-                               is not given to this parameter, that is, if
-                               None is given, it defaults to using the module
-                               level configuration, as set by
-                               :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
-                               module level configuration itself is not set,
-                               it defaults to 'none'.
-    :type allow_output_check: str
     :param shell: Whether to run the command on a subshell
     :type shell: bool
     :param env: Use extra environment variables
@@ -1304,15 +1166,15 @@ def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     """
     return getstatusoutput(cmd=cmd, timeout=timeout, verbose=verbose,
                            ignore_status=ignore_status,
-                           allow_output_check=allow_output_check, shell=shell,
+                           shell=shell,
                            env=env, sudo=sudo,
                            ignore_bg_processes=ignore_bg_processes,
                            logger=logger)[1]
 
 
 def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
-                    allow_output_check='combined', shell=True,
-                    env=None, sudo=False, ignore_bg_processes=False, logger=None):
+                    shell=True, env=None, sudo=False,
+                    ignore_bg_processes=False, logger=None):
     """
     Because commands module is removed in Python3 and it redirect stderr
     to stdout, we port commands.getstatusoutput to make code compatible
@@ -1329,24 +1191,6 @@ def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
-    :param allow_output_check: Whether to record the output from this
-                               process (from stdout and stderr) in the
-                               test's output record files. Valid values:
-                               'stdout', for standard output *only*,
-                               'stderr' for standard error *only*,
-                               'both' for both standard output and error
-                               in separate files, 'combined' for
-                               standard output and error in a single file,
-                               and 'none' to disable all recording. 'all'
-                               is also a valid, but deprecated, option that
-                               is a synonym of 'both'.  If an explicit value
-                               is not given to this parameter, that is, if
-                               None is given, it defaults to using the module
-                               level configuration, as set by
-                               :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
-                               module level configuration itself is not set,
-                               it defaults to 'none'.
-    :type allow_output_check: str
     :param shell: Whether to run the command on a subshell
     :type shell: bool
     :param env: Use extra environment variables
@@ -1370,7 +1214,6 @@ def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose,
                      ignore_status=ignore_status,
-                     allow_output_check=allow_output_check,
                      shell=shell, env=env, sudo=sudo,
                      ignore_bg_processes=ignore_bg_processes, logger=logger)
     text = cmd_result.stdout_text

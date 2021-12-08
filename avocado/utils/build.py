@@ -87,7 +87,7 @@ def run_make(path, make='make', extra_args='', process_kwargs=None):  # pylint: 
 
 
 def make(path, make='make', env=None, extra_args='', ignore_status=None,  # pylint: disable=W0621
-         allow_output_check=None, process_kwargs=None):
+         process_kwargs=None):
     """
     Run make, adding MAKEOPTS to the list of options.
 
@@ -95,24 +95,11 @@ def make(path, make='make', env=None, extra_args='', ignore_status=None,  # pyli
     :param env: dictionary with environment variables to be set before
                 calling make (e.g.: CFLAGS).
     :param extra: extra command line arguments to pass to make.
-    :param allow_output_check: Whether to log the command stream outputs
-                               (stdout and stderr) of the make process in
-                               the test stream files. Valid values: 'stdout',
-                               for allowing only standard output, 'stderr',
-                               to allow only standard error, 'all',
-                               to allow both standard output and error,
-                               and 'none', to allow none to be
-                               recorded (default). The default here is
-                               'none', because usually we don't want
-                               to use the compilation output as a reference
-                               in tests.
-    :type allow_output_check: str
     :returns: exit status of the make process
     """
 
     kwargs = dict(env=env,
-                  ignore_status=ignore_status,
-                  allow_output_check=allow_output_check)
+                  ignore_status=ignore_status)
     if process_kwargs is not None:
         kwargs.update(process_kwargs)
     result = run_make(path, make, extra_args, kwargs)
