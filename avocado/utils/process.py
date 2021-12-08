@@ -617,58 +617,61 @@ class SubProcess:
         return cmd
 
     def _init_subprocess(self):
-        if self._popen is None:
+        def signal_handler(signum, frame):  # pylint: disable=W0613
+            self.result.interrupted = "signal/ctrl+c"
+            self.wait()
+            signal.default_int_handler()
+
+        if self._popen is not None:
+            return
+
+        if self.verbose:
+            LOG.info("Running '%s'", self.cmd)
+        if self.shell is False:
+            cmd = shlex.split(self.cmd)
+        else:
+            cmd = self.cmd
+        try:
+            self._popen = subprocess.Popen(cmd,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE,
+                                           shell=self.shell,
+                                           env=self.env)
+        except OSError as details:
+            details.strerror += " (%s)" % self.cmd
+            raise details
+
+        self.start_time = time.monotonic()  # pylint: disable=W0201
+
+        # prepare fd drainers
+        self._stdout_drainer = FDDrainer(
+            self._popen.stdout.fileno(),
+            self.result,
+            name="%s-stdout" % self.cmd,
+            logger=self.logger,
+            logger_prefix="[stdout] %s",
+            stream_logger=None,
+            ignore_bg_processes=self._ignore_bg_processes,
+            verbose=self.verbose)
+        self._stderr_drainer = FDDrainer(
+            self._popen.stderr.fileno(),
+            self.result,
+            name="%s-stderr" % self.cmd,
+            logger=self.logger,
+            logger_prefix="[stderr] %s",
+            stream_logger=None,
+            ignore_bg_processes=self._ignore_bg_processes,
+            verbose=self.verbose)
+
+        # start stdout/stderr threads
+        self._stdout_drainer.start()
+        self._stderr_drainer.start()
+
+        try:
+            signal.signal(signal.SIGINT, signal_handler)
+        except ValueError:
             if self.verbose:
-                LOG.info("Running '%s'", self.cmd)
-            if self.shell is False:
-                cmd = shlex.split(self.cmd)
-            else:
-                cmd = self.cmd
-            try:
-                self._popen = subprocess.Popen(cmd,
-                                               stdout=subprocess.PIPE,
-                                               stderr=subprocess.PIPE,
-                                               shell=self.shell,
-                                               env=self.env)
-            except OSError as details:
-                details.strerror += " (%s)" % self.cmd
-                raise details
-
-            self.start_time = time.monotonic()  # pylint: disable=W0201
-
-            # prepare fd drainers
-            self._stdout_drainer = FDDrainer(
-                self._popen.stdout.fileno(),
-                self.result,
-                name="%s-stdout" % self.cmd,
-                logger=self.logger,
-                logger_prefix="[stdout] %s",
-                stream_logger=None,
-                ignore_bg_processes=self._ignore_bg_processes,
-                verbose=self.verbose)
-            self._stderr_drainer = FDDrainer(
-                self._popen.stderr.fileno(),
-                self.result,
-                name="%s-stderr" % self.cmd,
-                logger=self.logger,
-                logger_prefix="[stderr] %s",
-                stream_logger=None,
-                ignore_bg_processes=self._ignore_bg_processes,
-                verbose=self.verbose)
-
-            # start stdout/stderr threads
-            self._stdout_drainer.start()
-            self._stderr_drainer.start()
-
-            def signal_handler(signum, frame):  # pylint: disable=W0613
-                self.result.interrupted = "signal/ctrl+c"
-                self.wait()
-                signal.default_int_handler()
-            try:
-                signal.signal(signal.SIGINT, signal_handler)
-            except ValueError:
-                if self.verbose:
-                    LOG.info("Command %s running on a thread", self.cmd)
+                LOG.info("Command %s running on a thread", self.cmd)
 
     def _fill_results(self, rc):
         self._init_subprocess()
