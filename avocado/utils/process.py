@@ -56,11 +56,6 @@ WRAP_PROCESS_NAMES_EXPR = []
 #: undefined, this situation will be flagged by an exception.
 UNDEFINED_BEHAVIOR_EXCEPTION = None
 
-#: When using the nrunner architecture we don't need to log messages into the
-#: stream_logger as well. By setting this to True, we will set stream_logger to
-#: None.
-NRUNNER_MODE = True
-
 # variable=value bash assignment
 _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
 
@@ -642,19 +637,13 @@ class SubProcess:
             self.start_time = time.monotonic()  # pylint: disable=W0201
 
             # prepare fd drainers
-            if NRUNNER_MODE:
-                stdout_stream_logger = None
-                stderr_stream_logger = None
-            else:
-                stdout_stream_logger = self.stdout_logger
-                stderr_stream_logger = self.stderr_logger
             self._stdout_drainer = FDDrainer(
                 self._popen.stdout.fileno(),
                 self.result,
                 name="%s-stdout" % self.cmd,
                 logger=self.logger,
                 logger_prefix="[stdout] %s",
-                stream_logger=stdout_stream_logger,
+                stream_logger=None,
                 ignore_bg_processes=self._ignore_bg_processes,
                 verbose=self.verbose)
             self._stderr_drainer = FDDrainer(
@@ -663,7 +652,7 @@ class SubProcess:
                 name="%s-stderr" % self.cmd,
                 logger=self.logger,
                 logger_prefix="[stderr] %s",
-                stream_logger=stderr_stream_logger,
+                stream_logger=None,
                 ignore_bg_processes=self._ignore_bg_processes,
                 verbose=self.verbose)
 

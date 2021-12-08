@@ -24,7 +24,6 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, Init
 from avocado.core.settings import settings
 from avocado.core.suite import TestSuite, TestSuiteError
-from avocado.utils import process
 
 
 class RunInit(Init):
@@ -226,9 +225,6 @@ class Run(CLICmd):
                        possibly other sources.
         :type config: dict
         """
-        if config.get('run.test_runner') == 'runner':
-            process.NRUNNER_MODE = False
-
         unique_job_id = config.get('run.unique_job_id')
         if unique_job_id is not None:
             try:
