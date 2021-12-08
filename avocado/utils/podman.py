@@ -49,11 +49,15 @@ class Podman:
         :rtype: tuple with returncode, stdout and stderr.
         """
         try:
+            LOG.debug("Executing %s", args[0])
             proc = await create_subprocess_exec(self.podman_bin,
                                                 *args,
                                                 stdout=subprocess.PIPE,
                                                 stderr=subprocess.PIPE)
             stdout, stderr = await proc.communicate()
+            LOG.debug("Return code: %s", proc.returncode)
+            LOG.debug("Stdout: %s", stdout.decode("utf-8", "replace"))
+            LOG.debug("Stderr: %s", stderr.decode("utf-8", "replace"))
         except (FileNotFoundError, PermissionError) as ex:
             # Since this method is also used by other methods, let's
             # log here as well.
@@ -67,6 +71,24 @@ class Podman:
             raise PodmanException(msg)
 
         return proc.returncode, stdout, stderr
+
+    async def copy_to_container(self, container_id, src, dst):
+        """Copy artifacts from src to container:dst.
+
+        This method allows copying the contents of src to the dst. Files will
+        be copied from the local machine to the container. The "src" argument
+        can be a file or a directory.
+
+        :param str container_id: string with the container identification.
+        :param str src: what file or directory you are trying to copy.
+        :param str dst: the destination inside the container.
+        :rtype: tuple with returncode, stdout and stderr.
+        """
+        try:
+            return await self.execute("cp", src, f"{container_id}:{dst}")
+        except PodmanException as ex:
+            error = f"Failed copying data to container {container_id}"
+            raise PodmanException(error) from ex
 
     async def get_python_version(self, image):
         """Return the current Python version installed in an image.
