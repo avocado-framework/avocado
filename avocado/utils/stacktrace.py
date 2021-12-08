@@ -27,13 +27,14 @@ def prepare_exc_info(exc_info):
     return "".join(tb_info(exc_info))
 
 
-def log_exc_info(exc_info, logger=''):
+def log_exc_info(exc_info, logger=None):
     """
     Log exception info to logger_name.
 
     :param exc_info: Exception info produced by sys.exc_info()
     :param logger: Name or logger instance (defaults to '')
     """
+    logger = logger or __name__
     if isinstance(logger, str):
         logger = logging.getLogger(logger)
     logger.error('')
@@ -46,13 +47,14 @@ def log_exc_info(exc_info, logger=''):
     logger.error('')
 
 
-def log_message(message, logger=''):
+def log_message(message, logger=None):
     """
     Log message to logger.
 
     :param message: Message
     :param logger: Name or logger instance (defaults to '')
     """
+    logger = logger or __name__
     if isinstance(logger, str):
         logger = logging.getLogger(logger)
     for line in message.splitlines():
