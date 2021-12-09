@@ -21,7 +21,6 @@ Job module - describes a sequence of automated test operations.
 import logging
 import os
 import pprint
-import re
 import shutil
 import sys
 import tempfile
@@ -205,33 +204,6 @@ class Job:
         main_logger.addHandler(test_handler)
         main_logger.setLevel(self.loglevel)
         self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
-        # Add --store-logging-streams
-        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
-        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
-
-        # Store custom test loggers
-        if self.config.get("run.test_runner") == 'runner':
-            store_logging_stream = self.config.get('job.run.store_logging_stream')
-            for name in store_logging_stream:
-                name = re.split(r'(?<!\\):', name, maxsplit=1)
-                if len(name) == 1:
-                    name = name[0]
-                    level = logging.INFO
-                else:
-                    level = (int(name[1]) if name[1].isdigit()
-                             else logging.getLevelName(name[1].upper()))
-                    name = name[0]
-                try:
-                    logname = "log" if name == "" else name
-                    logfile = os.path.join(self.logdir, logname + "." +
-                                           logging.getLevelName(level))
-                    handler = output.add_log_handler(name, logging.FileHandler,
-                                                     logfile, level, formatter)
-                except ValueError as details:
-                    self.log.error("Failed to set log for --store-logging-stream "
-                                   "%s:%s: %s.", name, level, details)
-                else:
-                    self.__logging_handlers[handler] = [name]
 
         # Enable console loggers
         enabled_logs = self.config.get("core.show")
