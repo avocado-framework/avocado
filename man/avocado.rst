@@ -84,12 +84,12 @@ Options for subcommand `run` (`avocado run --help`)::
                             parameter.
       --test-runner TEST_RUNNER
                             Selects the runner implementation from one of the
-                            installed and active implementations. You can run
+                            installed and active implementations.  You can run
                             "avocado plugins" and find the list of valid runners
                             under the "Plugins that run test suites on a job
-                            (runners) section. Defaults to "nrunner", which is the
-                            new runner. To use the conventional and traditional
-                            runner, use "runner".
+                            (runners) section.  Defaults to "nrunner", which is
+                            the new runner and only runner supported at this moment.
+
       -d, --dry-run         Instead of running the test only list them and log
                             their params.
       --dry-run-no-cleanup  Do not automatically clean up temporary directories

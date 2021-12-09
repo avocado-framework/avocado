@@ -208,8 +208,7 @@ def register_core_options():
                 '"avocado plugins" and find the list of valid runners '
                 'under the "Plugins that run test suites on a job '
                 '(runners) section.  Defaults to "nrunner", which is '
-                'the new runner.  To use the conventional and traditional '
-                'runner, use "runner".')
+                'the new runner and only runner supported at this moment.')
     stgs.register_option(section='run',
                          key='test_runner',
                          default='nrunner',
