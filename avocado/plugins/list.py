@@ -16,13 +16,12 @@
 import json
 import os
 
-from avocado.core import exit_codes, loader, parser_common_args
+from avocado.core import exit_codes, parser_common_args
 from avocado.core.output import LOG_UI, TERM_SUPPORT
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.resolver import ReferenceResolutionResult
 from avocado.core.settings import settings
 from avocado.core.suite import TestSuite
-from avocado.core.test import Test
 from avocado.utils.astring import iter_tabular_output
 
 
@@ -48,24 +47,10 @@ class List(CLICmd):
 
     @staticmethod
     def _prepare_matrix_for_display(matrix, verbose=False):
-        try:
-            type_label_mapping = loader.loader.get_type_label_mapping()
-            decorator_mapping = loader.loader.get_decorator_mapping()
-        except RuntimeError:
-            # When running with --resolver this will fall here, and should use
-            # the default mapping
-            pass
-
         colored_matrix = []
         for item in matrix:
             cls = item[0]
-            try:
-                decorator = decorator_mapping[cls]
-                type_label = decorator(type_label_mapping[cls])
-            except (KeyError, UnboundLocalError):
-                # In this case nrunner will not be available on decorator_map,
-                # so we are using the default "healthy_str"
-                type_label = TERM_SUPPORT.healthy_str(cls)
+            type_label = TERM_SUPPORT.healthy_str(cls)
             if verbose:
                 colored_matrix.append((type_label, item[1],
                                        _get_tags_as_string(item[2] or {})))
@@ -139,24 +124,6 @@ class List(CLICmd):
                 LOG_UI.info("%s: %s", key, suite.tags_stats[key])
 
     @staticmethod
-    def _get_test_matrix(suite):
-        """Used for loader."""
-        test_matrix = []
-
-        verbose = suite.config.get('core.verbose')
-        for cls, params in suite.tests:
-            if isinstance(cls, str):
-                cls = Test
-            if verbose:
-                test_matrix.append((cls,
-                                    params['name'],
-                                    params.get('tags', {})))
-            else:
-                test_matrix.append((cls, params['name']))
-
-        return test_matrix
-
-    @staticmethod
     def _get_resolution_matrix(suite):
         """Used for resolver."""
         test_matrix = []
@@ -173,12 +140,7 @@ class List(CLICmd):
     @staticmethod
     def _save_to_json(matrix, filename, verbose=False):
         result = []
-        try:
-            type_label_mapping = loader.loader.get_type_label_mapping()
-        except RuntimeError:
-            # We are in --resolver mode here, so lets create a fake mapping and
-            # use the default
-            type_label_mapping = {}
+        type_label_mapping = {}
 
         for line in matrix:
             try:
@@ -225,7 +187,6 @@ class List(CLICmd):
                                          positional_arg=True,
                                          long_arg=None,
                                          allow_multiple=True)
-        loader.add_loader_options(parser, 'list')
 
         help_msg = ('Uses the Avocado resolver method (part of the nrunner '
                     'architecture) to detect tests. This is enabled by '
@@ -239,18 +200,6 @@ class List(CLICmd):
                                  help_msg=help_msg,
                                  parser=parser,
                                  long_arg='--resolver')
-
-        help_msg = ('Uses the Avocado legacy (loader) method for finding '
-                    'tests. This option will exist only for a transitional '
-                    'period until the legacy (loader) method is deprecated '
-                    'and removed')
-        settings.register_option(section='list',
-                                 key='resolver',
-                                 key_type=bool,
-                                 default=True,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--loader')
 
         help_msg = ('Writes runnable recipe files to a directory. Valid only '
                     'when using --resolver.')
@@ -276,29 +225,16 @@ class List(CLICmd):
     def run(self, config):
         verbose = config.get('core.verbose')
         write_to_json_file = config.get('list.write_to_json_file')
-        resolver = config.get('list.resolver')
-        runner = 'nrunner' if resolver else 'runner'
         config['run.ignore_missing_references'] = True
-        config['run.test_runner'] = runner
+        config['run.test_runner'] = 'nrunner'
         try:
-            if not resolver:
-                try:
-                    loader.loader.load_plugins(config)
-                    loader.loader.get_extra_listing()
-                except loader.LoaderError as error:
-                    LOG_UI.error(error)
-                    return exit_codes.AVOCADO_FAIL
             suite = TestSuite.from_config(config)
-            if runner == 'nrunner':
-                matrix = self._get_resolution_matrix(suite)
-                self._display(suite, matrix)
+            matrix = self._get_resolution_matrix(suite)
+            self._display(suite, matrix)
 
-                directory = config.get('list.recipes.write_to_directory')
-                if directory is not None:
-                    self.save_recipes(suite, directory, len(matrix))
-            else:
-                matrix = self._get_test_matrix(suite)
-                self._display(suite, matrix)
+            directory = config.get('list.recipes.write_to_directory')
+            if directory is not None:
+                self.save_recipes(suite, directory, len(matrix))
             if write_to_json_file:
                 self._save_to_json(matrix, write_to_json_file, verbose)
         except KeyboardInterrupt:

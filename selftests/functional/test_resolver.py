@@ -5,9 +5,9 @@ import unittest
 from avocado.utils import process, script
 # Use the same definitions from loader to make sure the behavior
 # is also the same
-from selftests.functional.test_loader import \
+from selftests.functional.test_list import \
     AVOCADO_TEST_OK as AVOCADO_INSTRUMENTED_TEST
-from selftests.functional.test_loader import SIMPLE_TEST as EXEC_TEST
+from selftests.functional.test_list import SIMPLE_TEST as EXEC_TEST
 from selftests.utils import AVOCADO, BASEDIR
 
 
