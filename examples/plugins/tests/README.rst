@@ -16,7 +16,7 @@ effect, after enabling them with ``python setup.py develop --user``-like
 commands (see parent directory ``README.rst``), you will want to
 list tests with::
 
-  avocado list --resolver $REFERENCE
+  avocado list $REFERENCE
 
 And run tests with::
 

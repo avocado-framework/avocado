@@ -188,21 +188,7 @@ class List(CLICmd):
                                          long_arg=None,
                                          allow_multiple=True)
 
-        help_msg = ('Uses the Avocado resolver method (part of the nrunner '
-                    'architecture) to detect tests. This is enabled by '
-                    'default and exists only for compatibility purposes, '
-                    'and will be removed soon. To use the legacy (loader) '
-                    'method for finding tests, set the "--loader" option')
-        settings.register_option(section='list',
-                                 key='compatiblity_with_resolver_noop',
-                                 key_type=bool,
-                                 default=True,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--resolver')
-
-        help_msg = ('Writes runnable recipe files to a directory. Valid only '
-                    'when using --resolver.')
+        help_msg = ('Writes runnable recipe files to a directory.')
         settings.register_option(section='list.recipes',
                                  key='write_to_directory',
                                  default=None,
