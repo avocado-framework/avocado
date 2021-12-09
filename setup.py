@@ -423,4 +423,4 @@ if __name__ == '__main__':
                     'man': Man,
                     'plugin': Plugin,
                     'test': Test},
-          install_requires=['setuptools'])
+          install_requires=['setuptools >= 40.6.3'])

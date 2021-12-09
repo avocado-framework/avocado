@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 93.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -45,7 +45,7 @@ BuildRequires: python3-devel
 BuildRequires: python3-docutils
 BuildRequires: python3-lxml
 BuildRequires: python3-psutil
-BuildRequires: python3-setuptools
+BuildRequires: python3-setuptools >= 40.6.3
 
 %if ! 0%{?rhel}
 %if ! 0%{?fedora} > 35
@@ -379,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Dec 13 2021 Ana Guerrero Lopez <anguerre@redhat.com> - 93.0-3
+- Require at least setuptools 40.6.3, needed for PEP420.
+
 * Wed Nov 17 2021 Ana Guerrero Lopez <anguerre@redhat.com> - 93.0-2
 - Adjust selftest/check.py to use new --skip option
 
