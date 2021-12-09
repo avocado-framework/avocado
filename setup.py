@@ -382,6 +382,7 @@ if __name__ == '__main__':
                   'fetchasset = avocado.plugins.assets:FetchAssetJob',
                   'sysinfo = avocado.plugins.sysinfo:SysInfoJob',
                   'testlogging = avocado.plugins.testlogs:TestLogging',
+                  'beaker = avocado.plugins.beaker_result:BeakerResult',
                   ],
               'avocado.plugins.varianter': [
                   'json_variants = avocado.plugins.json_variants:JsonVariants',
