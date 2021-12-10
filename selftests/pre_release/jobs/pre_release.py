@@ -28,6 +28,7 @@ vmimage = {
 
 if __name__ == '__main__':
     os.chdir(ROOT_DIR)
-    with Job.from_config({}, [cirrus_ci, parallel_1, vmimage]) as j:
+    config = {'job.output.testlogs.statuses': ['FAIL', 'ERROR', 'INTERRUPT']}
+    with Job.from_config(config, [cirrus_ci, parallel_1, vmimage]) as j:
         os.environ['AVOCADO_CHECK_LEVEL'] = '3'
         sys.exit(j.run())
