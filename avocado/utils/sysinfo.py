@@ -176,7 +176,6 @@ class Command(Collectible):
                                  timeout=self.timeout,
                                  verbose=False,
                                  ignore_status=True,
-                                 allow_output_check='combined',
                                  shell=True,
                                  env=env)
             yield result.stdout

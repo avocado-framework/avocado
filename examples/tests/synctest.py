@@ -32,11 +32,9 @@ class SyncTest(Test):
         if self.params.get('debug_symbols', default=True):
             build.make(srcdir,
                        env={'CFLAGS': '-g -O0'},
-                       extra_args='synctest',
-                       allow_output_check='none')
+                       extra_args='synctest')
         else:
-            build.make(srcdir,
-                       allow_output_check='none')
+            build.make(srcdir)
 
     def test(self):
         """

@@ -103,8 +103,7 @@ class GitRepoHelper:
         """
         os.chdir(self.destination_dir)
         return process.run(r"%s %s" % (self.cmd, astring.shell_escape(cmd)),
-                           ignore_status=ignore_status,
-                           allow_output_check='none')
+                           ignore_status=ignore_status)
 
     def fetch(self, uri):
         """

@@ -116,9 +116,6 @@ class TestClassTestUnit(unittest.TestCase):
         above_limit_name = os.path.join(self.tmpdir.name, "a" * 251)
         tst = self._get_fake_filename_test(above_limit_name)
         self.assertFalse(tst.get_data('', 'file', False))
-        tst._record_reference('stdout', 'stdout.expected')
-        tst._record_reference('stderr', 'stderr.expected')
-        tst._record_reference('output', 'output.expected')
 
     def test_all_dirs_exists_no_hang(self):
         with unittest.mock.patch('os.path.exists', return_value=True):

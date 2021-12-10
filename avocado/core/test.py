@@ -642,34 +642,6 @@ class Test(unittest.TestCase, TestData):
         for name, handler in self._logging_handlers.items():
             logging.getLogger(name).removeHandler(handler)
 
-    def _record_reference(self, produced_file_path, reference_file_name):
-        '''
-        Saves a copy of a file produced by the test into a reference file
-
-        This utility method will copy the produced file into the expected
-        reference file location, which can later be used for comparison
-        on subsequent test runs.
-
-        Note: A reference file is a "golden" file with content that is
-        expected to match what was produced during the test.  If the
-        produced content matches the reference file content, the test
-        performed correctly.
-
-        :param produced_file_path: the location of the file that was produced
-                                   by this test execution
-        :type produced_file_path: str
-        :param reference_file_name: the name of the file that will be used on
-                                    subsequent runs to check the test produced
-                                    the correct content.  This file will be
-                                    saved into a location obtained by
-                                    calling :meth:`get_data()`.
-        :type reference_file_name: str
-        '''
-        reference_path = self.get_data(reference_file_name, must_exist=False)
-        if reference_path is not None:
-            utils_path.init_dir(os.path.dirname(reference_path))
-            shutil.copyfile(produced_file_path, reference_path)
-
     def _check_reference(self, produced_file_path, reference_file_name,
                          diff_file_name, child_log_name, name='Content'):
         '''
@@ -730,22 +702,12 @@ class Test(unittest.TestCase, TestData):
         """
         Auxiliary method to run_avocado.
         """
-        # If the test contains an output.expected file, it requires
-        # changing the mode of operation of the process.* utility
-        # methods, so that after the test finishes, the output
-        # produced can be compared to the expected one.  This runs in
-        # its own process, so the change should not effect other
-        # components using process.* functions.
-        if self.get_data('output.expected') is not None:
-            process.OUTPUT_CHECK_RECORD_MODE = 'combined'
-
         testMethod = getattr(self, self._testMethodName)
         self._start_logging()
         if self.__sysinfo_enabled:
             self.__sysinfo_logger.start()
         test_exception = None
         cleanup_exception = None
-        output_check_exception = None
         stdout_check_exception = None
         stderr_check_exception = None
         skip_test_condition = getattr(testMethod, '__skip_test_condition__', False)
@@ -823,66 +785,11 @@ class Test(unittest.TestCase, TestData):
         whiteboard_file = os.path.join(self.logdir, 'whiteboard')
         genio.write_file(whiteboard_file, self.whiteboard)
 
-        output_check_record = self._config.get('run.output_check_record')
-        output_check = self._config.get('run.output_check')
-
-        # record the output if the modes are valid
-        if output_check_record == 'combined':
-            self._record_reference(self._output_file,
-                                   "output.expected")
-        else:
-            if output_check_record in ['all', 'both', 'stdout']:
-                self._record_reference(self._stdout_file,
-                                       "stdout.expected")
-            if output_check_record in ['all', 'both', 'stderr']:
-                self._record_reference(self._stderr_file,
-                                       "stderr.expected")
-
-        # check the output and produce test failures
-        if output_check_record != 'none' and output_check:
-            output_checked = False
-            try:
-                output_checked = self._check_reference(
-                    self._output_file,
-                    'output.expected',
-                    'output.diff',
-                    'output_diff',
-                    'Output')
-            except exceptions.TestFail as details:
-                stacktrace.log_exc_info(sys.exc_info(),
-                                        logger=LOG_JOB)
-                output_check_exception = details
-            if not output_checked:
-                try:
-                    self._check_reference(self._stdout_file,
-                                          'stdout.expected',
-                                          'stdout.diff',
-                                          'stdout_diff',
-                                          'Stdout')
-                except exceptions.TestFail as details:
-                    # output check was performed (and failed)
-                    output_checked = True
-                    stacktrace.log_exc_info(sys.exc_info(),
-                                            logger=LOG_JOB)
-                    stdout_check_exception = details
-                try:
-                    self._check_reference(self._stderr_file,
-                                          'stderr.expected',
-                                          'stderr.diff',
-                                          'stderr_diff',
-                                          'Stderr')
-                except exceptions.TestFail as details:
-                    stacktrace.log_exc_info(sys.exc_info(),
-                                            logger=LOG_JOB)
-                    stderr_check_exception = details
-
         # pylint: disable=E0702
         if test_exception is not None:
             raise test_exception
         elif cleanup_exception is not None:
             raise cleanup_exception
-        elif output_check_exception is not None:
-            raise output_check_exception
         elif stdout_check_exception is not None:
             raise stdout_check_exception
         elif stderr_check_exception is not None:
@@ -1226,7 +1133,6 @@ class TapTest(SimpleTest):
             input_encoding = self._config.get('core.input_encoding')
             result = process.run(self._command,
                                  verbose=True,
-                                 allow_output_check='stdout',
                                  env=test_params,
                                  encoding=input_encoding)
 

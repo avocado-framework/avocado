@@ -113,9 +113,7 @@ Options for subcommand `run` (`avocado run --help`)::
       --keep-tmp            Keep job temporary files (useful for avocado
                             debugging).
       --ignore-missing-references
-                            Force the job execution, even if some of the test
-                            references are not resolved to tests. "on" and "off"
-                            will be deprecated soon.
+                            Force the job execution, even if some of the test.
       --disable-sysinfo     Enable or disable sysinfo information. Like hardware
                             details, profiles, etc.
       --execution-order RUN.EXECUTION_ORDER
@@ -158,26 +156,6 @@ Options for subcommand `run` (`avocado run --help`)::
       --xunit-max-test-log-chars SIZE
                             Limit the attached job log to given number of
                             characters (k/m/g suffix allowed)
-
-    output check arguments:
-      --output-check-record {none,stdout,stderr,both,combined,all}
-                            Record the output produced by each test (from stdout
-                            and stderr) into both the current executing result and
-                            into reference files. Reference files are used on
-                            subsequent runs to determine if the test produced the
-                            expected output or not, and the current executing
-                            result is used to check against a previously recorded
-                            reference file. Valid values: "none" (to explicitly
-                            disable all recording) "stdout" (to record standard
-                            output *only*), "stderr" (to record standard error
-                            *only*), "both" (to record standard output and error
-                            in separate files), "combined" (for standard output
-                            and error in a single file). "all" is also a valid but
-                            deprecated option that is a synonym of "both".
-      --disable-output-check
-                            Disables test output (stdout/stderr) check. If this
-                            option is given, no output will be checked, even if
-                            there are reference files present for the test.
 
     loader options:
       --loaders LOADER_NAME_OR_TEST_TYPE [LOADER_NAME_OR_TEST_TYPE ...]
@@ -746,88 +724,6 @@ Any command created by the test datadir will be wrapped on
 Any command that matches the pattern `*make` will be wrapper on
 ``ltrace.sh`` and the pattern ``*datadir`` will trigger the execution of
 ``perf.sh``.
-
-RECORDING TEST REFERENCE OUTPUT
-===============================
-
-As a tester, you may want to check if the output of a given application
-matches an expected output. In order to help with this common use case,
-we offer the option ``--output-check-record [mode]`` to the test runner.
-If this option is used, it will store the stdout or stderr of the
-process (or both, if you specified ``all``) being executed to reference
-files: ``stdout.expected`` and ``stderr.expected``.
-
-Those files will be recorded in the test data dir. The data dir is in
-the same directory as the test source file, named
-``[source_file_name.data]``. Let's take as an example the test
-``synctest.py``. In a fresh checkout of avocado, you can see::
-
-        examples/tests/synctest.py.data/stderr.expected
-        examples/tests/synctest.py.data/stdout.expected
-
-From those 2 files, only stdout.expected is non empty::
-
-    $ cat examples/tests/synctest.py.data/stdout.expected
-    PAR : waiting
-    PASS : sync interrupted
-
-The output files were originally obtained using the test runner and
-passing the option `--output-check-record` all to the test runner::
-
-    $ avocado run --output-check-record all examples/tests/synctest.py
-    JOB ID    : <id>
-    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
-     (1/1) examples/tests/synctest.py:SyncTest.test: PASS (4.00 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB TIME   : 4.10 s
-
-After the reference files are added, the check process is transparent,
-in the sense that you do not need to provide special flags to the test
-runner. Now, every time the test is executed, after it is done running,
-it will check if the outputs are exactly right before considering the
-test as PASSed. If you want to override the default behavior and skip
-output check entirely, you may provide the flag ``--output-check=off``
-to the test runner.
-
-The ``avocado.utils.process`` APIs have a parameter
-``allow_output_check`` (defaults to ``all``), so that you can select
-which process outputs will go to the reference files, should you chose
-to record them. You may choose ``all``, for both stdout and stderr,
-``stdout``, for the stdout only, ``stderr``, for only the stderr only,
-or ``none``, to allow neither of them to be recorded and checked.
-
-This process works fine also with simple tests, executables that return
-0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
-
-    $ cat output_record.sh
-    #!/bin/bash
-    echo "Hello, world!"
-
-Let's record the output (both stdout and stderr) for this one::
-
-    $ avocado run output_record.sh --output-check-record all
-    JOB ID    : <id>
-    JOB LOG   : /home/user/avocado/job-results/job-<date>-<shortid>/job.log
-     (1/1) output_record.sh: PASS (0.01 s)
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB HTML   : /home/user/avocado/job-results/job-<date>-<shortid>/results.html
-    JOB TIME   : 0.11 s
-
-After this is done, you'll notice that a the test data directory
-appeared in the same level of our shell script, containing 2 files::
-
-    $ ls output_record.sh.data/
-    stderr.expected  stdout.expected
-
-Let's look what's in each of them::
-
-    $ cat output_record.sh.data/stdout.expected
-    Hello, world!
-    $ cat output_record.sh.data/stderr.expected
-    $
-
-Now, every time this test runs, it'll take into account the expected
-files that were recorded, no need to do anything else but run the test.
 
 LINUX DISTRIBUTION UTILITIES
 ============================

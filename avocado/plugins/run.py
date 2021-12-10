@@ -24,7 +24,6 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, Init
 from avocado.core.settings import settings
 from avocado.core.suite import TestSuite, TestSuiteError
-from avocado.utils import process
 
 
 class RunInit(Init):
@@ -177,8 +176,7 @@ class Run(CLICmd):
                                  long_arg='--keep-tmp')
 
         help_msg = ('Force the job execution, even if some of the test '
-                    'references are not resolved to tests. "on" and '
-                    '"off" will be deprecated soon.')
+                    'references are not resolved to tests.')
         settings.register_option(section='run',
                                  key='ignore_missing_references',
                                  default=False,
@@ -216,42 +214,6 @@ class Run(CLICmd):
                                  parser=parser,
                                  long_arg='--log-test-data-directories')
 
-        out_check = parser.add_argument_group('output check arguments')
-
-        help_msg = ('Record the output produced by each test (from stdout '
-                    'and stderr) into both the current executing result '
-                    'and into reference files. Reference files are used on '
-                    'subsequent runs to determine if the test produced the '
-                    'expected output or not, and the current executing result '
-                    'is used to check against a previously recorded reference '
-                    'file.  Valid values: "none" (to explicitly disable all '
-                    'recording) "stdout" (to record standard output *only*), '
-                    '"stderr" (to record standard error *only*), "both" (to '
-                    'record standard output and error in separate files), '
-                    '"combined" (for standard output and error in a single '
-                    'file). "all" is also a valid but deprecated option that '
-                    'is a synonym of "both".')
-        settings.register_option(section='run',
-                                 key='output_check_record',
-                                 help_msg=help_msg,
-                                 choices=('none', 'stdout', 'stderr',
-                                          'both', 'combined', 'all'),
-                                 parser=out_check,
-                                 default=None,
-                                 long_arg='--output-check-record')
-
-        help_msg = ('Disables test output (stdout/stderr) check. If this '
-                    'option is given, no output will be checked, even if '
-                    'there are reference files present for the test.')
-        settings.register_option(section='run',
-                                 key='output_check',
-                                 default=True,
-                                 key_type=bool,
-                                 action='store_false',
-                                 help_msg=help_msg,
-                                 parser=out_check,
-                                 long_arg='--disable-output-check')
-
         loader.add_loader_options(parser, 'run')
         parser_common_args.add_tag_filter_args(parser)
 
@@ -263,13 +225,6 @@ class Run(CLICmd):
                        possibly other sources.
         :type config: dict
         """
-        if 'run.output_check_record' in config:
-            check_record = config.get('run.output_check_record')
-            process.OUTPUT_CHECK_RECORD_MODE = check_record
-
-        if config.get('run.test_runner') == 'runner':
-            process.NRUNNER_MODE = False
-
         unique_job_id = config.get('run.unique_job_id')
         if unique_job_id is not None:
             try:
