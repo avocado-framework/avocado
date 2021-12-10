@@ -671,10 +671,8 @@ def main(args):  # pylint: disable=W0621
     # ========================================================================
     # Job execution
     # ========================================================================
-    config = {'core.show': ['app'],
-              'run.job_category': 'avocado-selftests',
-              'job.output.testlogs.statuses': ['FAIL', 'ERROR', 'INTERRUPT'],
-              'job.output.testlogs.logfiles': ['debug.log']}
+    config = {'run.job_category': 'avocado-selftests',
+              'job.output.testlogs.statuses': ['FAIL', 'ERROR', 'INTERRUPT']}
 
     # Workaround for travis problem on arm64 - https://github.com/avocado-framework/avocado/issues/4768
     if (platform.machine() == 'aarch64'):
