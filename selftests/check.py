@@ -515,6 +515,10 @@ def create_suites(args):  # pylint: disable=W0621
              'runnable-run-no-args-exit-code': 2,
              'runnable-run-uri-only-exit-code': 2},
 
+            {'runner': 'avocado-runner-dry-run',
+             'runnable-run-no-args-exit-code': 0,
+             'runnable-run-uri-only-exit-code': 0},
+
             {'runner': 'avocado-runner-noop',
              'runnable-run-no-args-exit-code': 0,
              'runnable-run-uri-only-exit-code': 0},
