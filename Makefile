@@ -1,7 +1,5 @@
-ifndef PYTHON
-PYTHON=$(shell which python3 2>/dev/null || which python 2>/dev/null)
-endif
-VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
+include Makefile.include
+
 PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell basename ${PWD})
