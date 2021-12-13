@@ -1,13 +1,14 @@
 import time
 from multiprocessing import Process, SimpleQueue
 
-from avocado.core import nrunner
+from avocado.core.nrunner.app import BaseRunnerApp
+from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
 from avocado.core.runners.utils import messages
 from avocado.utils.software_manager.main import MESSAGES
 from avocado.utils.software_manager.manager import SoftwareManager
 
 
-class RequirementPackageRunner(nrunner.BaseRunner):
+class RequirementPackageRunner(BaseRunner):
     """Runner for requirements of type package
 
     This runner handles, the installation, verification and removal of
@@ -129,7 +130,7 @@ class RequirementPackageRunner(nrunner.BaseRunner):
             process.start()
 
             while queue.empty():
-                time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
+                time.sleep(RUNNER_RUN_STATUS_INTERVAL)
                 yield messages.RunningMessage.get()
 
             output = queue.get()
@@ -148,14 +149,15 @@ class RequirementPackageRunner(nrunner.BaseRunner):
         yield messages.FinishedMessage.get(result)
 
 
-class RunnerApp(nrunner.BaseRunnerApp):
+class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner-requirement-package'
     PROG_DESCRIPTION = ('nrunner application for requirements of type package')
     RUNNABLE_KINDS_CAPABLE = {'requirement-package': RequirementPackageRunner}
 
 
 def main():
-    nrunner.main(RunnerApp)
+    app = RunnerApp(print)
+    app.run()
 
 
 if __name__ == '__main__':

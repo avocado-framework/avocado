@@ -1,6 +1,6 @@
 import unittest
 
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.requirements.resolver import RequirementsResolver
 
 

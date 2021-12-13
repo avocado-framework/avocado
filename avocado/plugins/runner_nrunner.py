@@ -24,10 +24,12 @@ import random
 import tempfile
 from copy import deepcopy
 
-from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.exceptions import JobError, TestFailFast
 from avocado.core.messages import MessageHandler
+from avocado.core.nrunner.registry import RUNNERS_REGISTRY_PYTHON_CLASS
+from avocado.core.nrunner.runner import check_runnables_runner_requirements
+from avocado.core.nrunner.task import Task
 from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
@@ -194,11 +196,11 @@ class Runner(RunnerInterface):
             if runnable.kind == 'dry-run':
                 requirement_runnable.kind = 'noop'
             # creates the requirement task
-            requirement_task = nrunner.Task(requirement_runnable,
-                                            identifier=task_id,
-                                            status_uris=[self.status_server.uri],
-                                            category='requirement',
-                                            job_id=job_id)
+            requirement_task = Task(requirement_runnable,
+                                    identifier=task_id,
+                                    status_uris=[self.status_server.uri],
+                                    category='requirement',
+                                    job_id=job_id)
             # make sure we track the dependencies of a task
             # runtime_task.task.dependencies.add(requirement_task)
             # created the requirement runtime task
@@ -225,11 +227,11 @@ class Runner(RunnerInterface):
         runnable.variant = dump_variant(variant)
 
         # handles the test task
-        task = nrunner.Task(runnable,
-                            identifier=test_id,
-                            known_runners=nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
-                            status_uris=[self.status_server.uri],
-                            job_id=job_id)
+        task = Task(runnable,
+                    identifier=test_id,
+                    known_runners=RUNNERS_REGISTRY_PYTHON_CLASS,
+                    status_uris=[self.status_server.uri],
+                    job_id=job_id)
         runtime_task = RuntimeTask(task)
         result.append(runtime_task)
 
@@ -339,7 +341,7 @@ class Runner(RunnerInterface):
             job.interrupted_reason = f"Suite {test_suite.name} is disabled."
             return summary
 
-        test_suite.tests, missing_requirements = nrunner.check_runnables_runner_requirements(
+        test_suite.tests, missing_requirements = check_runnables_runner_requirements(
             test_suite.tests)
         self._abort_if_missing_runners(missing_requirements)
 

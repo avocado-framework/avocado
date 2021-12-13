@@ -21,7 +21,7 @@ import os
 from datetime import datetime
 
 from avocado.core import exit_codes, safeloader
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, JobPreTests
 from avocado.core.settings import settings

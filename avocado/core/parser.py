@@ -21,7 +21,7 @@ from configparser import ConfigParser, NoOptionError
 from glob import glob
 
 from avocado.core import exit_codes
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.output import LOG_UI
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult)

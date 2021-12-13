@@ -1,11 +1,13 @@
 import io
 
-from avocado.core import nrunner
+from avocado.core.nrunner.app import BaseRunnerApp
+from avocado.core.nrunner.registry import RUNNERS_REGISTRY_PYTHON_CLASS
+from avocado.core.runners.exec_test import ExecTestRunner
 from avocado.core.runners.utils.messages import FinishedMessage
 from avocado.core.tapparser import TapParser, TestResult
 
 
-class TAPRunner(nrunner.ExecTestRunner):
+class TAPRunner(ExecTestRunner):
     """Runner for standalone executables treated as TAP
 
     When creating the Runnable, use the following attributes:
@@ -61,7 +63,10 @@ class TAPRunner(nrunner.ExecTestRunner):
                                    returncode=process.returncode)
 
 
-class RunnerApp(nrunner.BaseRunnerApp):
+RUNNERS_REGISTRY_PYTHON_CLASS['tap'] = TAPRunner
+
+
+class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner-tap'
     PROG_DESCRIPTION = ('nrunner application for executable tests that '
                         'produce TAP')
@@ -69,7 +74,8 @@ class RunnerApp(nrunner.BaseRunnerApp):
 
 
 def main():
-    nrunner.main(RunnerApp)
+    app = RunnerApp(print)
+    app.run()
 
 
 if __name__ == '__main__':

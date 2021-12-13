@@ -3,9 +3,10 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import exit_codes, job, nrunner, test
+from avocado.core import exit_codes, job, test
 from avocado.core.exceptions import (JobBaseException,
                                      JobTestSuiteDuplicateNameError)
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.suite import TestSuite, TestSuiteStatus
 from avocado.utils import path as utils_path
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
@@ -318,7 +319,7 @@ class JobTest(unittest.TestCase):
         self.job.setup()
         self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
         if self.job.test_suite:
-            self.assertIsInstance(self.job.test_suite.tests[0], nrunner.Runnable)
+            self.assertIsInstance(self.job.test_suite.tests[0], Runnable)
 
     def test_job_get_failed_tests(self):
         config = {'resolver.references': ['/bin/true', '/bin/false'],

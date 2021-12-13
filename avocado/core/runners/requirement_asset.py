@@ -1,13 +1,14 @@
 import time
 from multiprocessing import Process, SimpleQueue
 
-from avocado.core import nrunner
+from avocado.core.nrunner.app import BaseRunnerApp
+from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
 from avocado.core.settings import settings
 from avocado.utils import data_structures
 from avocado.utils.asset import Asset
 
 
-class RequirementAssetRunner(nrunner.BaseRunner):
+class RequirementAssetRunner(BaseRunner):
     """Runner for requirements of type package
 
     This runner handles the fetch of files using the Avocado Assets utility.
@@ -76,7 +77,7 @@ class RequirementAssetRunner(nrunner.BaseRunner):
             process.start()
 
             while queue.empty():
-                time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
+                time.sleep(RUNNER_RUN_STATUS_INTERVAL)
                 yield self.prepare_status('running')
 
             output = queue.get()
@@ -99,14 +100,15 @@ class RequirementAssetRunner(nrunner.BaseRunner):
         yield self.prepare_status('finished', {'result': result})
 
 
-class RunnerApp(nrunner.BaseRunnerApp):
+class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner-requirement-asset'
     PROG_DESCRIPTION = ('nrunner application for requirements of type asset')
     RUNNABLE_KINDS_CAPABLE = {'requirement-asset': RequirementAssetRunner}
 
 
 def main():
-    nrunner.main(RunnerApp)
+    app = RunnerApp(print)
+    app.run()
 
 
 if __name__ == '__main__':

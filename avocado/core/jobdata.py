@@ -20,7 +20,7 @@ import ast
 import json
 import os
 
-from avocado.core.nrunner import ConfigDecoder, ConfigEncoder
+from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
 from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.settings import settings
 from avocado.core.varianter import VARIANTS_FILENAME

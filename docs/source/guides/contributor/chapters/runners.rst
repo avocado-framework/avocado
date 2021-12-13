@@ -145,8 +145,8 @@ foundation is used.  Each one of the test references given to ``list``
 or ``run`` will be "resolved" into zero or more tests.  Being more
 precise and verbose, resolver plugins will produce
 :class:`avocado.core.resolver.ReferenceResolution`, which contain zero
-or more :class:`avocado.core.nrunner.Runnable`, which are described in
-the following section.  Overall, the process looks like::
+or more :class:`avocado.core.nrunner.runnable.Runnable`, which are
+described in the following section.  Overall, the process looks like::
 
   +--------------------+    +-----------------------+
   | avocado list | run | -> | avocado.core.resolver | ---+
@@ -242,11 +242,12 @@ architecture listed earlier.  It should be clear that:
 
 Now let's shift our attention to the nrunner architecture.  In
 the nrunner architecture, a
-:class:`avocado.core.nrunner.Runnable` describe a "code payload" that
-will be executed, but they are not executable code themselves.
-Because they are **data** and not **code**, they are easily serialized
-and transported to different environments.  Running the payload
-described by a ``Runnable`` is delegated to another component.
+:class:`avocado.core.nrunner.runnable.Runnable` describe a "code
+payload" that will be executed, but they are not executable code
+themselves.  Because they are **data** and not **code**, they are
+easily serialized and transported to different environments.  Running
+the payload described by a ``Runnable`` is delegated to another
+component.
 
 Most often, this component is a standalone executable (see
 :data:`avocado.core.spawners.common.SpawnMethod.STANDALONE_EXECUTABLE`)
@@ -265,9 +266,9 @@ following steps:
    <avocado.core.spawners.common.BaseSpawner>`, with
    :class:`ProcessSpawner
    <avocado.core.spawners.process.ProcessSpawner>` being the default
-3. For each :class:`avocado.core.nrunner.Runnable` found by the
-   resolver, turns it into a :class:`avocado.core.nrunner.Task`, which
-   means giving it the following extra information:
+3. For each :class:`avocado.core.nrunner.runnable.Runnable` found by
+   the resolver, turns it into a :class:`avocado.core.nrunner.Task`,
+   which means giving it the following extra information:
 
   a. The status server(s) that it should report to
   b. An unique identification, so that its messages to the status
@@ -362,8 +363,8 @@ A Runnable can be created in a number of ways.  The first one is
 through :class:`avocado.core.nrunner.Runnable`, a very low level (and
 internal) API.  Still, it serves as an example::
 
-  >>> from avocado.core import nrunner
-  >>> runnable = nrunner.Runnable('exec', '/bin/true')
+  >>> from avocado.core.nrunner.runnable import Runnable
+  >>> runnable = Runnable('exec', '/bin/true')
   >>> runnable
   <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">
 
@@ -375,8 +376,8 @@ itself will look like::
 
 And example the code to create it::
 
-  >>> from avocado.core import nrunner
-  >>> runnable = nrunner.Runnable.from_recipe("/path/to/recipe.json")
+  >>> from avocado.core.nrunner.runnable import Runnable
+  >>> runnable = Runnable.from_recipe("/path/to/recipe.json")
   >>> runnable
   <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">>
 
@@ -384,8 +385,8 @@ The third way to create a Runnable, is even more internal.  Its usage
 is **discouraged**, unless you are creating a tool that needs to
 create Runnables based on the user's input from the command line::
 
-  >>> from avocado.core import nrunner
-  >>> runnable = nrunner.Runnable.from_args({'kind': 'exec', 'uri': '/bin/true'})
+  >>> from avocado.core.nrunner.runnable import Runnable
+  >>> runnable = Runnable.from_args({'kind': 'exec', 'uri': '/bin/true'})
   >>> runnable
   <Runnable kind="exec" uri="/bin/true" args="()" kwargs="{}" tags="None" requirements="None">>
 

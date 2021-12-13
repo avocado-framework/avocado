@@ -23,11 +23,14 @@ import time
 
 from robot import run
 
-from avocado.core import nrunner
+from avocado.core.nrunner.app import BaseRunnerApp
+from avocado.core.nrunner.runner import (RUNNER_RUN_CHECK_INTERVAL,
+                                         RUNNER_RUN_STATUS_INTERVAL,
+                                         BaseRunner)
 from avocado.core.runners.utils import messages
 
 
-class RobotRunner(nrunner.BaseRunner):
+class RobotRunner(BaseRunner):
 
     def _uri_to_file_suite_test(self):
         """Converts the uri to a file name, suit name and test name"""
@@ -88,11 +91,11 @@ class RobotRunner(nrunner.BaseRunner):
 
         most_current_execution_state_time = None
         while queue.empty():
-            time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
+            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
             now = time.monotonic()
             if most_current_execution_state_time is not None:
                 next_execution_state_mark = (most_current_execution_state_time +
-                                             nrunner.RUNNER_RUN_STATUS_INTERVAL)
+                                             RUNNER_RUN_STATUS_INTERVAL)
             if (most_current_execution_state_time is None or
                     now > next_execution_state_mark):
                 most_current_execution_state_time = now
@@ -104,14 +107,15 @@ class RobotRunner(nrunner.BaseRunner):
         yield messages.FinishedMessage.get(status['result'])
 
 
-class RunnerApp(nrunner.BaseRunnerApp):
+class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner-robot'
     PROG_DESCRIPTION = '*nrunner application for robot tests'
     RUNNABLE_KINDS_CAPABLE = {'robot': RobotRunner}
 
 
 def main():
-    nrunner.main(RunnerApp)
+    app = RunnerApp(print)
+    app.run()
 
 
 if __name__ == '__main__':

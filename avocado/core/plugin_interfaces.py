@@ -359,3 +359,18 @@ class DeploymentSpawner(Spawner):
 
         This method should also be executed before spawning the task.
         """
+
+
+class NrunnerRunner(Plugin):
+    """Base interface for a nrunner Runner."""
+
+    def __init__(self, runnable):
+        self.runnable = runnable
+
+    @abc.abstractmethod
+    def run(self):
+        """Runner main method
+
+        Yields dictionary as output, containing status as well as relevant
+        information concerning the results.
+        """

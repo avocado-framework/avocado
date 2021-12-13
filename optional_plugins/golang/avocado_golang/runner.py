@@ -3,11 +3,12 @@ import time
 
 from avocado_golang import GO_BIN
 
-from avocado.core import nrunner
+from avocado.core.nrunner.app import BaseRunnerApp
+from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
 from avocado.core.runners.utils import messages
 
 
-class GolangRunner(nrunner.BaseRunner):
+class GolangRunner(BaseRunner):
     """Runner for Golang tests.
 
     When creating the Runnable, use the following attributes:
@@ -59,7 +60,7 @@ class GolangRunner(nrunner.BaseRunner):
             stderr=subprocess.PIPE)
 
         while process.poll() is None:
-            time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
+            time.sleep(RUNNER_RUN_STATUS_INTERVAL)
             yield messages.RunningMessage.get()
 
         result = 'pass' if process.returncode == 0 else 'fail'
@@ -69,14 +70,15 @@ class GolangRunner(nrunner.BaseRunner):
                                            returncode=process.returncode)
 
 
-class RunnerApp(nrunner.BaseRunnerApp):
+class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner-golang'
     PROG_DESCRIPTION = 'nrunner application for golang tests'
     RUNNABLE_KINDS_CAPABLE = {'golang': GolangRunner}
 
 
 def main():
-    nrunner.main(RunnerApp)
+    app = RunnerApp(print)
+    app.run()
 
 
 if __name__ == '__main__':

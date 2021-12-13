@@ -15,7 +15,7 @@
 import os
 import time
 
-from avocado.core.nrunner import TASK_DEFAULT_CATEGORY
+from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY
 from avocado.core.output import LOG_UI
 from avocado.core.test_id import TestID
 

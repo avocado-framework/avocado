@@ -49,7 +49,7 @@ def resolutions_to_runnables(resolutions, config):
     information about the resolution process (if it was successful
     or not) and in case of successful resolutions a list of
     resolutions.  It's expected that the resolution contain one
-    or more :class:`avocado.core.nrunner.Runnable`.
+    or more :class:`avocado.core.nrunner.runnable.Runnable`.
 
     This function sets the runnable specific configuration for each
     runnable.  It also performs tag based filtering on the runnables
@@ -61,7 +61,7 @@ def resolutions_to_runnables(resolutions, config):
     :param config: job configuration
     :type config: dict
     :returns: the resolutions converted to runnables
-    :rtype: list of :class:`avocado.core.nrunner.Runnable`
+    :rtype: list of :class:`avocado.core.nrunner.runnable.Runnable`
     """
     result = []
     filter_by_tags = config.get("filter.by_tags.tags")
