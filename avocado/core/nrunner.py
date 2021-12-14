@@ -103,7 +103,12 @@ class ConfigEncoder(json.JSONEncoder):
     def default(self, config_option):  # pylint: disable=W0221
         if isinstance(config_option, set):
             return {'__encoded_set__': list(config_option)}
-        return json.JSONEncoder.default(self, config_option)
+        try:
+            return json.JSONEncoder.default(self, config_option)
+        except TypeError:
+            # Probably this is a not JSON serializable data. To keep the same
+            # behavior as before, lets return None
+            return None
 
 
 class Runnable:
