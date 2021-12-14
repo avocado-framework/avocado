@@ -8,6 +8,7 @@ redhat_version_task:
           - image: fedora:35
           - image: fedora:34
           - image: registry.access.redhat.com/ubi8/ubi
+          - image: registry.access.redhat.com/ubi9-beta/ubi
 
 fedora_develop_install_uninstall_task:
     develop_install_uninstall_script:
@@ -38,6 +39,7 @@ redhat_egg_task:
           - image: fedora:35
           - image: fedora:34
           - image: registry.access.redhat.com/ubi8/ubi
+          - image: registry.access.redhat.com/ubi9-beta/ubi
 
 debian_version_task:
     version_script:
@@ -49,7 +51,7 @@ debian_version_task:
         matrix:
           - image: debian:10.10
           - image: debian:11.0
-          - image: ubuntu:18.04
+          - image: ubuntu:21.10
           - image: ubuntu:20.04
 
 debian_egg_task:
@@ -65,7 +67,7 @@ debian_egg_task:
         matrix:
           - image: debian:10.10
           - image: debian:11.0
-          - image: ubuntu:18.04
+          - image: ubuntu:21.10
           - image: ubuntu:20.04
 
 fedora_selftests_task:
