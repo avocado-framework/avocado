@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 93.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -168,9 +168,6 @@ cp -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
 find %{buildroot}%{_docdir}/avocado -type f -name '*.py' -exec chmod -c -x {} ';'
 mkdir -p %{buildroot}%{_libexecdir}/avocado
 mv %{buildroot}%{python3_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
-# adjust permissions for file containing shebang line needed for
-# spawning tasks in podman containers
-chmod -c +x %{buildroot}%{python3_sitelib}/avocado/core/nrunner.py
 
 %if %{with tests}
 %check
@@ -379,6 +376,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Dec 13 2021 Cleber Rosa <crosa@redhat.com> - 93.0-3
+- Removed executable mode from avocado/core/nrunner.py
+
 * Wed Nov 17 2021 Ana Guerrero Lopez <anguerre@redhat.com> - 93.0-2
 - Adjust selftest/check.py to use new --skip option
 

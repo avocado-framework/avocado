@@ -1,11 +1,6 @@
 # This Makefile contains targets used by GitHub Actions
+include Makefile.include
 
-ifndef PYTHON
-PYTHON=$(shell which python3 2>/dev/null)
-endif
-ifndef VERSION
-VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
-endif
 ifndef AVOCADO_OPTIONAL_PLUGINS
 AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
 endif

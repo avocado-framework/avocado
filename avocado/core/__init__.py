@@ -140,6 +140,7 @@ def register_core_options():
                          key_type=int,
                          help_msg=help_msg,
                          default=10)
+
     help_msg = ('Whether to display colored output in terminals that '
                 'support it')
     stgs.register_option(section='runner.output',

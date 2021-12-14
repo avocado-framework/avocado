@@ -1,0 +1,9 @@
+# This Makefile contains snippets used on other Makefiles
+
+ifndef PYTHON
+PYTHON=$(shell which python3 2>/dev/null || which python 2>/dev/null)
+endif
+
+ifndef VERSION
+VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
+endif
