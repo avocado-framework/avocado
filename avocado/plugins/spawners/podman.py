@@ -49,6 +49,16 @@ class PodmanSpawnerInit(Init):
             help_msg=help_msg,
             default=default_distro)
 
+        help_msg = ('Avocado egg path to be used during initial bootstrap '
+                    'of avocado inside the isolated environment. By default, '
+                    'Avocado will try to download (or get from cache) an '
+                    'egg from its repository.')
+
+        settings.register_option(section=section,
+                                 key='avocado_spawner_egg',
+                                 help_msg=help_msg,
+                                 default=None)
+
 
 class PodmanCLI(CLI):
 
@@ -71,6 +81,13 @@ class PodmanCLI(CLI):
                                          parser=parser,
                                          long_arg='--spawner-podman-image',
                                          metavar='CONTAINER_IMAGE')
+
+        namespace = 'spawner.podman.avocado_spawner_egg'
+        long_arg = '--spawner-podman-avocado-egg'
+        settings.add_argparser_to_option(namespace=namespace,
+                                         parser=parser,
+                                         long_arg=long_arg,
+                                         metavar='AVOCADO_EGG')
 
     def run(self, config):
         pass
@@ -112,8 +129,14 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         # Setuptools
         # For now let's pin to setuptools 59.2.
         # TODO: Automatically get latest setuptools version.
-        eggs = [f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{py_major}.{py_minor}.egg",
-                f"https://github.com/avocado-framework/avocado/releases/download/{VERSION}/avocado_framework-{VERSION}-py{py_major}.{py_minor}.egg"]
+        eggs = [f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{py_major}.{py_minor}.egg"]
+        local_egg = self.config.get('spawner.podman.avocado_spawner_egg')
+        if local_egg:
+            eggs.append(local_egg)
+        else:
+            remote_egg = f"https://github.com/avocado-framework/avocado/releases/download/{VERSION}/avocado_framework-{VERSION}-py{py_major}.{py_minor}.egg"
+            eggs.append(remote_egg)
+
         for url in eggs:
             path = self._fetch_asset(url)
             to = os.path.join('/tmp/', os.path.basename(path))
