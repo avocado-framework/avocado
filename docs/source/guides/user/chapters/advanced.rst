@@ -62,10 +62,7 @@ True or False).
    have to use it in combination with :ref:`documentation<the_hint_files>`.
 
 .. note:: Also, be aware this feature it is meant to set custom Runnable
-   identifiers strings only. Due some current limitations on hint files, this
-   will not fully solve the 'external runner' problem. For that, we have a
-   `pending Feature Request
-   <https://github.com/avocado-framework/avocado/issues/5137>`_
+   identifiers strings only.
 
 Test Runner Selection
 ---------------------

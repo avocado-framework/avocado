@@ -199,6 +199,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-runner-requirement-package
 %{_bindir}/avocado-runner-sysinfo
 %{_bindir}/avocado-software-manager
+%{_bindir}/avocado-external-runner
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_resultsdb*
@@ -376,6 +377,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Jan 21 2022 Beraldo Leal <bleal@redhat.com> - 94.0-2
+- Added new binary for 'avocado-external-runner'
+
 * Mon Dec 20 2021 Avocado Developer <avocado@redhat.com> - 94.0-1
 - New release
 
