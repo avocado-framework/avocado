@@ -143,7 +143,8 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         for egg, to in eggs:
             await self.podman.copy_to_container(where, egg, to)
 
-    async def _create_container_for_task(self, runtime_task, env_args):
+    async def _create_container_for_task(self, runtime_task, env_args,
+                                         test_output=None):
         mount_status_server_socket = False
         mounted_status_server_socket = '/tmp/.status_server.sock'
         status_server_uri = runtime_task.task.status_services[0].uri
@@ -172,6 +173,11 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         else:
             status_server_opts = ("--net=host", )
 
+        output_opts = ()
+        if test_output:
+            podman_output = runtime_task.task.runnable.output_dir
+            output_opts = ("-v", "%s:%s" % (test_output, podman_output))
+
         image = self.config.get('spawner.podman.image')
 
         envs = [f"-e={k}={v}" for k, v in env_args.items()]
@@ -179,6 +185,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             # pylint: disable=W0201
             _, stdout, _ = await self.podman.execute("create",
                                                      *status_server_opts,
+                                                     *output_opts,
                                                      entry_point_arg,
                                                      *envs,
                                                      image)
@@ -190,7 +197,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         return stdout.decode().strip()
 
     async def spawn_task(self, runtime_task):
-
+        self.create_task_output_dir(runtime_task)
         podman_bin = self.config.get('spawner.podman.bin')
         try:
             # pylint: disable=W0201
@@ -204,8 +211,10 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         eggs = self.get_eggs_paths(major, minor)
         destination_eggs = ":".join(map(lambda egg: str(egg[1]), eggs))
         env_args = {'PYTHONPATH': destination_eggs}
+        output_dir_path = self.task_output_dir(runtime_task)
         container_id = await self._create_container_for_task(runtime_task,
-                                                             env_args)
+                                                             env_args,
+                                                             output_dir_path)
 
         runtime_task.spawner_handle = container_id
 
@@ -221,6 +230,13 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             return False
 
         return returncode == 0
+
+    def create_task_output_dir(self, runtime_task):
+        output_dir_path = self.task_output_dir(runtime_task)
+        output_podman_path = '~/avocado/job-results/spawner/task'
+
+        os.makedirs(output_dir_path, exist_ok=True)
+        runtime_task.task.setup_output_dir(output_podman_path)
 
     async def wait_task(self, runtime_task):
         while True:

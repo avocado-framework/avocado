@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from avocado.core.plugin_interfaces import Spawner
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
@@ -19,6 +20,7 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         return runtime_task.spawner_handle.returncode is None
 
     async def spawn_task(self, runtime_task):
+        self.create_task_output_dir(runtime_task)
         task = runtime_task.task
         runner = task.runnable.pick_runner_command()
         args = runner[1:] + ['task-run'] + task.get_command_args()
@@ -35,6 +37,11 @@ class ProcessSpawner(Spawner, SpawnerMixin):
             return False
         asyncio.ensure_future(self._collect_task(runtime_task.spawner_handle))
         return True
+
+    def create_task_output_dir(self, runtime_task):
+        output_dir_path = self.task_output_dir(runtime_task)
+        os.makedirs(output_dir_path, exist_ok=True)
+        runtime_task.task.setup_output_dir(output_dir_path)
 
     @staticmethod
     async def wait_task(runtime_task):

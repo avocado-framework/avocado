@@ -57,6 +57,8 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             klass, method = klass_method.split('.', 1)
 
             params = AvocadoInstrumentedTestRunner._create_params(runnable)
+            result_dir = (runnable.output_dir or
+                          tempfile.mkdtemp(prefix=".avocado-task"))
             test_factory = [klass,
                             {'name': TestID(1, runnable.uri),
                              'methodName': method,
@@ -64,7 +66,7 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                              'modulePath': module_path,
                              'params': params,
                              'tags': runnable.tags,
-                             'run.results_dir': tempfile.mkdtemp(prefix=".avocado-task"),
+                             'run.results_dir': result_dir,
                              }]
 
             messages.start_logging(runnable.config, queue)
