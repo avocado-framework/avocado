@@ -126,6 +126,7 @@ class InitDispatcher(EnabledExtensionManager):
 
 class SpawnerDispatcher(EnabledExtensionManager):
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, job=None):
         super(SpawnerDispatcher, self).__init__('avocado.plugins.spawner',
-                                                invoke_kwds={'config': config})
+                                                invoke_kwds={'job': job,
+                                                             'config': config})

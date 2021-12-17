@@ -359,8 +359,7 @@ class Runner(RunnerInterface):
                     if rt.task.category == 'test']
         tsm = TaskStateMachine(self.runtime_tasks, self.status_repo)
         spawner_name = test_suite.config.get('nrunner.spawner')
-        spawner = SpawnerDispatcher(test_suite.config)[spawner_name].obj
-        spawner.job_output_dir = job.test_results_path
+        spawner = SpawnerDispatcher(test_suite.config, job)[spawner_name].obj
         max_running = min(test_suite.config.get('nrunner.max_parallel_tasks'),
                           len(self.runtime_tasks))
         timeout = test_suite.config.get('task.timeout.running')

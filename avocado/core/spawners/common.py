@@ -28,14 +28,16 @@ class SpawnerMixin:
 
     METHODS = []
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, job=None):
         if config is None:
             config = settings.as_dict()
         self.config = config
-        self.job_output_dir = None
+        self._job = job
 
     def task_output_dir(self, runtime_task):
-        return os.path.join(self.job_output_dir,
+        if self._job is None:
+            raise SpawnerException("Job wasn't set properly")
+        return os.path.join(self._job.test_results_path,
                             runtime_task.task.identifier.str_filesystem)
 
     @staticmethod
