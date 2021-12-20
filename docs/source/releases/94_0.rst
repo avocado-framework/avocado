@@ -1,0 +1,78 @@
+================
+94.0 Gran Torino
+================
+
+The Avocado team is proud to present another release: Avocado 94.0,
+AKA "Gran Torino", is now available!
+
+Release documentation: `Avocado 94.0
+<http://avocado-framework.readthedocs.io/en/94.0/>`_
+
+Users/Test Writers
+==================
+
+* The Podman Spawner now deploys Avocado inside a container using
+  Python eggs.  This is a significant change from previous versions in
+  the sense that all test types supported by Avocado's ``nrunner``
+  architecture in the default installation are now supported on a
+  container (this includes ``avocado-instrumented``, ``tap``, etc).
+
+* A results plugin for `Beaker <https://beaker-project.org>`_ is
+  now available and works out of the box without any manual
+  configuration needed.
+
+* The ``AVOCADO_VERSION`` and ``AVOCADO_TEST_WORKDIR`` are now
+  available to ``exec-test`` tests run under the ``nrunner``
+  architecture.
+
+* ``nrunner`` task identifiers can now be configured as a format
+  string that utilizes the attributes of the runnable.  This allows
+  users to define how test results will be named and presented.
+
+* The ``--output-check-record`` has been dropped for the legacy
+  runner.  A similar feature is planned to be added to the ``nrunner``
+  architecture.
+
+Bug Fixes
+=========
+
+* Objects that could not be serialized as JSON were causing crashes
+  during job runs.
+
+Utility APIs
+============
+
+* mod:`avocado.utils.network` removed deprecated modules and methods.
+
+* mod:`avocado.utils.vmimage` now uses https://cloud.debian.org for
+  obtaining Debian Cloud images.
+
+Misc Changes
+============
+
+* A Blue Print for a new architecture responsible for handling the
+  tasks dependencies has been approved
+
+* More work towards the elimination of root logger usage
+
+Internal Changes
+================
+
+* Spanwers now better cooperate with runners with regards to the
+  output directory, avoiding duplicate directories and unnecessary
+  data copies.
+
+* CodeCoverage CI jobs will run only once (on Python 3.10)
+
+* The ``selftests/check.py`` script now allows for the inclusion
+  (``--select``) or exclusion (``--skip``) of major test groups to be
+  run
+
+* The import style used throughout Avocado has switched from relative
+  to absolute imports
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/93.0...94.0>`_.
