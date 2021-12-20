@@ -194,7 +194,7 @@ class HTMLResult(Result):
         # if possible, put browser in separate process
         # group, so keyboard interrupts don't affect
         # browser as well as Python
-        setsid = getattr(os, 'setsid', None)
+        setsid=getattr(os, 'setsid', None)
         if not setsid:
             setsid = getattr(os, 'setpgrp', None)
         inout = open(os.devnull, "r+")
