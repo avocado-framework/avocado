@@ -13,7 +13,15 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Amador Pahim <apahim@redhat.com>
 
-from setuptools import find_packages, setup
+from setuptools import setup
+
+# Handle systems with setuptools < 40
+try:
+    from setuptools import find_namespace_packages
+except ImportError:
+    packages = ['avocado_resultsdb']
+else:
+    packages = find_namespace_packages(include=['avocado_resultsdb'])
 
 VERSION = open("VERSION", "r").read().strip()
 
@@ -23,17 +31,17 @@ setup(name='avocado-framework-plugin-resultsdb',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
-      packages=find_packages(),
+      packages=packages,
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION,
                         'resultsdb-api==2.1.3'],
       entry_points={
           'avocado.plugins.cli': [
-              'resultsdb = avocado_resultsdb:ResultsdbCLI',
+              'resultsdb = avocado_resultsdb.resultsdb:ResultsdbCLI',
               ],
           'avocado.plugins.result_events': [
-              'resultsdb = avocado_resultsdb:ResultsdbResultEvent',
+              'resultsdb = avocado_resultsdb.resultsdb:ResultsdbResultEvent',
               ],
           'avocado.plugins.result': [
-              'resultsdb = avocado_resultsdb:ResultsdbResult',
+              'resultsdb = avocado_resultsdb.resultsdb:ResultsdbResult',
               ]})
