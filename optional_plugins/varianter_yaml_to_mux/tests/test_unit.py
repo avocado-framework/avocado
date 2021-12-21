@@ -5,9 +5,9 @@ import os
 import pickle
 import unittest
 
-import avocado_varianter_yaml_to_mux as yaml_to_mux
+import avocado_varianter_yaml_to_mux.varianter_yaml_to_mux as yaml_to_mux
 import yaml
-from avocado_varianter_yaml_to_mux import mux
+from avocado_varianter_yaml_to_mux.varianter_yaml_to_mux import mux
 
 from avocado.core import parameters, tree
 from avocado.utils import astring
