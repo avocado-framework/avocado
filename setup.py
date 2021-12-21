@@ -219,7 +219,7 @@ class Test(SimpleCommand):
 
         # Import here on purpose, otherwise it'll mess with install/develop commands
         import selftests.check
-        selftests.check.main(args)
+        sys.exit(selftests.check.main(args))
 
 
 class Man(SimpleCommand):
