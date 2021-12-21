@@ -267,21 +267,21 @@ class _BaseLoader(SafeLoader):
     YAML loader with additional features related to mux
     """
 
-    SafeLoader.add_constructor(u'!include',
+    SafeLoader.add_constructor('!include',
                                lambda *_: mux.Control(YAML_INCLUDE))
-    SafeLoader.add_constructor(u'!using',
+    SafeLoader.add_constructor('!using',
                                lambda *_: mux.Control(YAML_USING))
-    SafeLoader.add_constructor(u'!remove_node',
+    SafeLoader.add_constructor('!remove_node',
                                lambda *_: mux.Control(YAML_REMOVE_NODE))
-    SafeLoader.add_constructor(u'!remove_value',
+    SafeLoader.add_constructor('!remove_value',
                                lambda *_: mux.Control(YAML_REMOVE_VALUE))
-    SafeLoader.add_constructor(u'!filter-only',
+    SafeLoader.add_constructor('!filter-only',
                                lambda *_: mux.Control(YAML_FILTER_ONLY))
-    SafeLoader.add_constructor(u'!filter-out',
+    SafeLoader.add_constructor('!filter-out',
                                lambda *_: mux.Control(YAML_FILTER_OUT))
-    SafeLoader.add_constructor(u'tag:yaml.org,2002:python/dict',
+    SafeLoader.add_constructor('tag:yaml.org,2002:python/dict',
                                SafeLoader.construct_yaml_map)
-    SafeLoader.add_constructor(u'!mux', _mux_loader)
+    SafeLoader.add_constructor('!mux', _mux_loader)
     SafeLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                                _mapping_to_tree_loader)
 
@@ -345,11 +345,11 @@ def create_from_yaml(paths):
             _merge(data, path)
     # Yaml can raise IndexError on some files
     except (yaml.YAMLError, IndexError) as details:
-        if (u'mapping values are not allowed in this context' in
+        if ('mapping values are not allowed in this context' in
                 astring.to_text(details)):
-            details = (u"%s\nMake sure !tags and colons are separated by a "
-                       u"space (eg. !include :)" % details)
-        msg = u"Invalid multiplex file '%s': %s" % (path, details)
+            details = ("%s\nMake sure !tags and colons are separated by a "
+                       "space (eg. !include :)" % details)
+        msg = "Invalid multiplex file '%s': %s" % (path, details)
         raise IOError(2, msg, path)
     return data
 
