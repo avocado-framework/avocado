@@ -14,7 +14,15 @@
 #          Cleber Rosa <crosa@redhat.com>
 
 
-from setuptools import find_packages, setup
+from setuptools import setup
+
+# Handle systems with setuptools < 40
+try:
+    from setuptools import find_namespace_packages
+except ImportError:
+    packages = ['avocado_varianter_cit']
+else:
+    packages = find_namespace_packages(include=['avocado_varianter_cit'])
 
 VERSION = open("VERSION", "r").read().strip()
 
@@ -24,15 +32,15 @@ setup(name='avocado-framework-plugin-varianter-cit',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
-      packages=find_packages(),
+      packages=packages,
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION],
       test_suite='tests',
       entry_points={
           'avocado.plugins.cli': [
-              'varianter_cit = avocado_varianter_cit:VarianterCitCLI',
+              'varianter_cit = avocado_varianter_cit.varianter_cit:VarianterCitCLI',
           ],
           "avocado.plugins.varianter": [
-              "varianter_cit = avocado_varianter_cit:VarianterCit",
+              "varianter_cit = avocado_varianter_cit.varianter_cit:VarianterCit",
           ]}
       )

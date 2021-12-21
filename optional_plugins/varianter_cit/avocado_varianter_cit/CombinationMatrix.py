@@ -1,6 +1,6 @@
 import itertools
 
-from .CombinationRow import CombinationRow as Row
+from avocado_varianter_cit.CombinationRow import CombinationRow as Row
 
 
 class CombinationMatrix:

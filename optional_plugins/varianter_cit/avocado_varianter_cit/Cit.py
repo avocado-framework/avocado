@@ -1,10 +1,10 @@
 import logging
 import random
 
-from avocado.core.output import LOG_UI, Throbber
+from avocado_varianter_cit.CombinationMatrix import CombinationMatrix
+from avocado_varianter_cit.Solver import Solver
 
-from .CombinationMatrix import CombinationMatrix
-from .Solver import Solver
+from avocado.core.output import LOG_UI, Throbber
 
 ITERATIONS_SIZE = 600
 LOG = LOG_UI.getChild("Cit")
