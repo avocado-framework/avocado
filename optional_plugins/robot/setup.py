@@ -13,7 +13,15 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Amador Pahim <apahim@redhat.com>
 
-from setuptools import find_packages, setup
+from setuptools import setup
+
+# Handle systems with setuptools < 40
+try:
+    from setuptools import find_namespace_packages
+except ImportError:
+    packages = ['avocado_robot']
+else:
+    packages = find_namespace_packages(include=['avocado_robot'])
 
 VERSION = open("VERSION", "r").read().strip()
 
@@ -23,7 +31,7 @@ setup(name='avocado-framework-plugin-robot',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
-      packages=find_packages(),
+      packages=packages,
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION,
                         'robotframework>=4.1'],
@@ -33,6 +41,6 @@ setup(name='avocado-framework-plugin-robot',
               'avocado-runner-robot = avocado_robot.runner:main',
           ],
           'avocado.plugins.resolver': [
-              'robot = avocado_robot:RobotResolver'
+              'robot = avocado_robot.robot:RobotResolver'
           ]}
       )
