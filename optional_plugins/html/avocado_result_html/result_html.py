@@ -210,10 +210,17 @@ class HTMLResult(Result):
 
     @staticmethod
     def _render(result, output_path):
-        env = jinja.Environment(
-            loader=jinja.PackageLoader('avocado_result_html'),
-            autoescape=True,
-        )
+        # Workaround for systems with older versions of jinja2 (before version 3)
+        try:
+            env = jinja.Environment(
+                loader=jinja.PackageLoader('avocado_result_html'),
+                autoescape=True,
+            )
+        except (TypeError, AssertionError):
+            env = jinja.Environment(
+                loader=jinja.PackageLoader('avocado_result_html.result_html'),
+                autoescape=True,
+            )
         template = env.get_template('results.html')
         report_contents = template.render({'data': ReportModel(result, output_path)})
 
