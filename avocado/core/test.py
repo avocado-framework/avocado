@@ -1192,7 +1192,7 @@ class MockingTest(Test):
         This class substitutes other classes. Let's just ignore the remaining
         arguments and only set the ones supported by avocado.Test
         """
-        super_kwargs = dict()
+        super_kwargs = {}
         args = list(reversed(args))
         for arg in ["methodName", "name", "params", "base_logdir", "config",
                     "runner_queue"]:
