@@ -36,13 +36,13 @@ def get_one_job_results(path, results):
 def merge_results(results, result_json_paths):
     for result_json_path in result_json_paths:
         job = get_one_job_results(result_json_path, results)
-        for test_id in job:
-            if test_id not in results:
-                results[test_id] = {}
-            status = job[test_id]
-            if status not in results[test_id]:
-                results[test_id][status] = 0
-            results[test_id][status] += 1
+        for test_id_key, test_id_value in job.items():
+            if test_id_key not in results:
+                results[test_id_key] = {}
+            status = test_id_value
+            if status not in results[test_id_key]:
+                results[test_id_key][status] = 0
+            results[test_id_key][status] += 1
 
 
 def main():
