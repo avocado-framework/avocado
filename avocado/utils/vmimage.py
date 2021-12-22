@@ -524,7 +524,7 @@ class Image:
         else:
             qemu_img = QEMU_IMG
         name, extension = os.path.splitext(self.base_image)
-        new_image = '%s-%s%s' % (name, str(uuid.uuid4()).split('-')[0],
+        new_image = '%s-%s%s' % (name, str(uuid.uuid4()).split('-', maxsplit=1)[0],
                                  extension)
         if self.snapshot_dir is not None:
             new_image = os.path.join(self.snapshot_dir,
