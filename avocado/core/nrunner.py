@@ -100,11 +100,11 @@ class ConfigEncoder(json.JSONEncoder):
     JSON Encoder for config options.
     """
 
-    def default(self, config_option):  # pylint: disable=W0221
-        if isinstance(config_option, set):
-            return {'__encoded_set__': list(config_option)}
+    def default(self, o):
+        if isinstance(o, set):
+            return {'__encoded_set__': list(o)}
         try:
-            return json.JSONEncoder.default(self, config_option)
+            return json.JSONEncoder.default(self, o)
         except TypeError:
             # Probably this is a not JSON serializable data. To keep the same
             # behavior as before, lets return None

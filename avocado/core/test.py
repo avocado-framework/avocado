@@ -877,7 +877,7 @@ class Test(unittest.TestCase, TestData):
             self.log.info("%s %s", self.status,
                           self.name)
 
-    def fail(self, message=None):  # pylint: disable=W0221
+    def fail(self, msg=None):
         """
         Fails the currently running test.
 
@@ -886,13 +886,11 @@ class Test(unittest.TestCase, TestData):
 
         :param message: an optional message that will be recorded in the logs
         :type message: str
-        :warning message: This parameter will changed name to "msg" in the next
-                          LTS release because of lint W0221
         """
-        raise exceptions.TestFail(message)
+        raise exceptions.TestFail(msg)
 
     @staticmethod
-    def error(message=None):  # pylint: disable=W0221
+    def error(msg=None):
         """
         Errors the currently running test.
 
@@ -901,13 +899,11 @@ class Test(unittest.TestCase, TestData):
 
         :param message: an optional message that will be recorded in the logs
         :type message: str
-        :warning message: This parameter will changed name to "msg" in the next
-                          LTS release because of lint W0221
         """
-        raise exceptions.TestError(message)
+        raise exceptions.TestError(msg)
 
     @staticmethod
-    def cancel(message=None):  # pylint: disable=W0221
+    def cancel(msg=None):
         """
         Cancels the test.
 
@@ -919,10 +915,8 @@ class Test(unittest.TestCase, TestData):
 
         :param message: an optional message that will be recorded in the logs
         :type message: str
-        :warning message: This parameter will changed name to "msg" in the next
-                          LTS release because of lint W0221
         """
-        raise exceptions.TestCancel(message)
+        raise exceptions.TestCancel(msg)
 
     def fetch_asset(self, name, asset_hash=None, algorithm=None,
                     locations=None, expire=None, find_only=False,
