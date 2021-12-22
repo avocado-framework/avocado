@@ -578,7 +578,7 @@ class Test(unittest.TestCase, TestData):
         state['class_name'] = self.__class__.__name__
         state['params'] = [(path, key, value)
                            for path, key, value
-                           in self.__params.iteritems()]  # pylint: disable=W1620
+                           in self.__params.iteritems()]
         return state
 
     def _register_log_file_handler(self, logger, formatter, filename,
@@ -1094,7 +1094,7 @@ class SimpleTest(Test):
         """
         try:
             test_params = dict([(str(key), str(val)) for _, key, val in
-                                self.params.iteritems()])  # pylint: disable=W1620
+                                self.params.iteritems()])
 
             input_encoding = self._config.get('core.input_encoding')
             result = process.run(self._command,
@@ -1157,7 +1157,7 @@ class TapTest(SimpleTest):
         try:
             test_params = {
                 str(key): str(val)
-                for _, key, val in self.params.iteritems()  # pylint: disable=W1620
+                for _, key, val in self.params.iteritems()
             }
 
             input_encoding = self._config.get('core.input_encoding')
@@ -1261,7 +1261,7 @@ class DryRunTest(MockingTest):
 
     def setUp(self):
         self.log.info("Test params:")
-        for path, key, value in self.params.iteritems():  # pylint: disable=W1620
+        for path, key, value in self.params.iteritems():
             self.log.info("%s:%s ==> %s", path, key, value)
         self.cancel('Test cancelled due to --dry-run')
 
