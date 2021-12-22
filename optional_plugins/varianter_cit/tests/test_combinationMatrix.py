@@ -32,9 +32,9 @@ class MatrixInitialization(unittest.TestCase):
                          "Total uovered_more_than_ones number is wrong.")
         self.assertEqual(len(matrix.hash_table), excepted_row_size, "Matrix has wrong row size")
         self.assertEqual(len(matrix.uncovered_rows), excepted_row_size, "Matrix has wrong uncovered row size")
-        for key in matrix.hash_table:
+        for key, value in matrix.hash_table:
             with self.subTest(combination=key):
-                self.assertTrue(combination_row_equals(matrix.hash_table[key], excepted_hash_table[key]))
+                self.assertTrue(combination_row_equals(value, excepted_hash_table[key]))
 
 
 class CombinationMatrixTest(unittest.TestCase):
@@ -67,9 +67,9 @@ class CombinationMatrixTest(unittest.TestCase):
                          "Total uovered_more_than_ones number is wrong.")
         self.assertEqual(excepted_uncovered_row_size, len(self.matrix.uncovered_rows),
                          "Matrix has wrong uncovered row size")
-        for key in self.matrix.hash_table:
+        for key, value in self.matrix.hash_table.items():
             with self.subTest(combination=key):
-                self.assertTrue(combination_row_equals(self.matrix.hash_table[key], self.excepted_hash_table[key]))
+                self.assertTrue(combination_row_equals(value, self.excepted_hash_table[key]))
         solution_row = [0, 0, 2, 3]
         self.matrix.cover_solution_row(solution_row)
         solution_row = [0, 1, 2, 3]
@@ -111,9 +111,9 @@ class CombinationMatrixTest(unittest.TestCase):
                          "Total uovered_more_than_ones number is wrong.")
         self.assertEqual(excepted_uncovered_row_size, len(self.matrix.uncovered_rows),
                          "Matrix has wrong uncovered row size")
-        for key in self.matrix.hash_table:
+        for key, value in self.matrix.hash_table.items():
             with self.subTest(combination=key):
-                self.assertTrue(combination_row_equals(self.matrix.hash_table[key], self.excepted_hash_table[key]))
+                self.assertTrue(combination_row_equals(value, self.excepted_hash_table[key]))
 
         self.matrix.cover_combination(solution_row, (1, 0))
         excepted_covered_more_than_ones = 5
@@ -135,9 +135,9 @@ class CombinationMatrixTest(unittest.TestCase):
                          "Total uovered_more_than_ones number is wrong.")
         self.assertEqual(excepted_uncovered_row_size, len(self.matrix.uncovered_rows),
                          "Matrix has wrong uncovered row size")
-        for key in self.matrix.hash_table:
+        for key, value in self.matrix.hash_table.items():
             with self.subTest(combination=key):
-                self.assertTrue(combination_row_equals(self.matrix.hash_table[key], self.excepted_hash_table[key]))
+                self.assertTrue(combination_row_equals(value, self.excepted_hash_table[key]))
 
         self.matrix.cover_solution_row(solution_row)
         self.matrix.cover_solution_row(solution_row)
@@ -156,9 +156,9 @@ class CombinationMatrixTest(unittest.TestCase):
                          "Total uovered_more_than_ones number is wrong.")
         self.assertEqual(excepted_uncovered_row_size, len(self.matrix.uncovered_rows),
                          "Matrix has wrong uncovered row size")
-        for key in self.matrix.hash_table:
+        for key, value in self.matrix.hash_table.items():
             with self.subTest(combination=key):
-                self.assertTrue(combination_row_equals(self.matrix.hash_table[key], self.excepted_hash_table[key]))
+                self.assertTrue(combination_row_equals(value, self.excepted_hash_table[key]))
 
     def test_uncover_combination(self):
         solution_row = [1, 0, 2, 3]
@@ -173,9 +173,9 @@ class CombinationMatrixTest(unittest.TestCase):
                          "Total uovered_more_than_ones number is wrong.")
         self.assertEqual(excepted_uncovered_row_size, len(self.matrix.uncovered_rows),
                          "Matrix has wrong uncovered row size")
-        for key in self.matrix.hash_table:
+        for key, value in self.matrix.hash_table.items():
             with self.subTest(combination=key):
-                self.assertTrue(combination_row_equals(self.matrix.hash_table[key], self.excepted_hash_table[key]))
+                self.assertTrue(combination_row_equals(value, self.excepted_hash_table[key]))
 
     def test_uncover(self):
         solution_row = [1, 0, 2, 3]
@@ -190,6 +190,6 @@ class CombinationMatrixTest(unittest.TestCase):
                          "Total uovered_more_than_ones number is wrong.")
         self.assertEqual(excepted_uncovered_row_size, len(self.matrix.uncovered_rows),
                          "Matrix has wrong uncovered row size")
-        for key in self.matrix.hash_table:
+        for key, value in self.matrix.hash_table.items():
             with self.subTest(combination=key):
-                self.assertTrue(combination_row_equals(self.matrix.hash_table[key], self.excepted_hash_table[key]))
+                self.assertTrue(combination_row_equals(value, self.excepted_hash_table[key]))

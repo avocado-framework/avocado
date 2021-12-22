@@ -75,8 +75,8 @@ class CombinationRow:
 
         self.uncovered = 0
         self.covered_more_than_ones = 0
-        for key in self.hash_table:
-            if self.hash_table[key] is not None:
+        for key, value in self.hash_table:
+            if value is not None:
                 self.hash_table[key] = 0
                 self.uncovered += 1
 

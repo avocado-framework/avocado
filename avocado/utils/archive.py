@@ -125,12 +125,12 @@ class ArchiveFile:
         self.filename = filename
         self.mode = mode
         engine = None
-        for ext in ArchiveFile._extension_table:
+        for ext, value in ArchiveFile._extension_table.items():
             if filename.endswith(ext):
                 (self.is_zip,
                  self.is_tar,
                  engine,
-                 extra_mode) = ArchiveFile._extension_table[ext]
+                 extra_mode) = value
         if engine is not None:
             self.mode += extra_mode
             self._engine = engine(self.filename, self.mode)
