@@ -185,7 +185,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         process.run(cmd_line)
         # Also check whether jobdata contains correct parameter paths
         variants = open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                                     "variants-1.json")).read()
+                                     "variants-1.json"), encoding='utf-8').read()
         expected = '[{"paths": ["/run/*"], "variant_id": null, "variant": [["/", []]]}]'
         self.assertEqual(variants, expected)
 
@@ -407,7 +407,7 @@ class RunnerOperationTest(TestCaseTmpDir):
                     % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         json_path = os.path.join(self.tmpdir.name, 'latest', 'results.json')
-        with open(json_path) as json_file:
+        with open(json_path, encoding='utf-8') as json_file:
             result_json = json.load(json_file)
         output = result.stdout
         expected_rc = exit_codes.AVOCADO_JOB_INTERRUPTED
@@ -566,9 +566,9 @@ class RunnerOperationTest(TestCaseTmpDir):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
         json_path = os.path.join(self.tmpdir.name, 'latest', 'results.json')
-        with open(json_path) as json_file:
+        with open(json_path, encoding='utf-8') as json_file:
             result_json = json.load(json_file)
-        with open(result_json['tests'][0]['logfile'], 'r+b') as test_log_file:
+        with open(result_json['tests'][0]['logfile'], 'r+b') as test_log_file:  # pylint: disable=W1514
             test_log = test_log_file.read()
 
         self.assertIn(b"PARAMS (key=sleep_length, path=*, default=1) => '0.01'",
@@ -592,7 +592,7 @@ class RunnerOperationTest(TestCaseTmpDir):
             test_log_dir = glob.glob(os.path.join(self.tmpdir.name, 'job-*',
                                                   'test-results', '1-*'))[0]
             test_log_path = os.path.join(test_log_dir, 'debug.log')
-            with open(test_log_path, 'rb') as test_log:
+            with open(test_log_path, 'rb') as test_log:  # pylint: disable=W1514
                 self.assertNotIn(b'SHOULD NOT BE ON debug.log', test_log.read())
 
     def test_store_logging_stream(self):
@@ -608,7 +608,7 @@ class RunnerOperationTest(TestCaseTmpDir):
                                      '.test_plant_organic',
                                      'avocado.test.progress')
         self.assertTrue(os.path.exists(progress_info))
-        with open(progress_info) as file:
+        with open(progress_info, encoding='utf-8') as file:
             stream_line = file.readline()
             self.assertIn('INFO | 1-examples/tests/logging_streams.py:'
                           'Plant.test_plant_organic: preparing soil on row 0',

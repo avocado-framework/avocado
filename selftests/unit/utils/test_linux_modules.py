@@ -8,7 +8,7 @@ from avocado.utils import linux_modules
 class Lsmod(Test):
 
     def setUp(self):
-        with open(self.get_data('lsmod')) as lsmod_file:
+        with open(self.get_data('lsmod'), encoding='utf-8') as lsmod_file:
             self.lsmod_out = lsmod_file.read()
 
     def test_parse_lsmod(self):

@@ -164,7 +164,7 @@ class Variants(CLICmd):
         # Export the serialized variants
         if json_variants_dump is not None:
             try:
-                with open(json_variants_dump, 'w') as variants_file:
+                with open(json_variants_dump, 'w', encoding='utf-8') as variants_file:
                     json.dump(varianter.dump(), variants_file)
             except IOError:
                 LOG_UI.error("Cannot write %s", json_variants_dump)

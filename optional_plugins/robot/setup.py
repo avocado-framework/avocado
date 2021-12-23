@@ -23,7 +23,7 @@ except ImportError:
 else:
     packages = find_namespace_packages(include=['avocado_robot'])
 
-VERSION = open("VERSION", "r").read().strip()
+VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
 
 setup(name='avocado-framework-plugin-robot',
       description='Avocado Plugin for Execution of Robot Framework tests',

@@ -113,7 +113,7 @@ class StartMessageHandler(BaseMessageHandler):
                       task.runnable.variant.get('variant', [])
                       for param in params[1]]
 
-        open(logfile, 'w').close()
+        open(logfile, 'w', encoding='utf-8').close()
         metadata = {'job_logdir': job.logdir,
                     'job_unique_id': job.unique_id,
                     'base_path': base_path,
@@ -266,7 +266,7 @@ class BaseRunningMessageHandler(BaseMessageHandler):
         """
 
         def _save_to_file(file_name, mode):
-            with open(file_name, mode) as fp:
+            with open(file_name, mode) as fp:  # pylint: disable=W1514
                 fp.write(buff)
 
         file = os.path.join(task.metadata['task_path'], filename)

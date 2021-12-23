@@ -49,7 +49,7 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
     :param defaults_extra: Extra entry in conf file in defaults section.
     """
     conf_file = "/etc/multipath.conf"
-    with open(conf_file, "w") as mpath_fp:
+    with open(conf_file, "w", encoding='utf-8') as mpath_fp:
         mpath_fp.write("defaults {\n")
         mpath_fp.write("    find_multipaths yes\n")
         mpath_fp.write("    user_friendly_names yes\n")
@@ -60,7 +60,7 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
             mpath_fp.write("blacklist {\n")
             mpath_fp.write("    %s\n" % blacklist)
             mpath_fp.write("}\n")
-    LOG.debug(open(conf_file, "r").read())
+    LOG.debug(open(conf_file, "r", encoding='utf-8').read())
     # The reason for sleep here is to give some time for change in
     # multipath.conf file to take effect.
     time.sleep(5)

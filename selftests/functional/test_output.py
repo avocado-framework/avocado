@@ -215,7 +215,7 @@ class OutputTest(TestCaseTmpDir):
     def _check_output(self, path, exps):
         i = 0
         end = len(exps)
-        with open(path, 'rb') as output_file:
+        with open(path, 'rb') as output_file:  # pylint: disable=W1514
             output_file_content = output_file.read()
             output_file.seek(0)
             for line in output_file:
@@ -248,10 +248,10 @@ class OutputTest(TestCaseTmpDir):
 
         self._check_output(logfile, exps)
         testdir = res["tests"][0]["logdir"]
-        with open(os.path.join(testdir, "stdout"), 'rb') as stdout_file:
+        with open(os.path.join(testdir, "stdout"), 'rb') as stdout_file:  # pylint: disable=W1514
             expected = b"top_print\n\ntop_stdout\ninit_print\n\ninit_stdout\ntest_print\n\ntest_stdout\n"
             self.assertEqual(expected, stdout_file.read())
-        with open(os.path.join(testdir, "stderr"), 'rb') as stderr_file:
+        with open(os.path.join(testdir, "stderr"), 'rb') as stderr_file:  # pylint: disable=W1514
             expected = b"top_stderr\ninit_stderr\ntest_stderr\n"
             self.assertEqual(expected, stderr_file.read())
 
@@ -261,7 +261,7 @@ class OutputTest(TestCaseTmpDir):
                                                  self.tmpdir.name,
                                                  test))
         res = json.loads(result.stdout_text)
-        with open(logfile, 'rb') as output_file:
+        with open(logfile, 'rb') as output_file:  # pylint: disable=W1514
             expected = [b'[stdout] top_print\n',
                         b'[stdout] \n',
                         b'[stdout] top_stdout\n',
@@ -323,7 +323,7 @@ class OutputPluginTest(TestCaseTmpDir):
         base_dir = os.path.dirname(debug_log)
         json_output_path = os.path.join(base_dir, 'results.json')
         self.assertTrue(os.path.isfile(json_output_path))
-        with open(json_output_path, 'r') as fp:
+        with open(json_output_path, 'r', encoding='utf-8') as fp:
             json.load(fp)
         xunit_output_path = os.path.join(base_dir, 'results.xml')
         self.assertTrue(os.path.isfile(json_output_path))
@@ -381,7 +381,7 @@ class OutputPluginTest(TestCaseTmpDir):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         # Check if we are producing valid outputs
-        with open(tmpfile, 'r') as fp:
+        with open(tmpfile, 'r', encoding='utf-8') as fp:
             json_results = json.load(fp)
             debug_log = json_results['debuglog']
             self.check_output_files(debug_log)
@@ -403,7 +403,7 @@ class OutputPluginTest(TestCaseTmpDir):
         self.assertEqual(result.stdout, b"",
                          "Output is not empty:\n%s" % result.stdout)
         # Check if we are producing valid outputs
-        with open(tmpfile2, 'r') as fp:
+        with open(tmpfile2, 'r', encoding='utf-8') as fp:
             json_results = json.load(fp)
             debug_log = json_results['debuglog']
             self.check_output_files(debug_log)
@@ -451,7 +451,7 @@ class OutputPluginTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        with open(tmpfile, 'r') as fp:
+        with open(tmpfile, 'r', encoding='utf-8') as fp:
             json_results = json.load(fp)
             logfile = json_results['tests'][0]['logfile']
             debug_dir = os.path.dirname(logfile)
@@ -470,7 +470,7 @@ class OutputPluginTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        with open(tmpfile, 'r') as fp:
+        with open(tmpfile, 'r', encoding='utf-8') as fp:
             json_results = json.load(fp)
             json_dir = None
             test = json_results['tests'][0]
@@ -496,7 +496,7 @@ class OutputPluginTest(TestCaseTmpDir):
                          (expected_rc, result))
         self.assertEqual(result.stdout, b'',
                          'After redirecting to file, output is not empty: %s' % result.stdout)
-        with open(redirected_output_path, 'r') as redirected_output_file_obj:
+        with open(redirected_output_path, 'r', encoding='utf-8') as redirected_output_file_obj:
             redirected_output = redirected_output_file_obj.read()
             for code in TermSupport.ESCAPE_CODES:
                 self.assertNotIn(code, redirected_output,

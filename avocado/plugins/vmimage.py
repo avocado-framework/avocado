@@ -23,7 +23,7 @@ def list_downloaded_images():
                                   if pos_json.endswith('_metadata.json')]
                 files = list(set(files) - set(metadata_files))
                 for metadata_file in metadata_files:
-                    with open(os.path.join(root, metadata_file), 'r') as data:
+                    with open(os.path.join(root, metadata_file), 'r', encoding='utf-8') as data:
                         metadata = json.loads(data.read())
                     if isinstance(metadata, dict):
                         if metadata.get("type", None) == "vmimage":

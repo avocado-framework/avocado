@@ -97,7 +97,7 @@ class AptBackend(DpkgBackend):
             process.system(add_cmd, shell=True, sudo=True)
 
         def _get_repo_file_contents():
-            with open(self.repo_file_path, 'r') as repo_file:
+            with open(self.repo_file_path, 'r', encoding='utf-8') as repo_file:
                 return repo_file.read()
 
         if not os.path.isfile(self.repo_file_path):
@@ -121,7 +121,7 @@ class AptBackend(DpkgBackend):
         """
         try:
             new_file_contents = []
-            with open(self.repo_file_path, 'r') as repo_file:
+            with open(self.repo_file_path, 'r', encoding='utf-8') as repo_file:
                 for line in repo_file.readlines():
                     if line != repo:
                         new_file_contents.append(line)

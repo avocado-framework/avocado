@@ -24,7 +24,7 @@ class HtmlResultTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc,
                                                                 result))
-        with open(html_output, 'rt') as fp:
+        with open(html_output, 'rt', encoding='utf-8') as fp:
             output = fp.read()
 
         # Try to find some strings on HTML
@@ -37,7 +37,7 @@ class HtmlResultTest(unittest.TestCase):
         base_dir = os.path.dirname(debug_log)
         json_output_path = os.path.join(base_dir, 'results.json')
         self.assertTrue(os.path.isfile(json_output_path))
-        with open(json_output_path, 'r') as fp:
+        with open(json_output_path, 'r', encoding='utf-8') as fp:
             json.load(fp)
         xunit_output_path = os.path.join(base_dir, 'results.xml')
         self.assertTrue(os.path.isfile(json_output_path))
@@ -87,7 +87,7 @@ class HtmlResultTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertNotEqual(output, "", "Output is empty")
         # Check if we are producing valid outputs
-        with open(tmpfile2, 'r') as fp:
+        with open(tmpfile2, 'r', encoding='utf-8') as fp:
             json_results = json.load(fp)
             debug_log = json_results['debuglog']
             self.check_output_files(debug_log)

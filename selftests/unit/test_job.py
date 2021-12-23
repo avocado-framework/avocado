@@ -163,7 +163,7 @@ class JobTest(unittest.TestCase):
     def test_job_post_tests(self):
         class JobLogPost(job.Job):
             def post_tests(self):
-                with open(os.path.join(self.logdir, "reversed_id"), "w") as f:
+                with open(os.path.join(self.logdir, "reversed_id"), "w", encoding='utf-8') as f:
                     f.write(self.unique_id[::-1])
                 super().post_tests()
         simple_tests_found = self._find_simple_test_candidates()
@@ -178,7 +178,7 @@ class JobTest(unittest.TestCase):
             self.job.run_tests()
         finally:
             self.job.post_tests()
-        with open(os.path.join(self.job.logdir, "reversed_id")) as reverse_id_file:
+        with open(os.path.join(self.job.logdir, "reversed_id"), encoding='utf-8') as reverse_id_file:
             self.assertEqual(self.job.unique_id[::-1],
                              reverse_id_file.read())
 
@@ -200,7 +200,7 @@ class JobTest(unittest.TestCase):
                     super().pre_tests()
 
             def post_tests(self):
-                with open(os.path.join(self.logdir, "reversed_id"), "w") as f:
+                with open(os.path.join(self.logdir, "reversed_id"), "w", encoding='utf-8') as f:
                     f.write(self.unique_id[::-1])
                 super().post_tests()
         simple_tests_found = self._find_simple_test_candidates()
@@ -212,7 +212,7 @@ class JobTest(unittest.TestCase):
         self.assertEqual(self.job.run(),
                          exit_codes.AVOCADO_ALL_OK)
         self.assertLessEqual(len(self.job.test_suites), 1)
-        with open(os.path.join(self.job.logdir, "reversed_id")) as reverse_id_file:
+        with open(os.path.join(self.job.logdir, "reversed_id"), encoding='utf-8') as reverse_id_file:
             self.assertEqual(self.job.unique_id[::-1],
                              reverse_id_file.read())
 

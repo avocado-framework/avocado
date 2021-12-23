@@ -189,7 +189,7 @@ class Probe:
                 check_file = self.session.cmd("cat %s" % self.CHECK_FILE).stdout_text.split('/n')
             elif os.path.exists(self.CHECK_FILE):
                 try:
-                    check_file = open(self.CHECK_FILE)
+                    check_file = open(self.CHECK_FILE, encoding='utf-8')
                 except IOError as err:
                     LOGGER.debug("Could not open %s", self.CHECK_FILE)
                     LOGGER.debug("Exception: %s", str(err))
@@ -230,7 +230,7 @@ class Probe:
                 version_file_content = self.session.cmd("cat %s" % self.CHECK_FILE).stdout_text
             else:
                 try:
-                    version_file_content = open(self.CHECK_FILE).read()
+                    version_file_content = open(self.CHECK_FILE, encoding='utf-8').read()
                 except IOError as err:
                     LOGGER.debug("Could not open %s", self.CHECK_FILE)
                     LOGGER.debug("Exception: %s", str(err))
@@ -409,7 +409,7 @@ class SUSEProbe(Probe):
         version_id_re = re.compile(r'VERSION_ID="([\d\.]*)"')
         version_id = None
 
-        with open(self.CHECK_FILE) as check_file:
+        with open(self.CHECK_FILE, encoding='utf-8') as check_file:
             for line in check_file:
                 match = version_id_re.match(line)
                 if match:

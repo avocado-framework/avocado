@@ -29,7 +29,7 @@ from setuptools import Command, find_packages, setup
 
 
 BASE_PATH = os.path.dirname(__file__)
-with open(os.path.join(BASE_PATH, 'VERSION'), 'r') as version_file:
+with open(os.path.join(BASE_PATH, 'VERSION'), 'r', encoding='utf-8') as version_file:
     VERSION = version_file.read().strip()
 
 

@@ -70,7 +70,7 @@ class XUnitResult(Result):
         element.appendChild(traceback)
         system_out = document.createElement('system-out')
         try:
-            with open(test.get("logfile"), "r") as logfile_obj:
+            with open(test.get("logfile"), "r", encoding='utf-8') as logfile_obj:
                 if max_log_size is not None:
                     logfile_obj.seek(0, 2)
                     log_size = logfile_obj.tell()

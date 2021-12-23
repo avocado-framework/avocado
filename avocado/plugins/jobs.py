@@ -43,7 +43,7 @@ class Jobs(CLICmd):
         if not filename or not os.path.isfile(filename):
             raise FileNotFoundError('File not found {}'.format(filename))
 
-        with open(filename, 'r') as fp:
+        with open(filename, 'r', encoding='utf-8') as fp:
             return json.load(fp)
 
     @staticmethod
@@ -137,7 +137,7 @@ class Jobs(CLICmd):
         """Called when 'avocado jobs list' command is executed."""
 
         for filename in jobs_results.values():
-            with open(filename, 'r') as fp:
+            with open(filename, 'r', encoding='utf-8') as fp:
                 job = json.load(fp)
                 try:
                     started_ts = job['tests'][0]['start']
@@ -254,7 +254,7 @@ class Jobs(CLICmd):
 
         jobs_dir = get_logs_dir()
         for result in glob(os.path.join(jobs_dir, '*/results.json')):
-            with open(result, 'r') as fp:
+            with open(result, 'r', encoding='utf-8') as fp:
                 job = json.load(fp)
                 results[job['job_id']] = result
 

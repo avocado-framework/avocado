@@ -12,7 +12,7 @@ class TestLogsUI(TestCaseTmpDir):
 
     def setUp(self):
         super().setUp()
-        with open(os.path.join(self.tmpdir.name, 'config'), 'w') as config:
+        with open(os.path.join(self.tmpdir.name, 'config'), 'w', encoding='utf-8') as config:
             config.write(CONFIG)
 
     def test(self):
@@ -70,7 +70,7 @@ class TestLogging(TestCaseTmpDir):
                     (AVOCADO, self.tmpdir.name, pass_test))
         process.run(cmd_line)
         log_file = os.path.join(self.tmpdir.name, 'latest', 'job.log')
-        with open(log_file, 'r') as fp:
+        with open(log_file, 'r', encoding='utf-8') as fp:
             log = fp.read()
         self.assertIn('passtest.py:PassTest.test: STARTED', log)
         self.assertIn('passtest.py:PassTest.test: PASS', log)

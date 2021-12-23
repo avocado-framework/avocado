@@ -59,7 +59,7 @@ class FileLock:
             except Exception:  # pylint: disable=W0703
                 try:
                     # Read the file to realize what's happening.
-                    with open(self.filename, 'r') as f:
+                    with open(self.filename, 'r', encoding='utf-8') as f:
                         content = f.read()
 
                     existing_lock_pid = int(content)

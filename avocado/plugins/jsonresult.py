@@ -82,7 +82,7 @@ class JSONResult(Result):
         content = self._render(result)
         if json_enabled:
             json_path = os.path.join(job.logdir, 'results.json')
-            with open(json_path, 'w') as json_file:
+            with open(json_path, 'w', encoding='utf-8') as json_file:
                 json_file.write(content)
 
         json_path = json_output
@@ -90,7 +90,7 @@ class JSONResult(Result):
             if json_path == '-':
                 LOG_UI.debug(content)
             else:
-                with open(json_path, 'w') as json_file:
+                with open(json_path, 'w', encoding='utf-8') as json_file:
                     json_file.write(content)
 
 

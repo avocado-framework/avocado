@@ -126,12 +126,12 @@ class ProcessTest(TestCaseTmpDir):
     def setUp(self):
         super().setUp()
         self.fake_vmstat = os.path.join(self.tmpdir.name, 'vmstat')
-        with open(self.fake_vmstat, 'w') as fake_vmstat_obj:
+        with open(self.fake_vmstat, 'w', encoding='utf-8') as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)
         os.chmod(self.fake_vmstat, DEFAULT_MODE)
 
         self.fake_uptime = os.path.join(self.tmpdir.name, 'uptime')
-        with open(self.fake_uptime, 'w') as fake_uptime_obj:
+        with open(self.fake_uptime, 'w', encoding='utf-8') as fake_uptime_obj:
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
         os.chmod(self.fake_uptime, DEFAULT_MODE)
 

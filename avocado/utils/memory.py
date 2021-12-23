@@ -100,7 +100,7 @@ def hotplug(block):
     :type string: like 198
     """
     block = get_blk_string(block)
-    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:
+    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:  # pylint: disable=W1514
         state_file.write('online')
     if not _check_memory_state(block):
         raise MemError(
@@ -115,7 +115,7 @@ def hotunplug(block):
     :type string: like 198 or memory198
     """
     block = get_blk_string(block)
-    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:
+    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:  # pylint: disable=W1514
         state_file.write('offline')
     if _check_memory_state(block):
         raise MemError(
@@ -314,7 +314,7 @@ def read_from_vmstat(key):
     :return: The value of the item
     :rtype: int
     """
-    with open("/proc/vmstat") as vmstat:
+    with open("/proc/vmstat") as vmstat:  # pylint: disable=W1514
         vmstat_info = vmstat.read()
         return int(re.findall(r"%s\s+(\d+)" % key, vmstat_info)[0])
 
@@ -330,7 +330,7 @@ def read_from_smaps(pid, key):
     :return: The value of the item in kb
     :rtype: int
     """
-    with open("/proc/%s/smaps" % pid) as smaps:
+    with open("/proc/%s/smaps" % pid) as smaps:  # pylint: disable=W1514
         smaps_info = smaps.read()
 
         memory_size = 0
@@ -352,7 +352,7 @@ def read_from_numa_maps(pid, key):
     :return: A dict using the address as the keys
     :rtype: dict
     """
-    with open("/proc/%s/numa_maps" % pid) as numa_maps:
+    with open("/proc/%s/numa_maps" % pid) as numa_maps:  # pylint: disable=W1514
         numa_map_info = numa_maps.read()
 
         numa_maps_dict = {}
@@ -365,7 +365,7 @@ def read_from_numa_maps(pid, key):
 
 def _get_buddy_info_content():
     buddy_info_content = ''
-    with open("/proc/buddyinfo") as buddy_info:
+    with open("/proc/buddyinfo") as buddy_info:  # pylint: disable=W1514
         buddy_info_content = buddy_info.read()
     return buddy_info_content
 
@@ -487,7 +487,7 @@ class MemInfo:
     """
 
     def __init__(self):
-        with open('/proc/meminfo', 'r') as meminfo_file:
+        with open('/proc/meminfo', 'r') as meminfo_file:  # pylint: disable=W1514
             for line in meminfo_file.readlines():
                 name = line.strip().split()[0].strip(':')
                 safe_name = name.replace('(', '_').replace(')', '_')

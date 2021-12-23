@@ -60,7 +60,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.tests = safeloader.find_avocado_tests(self.file_name)[0]
 
         # create Abstract Syntax Tree from test source file
-        with open(self.file_name) as source_file:
+        with open(self.file_name, encoding='utf-8') as source_file:
             self.tree = ast.parse(source_file.read(), self.file_name)
 
         # build list of keyword arguments from calls that match pattern

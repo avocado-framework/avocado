@@ -78,7 +78,7 @@ class Script:
         """
         dirname = os.path.dirname(self.path)
         utils_path.init_dir(dirname)
-        with open(self.path, self.open_mode) as fd:
+        with open(self.path, self.open_mode) as fd:  # pylint: disable=W1514
             fd.write(self.content)
             os.chmod(self.path, self.mode)
             self.stored = True

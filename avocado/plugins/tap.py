@@ -62,7 +62,7 @@ class TAPResult(ResultEvents):
             log = LOG_UI.debug
             self.__logs.append(log)
         elif output is not None:
-            log = open(output, "w", 1)
+            log = open(output, "w", 1, encoding='utf-8')
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
         self.__include_logs = self.config.get('job.run.result.tap.include_logs')
@@ -89,7 +89,7 @@ class TAPResult(ResultEvents):
         """
         # Should we add default results.tap?
         if self.config.get('job.run.result.tap.enabled'):
-            log = open(os.path.join(job.logdir, 'results.tap'), "w", 1)
+            log = open(os.path.join(job.logdir, 'results.tap'), "w", 1, encoding='utf-8')
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
 
@@ -118,7 +118,7 @@ class TAPResult(ResultEvents):
         # First log the system output
         if self.__include_logs:
             self.__write("# debug.log of %s:", name)
-            with open(state.get("logfile"), "r") as logfile_obj:
+            with open(state.get("logfile"), "r", encoding='utf-8') as logfile_obj:
                 for line in logfile_obj:
                     self.__write("#   %s", line.rstrip())
 

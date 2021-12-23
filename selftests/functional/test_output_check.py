@@ -136,7 +136,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
             'output_check.sh',
             content,
             'avocado_output_check_functional',
-            open_mode='wb')
+            open_mode='wb')  # pylint: disable=W1514
         self.output_script.save()
 
     def _check_output_record_all(self):
@@ -150,9 +150,9 @@ class RunnerSimpleTest(TestCaseTmpDir):
                          (expected_rc, result))
         stdout_file = "%s.data/stdout.expected" % self.output_script
         stderr_file = "%s.data/stderr.expected" % self.output_script
-        with open(stdout_file, 'rb') as fd_stdout:
+        with open(stdout_file, 'rb') as fd_stdout:  # pylint: disable=W1514
             self.assertEqual(fd_stdout.read(), STDOUT)
-        with open(stderr_file, 'rb') as fd_stderr:
+        with open(stderr_file, 'rb') as fd_stderr:  # pylint: disable=W1514
             self.assertEqual(fd_stderr.read(), STDERR)
 
     def _check_output_record_combined(self):
@@ -165,15 +165,15 @@ class RunnerSimpleTest(TestCaseTmpDir):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         output_file = "%s.data/output.expected" % self.output_script
-        with open(output_file, 'rb') as fd_output:
+        with open(output_file, 'rb') as fd_output:  # pylint: disable=W1514
             self.assertEqual(fd_output.read(), STDOUT + STDERR)
 
     def _setup_simple_test(self, simple_test_content):
         variants_file = os.path.join(self.tmpdir.name, 'variants.json')
-        with open(variants_file, 'w') as file_obj:
+        with open(variants_file, 'w',  encoding='utf-8') as file_obj:
             file_obj.write(JSON_VARIANTS)
         simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
-        with open(simple_test, 'w') as file_obj:
+        with open(simple_test, 'w', encoding='utf-8') as file_obj:
             file_obj.write(simple_test_content)
         return (simple_test, variants_file)
 
@@ -200,7 +200,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
                          (expected_rc, result))
         stdout_file = "%s.data/stdout.expected" % self.output_script
         stderr_file = "%s.data/stderr.expected" % self.output_script
-        with open(stdout_file, 'rb') as fd_stdout:
+        with open(stdout_file, 'rb') as fd_stdout:  # pylint: disable=W1514
             self.assertEqual(fd_stdout.read(), STDOUT)
         self.assertIsNotFile(stderr_file)
 
@@ -228,7 +228,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self._check_output_record_all()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
         stdout_file = "%s.data/stdout.expected" % self.output_script.path
-        with open(stdout_file, 'wb') as stdout_file_obj:
+        with open(stdout_file, 'wb') as stdout_file_obj:  # pylint: disable=W1514
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --xunit -'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
@@ -243,7 +243,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self._check_output_record_combined()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
         output_file = "%s.data/output.expected" % self.output_script.path
-        with open(output_file, 'wb') as output_file_obj:
+        with open(output_file, 'wb') as output_file_obj:  # pylint: disable=W1514
             output_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --xunit -'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
@@ -260,11 +260,11 @@ class RunnerSimpleTest(TestCaseTmpDir):
         tampered_msg_stderr = b"I PITY THE FOOL THAT STANDS ON STDERR!"
 
         stdout_file = "%s.data/stdout.expected" % self.output_script.path
-        with open(stdout_file, 'wb') as stdout_file_obj:
+        with open(stdout_file, 'wb') as stdout_file_obj:  # pylint: disable=W1514
             stdout_file_obj.write(tampered_msg_stdout)
 
         stderr_file = "%s.data/stderr.expected" % self.output_script.path
-        with open(stderr_file, 'wb') as stderr_file_obj:
+        with open(stderr_file, 'wb') as stderr_file_obj:  # pylint: disable=W1514
             stderr_file_obj.write(tampered_msg_stderr)
 
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --json -'
@@ -282,19 +282,19 @@ class RunnerSimpleTest(TestCaseTmpDir):
         stderr_diff = os.path.join(json_result['tests'][0]['logdir'],
                                    'stderr.diff')
 
-        with open(stdout_diff, 'rb') as stdout_diff_obj:
+        with open(stdout_diff, 'rb') as stdout_diff_obj:  # pylint: disable=W1514
             stdout_diff_content = stdout_diff_obj.read()
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!',
                       stdout_diff_content)
         self.assertIn(b'+' + STDOUT, stdout_diff_content)
 
-        with open(stderr_diff, 'rb') as stderr_diff_obj:
+        with open(stderr_diff, 'rb') as stderr_diff_obj:  # pylint: disable=W1514
             stderr_diff_content = stderr_diff_obj.read()
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDERR!',
                       stderr_diff_content)
         self.assertIn(b'+Hello, stderr!', stderr_diff_content)
 
-        with open(job_log, 'rb') as job_log_obj:
+        with open(job_log, 'rb') as job_log_obj:  # pylint: disable=W1514
             job_log_content = job_log_obj.read()
         self.assertIn(b'Stdout Diff:', job_log_content)
         self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!', job_log_content)
@@ -307,7 +307,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self._check_output_record_all()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
         stdout_file = "%s.data/stdout.expected" % self.output_script.path
-        with open(stdout_file, 'wb') as stdout_file_obj:
+        with open(stdout_file, 'wb') as stdout_file_obj:  # pylint: disable=W1514
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
                     '--disable-output-check --xunit -'
@@ -321,10 +321,10 @@ class RunnerSimpleTest(TestCaseTmpDir):
 
     def test_merge_records_same_output(self):
         variants_file = os.path.join(self.tmpdir.name, 'variants.json')
-        with open(variants_file, 'w') as file_obj:
+        with open(variants_file, 'w', encoding='utf-8') as file_obj:
             file_obj.write(JSON_VARIANTS)
         simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
-        with open(simple_test, 'w') as file_obj:
+        with open(simple_test, 'w', encoding='utf-8') as file_obj:
             file_obj.write(TEST_WITH_SAME_EXPECTED_OUTPUT)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
                     '--output-check-record both --json-variants-load %s' %

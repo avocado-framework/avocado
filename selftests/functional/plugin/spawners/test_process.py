@@ -26,6 +26,6 @@ class ProcessSpawnerTest(TestCaseTmpDir):
         res = json.loads(result.stdout_text)
         logfile = res["tests"][0]["logfile"]
         testdir = res["tests"][0]["logdir"]
-        with open(logfile, 'r') as debug_file:
+        with open(logfile, 'r', encoding='utf-8') as debug_file:
             expected = "logdir is: %s" % testdir
             self.assertIn(expected, debug_file.read())

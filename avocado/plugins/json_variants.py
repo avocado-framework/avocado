@@ -81,7 +81,7 @@ class JsonVariants(Varianter):
             self.variants = _NO_VARIANTS
             return
         try:
-            with open(load_variants, 'r') as var_file:
+            with open(load_variants, 'r', encoding='utf-8') as var_file:
                 self.variants = varianter.Varianter(state=json.load(var_file))
         except IOError:
             LOG_UI.error("JSON serialized file '%s' could not be found or "

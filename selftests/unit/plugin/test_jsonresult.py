@@ -43,7 +43,7 @@ class JSONResultTest(TestCaseTmpDir):
         self.test_result.end_tests()
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
-        with open(self.job.config.get('job.run.result.json.output')) as fp:
+        with open(self.job.config.get('job.run.result.json.output'), encoding='utf-8') as fp:
             j = fp.read()
         obj = json.loads(j)
         self.assertTrue(obj)
@@ -79,7 +79,7 @@ class JSONResultTest(TestCaseTmpDir):
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
         output = self.job.config.get('job.run.result.json.output')
-        with open(output) as json_output:
+        with open(output, encoding='utf-8') as json_output:
             res = json.loads(json_output.read())
         check_item("[pass]", res["pass"], 2)
         check_item("[errors]", res["errors"], 4)
@@ -99,7 +99,7 @@ class JSONResultTest(TestCaseTmpDir):
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
         output = self.job.config.get('job.run.result.json.output')
-        with open(output) as json_output:
+        with open(output, encoding='utf-8') as json_output:
             res = json.loads(json_output.read())
         check_item("[total]", res["total"], 1)
         check_item("[skip]", res["skip"], 0)

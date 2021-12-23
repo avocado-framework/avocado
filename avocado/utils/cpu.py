@@ -68,7 +68,7 @@ def _get_info():
     :rtype: list
     """
     cpuinfo = []
-    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:
+    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:  # pylint: disable=W1514
         for line in proc_cpuinfo:
             if line == b'\n':
                 break
@@ -85,7 +85,7 @@ def _get_status(cpu):
     :return: `bool` True if online or False if not
     :rtype: bool
     """
-    with open('/sys/devices/system/cpu/cpu%s/online' % cpu, 'rb') as cpu_online:
+    with open('/sys/devices/system/cpu/cpu%s/online' % cpu, 'rb') as cpu_online:  # pylint: disable=W1514
         if b'1' in cpu_online.read():
             return True
     return False
@@ -198,7 +198,7 @@ def get_family():
             # refer below links for microarchitectures names
             # https://en.wikipedia.org/wiki/List_of_Intel_CPU_microarchitectures
             # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/events/intel/core.c#n4613
-            with open('/sys/devices/cpu/caps/pmu_name', 'rb') as mico_arch:
+            with open('/sys/devices/cpu/caps/pmu_name', 'rb') as mico_arch:  # pylint: disable=W1514
                 family = mico_arch.read().decode('utf-8').strip('\n').lower()
         except FileNotFoundError as err:
             msg = "Could not find micro-architecture/family, Error: %s" % err
@@ -240,7 +240,7 @@ def online_list():
     if platform.machine() == 's390x':
         search_str = b'cpu number'
         index = 3
-    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:
+    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:  # pylint: disable=W1514
         for line in proc_cpuinfo:
             if line.startswith(search_str):
                 cpus.append(int(line.split()[index]))  # grab cpu number
@@ -260,7 +260,7 @@ def online_count():
 def online(cpu):
     """Online given CPU."""
     if _get_status(cpu) is False:
-        with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
+        with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:  # pylint: disable=W1514
             fd.write(b'1')
         if _get_status(cpu):
             return 0
@@ -270,7 +270,7 @@ def online(cpu):
 def offline(cpu):
     """Offline given CPU."""
     if _get_status(cpu):
-        with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
+        with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:  # pylint: disable=W1514
             fd.write(b'0')
         if _get_status(cpu):
             return 1
@@ -292,7 +292,7 @@ def get_idle_state():
         for state_no in range(states):
             state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
             try:
-                cpu_idlestate[cpu][state_no] = bool(int(open(state_file, 'rb').read()))
+                cpu_idlestate[cpu][state_no] = bool(int(open(state_file, 'rb').read()))  # pylint: disable=W1514
             except IOError as err:
                 LOG.warning("Failed to read idle state on cpu %s "
                             "for state %s:\n%s", cpu, state_no, err)
@@ -336,7 +336,7 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
             for state_no in states:
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
                 try:
-                    open(state_file, "wb").write(disable)
+                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
                 except IOError as err:
                     LOG.warning("Failed to set idle state on cpu %s "
                                 "for state %s:\n%s", cpu, state_no, err)
@@ -346,7 +346,7 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
                 disable = _bool_to_binary(value)
                 try:
-                    open(state_file, "wb").write(disable)
+                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
                 except IOError as err:
                     LOG.warning("Failed to set idle state on cpu %s "
                                 "for state %s:\n%s", cpu, state_no, err)
@@ -370,7 +370,7 @@ def set_freq_governor(governor="random"):
                   " No proper permissions to read/write sysfs entries")
         return False
     cpus_list = total_count()
-    with open(avl_gov_file, 'r') as fl:
+    with open(avl_gov_file, 'r') as fl:  # pylint: disable=W1514
         avl_govs = fl.read().strip().split(' ')
     if governor == "random":
         avl_govs.remove(cur_gov)
@@ -384,7 +384,7 @@ def set_freq_governor(governor="random"):
     for cpu in range(cpus_list):
         cur_gov_file = "/sys/devices/system/cpu/cpu%s/cpufreq/scaling_governor" % cpu
         try:
-            with open(cur_gov_file, 'w') as fl:
+            with open(cur_gov_file, 'w') as fl:  # pylint: disable=W1514
                 fl.write(governor)
         except IOError as err:
             LOG.warning("Unable to write a given frequency "
@@ -397,7 +397,7 @@ def get_freq_governor():
     """Get current cpu frequency governor."""
     cur_gov_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
     try:
-        with open(cur_gov_file, 'r') as fl:
+        with open(cur_gov_file, 'r') as fl:  # pylint: disable=W1514
             return fl.read().strip()
     except IOError as err:
         LOG.error("Unable to get the current governor\n %s", err)
@@ -422,7 +422,7 @@ def get_pid_cpus(pid):
 
     for proc_stat_file in proc_stat_files:
         try:
-            with open(proc_stat_file) as proc_stat:
+            with open(proc_stat_file) as proc_stat:  # pylint: disable=W1514
                 cpus.add(
                     proc_stat.read().split(' ')[processor_id_index]
                 )

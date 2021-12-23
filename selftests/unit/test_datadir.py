@@ -106,7 +106,7 @@ class DataDirTest(Base):
 
         # Create the id file.
         id_file_path = os.path.join(expected_jrd, 'id')
-        with open(id_file_path, 'w') as id_file:
+        with open(id_file_path, 'w', encoding='utf-8') as id_file:
             id_file.write("%s\n" % unique_id)
             id_file.flush()
             os.fsync(id_file)

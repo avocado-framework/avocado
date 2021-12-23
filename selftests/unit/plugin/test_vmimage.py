@@ -113,7 +113,7 @@ class VMImagePlugin(unittest.TestCase):
                             version=image['version'],
                             build=image['build'],
                             arch=image['arch']))
-                        open(image["file"], "w").close()
+                        open(image["file"], "w", encoding='utf-8').close()
                         create_metadata_file(image['file'], image)
             return sorted(expected_images, key=lambda i: i['name'])
 

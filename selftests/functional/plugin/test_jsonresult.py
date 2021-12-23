@@ -14,7 +14,7 @@ class JsonResultTest(TestCaseTmpDir):
         process.run(cmd_line, ignore_status=True)
         json_path = path.join(self.tmpdir.name, 'latest', 'results.json')
 
-        with open(json_path, 'r') as json_file:
+        with open(json_path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
             test_data = data['tests'].pop()
             expected_logfile = path.join(test_data['logdir'], 'debug.log')
@@ -26,7 +26,7 @@ class JsonResultTest(TestCaseTmpDir):
                     (AVOCADO, self.tmpdir.name))
         process.run(cmd_line, ignore_status=True)
         json_path = path.join(self.tmpdir.name, 'latest', 'results.json')
-        with open(json_path, 'r') as json_file:
+        with open(json_path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
             test_data = data['tests'].pop()
             self.assertEqual('This test is supposed to fail',

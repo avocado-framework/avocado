@@ -197,7 +197,7 @@ class List(CLICmd):
         if filename == '-':
             LOG_UI.debug(json.dumps(result, indent=4))
         else:
-            with open(filename, 'w') as fp:
+            with open(filename, 'w', encoding='utf-8') as fp:
                 json.dump(result, fp, indent=4)
 
     @staticmethod

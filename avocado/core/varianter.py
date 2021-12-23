@@ -352,7 +352,7 @@ class Varianter:
             return None
 
         variants = []
-        with open(path, 'r') as variants_file:
+        with open(path, 'r', encoding='utf-8') as variants_file:
             for variant in json.load(variants_file):
                 variants.append(cls(state=variant))
         return variants

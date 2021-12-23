@@ -24,11 +24,11 @@ except ImportError:
 else:
     packages = find_namespace_packages(include=['avocado_varianter_cit'])
 
-VERSION = open("VERSION", "r").read().strip()
+VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
 
 setup(name='avocado-framework-plugin-varianter-cit',
       description='Varianter with combinatorial capabilities',
-      version=open("VERSION", "r").read().strip(),
+      version=open("VERSION", "r", encoding='utf-8').read().strip(),
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',

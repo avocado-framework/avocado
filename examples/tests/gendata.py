@@ -14,5 +14,5 @@ class GenDataTest(Test):
         output_path = os.path.join(self.outputdir, "test.json")
         output = {"basedir": self.basedir,
                   "outputdir": self.outputdir}
-        with open(output_path, "w") as output_file:
+        with open(output_path, "w", encoding='utf-8') as output_file:
             json.dump(output, output_file)

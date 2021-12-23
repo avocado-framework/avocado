@@ -140,9 +140,9 @@ def extract_changes(file_paths, compared_file_paths=None):
             file1, file2 = compared_file_paths[i], file_paths[i]
         else:
             file1, file2 = temp_file_path, file_paths[i]
-        with open(file1) as f1:
+        with open(file1, encoding='utf-8') as f1:
             lines1 = f1.readlines()
-        with open(file2) as f2:
+        with open(file2, encoding='utf-8') as f2:
             lines2 = f2.readlines()
         lines = difflib.unified_diff(lines1, lines2,
                                      fromfile=file1, tofile=file2, n=0)
