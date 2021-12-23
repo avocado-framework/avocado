@@ -198,9 +198,9 @@ class AltDataDirTest(Base):
         stg.merge_with_configs()
         with unittest.mock.patch('avocado.core.data_dir.settings', stg):
             from avocado.core import data_dir
-            for key in self.mapping.keys():
+            for key, value in self.mapping.items():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
-                self.assertEqual(data_dir_func(), self.mapping[key])
+                self.assertEqual(data_dir_func(), value)
 
         (self.alt_base_dir,  # pylint: disable=W0201
          alt_mapping,
@@ -215,9 +215,9 @@ class AltDataDirTest(Base):
         alt_stg.process_config_path(self.alt_config_file_path)
         alt_stg.merge_with_configs()
         with unittest.mock.patch('avocado.core.data_dir.settings', alt_stg):
-            for key in alt_mapping.keys():
+            for key, value in alt_mapping.items():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
-                self.assertEqual(data_dir_func(), alt_mapping[key])
+                self.assertEqual(data_dir_func(), value)
 
     def tearDown(self):
         super(AltDataDirTest, self).tearDown()
