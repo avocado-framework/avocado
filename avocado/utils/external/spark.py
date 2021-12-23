@@ -479,7 +479,7 @@ class GenericParser:
     def makeSet(self, token, sets, i):
         cur, next_item = sets[i], sets[i + 1]
 
-        ttype = token is not None and self.typestring(token) or None
+        ttype = token is not None and self.typestring(token) or None  # pylint: disable=R1709
         if ttype is not None:
             fn, arg = self.gotoT, ttype
         else:
@@ -521,7 +521,7 @@ class GenericParser:
         #  cost of extreme ugliness.
         #
         cur, next_item = sets[i], sets[i + 1]
-        ttype = token is not None and self.typestring(token) or None
+        ttype = token is not None and self.typestring(token) or None  # pylint: disable=R1709
 
         for item in cur:
             ptr = (item, i)
