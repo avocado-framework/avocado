@@ -82,7 +82,7 @@ class AstringUtilsTest(unittest.TestCase):
 
         matrix = [("\xd0\xb0\xd0\xb2\xd0\xbe\xd0\xba\xd0\xb0\xd0\xb4\xff",
                    123),
-                  (u'\u0430\u0432\u043e\u043a\u0430\u0434\xff', 123),
+                  ('\u0430\u0432\u043e\u043a\u0430\u0434\xff', 123),
                   ("avok\xc3\xa1do", 123),
                   ("a\u0430", 123)]  # pylint: disable=W1402
         str_matrix = ("\xd0\xb0\xd0\xb2\xd0\xbe\xd0\xba\xd0\xb0\xd0\xb4"
@@ -98,7 +98,7 @@ class AstringUtilsTest(unittest.TestCase):
                          "a__________b")
         self.assertEqual(astring.string_to_safe_path('..'), "_.")
         self.assertEqual(len(astring.string_to_safe_path(" " * 300)), 255)
-        avocado = u'\u0430\u0432\u043e\u043a\u0430\u0434\xff<>'
+        avocado = '\u0430\u0432\u043e\u043a\u0430\u0434\xff<>'
         self.assertEqual(astring.string_to_safe_path(avocado),
                          "%s__" % avocado[:-2])
 
@@ -108,12 +108,12 @@ class AstringUtilsTest(unittest.TestCase):
         thing across Python 2 and 3 and can be decoded into "text"
         """
         binary = b''
-        text = u''
+        text = ''
         self.assertTrue(astring.is_bytes(binary))
         self.assertFalse(astring.is_bytes(text))
         self.assertTrue(hasattr(binary, 'decode'))
         self.assertTrue(astring.is_text(binary.decode()))
-        self.assertFalse(astring.is_bytes(str('')))
+        self.assertFalse(astring.is_bytes(''))
 
     def test_is_text(self):
         """
@@ -121,7 +121,7 @@ class AstringUtilsTest(unittest.TestCase):
         extended set of characters and can be encoded into "bytes"
         """
         binary = b''
-        text = u''
+        text = ''
         self.assertTrue(astring.is_text(text))
         self.assertFalse(astring.is_text(binary))
         self.assertTrue(hasattr(text, 'encode'))
@@ -130,23 +130,23 @@ class AstringUtilsTest(unittest.TestCase):
     def test_to_text_is_text(self):
         self.assertTrue(astring.is_text(astring.to_text(b'')))
         self.assertTrue(astring.is_text(astring.to_text('')))
-        self.assertTrue(astring.is_text(astring.to_text(u'')))
+        self.assertTrue(astring.is_text(astring.to_text('')))
 
     def test_to_text_decode_is_text(self):
         self.assertTrue(astring.is_text(astring.to_text(b'', 'ascii')))
         self.assertTrue(astring.is_text(astring.to_text('', 'ascii')))
-        self.assertTrue(astring.is_text(astring.to_text(u'', 'ascii')))
+        self.assertTrue(astring.is_text(astring.to_text('', 'ascii')))
 
     def test_to_text(self):
         text_1 = astring.to_text(b'\xc3\xa1', 'utf-8')
-        text_2 = astring.to_text(u'\u00e1', 'utf-8')
+        text_2 = astring.to_text('\u00e1', 'utf-8')
         self.assertTrue(astring.is_text(text_1))
         self.assertEqual(text_1, text_2)
-        self.assertEqual(astring.to_text(Exception(u'\u00e1')),
-                         u"\xe1")
+        self.assertEqual(astring.to_text(Exception('\u00e1')),
+                         "\xe1")
         # For tuple, dict and others astring.to_text is equivalent of str()
         # because on py3 it's unicode and on py2 it uses __repr__ (is encoded)
-        self.assertEqual(astring.to_text({u'\xe1': 1}), str({u'\xe1': 1}))
+        self.assertEqual(astring.to_text({'\xe1': 1}), str({'\xe1': 1}))
 
 
 if __name__ == '__main__':

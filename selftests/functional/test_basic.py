@@ -634,7 +634,7 @@ class DryRunTest(TestCaseTmpDir):
         for i in range(number_of_tests):
             test = result['tests'][i]
             self.assertEqual(test['fail_reason'],
-                             u'Test cancelled due to --dry-run')
+                             'Test cancelled due to --dry-run')
 
 
 class RunnerHumanOutputTest(TestCaseTmpDir):
@@ -688,7 +688,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
     def setUp(self):
         super(RunnerSimpleTest, self).setUp()
         self.pass_script = script.TemporaryScript(
-            u'\u00e1 \u00e9 \u00ed \u00f3 \u00fa',
+            '\u00e1 \u00e9 \u00ed \u00f3 \u00fa',
             "#!/bin/sh\ntrue",
             'avocado_simpletest_functional')
         self.pass_script.save()
