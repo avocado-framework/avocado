@@ -46,7 +46,7 @@ class ListWithUnpickableAttribute(list):
     """
 
     def __init__(self, *args, **kwargs):
-        self.__troublemaker = Unpickable()
+        self.__troublemaker = Unpickable()  # pylint: disable=W0238
         super().__init__(*args, **kwargs)
 
 
