@@ -442,7 +442,7 @@ class UnionTechProbe(Probe):
     Simple probe for UnionTech systems in general
     """
 
-    CHECK_FILE = '/etc/UnionTech-release'
+    CHECK_FILE = '/etc/os-version'
     CHECK_FILE_CONTAINS = 'uos release'
     CHECK_FILE_DISTRO_NAME = 'uos'
     CHECK_VERSION_REGEX = re.compile(r'uos release (\d+)\.(\d+).*')
