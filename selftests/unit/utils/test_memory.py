@@ -6,7 +6,7 @@ from avocado.utils import memory
 class Test(unittest.TestCase):
 
     def test_numa_nodes_with_memory(self):
-        file_values = [u"0\n", u"1-3", u"0-1,12-14\n"]
+        file_values = ["0\n", "1-3", "0-1,12-14\n"]
         expected_values = [[0], [1, 2, 3], [0, 1, 12, 13, 14]]
         for value, exp in zip(file_values, expected_values):
             with unittest.mock.patch('os.path.exists', return_value=True):

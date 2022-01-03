@@ -1,7 +1,7 @@
 import socket
 import unittest.mock
 
-import avocado.utils.network.ports as ports
+from avocado.utils.network import ports
 
 try:
     import netifaces

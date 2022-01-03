@@ -1,4 +1,4 @@
-import imp
+import importlib
 import inspect
 import os
 import sys
@@ -40,8 +40,7 @@ def load_test(test_factory):
         # Tests with local dir imports need this
         try:
             sys.path.insert(0, test_module_dir)
-            f, p, d = imp.find_module(module_name, [test_module_dir])
-            test_module = imp.load_module(module_name, f, p, d)
+            test_module = importlib.import_module(module_name)
         except:  # pylint: disable=W0702
             # On load_module exception we fake the test class and pass
             # the exc_info as parameter to be logged.

@@ -268,7 +268,7 @@ class TestProcessRun(unittest.TestCase):
         # Using encoded string as shlex does not support decoding
         # but the behavior is exactly the same as if shell binary
         # produced unicode
-        text = u"Avok\xe1do"
+        text = "Avok\xe1do"
         # Even though code point used is "LATIN SMALL LETTER A WITH ACUTE"
         # (http://unicode.scarfboy.com/?s=u%2B00e1) when encoded to proper
         # utf-8, it becomes two bytes because it is >= 0x80
@@ -276,7 +276,7 @@ class TestProcessRun(unittest.TestCase):
         encoded_text = b'Avok\xc3\xa1do'
         self.assertEqual(text.encode('utf-8'), encoded_text)
         self.assertEqual(encoded_text.decode('utf-8'), text)
-        cmd = u"%s -n %s" % (ECHO_CMD, text)
+        cmd = "%s -n %s" % (ECHO_CMD, text)
         result = process.run(cmd, encoding='utf-8')
         self.assertEqual(result.stdout, encoded_text)
         self.assertEqual(result.stdout_text, text)
@@ -649,7 +649,7 @@ class FDDrainerTests(unittest.TestCase):
         fd_drainer._thread.join(60)
         self.assertFalse(fd_drainer._thread.is_alive())
         # \n added by StreamLogger
-        self.assertEqual(data.getvalue(), u"Avok\ufffd\ufffddo\n")
+        self.assertEqual(data.getvalue(), "Avok\ufffd\ufffddo\n")
 
 
 class GetCommandOutputPattern(unittest.TestCase):
