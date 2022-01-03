@@ -859,7 +859,8 @@ class Test(unittest.TestCase, TestData):
             self._tag_end()
             self._report()
             self.log.info("")
-            self._stop_logging()
+            if self._config.get("run.test_runner") != 'nrunner':
+                self._stop_logging()
 
     def _report(self):
         """
