@@ -285,7 +285,8 @@ class Runner(RunnerInterface):
                 index,
                 variant,
                 job_id))
-        return runtime_tasks
+        # remove duplicates from runtime_tasks
+        return list(dict.fromkeys(runtime_tasks))
 
     def _determine_status_server_uri(self, test_suite):
         # pylint: disable=W0201
