@@ -137,7 +137,7 @@ class JobTest(unittest.TestCase):
                         if not runnable.uri.endswith('time'):
                             filtered_test_suite.append(test_factory)
                 self.test_suite.tests = filtered_test_suite
-                super(JobFilterTime, self).pre_tests()
+                super().pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
@@ -165,7 +165,7 @@ class JobTest(unittest.TestCase):
             def post_tests(self):
                 with open(os.path.join(self.logdir, "reversed_id"), "w") as f:
                     f.write(self.unique_id[::-1])
-                super(JobLogPost, self).post_tests()
+                super().post_tests()
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,
@@ -197,12 +197,12 @@ class JobTest(unittest.TestCase):
                             if not runnable.uri.endswith('time'):
                                 filtered_test_suite.append(test_factory)
                     suite.tests = filtered_test_suite
-                    super(JobFilterLog, self).pre_tests()
+                    super().pre_tests()
 
             def post_tests(self):
                 with open(os.path.join(self.logdir, "reversed_id"), "w") as f:
                     f.write(self.unique_id[::-1])
-                super(JobFilterLog, self).post_tests()
+                super().post_tests()
         simple_tests_found = self._find_simple_test_candidates()
         config = {'core.show': ['none'],
                   'run.results_dir': self.tmpdir.name,

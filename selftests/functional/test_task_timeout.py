@@ -10,7 +10,7 @@ SCRIPT_CONTENT = """#!/bin/bash
 class TaskTimeOutTest(TestCaseTmpDir):
 
     def setUp(self):
-        super(TaskTimeOutTest, self).setUp()
+        super().setUp()
         self.script = script.TemporaryScript(
             'sleep.sh',
             SCRIPT_CONTENT,
@@ -31,5 +31,5 @@ class TaskTimeOutTest(TestCaseTmpDir):
         self.assertEqual(0, job.result.passed)
 
     def tearDown(self):
-        super(TaskTimeOutTest, self).tearDown()
+        super().tearDown()
         self.script.remove()

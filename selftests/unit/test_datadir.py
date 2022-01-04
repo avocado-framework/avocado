@@ -220,7 +220,7 @@ class AltDataDirTest(Base):
                 self.assertEqual(data_dir_func(), value)
 
     def tearDown(self):
-        super(AltDataDirTest, self).tearDown()
+        super().tearDown()
         os.unlink(self.alt_config_file_path)
         self.alt_base_dir.cleanup()
 

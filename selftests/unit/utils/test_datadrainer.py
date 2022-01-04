@@ -43,7 +43,7 @@ class Socket(datadrainer.FDDrainer):
     name = 'test_utils_datadrainer.Socket'
 
     def __init__(self, source):
-        super(Socket, self).__init__(source)
+        super().__init__(source)
         self.data_buffer = io.BytesIO()
         self._write_count = 0
 
@@ -78,7 +78,7 @@ class SocketBuffer(datadrainer.BufferFDDrainer):
     name = 'test_utils_datadrainer.SocketBuffer'
 
     def __init__(self, source):
-        super(SocketBuffer, self).__init__(source)
+        super().__init__(source)
         self._stop_check = lambda: len(self.data) > 2
 
 

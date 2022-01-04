@@ -40,12 +40,12 @@ class PartitionError(Exception):
 
     def __init__(self, partition, reason, details=None):
         msg = reason + ": " + str(details) if details else reason
-        super(PartitionError, self).__init__(msg)
+        super().__init__(msg)
         self.partition = partition
 
     def __str__(self):
         return "Partition(%s): %s" % (self.partition.device,
-                                      super(PartitionError, self).__str__())
+                                      super().__str__())
 
 
 class MtabLock:

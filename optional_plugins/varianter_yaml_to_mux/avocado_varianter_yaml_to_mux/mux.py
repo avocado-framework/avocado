@@ -234,13 +234,13 @@ class OutputList(list):  # only container pylint: disable=R0903
     """ List with some debug info """
 
     def __init__(self, values, nodes, yamls):
-        super(OutputList, self).__init__(values)
+        super().__init__(values)
         self.nodes = nodes
         self.yamls = yamls
 
     def __add__(self, other):
         """ Keep attrs separate in order to print the origins """
-        value = super(OutputList, self).__add__(other)
+        value = super().__add__(other)
         return OutputList(value,
                           self.nodes + other.nodes,
                           self.yamls + other.yamls)
@@ -259,7 +259,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
     """ Dict which stores the origin of the items """
 
     def __init__(self, srcyaml, node, values):
-        super(ValueDict, self).__init__()
+        super().__init__()
         self.yaml = srcyaml
         self.node = node
         self.yaml_per_key = {}
@@ -270,7 +270,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
         """ Store yaml_per_key and value """
         # Merge is responsible to set `self.yaml` to current file
         self.yaml_per_key[key] = self.yaml
-        return super(ValueDict, self).__setitem__(key, value)
+        return super().__setitem__(key, value)
 
     def __getitem__(self, key):
         """
@@ -279,7 +279,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
         overrides the `__str__` and return string with origin.
         :warning: Returned values are unusable in tests!
         """
-        value = super(ValueDict, self).__getitem__(key)
+        value = super().__getitem__(key)
         origin = self.yaml_per_key.get(key)
         if isinstance(value, list):
             value = OutputList([value], [self.node], [origin])
@@ -310,7 +310,7 @@ class MuxTreeNode(tree.TreeNode):
     """
 
     def __init__(self, name='', value=None, parent=None, children=None):
-        super(MuxTreeNode, self).__init__(name, value, parent, children)
+        super().__init__(name, value, parent, children)
         self.ctrl = []
         self.multiplex = None
 
@@ -318,7 +318,7 @@ class MuxTreeNode(tree.TreeNode):
         return '%s(name=%r)' % (self.__class__.__name__, self.name)
 
     def fingerprint(self):
-        return "%s%s" % (super(MuxTreeNode, self).fingerprint(), self.ctrl)
+        return "%s%s" % (super().fingerprint(), self.ctrl)
 
     def merge(self, other):
         """
@@ -346,7 +346,7 @@ class MuxTreeNode(tree.TreeNode):
                             remove.append(key)
                     for key in remove:
                         self.value.pop(key, None)
-        super(MuxTreeNode, self).merge(other)
+        super().merge(other)
         if other.multiplex is True:
             self.multiplex = True
         elif other.multiplex is False:

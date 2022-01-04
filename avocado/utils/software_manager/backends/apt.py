@@ -23,7 +23,7 @@ class AptBackend(DpkgBackend):
         """
         Initializes the base command and the debian package repository.
         """
-        super(AptBackend, self).__init__()
+        super().__init__()
         executable = utils_path.find_command('apt-get')
         self.base_command = executable + ' --yes --allow-unauthenticated'
         self.repo_file_path = '/etc/apt/sources.list.d/avocado.list'

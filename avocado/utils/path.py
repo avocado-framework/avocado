@@ -35,7 +35,7 @@ class CmdNotFoundError(Exception):
     """
 
     def __init__(self, cmd, paths):  # pylint: disable=W0231
-        super(CmdNotFoundError, self)
+        super()
         self.cmd = cmd
         self.paths = paths
 

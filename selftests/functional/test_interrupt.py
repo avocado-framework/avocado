@@ -94,7 +94,7 @@ class InterruptTest(TestCaseTmpDir):
         return len(test_processes) == 0
 
     def setUp(self):
-        super(InterruptTest, self).setUp()
+        super().setUp()
         self.test_module = None
 
     @skipOnLevelsInferiorThan(2)

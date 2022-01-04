@@ -51,7 +51,7 @@ class Diff(CLICmd):
         :param parser: The Avocado command line application parser
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
-        parser = super(Diff, self).configure(parser)
+        parser = super().configure(parser)
 
         parser.epilog = 'By default, a textual diff report is generated '\
                         'in the standard output.'

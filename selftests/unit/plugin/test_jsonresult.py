@@ -18,7 +18,7 @@ LOGFILE = None
 class JSONResultTest(TestCaseTmpDir):
 
     def setUp(self):
-        super(JSONResultTest, self).setUp()
+        super().setUp()
 
         class SimpleTest(Test):
 
@@ -107,7 +107,7 @@ class JSONResultTest(TestCaseTmpDir):
 
     def tearDown(self):
         self.job.cleanup()
-        super(JSONResultTest, self).tearDown()
+        super().tearDown()
 
 
 if __name__ == '__main__':

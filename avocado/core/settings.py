@@ -65,7 +65,7 @@ class ConfigFileNotFound(SettingsError):
     """
 
     def __init__(self, path_list):
-        super(ConfigFileNotFound, self).__init__()
+        super().__init__()
         self.path_list = path_list
 
     def __str__(self):

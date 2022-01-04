@@ -38,7 +38,7 @@ class YumBackend(RpmBackend):
         """
         Initializes the base command and the yum package repository.
         """
-        super(YumBackend, self).__init__()
+        super().__init__()
         self.cmd = cmd
         self.base_command = '%s -y ' % utils_path.find_command(cmd)
         self._cfgparser = None

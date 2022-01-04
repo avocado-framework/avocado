@@ -38,7 +38,7 @@ class Base(Test):
 
 class Provider(Base):
     def setUp(self):
-        super(Provider, self).setUp()
+        super().setUp()
         self.vmimage_provider = vmimage.get_best_provider(self.vmimage_name,
                                                           self.vmimage_version,
                                                           self.vmimage_build,

@@ -115,7 +115,7 @@ class ExtensionManager:
         in that it returns names in a predictable order, by using standard
         :func:`sorted`.
         """
-        return sorted(super(ExtensionManager, self).names())
+        return sorted(super().names())
 
     def map_method_with_return(self, method_name, *args, **kwargs):
         """

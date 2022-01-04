@@ -57,7 +57,7 @@ class LoaderUnhandledReferenceError(LoaderError):
     """ Test References not handled by any resolver """
 
     def __init__(self, unhandled_references, plugins):
-        super(LoaderUnhandledReferenceError, self).__init__()
+        super().__init__()
         self.unhandled_references = unhandled_references
         self.plugins = [_.name for _ in plugins]
 
@@ -372,7 +372,7 @@ class SimpleFileLoader(TestLoader):
 
     def __init__(self, config, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
-        super(SimpleFileLoader, self).__init__(config, extra_params)
+        super().__init__(config, extra_params)
         self.test_type = test_type
 
     @staticmethod

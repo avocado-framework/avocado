@@ -68,7 +68,7 @@ class DistroDef(utils_distro.LinuxDistro):
     """
 
     def __init__(self, name, version, release, arch):
-        super(DistroDef, self).__init__(name, version, release, arch)
+        super().__init__(name, version, release, arch)
 
         #: All the software packages that ship with this Linux distro
         self.software_packages = []
@@ -168,7 +168,7 @@ class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
     """
 
     def __init__(self, path):
-        super(DistroPkgInfoLoaderRpm, self).__init__(path)
+        super().__init__(path)
         try:
             utils_path.find_command('rpm')
             self.capable = True
@@ -198,7 +198,7 @@ class DistroPkgInfoLoaderDeb(DistroPkgInfoLoader):
     """
 
     def __init__(self, path):
-        super(DistroPkgInfoLoaderDeb, self).__init__(path)
+        super().__init__(path)
         try:
             utils_path.find_command('dpkg-deb')
             self.capable = True
@@ -303,7 +303,7 @@ class Distro(CLICmd):
     description = 'Shows detected Linux distribution'
 
     def configure(self, parser):
-        parser = super(Distro, self).configure(parser)
+        parser = super().configure(parser)
 
         help_msg = 'Creates a distro definition file based on the path given.'
         settings.register_option(section='distro',

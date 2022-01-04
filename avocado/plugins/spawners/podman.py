@@ -56,7 +56,7 @@ class PodmanCLI(CLI):
     description = 'podman spawner command line options for "run"'
 
     def configure(self, parser):
-        super(PodmanCLI, self).configure(parser)
+        super().configure(parser)
         parser = parser.subcommands.choices.get('run', None)
         if parser is None:
             return

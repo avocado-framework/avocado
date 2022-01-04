@@ -23,7 +23,7 @@ from avocado.core.settings import settings
 class EnabledExtensionManager(ExtensionManager):
 
     def __init__(self, namespace, invoke_kwds=None):
-        super(EnabledExtensionManager, self).__init__(namespace, invoke_kwds)
+        super().__init__(namespace, invoke_kwds)
         namespace = "%s.order" % self.settings_section()
         configured_order = settings.as_dict().get(namespace)
         ordered = []

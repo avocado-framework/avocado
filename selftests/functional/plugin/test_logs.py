@@ -11,7 +11,7 @@ statuses = ["FAIL", "CANCEL"]"""
 class TestLogsUI(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestLogsUI, self).setUp()
+        super().setUp()
         with open(os.path.join(self.tmpdir.name, 'config'), 'w') as config:
             config.write(CONFIG)
 
@@ -34,7 +34,7 @@ class TestLogsUI(TestCaseTmpDir):
 class TestLogsFilesUI(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestLogsFilesUI, self).setUp()
+        super().setUp()
         self.config_file = script.TemporaryScript(
             'avocado.conf',
             "[job.output.testlogs]\n"
@@ -58,7 +58,7 @@ class TestLogsFilesUI(TestCaseTmpDir):
                          r'Failure to access log file.*DOES_NOT_EXIST"')
 
     def tearDown(self):
-        super(TestLogsFilesUI, self).tearDown()
+        super().tearDown()
         self.config_file.remove()
 
 

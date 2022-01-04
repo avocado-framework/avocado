@@ -916,10 +916,8 @@ class WrapSubProcess(SubProcess):
             if not os.path.exists(self.wrapper):
                 raise IOError("No such wrapper: '%s'" % self.wrapper)
             cmd = wrapper + ' ' + cmd
-        super(WrapSubProcess, self).__init__(cmd, verbose,
-                                             shell, env, sudo,
-                                             ignore_bg_processes, encoding,
-                                             logger)
+        super().__init__(cmd, verbose, shell, env, sudo,
+                         ignore_bg_processes, encoding, logger)
 
 
 def should_run_inside_wrapper(cmd):

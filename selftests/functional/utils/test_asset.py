@@ -12,7 +12,7 @@ setup_avocado_loggers()
 class TestAsset(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestAsset, self).setUp()
+        super().setUp()
         self.assetdir = tempfile.mkdtemp(dir=self.tmpdir.name)
         self.assetname = 'foo.tgz'
         self.assethash = '3a033a8938c1af56eeb793669db83bcbd0c17ea5'

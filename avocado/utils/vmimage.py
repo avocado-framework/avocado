@@ -214,7 +214,7 @@ class FedoraImageProviderBase(ImageProviderBase):
 
         self.url_images = self.url_versions + '{version}/' \
             + cloud + '/{arch}/images/'
-        return super(FedoraImageProviderBase, self).get_image_url()
+        return super().get_image_url()
 
 
 class FedoraImageProvider(FedoraImageProviderBase):
@@ -226,7 +226,7 @@ class FedoraImageProvider(FedoraImageProviderBase):
 
     def __init__(self, version='[0-9]+', build='[0-9]+.[0-9]+',
                  arch=DEFAULT_ARCH):
-        super(FedoraImageProvider, self).__init__(version, build, arch)
+        super().__init__(version, build, arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora/linux/releases/'
         self.url_old_images = 'https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/'
         self.image_pattern = 'Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
@@ -241,8 +241,8 @@ class FedoraSecondaryImageProvider(FedoraImageProviderBase):
 
     def __init__(self, version='[0-9]+', build='[0-9]+.[0-9]+',
                  arch=DEFAULT_ARCH):
-        super(FedoraSecondaryImageProvider, self).__init__(version, build,
-                                                           arch)
+        super().__init__(version, build, arch)
+
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora-secondary/releases/'
         self.url_old_images = 'https://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/'
         self.image_pattern = 'Fedora-Cloud-Base-(?P<version>{version})-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
@@ -256,7 +256,7 @@ class CentOSImageProvider(ImageProviderBase):
     name = 'CentOS'
 
     def __init__(self, version='[0-9]+', build='[0-9]{4}', arch=DEFAULT_ARCH):
-        super(CentOSImageProvider, self).__init__(version, build, arch)
+        super().__init__(version, build, arch)
         self.url_versions = 'https://cloud.centos.org/centos/'
         self.url_images = self.url_versions + '{version}/images/'
         self.image_pattern = 'CentOS-(?P<version>{version})-(?P<arch>{arch})-GenericCloud-(?P<build>{build}).qcow2.xz$'
@@ -266,7 +266,7 @@ class CentOSImageProvider(ImageProviderBase):
             self.build = r'[\d\.\-]+'
             self.url_images = self.url_versions + '{version}/{arch}/images/'
             self.image_pattern = 'CentOS-(?P<version>{version})-GenericCloud-(?P<build>{build}).(?P<arch>{arch}).qcow2$'
-        return super(CentOSImageProvider, self).get_image_url()
+        return super().get_image_url()
 
 
 class UbuntuImageProvider(ImageProviderBase):
@@ -285,7 +285,7 @@ class UbuntuImageProvider(ImageProviderBase):
         elif arch == 'aarch64':
             arch = 'arm64'
 
-        super(UbuntuImageProvider, self).__init__(version, build, arch)
+        super().__init__(version, build, arch)
         self.url_versions = 'http://cloud-images.ubuntu.com/releases/'
         self.url_images = self.url_versions + 'releases/{version}/release/'
         self.image_pattern = 'ubuntu-(?P<version>{version})-server-cloudimg-(?P<arch>{arch}).img'
@@ -346,7 +346,7 @@ class DebianImageProvider(ImageProviderBase):
         if (version not in table_version.keys()):
             raise ImageProviderError("Unknown version", version)
 
-        super(DebianImageProvider, self).__init__(version, build, arch)
+        super().__init__(version, build, arch)
         self.url_versions = 'https://cloud.debian.org/images/cloud/'
         self.url_images = self.url_versions + version + '/{build}/'
         self.image_pattern = 'debian-'+table_version[version]+'-generic-(?P<arch>{arch})-{build}.qcow2$'
@@ -357,7 +357,7 @@ class DebianImageProvider(ImageProviderBase):
         self._feed_html_parser(self.url_versions+self._version+"/", parserbuild)
         self.build = max(parserbuild.items)
 
-        return super(DebianImageProvider, self).get_image_url()
+        return super().get_image_url()
 
 
 class JeosImageProvider(ImageProviderBase):
@@ -373,7 +373,7 @@ class JeosImageProvider(ImageProviderBase):
         if arch == 'x86_64':
             arch = '64'
 
-        super(JeosImageProvider, self).__init__(version, build, arch)
+        super().__init__(version, build, arch)
         self.url_versions = 'https://avocado-project.org/data/assets/jeos/'
         self.url_images = self.url_versions + '{version}/'
         self.image_pattern = 'jeos-(?P<version>{version})-(?P<arch>{arch}).qcow2.xz$'
@@ -388,7 +388,7 @@ class OpenSUSEImageProvider(ImageProviderBase):
     name = 'OpenSUSE'
 
     def __init__(self, version='[0-9]{2}.[0-9]{1}', build=None, arch=DEFAULT_ARCH):
-        super(OpenSUSEImageProvider, self).__init__(version, build, arch)
+        super().__init__(version, build, arch)
         self.url_versions = 'https://download.opensuse.org/pub/opensuse/distribution/leap/'
         self.url_images = self.url_versions + '{version}/appliances/'
 
@@ -407,7 +407,7 @@ class OpenSUSEImageProvider(ImageProviderBase):
         return [float(v) for v in versions]
 
     def get_versions(self):
-        versions = super(OpenSUSEImageProvider, self).get_versions()
+        versions = super().get_versions()
         return self._convert_version_numbers(versions)
 
     def get_best_version(self, versions):
@@ -429,7 +429,7 @@ class CirrOSImageProvider(ImageProviderBase):
     name = 'CirrOS'
 
     def __init__(self, version=r'[0-9]+\.[0-9]+\.[0-9]+', build=None, arch=DEFAULT_ARCH):
-        super(CirrOSImageProvider, self).__init__(version=version, build=build, arch=arch)
+        super().__init__(version=version, build=build, arch=arch)
         self.url_versions = 'https://download.cirros-cloud.net/'
         self.url_images = self.url_versions + '{version}/'
         self.image_pattern = 'cirros-{version}-{arch}-disk.img$'

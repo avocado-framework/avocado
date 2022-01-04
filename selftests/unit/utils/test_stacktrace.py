@@ -47,7 +47,7 @@ class ListWithUnpickableAttribute(list):
 
     def __init__(self, *args, **kwargs):
         self.__troublemaker = Unpickable()
-        super(ListWithUnpickableAttribute, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class TestUnpickableObject(unittest.TestCase):

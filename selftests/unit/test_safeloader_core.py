@@ -267,7 +267,7 @@ class FindClassAndMethods(UnlimitedDiff):
 class MultiLevel(TestCaseTmpDir):
 
     def setUp(self):
-        super(MultiLevel, self).setUp()
+        super().setUp()
         init = script.Script(os.path.join(self.tmpdir.name, '__init__.py'),
                              '', mode=script.READ_ONLY_MODE)
         init.save()

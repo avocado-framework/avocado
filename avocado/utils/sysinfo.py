@@ -91,7 +91,7 @@ class Logfile(Collectible):
     def __init__(self, path, log_path=None):
         if not log_path:
             log_path = os.path.basename(path)
-        super(Logfile, self).__init__(log_path)
+        super().__init__(log_path)
         self.path = path
 
     def __repr__(self):
@@ -136,7 +136,7 @@ class Command(Collectible):
     """
 
     def __init__(self, cmd, timeout=-1, locale='C'):
-        super(Command, self).__init__(cmd)
+        super().__init__(cmd)
         self._name = self.log_path
         self.cmd = cmd
         self.timeout = timeout
@@ -198,7 +198,7 @@ class Daemon(Command):
     """
 
     def __init__(self, *args, **kwargs):
-        super(Daemon, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.daemon_process = None
         self.temp_file = tempfile.NamedTemporaryFile()
 
@@ -274,7 +274,7 @@ class JournalctlWatcher(Collectible):
         if not log_path:
             log_path = 'journalctl.gz'
 
-        super(JournalctlWatcher, self).__init__(log_path)
+        super().__init__(log_path)
         self.cursor = self._get_cursor()
 
     def __repr__(self):
@@ -337,7 +337,7 @@ class LogWatcher(Collectible):
         else:
             log_path += ".gz"
 
-        super(LogWatcher, self).__init__(log_path)
+        super().__init__(log_path)
         self.path = path
         self.size = 0
         self.inode = 0

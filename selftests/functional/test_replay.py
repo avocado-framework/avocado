@@ -10,7 +10,7 @@ from selftests.utils import AVOCADO, TestCaseTmpDir
 class ReplayTests(TestCaseTmpDir):
 
     def setUp(self):
-        super(ReplayTests, self).setUp()
+        super().setUp()
         cmd_line = ('%s run examples/tests/passtest.py '
                     'examples/tests/passtest.py '
                     'examples/tests/passtest.py '

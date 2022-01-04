@@ -55,7 +55,7 @@ class TaskInfo(Task):
     in the real implementation."""
 
     def __init__(self, identification):
-        super(TaskInfo, self).__init__(identification)
+        super().__init__(identification)
         self._status = None
         self._timeout = None
 

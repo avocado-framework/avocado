@@ -108,7 +108,7 @@ class IsoInfo(BaseIso9660, unittest.TestCase):
     @unittest.skipIf(process.system("which isoinfo", ignore_status=True),
                      "isoinfo not installed.")
     def setUp(self):
-        super(IsoInfo, self).setUp()
+        super().setUp()
         self.iso = iso9660.Iso9660IsoInfo(self.iso_path)
 
 
@@ -121,7 +121,7 @@ class IsoRead(BaseIso9660, unittest.TestCase):
     @unittest.skipIf(process.system("which iso-read", ignore_status=True),
                      "iso-read not installed.")
     def setUp(self):
-        super(IsoRead, self).setUp()
+        super().setUp()
         self.iso = iso9660.Iso9660IsoRead(self.iso_path)
 
 
@@ -139,7 +139,7 @@ class IsoMount(BaseIso9660, unittest.TestCase):
                      os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
                      'TRAVIS Environment is unsuitable for these tests')
     def setUp(self):
-        super(IsoMount, self).setUp()
+        super().setUp()
         self.iso = iso9660.Iso9660Mount(self.iso_path)
 
 
@@ -151,7 +151,7 @@ class PyCDLib(BaseIso9660, unittest.TestCase):
 
     @unittest.skipUnless(iso9660.has_pycdlib(), "pycdlib not installed")
     def setUp(self):
-        super(PyCDLib, self).setUp()
+        super().setUp()
         self.iso = iso9660.ISO9660PyCDLib(self.iso_path)
 
     def test_create_write(self):

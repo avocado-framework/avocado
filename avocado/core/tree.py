@@ -52,11 +52,10 @@ class FilterSet(set):
         return item
 
     def add(self, item):
-        return super(FilterSet, self).add(self.__normalize(item))
+        return super().add(self.__normalize(item))
 
     def update(self, items):
-        return super(FilterSet, self).update([self.__normalize(item)
-                                              for item in items])
+        return super().update([self.__normalize(item) for item in items])
 
     def __str__(self):
         return ('FilterSet([%s])'
@@ -68,7 +67,7 @@ class TreeEnvironment(dict):
     """ TreeNode environment with values, origins and filters """
 
     def __init__(self):
-        super(TreeEnvironment, self).__init__()     # values
+        super().__init__()     # values
         self.origin = {}    # origins of the values
         self.filter_only = FilterSet()   # list of filter_only
         self.filter_out = FilterSet()    # list of filter_out

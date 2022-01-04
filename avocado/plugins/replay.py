@@ -32,7 +32,7 @@ class Replay(CLICmd):
     description = "Runs a new job using a previous job as its configuration"
 
     def configure(self, parser):
-        parser = super(Replay, self).configure(parser)
+        parser = super().configure(parser)
         help_msg = ('Replays a job, identified by: complete or partial Job '
                     'ID, "latest" for the latest job, the job results path.')
         settings.register_option(section='job.replay',

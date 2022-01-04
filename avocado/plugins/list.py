@@ -217,7 +217,7 @@ class List(CLICmd):
         :param parser: The Avocado command line application parser
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
-        parser = super(List, self).configure(parser)
+        parser = super().configure(parser)
         settings.add_argparser_to_option(namespace='resolver.references',
                                          nargs='*',
                                          metavar='TEST_REFERENCE',
