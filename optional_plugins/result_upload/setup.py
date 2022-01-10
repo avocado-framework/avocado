@@ -13,7 +13,15 @@
 # Copyright: Virtuozzo Inc. 2017
 # Authors: Dmitry Monakhov <dmonakhov@openvz.org>
 
-from setuptools import find_packages, setup
+from setuptools import setup
+
+# Handle systems with setuptools < 40
+try:
+    from setuptools import find_namespace_packages
+except ImportError:
+    packages = ['avocado_result_upload']
+else:
+    packages = find_namespace_packages(include=['avocado_result_upload'])
 
 VERSION = open("VERSION", "r").read().strip()
 
@@ -23,13 +31,13 @@ setup(name='avocado-framework-plugin-result-upload',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
-      packages=find_packages(),
+      packages=packages,
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION],
       entry_points={
           'avocado.plugins.cli': [
-              'results_upload = avocado_result_upload:ResultUploadCLI',
+              'results_upload = avocado_result_upload.result_upload:ResultUploadCLI',
               ],
           'avocado.plugins.result': [
-              'results_upload = avocado_result_upload:ResultUpload',
+              'results_upload = avocado_result_upload.result_upload:ResultUpload',
               ]})

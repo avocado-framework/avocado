@@ -1,7 +1,7 @@
 import subprocess
 import time
 
-from avocado_golang import GO_BIN
+from avocado_golang.golang import GO_BIN
 
 from avocado.core import nrunner
 from avocado.core.runners.utils import messages

@@ -1,14 +1,14 @@
 import os
 import unittest.mock
 
-import avocado_golang
+import avocado_golang.golang
 
 from avocado.core.resolver import ReferenceResolutionResult
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-@unittest.skipIf(avocado_golang.GO_BIN is None, "go binary not found")
+@unittest.skipIf(avocado_golang.golang.GO_BIN is None, "go binary not found")
 class ResolverModule(unittest.TestCase):
     """
     Test golang resolution when a module name is given
@@ -19,13 +19,13 @@ class ResolverModule(unittest.TestCase):
         os.environ['GOPATH'] = THIS_DIR
 
     def test_resolver_no_go_bin(self):
-        with unittest.mock.patch('avocado_golang.GO_BIN', None):
-            res = avocado_golang.GolangResolver().resolve('countavocados')
+        with unittest.mock.patch('avocado_golang.golang.GO_BIN', None):
+            res = avocado_golang.golang.GolangResolver().resolve('countavocados')
         self.assertEqual(res.reference, 'countavocados')
         self.assertEqual(res.result, ReferenceResolutionResult.NOTFOUND)
 
     def test_resolver(self):
-        res = avocado_golang.GolangResolver().resolve('countavocados')
+        res = avocado_golang.golang.GolangResolver().resolve('countavocados')
         self.assertEqual(res.result, ReferenceResolutionResult.SUCCESS)
         self.assertEqual(len(res.resolutions), 3)
         empty_container = res.resolutions[0]

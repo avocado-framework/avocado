@@ -1,7 +1,7 @@
 import os
 import unittest
 
-import avocado_robot
+import avocado_robot.robot
 import pkg_resources
 
 from avocado.core.resolver import ReferenceResolutionResult
@@ -35,7 +35,7 @@ class Resolver(unittest.TestCase):
     @unittest.skipUnless(os.path.isfile(ROBOT_AVOCADO),
                          'Robot test file not found at "%s"' % ROBOT_AVOCADO)
     def test_resolver(self):
-        res = avocado_robot.RobotResolver().resolve(ROBOT_AVOCADO)
+        res = avocado_robot.robot.RobotResolver().resolve(ROBOT_AVOCADO)
         self.assertEqual(res.result, ReferenceResolutionResult.SUCCESS)
         self.assertEqual(len(res.resolutions), 2)
         nosleep = res.resolutions[0]

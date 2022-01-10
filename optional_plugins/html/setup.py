@@ -13,7 +13,15 @@
 # Copyright: Red Hat Inc. 2016
 # Author: Cleber Rosa <crosa@redhat.com>
 
-from setuptools import find_packages, setup
+from setuptools import setup
+
+# Handle systems with setuptools < 40
+try:
+    from setuptools import find_namespace_packages
+except ImportError:
+    packages = ['avocado_result_html']
+else:
+    packages = find_namespace_packages(include=['avocado_result_html'])
 
 VERSION = open("VERSION", "r").read().strip()
 
@@ -23,17 +31,17 @@ setup(name='avocado-framework-plugin-result-html',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
-      packages=find_packages(),
+      packages=packages,
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION, 'jinja2'],
       entry_points={
           'avocado.plugins.cli': [
-              'html = avocado_result_html:HTML',
+              'html = avocado_result_html.result_html:HTML',
           ],
           'avocado.plugins.init': [
-              'html = avocado_result_html:HTMLInit',
+              'html = avocado_result_html.result_html:HTMLInit',
           ],
           'avocado.plugins.result': [
-              'html = avocado_result_html:HTMLResult',
+              'html = avocado_result_html.result_html:HTMLResult',
           ]}
       )

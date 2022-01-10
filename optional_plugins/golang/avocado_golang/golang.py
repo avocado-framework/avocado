@@ -21,13 +21,11 @@ import glob
 import os
 import re
 
-from avocado.core import exceptions, output
 from avocado.core.nrunner import Runnable
-from avocado.core.plugin_interfaces import CLI, Resolver
+from avocado.core.plugin_interfaces import Resolver
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult)
 from avocado.utils import path as utils_path
-from avocado.utils import process
 
 try:
     GO_BIN = utils_path.find_command('go')

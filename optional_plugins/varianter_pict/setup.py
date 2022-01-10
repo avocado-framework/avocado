@@ -13,7 +13,15 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Cleber Rosa <crosa@redhat.com>
 
-from setuptools import find_packages, setup
+from setuptools import setup
+
+# Handle systems with setuptools < 40
+try:
+    from setuptools import find_namespace_packages
+except ImportError:
+    packages = ['avocado_varianter_pict']
+else:
+    packages = find_namespace_packages(include=['avocado_varianter_pict'])
 
 VERSION = open("VERSION", "r").read().strip()
 
@@ -23,14 +31,14 @@ setup(name='avocado-framework-plugin-varianter-pict',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
-      packages=find_packages(),
+      packages=packages,
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION],
       entry_points={
           'avocado.plugins.cli': [
-              'varianter_pict = avocado_varianter_pict:VarianterPictCLI',
+              'varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPictCLI',
           ],
           "avocado.plugins.varianter": [
-              "varianter_pict = avocado_varianter_pict:VarianterPict",
+              "varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPict",
           ]}
       )
