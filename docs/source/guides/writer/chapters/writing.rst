@@ -1242,7 +1242,7 @@ installed by a package::
 
   from avocado import Test
 
-  from avocado.utils import software_manager
+  from avocado.utils.software_manager import distro_packages
   from avocado.utils import path as utils_path
   from avocado.utils import process
 
@@ -1257,7 +1257,7 @@ installed by a package::
           try:
               self.sleep = utils_path.find_command('sleep')
           except utils_path.CmdNotFoundError:
-              software_manager.install_distro_packages({'fedora': ['coreutils']})
+              distro_packages.install_distro_packages({'fedora': ['coreutils']})
               self.sleep = utils_path.find_command('sleep')
 
       def test(self):
