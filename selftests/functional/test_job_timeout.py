@@ -33,7 +33,7 @@ class ParseXMLError(Exception):
 class JobTimeOutTest(TestCaseTmpDir):
 
     def setUp(self):
-        super(JobTimeOutTest, self).setUp()
+        super().setUp()
         self.script = script.TemporaryScript(
             'sleep.sh',
             SCRIPT_CONTENT,
@@ -163,7 +163,7 @@ class JobTimeOutTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
 
     def tearDown(self):
-        super(JobTimeOutTest, self).tearDown()
+        super().tearDown()
         self.script.remove()
         self.py.remove()
 

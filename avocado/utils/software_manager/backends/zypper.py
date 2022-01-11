@@ -20,7 +20,7 @@ class ZypperBackend(RpmBackend):
         """
         Initializes the base command and the yum package repository.
         """
-        super(ZypperBackend, self).__init__()
+        super().__init__()
         self.base_command = utils_path.find_command('zypper') + ' -n'
         z_cmd = self.base_command + ' --version'
         cmd_result = process.run(z_cmd, ignore_status=True,

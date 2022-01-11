@@ -575,7 +575,7 @@ class FDDrainerTests(unittest.TestCase):
             """
 
             def __init__(self, *args, **kwargs):
-                super(CatchHandler, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
                 self.caught_record = False
 
             def handle(self, record):

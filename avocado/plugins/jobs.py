@@ -91,7 +91,7 @@ class Jobs(CLICmd):
         :param parser: The Avocado command line application parser
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
-        parser = super(Jobs, self).configure(parser)
+        parser = super().configure(parser)
 
         subcommands = parser.add_subparsers(dest='jobs_subcommand',
                                             metavar='sub-command')

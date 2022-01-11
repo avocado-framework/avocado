@@ -27,7 +27,7 @@ class LVUtilsTest(TestCaseTmpDir):
     @unittest.skipIf(not process.can_sudo(), "This test requires root or "
                      "passwordless sudo configured.")
     def setUp(self):
-        super(LVUtilsTest, self).setUp()
+        super().setUp()
         self.vgs = []
 
     def tearDown(self):

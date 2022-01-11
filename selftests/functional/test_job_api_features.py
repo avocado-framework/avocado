@@ -13,7 +13,7 @@ from selftests.utils import TestCaseTmpDir
 class Test(TestCaseTmpDir):
 
     def setUp(self):
-        super(Test, self).setUp()
+        super().setUp()
         self.base_config = {'core.show': ['none'],
                             'run.results_dir': self.tmpdir.name,
                             'resolver.references': ['examples/tests/passtest.py']}

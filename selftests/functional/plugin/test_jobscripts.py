@@ -37,7 +37,7 @@ warn_non_zero_status = True"""
 class JobScriptsTest(TestCaseTmpDir):
 
     def setUp(self):
-        super(JobScriptsTest, self).setUp()
+        super().setUp()
         self.pre_dir = os.path.join(self.tmpdir.name, 'pre.d')
         os.mkdir(self.pre_dir)
         self.post_dir = os.path.join(self.tmpdir.name, 'post.d')

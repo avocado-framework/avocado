@@ -338,7 +338,7 @@ class Assets(CLICmd):
                                      long_arg='--by-overall-limit',
                                      parser=subparser)
 
-        parser = super(Assets, self).configure(parser)
+        parser = super().configure(parser)
 
         subcommands = parser.add_subparsers(dest='assets_subcommand')
         subcommands.required = True

@@ -6,7 +6,7 @@ from avocado.core import parser
 
 class SilentParser(argparse.ArgumentParser):
     def __init__(self):
-        super(SilentParser, self).__init__(prog='avocado')
+        super().__init__(prog='avocado')
 
     def error(self, message):
         """

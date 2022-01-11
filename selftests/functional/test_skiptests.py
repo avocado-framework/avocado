@@ -261,7 +261,7 @@ class Base(TestCaseTmpDir):
     SCRIPT_TO_EXEC = 'script_to_exec.py'
 
     def setUp(self):
-        super(Base, self).setUp()
+        super().setUp()
         for name, content in self.FILE_NAME_CONTENT_MAP.items():
             self._create_tmp_file(name, content)
 

@@ -46,7 +46,7 @@ class Variants(CLICmd):
     description = "Tool to analyze and visualize test variants and params"
 
     def configure(self, parser):
-        parser = super(Variants, self).configure(parser)
+        parser = super().configure(parser)
         verbosity_levels = ("(positive integer - 0, 1, ... - or %s)"
                             % ", ".join(sorted(_VERBOSITY_LEVELS,
                                                key=lambda _: _VERBOSITY_LEVELS[_])))

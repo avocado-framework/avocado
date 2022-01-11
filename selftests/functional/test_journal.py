@@ -11,7 +11,7 @@ from selftests.utils import AVOCADO, TestCaseTmpDir
 class JournalPluginTests(TestCaseTmpDir):
 
     def setUp(self):
-        super(JournalPluginTests, self).setUp()
+        super().setUp()
         self.cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --json - '
                          '--journal examples/tests/passtest.py'
                          % (AVOCADO, self.tmpdir.name))
@@ -46,7 +46,7 @@ class JournalPluginTests(TestCaseTmpDir):
 
     def tearDown(self):
         self.db.close()
-        super(JournalPluginTests, self).tearDown()
+        super().tearDown()
 
 
 if __name__ == '__main__':

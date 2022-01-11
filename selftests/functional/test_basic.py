@@ -686,7 +686,7 @@ class RunnerHumanOutputTest(TestCaseTmpDir):
 class RunnerSimpleTest(TestCaseTmpDir):
 
     def setUp(self):
-        super(RunnerSimpleTest, self).setUp()
+        super().setUp()
         self.pass_script = script.TemporaryScript(
             '\u00e1 \u00e9 \u00ed \u00f3 \u00fa',
             "#!/bin/sh\ntrue",
@@ -805,13 +805,13 @@ class RunnerSimpleTest(TestCaseTmpDir):
     def tearDown(self):
         self.pass_script.remove()
         self.fail_script.remove()
-        super(RunnerSimpleTest, self).tearDown()
+        super().tearDown()
 
 
 class RunnerSimpleTestStatus(TestCaseTmpDir):
 
     def setUp(self):
-        super(RunnerSimpleTestStatus, self).setUp()
+        super().setUp()
         self.config_file = script.TemporaryScript('avocado.conf',
                                                   "[simpletests.status]\n"
                                                   "warn_regex = ^WARN$\n"
@@ -865,14 +865,14 @@ class RunnerSimpleTestStatus(TestCaseTmpDir):
         skip2_script.remove()
 
     def tearDown(self):
-        super(RunnerSimpleTestStatus, self).tearDown()
+        super().tearDown()
         self.config_file.remove()
 
 
 class RunnerReferenceFromConfig(TestCaseTmpDir):
 
     def setUp(self):
-        super(RunnerReferenceFromConfig, self).setUp()
+        super().setUp()
         self.config_file = script.TemporaryScript('avocado.conf',
                                                   "[resolver]\n"
                                                   "references = ['/bin/true']\n")
@@ -888,14 +888,14 @@ class RunnerReferenceFromConfig(TestCaseTmpDir):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def tearDown(self):
-        super(RunnerReferenceFromConfig, self).tearDown()
+        super().tearDown()
         self.config_file.remove()
 
 
 class RunnerSimpleTestFailureFields(TestCaseTmpDir):
 
     def setUp(self):
-        super(RunnerSimpleTestFailureFields, self).setUp()
+        super().setUp()
         self.config_file = script.TemporaryScript(
             'avocado.conf',
             "[simpletests.status]\n"
@@ -915,7 +915,7 @@ class RunnerSimpleTestFailureFields(TestCaseTmpDir):
         self.assertNotIn("Exited with status: '1'", result.stdout_text)
 
     def tearDown(self):
-        super(RunnerSimpleTestFailureFields, self).tearDown()
+        super().tearDown()
         self.config_file.remove()
 
 
@@ -1115,7 +1115,7 @@ class PluginsXunitTest(TestCaseTmpDir):
     @unittest.skipUnless(SCHEMA_CAPABLE,
                          'Unable to validate schema due to missing xmlschema library')
     def setUp(self):
-        super(PluginsXunitTest, self).setUp()
+        super().setUp()
         junit_xsd = os.path.join(os.path.dirname(__file__),
                                  os.path.pardir, ".data", 'jenkins-junit.xsd')
         self.xml_schema = xmlschema.XMLSchema(junit_xsd)

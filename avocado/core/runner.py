@@ -121,7 +121,7 @@ class TestStatus:
         # Update state before returning the value
         if name in ("status", "interrupt"):
             self._tick()
-        return super(TestStatus, self).__getattribute__(name)
+        return super().__getattribute__(name)
 
     def wait_for_early_status(self, proc, timeout):
         """

@@ -31,7 +31,7 @@ class Config(CLICmd):
     description = 'Shows avocado config keys'
 
     def configure(self, parser):
-        parser = super(Config, self).configure(parser)
+        parser = super().configure(parser)
         help_msg = ('Shows the data directories currently being used by '
                     'Avocado')
         settings.register_option(section='config',

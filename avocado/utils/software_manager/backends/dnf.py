@@ -18,7 +18,7 @@ class DnfBackend(YumBackend):
         """
         Initializes the base command and the DNF package repository.
         """
-        super(DnfBackend, self).__init__(cmd='dnf')
+        super().__init__(cmd='dnf')
 
     def build_dep(self, name):
         """

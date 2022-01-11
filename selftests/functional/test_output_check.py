@@ -130,7 +130,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self.assertFalse(os.path.isfile(path))
 
     def setUp(self):
-        super(RunnerSimpleTest, self).setUp()
+        super().setUp()
         content = b"#!/bin/sh\necho -n '%s';echo -n '%s'>&2" % (STDOUT, STDERR)
         self.output_script = script.TemporaryScript(
             'output_check.sh',
@@ -378,7 +378,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
 
     def tearDown(self):
-        super(RunnerSimpleTest, self).tearDown()
+        super().tearDown()
         self.output_script.remove()
 
 

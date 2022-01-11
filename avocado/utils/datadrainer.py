@@ -154,7 +154,7 @@ class BufferFDDrainer(FDDrainer):
     name = 'avocado.utils.datadrainer.BufferFDDrainer'
 
     def __init__(self, source, stop_check=None, name=None):
-        super(BufferFDDrainer, self).__init__(source, stop_check, name)
+        super().__init__(source, stop_check, name)
         self._data = io.BytesIO()
 
     def write(self, data):
@@ -173,7 +173,7 @@ class LineLogger(FDDrainer):
     name = 'avocado.utils.datadrainer.LineLogger'
 
     def __init__(self, source, stop_check=None, name=None, logger=None):
-        super(LineLogger, self).__init__(source, stop_check, name)
+        super().__init__(source, stop_check, name)
         self._logger = logger
         self._buffer = io.BytesIO()
 

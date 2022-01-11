@@ -9,7 +9,7 @@ class HelloWorld(CLICmd):
     description = "The classical Hello World plugin example!"
 
     def configure(self, parser):
-        parser = super(HelloWorld, self).configure(parser)
+        parser = super().configure(parser)
 
         settings.register_option(section='hello',
                                  key='message',

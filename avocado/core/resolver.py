@@ -96,8 +96,8 @@ class Resolver(EnabledExtensionManager):
     }
 
     def __init__(self, config=None):
-        super(Resolver, self).__init__('avocado.plugins.resolver',
-                                       invoke_kwds={'config': config})
+        super().__init__('avocado.plugins.resolver',
+                         invoke_kwds={'config': config})
 
     def resolve(self, reference):
         resolution = []
@@ -129,8 +129,8 @@ class Discoverer(EnabledExtensionManager):
     """
 
     def __init__(self, config=None):
-        super(Discoverer, self).__init__('avocado.plugins.discoverer',
-                                         invoke_kwds={'config': config})
+        super().__init__('avocado.plugins.discoverer',
+                         invoke_kwds={'config': config})
 
     def discover(self):
         resolutions = []

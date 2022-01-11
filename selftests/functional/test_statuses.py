@@ -125,7 +125,7 @@ EXPECTED_RESULTS = {'SkipSetup.test': ('SKIP',
 class TestStatuses(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestStatuses, self).setUp()
+        super().setUp()
         test_file = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  os.path.pardir,
                                                  ".data",

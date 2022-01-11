@@ -95,7 +95,7 @@ class VMimage(CLICmd):
     description = 'Provides VM images acquired from official repositories'
 
     def configure(self, parser):
-        parser = super(VMimage, self).configure(parser)
+        parser = super().configure(parser)
         subcommands = parser.add_subparsers(dest='vmimage_subcommand')
         subcommands.required = True
         subcommands.add_parser('list', help='List of all downloaded images')

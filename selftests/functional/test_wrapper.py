@@ -28,7 +28,7 @@ def missing_binary(binary):
 class WrapperTest(TestCaseTmpDir):
 
     def setUp(self):
-        super(WrapperTest, self).setUp()
+        super().setUp()
         self.tmpfile = tempfile.mktemp()
         self.script = script.TemporaryScript(
             'success.sh',
@@ -97,7 +97,7 @@ class WrapperTest(TestCaseTmpDir):
                         (self.tmpfile, cmd_line, result.stdout))
 
     def tearDown(self):
-        super(WrapperTest, self).tearDown()
+        super().tearDown()
         self.script.remove()
         self.dummy.remove()
         try:

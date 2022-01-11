@@ -169,7 +169,7 @@ class SysInfo(CLICmd):
         :param parser: The Avocado command line application parser
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
-        parser = super(SysInfo, self).configure(parser)
+        parser = super().configure(parser)
 
         help_msg = ('Directory where Avocado will dump sysinfo data.  If one '
                     'is not given explicitly, it will default to a directory '

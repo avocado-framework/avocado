@@ -11,7 +11,7 @@ from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir
 class DiffTests(TestCaseTmpDir):
 
     def setUp(self):
-        super(DiffTests, self).setUp()
+        super().setUp()
         cmd_line = ('%s run examples/tests/passtest.py '
                     '--job-results-dir %s --disable-sysinfo --json -' %
                     (AVOCADO, self.tmpdir.name))

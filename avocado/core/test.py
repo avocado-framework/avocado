@@ -1016,9 +1016,8 @@ class SimpleTest(Test):
         if executable is None:
             executable = name.name
         self._filename = executable
-        super(SimpleTest, self).__init__(name=name, params=params,
-                                         base_logdir=base_logdir,
-                                         config=config)
+        super().__init__(name=name, params=params,
+                         base_logdir=base_logdir, config=config)
         # Access workdir to initialize it, given that it's lazy
         _ = self.workdir
 
@@ -1202,7 +1201,7 @@ class MockingTest(Test):
                 super_kwargs[arg] = args.pop()
         # The methodName might not exist, make sure it's self.test
         super_kwargs["methodName"] = "test"
-        super(MockingTest, self).__init__(**super_kwargs)
+        super().__init__(**super_kwargs)
 
     def test(self):
         pass
@@ -1233,7 +1232,7 @@ class DryRunTest(MockingTest):
             self._filename = kwargs.pop('modulePath')
         if self._filename is None:
             self._filename = kwargs["name"].name
-        super(DryRunTest, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def setUp(self):
         self.log.info("Test params:")

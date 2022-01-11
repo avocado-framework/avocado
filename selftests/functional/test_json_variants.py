@@ -9,7 +9,7 @@ from selftests.utils import AVOCADO, TestCaseTmpDir
 class VariantsDumpLoadTests(TestCaseTmpDir):
 
     def setUp(self):
-        super(VariantsDumpLoadTests, self).setUp()
+        super().setUp()
         self.variants_file = os.path.join(self.tmpdir.name, 'variants.json')
 
     def test_variants_dump(self):

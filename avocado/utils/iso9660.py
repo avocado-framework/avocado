@@ -196,7 +196,7 @@ class MixInMntDirMount:
         """
         Cleanups and frees any resources being used
         """
-        super(MixInMntDirMount, self).close()
+        super().close()
         if self._mount_instance:
             self._mount_instance.close()
             self._mount_instance = None
@@ -211,7 +211,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
     """
 
     def __init__(self, path):
-        super(Iso9660IsoInfo, self).__init__(path)
+        super().__init__(path)
         self.joliet = False
         self.rock_ridge = False
         self.el_torito = False
@@ -280,7 +280,7 @@ class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
     """
 
     def __init__(self, path):
-        super(Iso9660IsoRead, self).__init__(path)
+        super().__init__(path)
         self.temp_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def read(self, path):
@@ -295,7 +295,7 @@ class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
         process.run(cmd)
 
     def close(self):
-        super(Iso9660IsoRead, self).close()
+        super().close()
         shutil.rmtree(self.temp_dir, True)
 
 
@@ -312,7 +312,7 @@ class Iso9660Mount(BaseIso9660):
         :param path: path to the ISO9660 file
         :type path: str
         """
-        super(Iso9660Mount, self).__init__(path)
+        super().__init__(path)
         self._mnt_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         if sys.platform.startswith('darwin'):
             fs_type = 'cd9660'
@@ -382,7 +382,7 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
     def __init__(self, path):
         if not has_pycdlib():
             raise RuntimeError('This class requires the pycdlib library')
-        super(ISO9660PyCDLib, self).__init__(path)
+        super().__init__(path)
         self._iso = None
         self._iso_opened_for_create = False
 
@@ -449,7 +449,7 @@ class ISO9660PyCDLib(MixInMntDirMount, BaseIso9660):
         self._iso.get_file_from_iso(dst, joliet_path=src)
 
     def close(self):
-        super(ISO9660PyCDLib, self).close()
+        super().close()
         if self._iso:
             if self._iso_opened_for_create:
                 self._iso.write(self.path)

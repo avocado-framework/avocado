@@ -80,7 +80,7 @@ class TestPartitionMkfsMount(Base):
     """
 
     def setUp(self):
-        super(TestPartitionMkfsMount, self).setUp()
+        super().setUp()
         self.disk.mkfs()
         self.disk.mount()
         self.use_mnt_file = os.path.join(self.mountpoint, 'file')

@@ -31,7 +31,7 @@ fi
 class TestsTmpDirTests(TestCaseTmpDir):
 
     def setUp(self):
-        super(TestsTmpDirTests, self).setUp()
+        super().setUp()
         self.simple_test = script.TemporaryScript(
             'test_simple.sh',
             SIMPLE_SCRIPT)
@@ -81,7 +81,7 @@ class TestsTmpDirTests(TestCaseTmpDir):
                              % (len(content), content))
 
     def tearDown(self):
-        super(TestsTmpDirTests, self).tearDown()
+        super().tearDown()
         self.instrumented_test.remove()
         self.simple_test.remove()
 

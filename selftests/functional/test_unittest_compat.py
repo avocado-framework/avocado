@@ -43,7 +43,7 @@ from unittest import main
 
 class CustomBaselogDirInit(Test):
     def __init__(self, *args, **kwargs):
-        super(CustomBaselogDirInit, self).__init__(base_logdir="%s", *args,
+        super().__init__(base_logdir="%s", *args,
                                                    **kwargs)
 
 class AvocadoErrorTest(CustomBaselogDirInit):
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 class UnittestCompat(TestCaseTmpDir):
 
     def setUp(self):
-        super(UnittestCompat, self).setUp()
+        super().setUp()
         self.original_pypath = os.environ.get('PYTHONPATH')
         if self.original_pypath is not None:
             os.environ['PYTHONPATH'] = '%s:%s' % (
@@ -103,7 +103,7 @@ class UnittestCompat(TestCaseTmpDir):
         self.assertIn(b'FAILED (errors=1)', result.stderr)
 
     def tearDown(self):
-        super(UnittestCompat, self).tearDown()
+        super().tearDown()
         self.unittest_script_error.remove()
         self.unittest_script_fail.remove()
         self.unittest_script_good.remove()

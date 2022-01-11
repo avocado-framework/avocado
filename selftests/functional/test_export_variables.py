@@ -26,7 +26,7 @@ test "$AVOCADO_VERSION" = "{version}" -a \
 class EnvironmentVariablesTest(TestCaseTmpDir):
 
     def setUp(self):
-        super(EnvironmentVariablesTest, self).setUp()
+        super().setUp()
         self.script = script.TemporaryScript(
             'version.sh',
             SCRIPT_CONTENT,
@@ -45,7 +45,7 @@ class EnvironmentVariablesTest(TestCaseTmpDir):
                          (expected_rc, result))
 
     def tearDown(self):
-        super(EnvironmentVariablesTest, self).tearDown()
+        super().tearDown()
         self.script.remove()
 
 

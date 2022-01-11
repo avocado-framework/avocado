@@ -124,7 +124,7 @@ if __name__ == '__main__':
 class ProcessTest(TestCaseTmpDir):
 
     def setUp(self):
-        super(ProcessTest, self).setUp()
+        super().setUp()
         self.fake_vmstat = os.path.join(self.tmpdir.name, 'vmstat')
         with open(self.fake_vmstat, 'w') as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)
