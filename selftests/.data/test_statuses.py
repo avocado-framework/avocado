@@ -17,6 +17,7 @@ class SkipSetup(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -33,6 +34,7 @@ class SkipTest(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -49,6 +51,7 @@ class SkipTeardown(Test):
     @skip("from tearDown()")
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -65,6 +68,7 @@ class CancelSetup(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -81,6 +85,7 @@ class CancelTest(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -96,6 +101,7 @@ class CancelTeardown(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.cancel()
         self.log.info('teardown post')
 
@@ -113,6 +119,7 @@ class FailSetup(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -129,6 +136,7 @@ class FailTest(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -144,6 +152,7 @@ class FailTeardown(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.fail()
         self.log.info('teardown post')
 
@@ -161,6 +170,7 @@ class WarnSetup(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -177,6 +187,7 @@ class WarnTest(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -192,6 +203,7 @@ class WarnTeardown(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.warn('')
         self.log.info('teardown post')
 
@@ -209,6 +221,7 @@ class ExitSetup(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -225,6 +238,7 @@ class ExitTest(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -240,6 +254,7 @@ class ExitTeardown(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         sys.exit(-1)
         self.log.info('teardown post')
 
@@ -258,6 +273,7 @@ class ExceptionSetup(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -275,6 +291,7 @@ class ExceptionTest(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')
 
 
@@ -290,6 +307,7 @@ class ExceptionTeardown(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         raise ValueError
         # pylint: disable=W0101
         self.log.info('teardown post')
@@ -308,4 +326,5 @@ class KillTest(Test):
 
     def tearDown(self):
         self.log.info('teardown pre')
+        self.log.info('teardown status: %s', self.status)
         self.log.info('teardown post')

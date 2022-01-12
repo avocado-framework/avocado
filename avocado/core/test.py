@@ -328,6 +328,7 @@ class Test(unittest.TestCase, TestData):
         self.__fail_reason = None
         self.__fail_class = None
         self.__traceback = None
+        self.__skip_test = False
 
         # Are initialized lazily
         self.__cache_dirs = None
@@ -703,40 +704,37 @@ class Test(unittest.TestCase, TestData):
                 return True
         return False
 
-    def _run_avocado(self):
+    def _run_test(self):
         """
-        Auxiliary method to run_avocado.
+        Auxiliary method to run setup and test method.
         """
+        self._tag_start()
         testMethod = getattr(self, self._testMethodName)
         if self._config.get("run.test_runner") != 'nrunner':
             self._start_logging()
         if self.__sysinfo_enabled:
             self.__sysinfo_logger.start()
-        test_exception = None
-        cleanup_exception = None
-        stdout_check_exception = None
-        stderr_check_exception = None
         skip_test_condition = getattr(testMethod, '__skip_test_condition__', False)
         skip_test_condition_negate = getattr(testMethod, '__skip_test_condition_negate__', False)
         if skip_test_condition:
             if callable(skip_test_condition):
                 if skip_test_condition_negate:
-                    skip_test = not bool(skip_test_condition(self))
+                    self.__skip_test = not bool(skip_test_condition(self))
                 else:
-                    skip_test = bool(skip_test_condition(self))
+                    self.__skip_test = bool(skip_test_condition(self))
             else:
                 if skip_test_condition_negate:
-                    skip_test = not bool(skip_test_condition)
+                    self.__skip_test = not bool(skip_test_condition)
                 else:
-                    skip_test = bool(skip_test_condition)
+                    self.__skip_test = bool(skip_test_condition)
         else:
-            skip_test = bool(skip_test_condition)
+            self.__skip_test = bool(skip_test_condition)
         try:
-            if skip_test is False:
+            if self.__skip_test is False:
                 self.__phase = 'SETUP'
                 self.setUp()
         except exceptions.TestSkipError as details:
-            skip_test = True
+            self.__skip_test = True
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise exceptions.TestSkipError(details)
         except exceptions.TestCancel:
@@ -762,50 +760,37 @@ class Test(unittest.TestCase, TestData):
                 details = sys.exc_info()[1]
                 if not isinstance(details, Exception):  # Avoid passing nasty exc
                     details = exceptions.TestError("%r: %s" % (details, details))
-                test_exception = details
                 self.log.debug("Local variables:")
                 local_vars = inspect.trace()[1][0].f_locals
                 for key, value in local_vars.items():
                     self.log.debug(' -> %s %s: %s', key, type(value), value)
-        finally:
-            try:
-                if skip_test is False:
-                    self.__phase = 'TEARDOWN'
-                    self.tearDown()
-            except exceptions.TestSkipError as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-                skip_illegal_msg = ('Using skip decorators in tearDown() '
-                                    'is not allowed in '
-                                    'avocado, you must fix your '
-                                    'test. Original skip exception: %s' %
-                                    details)
-                raise exceptions.TestError(skip_illegal_msg)
-            except exceptions.TestCancel as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-                raise
-            except:  # avoid old-style exception failures pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-                details = sys.exc_info()[1]
-                cleanup_exception = exceptions.TestSetupFail(details)
-
-        whiteboard_file = os.path.join(self.logdir, 'whiteboard')
-        genio.write_file(whiteboard_file, self.whiteboard)
-
-        # pylint: disable=E0702
-        if test_exception is not None:
-            raise test_exception
-        elif cleanup_exception is not None:
-            raise cleanup_exception
-        elif stdout_check_exception is not None:
-            raise stdout_check_exception
-        elif stderr_check_exception is not None:
-            raise stderr_check_exception
-        elif self.__log_warn_used:
-            raise exceptions.TestWarn("Test passed but there were warnings "
-                                      "during execution. Check the log for "
-                                      "details.")
+                raise details
 
         self.__status = 'PASS'
+
+    def _tearDown(self):
+        """
+        Auxiliary method to run tearDown.
+        """
+        try:
+            if self.__skip_test is False:
+                self.__phase = 'TEARDOWN'
+                self.tearDown()
+        except exceptions.TestSkipError as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            skip_illegal_msg = ('Using skip decorators in tearDown() '
+                                'is not allowed in '
+                                'avocado, you must fix your '
+                                'test. Original skip exception: %s' %
+                                details)
+            raise exceptions.TestError(skip_illegal_msg)
+        except exceptions.TestCancel:
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            raise
+        except:  # avoid old-style exception failures pylint: disable=W0702
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            details = sys.exc_info()[1]
+            raise exceptions.TestSetupFail(details)
 
     def _setup_environment_variables(self):
         os.environ['AVOCADO_VERSION'] = VERSION
@@ -819,16 +804,14 @@ class Test(unittest.TestCase, TestData):
         if self.__sysinfo_enabled:
             os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
 
-    def run_avocado(self):
-        """
-        Wraps the run method, for execution inside the avocado runner.
-
-        :result: Unused param, compatibility with :class:`unittest.TestCase`.
-        """
-        self._setup_environment_variables()
+    def _catch_test_status(self, method):
+        """Wrapper around test methods for catching and logging failures."""
         try:
-            self._tag_start()
-            self._run_avocado()
+            method()
+            if self.__log_warn_used:
+                raise exceptions.TestWarn("Test passed but there were warnings "
+                                          "during execution. Check the log for "
+                                          "details.")
         except exceptions.TestBaseException as detail:
             self.__status = detail.status
             self.__fail_class = detail.__class__.__name__
@@ -852,13 +835,25 @@ class Test(unittest.TestCase, TestData):
                                       "traceback for details.")
             for e_line in tb_info:
                 self.log.error(e_line)
-        finally:
-            if self.__sysinfo_enabled:
-                self.__sysinfo_logger.end(self.__status)
-            self.__phase = 'FINISHED'
-            self._tag_end()
-            self._report()
-            self.log.info("")
+
+    def run_avocado(self):
+        """
+        Wraps the run method, for execution inside the avocado runner.
+
+        :result: Unused param, compatibility with :class:`unittest.TestCase`.
+        """
+        self._setup_environment_variables()
+        self._catch_test_status(self._run_test)
+        self._catch_test_status(self._tearDown)
+        whiteboard_file = os.path.join(self.logdir, 'whiteboard')
+        genio.write_file(whiteboard_file, self.whiteboard)
+        if self.__sysinfo_enabled:
+            self.__sysinfo_logger.end(self.__status)
+        self.__phase = 'FINISHED'
+        self._tag_end()
+        self._report()
+        self.log.info("")
+        if self._config.get("run.test_runner") != 'nrunner':
             self._stop_logging()
 
     def _report(self):
