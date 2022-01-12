@@ -479,13 +479,13 @@ def tree_view(root, verbose=None, use_utf8=None):
     if use_utf8 is None:
         use_utf8 = locale.getdefaultlocale()[1] == 'UTF-8'
     if use_utf8:
-        charset = {'DoubleDown': u' \u2551   ',
-                   'DoubleDownRight': u' \u2560\u2550\u2550 ',
-                   'DoubleRight': u' \u255a\u2550\u2550 ',
-                   'Down': u' \u2503   ',
-                   'DownRight': u' \u2523\u2501\u2501 ',
-                   'Right': u' \u2517\u2501\u2501 ',
-                   'Value': u'\u2192 '}
+        charset = {'DoubleDown': ' \u2551   ',
+                   'DoubleDownRight': ' \u2560\u2550\u2550 ',
+                   'DoubleRight': ' \u255a\u2550\u2550 ',
+                   'Down': ' \u2503   ',
+                   'DownRight': ' \u2523\u2501\u2501 ',
+                   'Right': ' \u2517\u2501\u2501 ',
+                   'Value': '\u2192 '}
     else:   # ASCII fallback
         charset = {'Down': ' |   ',
                    'DownRight': ' |-- ',

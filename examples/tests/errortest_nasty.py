@@ -25,4 +25,4 @@ class FailTest(Test):
         """
         Avocado should report this as TestError.
         """
-        raise NastyException(u"Nasty-string-like-exception\u017e")
+        raise NastyException("Nasty-string-like-exception\u017e")

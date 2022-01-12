@@ -195,8 +195,8 @@ extensions = ['sphinx.ext.autodoc',  # pylint: disable=C0103
               'sphinx.ext.coverage']
 
 master_doc = 'index'  # pylint: disable=C0103
-project = u'Avocado'  # pylint: disable=C0103
-copyright = u'2014-2019, Red Hat'   # pylint: disable=W0622,C0103
+project = 'Avocado'  # pylint: disable=C0103
+copyright = '2014-2019, Red Hat'   # pylint: disable=W0622,C0103
 
 VERSION_FILE = os.path.join(ROOT_PATH, 'VERSION')
 VERSION = genio.read_file(VERSION_FILE).strip()
@@ -214,18 +214,18 @@ if not ON_RTD:  # only import and set the theme if we're building docs locally
 htmlhelp_basename = 'avocadodoc'  # pylint: disable=C0103
 
 latex_documents = [  # pylint: disable=C0103
-    ('index', 'avocado.tex', u'avocado Documentation',
-     u'Avocado Development Team', 'manual'),
+    ('index', 'avocado.tex', 'avocado Documentation',
+     'Avocado Development Team', 'manual'),
 ]
 
 man_pages = [  # pylint: disable=C0103
-    ('index', 'avocado', u'avocado Documentation',
-     [u'Avocado Development Team'], 1)
+    ('index', 'avocado', 'avocado Documentation',
+     ['Avocado Development Team'], 1)
 ]
 
 texinfo_documents = [  # pylint: disable=C0103
-    ('index', 'avocado', u'avocado Documentation',
-     u'Avocado Development Team', 'avocado', 'One line description of project.',
+    ('index', 'avocado', 'avocado Documentation',
+     'Avocado Development Team', 'avocado', 'One line description of project.',
      'Miscellaneous'),
 ]
 

@@ -739,7 +739,7 @@ class Test(unittest.TestCase, TestData):
             skip_test = True
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise exceptions.TestSkipError(details)
-        except exceptions.TestCancel as details:
+        except exceptions.TestCancel:
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise
         except:  # Old-style exceptions are not inherited from Exception()
@@ -754,7 +754,7 @@ class Test(unittest.TestCase, TestData):
                     loop.run_until_complete(testMethod())
                 else:
                     testMethod()
-            except exceptions.TestCancel as details:
+            except exceptions.TestCancel:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise
             except:  # Old-style exceptions are not inherited from Exception() pylint: disable=W0702

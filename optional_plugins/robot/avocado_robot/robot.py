@@ -33,10 +33,13 @@ def find_tests(reference, test_suite):
     data = TestSuite.from_model(model)
 
     test_suite[data.name] = []
-    for test_case in data.tests:
+    # data.tests is a list
+    for test_case in data.tests:  # pylint: disable=E1133
         test_suite[data.name].append({'test_name': test_case,
                                       'test_source': data.source})
-    for child_data in data.suites:
+
+    # data.suites is a list
+    for child_data in data.suites:  # pylint: disable=E1133
         find_tests(child_data, test_suite)
     return test_suite
 
@@ -59,10 +62,10 @@ class RobotResolver(Resolver):
 
         robot_suite = find_tests(reference, test_suite={})
         runnables = []
-        for item in robot_suite:
-            for robot_test in robot_suite[item]:
+        for key, value in robot_suite.items():
+            for robot_test in value:
                 uri = "%s:%s.%s" % (robot_test['test_source'],
-                                    item,
+                                    key,
                                     robot_test['test_name'])
 
                 runnables.append(Runnable('robot', uri=uri))
