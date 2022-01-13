@@ -1,3 +1,9 @@
+from avocado.core.nrunner import RUNNERS_REGISTRY_PYTHON_CLASS, Task
+from avocado.core.requirements.resolver import RequirementsResolver
+from avocado.core.test_id import TestID
+from avocado.core.varianter import dump_variant
+
+
 class RuntimeTask:
     """Task with extra status information on its life cycle status.
 
@@ -46,3 +52,93 @@ class RuntimeTask:
         if isinstance(other, RuntimeTask):
             return hash(self) == hash(other)
         return False
+
+    @classmethod
+    def get_test_from_runnable(cls, runnable, no_digits, index, variant,
+                               test_suite_name=None, status_server_uri=None,
+                               job_id=None):
+        """Creates runtime task for test from runnable
+
+        :param runnable: the "description" of what the task should run.
+        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param no_digits: number of digits of the test uid
+        :type no_digits: int
+        :param index: index of tests inside test suite
+        :type index: int
+        :param test_suite_name: test suite name which this test is related to
+        :type test_suite_name: str
+        :param status_server_uri: the URIs for the status servers that this
+                                  task should send updates to.
+        :type status_server_uri: list
+        :param job_id: the ID of the job, for authenticating messages that get
+                       sent to the destination job's status server and will
+                       make into the job's results.
+        :type job_id: str
+        :returns: RUntimeTask of the test from runnable
+        """
+
+        # create test ID
+        if test_suite_name:
+            prefix = "{}-{}".format(test_suite_name, index)
+        else:
+            prefix = index
+        test_id = TestID(prefix,
+                         runnable.identifier,
+                         variant,
+                         no_digits)
+        # inject variant on runnable
+        runnable.variant = dump_variant(variant)
+
+        # handles the test task
+        task = Task(runnable,
+                    identifier=test_id,
+                    known_runners=RUNNERS_REGISTRY_PYTHON_CLASS,
+                    status_uris=status_server_uri,
+                    job_id=job_id)
+        return cls(task)
+
+    @classmethod
+    def get_requirements_form_runnable(cls, runnable, test_suite_name,
+                                       status_server_uri=None, job_id=None):
+        """Creates runtime tasks for requirements from runnable
+
+        :param runnable: the "description" of what the task should run.
+        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        :param test_suite_name: test suite name which this test is related to
+        :type test_suite_name: str
+        :param status_server_uri: the URIs for the status servers that this
+                                  task should send updates to.
+        :type status_server_uri: list
+        :param job_id: the ID of the job, for authenticating messages that get
+                       sent to the destination job's status server and will
+                       make into the job's results.
+        :type job_id: str
+        :returns: RUntimeTasks of the requirements from runnable
+        :rtype: list
+        """
+        if runnable.requirements is None:
+            return []
+
+        # creates the runnables for the requirements
+        requirements_runnables = RequirementsResolver.resolve(runnable)
+        requirements_runtime_tasks = []
+        # creates the tasks and runtime tasks for the requirements
+        for requirement_runnable in requirements_runnables:
+            name = '%s-%s' % (requirement_runnable.kind,
+                              requirement_runnable.kwargs.get('name'))
+            prefix = '%s-%s' % (test_suite_name, name)
+            # the human UI works with TestID objects, so we need to
+            # use it to name Task
+            task_id = TestID(prefix, name)
+            # with --dry-run we don't want to run requirement
+            if runnable.kind == 'dry-run':
+                requirement_runnable.kind = 'noop'
+            # creates the requirement task
+            requirement_task = Task(requirement_runnable,
+                                    identifier=task_id,
+                                    status_uris=status_server_uri,
+                                    category='requirement',
+                                    job_id=job_id)
+            requirements_runtime_tasks.append(cls(requirement_task))
+
+        return requirements_runtime_tasks

@@ -26,6 +26,7 @@ from avocado.core.resolver import ReferenceResolutionResult, resolve
 from avocado.core.settings import settings
 from avocado.core.tags import filter_test_tags, filter_test_tags_runnable
 from avocado.core.test import DryRunTest, Test
+from avocado.core.tree import TreeNode
 from avocado.core.varianter import Varianter, is_empty_variant
 
 
@@ -328,6 +329,32 @@ class TestSuite:
                                                 "variant: %s" % details)
             self._variants = variants
         return self._variants
+
+    def get_test_variants(self):
+        """Computes test variants based on the parameters"""
+
+        if self.test_parameters:
+            paths = ['/']
+            tree_nodes = TreeNode().get_node(paths[0], True)
+            tree_nodes.value = self.test_parameters
+            variant = {"variant": tree_nodes,
+                       "variant_id": None,
+                       "paths": paths}
+            test_variant = [(test, variant) for test in self.tests]
+
+        else:
+            # let's use variants when parameters are not available
+            # define execution order
+            execution_order = self.config.get('run.execution_order')
+            if execution_order == "variants-per-test":
+                test_variant = [(test, variant)
+                                for test in self.tests
+                                for variant in self.variants.itertests()]
+            elif execution_order == "tests-per-variant":
+                test_variant = [(test, variant)
+                                for variant in self.variants.itertests()
+                                for test in self.tests]
+        return test_variant
 
     def run(self, job):
         """Run this test suite with the job context in mind.
