@@ -19,6 +19,7 @@ framework tests.
 """
 
 import asyncio
+import functools
 import inspect
 import io
 import logging
@@ -30,6 +31,7 @@ import sys
 import tempfile
 import time
 import unittest
+import warnings
 from difflib import unified_diff
 
 from avocado.core import exceptions, output, parameters, sysinfo, tapparser
@@ -872,37 +874,67 @@ class Test(unittest.TestCase, TestData):
             self.log.info("%s %s", self.status,
                           self.name)
 
-    def fail(self, message=None):  # pylint: disable=W0221
+    def _deprecate_params_message(func):  # pylint: disable=E0213
+        """ This decorator helps to deprecate parameter 'message' and
+        replace it with 'msg'.
+        """
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            msg = None
+            message = None
+
+            if 'msg' in kwargs:
+                msg = kwargs.get('msg')
+            elif args:
+                msg = args[0]
+
+            if 'message' in kwargs:
+                message = kwargs.get('message')
+                if msg:
+                    warnings.warn("Please favor parameter 'msg' and do not use "
+                                  "it with the parameter 'message'",
+                                  DeprecationWarning)
+
+                else:
+                    warnings.warn("The parameter 'message' has been deprecated."
+                                  " Please use 'msg' instead", DeprecationWarning)
+
+            actual_message = msg or message
+            return func(actual_message)
+        return wrapper
+
+    @staticmethod
+    @_deprecate_params_message
+    def fail(msg=None):
         """
         Fails the currently running test.
 
         After calling this method a test will be terminated and have its status
         as FAIL.
 
-        :param message: an optional message that will be recorded in the logs
-        :type message: str
-        :warning message: This parameter will changed name to "msg" in the next
-                          LTS release because of lint W0221
+        :param msg: an optional message that will be recorded in the logs
+        :type msg: str
         """
-        raise exceptions.TestFail(message)
+        raise exceptions.TestFail(msg)
 
     @staticmethod
-    def error(message=None):  # pylint: disable=W0221
+    @_deprecate_params_message
+    def error(msg=None):
         """
         Errors the currently running test.
 
         After calling this method a test will be terminated and have its status
         as ERROR.
 
-        :param message: an optional message that will be recorded in the logs
-        :type message: str
-        :warning message: This parameter will changed name to "msg" in the next
-                          LTS release because of lint W0221
+        :param msg: an optional message that will be recorded in the logs
+        :type msg: str
         """
-        raise exceptions.TestError(message)
+        raise exceptions.TestError(msg)
 
     @staticmethod
-    def cancel(message=None):  # pylint: disable=W0221
+    @_deprecate_params_message
+    def cancel(msg=None):
         """
         Cancels the test.
 
@@ -912,12 +944,10 @@ class Test(unittest.TestCase, TestData):
         test method, avocado will mark your test status as ERROR, and
         instruct you to fix your test in the error message.
 
-        :param message: an optional message that will be recorded in the logs
-        :type message: str
-        :warning message: This parameter will changed name to "msg" in the next
-                          LTS release because of lint W0221
+        :param msg: an optional message that will be recorded in the logs
+        :type msg: str
         """
-        raise exceptions.TestCancel(message)
+        raise exceptions.TestCancel(msg)
 
     def fetch_asset(self, name, asset_hash=None, algorithm=None,
                     locations=None, expire=None, find_only=False,
@@ -1186,7 +1216,7 @@ class MockingTest(Test):
         This class substitutes other classes. Let's just ignore the remaining
         arguments and only set the ones supported by avocado.Test
         """
-        super_kwargs = dict()
+        super_kwargs = {}
         args = list(reversed(args))
         for arg in ["methodName", "name", "params", "base_logdir", "config",
                     "runner_queue"]:

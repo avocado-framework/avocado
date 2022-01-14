@@ -91,9 +91,9 @@ class AST:
 
 
 class GdbMiScannerBase(spark.GenericScanner):
-    def tokenize(self, data_input):  # pylint: disable=W0221
+    def tokenize(self, s):  # pylint: disable=W0221
         self.rv = []  # pylint: disable=W0201
-        spark.GenericScanner.tokenize(self, data_input)
+        spark.GenericScanner.tokenize(self, s)
         return self.rv
 
     def t_nl(self, s):  # pylint: disable=W0613
