@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from avocado.core import nrunner
+from avocado.core.nrunner import RUNNERS_REGISTRY_PYTHON_CLASS, Task
 from avocado.core.requirements.resolver import RequirementsResolver
 from avocado.core.test_id import TestID
 from avocado.core.tree import TreeNode
@@ -36,6 +36,7 @@ class RuntimeTask:
         self.spawner_handle = None
         #: The result of the spawning of a Task
         self.spawning_result = None
+        self.dependencies = []
 
     def __repr__(self):
         if self.status is None:
@@ -63,14 +64,34 @@ class RuntimeGraph:
         self.test_suite = test_suite
         self.job_id = job_id
         self.status_server_uri = status_server_uri
+        self.graph = {}
 
-    def _get_requirements_runtime_tasks(self, runnable, prefix):
+    def _add_edge(self, pre_runtime_task, post_runtime_task):
+        post_runtime_task.dependencies.append(pre_runtime_task)
+
+    def _topological_order(self):
+        def topological_order_util(vertex, visited, topological_order):
+            visited[vertex] = True
+            for v in vertex.dependencies:
+                if not visited[v]:
+                    topological_order_util(v, visited, topological_order)
+            topological_order.append(vertex)
+
+        visited = dict.fromkeys(self.graph, False)
+        topological_order = []
+
+        for vertex in self.graph.values():
+            if not visited[vertex]:
+                topological_order_util(vertex, visited, topological_order)
+        return topological_order
+
+    def _create_requirements_runtime_tasks(self, runtime_task, prefix):
+        runnable = runtime_task.task.runnable
         if runnable.requirements is None:
             return
 
         # creates the runnables for the requirements
         requirements_runnables = RequirementsResolver.resolve(runnable)
-        requirements_runtime_tasks = []
         # creates the tasks and runtime tasks for the requirements
         for requirement_runnable in requirements_runnables:
             name = '%s-%s' % (requirement_runnable.kind,
@@ -84,22 +105,21 @@ class RuntimeGraph:
             if runnable.kind == 'dry-run':
                 requirement_runnable.kind = 'noop'
             # creates the requirement task
-            requirement_task = nrunner.Task(requirement_runnable,
-                                            identifier=task_id,
-                                            status_uris=[self.status_server_uri],
-                                            category='requirement',
-                                            job_id=self.job_id)
-            # make sure we track the dependencies of a task
-            # runtime_task.task.dependencies.add(requirement_task)
-            # created the requirement runtime task
-            requirements_runtime_tasks.append(RuntimeTask(requirement_task))
-
-        return requirements_runtime_tasks
+            requirement_task = RuntimeTask(Task(requirement_runnable,
+                                                identifier=task_id,
+                                                status_uris=[self.status_server_uri],
+                                                category='requirement',
+                                                job_id=self.job_id))
+            if requirement_task in self.graph:
+                requirement_task = self.graph.get(requirement_task)
+            else:
+                self.graph[requirement_task] = requirement_task
+            runtime_task.task.dependencies.add(requirement_task.task)
+            self._add_edge(requirement_task, runtime_task)
 
     def _create_runtime_tasks_for_test(self, runnable, no_digits,
                                        index, variant):
         """Creates runtime tasks for both tests, and for its requirements."""
-        result = []
 
         # test related operations
         # create test ID
@@ -115,27 +135,16 @@ class RuntimeGraph:
         runnable.variant = dump_variant(variant)
 
         # handles the test task
-        task = nrunner.Task(runnable,
-                            identifier=test_id,
-                            known_runners=nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
-                            status_uris=[self.status_server_uri],
-                            job_id=self.job_id)
+        task = Task(runnable,
+                    identifier=test_id,
+                    known_runners=RUNNERS_REGISTRY_PYTHON_CLASS,
+                    status_uris=[self.status_server_uri],
+                    job_id=self.job_id)
         runtime_task = RuntimeTask(task)
-        result.append(runtime_task)
+        self.graph[runtime_task] = runtime_task
 
         # handles the requirements
-        requirements_runtime_tasks = (
-            self._get_requirements_runtime_tasks(runnable,
-                                                 prefix))
-        # extend the list of tasks with the requirements runtime tasks
-        if requirements_runtime_tasks is not None:
-            for requirement_runtime_task in requirements_runtime_tasks:
-                # make sure we track the dependencies of a task
-                runtime_task.task.dependencies.add(
-                    requirement_runtime_task.task)
-            result.extend(requirements_runtime_tasks)
-
-        return result
+        self._create_requirements_runtime_tasks(runtime_task, prefix)
 
     def _get_test_variants(self):
         """Computes test variants based on the test_suite"""
@@ -173,14 +182,11 @@ class RuntimeGraph:
         test_variant = self._get_test_variants()
         copy_runnable = len(test_variant) > len(self.test_suite.tests)
         # create runtime tasks
-        runtime_tasks = []
         for index, (runnable, variant) in enumerate(test_variant, start=1):
             if copy_runnable:
                 runnable = deepcopy(runnable)
-            runtime_tasks.extend(self._create_runtime_tasks_for_test(
-                runnable,
-                no_digits,
-                index,
-                variant))
-        # remove duplicates from runtime_tasks
-        return list(dict.fromkeys(runtime_tasks))
+            self._create_runtime_tasks_for_test(runnable,
+                                                no_digits,
+                                                index,
+                                                variant)
+        return self._topological_order()
