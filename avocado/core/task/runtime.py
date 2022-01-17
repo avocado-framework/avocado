@@ -35,3 +35,14 @@ class RuntimeTask:
             return '<RuntimeTask Task Identifier: "%s" Status: "%s">' % (
                 self.task.identifier,
                 self.status)
+
+    def __hash__(self):
+        if self.task.category == "test":
+            return hash(self.task.identifier)
+        return hash((str(self.task.runnable), self.task.job_id,
+                     self.task.category))
+
+    def __eq__(self, other):
+        if isinstance(other, RuntimeTask):
+            return hash(self) == hash(other)
+        return False
