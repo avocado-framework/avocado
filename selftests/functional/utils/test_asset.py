@@ -17,7 +17,7 @@ class TestAsset(TestCaseTmpDir):
         self.assetname = 'foo.tgz'
         self.assethash = '3a033a8938c1af56eeb793669db83bcbd0c17ea5'
         self.localpath = os.path.join(self.assetdir, self.assetname)
-        with open(self.localpath, 'w') as f:
+        with open(self.localpath, 'w', encoding='utf-8') as f:
             f.write('Test!')
         self.url = 'file://%s' % self.localpath
         self.cache_dir = tempfile.mkdtemp(dir=self.tmpdir.name)
@@ -62,7 +62,7 @@ class TestAsset(TestCaseTmpDir):
                                   locations=[self.url],
                                   cache_dirs=[self.cache_dir],
                                   expire=None).fetch()
-        with open(foo_tarball, 'r') as f:
+        with open(foo_tarball, 'r', encoding='utf-8') as f:
             content1 = f.read()
 
         # Create the file in a different location with a different content
@@ -70,7 +70,7 @@ class TestAsset(TestCaseTmpDir):
         new_localpath = os.path.join(new_assetdir, self.assetname)
         new_hash = '9f1ad57044be4799f288222dc91d5eab152921e9'
         new_url = 'file://%s' % new_localpath
-        with open(new_localpath, 'w') as f:
+        with open(new_localpath, 'w', encoding='utf-8') as f:
             f.write('Changed!')
 
         # Don't expire cached file
@@ -80,7 +80,7 @@ class TestAsset(TestCaseTmpDir):
                                   locations=[new_url],
                                   cache_dirs=[self.cache_dir],
                                   expire=None).fetch()
-        with open(foo_tarball, 'r') as f:
+        with open(foo_tarball, 'r', encoding='utf-8') as f:
             content2 = f.read()
         self.assertEqual(content1, content2)
 
@@ -92,7 +92,7 @@ class TestAsset(TestCaseTmpDir):
                                   cache_dirs=[self.cache_dir],
                                   expire=-1).fetch()
 
-        with open(foo_tarball, 'r') as f:
+        with open(foo_tarball, 'r', encoding='utf-8') as f:
             content2 = f.read()
         self.assertNotEqual(content1, content2)
 
@@ -125,7 +125,7 @@ class TestAsset(TestCaseTmpDir):
         second_asset_local_path = os.path.join(second_asset_origin_dir,
                                                second_assetname)
         second_asset_content = 'This is not your first asset content!'
-        with open(second_asset_local_path, 'w') as f:
+        with open(second_asset_local_path, 'w', encoding='utf-8') as f:
             f.write(second_asset_content)
         second_asset_origin_url = 'file://%s' % second_asset_local_path
 
@@ -135,7 +135,7 @@ class TestAsset(TestCaseTmpDir):
         a2 = asset.Asset(second_asset_origin_url, None, None,
                          None, [self.cache_dir], None)
         a2_path = a2.fetch()
-        with open(a2_path, 'r') as a2_file:
+        with open(a2_path, 'r', encoding='utf-8') as a2_file:
             self.assertEqual(a2_file.read(), second_asset_content)
 
         third_assetname = self.assetname
@@ -143,13 +143,13 @@ class TestAsset(TestCaseTmpDir):
         third_asset_local_path = os.path.join(third_asset_origin_dir,
                                               third_assetname)
         third_asset_content = 'Another content!'
-        with open(third_asset_local_path, 'w') as f:
+        with open(third_asset_local_path, 'w', encoding='utf-8') as f:
             f.write(third_asset_content)
         third_asset_origin_url = 'file://%s' % third_asset_local_path
         a3 = asset.Asset(third_asset_origin_url, None, None,
                          None, [self.cache_dir], None)
         a3_path = a3.fetch()
-        with open(a3_path, 'r') as a3_file:
+        with open(a3_path, 'r', encoding='utf-8') as a3_file:
             self.assertEqual(a3_file.read(), third_asset_content)
 
     def test_create_metadata_file(self):

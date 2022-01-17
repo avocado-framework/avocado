@@ -23,7 +23,7 @@ except ImportError:
 else:
     packages = find_namespace_packages(include=['avocado_varianter_yaml_to_mux'])
 
-VERSION = open("VERSION", "r").read().strip()
+VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
 
 setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
       description='Avocado Varianter plugin to parse YAML file into variants',

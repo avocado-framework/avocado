@@ -121,7 +121,7 @@ class PathInspector:
     def get_first_line(self):
         first_line = ""
         if os.path.isfile(self.path):
-            with open(self.path, 'r') as open_file:
+            with open(self.path, 'r', encoding='utf-8') as open_file:
                 first_line = open_file.readline()
         return first_line
 

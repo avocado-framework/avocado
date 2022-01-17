@@ -66,7 +66,7 @@ class BaseIso9660:
                          b"file content\n")
         dst = os.path.join(self.tmpdir.name, "file")
         self.iso.copy(os.path.join("Dir", "in_dir_file"), dst)
-        self.assertEqual(open(dst).read(), "content of in-dir-file\n")
+        self.assertEqual(open(dst, encoding='utf-8').read(), "content of in-dir-file\n")
         self.iso.close()
         self.iso.close()    # check that double-close won't fail
 

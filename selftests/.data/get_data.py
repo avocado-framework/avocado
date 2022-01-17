@@ -22,7 +22,7 @@ class GetData(Test):
         self.assertEqual(file_data,
                          self.get_data('file_data', source='file',
                                        must_exist=False))
-        self.assertEqual(open(file_data).read(), 'get_data.py')
+        self.assertEqual(open(file_data, encoding='utf-8').read(), 'get_data.py')
 
         # Test-level checks
         test_data = self.get_data('test_data')
@@ -32,7 +32,7 @@ class GetData(Test):
         self.assertEqual(test_data,
                          self.get_data('test_data', source='test',
                                        must_exist=False))
-        self.assertEqual(open(test_data).read(), 'a')
+        self.assertEqual(open(test_data, encoding='utf-8').read(), 'a')
 
         # Variant-level checks
         in_variant = self.params.get('in_variant', default=False)
@@ -75,11 +75,11 @@ class GetData(Test):
         """
         file_data = self.get_data('file_data')
         self.assertIsNotNone(file_data)
-        self.assertEqual(open(file_data).read(), 'get_data.py')
+        self.assertEqual(open(file_data, encoding='utf-8').read(), 'get_data.py')
 
         test_data = self.get_data('test_data')
         self.assertIsNotNone(test_data)
-        self.assertEqual(open(test_data).read(), 'b')
+        self.assertEqual(open(test_data, encoding='utf-8').read(), 'b')
 
         variant_data = self.get_data('variant_data')
         self.assertIsNone(variant_data)

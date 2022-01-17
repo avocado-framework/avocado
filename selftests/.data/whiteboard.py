@@ -22,7 +22,7 @@ class WhiteBoard(Test):
         if data_file:
             self.log.info('Writing data to whiteboard from file: %s',
                           data_file)
-            with open(data_file, 'r') as whiteboard_file:
+            with open(data_file, 'r', encoding='utf-8') as whiteboard_file:
                 size = int(data_size)
                 data = whiteboard_file.read(size)
         else:

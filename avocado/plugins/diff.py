@@ -292,7 +292,7 @@ class Diff(CLICmd):
                                                     fromdesc=job1_id,
                                                     todesc=job2_id)
 
-                with open(html_file, 'w') as fp:
+                with open(html_file, 'w', encoding='utf-8') as fp:
                     fp.writelines(job_diff_html)
                 LOG_UI.info(html_file)
 
@@ -304,7 +304,7 @@ class Diff(CLICmd):
             setsid = getattr(os, 'setsid', None)
             if not setsid:
                 setsid = getattr(os, 'setpgrp', None)
-            with open(os.devnull, "r+") as inout:
+            with open(os.devnull, "r+", encoding='utf-8') as inout:
                 cmd = ['xdg-open', html_file]
                 subprocess.Popen(cmd, close_fds=True, stdin=inout,  # pylint: disable=W1509
                                  stdout=inout, stderr=inout,
@@ -357,7 +357,7 @@ class Diff(CLICmd):
     @staticmethod
     def _get_job_data(jobdir):
         results_json = os.path.join(jobdir, 'results.json')
-        with open(results_json, 'r') as json_file:
+        with open(results_json, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
         return data
@@ -369,7 +369,7 @@ class Diff(CLICmd):
             LOG_UI.error("Can't find job results directory for '%s'", job_id)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        with open(os.path.join(resultsdir, 'id'), 'r') as id_file:
+        with open(os.path.join(resultsdir, 'id'), 'r', encoding='utf-8') as id_file:
             sourcejob = id_file.read().strip()
 
         return resultsdir, sourcejob
@@ -398,7 +398,7 @@ class Diff(CLICmd):
     def _get_config(resultsdir):
         config_file = os.path.join(resultsdir, 'replay', 'config')
         try:
-            with open(config_file, 'r') as conf:
+            with open(config_file, 'r', encoding='utf-8') as conf:
                 return conf.readlines()
         except IOError:
             return ['Not found\n']
@@ -411,7 +411,7 @@ class Diff(CLICmd):
             for name in sorted(files):
                 name_header = ['\n', '** %s **\n' % name]
                 sysinfo.extend(name_header)
-                with open(os.path.join(path, name), 'r') as sysinfo_file:
+                with open(os.path.join(path, name), 'r', encoding='utf-8') as sysinfo_file:
                     try:
                         sysinfo.extend(sysinfo_file.readlines())
                     except UnicodeDecodeError:

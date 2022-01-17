@@ -63,12 +63,12 @@ class TestPartition(Base):
         self.assertIsNone(self.disk.get_mountpoint())
         self.disk.mkfs()
         self.disk.mount()
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
         self.assertEqual(self.mountpoint, self.disk.get_mountpoint())
         self.disk.unmount()
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertNotIn(self.mountpoint, proc_mounts)
 
@@ -103,7 +103,7 @@ class TestPartitionMkfsMount(Base):
                      "requires running kill as a privileged user")
     def test_force_unmount(self):
         """ Test force-unmount feature """
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
         proc = self.run_process_to_use_mnt()
@@ -113,7 +113,7 @@ class TestPartitionMkfsMount(Base):
         self.assertIn(proc.poll(), [-9, 137],
                       "Unexpected return code when trying to kill process "
                       "using the mountpoint")
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertNotIn(self.mountpoint, proc_mounts)
 
@@ -122,7 +122,7 @@ class TestPartitionMkfsMount(Base):
     @unittest.skipUnless(missing_binary('lsof'), "requires not having lsof")
     def test_force_unmount_no_lsof(self):
         """ Checks that a force-unmount will fail on systems without lsof """
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
         proc = self.run_process_to_use_mnt()
@@ -133,7 +133,7 @@ class TestPartitionMkfsMount(Base):
                      "requires running Python as a privileged user")
     def test_force_unmount_get_pids_fail(self):
         """ Checks PartitionError is raised if there's no lsof to get pids """
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
         proc = self.run_process_to_use_mnt()
@@ -149,7 +149,7 @@ class TestPartitionMkfsMount(Base):
 
     def test_double_mount(self):
         """ Check the attempt for second mount fails """
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
         self.assertRaises(partition.PartitionError, self.disk.mount)
@@ -157,21 +157,21 @@ class TestPartitionMkfsMount(Base):
 
     def test_double_umount(self):
         """ Check double unmount works well """
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
         self.disk.unmount()
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertNotIn(self.mountpoint, proc_mounts)
         self.disk.unmount()
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertNotIn(self.mountpoint, proc_mounts)
 
     def test_format_mounted(self):
         """ Check format on mounted device fails """
-        with open("/proc/mounts") as proc_mounts_file:
+        with open("/proc/mounts") as proc_mounts_file:  # pylint: disable=W1514
             proc_mounts = proc_mounts_file.read()
         self.assertIn(self.mountpoint, proc_mounts)
         self.assertRaises(partition.PartitionError, self.disk.mkfs)

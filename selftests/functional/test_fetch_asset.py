@@ -45,7 +45,7 @@ class FetchAsset(unittest.TestCase):
         """
         assetname = 'foo.tgz'
         localpath = os.path.join(self.asset_dir, assetname)
-        with open(localpath, 'w') as f:
+        with open(localpath, 'w', encoding='utf-8') as f:
             f.write('Test!')
         url = 'file://%s' % localpath
         fetch_content = r"""

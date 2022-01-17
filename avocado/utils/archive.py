@@ -35,7 +35,7 @@ def is_gzip_file(path):
     """
     Checks if file given by path has contents that suggests gzip file
     """
-    with open(path, 'rb') as gzip_file:
+    with open(path, 'rb') as gzip_file:  # pylint: disable=W1514
         return gzip_file.read(len(GZIP_MAGIC)) == GZIP_MAGIC
 
 
@@ -219,7 +219,7 @@ class ArchiveFile:
                 dst = os.path.join(dst_dir, path)
                 if not os.path.islink(dst):
                     # Link created as an ordinary file containing the dst path
-                    with open(dst, 'r') as dst_path:
+                    with open(dst, 'r') as dst_path:  # pylint: disable=W1514
                         src = dst_path.read()
                 else:
                     # Link is already there and could be outdated. Let's read

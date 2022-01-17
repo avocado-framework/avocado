@@ -37,7 +37,7 @@ class PythonModule:
         self.module = module
         self.klass = klass
         self.imported_symbols = {}
-        with open(self.path) as source_file:
+        with open(self.path, encoding='utf-8') as source_file:
             self.mod = ast.parse(source_file.read(), self.path)
         self.interesting_klass_found = False
 

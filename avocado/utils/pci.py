@@ -223,7 +223,7 @@ def get_pci_id_from_sysfs(full_pci_address):
     path = "/sys/bus/pci/devices/%s" % full_pci_address
     if os.path.isdir(path):
         path = "%s/%%s" % path
-        return ":".join(["%04x" % int(open(path % param).read(), 16)
+        return ":".join(["%04x" % int(open(path % param).read(), 16)  # pylint: disable=W1514
                          for param in ['vendor', 'device', 'subsystem_vendor',
                                        'subsystem_device']])
 

@@ -418,7 +418,7 @@ def get_name_of_init(run=process.run):
         try:
             return os.path.basename(os.readlink('/proc/1/exe'))
         except OSError:
-            with open('/proc/1/cmdline', 'r') as cmdline:
+            with open('/proc/1/cmdline', 'r') as cmdline:  # pylint: disable=W1514
                 init = cmdline.read().split(chr(0))[0]
                 try:
                     init = os.readlink(init)

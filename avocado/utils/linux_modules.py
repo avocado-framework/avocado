@@ -204,7 +204,7 @@ def get_loaded_modules():
     Gets list of loaded modules.
     :return: List of loaded modules.
     """
-    with open('/proc/modules', 'rb') as proc_modules:
+    with open('/proc/modules', 'rb') as proc_modules:  # pylint: disable=W1514
         return [astring.to_text(_.split(b' ', 1)[0]) for _ in proc_modules]
 
 
@@ -221,7 +221,7 @@ def check_kernel_config(config_name):
     kernel_version = platform.uname()[2]
 
     config_file = '/boot/config-' + kernel_version
-    with open(config_file, 'r') as kernel_config:
+    with open(config_file, 'r') as kernel_config:  # pylint: disable=W1514
         for line in kernel_config:
             line = line.split('=')
 

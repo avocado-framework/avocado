@@ -110,10 +110,10 @@ def can_mount():
         LOG.debug('Can not use mount: missing "mount" tool')
         return False
 
-    with open('/proc/filesystems') as proc_filesystems:
+    with open('/proc/filesystems') as proc_filesystems:  # pylint: disable=W1514
         if 'iso9660' not in proc_filesystems.read():
             process.system("modprobe iso9660", ignore_status=True, sudo=True)
-    with open('/proc/filesystems') as proc_filesystems:
+    with open('/proc/filesystems') as proc_filesystems:  # pylint: disable=W1514
         if 'iso9660' not in proc_filesystems.read():
             LOG.debug('Can not use mount: lack of iso9660 kernel support')
             return False

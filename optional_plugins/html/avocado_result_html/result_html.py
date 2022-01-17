@@ -59,7 +59,7 @@ class ReportModel:
         sysinfo_path = os.path.join(self.results_dir(False),
                                     'sysinfo', 'pre', sysinfo_file)
         try:
-            with open(sysinfo_path, 'r') as sysinfo_file:
+            with open(sysinfo_path, 'r', encoding='utf-8') as sysinfo_file:
                 sysinfo_contents = sysinfo_file.read()
         except (OSError, IOError) as details:
             sysinfo_contents = "Error reading %s: %s" % (sysinfo_path, details)
@@ -197,7 +197,7 @@ class HTMLResult(Result):
         setsid = getattr(os, 'setsid', None)
         if not setsid:
             setsid = getattr(os, 'setpgrp', None)
-        inout = open(os.devnull, "r+")
+        inout = open(os.devnull, "r+", encoding='utf-8')
         if "macOS" in platform.platform():
             open_path = find_command("open", default=None)
         else:

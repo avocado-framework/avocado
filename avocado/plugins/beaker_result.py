@@ -88,7 +88,7 @@ class BeakerResult(ResultEvents):
         self.send_request(req)
 
     def put_file(self, location, name, filename):
-        file = open(filename)
+        file = open(filename, encoding='utf-8')
         content = file.read().encode('utf-8')
         file.close()
         self.put_data(location, name, content)

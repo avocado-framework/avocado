@@ -583,9 +583,9 @@ class GDBServer:
 
         prefix = 'avocado_gdbserver_%s_' % self.port
         _, self.stdout_path = tempfile.mkstemp(prefix=prefix + 'stdout_')
-        self.stdout = open(self.stdout_path, 'w')
+        self.stdout = open(self.stdout_path, 'w', encoding='utf-8')
         _, self.stderr_path = tempfile.mkstemp(prefix=prefix + 'stderr_')
-        self.stderr = open(self.stderr_path, 'w')
+        self.stderr = open(self.stderr_path, 'w', encoding='utf-8')
 
         try:
             self.process = subprocess.Popen(args,

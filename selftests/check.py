@@ -63,7 +63,7 @@ class JobAPIFeaturesTest(Test):
     def file_has_content(file_path, content, regex):
         """Check if a file has `content`."""
         if os.path.isfile(file_path):
-            with open(file_path, "r") as f:
+            with open(file_path, "r", encoding='utf-8') as f:
                 lines = f.readlines()
             for line in lines:
                 if regex:

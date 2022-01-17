@@ -63,7 +63,7 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, (4, 0))
         # Also check whether jobdata contains correct parameter paths
         with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                               "variants-1.json")) as variants_file:
+                               "variants-1.json"), encoding='utf-8') as variants_file:
             variants = variants_file.read()
         self.assertIn('["/run/*"]', variants, "parameter paths stored in "
                       "jobdata does not contains [\"/run/*\"]\n%s" % variants)
@@ -78,7 +78,7 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (8, 0))
         # Also check whether jobdata contains correct parameter paths
         with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                               "variants-1.json")) as variants_file:
+                               "variants-1.json"), encoding='utf-8') as variants_file:
             variants = variants_file.read()
         exp = '["/foo/*", "/bar/*", "/baz/*"]'
         self.assertIn(exp, variants, "parameter paths stored in jobdata "
@@ -202,7 +202,7 @@ class ReplayTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
         self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
         idfile = ''.join(os.path.join(self.jobdir, 'id'))
-        with open(idfile, 'r') as f:
+        with open(idfile, 'r', encoding='utf-8') as f:
             self.jobid = f.read().strip('\n')
 
     def run_and_check(self, cmd_line, expected_rc):

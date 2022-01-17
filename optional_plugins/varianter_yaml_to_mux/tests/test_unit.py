@@ -329,7 +329,7 @@ class TestAvocadoParams(unittest.TestCase):
         str(self.params1)
         str(parameters.AvocadoParams([], []))
         self.assertEqual(
-            15, sum([1 for _ in self.params1.iteritems()])  # pylint: disable=W1620
+            15, sum([1 for _ in self.params1.iteritems()])
         )
 
     def test_unhashable(self):

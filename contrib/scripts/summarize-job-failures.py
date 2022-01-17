@@ -14,7 +14,7 @@ import sys
 
 
 def get_one_job_results(path, results):
-    with open(path) as result_json:
+    with open(path, encoding='utf-8') as result_json:
         js = json.load(result_json)
 
     job = {}

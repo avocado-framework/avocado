@@ -19,7 +19,7 @@ def create_metadata_file(image_file, metadata):
     basename = os.path.splitext(image_file)[0]
     metadata_file = "%s_metadata.json" % basename
     metadata = json.dumps(metadata)
-    with open(metadata_file, "w") as f:
+    with open(metadata_file, "w", encoding='utf-8') as f:
         f.write(metadata)
 
 
@@ -37,7 +37,7 @@ class VMImagePlugin(unittest.TestCase):
         image_dir = os.path.join(self.mapping['cache_dir'], 'by_location',
                                  '89b7a3293bbc1dd73bb143b15fa06f0f9c7188b8')
         os.makedirs(image_dir)
-        open(os.path.join(image_dir, expected_output), "w").close()
+        open(os.path.join(image_dir, expected_output), "w", encoding='utf-8').close()
         cmd_line = "%s --config %s vmimage get --distro fedora --distro-version " \
                    "30 --arch x86_64" % (AVOCADO, self.config_file.name)
         result = process.run(cmd_line)
@@ -57,7 +57,7 @@ class VMImagePlugin(unittest.TestCase):
                                  '89b7a3293bbc1dd73bb143b15fa06f0f9c7188b8')
         os.makedirs(image_dir)
         expected_file = os.path.join(image_dir, expected_output)
-        open(expected_file, "w").close()
+        open(expected_file, "w", encoding='utf-8').close()
         create_metadata_file(expected_file, metadata)
         cmd_line = "%s --config %s vmimage list" % (AVOCADO,
                                                     self.config_file.name)

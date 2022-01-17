@@ -295,7 +295,7 @@ echo 'ok 1 - description 1'
 echo 'not ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
 
-        with open(tap_path, 'w') as fp:
+        with open(tap_path, 'w', encoding='utf-8') as fp:
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
@@ -315,7 +315,7 @@ echo 'ok 1 - description 1'
 echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
 
-        with open(tap_path, 'w') as fp:
+        with open(tap_path, 'w', encoding='utf-8') as fp:
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
@@ -335,7 +335,7 @@ echo 'ok 1 - # SKIP description 1'
 echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
 
-        with open(tap_path, 'w') as fp:
+        with open(tap_path, 'w', encoding='utf-8') as fp:
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
@@ -355,7 +355,7 @@ echo 'Bail out! - description 1'
 echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
 
-        with open(tap_path, 'w') as fp:
+        with open(tap_path, 'w', encoding='utf-8') as fp:
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
@@ -375,7 +375,7 @@ echo 'error - description 1'
 echo 'ok 2 - description 2'"""
         tap_path = os.path.join(self.tmpdir.name, 'tap.sh')
 
-        with open(tap_path, 'w') as fp:
+        with open(tap_path, 'w', encoding='utf-8') as fp:
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)

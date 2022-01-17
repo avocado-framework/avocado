@@ -100,7 +100,7 @@ class Asset:
         result = crypto.hash_file(asset_path, algorithm=self.algorithm)
         hash_file = self._get_hash_file(asset_path)
         with FileLock(hash_file, 30):
-            with open(hash_file, 'w') as fp:
+            with open(hash_file, 'w', encoding='utf-8') as fp:
                 fp.write('%s %s\n' % (self.algorithm, result))
 
     def _create_metadata_file(self, asset_file):
@@ -114,7 +114,7 @@ class Asset:
         if self.metadata is not None:
             basename = os.path.splitext(asset_file)[0]
             metadata_path = "%s_metadata.json" % basename
-            with open(metadata_path, "w") as metadata_file:
+            with open(metadata_path, "w", encoding='utf-8') as metadata_file:
                 json.dump(self.metadata, metadata_file)
 
     def _download(self, url_obj, asset_path, timeout=None):
@@ -193,7 +193,7 @@ class Asset:
         """
         try:
             with FileLock(filename, 30):
-                with open(filename, 'r') as hash_file:
+                with open(filename, 'r', encoding='utf-8') as hash_file:
                     for line in hash_file:
                         # md5 is 32 chars big and sha512 is 128 chars big.
                         # others supported algorithms are between those.
@@ -452,7 +452,7 @@ class Asset:
         basename = os.path.splitext(asset_file)[0]
         metadata_file = "%s_metadata.json" % basename
         if os.path.isfile(metadata_file):
-            with open(metadata_file, "r") as f:
+            with open(metadata_file, "r", encoding='utf-8') as f:
                 metadata = json.load(f)
                 return metadata
 

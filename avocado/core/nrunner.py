@@ -208,7 +208,7 @@ class Runnable:
 
         :rtype: instance of :class:`Runnable`
         """
-        with open(recipe_path) as recipe_file:
+        with open(recipe_path, encoding='utf-8') as recipe_file:
             recipe = json.load(recipe_file)
         config = ConfigDecoder.decode_set(recipe.get('config', {}))
         return cls(recipe.get('kind'),
@@ -305,7 +305,7 @@ class Runnable:
         """
         Writes a file with a JSON representation (also known as a recipe)
         """
-        with open(recipe_path, 'w') as recipe_file:
+        with open(recipe_path, 'w', encoding='utf-8') as recipe_file:
             recipe_file.write(self.get_json())
 
     def is_kind_supported_by_runner_command(self, runner_command, env=None):
@@ -1005,7 +1005,7 @@ class Task:
 
         :rtype: instance of :class:`Task`
         """
-        with open(task_path) as recipe_file:
+        with open(task_path, encoding='utf-8') as recipe_file:
             recipe = json.load(recipe_file)
 
         identifier = recipe.get('id')

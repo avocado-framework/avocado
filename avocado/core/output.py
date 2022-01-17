@@ -355,7 +355,7 @@ class StdOutput:
         """
         Enable sys.stderr and disable sys.stdout
         """
-        sys.stdout = open(os.devnull, 'w')
+        sys.stdout = open(os.devnull, 'w', encoding='utf-8')
         sys.stderr = self.stderr
         self.__configured = True
 

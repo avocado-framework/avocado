@@ -13,12 +13,12 @@ class TestFileLock(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.filename = os.path.join(self.tmpdir.name, 'file.img')
         self.content = 'Foo bar'
-        with open(self.filename, 'w') as f:
+        with open(self.filename, 'w', encoding='utf-8') as f:
             f.write(self.content)
 
     def _readfile(self):
         with FileLock(self.filename):
-            with open(self.filename, 'r') as f:
+            with open(self.filename, 'r', encoding='utf-8') as f:
                 return f.read()
 
     def test_readfile(self):
@@ -29,7 +29,7 @@ class TestFileLock(unittest.TestCase):
             self.assertRaises(AlreadyLocked, self._readfile)
 
     def test_locked_by_other(self):
-        with open(self.filename+'.lock', 'w') as f:
+        with open(self.filename+'.lock', 'w', encoding='utf-8') as f:
             f.write('1')
         self.assertRaises(AlreadyLocked, self._readfile)
 

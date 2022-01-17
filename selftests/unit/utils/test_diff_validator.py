@@ -16,9 +16,9 @@ class ChangeValidationTest(unittest.TestCase):
         self.change = diff_validator.Change()
         self.files = [os.path.join(self.tmpdir.name, "file1.cnf"),
                       os.path.join(self.tmpdir.name, "file2.cnf")]
-        with open(self.files[0], "w") as f:
+        with open(self.files[0], "w", encoding='utf-8') as f:
             f.write("")
-        with open(self.files[1], "w") as f:
+        with open(self.files[1], "w", encoding='utf-8') as f:
             f.write("")
 
     def tearDown(self):
@@ -27,9 +27,9 @@ class ChangeValidationTest(unittest.TestCase):
 
     def test_change_success(self):
         files = self.files
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this line is removed\n")
-        with open(files[1], "w") as f:
+        with open(files[1], "w", encoding='utf-8') as f:
             f.write("this line is not removed\n")
 
         change = self.change
@@ -39,9 +39,9 @@ class ChangeValidationTest(unittest.TestCase):
         change.append_expected_add(files[1], "this is a new line again")
 
         diff_validator.make_temp_file_copies(change.get_target_files())
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this is a new line")
-        with open(files[1], "w") as f:
+        with open(files[1], "w", encoding='utf-8') as f:
             f.write("this line is not removed\nthis is a new line again\n")
 
         changes = diff_validator.extract_changes(change.get_target_files())
@@ -51,7 +51,7 @@ class ChangeValidationTest(unittest.TestCase):
 
     def test_change_wrong_no_change(self):
         files = self.files
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this line is removed\n")
 
         change = self.change
@@ -68,7 +68,7 @@ class ChangeValidationTest(unittest.TestCase):
 
     def test_change_wrong_add(self):
         files = self.files
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this line is removed\n")
 
         change = self.change
@@ -77,7 +77,7 @@ class ChangeValidationTest(unittest.TestCase):
         change.append_expected_remove(files[0], "this line is removed")
 
         diff_validator.make_temp_file_copies(change.get_target_files())
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this is a wrong new line\n")
 
         changes = diff_validator.extract_changes(change.get_target_files())
@@ -87,7 +87,7 @@ class ChangeValidationTest(unittest.TestCase):
 
     def test_change_unexpected_remove(self):
         files = self.files
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this line is removed\n")
 
         change = self.change
@@ -95,7 +95,7 @@ class ChangeValidationTest(unittest.TestCase):
         change.append_expected_add(files[0], "this is a new line")
 
         diff_validator.make_temp_file_copies(change.get_target_files())
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this is a new line\n")
 
         changes = diff_validator.extract_changes(change.get_target_files())
@@ -105,7 +105,7 @@ class ChangeValidationTest(unittest.TestCase):
 
     def test_change_unexpected_add(self):
         files = self.files
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this line is removed\n")
 
         change = self.change
@@ -113,7 +113,7 @@ class ChangeValidationTest(unittest.TestCase):
         change.append_expected_remove(files[0], "this line is removed")
 
         diff_validator.make_temp_file_copies(change.get_target_files())
-        with open(files[0], "w") as f:
+        with open(files[0], "w", encoding='utf-8') as f:
             f.write("this is an unexpected new line\n")
 
         changes = diff_validator.extract_changes(change.get_target_files())

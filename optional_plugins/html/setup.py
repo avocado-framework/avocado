@@ -23,7 +23,7 @@ except ImportError:
 else:
     packages = find_namespace_packages(include=['avocado_result_html'])
 
-VERSION = open("VERSION", "r").read().strip()
+VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
 
 setup(name='avocado-framework-plugin-result-html',
       description='Avocado HTML Report for Jobs',

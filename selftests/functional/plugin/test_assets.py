@@ -58,7 +58,7 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         asset_dir = os.path.join(self.mapping['cache_dir'], 'by_location',
                                  'a784600d3e01b346e8813bbd065d00048be8a482')
         os.makedirs(asset_dir)
-        open(os.path.join(asset_dir, 'hello-2.9.tar.gz'), "w").close()
+        open(os.path.join(asset_dir, 'hello-2.9.tar.gz'), "w", encoding='utf-8').close()
 
     def test_asset_fetch_success(self):
         """

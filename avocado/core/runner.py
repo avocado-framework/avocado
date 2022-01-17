@@ -46,7 +46,7 @@ def add_runner_failure(test_state, new_status, message):
     else:
         test_state["text_output"] = message + "\n"
     if test_log:
-        with open(test_log, "a") as log_file:
+        with open(test_log, "a", encoding='utf-8') as log_file:
             log_file.write('\n' + message + '\n')
     # Update the results
     if test_state.get("fail_reason"):
@@ -225,7 +225,7 @@ class TestStatus:
                                     __name__)
         test_state['traceback'] = 'Traceback not available'
         try:
-            with open(test_state['logfile'], 'r') as log_file_obj:
+            with open(test_state['logfile'], 'r', encoding='utf-8') as log_file_obj:
                 test_state['text_output'] = log_file_obj.read()
         except IOError:
             test_state["text_output"] = "Not available, file not created yet"

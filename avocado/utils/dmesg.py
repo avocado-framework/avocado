@@ -142,7 +142,7 @@ def collect_errors_by_level(output_file=None, level_check=5, skip_errors=None):
         raise DmesgError("level_check param should be integer")
     dmsg_log = ""
     cmd = "dmesg -T -l %s|grep ." % ",".join(
-        map(str, range(0, int(level_check))))  # pylint: disable=W1638
+        map(str, range(0, int(level_check))))
     out = process.run(cmd, timeout=30, ignore_status=True,
                       verbose=False, shell=True)
     if out.exit_status == 0:
@@ -153,7 +153,7 @@ def collect_errors_by_level(output_file=None, level_check=5, skip_errors=None):
             dmsg_log = "dmesg log:\n%s" % out.stdout_text
     if dmsg_log:
         if output_file:
-            with open(output_file, "w+") as log_f:
+            with open(output_file, "w+", encoding='utf-8') as log_f:
                 log_f.write(dmsg_log)
             err += " Please check  dmesg log %s." % (output_file)
         else:

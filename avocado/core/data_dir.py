@@ -351,7 +351,7 @@ def get_job_results_dir(job_ref, logs_dir=None):
         short_jobid += '*'
     idfile_pattern = os.path.join(logs_dir, 'job-*-%s' % short_jobid, 'id')
     for id_file in glob.glob(idfile_pattern):
-        with open(id_file, 'r') as fid:
+        with open(id_file, 'r', encoding='utf-8') as fid:
             line = fid.read().strip('\n')
             if line.startswith(job_ref):
                 match_file = id_file

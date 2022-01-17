@@ -231,8 +231,8 @@ class Daemon(Command):
         if self.locale:
             env["LC_ALL"] = self.locale
         logf_path = self.temp_file.name
-        stdin = open(os.devnull, "r")
-        stdout = open(logf_path, "w")
+        stdin = open(os.devnull, "r")  # pylint: disable=W1514
+        stdout = open(logf_path, "w")  # pylint: disable=W1514
 
         try:
             self.daemon_process = subprocess.Popen(shlex.split(self.cmd),

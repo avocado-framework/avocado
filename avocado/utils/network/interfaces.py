@@ -118,7 +118,7 @@ class NetworkInterface:
     def _write_to_file(self, filename, values):
         self._move_file_to_backup(filename)
 
-        with open(filename, 'w+') as fp:
+        with open(filename, 'w+') as fp:  # pylint: disable=W1514
             for key, value in values.items():
                 fp.write("{}={}\n".format(key, value))
 

@@ -97,7 +97,7 @@ class VarianterCit(Varianter):
                 self.error_exit(config)
 
         try:
-            parameters, constraints = Parser.parse(open(cit_parameter_file))
+            parameters, constraints = Parser.parse(open(cit_parameter_file, encoding='utf-8'))
         except ValueError as details:
             LOG_UI.error("Cannot parse parameter file: %s", details)
             self.error_exit(config)

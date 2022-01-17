@@ -39,7 +39,7 @@ def generate_reference():
     result = process.run("%s %s  config reference" % (sys.executable, avocado))
     reference_path = os.path.join(ROOT_PATH, 'docs', 'source',
                                   'config', 'reference.rst')
-    with open(reference_path, 'w') as reference:
+    with open(reference_path, 'w', encoding='utf-8') as reference:
         reference.write(result.stdout_text)
 
 
@@ -59,7 +59,7 @@ def generate_vmimage_distro():
     except FileExistsError:
         pass
 
-    with open(reference_path, 'w') as reference:
+    with open(reference_path, 'w', encoding='utf-8') as reference:
         reference.write("Provider, Version, Architecture\n")
         for v in varianter.itertests():
             vmimage_params = parameters.AvocadoParams(v['variant'], ['/run/*'])
@@ -142,12 +142,12 @@ for (section, params) in API_SECTIONS.items():
             if details.errno != errno.EEXIST:
                 raise
     else:
-        with open(main_rst) as main_rst_file:
+        with open(main_rst, encoding='utf-8') as main_rst_file:
             main_rst_content = main_rst_file.readlines()
 
     new_main_rst_content = [params[5], section, "=" * len(section), "",
                             params[1], ""]
-    with open(main_rst, "w") as new_main_rst:
+    with open(main_rst, "w", encoding='utf-8') as new_main_rst:
         new_main_rst.write("\n".join(new_main_rst_content))
         new_main_rst.write("".join(main_rst_content[2:]))
 
@@ -158,7 +158,7 @@ API_OPTIONAL_PLUGINS_PATH = os.path.join(BASE_API_OUTPUT_DIR,
 if not os.path.exists(API_OPTIONAL_PLUGINS_PATH):
     os.makedirs(API_OPTIONAL_PLUGINS_PATH)
 with open(os.path.join(API_OPTIONAL_PLUGINS_PATH, "index.rst"),
-          'w') as optional_plugins_toc:
+          'w', encoding='utf-8') as optional_plugins_toc:
     optional_plugins_toc.write(""".. index file for optional plugins API
 
 ====================

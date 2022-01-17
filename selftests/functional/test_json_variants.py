@@ -16,7 +16,7 @@ class VariantsDumpLoadTests(TestCaseTmpDir):
         cmd_line = ('%s variants --json-variants-dump %s' %
                     (AVOCADO, self.variants_file))
         process.run(cmd_line)
-        with open(self.variants_file, 'r') as file_obj:
+        with open(self.variants_file, 'r', encoding='utf-8') as file_obj:
             file_content = file_obj.read()
             self.assertEqual(file_content[0:2], '[{')
             self.assertIn('"paths": ["/run/*"]', file_content)
@@ -35,7 +35,7 @@ class VariantsDumpLoadTests(TestCaseTmpDir):
                    '             [["/run/params/bar", "p2", "bar2"],'
                    '              ["/run/params/bar", "p1", "bar1"]]]],'
                    '  "variant_id": "bar-d06d"}]')
-        with open(self.variants_file, 'w') as file_obj:
+        with open(self.variants_file, 'w', encoding='utf-8') as file_obj:
             file_obj.write(content)
         cmd_line = ('%s run examples/tests/passtest.py --json-variants-load %s '
                     '--test-runner=runner '

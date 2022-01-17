@@ -21,13 +21,13 @@ class ReplayTests(TestCaseTmpDir):
         self.run_and_check(cmd_line, expected_rc)
         self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
         idfile = ''.join(os.path.join(self.jobdir, 'id'))
-        with open(idfile, 'r') as f:
+        with open(idfile, 'r', encoding='utf-8') as f:
             self.jobid = f.read().strip('\n')
         self.config_path = self._create_config()
 
     def _create_config(self):
         config_path = os.path.join(self.tmpdir.name, 'config')
-        with open(config_path, 'w') as config:
+        with open(config_path, 'w', encoding='utf-8') as config:
             config.write("[datadir.paths]\n")
             config.write("logs_dir = %s\n" % self.tmpdir.name)
         return config_path

@@ -132,7 +132,7 @@ def get_available_filesystems():
     :rtype: list of str
     """
     filesystems = set()
-    with open('/proc/filesystems') as proc_fs:
+    with open('/proc/filesystems') as proc_fs:  # pylint: disable=W1514
         for proc_fs_line in proc_fs.readlines():
             filesystems.add(re.sub(r'(nodev)?\s*', '', proc_fs_line))
     return list(filesystems)
@@ -149,7 +149,7 @@ def get_filesystem_type(mount_point='/'):
     :returns: filesystem type
     :rtype: str
     """
-    with open('/proc/mounts') as mounts:
+    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
         for mount_line in mounts.readlines():
             _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
             if fs_file == mount_point:

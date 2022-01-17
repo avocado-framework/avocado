@@ -44,7 +44,7 @@ class TestLogsUI(JobPre, JobPost):
             return
 
         try:
-            with open(os.path.join(job.logdir, 'results.json')) as json_file:
+            with open(os.path.join(job.logdir, 'results.json'), encoding='utf-8') as json_file:
                 results = json.load(json_file)
         except FileNotFoundError:
             return
@@ -56,7 +56,7 @@ class TestLogsUI(JobPre, JobPost):
             for logfile in logfiles:
                 path = os.path.join(test['logdir'], logfile)
                 try:
-                    with open(path) as log:
+                    with open(path, encoding='utf-8') as log:
                         LOG_UI.info('Log file "%s" content for test "%s" (%s):',
                                     logfile, test['id'], test['status'])
                         LOG_UI.debug(log.read())

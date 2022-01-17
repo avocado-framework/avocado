@@ -59,7 +59,7 @@ def read_file(filename):
     :return: File contents
     :rtype: str
     """
-    with open(filename, 'r') as file_obj:
+    with open(filename, 'r', encoding='utf-8') as file_obj:
         contents = file_obj.read()
     return contents
 
@@ -74,7 +74,7 @@ def read_one_line(filename):
     :return: First line contents
     :rtype: str
     """
-    with open(filename, 'r') as file_obj:
+    with open(filename, 'r', encoding='utf-8') as file_obj:
         line = file_obj.readline().rstrip('\n')
     return line
 
@@ -98,7 +98,7 @@ def read_all_lines(filename):
     """
     contents = []
     try:
-        with open(filename, 'r') as file_obj:
+        with open(filename, 'r', encoding='utf-8') as file_obj:
             contents = [line.rstrip('\n') for line in file_obj.readlines()]
     except Exception:  # pylint: disable=W0703
         pass
@@ -114,7 +114,7 @@ def write_file(filename, data):
     :param line: Line to be written.
     :type line: str
     """
-    with open(filename, 'w') as file_obj:
+    with open(filename, 'w', encoding='utf-8') as file_obj:
         file_obj.write(data)
 
 
@@ -141,7 +141,7 @@ def write_file_or_fail(filename, data):
     :raises GenIOError: On write Failure
     """
     try:
-        with open(filename, 'w') as file_obj:
+        with open(filename, 'w', encoding='utf-8') as file_obj:
             file_obj.write(data)
     except OSError as details:
         raise GenIOError("The write to %s failed: %s" % (
@@ -157,7 +157,7 @@ def append_file(filename, data):
     :param line: Line to be written.
     :type line: str
     """
-    with open(filename, 'a+') as file_obj:
+    with open(filename, 'a+', encoding='utf-8') as file_obj:
         file_obj.write(data)
 
 
@@ -189,7 +189,7 @@ def is_pattern_in_file(filename,  pattern):
     if not os.path.isfile(filename):
         raise GenIOError('invalid file %s to match pattern %s'
                          % (filename, pattern))
-    with open(filename, 'r') as content_file:
+    with open(filename, 'r', encoding='utf-8') as content_file:
         if re.search(pattern, content_file.read(), re.MULTILINE):
             return True
     return False

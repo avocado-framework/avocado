@@ -375,7 +375,7 @@ class Job:
             self._update_latest_link()
         self.logfile = os.path.join(self.logdir, "job.log")
         idfile = os.path.join(self.logdir, "id")
-        with open(idfile, 'w') as id_file_obj:
+        with open(idfile, 'w', encoding='utf-8') as id_file_obj:
             id_file_obj.write("%s\n" % self.unique_id)
             id_file_obj.flush()
             os.fsync(id_file_obj)

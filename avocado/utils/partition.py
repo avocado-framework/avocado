@@ -65,7 +65,7 @@ class MtabLock:
             reason = "Unable to obtain '%s' lock in %ds" % (self.device,
                                                             self.timeout)
             raise PartitionError(self, reason, e)
-        self.mtab = open(self.device)
+        self.mtab = open(self.device)  # pylint: disable=W1514
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
@@ -137,7 +137,7 @@ class Partition:
         """
         # Try to match this device/mountpoint
         if filename:
-            with open(filename) as open_file:
+            with open(filename) as open_file:  # pylint: disable=W1514
                 for line in open_file:
                     parts = line.split()
                     if parts[0] == self.device and parts[1] == self.mountpoint:
