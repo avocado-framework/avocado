@@ -25,7 +25,7 @@ Don't be afraid to report bugs, even if you're not sure if they're valid. The
 most that can happen is that we find out together that this is a feature
 instead!
 
-Avocado is using Github's issue tracking system for collecting and discussing
+Avocado is using GitHub's issue tracking system for collecting and discussing
 issues. If you have a possible candidate, do not hesitate, share with us by
 `creating a new bug report
 <https://github.com/avocado-framework/avocado/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=>`_.
@@ -43,15 +43,15 @@ Framework.
 Contribute with code
 --------------------
 
-Avocado uses Github and the Github pull request development model. You can find
-a primer on how to use github pull requests `here
+Avocado uses GitHub and its pull request development model. You can find
+a primer on how to use GitHub pull requests `here
 <https://help.github.com/articles/using-pull-requests>`_.
 
 Every Pull Request you send will be automatically tested by the
 `CI system <https://github.com/avocado-framework/avocado/actions>`_ and review
 will take place in the Pull Request as well.
 
-For people who don’t like the Github development model, there is an option to
+For people who don’t like the GitHub development model, there is an option to
 send the patches to the Mailing List, following a more traditional workflow in
 Open Source development communities. The patches are reviewed in the Mailing
 List, should you opt for that. Then a maintainer will collect the patches,
@@ -66,7 +66,7 @@ no new feature can be merged into the master branch.
 Git workflow
 ~~~~~~~~~~~~
 
-- Fork the repository in github.
+- Fork the repository in GitHub.
 
 - Clone from your fork::
 
@@ -113,13 +113,13 @@ Git workflow
 
     $ git push origin my_new_local_branch
 
-- Create the Pull Request on github. Add the relevant information to the
+- Create the Pull Request on GitHub. Add the relevant information to the
   Pull Request description.
 
 - Check if your Pull Request passes the CI system. Your Pull Request will
   probably be ignored until it's all green.
 
-Now you're waiting for feedback on github Pull Request page. Once you get some,
+Now you're waiting for feedback on GitHub Pull Request page. Once you get some,
 join the discussion, answer the questions, make clear if you're going to change
 the code based on some review and, if not, why. Feel free to disagree with the
 reviewer, they probably have different use cases and opinions, which is
@@ -152,11 +152,11 @@ requested by the code reviewer). Instead, you should:
   description, point the previous Pull Request and the changes the current Pull
   Request introduced when compared to the previous Pull Request(s).
 
-- Close the previous Pull Request on github.
+- Close the previous Pull Request on GitHub.
 
 After your PR gets merged, you can sync the master branch on your local
 repository propagate the sync to the master branch in your fork repository on
-github::
+GitHub::
 
     $ git checkout master
     $ git pull upstream master
@@ -223,7 +223,7 @@ potential failures::
   $$ while :; do read AAA; python -m unittest $AAA; done
 
 .. note:: Before first use you might need to create
-  ``~/.config/github_checker.ini`` and fill github user/token entries (while on
+  ``~/.config/github_checker.ini`` and fill GitHub user/token entries (while on
   it you can also specify some defaults)
 
 
