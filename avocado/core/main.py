@@ -19,6 +19,7 @@ import time
 import traceback
 
 try:
+    import avocado.init
     from avocado.core import exit_codes
     from avocado.core.settings import settings
 except ImportError:

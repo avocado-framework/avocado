@@ -325,7 +325,7 @@ class Settings:
 
         config_file_name = 'avocado.conf'
         config_pkg_base = os.path.join('etc', 'avocado', config_file_name)
-        if resource_exists('avocado', config_pkg_base):
+        if resource_exists('avocado.core.settings', config_pkg_base):
             self._config_path_pkg = resource_filename('avocado', config_pkg_base)
         else:
             self._config_path_pkg = None
