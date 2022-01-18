@@ -13,8 +13,6 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-import os
-
 import pkg_resources
 
 from avocado.core.dispatcher import InitDispatcher

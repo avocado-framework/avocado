@@ -50,9 +50,9 @@ class DataDirTest(Base):
         When avocado.conf is present, honor the values coming from it.
         """
         stg = settings.Settings()
-        with unittest.mock.patch('avocado.core.stgs', stg):
-            import avocado.core
-            avocado.core.register_core_options()
+        with unittest.mock.patch('avocado.core.init.stgs', stg):
+            import avocado.core.init
+            avocado.core.init.register_core_options()
         stg.process_config_path(self.config_file_path)
         stg.merge_with_configs()
         with unittest.mock.patch('avocado.core.data_dir.settings', stg):
@@ -164,9 +164,9 @@ class DataDirTest(Base):
                          "It should get from the 'latest' id")
 
         stg = settings.Settings()
-        with unittest.mock.patch('avocado.core.stgs', stg):
-            import avocado.core
-            avocado.core.register_core_options()
+        with unittest.mock.patch('avocado.core.init.stgs', stg):
+            import avocado.core.init
+            avocado.core.init.register_core_options()
         stg.process_config_path(self.config_file_path)
         stg.merge_with_configs()
         with unittest.mock.patch('avocado.core.data_dir.settings',
@@ -191,9 +191,9 @@ class AltDataDirTest(Base):
         """
         # Initial settings with initial data_dir locations
         stg = settings.Settings()
-        with unittest.mock.patch('avocado.core.stgs', stg):
-            import avocado.core
-            avocado.core.register_core_options()
+        with unittest.mock.patch('avocado.core.init.stgs', stg):
+            import avocado.core.init
+            avocado.core.init.register_core_options()
         stg.process_config_path(self.config_file_path)
         stg.merge_with_configs()
         with unittest.mock.patch('avocado.core.data_dir.settings', stg):
@@ -209,9 +209,9 @@ class AltDataDirTest(Base):
 
         # Alternate settings with different data_dir location
         alt_stg = settings.Settings()
-        with unittest.mock.patch('avocado.core.stgs', alt_stg):
-            import avocado.core
-            avocado.core.register_core_options()
+        with unittest.mock.patch('avocado.core.init.stgs', alt_stg):
+            import avocado.core.init
+            avocado.core.init.register_core_options()
         alt_stg.process_config_path(self.alt_config_file_path)
         alt_stg.merge_with_configs()
         with unittest.mock.patch('avocado.core.data_dir.settings', alt_stg):

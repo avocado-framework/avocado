@@ -121,9 +121,9 @@ class VMImagePlugin(unittest.TestCase):
         (self.base_dir, self.mapping,
          self.config_file_path) = self._get_temporary_dirs_mapping_and_config()
         self.stg = Settings()
-        with unittest.mock.patch('avocado.core.stgs', self.stg):
-            import avocado.core
-            avocado.core.register_core_options()
+        with unittest.mock.patch('avocado.core.init.stgs', self.stg):
+            import avocado.core.init
+            avocado.core.init.register_core_options()
         self.stg.process_config_path(self.config_file_path)
         self.stg.merge_with_configs()
         self.expected_images = self._create_test_files()
