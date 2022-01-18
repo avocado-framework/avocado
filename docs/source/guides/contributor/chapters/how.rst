@@ -217,13 +217,8 @@ checks per each commit between your branch and the same branch on the
 Use ``./contrib/scripts/avocado-check-pr.sh -h`` to learn more about the
 options. We can recommend the following command::
 
-  $ AVOCADO_PARALLEL_CHECK=yes AVOCADO_CHECK_LEVEL=99
+  $ AVOCADO_CHECK_LEVEL=99
   $ ./contrib/scripts/avocado-check-pr.sh -i -v
- 
-And due to PARALLEL false-negatives running in a second terminal to re-check
-potential failures::
-
-  $$ while :; do read AAA; python -m unittest $AAA; done
 
 .. note:: Before first use you might need to create
   ``~/.config/github_checker.ini`` and fill GitHub user/token entries (while on
