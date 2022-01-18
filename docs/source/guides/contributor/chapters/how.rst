@@ -27,16 +27,18 @@ instead!
 
 Avocado is using Github's issue tracking system for collecting and discussing
 issues. If you have a possible candidate, do not hesitate, share with us by
-`creating a new issue <https://github.com/avocado-framework/avocado/issues/>`_.
+`creating a new bug report
+<https://github.com/avocado-framework/avocado/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=>`_.
 
 Suggest enhancements
 --------------------
 
 The same is valid when suggesting a new feature or enhancements: Don't think
-twice, just `submit the feature
-request <https://github.com/avocado-framework/avocado/issues/>`_ using the same
-link.  Our community will evaluate if the feature request is valid and when it
-might become a part of the Avocado Framework.
+twice, just `submit the feature request
+<https://github.com/avocado-framework/avocado/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=>`_
+using the same link.  Our community will evaluate if the feature
+request is valid and when it might become a part of the Avocado
+Framework.
 
 Contribute with code
 --------------------
