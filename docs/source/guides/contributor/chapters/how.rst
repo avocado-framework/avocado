@@ -66,7 +66,8 @@ no new feature can be merged into the master branch.
 Git workflow
 ~~~~~~~~~~~~
 
-- Fork the repository in GitHub.
+- `Fork the repository <https://github.com/avocado-framework/avocado/fork>`_
+  in GitHub.
 
 - Clone from your fork::
 
@@ -113,8 +114,10 @@ Git workflow
 
     $ git push origin my_new_local_branch
 
-- Create the Pull Request on GitHub. Add the relevant information to the
-  Pull Request description.
+- `Create the Pull Request
+  <https://github.com/avocado-framework/avocado/compare>`_ on
+  GitHub. Add the relevant information to the Pull Request
+  description.
 
 - Check if your Pull Request passes the CI system. Your Pull Request will
   probably be ignored until it's all green.
