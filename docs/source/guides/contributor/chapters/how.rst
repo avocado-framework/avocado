@@ -16,9 +16,10 @@ How can I contribute?
 Report a bug
 ------------
 
-If a test fails, congratulations, you have just found a bug. And If you have
-precise steps to reproduce, awesome! You're on your way to reporting a useful
-bug report.
+If Avocado crashes on you, or if one of the Avocado "selftests" fail,
+congratulations, you may have just found a bug. And If you have
+precise steps to reproduce, awesome! You're on your way to reporting a
+useful bug report.
 
 Don't be afraid to report bugs, even if you're not sure if they're valid. The
 most that can happen is that we find out together that this is a feature
