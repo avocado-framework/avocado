@@ -103,12 +103,6 @@ Git workflow
   your change, run ``make check`` to make sure you didn't introduce any
   regressions).
 
-- Paste the ``job.log`` file content from the previous step in a pastebin
-  service, like fpaste.org. If you have ``fpaste`` installed, you can
-  simply run::
-
-    $ fpaste ~/avocado/job-results/latest/job.log
-
 - Rebase your local branch on top of upstream master::
 
     $ git fetch
@@ -121,9 +115,6 @@ Git workflow
 
 - Create the Pull Request on github. Add the relevant information to the
   Pull Request description.
-
-- In the Pull Request discussion page, comment with the link to the
-  job.log output/file.
 
 - Check if your Pull Request passes the CI system. Your Pull Request will
   probably be ignored until it's all green.
