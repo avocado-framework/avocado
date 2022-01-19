@@ -18,7 +18,6 @@ import os
 import shutil
 import sys
 from abc import abstractmethod
-from distutils.command.clean import clean
 from pathlib import Path
 from subprocess import CalledProcessError, run
 
@@ -52,7 +51,23 @@ def walk_plugins_setup_py(action, action_name=None,
         run([sys.executable, "setup.py"] + action, cwd=parent_dir, check=True)
 
 
-class Clean(clean):
+class SimpleCommand(Command):
+    """Make Command implementation simpler."""
+
+    user_options = []
+
+    @abstractmethod
+    def run(self):
+        """Run when command is invoked."""
+
+    def initialize_options(self):
+        """Set default values for options."""
+
+    def finalize_options(self):
+        """Post-process options."""
+
+
+class Clean(SimpleCommand):
     """Our custom command to get rid of junk files after build."""
 
     description = "Get rid of scratch, byte files and build stuff."
@@ -165,22 +180,6 @@ class Develop(setuptools.command.develop.develop):
                 self.handle_install()
             elif self.uninstall:
                 self.handle_uninstall()
-
-
-class SimpleCommand(Command):
-    """Make Command implementation simpler."""
-
-    user_options = []
-
-    @abstractmethod
-    def run(self):
-        """Run when command is invoked."""
-
-    def initialize_options(self):
-        """Set default values for options."""
-
-    def finalize_options(self):
-        """Post-process options."""
 
 
 class Linter(SimpleCommand):
