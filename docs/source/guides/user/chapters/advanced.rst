@@ -82,6 +82,76 @@ And to select a different test runner, say, the legacy ``runner``::
 
   avocado run --test-runner=runner ...
 
+Running tests with an external runner
+-------------------------------------
+
+It's pretty standard to have organically grown test suites in most software
+projects, and these usually include a custom-built, specific test runner who
+knows how to find and run their tests.
+
+Still, running those tests inside Avocado may be a good idea for various
+reasons, including having results in different human and machine-readable
+formats and collecting system information alongside those tests (the Avocado's
+Sysinfo functionality), and more.
+
+Avocado makes that possible using its "external runner" feature. The most basic
+way of using it is::
+
+
+  $ avocado-external-runner external_runner foo bar baz
+
+
+In this example, Avocado will report individual test results for tests foo,
+bar, and baz. The actual results will be based on the return code of individual
+executions of /path/to/external_runner foo, /path/to/external_runner bar and
+finally /path/to/external_runner baz.
+
+As another way to explain how this feature works, think of the "external
+runner" as an interpreter. The individual tests as anything that this
+interpreter recognizes and can execute. A UNIX shell, say /bin/sh could be
+considered an external runner, and files with shellcode could be viewed as
+tests::
+
+
+  $ echo "exit 1" > /tmp/fail
+  $ echo "exit 0" > /tmp/pass
+
+  $ avocado-external-runner /bin/sh /tmp/pass /tmp/fail
+  JOB ID     : 874cab7e2639f1e2244246c69a5e0d3e1afefee0
+  JOB LOG    : ~/avocado/job-results/job-2022-01-19T15.33-874cab7/job.log
+   (external-runner-2/2) /bin/sh-/tmp/fail: STARTED
+   (external-runner-1/2) /bin/sh-/tmp/pass: STARTED
+   (external-runner-2/2) /bin/sh-/tmp/fail: FAIL (0.01 s)
+   (external-runner-1/2) /bin/sh-/tmp/pass: PASS (0.01 s)
+  RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+  JOB HTML   : ~/avocado/job-results/job-2022-01-19T15.33-874cab7/results.html
+  JOB TIME   : 1.10 s
+
+
+
+.. note:: This example is pretty obvious and could be achieved by giving
+   /tmp/pass and /tmp/fail shell “shebangs” (#!/bin/sh), making them executable
+   (chmod +x /tmp/pass /tmp/fail), and running them as “SIMPLE” tests.
+
+
+But now consider the following example::
+
+
+  $ avocado-external-runner curl redhat.com "google.com -v"
+  JOB ID     : fa68dd49a4c00e5a3c2e0fe45c6b3b0ed1b6495e
+  JOB LOG    : ~/avocado/job-results/job-2022-01-19T15.37-fa68dd4/job.log
+   (external-runner-2/2) /bin/curl-google.com: STARTED
+   (external-runner-1/2) /bin/curl-redhat.com: STARTED
+   (external-runner-2/2) /bin/curl-google.com: PASS (0.28 s)
+   (external-runner-1/2) /bin/curl-redhat.com: PASS (5.39 s)
+  RESULTS    : PASS 2 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+  JOB HTML   : ~/avocado/job-results/job-2022-01-19T15.37-fa68dd4/results.html
+  JOB TIME   : 6.38 s
+
+
+This effectively makes /bin/curl an “external test runner”, responsible for
+trying to fetch those URLs, and reporting PASS or FAIL for each of them.
+
 Wrap executables run by tests
 -----------------------------
 
