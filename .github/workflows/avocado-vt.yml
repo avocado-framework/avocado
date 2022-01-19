@@ -1,0 +1,34 @@
+name: Avocado_vt compatility
+
+on:
+  workflow_dispatch:
+    inputs:
+      avocado_branch:
+        description: 'Avocado Branch'
+        required: true
+        default: 'master'
+
+jobs:
+
+  # Run ansible job with extra: "method=pip avocado_vt=true" against
+  # https://github.com/avocado-framework/avocado-vt  - master
+  ansible-test:
+    name: Ansible test on Fedora
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:35
+    env:
+      RUN_BEFORE: 'dnf install -y git ansible'
+      GIT_URL: 'git://github.com/${{github.repository}}'
+      INVENTORY: 'selftests/deployment/inventory'
+      PLAYBOOK: 'selftests/deployment/deployment.yml'
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.avocado_branch }}
+          fetch-depth: 0
+      - name: Install Ansible
+        run: dnf install -y git ansible
+      - name: Run Ansible playbook
+        run:  ansible-pull -v -U ${{env.GIT_URL}} -i ${{env.INVENTORY}} -c local ${{env.PLAYBOOK}} -e "method=pip avocado_vt=true"
