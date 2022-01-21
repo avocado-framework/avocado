@@ -11,7 +11,7 @@ from avocado.utils import process
 from avocado.utils.software_manager.backends.rpm import RpmBackend
 
 try:
-    import yum
+    import yum  # pylint: disable=W0406
 except ImportError:
     HAS_YUM_MODULE = False
 else:
