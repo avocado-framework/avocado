@@ -23,9 +23,29 @@ from pathlib import Path
 from subprocess import CalledProcessError, run
 
 import setuptools.command.develop
-from setuptools import Command, find_packages, setup
+from setuptools import Command, setup
 
-# pylint: disable=E0611
+# Handle systems with setuptools < 40
+try:
+    from setuptools import find_namespace_packages
+except ImportError:
+    packages = ['avocado',
+                # avocado.core
+                'avocado.core', 'avocado.core.requirements',
+                'avocado.core.runners', 'avocado.core.spawners',
+                'avocado.core.status', 'avocado.core.task',
+                'avocado.core.safeloader', 'avocado.core.utils',
+                'avocado.core.requirements.cache',
+                'avocado.core.requirements.cache.backends',
+                'avocado.core.runners.utils',
+                # avocado.plugins
+                'avocado.plugins', 'avocado.plugins.spawners',
+                # avocado.utils
+                'avocado.utils', 'avocado.utils.external',
+                'avocado.utils.network', 'avocado.utils.software_manager',
+                'avocado.utils.software_manager.backends']
+else:
+    packages = find_namespace_packages(include=['avocado.*'])
 
 
 BASE_PATH = os.path.dirname(__file__)
@@ -306,7 +326,7 @@ if __name__ == '__main__':
               "Programming Language :: Python :: 3.9",
               "Programming Language :: Python :: 3.10",
               ],
-          packages=find_packages(exclude=('selftests*',)),
+          packages=packages,
           include_package_data=True,
           entry_points={
               'console_scripts': [
