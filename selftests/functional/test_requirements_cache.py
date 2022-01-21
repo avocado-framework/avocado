@@ -1,7 +1,8 @@
 import os
 import unittest.mock
 
-from avocado.core.requirements import cache
+# The sqlite based backend is the only implementation
+import avocado.core.requirements.cache.backends.sqlite as cache
 from selftests.utils import TestCaseTmpDir
 
 ENTRIES = [
