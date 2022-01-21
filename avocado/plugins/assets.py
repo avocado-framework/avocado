@@ -57,7 +57,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
 
         # check if we have valid instrumented tests
         # discards disabled tests
-        self.tests = safeloader.find_avocado_tests(self.file_name)[0]
+        self.tests = safeloader.core.find_avocado_tests(self.file_name)[0]
 
         # create Abstract Syntax Tree from test source file
         with open(self.file_name, encoding='utf-8') as source_file:

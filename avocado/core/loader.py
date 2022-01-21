@@ -22,9 +22,11 @@ import re
 import sys
 from enum import Enum
 
-from avocado.core import data_dir, output, safeloader, test
+from avocado.core import data_dir, output, test
 from avocado.core.output import LOG_UI
 from avocado.core.references import reference_split
+from avocado.core.safeloader.core import (find_avocado_tests,
+                                          find_python_unittests)
 from avocado.core.settings import settings
 from avocado.utils import stacktrace
 
@@ -589,7 +591,7 @@ class FileLoader(SimpleFileLoader):
     @staticmethod
     def _find_python_unittests(test_path, disabled, subtests_filter):
         result = []
-        class_methods = safeloader.find_python_unittests(test_path)
+        class_methods = find_python_unittests(test_path)
         for klass, methods in class_methods.items():
             if klass in disabled:
                 continue
@@ -611,7 +613,7 @@ class FileLoader(SimpleFileLoader):
             test_name = test_path
         try:
             # Avocado tests
-            avocado_tests, _ = safeloader.find_avocado_tests(test_path)
+            avocado_tests, _ = find_avocado_tests(test_path)
             if avocado_tests:
                 test_factories = []
                 for test_class, info in avocado_tests.items():

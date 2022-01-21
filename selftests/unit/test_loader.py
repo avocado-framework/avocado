@@ -279,10 +279,10 @@ class LoaderTest(unittest.TestCase):
 
     def test_list_raising_exception(self):
         with script.TemporaryScript('test.py', AVOCADO_TEST_OK) as avocado_test:
-            with unittest.mock.patch('avocado.core.loader.safeloader.find_avocado_tests') as _mock:
+            with unittest.mock.patch('avocado.core.safeloader.core.find_avocado_tests') as _mock:
                 _mock.side_effect = BaseException()
                 tests = self.loader.discover(avocado_test.path)
-                self.assertEqual(tests[0][1]["name"], avocado_test.path)
+                self.assertEqual(tests[0][1]["modulePath"], avocado_test.path)
 
     def tearDown(self):
         self.tmpdir.cleanup()
