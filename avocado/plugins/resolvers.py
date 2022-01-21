@@ -24,7 +24,8 @@ from avocado.core.plugin_interfaces import Resolver
 from avocado.core.references import reference_split
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult, check_file)
-from avocado.core.safeloader import find_avocado_tests, find_python_unittests
+from avocado.core.safeloader.core import (find_avocado_tests,
+                                          find_python_unittests)
 
 
 class ExecTestResolver(Resolver):

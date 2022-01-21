@@ -115,7 +115,7 @@ class AssetsClass(unittest.TestCase):
         """
         Make sure that current_klass is correctly assigned with a class name
         """
-        mocked_safeloader.find_avocado_tests.return_value = [
+        mocked_safeloader.core.find_avocado_tests.return_value = [
             'FetchAssets'
         ]
         tree = ast.parse(TEST_CLASS_SOURCE)
@@ -151,7 +151,7 @@ class AssetsClass(unittest.TestCase):
         """
         Make sure that current_klass is correctly assigned with a class name
         """
-        mocked_safeloader.find_avocado_tests.return_value = [
+        mocked_safeloader.core.find_avocado_tests.return_value = [
             'FetchAssets'
         ]
         tree = ast.parse(TEST_CLASS_SOURCE)
@@ -190,7 +190,7 @@ class AssetsClass(unittest.TestCase):
         """
         Make sure that current_klass is correctly assigned with a class name
         """
-        mocked_safeloader.find_avocado_tests.return_value = [
+        mocked_safeloader.core.find_avocado_tests.return_value = [
             'FetchAssets'
         ]
         tree = ast.parse(TEST_CLASS_SOURCE)

@@ -20,10 +20,12 @@ import ast
 import os
 from datetime import datetime
 
-from avocado.core import exit_codes, safeloader
+from avocado.core import exit_codes
 from avocado.core.nrunner import Runnable
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, JobPreTests
+from avocado.core.safeloader.core import (find_avocado_tests,
+                                          find_python_unittests)
 from avocado.core.settings import settings
 from avocado.utils import data_structures
 from avocado.utils.asset import SUPPORTED_OPERATORS, Asset
@@ -57,7 +59,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
 
         # check if we have valid instrumented tests
         # discards disabled tests
-        self.tests = safeloader.find_avocado_tests(self.file_name)[0]
+        self.tests = find_avocado_tests(self.file_name)[0]
 
         # create Abstract Syntax Tree from test source file
         with open(self.file_name, encoding='utf-8') as source_file:
