@@ -228,3 +228,101 @@ jobs:
           path: /home/runner/work/avocado/avocado/bandit-output.txt
           retention-days: 1
       - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  version_task:
+
+    name: Version task (${{ matrix.container }})
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        container: ["fedora:34",
+                    "fedora:35",
+                    "registry.access.redhat.com/ubi8/ubi",
+                    "registry.access.redhat.com/ubi9-beta/ubi",
+                    "debian:10.10",
+                    "debian:11.0",
+                    "ubuntu:21.10",
+                    "ubuntu:20.04"]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Install and run avocado --version
+        run: |
+         if ! command -v dnf &> /dev/null
+         then
+           python3 -c 'import setuptools' || dnf -y install python3 python3-setuptools
+         else
+           python3 --version || (apt update && apt -y install python3 python3-setuptools ca-certificates)
+         fi
+         python3 setup.py develop --user
+         python3 -m avocado --version
+
+
+  egg_task:
+
+    name: Egg task (${{ matrix.container }})
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        container: ["fedora:34",
+                    "fedora:35",
+                    "registry.access.redhat.com/ubi8/ubi",
+                    "registry.access.redhat.com/ubi9-beta/ubi",
+                    "debian:10.10",
+                    "debian:11.0",
+                    "ubuntu:21.10",
+                    "ubuntu:20.04"]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Test running avocado from eggs
+        run: |
+         if ! command -v dnf &> /dev/null
+         then
+           python3 -c 'import setuptools' || dnf -y install python3 python3-setuptools
+         else
+           python3 --version || (apt update && apt -y install python3 python3-setuptools)
+         fi
+         python3 setup.py bdist_egg
+         mv dist/avocado_framework-*egg /tmp
+         python3 setup.py clean --all
+         python3 -c 'import sys; import glob; sys.path.insert(0, glob.glob("/tmp/avocado_framework-*.egg")[0]); from avocado.core.main import main; sys.exit(main())' run /bin/true
+         cd /tmp
+         python3 -c 'import sys; from pkg_resources import require; require("avocado-framework"); from avocado.core.main import main; sys.exit(main())' run /bin/true
+
+
+  fedora_develop_install_uninstall_task:
+    name: Fedora develop install/uninstall task
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:35
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Test avocado install/uninstall
+        run: |
+         python3 -c 'import setuptools' || dnf -y install python3 python3-setuptools
+         python3 setup.py develop --user
+         test `python3 -m avocado plugins | grep ^html | wc -l` -eq "3"
+         test `python3 -m avocado plugins | grep ^robot | wc -l` -eq "1"
+         python3 setup.py develop --user --uninstall
+         python3 setup.py clean --all
+         python3 setup.py develop --user --skip-optional-plugins
+         python3 -m avocado --version
+         test `python3 -m avocado plugins | grep ^html | wc -l` -eq "0"
+         test `python3 -m avocado plugins | grep ^robot | wc -l` -eq "0"
+
+
+  fedora_selftests_task:
+    name: Fedora selftests
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/avocado-framework/avocado-ci-fedora-35
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Run unittests and functional tests
+        run: |
+         make develop
+         PATH=$HOME/.local/bin:$PATH LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 python3 selftests/check.py  --skip static-checks
