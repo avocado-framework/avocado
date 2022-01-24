@@ -176,7 +176,8 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         output_opts = ()
         if test_output:
             podman_output = runtime_task.task.runnable.output_dir
-            output_opts = ("-v", "%s:%s" % (test_output, podman_output))
+            output_opts = ("-v", "%s:%s" % (test_output,
+                                            os.path.expanduser(podman_output)))
 
         image = self.config.get('spawner.podman.image')
 
