@@ -49,7 +49,8 @@ class Podman:
         :rtype: tuple with returncode, stdout and stderr.
         """
         try:
-            LOG.debug("Executing %s", args[0])
+            LOG.debug("Executing %s", args)
+
             proc = await create_subprocess_exec(self.podman_bin,
                                                 *args,
                                                 stdout=subprocess.PIPE,
@@ -88,6 +89,7 @@ class Podman:
             return await self.execute("cp", src, f"{container_id}:{dst}")
         except PodmanException as ex:
             error = f"Failed copying data to container {container_id}"
+            LOG.error(error)
             raise PodmanException(error) from ex
 
     async def get_python_version(self, image):
