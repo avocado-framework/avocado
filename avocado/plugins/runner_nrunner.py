@@ -22,7 +22,6 @@ import os
 import platform
 import random
 import tempfile
-from copy import deepcopy
 
 from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
@@ -34,7 +33,7 @@ from avocado.core.plugin_interfaces import Runner as RunnerInterface
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
 from avocado.core.status.server import StatusServer
-from avocado.core.task.runtime import RuntimeTask
+from avocado.core.task.runtime import RuntimeTaskGraph
 from avocado.core.task.statemachine import TaskStateMachine, Worker
 
 
@@ -170,35 +169,6 @@ class Runner(RunnerInterface):
     name = 'nrunner'
     description = 'nrunner based implementation of job compliant runner'
 
-    def _get_all_runtime_tasks(self, tests, test_suite_name, job_id,
-                               status_server_uri):
-        no_digits = len(str(len(tests)))
-
-        runtime_tasks = []
-        for index, (runnable, variant) in enumerate(tests, start=1):
-            runnable = deepcopy(runnable)
-            runtime_task = RuntimeTask.get_test_from_runnable(
-                runnable,
-                no_digits,
-                index,
-                variant,
-                test_suite_name,
-                status_server_uri,
-                job_id)
-            requirements_tasks = RuntimeTask.get_requirements_form_runnable(
-                runnable,
-                test_suite_name,
-                status_server_uri,
-                job_id)
-            dependencies = [requirment.task
-                            for requirment in requirements_tasks]
-            runtime_task.task.dependencies = set(dependencies)
-
-            runtime_tasks.append(runtime_task)
-            runtime_tasks.extend(requirements_tasks)
-        # remove duplicates from runtime_tasks
-        return list(dict.fromkeys(runtime_tasks))
-
     def _determine_status_server_uri(self, test_suite):
         # pylint: disable=W0201
         self.status_server_dir = None
@@ -259,12 +229,12 @@ class Runner(RunnerInterface):
 
         self._create_status_server(test_suite, job)
 
+        graph = RuntimeTaskGraph(test_suite.get_test_variants(),
+                                 test_suite.name,
+                                 self.status_server.uri,
+                                 job.unique_id)
         # pylint: disable=W0201
-        self.runtime_tasks = self._get_all_runtime_tasks(
-            test_suite.get_test_variants(),
-            test_suite.name,
-            job.unique_id,
-            self.status_server.uri)
+        self.runtime_tasks = graph.get_tasks_in_topological_order()
 
         # Start the status server
         asyncio.ensure_future(self.status_server.serve_forever())
