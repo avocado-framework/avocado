@@ -24,6 +24,7 @@ from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, Init, Result
 from avocado.core.settings import settings
+from avocado.core.test_id import TestID
 from avocado.utils import astring
 from avocado.utils.data_structures import DataSize
 
@@ -56,7 +57,11 @@ class XUnitResult(Result):
     def _create_testcase_element(self, document, state):
         testcase = document.createElement('testcase')
         testcase.setAttribute('classname', self._get_attr(state, 'class_name'))
-        testcase.setAttribute('name', self._get_attr(state, 'name'))
+        name = state.get('name')
+        if isinstance(name, TestID):
+            testcase.setAttribute('name', self._escape_attr(name.name))
+        else:
+            testcase.setAttribute('name', self._get_attr(state, 'name'))
         testcase.setAttribute('time', self._format_time(self._get_attr(state, 'time_elapsed')))
         return testcase
 

@@ -24,6 +24,7 @@ from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, Init, Result
 from avocado.core.settings import settings
+from avocado.core.test_id import TestID
 from avocado.utils import astring
 
 UNKNOWN = '<unknown>'
@@ -42,7 +43,12 @@ class JSONResult(Result):
             if fail_reason is not None:
                 fail_reason = astring.to_text(fail_reason)
             tags = test.get('tags') or {}
-            tests.append({'id': str(test.get('name', UNKNOWN)),
+            # Actually we are saving the TestID() there.
+            test_id = test.get('name', UNKNOWN)
+            if isinstance(test_id, TestID):
+                name = test_id.name
+            tests.append({'id': str(test_id),
+                          'name': str(name),
                           'start': test.get('time_start', -1),
                           'end': test.get('time_end', -1),
                           'time': test.get('time_elapsed', -1),
