@@ -92,12 +92,6 @@ class Clean(SimpleCommand):
             if os.path.isdir(e):
                 shutil.rmtree(e)
 
-        self.clean_optional_plugins()
-
-    @staticmethod
-    def clean_optional_plugins():
-        walk_plugins_setup_py(["clean", "--all"])
-
 
 class Develop(setuptools.command.develop.develop):
     """Custom develop command."""

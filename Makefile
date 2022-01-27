@@ -32,7 +32,7 @@ pip:
 	$(PYTHON) -m pip --version || $(PYTHON) -m ensurepip $(PYTHON_DEVELOP_ARGS) || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
 
 clean:
-	$(PYTHON) setup.py clean --all
+	$(PYTHON) setup.py clean
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
