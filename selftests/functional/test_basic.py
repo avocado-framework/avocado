@@ -942,48 +942,9 @@ class PluginsTest(TestCaseTmpDir):
                          result.stdout)
 
     def test_list_error_output(self):
-        cmd_line = '%s list --loader sbrubles' % AVOCADO
+        cmd_line = '%s list sbrubles' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
-        self.assertIn(b"Unable to resolve reference", result.stderr)
-
-    def test_list_no_file_loader(self):
-        cmd_line = ("%s --verbose list --loaders tap.TAP "
-                    "--loader "
-                    "-- this-wont-be-matched" % AVOCADO)
-        result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
-                         "Avocado did not return rc %d:\n%s"
-                         % (exit_codes.AVOCADO_ALL_OK, result))
-        exp = (b"Type    Test                 Tag(s)\n"
-               b"MISSING this-wont-be-matched\n\n"
-               b"TEST TYPES SUMMARY\n"
-               b"==================\n"
-               b"missing: 1\n")
-        self.assertEqual(exp, result.stdout, "Stdout mismatch:\n%s\n\n%s"
-                         % (exp, result))
-
-    def test_list_verbose_tags(self):
-        """
-        Runs list verbosely and check for tag related output
-        """
-        test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),
-                                  VALID_PYTHON_TEST_WITH_TAGS)
-        cmd_line = ("%s --verbose list "
-                    "--loader "
-                    "--loaders file -- %s" % (AVOCADO, test))
-        result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
-                         "Avocado did not return rc %d:\n%s"
-                         % (exit_codes.AVOCADO_ALL_OK, result))
-        stdout_lines = result.stdout_text.splitlines()
-        self.assertIn("Tag(s)", stdout_lines[0])
-        full_test_name = "%s:MyTest.test" % test
-        self.assertEqual("INSTRUMENTED %s BIG_TAG_NAME" % full_test_name,
-                         stdout_lines[1])
-        self.assertIn("TEST TYPES SUMMARY", stdout_lines)
-        self.assertIn("instrumented: 1", stdout_lines)
-        self.assertIn("TEST TAGS SUMMARY", stdout_lines)
-        self.assertEqual("big_tag_name: 1", stdout_lines[-1])
+        self.assertEqual("", result.stdout_text)
 
     def test_plugin_list(self):
         cmd_line = '%s plugins' % AVOCADO

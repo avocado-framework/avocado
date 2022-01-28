@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import exit_codes, job, nrunner, test
+from avocado.core import exit_codes, job, nrunner
 from avocado.core.exceptions import (JobBaseException,
                                      JobTestSuiteDuplicateNameError)
 from avocado.core.suite import TestSuite, TestSuiteStatus
@@ -128,14 +128,9 @@ class JobTest(unittest.TestCase):
             def pre_tests(self):
                 filtered_test_suite = []
                 for test_factory in self.test_suite.tests:
-                    if self.config.get('run.test_runner') == 'runner':
-                        if test_factory[0] is test.SimpleTest:
-                            if not test_factory[1].get('name', '').endswith('time'):
-                                filtered_test_suite.append(test_factory)
-                    elif self.config.get('run.test_runner') == 'nrunner':
-                        runnable = test_factory
-                        if not runnable.uri.endswith('time'):
-                            filtered_test_suite.append(test_factory)
+                    runnable = test_factory
+                    if not runnable.uri.endswith('time'):
+                        filtered_test_suite.append(test_factory)
                 self.test_suite.tests = filtered_test_suite
                 super().pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
@@ -188,14 +183,9 @@ class JobTest(unittest.TestCase):
                 for suite in self.test_suites:
                     filtered_test_suite = []
                     for test_factory in suite.tests:
-                        if self.config.get('run.test_runner') == 'runner':
-                            if test_factory[0] is test.SimpleTest:
-                                if not test_factory[1].get('name', '').endswith('time'):
-                                    filtered_test_suite.append(test_factory)
-                        elif self.config.get('run.test_runner') == 'nrunner':
-                            runnable = test_factory
-                            if not runnable.uri.endswith('time'):
-                                filtered_test_suite.append(test_factory)
+                        runnable = test_factory
+                        if not runnable.uri.endswith('time'):
+                            filtered_test_suite.append(test_factory)
                     suite.tests = filtered_test_suite
                     super().pre_tests()
 
