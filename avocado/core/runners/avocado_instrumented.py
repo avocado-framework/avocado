@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 import tempfile
 import time
 import traceback
@@ -70,11 +71,22 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
                              }]
 
             messages.start_logging(runnable.config, queue)
+
+            if 'COVERAGE_RUN' in os.environ:
+                from coverage import Coverage
+                coverage = Coverage()
+                coverage.start()
+
             instance = loader.load_test(test_factory)
             early_state = instance.get_state()
             early_state['type'] = "early_state"
             queue.put(early_state)
             instance.run_avocado()
+
+            if 'COVERAGE_RUN' in os.environ:
+                coverage.stop()
+                coverage.save()
+
             state = instance.get_state()
             fail_reason = state.get('fail_reason')
             queue.put(messages.WhiteboardMessage.get(state['whiteboard']))

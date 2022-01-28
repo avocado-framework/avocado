@@ -42,4 +42,7 @@ coverage measurement.
 
 For other options related to `Coverage.py`_, visit the software documentation.
 
+.. note:: Currently coverage support is limited working only with
+   `ProcessSpawner` (the default spawner).
+
 .. _Coverage.py: https://coverage.readthedocs.io/
