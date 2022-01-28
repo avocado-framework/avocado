@@ -22,7 +22,6 @@ import os
 import platform
 import random
 import tempfile
-from copy import deepcopy
 
 from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
@@ -31,15 +30,11 @@ from avocado.core.messages import MessageHandler
 from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
-from avocado.core.requirements.resolver import RequirementsResolver
 from avocado.core.settings import settings
 from avocado.core.status.repo import StatusRepo
 from avocado.core.status.server import StatusServer
-from avocado.core.task.runtime import RuntimeTask
+from avocado.core.task.runtime import RuntimeTaskGraph
 from avocado.core.task.statemachine import TaskStateMachine, Worker
-from avocado.core.test_id import TestID
-from avocado.core.tree import TreeNode
-from avocado.core.varianter import dump_variant
 
 
 class RunnerInit(Init):
@@ -174,120 +169,6 @@ class Runner(RunnerInterface):
     name = 'nrunner'
     description = 'nrunner based implementation of job compliant runner'
 
-    def _get_requirements_runtime_tasks(self, runnable, prefix, job_id):
-        if runnable.requirements is None:
-            return
-
-        # creates the runnables for the requirements
-        requirements_runnables = RequirementsResolver.resolve(runnable)
-        requirements_runtime_tasks = []
-        # creates the tasks and runtime tasks for the requirements
-        for requirement_runnable in requirements_runnables:
-            name = '%s-%s' % (requirement_runnable.kind,
-                              requirement_runnable.kwargs.get('name'))
-            # the human UI works with TestID objects, so we need to
-            # use it to name other tasks
-            task_id = TestID(prefix,
-                             name,
-                             None)
-            # with --dry-run we don't want to run requirement
-            if runnable.kind == 'dry-run':
-                requirement_runnable.kind = 'noop'
-            # creates the requirement task
-            requirement_task = nrunner.Task(requirement_runnable,
-                                            identifier=task_id,
-                                            status_uris=[self.status_server.uri],
-                                            category='requirement',
-                                            job_id=job_id)
-            # make sure we track the dependencies of a task
-            # runtime_task.task.dependencies.add(requirement_task)
-            # created the requirement runtime task
-            requirements_runtime_tasks.append(RuntimeTask(requirement_task))
-
-        return requirements_runtime_tasks
-
-    def _create_runtime_tasks_for_test(self, test_suite, runnable, no_digits,
-                                       index, variant, job_id):
-        """Creates runtime tasks for both tests, and for its requirements."""
-        result = []
-
-        # test related operations
-        # create test ID
-        if test_suite.name:
-            prefix = "{}-{}".format(test_suite.name, index)
-        else:
-            prefix = index
-        test_id = TestID(prefix,
-                         runnable.identifier,
-                         variant,
-                         no_digits)
-        # inject variant on runnable
-        runnable.variant = dump_variant(variant)
-
-        # handles the test task
-        task = nrunner.Task(runnable,
-                            identifier=test_id,
-                            known_runners=nrunner.RUNNERS_REGISTRY_PYTHON_CLASS,
-                            status_uris=[self.status_server.uri],
-                            job_id=job_id)
-        runtime_task = RuntimeTask(task)
-        result.append(runtime_task)
-
-        # handles the requirements
-        requirements_runtime_tasks = (
-            self._get_requirements_runtime_tasks(runnable,
-                                                 prefix,
-                                                 job_id))
-        # extend the list of tasks with the requirements runtime tasks
-        if requirements_runtime_tasks is not None:
-            for requirement_runtime_task in requirements_runtime_tasks:
-                # make sure we track the dependencies of a task
-                runtime_task.task.dependencies.add(
-                    requirement_runtime_task.task)
-            result.extend(requirements_runtime_tasks)
-
-        return result
-
-    def _get_all_runtime_tasks(self, test_suite, job_id):
-        runtime_tasks = []
-        test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
-        no_digits = len(str(test_result_total))
-        if test_suite.test_parameters:
-            paths = ['/']
-            tree_nodes = TreeNode().get_node(paths[0], True)
-            tree_nodes.value = test_suite.test_parameters
-            variant = {"variant": tree_nodes, "variant_id": None, "paths": paths}
-            test_variant = [(test, variant) for test in test_suite.tests]
-
-        else:
-            # let's use variants when parameters are not available
-            # define execution order
-            execution_order = test_suite.config.get('run.execution_order')
-            if execution_order == "variants-per-test":
-                test_variant = [(test, variant) for test in test_suite.tests
-                                for variant in test_suite.variants.itertests()]
-            elif execution_order == "tests-per-variant":
-                test_variant = [(test, variant)
-                                for variant in test_suite.variants.itertests()
-                                for test in test_suite.tests]
-
-        # decide if a copy of the runnable is needed, in case of more
-        # variants than tests
-        copy_runnable = len(test_variant) > len(test_suite.tests)
-        # create runtime tasks
-        for index, (runnable, variant) in enumerate(test_variant, start=1):
-            if copy_runnable:
-                runnable = deepcopy(runnable)
-            runtime_tasks.extend(self._create_runtime_tasks_for_test(
-                test_suite,
-                runnable,
-                no_digits,
-                index,
-                variant,
-                job_id))
-        # remove duplicates from runtime_tasks
-        return list(dict.fromkeys(runtime_tasks))
-
     def _determine_status_server_uri(self, test_suite):
         # pylint: disable=W0201
         self.status_server_dir = None
@@ -348,8 +229,12 @@ class Runner(RunnerInterface):
 
         self._create_status_server(test_suite, job)
 
+        graph = RuntimeTaskGraph(test_suite.get_test_variants(),
+                                 test_suite.name,
+                                 self.status_server.uri,
+                                 job.unique_id)
         # pylint: disable=W0201
-        self.runtime_tasks = self._get_all_runtime_tasks(test_suite, job.unique_id)
+        self.runtime_tasks = graph.get_tasks_in_topological_order()
 
         # Start the status server
         asyncio.ensure_future(self.status_server.serve_forever())

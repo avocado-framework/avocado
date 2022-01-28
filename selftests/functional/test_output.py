@@ -146,35 +146,6 @@ if __name__ == '__main__':
         sys.exit(j.run())
 """
 
-AVOID_NON_TEST_TASKS = """#!/usr/bin/env python3
-
-from avocado.core import nrunner
-from avocado.core.job import Job
-from avocado.core.task.runtime import RuntimeTask
-from avocado.core.test_id import TestID
-from avocado.plugins import runner_nrunner
-
-
-class RunnerNRunnerWithFixedTasks(runner_nrunner.Runner):
-    def _create_runtime_tasks_for_test(self, test_suite, runnable, no_digits,
-                                       index, variant, job_id):
-        result = super(RunnerNRunnerWithFixedTasks, self)._create_runtime_tasks_for_test(
-            test_suite, runnable, no_digits, index, variant, job_id)
-        for rt_task in result:
-            if rt_task.task.runnable.uri != '/bin/true':
-                rt_task.task.category = 'non-test'
-        return result
-
-
-if __name__ == '__main__':
-    config = {'resolver.references': ['/bin/true', '/bin/false']}
-    job = Job.from_config(config)
-    job.setup()
-    job.test_suites[0]._runner = RunnerNRunnerWithFixedTasks()
-    job.run()
-    job.cleanup()
-"""
-
 
 def perl_tap_parser_uncapable():
     return os.system("perl -e 'use TAP::Parser;'") != 0
@@ -295,23 +266,6 @@ class OutputTest(TestCaseTmpDir):
             bin_true_number = result.stdout_text.count('/bin/true')
             self.assertEqual(expected_job_id_number, job_id_number)
             self.assertEqual(expected_bin_true_number, bin_true_number)
-
-    @skipUnlessPathExists('/bin/true')
-    @skipUnlessPathExists('/bin/false')
-    def test_avoid_output_on_non_test_task(self):
-        """
-        Ensure that a `Task` that is not a `test` is skipped, and the output
-        is not displayed while the job runs.
-        """
-        with script.Script(os.path.join(self.tmpdir.name,
-                                        'test_avoid_output_non_test_tasks.py'),
-                           AVOID_NON_TEST_TASKS) as job:
-            result = process.run(job.path, ignore_status=True)
-            self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertIn('/bin/true', result.stdout_text)
-            self.assertIn('PASS 1', result.stdout_text,)
-            self.assertIn('SKIP 1', result.stdout_text,)
-            self.assertNotIn('/bin/false', result.stdout_text)
 
     def tearDown(self):
         self.tmpdir.cleanup()
