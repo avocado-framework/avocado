@@ -167,62 +167,40 @@ using the ``--dry-run`` argument::
 which supports all ``run`` arguments, simulates the run and even lists the test
 params.
 
-The other way is to use ``list`` subcommand that lists the discovered tests If
-no arguments provided, Avocado lists "default" tests per each plugin.  The
-output might look like this::
+The other way is to use ``list`` subcommand that lists the discovered
+tests If no arguments provided, Avocado can lists tests discovered by
+each discovered plugin.
 
-    $ avocado list --loader
-    INSTRUMENTED /usr/share/doc/avocado/tests/abort.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/datadir.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/doublefail.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/errortest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/failtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/fiotest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/gendata.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/linuxbuild.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/multiplextest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/passtest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptenmin.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/synctest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/timeouttest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/warntest.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/whiteboard.py
-    ...
+Let's now list only the executable tests::
 
-These Python files are considered by Avocado to contain ``INSTRUMENTED`` tests.
+    $ avocado list /bin/true /bin/false examples/tests/passtest.py | grep ^exec-test
+    exec-test /bin/true
+    exec-test /bin/false
 
-Let's now list only the executable shell scripts::
-
-    $ avocado list --loader | grep ^SIMPLE
-    SIMPLE       /usr/share/doc/avocado/tests/env_variables.sh
-    SIMPLE       /usr/share/doc/avocado/tests/output_check.sh
-    SIMPLE       /usr/share/doc/avocado/tests/simplewarning.sh
-    SIMPLE       /usr/share/doc/avocado/tests/failtest.sh
-    SIMPLE       /usr/share/doc/avocado/tests/passtest.sh
-
-Here, as mentioned before, ``SIMPLE`` means that those files are executables
+Here, as mentioned before, ``exec-test`` means that those files are executables
 treated as simple tests. You can also give the ``--verbose`` or ``-V`` flag to
 display files that were found by Avocado, but are not considered Avocado
 tests::
 
-    $ avocado --verbose list examples/gdb-prerun-scripts/
-    Type       Test                                     Tag(s)
-    NOT_A_TEST examples/gdb-prerun-scripts/README: Not an INSTRUMENTED (avocado.Test based), PyUNITTEST (unittest.TestCase based) or SIMPLE (executable) test
-    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1: Not an INSTRUMENTED (avocado.Test based), PyUNITTEST (unittest.TestCase based) or SIMPLE (executable) test
-    !GLIB      examples/gdb-prerun-scripts/: No GLib-like tests found
-    !GOLANG    examples/gdb-prerun-scripts/: No test matching this reference.
-    !ROBOT     examples/gdb-prerun-scripts/: No robot-like tests found
-    NOT_A_TEST examples/gdb-prerun-scripts/README: Not a supported test
-    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1: Not a supported test
+    $ avocado -V list examples/gdb-prerun-scripts/
+    Type Test Tag(s)
+
+    Resolver             Reference                                Info
+    avocado-instrumented examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not end with ".py"
+    exec-test            examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not exist or is not executable
+    golang               examples/gdb-prerun-scripts/README
+    python-unittest      examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not end with ".py"
+    robot                examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not end with ".robot"
+    tap                  examples/gdb-prerun-scripts/README       File "examples/gdb-prerun-scripts/README" does not exist or is not executable
+    avocado-instrumented examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not end with ".py"
+    exec-test            examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not exist or is not executable
+    golang               examples/gdb-prerun-scripts/pass-sigusr1
+    python-unittest      examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not end with ".py"
+    robot                examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not end with ".robot"
+    tap                  examples/gdb-prerun-scripts/pass-sigusr1 File "examples/gdb-prerun-scripts/pass-sigusr1" does not exist or is not executable
 
     TEST TYPES SUMMARY
     ==================
-    !glib: 1
-    !golang: 1
-    !robot: 1
-    not_a_test: 4
 
 Notice that the verbose flag also adds summary information.
 
