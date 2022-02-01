@@ -83,7 +83,7 @@ class FreePort(unittest.TestCase):
                             good.append("%s, %s, %s" % (family, protocol,
                                                         addr))
                     except Exception as exc:
-                        if getattr(exc, 'errno', None) in (-2, 2, 22, 94):
+                        if getattr(exc, 'errno', None) in (-2, 2, 22, 94, 99):
                             skip.append("%s, %s, %s: Not supported: %s"
                                         % (family, protocol, addr, exc))
                         else:
