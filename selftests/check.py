@@ -578,10 +578,20 @@ def create_suites(args):  # pylint: disable=W0621
         suites.append(TestSuite.from_config(config_check_jobs, "jobs"))
 
     if args.dict_tests['functional']:
-        config_check_functional = copy.copy(config_check)
-        config_check_functional['resolver.references'] = ['selftests/functional/']
-        suites.append(TestSuite.from_config(config_check_functional,
-                                            "functional"))
+        functional_path = os.path.join('selftests', 'functional')
+        references = glob.glob(os.path.join(functional_path, 'test*.py'))
+        references.extend([os.path.join(functional_path, 'utils'),
+                           os.path.join(functional_path, 'plugin')])
+        config_check_functional_parallel = copy.copy(config_check)
+        config_check_functional_parallel['resolver.references'] = references
+        suites.append(TestSuite.from_config(config_check_functional_parallel,
+                                            "functional-parallel"))
+
+        config_check_functional_serial = copy.copy(config_check)
+        config_check_functional_serial['resolver.references'] = ['selftests/functional/serial/']
+        config_check_functional_serial['nrunner.max_parallel_tasks'] = 1
+        suites.append(TestSuite.from_config(config_check_functional_serial,
+                                            "functional-serial"))
 
     if args.dict_tests['static-checks']:
         config_check_static = copy.copy(config_check)
@@ -691,7 +701,7 @@ def main(args):  # pylint: disable=W0621
     if (platform.machine() == 'aarch64'):
         max_parallel = int(multiprocessing.cpu_count()/2)
         for suite in suites:
-            if suite.name == 'functional':
+            if suite.name == 'functional-parallel':
                 suite.config['nrunner.max_parallel_tasks'] = max_parallel
 
     with Job(config, suites) as j:
