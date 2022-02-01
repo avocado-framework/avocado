@@ -79,7 +79,11 @@ def _must_key_val_matches(must_key_vals, test_tags, include_empty_key):
                 continue
             else:
                 return False
-        if v not in key_val_test_tags.get(k, set()):
+        if v.startswith('-'):
+            abs_v = v[1:]
+            if abs_v in key_val_test_tags.get(k, set()):
+                return False
+        elif v not in key_val_test_tags.get(k, set()):
             return False
     return True
 

@@ -131,6 +131,13 @@ And to be even more specific, you can use::
   $ avocado list --loader byteorder.py --filter-by-tags endianness:big
   INSTRUMENTED byteorder.py:ByteOrder.test_be
 
+A "negated" form is also available to filter out tests that do *not*
+have a given value.  To filter out tests that have an endianess set,
+but are *not* big endian you can use::
+
+  $ avocado list byteorder.py --filter-by-tags endianness:-big
+  avocado-instrumented byteorder.py:ByteOrder.test_le
+
 Now, suppose you intend to run tests on a little endian platform, but you'd
 still want to include tests that are generic enough to run on either little or
 big endian (but not tests that are specific to other types of endianness), you

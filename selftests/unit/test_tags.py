@@ -73,6 +73,13 @@ class NoTagsTest(Test):
     def test_no_tags(self):
         pass
 
+class SafeAarch64Test(Test):
+    '''
+    :avocado: tags=safe,arch:aarch64
+    '''
+    def test_safe_aarch64(self):
+        pass
+
 if __name__ == "__main__":
     main()
 """
@@ -103,7 +110,7 @@ class TagFilter(unittest.TestCase):
                                                    loader.DiscoverMode.ALL)
 
     def test_no_tag_filter(self):
-        self.assertEqual(len(self.test_suite), 7)
+        self.assertEqual(len(self.test_suite), 8)
         self.assertEqual(self.test_suite[0][0], 'FastTest')
         self.assertEqual(self.test_suite[0][1]['methodName'], 'test_fast')
         self.assertEqual(self.test_suite[1][0], 'FastTest')
@@ -118,6 +125,8 @@ class TagFilter(unittest.TestCase):
         self.assertEqual(self.test_suite[5][1]['methodName'], 'test_safe_x86')
         self.assertEqual(self.test_suite[6][0], 'NoTagsTest')
         self.assertEqual(self.test_suite[6][1]['methodName'], 'test_no_tags')
+        self.assertEqual(self.test_suite[7][0], 'SafeAarch64Test')
+        self.assertEqual(self.test_suite[7][1]['methodName'], 'test_safe_aarch64')
 
     def test_filter_fast_net(self):
         filtered = tags.filter_test_tags(self.test_suite, ['fast,net'], False, False)
@@ -139,17 +148,21 @@ class TagFilter(unittest.TestCase):
 
     def test_filter_arch(self):
         filtered = tags.filter_test_tags(self.test_suite, ['arch'], False, False)
-        self.assertEqual(len(filtered), 1)
+        self.assertEqual(len(filtered), 2)
         self.assertEqual(filtered[0][0], 'SafeX86Test')
         self.assertEqual(filtered[0][1]['methodName'], 'test_safe_x86')
+        self.assertEqual(filtered[1][0], 'SafeAarch64Test')
+        self.assertEqual(filtered[1][1]['methodName'], 'test_safe_aarch64')
 
     def test_filter_arch_include_empty(self):
         filtered = tags.filter_test_tags(self.test_suite, ['arch'], True, False)
-        self.assertEqual(len(filtered), 2)
+        self.assertEqual(len(filtered), 3)
         self.assertEqual(filtered[0][0], 'SafeX86Test')
         self.assertEqual(filtered[0][1]['methodName'], 'test_safe_x86')
         self.assertEqual(filtered[1][0], 'NoTagsTest')
         self.assertEqual(filtered[1][1]['methodName'], 'test_no_tags')
+        self.assertEqual(filtered[2][0], 'SafeAarch64Test')
+        self.assertEqual(filtered[2][1]['methodName'], 'test_safe_aarch64')
 
     def test_filter_arch_x86_64(self):
         filtered = tags.filter_test_tags(self.test_suite, ['arch:x86_64'], False, False)
@@ -223,23 +236,35 @@ class TagFilter(unittest.TestCase):
         filtered = tags.filter_test_tags(self.test_suite,
                                          ['-fast,-slow'],
                                          False)
-        self.assertEqual(len(filtered), 2)
+        self.assertEqual(len(filtered), 3)
         self.assertEqual(filtered[0][0], 'SafeTest')
         self.assertEqual(filtered[0][1]['methodName'], 'test_safe')
         self.assertEqual(filtered[1][0], 'SafeX86Test')
         self.assertEqual(filtered[1][1]['methodName'], 'test_safe_x86')
+        self.assertEqual(filtered[2][0], 'SafeAarch64Test')
+        self.assertEqual(filtered[2][1]['methodName'], 'test_safe_aarch64')
 
     def test_filter_not_fast_not_slow_include_empty(self):
         filtered = tags.filter_test_tags(self.test_suite,
                                          ['-fast,-slow'],
                                          True)
-        self.assertEqual(len(filtered), 3)
+        self.assertEqual(len(filtered), 4)
         self.assertEqual(filtered[0][0], 'SafeTest')
         self.assertEqual(filtered[0][1]['methodName'], 'test_safe')
         self.assertEqual(filtered[1][0], 'SafeX86Test')
         self.assertEqual(filtered[1][1]['methodName'], 'test_safe_x86')
         self.assertEqual(filtered[2][0], 'NoTagsTest')
         self.assertEqual(filtered[2][1]['methodName'], 'test_no_tags')
+        self.assertEqual(filtered[3][0], 'SafeAarch64Test')
+        self.assertEqual(filtered[3][1]['methodName'], 'test_safe_aarch64')
+
+    def test_filter_safe_arch_not_x86_64(self):
+        filtered = tags.filter_test_tags(self.test_suite,
+                                         ['safe,arch:-x86_64'],
+                                         False)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0][0], 'SafeAarch64Test')
+        self.assertEqual(filtered[0][1]['methodName'], 'test_safe_aarch64')
 
     def test_filter_not_fast_not_slow_not_safe(self):
         filtered = tags.filter_test_tags(self.test_suite,
@@ -265,7 +290,9 @@ class TagFilter(unittest.TestCase):
             'SafeTest.test_safe': {'safe': None},
             'SafeX86Test.test_safe_x86': {'safe': None,
                                           'arch': set(['x86_64'])},
-            'NoTagsTest.test_no_tags': {}
+            'NoTagsTest.test_no_tags': {},
+            'SafeAarch64Test.test_safe_aarch64': {'safe': None,
+                                                  'arch': set(['aarch64'])}
         }
 
         for _, info in self.test_suite:
