@@ -90,14 +90,12 @@ class TestLogging(ResultEvents):
         pass
 
     def start_test(self, result, state):
-        if self.runner == 'nrunner':
-            LOG_JOB.info('%s: STARTED', self._get_name(state))
+        LOG_JOB.info('%s: STARTED', self._get_name(state))
 
     def test_progress(self, progress=False):
         pass
 
     def end_test(self, result, state):
-        if self.runner == 'nrunner':
-            LOG_JOB.info('%s: %s', self._get_name(state),
-                         state.get("status", "ERROR"))
-            LOG_JOB.info('More information in %s', state.get('task_path', ''))
+        LOG_JOB.info('%s: %s', self._get_name(state),
+                     state.get("status", "ERROR"))
+        LOG_JOB.info('More information in %s', state.get('task_path', ''))
