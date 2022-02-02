@@ -25,7 +25,7 @@ from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolutionResult, resolve
 from avocado.core.settings import settings
 from avocado.core.tags import filter_test_tags, filter_test_tags_runnable
-from avocado.core.test import DryRunTest, Test
+from avocado.core.test import DryRunTest
 from avocado.core.tree import TreeNode
 from avocado.core.varianter import Varianter, is_empty_variant
 
@@ -214,16 +214,6 @@ class TestSuite:
             self._increment_dict_key_counter(stats, test.kind)
         return stats
 
-    def _get_stats_from_runner(self):
-        stats = {}
-        mapping = loader.get_type_label_mapping()
-
-        for cls, _ in self.tests:
-            if isinstance(cls, str):
-                cls = Test
-            self._increment_dict_key_counter(stats, mapping[cls])
-        return stats
-
     def _get_tags_stats_from_nrunner(self):
         stats = {}
         for runnable in self.tests:
@@ -231,14 +221,6 @@ class TestSuite:
                 continue
             tags = runnable.tags or {}
             for tag in tags:
-                self._increment_dict_key_counter(stats, tag)
-        return stats
-
-    def _get_tags_stats_from_runner(self):
-        stats = {}
-        for test in self.tests:
-            params = test[1]
-            for tag in params.get('tags', {}):
                 self._increment_dict_key_counter(stats, tag)
         return stats
 
@@ -277,9 +259,7 @@ class TestSuite:
     def stats(self):
         """Return a statistics dict with the current tests."""
         runner_name = self.config.get('run.test_runner')
-        if runner_name == 'runner':
-            return self._get_stats_from_runner()
-        elif runner_name == 'nrunner':
+        if runner_name == 'nrunner':
             return self._get_stats_from_nrunner()
         return {}
 
@@ -298,9 +278,7 @@ class TestSuite:
     def tags_stats(self):
         """Return a statistics dict with the current tests tags."""
         runner_name = self.config.get('run.test_runner')
-        if runner_name == 'runner':
-            return self._get_tags_stats_from_runner()
-        elif runner_name == 'nrunner':
+        if runner_name == 'nrunner':
             return self._get_tags_stats_from_nrunner()
         return {}
 
