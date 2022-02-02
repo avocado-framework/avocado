@@ -95,23 +95,13 @@ test timeout) are still running while the test's process is stopped.
 Interrupting the job on first fail (failfast)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Avocado ``run`` command has the option ``--failfast`` to exit the job on
-first failed test. The legacy runner runs tests sequentially, with the behavior
-of ``--failfast`` as follows::
+The Avocado ``run`` command has the option ``--failfast`` to exit the job as
+soon as possible.
 
-    $ avocado run --failfast /bin/true /bin/false /bin/true /bin/true
-    JOB ID     : eaf51b8c7d6be966bdf5562c9611b1ec2db3f68a
-    JOB LOG    : $HOME/avocado/job-results/job-2016-07-19T09.43-eaf51b8/job.log
-     (1/4) /bin/true: PASS (0.01 s)
-     (2/4) /bin/false: FAIL (0.01 s)
-    Interrupting job (failfast).
-    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0 | CANCEL 0
-    JOB TIME   : 0.12 s
-
-With the nrunner runner, tests are executed in parallel. The ``--failfast``
-option work on the best effort to cancel tests that have not started yet. To
-replicate the same behavior as the legacy runner, use
-``--nrunner-max-parallel-tasks=1`` to limit the number of tasks executed in
+Due to our current runner architecture, tests are executed in parallel by
+default.  The ``--failfast`` option work on the best effort to cancel tests
+that have not started yet. To replicate the same behavior as the legacy runner,
+use ``--nrunner-max-parallel-tasks=1`` to limit the number of tasks executed in
 parallel::
 
     $ avocado run --failfast --nrunner-max-parallel-tasks=1 /bin/true /bin/false /bin/true /bin/true
