@@ -18,6 +18,5 @@ Avocado User's Guide
    chapters/datadirs
    chapters/logging
    chapters/plugins
-   chapters/loaders
    chapters/advanced
    chapters/whatsnext
