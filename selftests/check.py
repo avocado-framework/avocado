@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import copy
 import glob
 import multiprocessing
 import os
@@ -567,30 +568,38 @@ def create_suites(args):  # pylint: disable=W0621
     }
 
     if args.dict_tests['unit']:
-        config_check['resolver.references'] = ['selftests/unit/']
-        suites.append(TestSuite.from_config(config_check, "unit"))
+        config_check_unit = copy.copy(config_check)
+        config_check_unit['resolver.references'] = ['selftests/unit/']
+        suites.append(TestSuite.from_config(config_check_unit, "unit"))
 
     if args.dict_tests['jobs']:
-        config_check['resolver.references'] = ['selftests/jobs/']
-        suites.append(TestSuite.from_config(config_check, "jobs"))
+        config_check_jobs = copy.copy(config_check)
+        config_check_jobs['resolver.references'] = ['selftests/jobs/']
+        suites.append(TestSuite.from_config(config_check_jobs, "jobs"))
 
     if args.dict_tests['functional']:
-        config_check['resolver.references'] = ['selftests/functional/']
-        suites.append(TestSuite.from_config(config_check, "functional"))
+        config_check_functional = copy.copy(config_check)
+        config_check_functional['resolver.references'] = ['selftests/functional/']
+        suites.append(TestSuite.from_config(config_check_functional,
+                                            "functional"))
 
     if args.dict_tests['static-checks']:
-        config_check['resolver.references'] = glob.glob('selftests/*.sh')
-        suites.append(TestSuite.from_config(config_check, "static-checks"))
+        config_check_static = copy.copy(config_check)
+        config_check_static['resolver.references'] = glob.glob('selftests/*.sh')
+        suites.append(TestSuite.from_config(config_check_static,
+                                            "static-checks"))
 
     if args.dict_tests['optional-plugins']:
-        config_check['resolver.references'] = []
+        config_check_optional = copy.copy(config_check)
+        config_check_optional['resolver.references'] = []
         for optional_plugin in glob.glob('optional_plugins/*'):
             plugin_name = os.path.basename(optional_plugin)
             if plugin_name not in args.disable_plugin_checks:
                 pattern = '%s/tests/*' % optional_plugin
-                config_check['resolver.references'] += glob.glob(pattern)
+                config_check_optional['resolver.references'] += glob.glob(pattern)
 
-        suites.append(TestSuite.from_config(config_check, "optional-plugins"))
+        suites.append(TestSuite.from_config(config_check_optional,
+                                            "optional-plugins"))
 
     return suites
 
