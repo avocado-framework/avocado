@@ -42,9 +42,9 @@ Bug Fixes
 Utility APIs
 ============
 
-* mod:`avocado.utils.network` removed deprecated modules and methods.
+* :mod:`avocado.utils.network` removed deprecated modules and methods.
 
-* mod:`avocado.utils.vmimage` now uses https://cloud.debian.org for
+* :mod:`avocado.utils.vmimage` now uses https://cloud.debian.org for
   obtaining Debian Cloud images.
 
 Misc Changes
