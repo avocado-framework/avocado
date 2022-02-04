@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import copy
 import glob
 import multiprocessing
 import os
@@ -567,30 +568,48 @@ def create_suites(args):  # pylint: disable=W0621
     }
 
     if args.dict_tests['unit']:
-        config_check['resolver.references'] = ['selftests/unit/']
-        suites.append(TestSuite.from_config(config_check, "unit"))
+        config_check_unit = copy.copy(config_check)
+        config_check_unit['resolver.references'] = ['selftests/unit/']
+        suites.append(TestSuite.from_config(config_check_unit, "unit"))
 
     if args.dict_tests['jobs']:
-        config_check['resolver.references'] = ['selftests/jobs/']
-        suites.append(TestSuite.from_config(config_check, "jobs"))
+        config_check_jobs = copy.copy(config_check)
+        config_check_jobs['resolver.references'] = ['selftests/jobs/']
+        suites.append(TestSuite.from_config(config_check_jobs, "jobs"))
 
     if args.dict_tests['functional']:
-        config_check['resolver.references'] = ['selftests/functional/']
-        suites.append(TestSuite.from_config(config_check, "functional"))
+        functional_path = os.path.join('selftests', 'functional')
+        references = glob.glob(os.path.join(functional_path, 'test*.py'))
+        references.extend([os.path.join(functional_path, 'utils'),
+                           os.path.join(functional_path, 'plugin')])
+        config_check_functional_parallel = copy.copy(config_check)
+        config_check_functional_parallel['resolver.references'] = references
+        suites.append(TestSuite.from_config(config_check_functional_parallel,
+                                            "functional-parallel"))
+
+        config_check_functional_serial = copy.copy(config_check)
+        config_check_functional_serial['resolver.references'] = ['selftests/functional/serial/']
+        config_check_functional_serial['nrunner.max_parallel_tasks'] = 1
+        suites.append(TestSuite.from_config(config_check_functional_serial,
+                                            "functional-serial"))
 
     if args.dict_tests['static-checks']:
-        config_check['resolver.references'] = glob.glob('selftests/*.sh')
-        suites.append(TestSuite.from_config(config_check, "static-checks"))
+        config_check_static = copy.copy(config_check)
+        config_check_static['resolver.references'] = glob.glob('selftests/*.sh')
+        suites.append(TestSuite.from_config(config_check_static,
+                                            "static-checks"))
 
     if args.dict_tests['optional-plugins']:
-        config_check['resolver.references'] = []
+        config_check_optional = copy.copy(config_check)
+        config_check_optional['resolver.references'] = []
         for optional_plugin in glob.glob('optional_plugins/*'):
             plugin_name = os.path.basename(optional_plugin)
             if plugin_name not in args.disable_plugin_checks:
                 pattern = '%s/tests/*' % optional_plugin
-                config_check['resolver.references'] += glob.glob(pattern)
+                config_check_optional['resolver.references'] += glob.glob(pattern)
 
-        suites.append(TestSuite.from_config(config_check, "optional-plugins"))
+        suites.append(TestSuite.from_config(config_check_optional,
+                                            "optional-plugins"))
 
     return suites
 
@@ -682,7 +701,7 @@ def main(args):  # pylint: disable=W0621
     if (platform.machine() == 'aarch64'):
         max_parallel = int(multiprocessing.cpu_count()/2)
         for suite in suites:
-            if suite.name == 'functional':
+            if suite.name == 'functional-parallel':
                 suite.config['nrunner.max_parallel_tasks'] = max_parallel
 
     with Job(config, suites) as j:
