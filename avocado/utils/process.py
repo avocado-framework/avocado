@@ -635,7 +635,7 @@ class SubProcess:
             self._popen = subprocess.Popen(cmd,
                                            stdout=subprocess.PIPE,
                                            stderr=subprocess.PIPE,
-                                           shell=self.shell,
+                                           shell=self.shell,  # nosec
                                            env=self.env)
         except OSError as details:
             details.strerror += " (%s)" % self.cmd

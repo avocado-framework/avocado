@@ -156,7 +156,7 @@ class ListTestFunctional(TestCaseTmpDir):
         deadline = current_time + timeout
         test_process = subprocess.Popen(cmd_line, stdout=subprocess.PIPE,  # pylint: disable=W1509
                                         stderr=subprocess.PIPE,
-                                        preexec_fn=os.setsid, shell=True)
+                                        preexec_fn=os.setsid, shell=True)  # nosec
         while not test_process.poll():
             if time.monotonic() > deadline:
                 os.killpg(os.getpgid(test_process.pid), signal.SIGKILL)
