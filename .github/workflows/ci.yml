@@ -218,15 +218,6 @@ jobs:
       - name: Run Codespell Check
         run: make -f Makefile.gh codespell
         continue-on-error: True
-      - name: Run bandit check
-        run: make -f Makefile.gh bandit
-        continue-on-error: True
-      - name: Save bandit output as artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: bandit-results
-          path: /home/runner/work/avocado/avocado/bandit-output.txt
-          retention-days: 1
       - run: echo "🥑 This job's status is ${{ job.status }}."
 
 

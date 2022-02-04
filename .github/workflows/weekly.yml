@@ -96,3 +96,24 @@ jobs:
           name: job-results-without-plugins
           path: /home/runner/avocado/job-results/
       - run: echo "🥑 This job's status is ${{ job.status }}."
+
+
+  full-bandit-checks:
+    name: Bandit checks
+    runs-on: ubuntu-20.04
+    steps:
+      - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Run bandit check
+        run: make -f Makefile.gh bandit
+        continue-on-error: True
+      - name: Save bandit output as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: bandit-results
+          path: /home/runner/work/avocado/avocado/bandit-output.txt
+          retention-days: 1
+      - run: echo "🥑 This job's status is ${{ job.status }}."
