@@ -19,6 +19,7 @@ import errno
 import logging
 import os
 import re
+import subprocess
 import sys
 import traceback
 
@@ -593,7 +594,7 @@ class Paginator:
             except utils_path.CmdNotFoundError as details:
                 raise RuntimeError("Unable to enable pagination: %s" % details)
 
-        self.pipe = os.popen(paginator, 'w')
+        self.pipe = subprocess.Popen(paginator, stdin=subprocess.PIPE)
 
     def __del__(self):
         self.close()
@@ -601,7 +602,7 @@ class Paginator:
     def close(self):
         if self.pipe:
             try:
-                self.pipe.close()
+                self.pipe.stdin.close()
             except OSError:
                 pass
 
