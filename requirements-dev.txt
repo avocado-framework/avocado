@@ -12,6 +12,7 @@ coverage==5.5
 # To run make check
 aexpect==1.6.1
 psutil==5.8.0
+bandit==1.7.2; python_version > '3.6'
 
 # pycdlib is an optional requirement in production
 # but is necessary for selftests
