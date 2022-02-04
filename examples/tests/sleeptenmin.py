@@ -1,4 +1,4 @@
-import os
+import subprocess
 import time
 
 from avocado import Test
@@ -29,4 +29,4 @@ class SleepTenMin(Test):
             if method == 'builtin':
                 time.sleep(length)
             elif method == 'shell':
-                os.system(f"sleep {length}")
+                subprocess.run(["sleep", length], check=True)
