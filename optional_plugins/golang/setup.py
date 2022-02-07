@@ -13,15 +13,7 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Amador Pahim <apahim@redhat.com>
 
-from setuptools import setup
-
-# Handle systems with setuptools < 40
-try:
-    from setuptools import find_namespace_packages
-except ImportError:
-    packages = ['avocado_golang']
-else:
-    packages = find_namespace_packages(include=['avocado_golang'])
+from setuptools import find_packages, setup
 
 VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
 
@@ -31,7 +23,7 @@ setup(name='avocado-framework-plugin-golang',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
-      packages=packages,
+      packages=find_packages(),
       include_package_data=True,
       install_requires=['avocado-framework==%s' % VERSION],
       test_suite='tests',
@@ -40,7 +32,7 @@ setup(name='avocado-framework-plugin-golang',
               'avocado-runner-golang = avocado_golang.runner:main',
           ],
           'avocado.plugins.resolver': [
-              'golang = avocado_golang.golang:GolangResolver',
+              'golang = avocado_golang:GolangResolver',
           ],
           'avocado.plugins.runnable.runner': [
               'golang = avocado_golang.runner:GolangRunner'
