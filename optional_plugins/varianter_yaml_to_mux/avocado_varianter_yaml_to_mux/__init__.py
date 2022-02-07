@@ -16,18 +16,20 @@
 
 import ast
 import collections
+import copy
 import os
 import re
 import sys
 
 import yaml
-from avocado_varianter_yaml_to_mux import mux  # pylint: disable=W0406
 
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Init, Varianter
 from avocado.core.settings import settings
 from avocado.utils import astring
+
+from . import mux  # pylint: disable=W0406
 
 try:
     from yaml import CSafeLoader as SafeLoader
