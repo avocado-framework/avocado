@@ -14,7 +14,7 @@
          "description": "Run the GitHub Action 'Pre-release tests' on the master branch at https://github.com/avocado-framework/avocado/actions/workflows/prerelease.yml and check all the tests pass. Make at least a quick visual check to the logs."},
 
         {"name": "Avocado Remote Machine HTML report",
-         "description": "Run the simple test with `$ avocado run passtest.py --html /tmp/report.html`  and, on a web browser, open the HTML report in `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`) or `debug.log` point to valid locations."},
+         "description": "Run the simple test with `$ avocado run examples/tests/passtest.py --html /tmp/report.html`  and, on a web browser, open the HTML report in `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`) or `debug.log` point to valid locations."},
 
         {"name": "Paginator",
          "description": "Start new terminal and store the stty setting by running `stty -a > /tmp/tty_state_pre`. Then run `AVOCADO_LOG_EARLY=y avocado --enable-paginator config` and verify paginator is enabled, colored output is produced and quit. Then run `stty -a > /tmp/tty_state_post` followed by `diff /tmp/tty_state_{pre,post}` and verify the setting was not changed (no output)."}
