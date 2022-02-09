@@ -1,0 +1,82 @@
+==========================
+95.0 PAW Patrol: The Movie
+==========================
+
+The Avocado team is proud to present another release: Avocado 94.0,
+AKA "PAW Patrol: The Movie", is now available!
+
+Release documentation: `Avocado 95.0
+<http://avocado-framework.readthedocs.io/en/95.0/>`_
+
+Users/Test Writers
+==================
+
+* A large part of the legacy runner has been removed.  The
+  ``--loader`` options to ``avocado list``, for instance, is longer
+  available.  The ``nrunner`` architecture and runner implementation
+  has been the default one since version 91.0, and the remaining parts
+  of the legacy runner will be removed soon.
+
+* A script that provides the features of the legacy
+  ``--external-runner`` feature has been added.  It's built on the Job
+  API and ``nrunner`` architecture.
+
+* Test writers can now access a test's status while the ``tearDown``
+  method is being run.
+
+* Result plugins such as ``json`` and ``xunit`` now contain more accurate
+  values reflecting Avocado's concepts of a test's ID and name.
+
+* Support was added for ``Coverage.py`` when running
+  ``avocado-instrumented`` tests (currently limited to the
+  ``ProcessSpawner``).
+
+* By setting the ``spawner.podman.avocado_spawner_egg`` configuration
+  users can now control the exact Avocado package that will be
+  automatically deployed within Podman containers.
+
+Bug Fixes
+=========
+
+* A default value was added to the Spawner's attribute that tracks the
+  job's output directory, avoiding ``NoneType`` errors when it's not
+  explicitly set.
+
+* A crash when using the Podman spawner, after changes to the output
+  dir handling, has fixed.
+
+Misc Changes
+============
+
+* ``RuntimeTask`` instances are now comparable, and should now be
+  unique when representing requirements, preventing having duplicates.
+
+* The order of the ``RuntimeTask``s are now defined in a dependency
+  graph, in accordance with BluePrint 004.
+
+Internal Changes
+================
+
+* ``setup.py test`` now returns a non-zero error code when failures
+  occur.
+
+* RHEL 9 Beta has been added to some CI checks, and Ubuntu has been
+  updated from 18.04 to 21.10.
+
+* Pylint was updated to 2.12.2, along with many changes to conform to
+  the checks performed by that version.
+
+* Many parts of Avocado, including most "optional plugins", are now
+  PEP420 compliant.
+
+* Improvements to the contributor guide.
+
+* CI checks running on Cirrus-CI have been moved to GitHub Actions.
+
+* Packit builds have been added for CentOS Stream 8 and 9.
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/94.0...95.0>`_.
