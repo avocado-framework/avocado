@@ -14,7 +14,7 @@ class SuccessTest(Test):
 
     def test_check(self):
         """
-        :avocado: requirement={"type": "package", "name": "bash", "action": "check"}
+        :avocado: dependency={"type": "package", "name": "bash", "action": "check"}
         """
 '''
 
@@ -27,7 +27,7 @@ class FailTest(Test):
 
     def test_check(self):
         """
-        :avocado: requirement={"type": "package", "name": "-foo-bar-", "action": "check"}
+        :avocado: dependency={"type": "package", "name": "-foo-bar-", "action": "check"}
         """
 '''
 
@@ -40,15 +40,15 @@ class SuccessTest(Test):
 
     def test_a(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
         """
     def test_b(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
         """
     def test_c(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
         """
 '''
 
@@ -61,17 +61,17 @@ class FailTest(Test):
 
     def test_a(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
-        :avocado: requirement={"type": "package", "name": "-foo-bar-"}
+        :avocado: dependency={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "-foo-bar-"}
         """
     def test_b(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
         """
     def test_c(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
-        :avocado: requirement={"type": "package", "name": "-foo-bar-"}
+        :avocado: dependency={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "-foo-bar-"}
         """
 '''
 

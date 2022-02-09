@@ -1,1 +1,1 @@
-{"kind": "requirement-package", "kwargs": {"action": "check", "name": "foo"}}
+{"kind": "package", "kwargs": {"action": "check", "name": "foo"}}

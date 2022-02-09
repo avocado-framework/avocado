@@ -11,8 +11,8 @@ RUNNER = "%s -m avocado.core.runners.requirement_package" % sys.executable
 class RunnableRun(unittest.TestCase):
 
     def test_no_kwargs(self):
-        res = process.run("%s runnable-run -k requirement-package" % RUNNER,
-                          ignore_status=True)
+        res = process.run("%s runnable-run -k package" %
+                          RUNNER, ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'time': ", res.stdout)
@@ -20,7 +20,7 @@ class RunnableRun(unittest.TestCase):
 
     def test_action_check_alone(self):
         action = 'action=check'
-        res = process.run("%s runnable-run -k requirement-package %s"
+        res = process.run("%s runnable-run -k package %s"
                           % (RUNNER, action), ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
@@ -55,7 +55,8 @@ class RunnableRun(unittest.TestCase):
 class TaskRun(unittest.TestCase):
 
     def test_no_kwargs(self):
-        res = process.run("%s task-run -i XXXreq-pacXXX -k requirement-package"
+        res = process.run("%s task-run -i XXXreq-pacXXX"
+                          " -k package"
                           % RUNNER, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'result': 'error'", res.stdout)

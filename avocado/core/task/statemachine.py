@@ -188,7 +188,7 @@ class Worker:
         except IndexError:
             return
 
-        # a task waiting dependencies already checked its requirements
+        # a task waiting requirements already checked its requirements
         if runtime_task.status != 'WAITING DEPENDENCIES':
             # check for requirements a task may have
             requirements_ok = (

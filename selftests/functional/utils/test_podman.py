@@ -8,7 +8,7 @@ class PodmanTest(Test):
 
     def test_python_version(self):
         """
-        :avocado: requirement={"type": "package", "name": "podman", "action": "check"}
+        :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
         :avocado: tags=slow
         """
         podman = Podman()

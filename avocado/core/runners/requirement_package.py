@@ -8,14 +8,14 @@ from avocado.utils.software_manager.manager import SoftwareManager
 
 
 class RequirementPackageRunner(nrunner.BaseRunner):
-    """Runner for requirements of type package
+    """Runner for dependencies of type package
 
     This runner handles, the installation, verification and removal of
     packages using the avocado-software-manager.
 
     Runnable attributes usage:
 
-     * kind: 'requirement-package'
+     * kind: 'package'
 
      * uri: not used
 
@@ -149,9 +149,9 @@ class RequirementPackageRunner(nrunner.BaseRunner):
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
-    PROG_NAME = 'avocado-runner-requirement-package'
-    PROG_DESCRIPTION = ('nrunner application for requirements of type package')
-    RUNNABLE_KINDS_CAPABLE = {'requirement-package': RequirementPackageRunner}
+    PROG_NAME = 'avocado-runner-package'
+    PROG_DESCRIPTION = ('nrunner application for dependencies of type package')
+    RUNNABLE_KINDS_CAPABLE = {'package': RequirementPackageRunner}
 
 
 def main():

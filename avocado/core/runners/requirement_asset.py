@@ -8,13 +8,13 @@ from avocado.utils.asset import Asset
 
 
 class RequirementAssetRunner(nrunner.BaseRunner):
-    """Runner for requirements of type package
+    """Runner for dependencies of type package
 
     This runner handles the fetch of files using the Avocado Assets utility.
 
     Runnable attributes usage:
 
-     * kind: 'requirement-asset'
+     * kind: 'asset'
 
      * uri: not used
 
@@ -100,9 +100,9 @@ class RequirementAssetRunner(nrunner.BaseRunner):
 
 
 class RunnerApp(nrunner.BaseRunnerApp):
-    PROG_NAME = 'avocado-runner-requirement-asset'
-    PROG_DESCRIPTION = ('nrunner application for requirements of type asset')
-    RUNNABLE_KINDS_CAPABLE = {'requirement-asset': RequirementAssetRunner}
+    PROG_NAME = 'avocado-runner-asset'
+    PROG_DESCRIPTION = ('nrunner application for dependencies of type asset')
+    RUNNABLE_KINDS_CAPABLE = {'asset': RequirementAssetRunner}
 
 
 def main():

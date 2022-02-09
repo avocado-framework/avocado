@@ -168,7 +168,7 @@ class PythonUnittest(unittest.TestCase):
             self.assertEqual(resolution.args, ())
             self.assertEqual(resolution.kwargs, {})
             self.assertEqual(resolution.tags, {})
-            self.assertEqual(resolution.requirements, [])
+            self.assertEqual(resolution.dependencies, [])
 
         path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(__file__))),

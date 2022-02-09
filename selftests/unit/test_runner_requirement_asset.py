@@ -9,7 +9,7 @@ class BasicTests(unittest.TestCase):
     """Basic unit tests for the RequirementAssetRunner class"""
 
     def test_no_kwargs(self):
-        runnable = Runnable(kind='requirement-asset', uri=None)
+        runnable = Runnable(kind='asset', uri=None)
         runner = RequirementAssetRunner(runnable)
         status = runner.run()
         messages = []
@@ -24,7 +24,7 @@ class BasicTests(unittest.TestCase):
         self.assertIn(stderr, messages[-2]['log'])
 
     def test_wrong_name(self):
-        runnable = Runnable(kind='requirement-asset', uri=None,
+        runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'foo'})
         runner = RequirementAssetRunner(runnable)
         status = runner.run()
@@ -55,7 +55,7 @@ class FetchTests(unittest.TestCase):
     def test_success_fetch(self):
 
         self.mock_sm.return_value.fetch.return_value = '/tmp/asset.txt'
-        runnable = Runnable(kind='requirement-asset', uri=None,
+        runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'asset.txt'})
         runner = RequirementAssetRunner(runnable)
         status = runner.run()
@@ -74,7 +74,7 @@ class FetchTests(unittest.TestCase):
 
         self.mock_sm.return_value.fetch = lambda: (_ for _ in ()).throw(
             OSError('Failed to fetch asset.txt'))
-        runnable = Runnable(kind='requirement-asset', uri=None,
+        runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'asset.txt'})
         runner = RequirementAssetRunner(runnable)
         status = runner.run()

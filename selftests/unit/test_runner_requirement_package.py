@@ -9,7 +9,7 @@ class BasicTests(unittest.TestCase):
     """Basic unit tests for the RequirementPackageRunner class"""
 
     def test_no_kwargs(self):
-        runnable = Runnable(kind='requirement-package', uri=None)
+        runnable = Runnable(kind='package', uri=None)
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
         messages = []
@@ -24,7 +24,7 @@ class BasicTests(unittest.TestCase):
         self.assertIn(stderr, messages[-2]['log'])
 
     def test_wrong_action(self):
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
@@ -56,7 +56,7 @@ class ActionTests(unittest.TestCase):
 
         self.mock_sm.return_value.check_installed = lambda check_installed: False
         self.mock_sm.return_value.install = lambda install: True
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'install', 'name': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
@@ -74,7 +74,7 @@ class ActionTests(unittest.TestCase):
     def test_already_installed(self):
 
         self.mock_sm.return_value.check_installed = lambda check_installed: True
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'install', 'name': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
@@ -93,7 +93,7 @@ class ActionTests(unittest.TestCase):
 
         self.mock_sm.return_value.check_installed = lambda check_installed: False
         self.mock_sm.return_value.install = lambda install: False
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'install', 'name': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
@@ -112,7 +112,7 @@ class ActionTests(unittest.TestCase):
 
         self.mock_sm.return_value.check_installed = lambda check_installed: True
         self.mock_sm.return_value.remove = lambda remove: True
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'remove', 'name': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
@@ -130,7 +130,7 @@ class ActionTests(unittest.TestCase):
     def test_not_installed(self):
 
         self.mock_sm.return_value.check_installed = lambda check_installed: False
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'remove', 'name': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
@@ -149,7 +149,7 @@ class ActionTests(unittest.TestCase):
 
         self.mock_sm.return_value.check_installed = lambda check_installed: True
         self.mock_sm.return_value.remove = lambda remove: False
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'remove', 'name': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
@@ -167,7 +167,7 @@ class ActionTests(unittest.TestCase):
     def test_success_check(self):
 
         self.mock_sm.return_value.check_installed = lambda check_installed: True
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'check', 'name': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()
@@ -185,7 +185,7 @@ class ActionTests(unittest.TestCase):
     def test_fail_check(self):
 
         self.mock_sm.return_value.check_installed = lambda check_installed: False
-        runnable = Runnable(kind='requirement-package', uri=None,
+        runnable = Runnable(kind='package', uri=None,
                             **{'action': 'check', 'name': 'foo'})
         runner = RequirementPackageRunner(runnable)
         status = runner.run()

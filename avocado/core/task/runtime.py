@@ -1,7 +1,7 @@
 from copy import deepcopy
 
+from avocado.core.dependencies.resolver import DependencyResolver
 from avocado.core.nrunner import RUNNERS_REGISTRY_PYTHON_CLASS, Task
-from avocado.core.requirements.resolver import RequirementsResolver
 from avocado.core.test_id import TestID
 from avocado.core.varianter import dump_variant
 
@@ -101,9 +101,9 @@ class RuntimeTask:
         return cls(task)
 
     @classmethod
-    def get_requirements_form_runnable(cls, runnable, status_server_uri=None,
+    def get_dependencies_form_runnable(cls, runnable, status_server_uri=None,
                                        job_id=None):
-        """Creates runtime tasks for requirements from runnable
+        """Creates runtime tasks for dependencies from runnable
 
         :param runnable: the "description" of what the task should run.
         :type runnable: :class:`avocado.core.nrunner.Runnable`
@@ -114,40 +114,40 @@ class RuntimeTask:
                        sent to the destination job's status server and will
                        make into the job's results.
         :type job_id: str
-        :returns: RUntimeTasks of the requirements from runnable
+        :returns: RUntimeTasks of the dependencies from runnable
         :rtype: list
         """
-        if runnable.requirements is None:
+        if runnable.dependencies is None:
             return []
 
-        # creates the runnables for the requirements
-        requirements_runnables = RequirementsResolver.resolve(runnable)
-        requirements_runtime_tasks = []
-        # creates the tasks and runtime tasks for the requirements
-        for requirement_runnable in requirements_runnables:
-            name = '%s-%s' % (requirement_runnable.kind,
-                              requirement_runnable.kwargs.get('name'))
+        # creates the runnables for the dependencies
+        dependencies_runnables = DependencyResolver.resolve(runnable)
+        dependencies_runtime_tasks = []
+        # creates the tasks and runtime tasks for the dependencies
+        for dependency_runnable in dependencies_runnables:
+            name = '%s-%s' % (dependency_runnable.kind,
+                              dependency_runnable.kwargs.get('name'))
             prefix = 0
             # the human UI works with TestID objects, so we need to
             # use it to name Task
             task_id = TestID(prefix, name)
-            # with --dry-run we don't want to run requirement
+            # with --dry-run we don't want to run dependencies
             if runnable.kind == 'dry-run':
-                requirement_runnable.kind = 'noop'
-            # creates the requirement task
-            requirement_task = Task(requirement_runnable,
-                                    identifier=task_id,
-                                    status_uris=status_server_uri,
-                                    category='requirement',
-                                    job_id=job_id)
-            requirements_runtime_tasks.append(cls(requirement_task))
+                dependency_runnable.kind = 'noop'
+            # creates the dependency task
+            dependency_task = Task(dependency_runnable,
+                                   identifier=task_id,
+                                   status_uris=status_server_uri,
+                                   category='dependency',
+                                   job_id=job_id)
+            dependencies_runtime_tasks.append(cls(dependency_task))
 
-        return requirements_runtime_tasks
+        return dependencies_runtime_tasks
 
     def is_dependencies_finished(self):
-        for dependencie in self.dependencies:
-            if not dependencie.status or not ("FINISHED" in dependencie.status
-                                              or "FAILED" in dependencie.status):
+        for dependency in self.dependencies:
+            if not dependency.status or not ("FINISHED" in dependency.status
+                                             or "FAILED" in dependency.status):
                 return False
         return True
 
@@ -188,20 +188,20 @@ class RuntimeTaskGraph:
                 job_id)
             self.graph[runtime_test] = runtime_test
 
-            requirements_tasks = RuntimeTask.get_requirements_form_runnable(
+            dependencies_tasks = RuntimeTask.get_dependencies_form_runnable(
                 runnable,
                 status_server_uri,
                 job_id)
-            self._connect_requirements_with_test(requirements_tasks,
+            self._connect_dependencies_with_test(dependencies_tasks,
                                                  runtime_test)
 
-    def _connect_requirements_with_test(self, requirements, runtime_test):
-        for requirement_task in requirements:
-            if requirement_task in self.graph:
-                requirement_task = self.graph.get(requirement_task)
+    def _connect_dependencies_with_test(self, dependencies, runtime_test):
+        for dependency_task in dependencies:
+            if dependency_task in self.graph:
+                dependency_task = self.graph.get(dependency_task)
             else:
-                self.graph[requirement_task] = requirement_task
-            runtime_test.dependencies.append(requirement_task)
+                self.graph[dependency_task] = dependency_task
+            runtime_test.dependencies.append(dependency_task)
 
     def get_tasks_in_topological_order(self):
         """Computes the topological order of runtime tasks in graph
