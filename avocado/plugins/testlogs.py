@@ -30,6 +30,16 @@ class TestLogsUIInit(Init):
                                  default=['debug.log'],
                                  help_msg=help_msg)
 
+        help_msg = ("Status that will trigger the output of a summary "
+                    "after the job ends. This is useful to list failed "
+                    "tests for instances at the end of a job run. "
+                    "Valid statuses: %s" % ", ".join(STATUSES))
+        settings.register_option(section='job.output.testlogs',
+                                 key='summary_statuses',
+                                 key_type=list,
+                                 default=['FAIL', 'ERROR'],
+                                 help_msg=help_msg)
+
 
 class TestLogsUI(JobPre, JobPost):
 
@@ -40,21 +50,25 @@ class TestLogsUI(JobPre, JobPost):
 
     def post(self, job):
         statuses = job.config.get('job.output.testlogs.statuses')
-        if not statuses:
-            return
+        summary = job.config.get('job.output.testlogs.summary_statuses')
 
         if job.config.get('stdout_claimed_by') is not None:
             return
 
         try:
-            with open(os.path.join(job.logdir, 'results.json'), encoding='utf-8') as json_file:
+            with open(os.path.join(job.logdir, 'results.json'),
+                      encoding='utf-8') as json_file:
                 results = json.load(json_file)
         except FileNotFoundError:
             return
 
         logfiles = job.config.get('job.output.testlogs.logfiles')
+        summary_tests = []
         for test in results['tests']:
-            if test['status'] not in statuses:
+            if test['status'] in summary:
+                line = f"{test['name']}: {test['status']}"
+                summary_tests.append(line)
+            if not statuses or test['status'] not in statuses:
                 continue
             for logfile in logfiles:
                 path = os.path.join(test['logdir'], logfile)
@@ -66,6 +80,12 @@ class TestLogsUI(JobPre, JobPost):
                 except (FileNotFoundError, PermissionError) as error:
                     LOG_UI.error('Failure to access log file "%s": %s',
                                  path, error)
+
+        if summary_tests:
+            LOG_UI.info("")
+            LOG_UI.info("Test summary:")
+            for test in sorted(summary_tests):
+                LOG_UI.error(test)
 
 
 class TestLogging(ResultEvents):
