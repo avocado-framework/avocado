@@ -47,7 +47,7 @@ def url_open(url, data=None, timeout=5):
     try:
         result = urlopen(url, data=data, timeout=timeout)
     except (socket.timeout, HTTPError) as ex:
-        msg = "Failed downloading file: {}".format(str(ex))
+        msg = f"Failed downloading file: {ex}"
         log.error(msg)
         return None
 

@@ -176,9 +176,7 @@ class Session:
 
     @property
     def control_master(self):
-        control = "~/.ssh/avocado-master-{}@{}:{}".format(self.user,
-                                                          self.host,
-                                                          self.port)
+        control = f"~/.ssh/avocado-master-{self.user}@{self.host}:{self.port}"
         control = os.path.expanduser(control)
         if os.path.exists(control):
             return control
@@ -259,10 +257,10 @@ class Session:
         options = self._dash_o_opts_to_str(options)
         if recursive:
             options += ' -r'
-        options += " {} {}".format(source, destination)
+        options += f"{source} {destination}"
         try:
-            result = process.run("{} {}".format(cmd, options),
+            result = process.run("{cmd} {options}",
                                  ignore_status=True)
             return result.exit_status == 0
         except process.CmdError as exc:
-            raise NWException("failed to copy file {}".format(exc))
+            raise NWException(f"failed to copy file {exec}")

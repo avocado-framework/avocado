@@ -34,15 +34,14 @@ class PodmanSpawnerInit(Init):
 
         this_distro = distro.detect()
         if this_distro != distro.UNKNOWN_DISTRO:
-            default_distro = '{0}:{1}'.format(this_distro.name,
-                                              this_distro.version)
+            default_distro = f'{this_distro.name}:{this_distro.version}'
         else:
             default_distro = 'fedora:latest'
         help_msg = ('Image name to use when creating the container. '
                     'The first default choice is a container image '
                     'matching the current OS. If unable to detect, '
                     'default becomes the latest Fedora release. Default '
-                    'on this system: {0}'.format(default_distro))
+                    f'on this system: {default_distro}')
         settings.register_option(
             section=section,
             key='image',
@@ -129,7 +128,8 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         # Setuptools
         # For now let's pin to setuptools 59.2.
         # TODO: Automatically get latest setuptools version.
-        eggs = [f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{py_major}.{py_minor}.egg"]
+        eggs = [
+            f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{py_major}.{py_minor}.egg"]
         local_egg = self.config.get('spawner.podman.avocado_spawner_egg')
         if local_egg:
             eggs.append(local_egg)

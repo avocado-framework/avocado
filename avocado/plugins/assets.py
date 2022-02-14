@@ -191,7 +191,8 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
                 if isinstance(node.value, ast.Str):
                     self.asgmts[cur_klass][cur_method][name] = node.value.s
                 elif isinstance(node.value, ast.List):
-                    self.asgmts[cur_klass][cur_method][name] = self._ast_list_to_list(node)
+                    self.asgmts[cur_klass][cur_method][name] = self._ast_list_to_list(
+                        node)
 
         self.generic_visit(node)
 
@@ -289,9 +290,9 @@ class Assets(CLICmd):
     @staticmethod
     def _count_filter_args(config):
         sub_command = config.get('assets_subcommand')
-        args = [config.get("assets.{}.days".format(sub_command)),
-                config.get("assets.{}.size_filter".format(sub_command)),
-                config.get("assets.{}.overall_limit".format(sub_command))]
+        args = [config.get(f"assets.{sub_command}.days"),
+                config.get(f"assets.{sub_command}.size_filter"),
+                config.get(f"assets.{sub_command}.overall_limit")]
         return len([a for a in args if a is not None])
 
     def configure(self, parser):
@@ -378,8 +379,8 @@ class Assets(CLICmd):
                                  long_arg='--timeout')
 
         register_subcommand_parser = subcommands.add_parser(
-                'register',
-                help='Register an asset directly to the cacche')
+            'register',
+            help='Register an asset directly to the cacche')
 
         help_msg = "Unique name to associate with this asset."
         settings.register_option(section='assets.register',
@@ -410,14 +411,14 @@ class Assets(CLICmd):
                                  parser=register_subcommand_parser)
 
         purge_subcommand_parser = subcommands.add_parser(
-                'purge',
-                help='Removes assets cached locally.')
+            'purge',
+            help='Removes assets cached locally.')
         register_filter_options(purge_subcommand_parser, 'assets.purge')
 
         help_msg = 'List all cached assets.'
         list_subcommand_parser = subcommands.add_parser(
-                'list',
-                help=help_msg)
+            'list',
+            help=help_msg)
         register_filter_options(list_subcommand_parser, 'assets.list')
 
     def handle_purge(self, config):
@@ -479,7 +480,7 @@ class Assets(CLICmd):
         for asset in assets:
             stat = os.stat(asset)
             basename = os.path.basename(asset)
-            hash_path = "{}-CHECKSUM".format(asset)
+            hash_path = f"{asset}-CHECKSUM"
             atime = datetime.fromtimestamp(stat.st_atime)
             _, checksum = Asset.read_hash_from_file(hash_path)
             matrix.append((basename,

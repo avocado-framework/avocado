@@ -645,7 +645,7 @@ class Asset:
         :param asset_path: full path of the asset file.
         """
         os.remove(asset_path)
-        filename = "{}-CHECKSUM".format(asset_path)
+        filename = f"{asset_path}-CHECKSUM"
         os.remove(filename)
 
     @property

@@ -107,7 +107,8 @@ class TaskStateMachine:
                     LOG.debug('Task "%s" finished: %s',
                               runtime_task.task.identifier, status_reason)
                 else:
-                    LOG.debug('Task "%s" finished', runtime_task.task.identifier)
+                    LOG.debug('Task "%s" finished',
+                              runtime_task.task.identifier)
                 self.finished.append(runtime_task)
 
 
@@ -129,10 +130,9 @@ class Worker:
         LOG.debug("%s has been initialized", self)
 
     def __repr__(self):
-        fmt = ('<Worker spawner="{}" max_triaging={} max_running={} '
-               'task_timeout={}>')
-        return fmt.format(self._spawner, self._max_triaging,
-                          self._max_running, self._task_timeout)
+        fmt = (f'<Worker spawner="{self._spawner}" max_triaging={self._max_triaging} max_running={self._max_running} '
+               f'task_timeout={self._task_timeout}>')
+        return fmt
 
     async def bootstrap(self):
         """Reads from requested, moves into triaging."""
@@ -191,7 +191,7 @@ class Worker:
         if runtime_task.status != 'WAITING DEPENDENCIES':
             # check for requirements a task may have
             requirements_ok = (
-                    await self._spawner.check_task_requirements(runtime_task))
+                await self._spawner.check_task_requirements(runtime_task))
             if requirements_ok:
                 LOG.debug('Task "%s": requirements OK (will proceed to check '
                           'dependencies)', runtime_task.task.identifier)

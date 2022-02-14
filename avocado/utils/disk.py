@@ -68,9 +68,7 @@ def create_loop_device(size, blocksize=4096, directory='./'):
 
     loop_file = os.path.join(directory,
                              "tmp_%s.img" % loop.split('/')[-1])
-    cmd = "dd if=/dev/zero of={} bs={} count={}".format(loop_file,
-                                                        blocksize,
-                                                        int(size / blocksize))
+    cmd = f"dd if=/dev/zero of={loop_file} bs={blocksize} count={int(size/blocksize)}"
     if process.system(cmd, ignore_status=True, sudo=True) != 0:
         raise DiskError("Unable to create backing file for loop device")
 

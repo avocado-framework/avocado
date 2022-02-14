@@ -74,9 +74,10 @@ def record(job, cmdline=None):
 
     for idx, suite in enumerate(job.test_suites, 1):
         if suite.name:
-            suite_var_name = "variants-{}-{}.json".format(idx, suite.name)
+            suite_var_name = f"variants-{idx}-{suite.name}.json"
         else:
-            suite_var_name = "variants-{}.json".format(idx)
+            suite_var_name = f"variants-{idx}.json"
+
         path_suite_variant = os.path.join(base_dir, suite_var_name)
         record_suite_variant(path_suite_variant, suite)
 

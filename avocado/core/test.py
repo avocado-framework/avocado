@@ -282,7 +282,8 @@ class Test(unittest.TestCase, TestData):
             logdir = self.__base_logdir
             self.__logdir = logdir
         else:
-            self.__base_logdir = os.path.join(self.__base_logdir, 'test-results')
+            self.__base_logdir = os.path.join(
+                self.__base_logdir, 'test-results')
             logdir = os.path.join(self.__base_logdir, self.name.str_filesystem)
 
             if os.path.exists(logdir):
@@ -574,7 +575,8 @@ class Test(unittest.TestCase, TestData):
         """
         if self.running and self.time_start:
             self._update_time_elapsed()
-        state = {key: getattr(self, key, None) for (key) in TEST_STATE_ATTRIBUTES}
+        state = {key: getattr(self, key, None)
+                 for (key) in TEST_STATE_ATTRIBUTES}
         state['class_name'] = self.__class__.__name__
         state['params'] = [(path, key, value)
                            for path, key, value
@@ -716,8 +718,10 @@ class Test(unittest.TestCase, TestData):
             self._start_logging()
         if self.__sysinfo_enabled:
             self.__sysinfo_logger.start()
-        skip_test_condition = getattr(testMethod, '__skip_test_condition__', False)
-        skip_test_condition_negate = getattr(testMethod, '__skip_test_condition_negate__', False)
+        skip_test_condition = getattr(
+            testMethod, '__skip_test_condition__', False)
+        skip_test_condition_negate = getattr(
+            testMethod, '__skip_test_condition_negate__', False)
         if skip_test_condition:
             if callable(skip_test_condition):
                 if skip_test_condition_negate:
@@ -761,7 +765,8 @@ class Test(unittest.TestCase, TestData):
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 details = sys.exc_info()[1]
                 if not isinstance(details, Exception):  # Avoid passing nasty exc
-                    details = exceptions.TestError("%r: %s" % (details, details))
+                    details = exceptions.TestError(
+                        "%r: %s" % (details, details))
                 self.log.debug("Local variables:")
                 local_vars = inspect.trace()[1][0].f_locals
                 for key, value in local_vars.items():
@@ -991,7 +996,7 @@ class Test(unittest.TestCase, TestData):
                                                      asset_hash)
             except OSError as e:
                 if cancel_on_missing:
-                    self.cancel("Missing asset {}".format(name))
+                    self.cancel(f"Missing asset {name}")
                 raise e
 
         asset_obj = asset.Asset(name, asset_hash, algorithm, locations,
@@ -1008,7 +1013,7 @@ class Test(unittest.TestCase, TestData):
             # the asset
             if cancel_on_missing:
                 # cancel when requested
-                self.cancel("Missing asset {}".format(name))
+                self.cancel(f"Missing asset {name}")
             # otherwise re-throw OSError
             raise e
 
@@ -1081,7 +1086,8 @@ class SimpleTest(Test):
         failure_fields = self._config.get('simpletests.status.failure_fields')
         msgs = []
         if 'status' in failure_fields:
-            msgs.append("Exited with status: '%u'" % cmd_error.result.exit_status)
+            msgs.append("Exited with status: '%u'" %
+                        cmd_error.result.exit_status)
         if 'stdout' in failure_fields:
             msgs.append("stdout: %r" % cmd_error.result.stdout_text)
         if 'stderr' in failure_fields:
@@ -1186,16 +1192,19 @@ class TapTest(SimpleTest):
                 self.error(event.message)
                 continue
             if isinstance(event, tapparser.TapParser.Test):
-                bad = event.result in (tapparser.TestResult.XPASS, tapparser.TestResult.FAIL)
+                bad = event.result in (
+                    tapparser.TestResult.XPASS, tapparser.TestResult.FAIL)
                 if event.result != tapparser.TestResult.SKIP:
                     count += 1
                 if bad:
-                    self.log.error('%s %s %s', event.result.name, event.number, event.name)
+                    self.log.error('%s %s %s', event.result.name,
+                                   event.number, event.name)
                     fail += 1
                     if event.result == tapparser.TestResult.XPASS:
                         bad_errormsg = 'there were test failures or unexpected passes'
                 else:
-                    self.log.info('%s %s %s', event.result.name, event.number, event.name)
+                    self.log.info('%s %s %s', event.result.name,
+                                  event.number, event.name)
 
         if not count:
             raise exceptions.TestSkipError('no tests were run')

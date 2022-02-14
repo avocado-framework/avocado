@@ -57,7 +57,7 @@ class NetworkInterface:
         else:
             msg = 'Distro not supported by API. Could not get interface filename.'
             raise NWException(msg)
-        return "{}/ifcfg-{}".format(path, self.name)
+        return f"{path}/ifcfg-{self.name}"
 
     @property
     def config_file_path(self):
@@ -82,9 +82,9 @@ class NetworkInterface:
             return
 
     def _get_interface_details(self, version=None):
-        cmd = "ip -j link show {}".format(self.name)
+        cmd = f"ip -j link show {self.name}"
         if version:
-            cmd = "ip -{} -j address show {}".format(version, self.name)
+            cmd = f"ip -{version} -j address show {self.name}"
         output = run_command(cmd, self.host)
         try:
             result = json.loads(output)
@@ -93,22 +93,23 @@ class NetworkInterface:
                     return item
             raise NWException("Interface not found")
         except (NWException, json.JSONDecodeError):
-            msg = "Unable to get the details of interface {}".format(self.name)
+            msg = f"Unable to get the details of interface {self.name}"
             LOG.error(msg)
             raise NWException(msg)
 
     def _get_bondinterface_details(self):
-        cmd = "cat /sys/class/net/{}/bonding/mode \
-               /sys/class/net/{}/bonding/slaves".format(self.name, self.name)
+        cmd = f"cat /sys/class/net/{self.name}/bonding/mode \
+               /sys/class/net/{self.name}/bonding/slaves"
         try:
             mode, slaves = run_command(cmd, self.host).splitlines()
             return {'mode': mode.split(),
                     'slaves': slaves.split()}
         except Exception:
-            raise NWException("Slave interface not found for the bond {}".format(self.name))
+            raise NWException(
+                f"Slave interface not found for the bond {self.name}")
 
     def _move_file_to_backup(self, filename, ignore_missing=True):
-        destination = "{}.backup".format(filename)
+        destination = f"{filename}.backup"
         if os.path.exists(filename):
             shutil.move(filename, destination)
         else:
@@ -120,7 +121,7 @@ class NetworkInterface:
 
         with open(filename, 'w+') as fp:  # pylint: disable=W1514
             for key, value in values.items():
-                fp.write("{}={}\n".format(key, value))
+                fp.write(f"{key}={value}\n")
 
     def set_hwaddr(self, hwaddr):
         """Sets a Hardware Address (MAC Address) to the interface.
@@ -132,7 +133,7 @@ class NetworkInterface:
 
         :param hwaddr: Hardware Address (Mac Address)
         """
-        cmd = "ip link set dev {} address {}".format(self.name, hwaddr)
+        cmd = f"ip link set dev {self.name} address {hwaddr}"
         try:
             run_command(cmd, self.self.host, sudo=True)
         except Exception as ex:
@@ -150,13 +151,12 @@ class NetworkInterface:
         :param netmask: Network mask
         """
 
-        ip = ip_interface("{}/{}".format(ipaddr, netmask))
-        cmd = 'ip addr add {} dev {}'.format(ip.compressed,
-                                             self.name)
+        ip = ip_interface(f"{ipaddr}/{netmask}")
+        cmd = f'ip addr add {ip.compressed} dev {self.name}'
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException("Failed to add address {}".format(ex))
+            raise NWException(f"Failed to add address {ex}")
 
     @property
     def vlans(self):
@@ -190,14 +190,12 @@ class NetworkInterface:
                           <interface_name>.<vlan_num>
         """
 
-        vlan_name = vlan_name or "{}.{}".format(self.name, vlan_num)
-        cmd = "ip link add link {} name {} type vlan id {}".format(self.name,
-                                                                   vlan_name,
-                                                                   vlan_num)
+        vlan_name = vlan_name or f"{self.name}.{vlan_num}"
+        cmd = f"ip link add link {self.name} name {vlan_name} type vlan id {vlan_num}"
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException("Failed to add VLAN tag: {}".format(ex))
+            raise NWException(f"Failed to add VLAN tag: {ex}")
 
     def remove_vlan_by_tag(self, vlan_num):
         """Remove the VLAN of the interface by tag number.
@@ -213,13 +211,13 @@ class NetworkInterface:
             vlan_name = self.vlans[str(vlan_num)]
         else:
             return False
-        cmd = "ip link delete {}".format(vlan_name)
+        cmd = f"ip link delete {vlan_name}"
 
         try:
             run_command(cmd, self.host, sudo=True)
             return True
         except Exception as ex:
-            raise NWException("Failed to remove VLAN interface: {}".format(ex))
+            raise NWException(f"Failed to remove VLAN interface: {ex}")
 
     def remove_all_vlans(self):
         """Remove all VLANs of this interface.
@@ -229,10 +227,10 @@ class NetworkInterface:
         """
         try:
             for v in self.vlans.values():
-                cmd = "ip link delete {}".format(v)
+                cmd = f"ip link delete {v}"
                 run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            raise NWException("Failed to remove VLAN interface: {}".format(ex))
+            raise NWException(f"Failed to remove VLAN interface: {ex}")
 
     def bring_down(self):
         """Shutdown the interface.
@@ -243,7 +241,7 @@ class NetworkInterface:
         You must have sudo permissions to run this method on a host.
         """
 
-        cmd = "ip link set {} down".format(self.name)
+        cmd = f"ip link set {self.name} down"
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
@@ -256,7 +254,7 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
         """
-        cmd = "ip link set {} up".format(self.name)
+        cmd = f"ip link set {self.name} up"
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
@@ -307,7 +305,7 @@ class NetworkInterface:
         :return: IP address as string.
         """
         if version not in [4, 6]:
-            raise NWException("Version {} not supported".format(version))
+            raise NWException(f"Version {version} not supported")
 
         try:
             details = self._get_interface_details(version)
@@ -315,7 +313,7 @@ class NetworkInterface:
             if addr_info:
                 return [x.get('local') for x in addr_info]
         except (NWException, IndexError):
-            msg = "Could not get ip addresses for {}".format(self.name)
+            msg = f"Could not get ip addresses for {self.name}"
             LOG.debug(msg)
             return []
 
@@ -325,11 +323,11 @@ class NetworkInterface:
         This method will try to get the address and if fails it will raise a
         NWException.
         """
-        cmd = "cat /sys/class/net/{}/address".format(self.name)
+        cmd = f"cat /sys/class/net/{self.name}/address"
         try:
             return run_command(cmd, self.host)
         except Exception as ex:
-            raise NWException("Failed to get hw address: {}".format(ex))
+            raise NWException(f"Failed to get hw address: {ex}")
 
     def get_mtu(self):
         """Return the current MTU value of this interface.
@@ -353,13 +351,13 @@ class NetworkInterface:
         :param count: How many packets to send. Default is 2
         :param options: ping command options. Default is None
         """
-        cmd = "ping -I {} {} -c {}".format(self.name, peer_ip, count)
+        cmd = f"ping -I {self.name} {peer_ip} -c {count}"
         if options is not None:
-            cmd = "{} {}".format(cmd, options)
+            cmd = "{cmd} {options}"
         try:
             run_command(cmd, self.host)
         except Exception as ex:
-            raise NWException("Failed to ping: {}".format(ex))
+            raise NWException(f"Failed to ping: {ex}")
 
     def save(self, ipaddr, netmask):
         """Save current interface IP Address to the system configuration file.
@@ -383,7 +381,7 @@ class NetworkInterface:
 
         current_distro = distro_detect()
 
-        filename = "ifcfg-{}".format(self.name)
+        filename = f"ifcfg-{self.name}"
         if current_distro.name in ['rhel', 'fedora']:
             path = "/etc/sysconfig/network-scripts"
         elif current_distro.name == 'SuSE':
@@ -413,13 +411,13 @@ class NetworkInterface:
                                 'MASTER': self.name}
             if current_distro.name == 'SuSE':
                 ifcfg_dict['BONDING_MODULE_OPTS'] = 'mode=' \
-                           + bond_dict['mode'][0]
+                    + bond_dict['mode'][0]
                 for index, slave in enumerate(bond_dict['slaves']):
-                    bonding_slave = 'BONDING_SLAVE{}'.format(index)
+                    bonding_slave = f'BONDING_SLAVE{index}'
                     ifcfg_dict[bonding_slave] = slave
                     ifcfg_slave_dict.update({'NAME': slave,
                                              'DEVICE': slave})
-                    self._write_to_file("{}/ifcfg-{}".format(path, slave),
+                    self._write_to_file(f"{path}/ifcfg-{salve}",
                                         ifcfg_slave_dict)
             elif current_distro.name in ['rhel', 'fedora']:
                 ifcfg_dict['BONDING_OPTS'] = 'mode='+bond_dict['mode'][0]
@@ -427,13 +425,13 @@ class NetworkInterface:
                     ifcfg_slave_dict.update({'NAME': slave,
                                              'DEVICE': slave,
                                              'TYPE': 'Ethernet'})
-                    self._write_to_file("{}/ifcfg-{}".format(path, slave),
+                    self._write_to_file(f"{path}/ifcfg-{slave}",
                                         ifcfg_slave_dict)
             else:
                 msg = 'Distro not supported by API. Could not save ipaddr.'
                 raise NWException(msg)
 
-        self._write_to_file("{}/{}".format(path, filename), ifcfg_dict)
+        self._write_to_file(f"{path}/{filename=}", ifcfg_dict)
 
     def set_mtu(self, mtu, timeout=30):
         """Sets a new MTU value to this interface.
@@ -464,13 +462,12 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
         """
-        ip = ip_interface("{}/{}".format(ipaddr, netmask))
-        cmd = 'ip addr del {} dev {}'.format(ip.compressed,
-                                             self.name)
+        ip = ip_interface(f"{ipaddr}/{netmask}")
+        cmd = f'ip addr del {ip.compressed} dev {self.name}'
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            msg = 'Failed to remove ipaddr. {}'.format(ex)
+            msg = f'Failed to remove ipaddr. {ex}'
             raise NWException(msg)
 
     def remove_link(self):
@@ -482,11 +479,11 @@ class NetworkInterface:
 
         You must have sudo permissions to run this method on a host.
         """
-        cmd = 'ip link del dev {}'.format(self.name)
+        cmd = f'ip link del dev {self.name}'
         try:
             run_command(cmd, self.host, sudo=True)
         except Exception as ex:
-            msg = 'Failed to delete link. {}'.format(ex)
+            msg = f'Failed to delete link. {ex}'
             raise NWException(msg)
 
     def restore_from_backup(self):
@@ -496,7 +493,7 @@ class NetworkInterface:
         interface then it copies backup file to interface file in /sysfs path.
         """
 
-        backup_file = "{}.backup".format(self.config_filename)
+        backup_file = f"{self.config_filename}.backup"
         if os.path.exists(backup_file):
             shutil.move(backup_file, self.config_filename)
         else:
@@ -510,12 +507,12 @@ class NetworkInterface:
 
         rtype: bool
         """
-        cmd = 'ip link show dev {}'.format(self.name)
+        cmd = f'ip link show dev {self.name}'
         try:
             run_command(cmd, self.host)
             return True
         except Exception as ex:
-            msg = "Interface {} is not available. {}".format(self.name, ex)
+            msg = f"Interface {self.name} is not available. {ex}"
             LOG.debug(msg)
             return False
 
@@ -526,12 +523,12 @@ class NetworkInterface:
 
         rtype: bool
         """
-        cmd = 'cat /proc/net/bonding/{}'.format(self.name)
+        cmd = f'cat /proc/net/bonding/{self.name}'
         try:
             run_command(cmd, self.host)
             return True
         except Exception as ex:
-            msg = "{} is not a bond device. {}".format(self.name, ex)
+            msg = f"{self.name} is not a bond device. {ex}"
             LOG.debug(msg)
             return False
 
@@ -549,12 +546,12 @@ class NetworkInterface:
         if self.if_type != 'Bond':
             return
         for slave_config in self.slave_config_filename:
-            backup_slave_config = "{}.backup".format(slave_config)
+            backup_slave_config = f"{slave_config}.backup"
             try:
                 if os.path.exists(backup_slave_config):
                     shutil.move(backup_slave_config, slave_config)
                 else:
                     os.remove(slave_config)
             except Exception as ex:
-                raise NWException("Could not restore \
-                                  the config file {}".format(ex))
+                raise NWException(f"Could not restore \
+                                  the config file {ex}")

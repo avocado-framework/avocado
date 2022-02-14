@@ -52,7 +52,7 @@ class XUnitResult(Result):
 
     @staticmethod
     def _format_time(time):
-        return "{:.3f}".format(float(time))
+        return f"{time:.3f}"
 
     def _create_testcase_element(self, document, state):
         testcase = document.createElement('testcase')
@@ -62,7 +62,8 @@ class XUnitResult(Result):
             testcase.setAttribute('name', self._escape_attr(name.name))
         else:
             testcase.setAttribute('name', self._get_attr(state, 'name'))
-        testcase.setAttribute('time', self._format_time(self._get_attr(state, 'time_elapsed')))
+        testcase.setAttribute('time', self._format_time(
+            self._get_attr(state, 'time_elapsed')))
         return testcase
 
     def _create_failure_or_error(self, document, test, element_type,
@@ -70,7 +71,8 @@ class XUnitResult(Result):
         element = document.createElement(element_type)
         element.setAttribute('type', self._get_attr(test, 'fail_class'))
         element.setAttribute('message', self._get_attr(test, 'fail_reason'))
-        traceback_content = self._escape_cdata(test.get('traceback', self.UNKNOWN))
+        traceback_content = self._escape_cdata(
+            test.get('traceback', self.UNKNOWN))
         traceback = document.createCDATASection(traceback_content)
         element.appendChild(traceback)
         system_out = document.createElement('system-out')
@@ -94,7 +96,8 @@ class XUnitResult(Result):
         except (TypeError, IOError):
             text_output = self.UNKNOWN
         system_out_cdata_content = self._escape_cdata(text_output)
-        system_out_cdata = document.createCDATASection(system_out_cdata_content)
+        system_out_cdata = document.createCDATASection(
+            system_out_cdata_content)
         system_out.appendChild(system_out_cdata)
         return element, system_out
 
@@ -104,13 +107,18 @@ class XUnitResult(Result):
         if job_name:
             testsuite.setAttribute('name', job_name)
         else:
-            testsuite.setAttribute('name', os.path.basename(os.path.dirname(result.logfile)))
+            testsuite.setAttribute('name', os.path.basename(
+                os.path.dirname(result.logfile)))
         testsuite.setAttribute('tests', self._escape_attr(result.tests_total))
-        testsuite.setAttribute('errors', self._escape_attr(result.errors + result.interrupted))
+        testsuite.setAttribute('errors', self._escape_attr(
+            result.errors + result.interrupted))
         testsuite.setAttribute('failures', self._escape_attr(result.failed))
-        testsuite.setAttribute('skipped', self._escape_attr(result.skipped + result.cancelled))
-        testsuite.setAttribute('time', self._escape_attr(self._format_time(result.tests_total_time)))
-        testsuite.setAttribute('timestamp', self._escape_attr(datetime.datetime.now().isoformat()))
+        testsuite.setAttribute('skipped', self._escape_attr(
+            result.skipped + result.cancelled))
+        testsuite.setAttribute('time', self._escape_attr(
+            self._format_time(result.tests_total_time)))
+        testsuite.setAttribute('timestamp', self._escape_attr(
+            datetime.datetime.now().isoformat()))
         document.appendChild(testsuite)
         for test in result.tests:
             testcase = self._create_testcase_element(document, test)

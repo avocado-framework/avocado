@@ -74,10 +74,9 @@ class ReferenceResolution:
         self.origin = origin
 
     def __repr__(self):
-        fmt = ('<ReferenceResolution reference="{}" result="{}" '
-               'resolutions="{}" info="{}" origin="{}">')
-        return fmt.format(self.reference, self.result, self.resolutions,
-                          self.info, self.origin)
+        fmt = (f'<ReferenceResolution reference="{self.reference}" result="{self.result}" '
+               f'resolutions="{self.resolutions}" info="{self.info}" origin="{self.origin}">')
+        return fmt
 
 
 class Resolver(EnabledExtensionManager):

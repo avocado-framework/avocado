@@ -82,7 +82,7 @@ class RuntimeTask:
 
         # create test ID
         if test_suite_name:
-            prefix = "{}-{}".format(test_suite_name, index)
+            prefix = f"{test_suite_name}-{index}"
         else:
             prefix = index
         test_id = TestID(prefix,

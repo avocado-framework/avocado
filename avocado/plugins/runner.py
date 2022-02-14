@@ -238,7 +238,8 @@ class TestRunner(Runner):
 
         # Get/update the test status (decrease timeout on abort)
         if abort_reason:
-            after_interrupted = job.config.get('runner.timeout.after_interrupted')
+            after_interrupted = job.config.get(
+                'runner.timeout.after_interrupted')
             finish_deadline = time.monotonic() + after_interrupted
         else:
             finish_deadline = deadline
@@ -348,7 +349,8 @@ class TestRunner(Runner):
         else:
             deadline = None
 
-        test_result_total = test_suite.variants.get_number_of_tests(test_suite.tests)
+        test_result_total = test_suite.variants.get_number_of_tests(
+            test_suite.tests)
         no_digits = len(str(test_result_total))
         job.result.tests_total = test_result_total
         index = 1
@@ -360,7 +362,7 @@ class TestRunner(Runner):
                 test_parameters["config"] = job.config
                 name = test_parameters.get("name")
                 if test_suite.name:
-                    prefix = "{}-{}".format(test_suite.name, index)
+                    prefix = f"{test_suite.name}-{index}"
                 else:
                     prefix = index
                 test_parameters["name"] = TestID(prefix,

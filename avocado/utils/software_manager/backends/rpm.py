@@ -235,7 +235,7 @@ class RpmBackend(BaseBackend):
         """
         abs_path = os.path.abspath(os.path.expanduser((package_path)))
         try:
-            result = process.run("rpm -qp {}".format(abs_path))
+            result = process.run(f"rpm -qp {abs_path}")
         except process.CmdError:
             return False
         if result.exit_status == 0:
@@ -257,9 +257,7 @@ class RpmBackend(BaseBackend):
         dest = dest_path or os.path.curdir
 
         # If something goes wrong process.run will raise a CmdError exception
-        process.run("rpm2cpio {} | cpio -dium -D {}".format(abs_path,
-                                                            dest),
-                    shell=True)
+        process.run(f"rpm2cpio {abs_path} | cpio -dium -D {dest}", shell=True)
         return dest
 
     def perform_setup(self, packages, no_dependencies=False):
@@ -280,7 +278,8 @@ class RpmBackend(BaseBackend):
                 package_name = "-".join(package_file.split('-')[0:-2])
                 LOG.debug("%s -> %s", package_file, package_name)
                 installed = self.check_installed(package_name)
-                verified = self.rpm_verify(package_name) if installed else False
+                verified = self.rpm_verify(
+                    package_name) if installed else False
                 if installed and not verified:
                     self.rpm_erase(package_name)
                 if not installed or not verified:

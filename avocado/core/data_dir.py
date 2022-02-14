@@ -60,7 +60,7 @@ def _get_settings_dir(dir_name):
     """
     Returns a given "datadir" directory as set by the configuration system
     """
-    namespace = 'datadir.paths.{}'.format(dir_name)
+    namespace = f"datadir.paths.{dir_name}"
     path = settings.as_dict().get(namespace)
     return os.path.abspath(path)
 

@@ -103,7 +103,7 @@ def collect_dmesg(output_file=None):
         "dmesg", ignore_status=True, sudo=True).decode()
     genio.write_file(output_file, dmesg)
     if not os.path.isfile(output_file):
-        raise DmesgError("{} is not a valid file.".format(output_file))
+        raise DmesgError(f"{output_file} is not a valid file.")
     return output_file
 
 
@@ -159,7 +159,7 @@ def collect_errors_by_level(output_file=None, level_check=5, skip_errors=None):
         else:
             err += " Please check  dmesg log in debug log."
             LOGGER.debug(dmsg_log)
-        raise DmesgError("Test is failed {}".format(err))
+        raise DmesgError(f"Test is failed {err}")
 
 
 def skip_dmesg_messages(dmesg_stdout, skip_messages):

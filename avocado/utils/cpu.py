@@ -224,7 +224,8 @@ def get_family():
         try:
             family = zfamily_map[get_version()].lower()
         except KeyError as err:
-            msg = "Could not find family for %s\nError: %s" % (get_version(), err)
+            msg = "Could not find family for %s\nError: %s" % (
+                get_version(), err)
             LOG.warning(msg)
             raise FamilyException(msg)
     else:
@@ -290,9 +291,11 @@ def get_idle_state():
     for cpu in cpus_list:
         cpu_idlestate[cpu] = {}
         for state_no in range(states):
-            state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+            state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (
+                cpu, state_no)
             try:
-                cpu_idlestate[cpu][state_no] = bool(int(open(state_file, 'rb').read()))  # pylint: disable=W1514
+                cpu_idlestate[cpu][state_no] = bool(
+                    int(open(state_file, 'rb').read()))  # pylint: disable=W1514
             except IOError as err:
                 LOG.warning("Failed to read idle state on cpu %s "
                             "for state %s:\n%s", cpu, state_no, err)
@@ -328,25 +331,30 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
     if not setstate:
         states = []
         if state_number == 'all':
-            states = list(range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*"))))
+            states = list(
+                range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*"))))
         else:
             states.append(state_number)
         disable = _bool_to_binary(disable)
         for cpu in cpus_list:
             for state_no in states:
-                state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (
+                    cpu, state_no)
                 try:
-                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
+                    open(state_file, "wb").write(
+                        disable)  # pylint: disable=W1514
                 except IOError as err:
                     LOG.warning("Failed to set idle state on cpu %s "
                                 "for state %s:\n%s", cpu, state_no, err)
     else:
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
-                state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (
+                    cpu, state_no)
                 disable = _bool_to_binary(value)
                 try:
-                    open(state_file, "wb").write(disable)  # pylint: disable=W1514
+                    open(state_file, "wb").write(
+                        disable)  # pylint: disable=W1514
                 except IOError as err:
                     LOG.warning("Failed to set idle state on cpu %s "
                                 "for state %s:\n%s", cpu, state_no, err)
@@ -440,8 +448,8 @@ def _deprecated(newfunc, oldfuncname):
     :rtype: `function`
     """
     def wrap(*args, **kwargs):
-        fmt_str = "avocado.utils.cpu.{}() it is getting deprecat".format(oldfuncname)
-        fmt_str += "ed, Use avocado.utils.cpu.{}() instead".format(newfunc.__name__)
+        fmt_str = f"avocado.utils.cpu.{oldfuncname}() it is getting deprecat"
+        fmt_str += f"ed, Use avocado.utils.cpu.{__name__}() instead"
         warnings.warn((fmt_str), DeprecationWarning, stacklevel=2)
         return newfunc(*args, **kwargs)
     return wrap

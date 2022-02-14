@@ -41,7 +41,7 @@ class Jobs(CLICmd):
     @staticmethod
     def _get_data_from_file(filename):
         if not filename or not os.path.isfile(filename):
-            raise FileNotFoundError('File not found {}'.format(filename))
+            raise FileNotFoundError(f'File not found {filename}')
 
         with open(filename, 'r', encoding='utf-8') as fp:
             return json.load(fp)

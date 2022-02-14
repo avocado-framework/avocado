@@ -131,11 +131,9 @@ class Runnable:
         self.kwargs = kwargs
 
     def __repr__(self):
-        fmt = ('<Runnable kind="{}" uri="{}" config="{}" args="{}" '
-               'kwargs="{}" tags="{}" requirements="{}"> variant="{}"')
-        return fmt.format(self.kind, self.uri, self.config, self.args,
-                          self.kwargs, self.tags, self.requirements,
-                          self.variant)
+        fmt = (f'<Runnable kind="{self.kwargs}" uri="{self.uri}" config="{self.config}" args="{self.args}" '
+               f'kwargs="{self.kwargs}" tags="{self.tags}" requirements="{self.requirements}"> variant="{self.variant}"')
+        return fmt
 
     @property
     def identifier(self):
@@ -239,11 +237,13 @@ class Runnable:
         for arg in self.args:
             args.append('-a')
             if arg.startswith('-'):
-                arg = 'base64:%s' % base64.b64encode(arg.encode()).decode('ascii')
+                arg = 'base64:%s' % base64.b64encode(
+                    arg.encode()).decode('ascii')
             args.append(arg)
 
         if self.tags is not None:
-            args.append('tags=json:%s' % json.dumps(self.get_serializable_tags()))
+            args.append('tags=json:%s' %
+                        json.dumps(self.get_serializable_tags()))
 
         if self.variant is not None:
             args.append('variant=json:%s' % json.dumps(self.variant))
@@ -914,7 +914,7 @@ class TaskStatusService:
             self.connection.close()
 
     def __repr__(self):
-        return '<TaskStatusService uri="{}">'.format(self.uri)
+        return f'<TaskStatusService uri="{self.uri}">'
 
 
 class Task:
@@ -960,7 +960,8 @@ class Task:
         self.category = category
         self.job_id = job_id
         self.status_services = []
-        status_uris = status_uris or self.runnable.config.get('nrunner.status_server_uri')
+        status_uris = status_uris or self.runnable.config.get(
+            'nrunner.status_server_uri')
         if status_uris is not None:
             if type(status_uris) is not list:
                 status_uris = [status_uris]
@@ -974,10 +975,9 @@ class Task:
         self.metadata = {}
 
     def __repr__(self):
-        fmt = ('<Task identifier="{}" runnable="{}" dependencies="{}"'
-               ' status_services="{}" category="{}" job_id="{}">')
-        return fmt.format(self.identifier, self.runnable, self.dependencies,
-                          self.status_services, self.category, self.job_id)
+        fmt = (f'<Task identifier="{self.identifier}" runnable="{self.runnable}" dependencies="{self.dependencies}"'
+               f' status_services="{self.status_services}" category="{self.category}" job_id="{self.job_id}">')
+        return fmt
 
     def are_requirements_available(self, runners_registry=None):
         """Verifies if requirements needed to run this task are available.
@@ -992,7 +992,8 @@ class Task:
 
     def setup_output_dir(self, output_dir=None):
         if not self.runnable.output_dir:
-            output_dir = output_dir or tempfile.mkdtemp(prefix='.avocado-task-')
+            output_dir = output_dir or tempfile.mkdtemp(
+                prefix='.avocado-task-')
             self.runnable.output_dir = output_dir
 
     @classmethod

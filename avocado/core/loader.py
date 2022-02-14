@@ -128,8 +128,8 @@ class TestLoaderProxy:
             supported_types.extend(_good_test_types(plugin))
 
         # Here is one of the few exceptions that has a hardcoded default
-        loaders = config.get("{}.loaders".format(subcommand)) or ['file',
-                                                                  '@DEFAULT']
+        loaders = config.get(f"{subcommand}.loaders") or ['file',
+                                                          '@DEFAULT']
         if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders

@@ -68,7 +68,7 @@ class SpawnerMixin:
         """
         results_dir = get_job_results_dir(job_id)
         task_id = string_to_safe_path(task_id)
-        data_pointer = '{}/test-results/{}/data'.format(results_dir, task_id)
+        data_pointer = f'{results_dir}/test-results/{task_id}/data'
         src = open(data_pointer, 'r', encoding='utf-8').readline().rstrip()
         try:
             for path in Path(src).expanduser().iterdir():
@@ -76,4 +76,4 @@ class SpawnerMixin:
                     for stream in SpawnerMixin.bytes_from_file(str(path)):
                         yield (path.name, stream)
         except FileNotFoundError as e:
-            raise SpawnerException("Task not found: {}".format(e))
+            raise SpawnerException(f"Task not found: {e}")
