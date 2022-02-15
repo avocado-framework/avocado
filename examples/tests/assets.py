@@ -32,15 +32,13 @@ class Hello(Test):
     @fail_on(process.CmdError)
     def test_gpg_signature(self):
         keyring = os.path.join(self.workdir, "tempring.gpg")
-        gpg_cmd = "gpg --no-default-keyring --keyring %s" % keyring
+        gpg_cmd = f"gpg --no-default-keyring --keyring {keyring}"
         signer_pubkey = self.get_data("gnu_hello_signer.gpg")
-        import_cmd = "%s --import %s" % (gpg_cmd, signer_pubkey)
+        import_cmd = f"{gpg_cmd} --import {signer_pubkey}"
         # gpg will not return 0 when creating a new keyring and
         # importing the public key
         process.run(import_cmd, ignore_status=True)
-        verify_cmd = "%s --verify %s %s" % (gpg_cmd,
-                                            self.hello_sig,
-                                            self.hello)
+        verify_cmd = f"{gpg_cmd} --verify {self.hello_sig} {self.hello}"
         process.run(verify_cmd)
 
     @fail_on(process.CmdError)

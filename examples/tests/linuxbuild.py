@@ -21,7 +21,7 @@ class LinuxBuildTest(Test):
         if linux_config is not None:
             linux_config = self.get_data(linux_config)
         if linux_config is None:
-            self.cancel('Test is missing data file %s' % linux_config)
+            self.cancel(f'Test is missing data file {linux_config}')
 
         self.linux_build = kernel.KernelBuild(kernel_version,
                                               linux_config,

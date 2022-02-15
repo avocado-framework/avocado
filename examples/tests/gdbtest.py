@@ -30,16 +30,14 @@ class GdbTest(Test):
             return99_source_path = self.get_data('return99.c')
             if return99_source_path is None:
                 self.cancel('Test is missing data file "return99.c"')
-            process.system('gcc -O0 -g %s -o %s' % (return99_source_path,
-                                                    self.return99_binary_path))
+            process.system(f'gcc -O0 -g {return99_source_path} -o {self.return99_binary_path}')
 
         self.segfault_binary_path = os.path.join(self.teststmpdir, 'segfault')
         if not os.path.exists(self.segfault_binary_path):
             segfault_source_path = self.get_data('segfault.c')
             if segfault_source_path is None:
                 self.cancel('Test is missing data file "segfault.c"')
-            process.system('gcc -O0 -g %s -o %s' % (segfault_source_path,
-                                                    self.segfault_binary_path))
+            process.system(f'gcc -O0 -g {segfault_source_path} -o {self.segfault_binary_path}')
 
     @staticmethod
     def is_process_alive(process):  # pylint: disable=W0621
@@ -73,14 +71,14 @@ class GdbTest(Test):
         g = gdb.GDB()
         self.log.info("Testing existing (valid) GDB commands using raw commands")
         for cmd in self.VALID_CMDS:
-            info_cmd = "-info-gdb-mi-command %s" % cmd[1:]
+            info_cmd = f"-info-gdb-mi-command {cmd[1:]}"
             r = g.cmd(info_cmd)
             self.assertEqual(r.result.result.command.exists, 'true')
 
         self.log.info("Testing non-existing (invalid) GDB commands using raw "
                       "commands")
         for cmd in self.INVALID_CMDS:
-            info_cmd = "-info-gdb-mi-command %s" % cmd[1:]
+            info_cmd = f"-info-gdb-mi-command {cmd[1:]}"
             r = g.cmd(info_cmd)
             self.assertEqual(r.result.result.command.exists, 'false')
 
@@ -105,7 +103,7 @@ class GdbTest(Test):
         self.log.info("Testing that GDB loads a file and sets a breakpoint")
         g = gdb.GDB()
 
-        file_cmd = "-file-exec-and-symbols %s" % self.return99_binary_path
+        file_cmd = f"-file-exec-and-symbols {self.return99_binary_path}"
         r = g.cmd(file_cmd)
         self.assertEqual(r.result.class_, 'done')
 
@@ -145,7 +143,7 @@ class GdbTest(Test):
         self.log.info("Testing that a core dump will be generated")
 
         g = gdb.GDB()
-        file_cmd = "-file-exec-and-symbols %s" % self.segfault_binary_path
+        file_cmd = f"-file-exec-and-symbols {self.segfault_binary_path}"
         r = g.cmd(file_cmd)
         self.assertEqual(r.result.class_, 'done')
 
@@ -160,8 +158,8 @@ class GdbTest(Test):
             if (hasattr(parsed_msg, 'class_') and
                 (parsed_msg.class_ == 'stopped') and
                     (parsed_msg.result.signal_name == 'SIGSEGV')):
-                core_path = "%s.core" % self.segfault_binary_path
-                gcore_cmd = 'gcore %s' % core_path
+                core_path = f"{self.segfault_binary_path}.core"
+                gcore_cmd = f'gcore {core_path}'
                 gcore_cmd = gdb.encode_mi_cli(gcore_cmd)
                 r = g.cmd(gcore_cmd)
                 self.assertEqual(r.result.class_, 'done')
@@ -191,14 +189,14 @@ class GdbTest(Test):
 
         # Do 100 cycle of target (kind of connects) and disconnects
         for _ in range(0, 100):
-            cmd = '-target-select extended-remote :%s' % s.port
+            cmd = f'-target-select extended-remote :{s.port}'
             r = g.cmd(cmd)
             self.assertEqual(r.result.class_, 'connected')
             r = g.cmd('-target-disconnect')
             self.assertEqual(r.result.class_, 'done')
 
         # manual server shutdown
-        cmd = '-target-select extended-remote :%s' % s.port
+        cmd = f'-target-select extended-remote :{s.port}'
         r = g.cmd(cmd)
         self.assertEqual(r.result.class_, 'connected')
         r = g.cli_cmd('monitor exit')
@@ -234,15 +232,15 @@ class GdbTest(Test):
         s = gdb.GDBServer()
         g = gdb.GDB()
 
-        cmd = '-file-exec-and-symbols %s' % self.return99_binary_path
+        cmd = f'-file-exec-and-symbols {self.return99_binary_path}'
         r = g.cmd(cmd)
         self.assertEqual(r.result.class_, 'done')
 
-        cmd = 'set remote exec-file %s' % self.return99_binary_path
+        cmd = f'set remote exec-file {self.return99_binary_path}'
         r = g.cmd(cmd)
         self.assertEqual(r.result.class_, 'done')
 
-        cmd = "-break-insert %s" % 'main'
+        cmd = f"-break-insert {'main'}"
         r = g.cmd(cmd)
         self.assertEqual(r.result.class_, 'done')
 
@@ -318,7 +316,7 @@ class GdbTest(Test):
         self.assertTrue(os.path.exists(s.stderr_path))
 
         stderr_lines = genio.read_all_lines(s.stderr_path)
-        listening_line = "Listening on port %s" % s.port
+        listening_line = f"Listening on port {s.port}"
         self.assertIn(listening_line, stderr_lines)
 
     def test_server_stdout(self):

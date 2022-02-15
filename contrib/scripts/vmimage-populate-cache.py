@@ -19,7 +19,7 @@ KNOWN_IMAGES = (
 def main():
     for image in KNOWN_IMAGES:
         name, version, arch, checksum, algorithm = image
-        print("%s version %s (%s): " % (name, version, arch), end='')
+        print(f"{name} version {version} ({arch}): ", end='')
         cache_dir = settings.as_dict().get('datadir.paths.cache_dirs')[0]
         download = vmimage.get(name=name, version=version, arch=arch,
                                checksum=checksum, algorithm=algorithm,

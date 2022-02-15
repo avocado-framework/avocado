@@ -47,9 +47,7 @@ class Mail(JobPre, JobPost):
         sender = job.config.get('plugins.job.mail.sender')
         server = job.config.get('plugins.job.mail.server')
         # build proper subject based on job status
-        subject = '%s Job %s - Status: %s' % (header,
-                                              job.unique_id,
-                                              job.status)
+        subject = f'{header} Job {job.unique_id} - Status: {job.status}'
         msg = MIMEText(subject)
         msg['Subject'] = subject
         msg['From'] = sender
