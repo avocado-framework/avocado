@@ -10,9 +10,8 @@ class Coroutine(TestCaseTmpDir):
         test_path = os.path.join(BASEDIR,
                                  "examples", "tests", "sleeptest_async.py")
         os.environ['PYTHONASYNCIODEBUG'] = '1'
-        cmd = ("{} --show=test run --disable-sysinfo --job-results-dir {} "
-               "-p sleep_length=0 {}").format(AVOCADO, self.tmpdir.name,
-                                              test_path)
+        cmd = (f"{AVOCADO} --show=test run --disable-sysinfo --job-results-dir {self.tmpdir} "
+               f"-p sleep_length=0 {test_path}")
         result = process.run(cmd, ignore_status=True)
         self.assertEqual(result.exit_status, 0)
         self.assertNotIn("RuntimeWarning: coroutine 'AsyncSleepTest.test' "

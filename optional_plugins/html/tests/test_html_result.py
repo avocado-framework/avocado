@@ -15,10 +15,9 @@ class HtmlResultTest(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix='avocado_' + __name__)
 
     def test_sysinfo_html_output(self):
-        html_output = "{}/output.html".format(self.tmpdir.name)
-        cmd_line = ('{} run --html {} --job-results-dir {} '
-                    'examples/tests/passtest.py'.format(AVOCADO, html_output,
-                                                        self.tmpdir.name))
+        html_output = f"{self.tmpdir}/output.html"
+        cmd_line = (f'{AVOCADO} run --html {html_output} --job-results-dir {self.tmpdir.name}'
+                    'examples/tests/passtest.py')
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

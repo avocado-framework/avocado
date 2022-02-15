@@ -48,7 +48,7 @@ def walk_plugins_setup_py(action, action_name=None,
 
     for plugin in list(Path(directory).glob("*/setup.py")):
         parent_dir = plugin.parent
-        print(">> {} {}".format(action_name, parent_dir))
+        print(f">> {action_name} {parent_dir}")
         run([sys.executable, "setup.py"] + action, cwd=parent_dir, check=True)
 
 

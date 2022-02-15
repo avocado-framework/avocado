@@ -13,9 +13,9 @@ class Basic(unittest.TestCase):
         params_path = os.path.join(BASEDIR, 'examples',
                                    'varianter_cit', 'test_params.cit')
         cmd_line = (
-            '{0} variants --cit-order-of-combinations=2 '
-            '--cit-parameter-file {1}'
-        ).format(AVOCADO, params_path)
+            f'{AVOCADO} variants --cit-order-of-combinations=2 '
+            f'--cit-parameter-file {params_path}'
+        )
         result = process.run(cmd_line)
         lines = result.stdout.splitlines()
         self.assertEqual(b'CIT Variants (9):', lines[0])
@@ -33,11 +33,11 @@ class Run(TestCaseTmpDir):
         test_path = os.path.join(BASEDIR, 'examples',
                                  'tests', 'cit_parameters.py')
         cmd_line = (
-            '{0} run --disable-sysinfo --job-results-dir={1} '
+            f'{AVOCADO} run --disable-sysinfo --job-results-dir={self.tmpdir.name} '
             '--cit-order-of-combinations=1 '
-            '--cit-parameter-file={2} '
-            '-- {3}'
-        ).format(AVOCADO, self.tmpdir.name, params_path, test_path)
+            f'--cit-parameter-file={params_path} '
+            f'-- {test_path}'
+        )
         process.run(cmd_line)
 
         base_test_logs_dir = os.path.join(self.tmpdir.name, 'latest',

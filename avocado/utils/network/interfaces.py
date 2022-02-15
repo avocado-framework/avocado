@@ -417,7 +417,7 @@ class NetworkInterface:
                     ifcfg_dict[bonding_slave] = slave
                     ifcfg_slave_dict.update({'NAME': slave,
                                              'DEVICE': slave})
-                    self._write_to_file(f"{path}/ifcfg-{salve}",
+                    self._write_to_file(f"{path}/ifcfg-{slave}",
                                         ifcfg_slave_dict)
             elif current_distro.name in ['rhel', 'fedora']:
                 ifcfg_dict['BONDING_OPTS'] = 'mode='+bond_dict['mode'][0]

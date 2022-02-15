@@ -259,8 +259,8 @@ class Session:
             options += ' -r'
         options += f"{source} {destination}"
         try:
-            result = process.run("{cmd} {options}",
+            result = process.run(f"{cmd} {options}",
                                  ignore_status=True)
             return result.exit_status == 0
         except process.CmdError as exc:
-            raise NWException(f"failed to copy file {exec}")
+            raise NWException(f"failed to copy file {exc}")

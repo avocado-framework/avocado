@@ -28,7 +28,8 @@ class Base(unittest.TestCase):
                          'test_dir = %(test_dir)s\n'
                          'data_dir = %(data_dir)s\n'
                          'logs_dir = %(logs_dir)s\n') % mapping
-        config_file = tempfile.NamedTemporaryFile('w', dir=base_dir.name, delete=False)
+        config_file = tempfile.NamedTemporaryFile(
+            'w', dir=base_dir.name, delete=False)
         config_file.write(temp_settings)
         config_file.close()
         return (base_dir, mapping, config_file.name)
@@ -59,7 +60,7 @@ class DataDirTest(Base):
             from avocado.core import data_dir
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
-                namespace = 'datadir.paths.{}'.format(key)
+                namespace = f'datadir.paths.{key}'
                 self.assertEqual(data_dir_func(), stg.as_dict().get(namespace))
 
     def test_unique_log_dir(self):
@@ -70,7 +71,8 @@ class DataDirTest(Base):
         from avocado.core import data_dir
         with unittest.mock.patch('avocado.core.data_dir.time.strftime',
                                  return_value="date_would_go_here"):
-            logdir = os.path.join(self.mapping['base_dir'], "foor", "bar", "baz")
+            logdir = os.path.join(
+                self.mapping['base_dir'], "foor", "bar", "baz")
             path_prefix = os.path.join(logdir, "job-date_would_go_here-")
             uid = "1234567890"*4
             for i in range(7, 40):

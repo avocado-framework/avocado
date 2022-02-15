@@ -50,7 +50,7 @@ def check_owner(owner, group, file_name_pattern, check_recursive=False):
         actual_id = os.stat(file_name).st_uid
         if actual_id != getpwnam(owner).pw_uid:
             raise RuntimeError(
-                'file {file_name} has wrong owner {getpwuid(actual_id).pw_name} (should be {owner})')
+                f'file {file_name} has wrong owner {getpwuid(actual_id).pw_name} (should be {owner})')
         actual_id = os.stat(file_name).st_gid
         if actual_id != getgrnam(group).gr_gid:
             raise RuntimeError(
