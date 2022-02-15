@@ -77,10 +77,9 @@ class TaskInfo(Task):
 
     def __repr__(self):
         if self._status is None:
-            return '%s' % self._identification
+            return f'{self._identification}'
         else:
-            return '%s (%s)' % (self._identification,
-                                self.status)
+            return f'{self._identification} ({self.status})'
 
 
 class TaskStateMachine:
@@ -144,7 +143,7 @@ async def bootstrap(lc):
         async with lc.lock:
             task = lc.requested.pop()
             lc.triaging.append(task)
-            debug('Moved Task %s: REQUESTED => TRIAGING' % task)
+            debug(f'Moved Task {task}: REQUESTED => TRIAGING')
     except IndexError:
         debug('BOOTSTRAP: nothing to do')
         return
@@ -163,12 +162,12 @@ async def triage(lc):
     if mock_check_task_requirement():
         async with lc.lock:
             lc.ready.append(task)
-            debug('Moving Task %s: TRIAGING => READY' % task)
+            debug(f'Moving Task {task}: TRIAGING => READY')
     else:
         async with lc.lock:
             lc.finished.append(task)
             task.status = 'FAILED ON TRIAGE'
-            debug('Moving Task %s: TRIAGING => FINISHED' % task)
+            debug(f'Moving Task {task}: TRIAGING => FINISHED')
 
 
 async def start(lc):
@@ -198,12 +197,12 @@ async def start(lc):
             # Let's give each task 15 seconds from start time
             task.timeout = time.monotonic() + 15
             lc.started.append(task)
-            debug('Moving Task %s: READY => STARTED' % task)
+            debug(f'Moving Task {task}: READY => STARTED')
     else:
         async with lc.lock:
             lc.finished.append(task)
             task.status = 'FAILED ON START'
-            debug('Moving Task %s: READY => FINISHED (ERRORED ON START)' % task)
+            debug(f'Moving Task {task}: READY => FINISHED (ERRORED ON START)')
 
 
 async def monitor(lc):
@@ -220,15 +219,15 @@ async def monitor(lc):
         async with lc.lock:
             task.status = 'FAILED W/ TIMEOUT'
             lc.finished.append(task)
-            debug('Moving Task %s: STARTED => FINISHED (FAILED ON TIMEOUT)' % task)
+            debug(f'Moving Task {task}: STARTED => FINISHED (FAILED ON TIMEOUT)')
     elif mock_monitor_task_finished():
         async with lc.lock:
             lc.finished.append(task)
-            debug('Moving Task %s: STARTED => FINISHED (COMPLETED AFTER STARTED)' % task)
+            debug(f'Moving Task {task}: STARTED => FINISHED (COMPLETED AFTER STARTED)')
     else:
         async with lc.lock:
             lc.started.insert(0, task)
-        debug('Task %s: has not finished yet' % task)
+        debug(f'Task {task}: has not finished yet')
 
 
 def print_lc_status(lc):
@@ -240,7 +239,7 @@ async def worker(lc):
     """Pushes Tasks forward and makes them do something with their lives."""
     while True:
         complete = await lc.complete
-        debug('Complete? %s' % complete)
+        debug(f'Complete? {complete}')
         if complete:
             break
         await bootstrap(lc)
@@ -256,7 +255,7 @@ async def worker(lc):
 if __name__ == '__main__':
     NUMBER_OF_TASKS = 40
     NUMBER_OF_LIFECYCLE_WORKERS = 4
-    tasks_info = [TaskInfo("%03i" % _) for _ in range(1, NUMBER_OF_TASKS - 1)]
+    tasks_info = [TaskInfo("%03i" % _) for _ in range(1, NUMBER_OF_TASKS - 1)]  # pylint: disable=C0209
     state_machine = TaskStateMachine(tasks_info)
     loop = asyncio.get_event_loop()
     workers = [loop.create_task(worker(state_machine))

@@ -2,10 +2,10 @@ from setuptools import setup
 
 name = 'magic'
 module = 'avocado_magic'
-resolver_ep = '%s = %s.resolver:%s' % (name, module, 'MagicResolver')
-discoverer_ep = '%s = %s.resolver:%s' % (name, module, 'MagicDiscoverer')
-runner_ep = '%s = %s.runner:%s' % (name, module, 'MagicRunner')
-runner_script = 'avocado-runner-%s = %s.runner:main' % (name, module)
+resolver_ep = f"{name} = {module}.resolver:MagicResolver"
+discoverer_ep = f"{name} = {module}.resolver:MagicDiscoverer"
+runner_ep = f"{name} = {module}.runner:MagicRunner"
+runner_script = f'avocado-runner-{name} = {module}.runner:main'
 
 
 if __name__ == '__main__':

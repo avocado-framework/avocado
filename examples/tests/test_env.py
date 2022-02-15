@@ -12,7 +12,7 @@ class Env(Test):
         Logs information about the environment under which the test is executed
         """
         pid = os.getpid()
-        p_dir = '/proc/%d' % pid
+        p_dir = f'/proc/{pid}'
 
         def get_proc_content(rel_path):
             try:
@@ -42,8 +42,8 @@ class Env(Test):
         log_std_io('stdout', sys.stdout)
         log_std_io('stderr', sys.stdout)
 
-        fd_dir = '/proc/%s/fd' % pid
-        if os.path.isdir('/proc/%s/fd' % pid):
+        fd_dir = f'/proc/{pid}/fd'
+        if os.path.isdir(f'/proc/{pid}/fd'):
             fds = os.listdir(fd_dir)
             self.log.debug('Open file descriptors:')
             for fd in fds:

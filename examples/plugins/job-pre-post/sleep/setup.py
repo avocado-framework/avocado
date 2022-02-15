@@ -3,8 +3,8 @@ from setuptools import setup
 name = 'avocado_job_sleep'
 init_klass = 'SleepInit'
 klass = 'Sleep'
-entry_point = '%s = %s:%s' % (name, name, klass)
-init_entry_point = '%s = %s:%s' % (name, name, init_klass)
+entry_point = f'{name} = {name}:{klass}'
+init_entry_point = f'{name} = {name}:{init_klass}'
 
 if __name__ == '__main__':
     setup(name=name,

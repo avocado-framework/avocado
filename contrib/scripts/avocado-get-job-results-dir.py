@@ -31,8 +31,7 @@ if __name__ == '__main__':
 
     resultsdir = data_dir.get_job_results_dir(sys.argv[1])
     if resultsdir is None:
-        sys.stderr.write("Can't find job results directory for '%s'\n" %
-                         sys.argv[1])
+        sys.stderr.write(f"Can't find job results directory for '{sys.argv[1]}'\n")
         sys.exit(-1)
 
-    sys.stdout.write('%s\n' % resultsdir)
+    sys.stdout.write(f'{resultsdir}\n')
