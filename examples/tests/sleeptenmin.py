@@ -29,4 +29,4 @@ class SleepTenMin(Test):
             if method == 'builtin':
                 time.sleep(length)
             elif method == 'shell':
-                os.system("sleep %s" % length)
+                os.system(f"sleep {length}")

@@ -71,12 +71,12 @@ class VMCleanup(Test):
                '--vm-host=%s')
         cmd %= (self.tmpdir, vm_domain, vm_host)
         if vm_username:
-            cmd += ' --vm-username=%s' % vm_username
+            cmd += f' --vm-username={vm_username}'
         if vm_password:
-            cmd += ' --vm-password=%s' % vm_password
+            cmd += f' --vm-password={vm_password}'
 
-        cmd_clean = '%s %s' % (cmd, self.clean_test_path)
-        cmd_dirty = '%s --vm-cleanup %s' % (cmd, self.dirty_test_path)
+        cmd_clean = f'{cmd} {self.clean_test_path}'
+        cmd_dirty = f'{cmd} --vm-cleanup {self.dirty_test_path}'
 
         process.run(cmd_clean)
         process.run(cmd_dirty)

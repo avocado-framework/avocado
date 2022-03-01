@@ -25,8 +25,7 @@ def get_one_job_results(path, results):
             # used as the baseline for the set of tests that should be
             # present on every job
             if test_id not in results:
-                print('Test ID "%s" is not present in a previous job, aborting'
-                      % test_id)
+                print(f'Test ID "{test_id}" is not present in a previous job, aborting')
                 sys.exit(1)
         status = test['status']
         job[test_id] = status
@@ -55,7 +54,7 @@ def main():
             any_failure = True
             print(test)
             for status, count in all_job_results[test].items():
-                print("  - %s: %s" % (status, count))
+                print(f"  - {status}: {count}")
     print('Jobs analyzed:', number_of_jobs, '(all PASSed)' if not any_failure else '')
 
 

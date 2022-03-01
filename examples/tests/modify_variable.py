@@ -27,7 +27,7 @@ class PrintVariableTest(Test):
         source = self.params.get('source', default='print_variable.c')
         c_file = self.get_data(source)
         if c_file is None:
-            self.cancel('Test is missing data file %s' % source)
+            self.cancel(f'Test is missing data file {source}')
         shutil.copy(c_file, self.workdir)
         self.__binary = source.rsplit('.', 1)[0]
         build.make(self.workdir,

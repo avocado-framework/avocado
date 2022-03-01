@@ -35,7 +35,7 @@ class MagicResolver(Resolver):
             return ReferenceResolution(
                 reference,
                 ReferenceResolutionResult.NOTFOUND,
-                info='Word "%s" is not a valid magic word' % (reference))
+                info=f'Word "{reference}" is not a valid magic word')
 
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,

@@ -61,12 +61,10 @@ class MultiplexTest(Test):
                       self.params.get('sync_tries', default=3))
 
         self.log.info('Executing ping test...')
-        cmdline = ('ping --timeout %s --tries %s'
-                   % (self.params.get('ping_timeout', default=10),
-                      self.params.get('ping_tries', default=5)))
+        cmdline = f"ping --timeout {self.params.get('ping_timeout', default=10)} --tries {self.params.get('ping_tries', default=5)}"
 
         ping_flags = self.params.get('ping_flags')
         if ping_flags:
-            cmdline += ' %s' % ping_flags
+            cmdline += f' {ping_flags}'
 
         self.log.info(cmdline)
