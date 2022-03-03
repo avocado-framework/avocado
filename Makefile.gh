@@ -23,7 +23,7 @@ codespell:
 
 bandit:
 	pip install bandit
-	bandit -o bandit-output.txt -r --skip B101,B105,B311,B404,B603 .
+	bandit -r --skip B101,B105,B311,B404,B603 .
 
 
 propagate-version:
