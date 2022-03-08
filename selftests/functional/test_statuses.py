@@ -146,9 +146,9 @@ class TestStatuses(TestCaseTmpDir):
                                                  ".data",
                                                  'test_statuses.py'))
 
-        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s --json - '
-               '--test-runner=runner '
-               % (AVOCADO, test_file, self.tmpdir.name))
+        cmd = (f'{AVOCADO} run {test_file} --disable-sysinfo '
+               f'--job-results-dir {self.tmpdir.name} --json - '
+               f'--test-runner=runner ')
 
         results = process.run(cmd, ignore_status=True)
         self.results = json.loads(results.stdout_text)
@@ -168,27 +168,23 @@ class TestStatuses(TestCaseTmpDir):
         # Testing if all class/methods were covered
         missing_msg = ' '.join(missing_tests)
         self.assertEqual(missing_msg, '',
-                         "Expected results not found for class/method: %s" %
-                         missing_msg)
+                         f"Expected results not found for class/method: {missing_msg}")
 
     def _check_test(self, test, expected):
         klass_method = test['id'].split(':')[1]
         self.assertEqual(expected[0], test['status'],
-                         "Status error: '%s' != '%s' (%s)" %
-                         (expected[0], test['status'], klass_method))
+                         f"Status error: '{expected[0]}' != '{test['status']}' ({klass_method})")
         debug_log = genio.read_file(test['logfile'])
         for msg in expected[1]:
             self.assertIn(msg, debug_log,
-                          "Message '%s' should be in the log (%s)."
-                          "\nJSON results:\n%s"
-                          "\nDebug Log:\n%s" %
-                          (msg, klass_method, test, debug_log))
+                          (f"Message '{msg}' should be in the log ({klass_method})."
+                           f"\nJSON results:\n{test}"
+                           f"\nDebug Log:\n{debug_log}"))
         for msg in set(ALL_MESSAGES) - set(expected[1]):
             self.assertNotIn(msg, debug_log,
-                             "Message '%s' should not be in the log (%s)"
-                             "\nJSON results:\n%s"
-                             "\nDebug Log:\n%s" %
-                             (msg, klass_method, test, debug_log))
+                             (f"Message '{msg}' should not be in the log ({klass_method})"
+                              f"\nJSON results:\n{test}"
+                              f"\nDebug Log:\n{debug_log}"))
 
 
 if __name__ == '__main__':

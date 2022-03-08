@@ -12,7 +12,7 @@ BASEDIR = os.path.abspath(os.path.join(BASEDIR, os.path.pardir))
 
 #: The name of the avocado test runner entry point
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",
-                         "%s -m avocado" % sys.executable)
+                         f"{sys.executable} -m avocado")
 
 
 def python_module_available(module_name):
@@ -50,7 +50,7 @@ def temp_dir_prefix(klass):
     """
     Returns a standard name for the temp dir prefix used by the tests
     """
-    return 'avocado_%s_' % klass.__class__.__name__
+    return f'avocado_{klass.__class__.__name__}_'
 
 
 def get_temporary_config(klass):
@@ -133,8 +133,8 @@ def skipOnLevelsInferiorThan(level):
 
 def skipUnlessPathExists(path):
     return unittest.skipUnless(os.path.exists(path),
-                               ('File or directory at path "%s" used in test is'
-                                ' not available in the system' % path))
+                               (f'File or directory at path "{path}" '
+                               f'used in test is not available in the system'))
 
 
 class TestCaseTmpDir(unittest.TestCase):

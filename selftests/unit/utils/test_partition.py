@@ -84,9 +84,9 @@ class TestPartitionMkfsMount(Base):
         self.disk.mkfs()
         self.disk.mount()
         self.use_mnt_file = os.path.join(self.mountpoint, 'file')
-        self.use_mnt_cmd = ("%s -c 'import time; f = open(\"%s\", \"w\"); "
-                            "time.sleep(60)'" % (sys.executable,
-                                                 self.use_mnt_file))
+        self.use_mnt_cmd = (f"{sys.executable} -c 'import time; "
+                            f"f = open(\"{self.use_mnt_file}\", \"w\"); "
+                            f"time.sleep(60)'")
 
     def run_process_to_use_mnt(self):
         proc = process.SubProcess(self.use_mnt_cmd, sudo=True)

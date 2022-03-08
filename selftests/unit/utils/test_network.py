@@ -77,18 +77,14 @@ class FreePort(unittest.TestCase):
                         sock = socket.socket(family, protocol)
                         sock.bind((addr, port))
                         if ports.is_port_free(port, "localhost"):
-                            bad.append("%s, %s, %s: reports free"
-                                       % (family, protocol, addr))
+                            bad.append(f"{family}, {protocol}, {addr}: reports free")
                         else:
-                            good.append("%s, %s, %s" % (family, protocol,
-                                                        addr))
+                            good.append(f"{family}, {protocol}, {addr}")
                     except Exception as exc:
                         if getattr(exc, 'errno', None) in (-2, 2, 22, 94):
-                            skip.append("%s, %s, %s: Not supported: %s"
-                                        % (family, protocol, addr, exc))
+                            skip.append(f"{family}, {protocol}, {addr}: Not supported: {exc}")
                         else:
-                            bad.append("%s, %s, %s: Failed to bind: %s"
-                                       % (family, protocol, addr, exc))
+                            bad.append(f"{family}, {protocol}, {addr}: Failed to bind: {exc}")
                     finally:
                         if sock is not None:
                             sock.close()

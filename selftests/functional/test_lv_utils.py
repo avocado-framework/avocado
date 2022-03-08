@@ -88,19 +88,19 @@ class LVUtilsTest(TestCaseTmpDir):
             self.assertFalse(glob.glob(os.path.join(ramdisk_basedir, "*")))
         except BaseException as details:
             try:
-                process.run("mountpoint %s && umount %s"
-                            % (mount_loc, mount_loc), shell=True, sudo=True)
+                process.run(f"mountpoint {mount_loc} && umount {mount_loc}",
+                            shell=True, sudo=True)
             except BaseException as details:
-                print("Fail to unmount LV: %s" % details)
+                print(f"Fail to unmount LV: {details}")
             try:
                 lv_utils.lv_remove(vg_name, lv_name)
             except BaseException as details:
-                print("Fail to cleanup LV: %s" % details)
+                print(f"Fail to cleanup LV: {details}")
             try:
                 lv_utils.vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
                                             vg_name, loop_device)
             except BaseException as details:
-                print("Fail to cleanup vg_ramdisk: %s" % details)
+                print(f"Fail to cleanup vg_ramdisk: {details}")
 
 
 class DiskSpace(unittest.TestCase):
@@ -123,8 +123,7 @@ class DiskSpace(unittest.TestCase):
         pre = glob.glob("/dev/sd*")
         process.system("modprobe scsi_debug", sudo=True)
         disks = set(glob.glob("/dev/sd*")).difference(pre)
-        self.assertEqual(len(disks), 1, "pre: %s\npost: %s"
-                         % (disks, glob.glob("/dev/sd*")))
+        self.assertEqual(len(disks), 1, f"pre: {disks}\npost: {glob.glob('/dev/sd*')}")
         disk = disks.pop()
         self.assertEqual(lv_utils.get_diskspace(disk), "8388608")
 

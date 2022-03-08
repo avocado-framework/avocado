@@ -11,12 +11,11 @@ class ReplayTests(TestCaseTmpDir):
 
     def setUp(self):
         super().setUp()
-        cmd_line = ('%s run examples/tests/passtest.py '
-                    'examples/tests/passtest.py '
-                    'examples/tests/passtest.py '
-                    'examples/tests/passtest.py '
-                    '--job-results-dir %s --disable-sysinfo --json -'
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f'{AVOCADO} run examples/tests/passtest.py '
+                    f'examples/tests/passtest.py '
+                    f'examples/tests/passtest.py '
+                    f'examples/tests/passtest.py '
+                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo --json -')
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
         self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
@@ -29,23 +28,20 @@ class ReplayTests(TestCaseTmpDir):
         config_path = os.path.join(self.tmpdir.name, 'config')
         with open(config_path, 'w', encoding='utf-8') as config:
             config.write("[datadir.paths]\n")
-            config.write("logs_dir = %s\n" % self.tmpdir.name)
+            config.write(f"logs_dir = {self.tmpdir.name}\n")
         return config_path
 
     def run_and_check(self, cmd_line, expected_rc):
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
-                         "Command %s did not return rc "
-                         "%d:\n%s" % (cmd_line, expected_rc, result))
+                         f"Command {cmd_line} did not return rc {expected_rc}:\n{result}")
         return result
 
     def test_run_replay_noid(self):
         """
         Runs a replay job with an invalid jobid.
         """
-        cmd_line = '%s --config=%s replay %s' % (AVOCADO,
-                                                 self.config_path,
-                                                 'foo')
+        cmd_line = f"{AVOCADO} --config={self.config_path} replay {'foo'}"
         expected_rc = exit_codes.AVOCADO_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
@@ -53,8 +49,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         Runs a replay job using the 'latest' keyword.
         """
-        cmd_line = '%s --config=%s replay latest' % (AVOCADO,
-                                                     self.config_path)
+        cmd_line = f'{AVOCADO} --config={self.config_path} replay latest'
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
@@ -72,9 +67,7 @@ class ReplayTests(TestCaseTmpDir):
         """
         Runs a replay job.
         """
-        cmd_line = '%s --config=%s replay %s' % (AVOCADO,
-                                                 self.config_path,
-                                                 self.jobdir)
+        cmd_line = f'{AVOCADO} --config={self.config_path} replay {self.jobdir}'
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 

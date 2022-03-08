@@ -100,7 +100,7 @@ class AstringUtilsTest(unittest.TestCase):
         self.assertEqual(len(astring.string_to_safe_path(" " * 300)), 255)
         avocado = '\u0430\u0432\u043e\u043a\u0430\u0434\xff<>'
         self.assertEqual(astring.string_to_safe_path(avocado),
-                         "%s__" % avocado[:-2])
+                         f"{avocado[:-2]}__")
 
     def test_is_bytes(self):
         """

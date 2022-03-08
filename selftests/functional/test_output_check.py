@@ -140,31 +140,29 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self.output_script.save()
 
     def _check_output_record_all(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check-record all'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path} '
+                    f'--output-check-record all')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        stdout_file = "%s.data/stdout.expected" % self.output_script
-        stderr_file = "%s.data/stderr.expected" % self.output_script
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
+        stdout_file = f"{self.output_script}.data/stdout.expected"
+        stderr_file = f"{self.output_script}.data/stderr.expected"
         with open(stdout_file, 'rb') as fd_stdout:  # pylint: disable=W1514
             self.assertEqual(fd_stdout.read(), STDOUT)
         with open(stderr_file, 'rb') as fd_stderr:  # pylint: disable=W1514
             self.assertEqual(fd_stderr.read(), STDERR)
 
     def _check_output_record_combined(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check-record combined'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path} '
+                    f'--output-check-record combined')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        output_file = "%s.data/output.expected" % self.output_script
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
+        output_file = f"{self.output_script}.data/output.expected"
         with open(output_file, 'rb') as fd_output:  # pylint: disable=W1514
             self.assertEqual(fd_output.read(), STDOUT + STDERR)
 
@@ -178,80 +176,74 @@ class RunnerSimpleTest(TestCaseTmpDir):
         return (simple_test, variants_file)
 
     def test_output_record_none(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check-record none'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path} '
+                    f'--output-check-record none')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        self.assertIsNotFile("%s.data/stdout.expected" % self.output_script)
-        self.assertIsNotFile("%s.data/stderr.expected" % self.output_script)
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
+        self.assertIsNotFile(f"{self.output_script}.data/stdout.expected")
+        self.assertIsNotFile(f"{self.output_script}.data/stderr.expected")
 
     def test_output_record_stdout(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check-record stdout'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path} '
+                    f'--output-check-record stdout')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        stdout_file = "%s.data/stdout.expected" % self.output_script
-        stderr_file = "%s.data/stderr.expected" % self.output_script
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
+        stdout_file = f"{self.output_script}.data/stdout.expected"
+        stderr_file = f"{self.output_script}.data/stderr.expected"
         with open(stdout_file, 'rb') as fd_stdout:  # pylint: disable=W1514
             self.assertEqual(fd_stdout.read(), STDOUT)
         self.assertIsNotFile(stderr_file)
 
     def test_output_record_and_check(self):
         self._check_output_record_all()
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path}')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
 
     def test_output_record_and_check_combined(self):
         self._check_output_record_combined()
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path}')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
 
     def test_output_tamper_stdout(self):
         self._check_output_record_all()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
-        stdout_file = "%s.data/stdout.expected" % self.output_script.path
+        stdout_file = f"{self.output_script.path}.data/stdout.expected"
         with open(stdout_file, 'wb') as stdout_file_obj:  # pylint: disable=W1514
             stdout_file_obj.write(tampered_msg)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --xunit -'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path} --xunit -')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
         self.assertIn(tampered_msg, result.stdout)
 
     def test_output_tamper_combined(self):
         self._check_output_record_combined()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
-        output_file = "%s.data/output.expected" % self.output_script.path
+        output_file = f"{self.output_script.path}.data/output.expected"
         with open(output_file, 'wb') as output_file_obj:  # pylint: disable=W1514
             output_file_obj.write(tampered_msg)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --xunit -'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path} --xunit -')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
         self.assertIn(tampered_msg, result.stdout)
 
     def test_output_diff(self):
@@ -259,21 +251,20 @@ class RunnerSimpleTest(TestCaseTmpDir):
         tampered_msg_stdout = b"I PITY THE FOOL THAT STANDS ON STDOUT!"
         tampered_msg_stderr = b"I PITY THE FOOL THAT STANDS ON STDERR!"
 
-        stdout_file = "%s.data/stdout.expected" % self.output_script.path
+        stdout_file = f"{self.output_script.path}.data/stdout.expected"
         with open(stdout_file, 'wb') as stdout_file_obj:  # pylint: disable=W1514
             stdout_file_obj.write(tampered_msg_stdout)
 
-        stderr_file = "%s.data/stderr.expected" % self.output_script.path
+        stderr_file = f"{self.output_script.path}.data/stderr.expected"
         with open(stderr_file, 'wb') as stderr_file_obj:  # pylint: disable=W1514
             stderr_file_obj.write(tampered_msg_stderr)
 
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --json -'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path} --json -')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
 
         json_result = json.loads(result.stdout_text)
         job_log = json_result['debuglog']
@@ -306,17 +297,16 @@ class RunnerSimpleTest(TestCaseTmpDir):
     def test_disable_output_check(self):
         self._check_output_record_all()
         tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
-        stdout_file = "%s.data/stdout.expected" % self.output_script.path
+        stdout_file = f"{self.output_script.path}.data/stdout.expected"
         with open(stdout_file, 'wb') as stdout_file_obj:  # pylint: disable=W1514
             stdout_file_obj.write(tampered_msg)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--disable-output-check --xunit -'
-                    % (AVOCADO, self.tmpdir.name, self.output_script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {self.output_script.path} '
+                    f'--disable-output-check --xunit -')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
         self.assertNotIn(tampered_msg, result.stdout)
 
     def test_merge_records_same_output(self):
@@ -326,56 +316,56 @@ class RunnerSimpleTest(TestCaseTmpDir):
         simple_test = os.path.join(self.tmpdir.name, 'simpletest.py')
         with open(simple_test, 'w', encoding='utf-8') as file_obj:
             file_obj.write(TEST_WITH_SAME_EXPECTED_OUTPUT)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check-record both --json-variants-load %s' %
-                    (AVOCADO, self.tmpdir.name, simple_test, variants_file))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {simple_test} --output-check-record '
+                    f'both --json-variants-load {variants_file}')
         process.run(cmd_line, ignore_status=True)
-        self.assertIsFile("%s.data/stdout.expected" % simple_test)
-        self.assertIsFile("%s.data/stderr.expected" % simple_test)
+        self.assertIsFile(f"{simple_test}.data/stdout.expected")
+        self.assertIsFile(f"{simple_test}.data/stderr.expected")
 
     def test_merge_records_different_output(self):
         simple_test, variants_file = self._setup_simple_test(
             TEST_WITH_DIFFERENT_EXPECTED_OUTPUT)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check-record both --json-variants-load %s' %
-                    (AVOCADO, self.tmpdir.name, simple_test, variants_file))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {simple_test} --output-check-record both '
+                    f'--json-variants-load {variants_file}')
         process.run(cmd_line, ignore_status=True)
-        self.assertIsNotFile("%s.data/stdout.expected" % simple_test)
-        self.assertIsNotFile("%s.data/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
+        self.assertIsNotFile(f"{simple_test}.data/stdout.expected")
+        self.assertIsNotFile(f"{simple_test}.data/stderr.expected")
+        self.assertIsFile(f"{simple_test}.data/PassTest.test_1/stdout.expected")
+        self.assertIsFile(f"{simple_test}.data/PassTest.test_1/stderr.expected")
+        self.assertIsFile(f"{simple_test}.data/PassTest.test_2/stdout.expected")
+        self.assertIsFile(f"{simple_test}.data/PassTest.test_2/stderr.expected")
 
     def test_merge_records_different_output_variants(self):
         simple_test, variants_file = self._setup_simple_test(
             TEST_WITH_DIFFERENT_EXPECTED_OUTPUT_VARIANTS)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check-record both --json-variants-load %s' %
-                    (AVOCADO, self.tmpdir.name, simple_test, variants_file))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {simple_test} --output-check-record both '
+                    f'--json-variants-load {variants_file}')
         process.run(cmd_line, ignore_status=True)
-        self.assertIsNotFile("%s.data/stdout.expected" % simple_test)
-        self.assertIsNotFile("%s.data/stderr.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_2/bar/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_2/foo/stderr.expected" % simple_test)
+        self.assertIsNotFile(f"{simple_test}.data/stdout.expected")
+        self.assertIsNotFile(f"{simple_test}.data/stderr.expected")
+        self.assertIsNotFile(f"{simple_test}.data/PassTest.test_1/stdout.expected")
+        self.assertIsNotFile(f"{simple_test}.data/PassTest.test_1/stderr.expected")
+        self.assertIsNotFile(f"{simple_test}.data/PassTest.test_2/stdout.expected")
+        self.assertIsNotFile(f"{simple_test}.data/PassTest.test_2/stderr.expected")
+        self.assertIsFile(f"{simple_test}.data/PassTest.test_2/bar/stderr.expected")
+        self.assertIsFile(f"{simple_test}.data/PassTest.test_2/foo/stderr.expected")
 
     def test_merge_records_different_and_same_output(self):
         simple_test, variants_file = self._setup_simple_test(
             TEST_WITH_DIFFERENT_AND_SAME_EXPECTED_OUTPUT)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
-                    '--output-check-record both --json-variants-load %s' %
-                    (AVOCADO, self.tmpdir.name, simple_test, variants_file))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo {simple_test} --output-check-record both '
+                    f'--json-variants-load {variants_file}')
         process.run(cmd_line, ignore_status=True)
-        self.assertIsFile("%s.data/stdout.expected" % simple_test)
-        self.assertIsFile("%s.data/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
+        self.assertIsFile(f"{simple_test}.data/stdout.expected")
+        self.assertIsFile(f"{simple_test}.data/stderr.expected")
+        self.assertIsFile(f"{simple_test}.data/PassTest.test_1/stdout.expected")
+        self.assertIsFile(f"{simple_test}.data/PassTest.test_1/stderr.expected")
+        self.assertIsNotFile(f"{simple_test}.data/PassTest.test_2/stdout.expected")
+        self.assertIsNotFile(f"{simple_test}.data/PassTest.test_2/stderr.expected")
 
     def tearDown(self):
         super().tearDown()

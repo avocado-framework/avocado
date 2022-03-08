@@ -15,7 +15,7 @@ class ReadtheDocs(Test):
                       'via the "token" parameter or the '
                       '"AVOCADO_READTHEDOCS_TOKEN" environment variable')
 
-        headers = {'Authorization': 'Token %s' % token,
+        headers = {'Authorization': f'Token {token}',
                    # readthedocs.org throws a 403 without User-Agent header
                    'User-Agent': ''}
 

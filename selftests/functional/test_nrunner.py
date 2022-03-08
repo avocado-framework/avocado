@@ -7,7 +7,7 @@ from avocado.utils import process
 from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
                              skipUnlessPathExists)
 
-RUNNER = "%s -m avocado.core.nrunner" % sys.executable
+RUNNER = f"{sys.executable} -m avocado.core.nrunner"
 
 
 class NRunnerFeatures(unittest.TestCase):
@@ -39,7 +39,7 @@ class NRunnerFeatures(unittest.TestCase):
 class RunnableRun(unittest.TestCase):
 
     def test_noop(self):
-        res = process.run("%s runnable-run -k noop" % RUNNER,
+        res = process.run(f"{RUNNER} runnable-run -k noop",
                           ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
@@ -49,8 +49,8 @@ class RunnableRun(unittest.TestCase):
     def test_exec_test(self):
         # 'base64:LWM=' becomes '-c' and makes Python execute the
         # commands on the subsequent argument
-        cmd = ("%s runnable-run -k exec-test -u %s -a 'base64:LWM=' -a "
-               "'import sys; sys.exit(99)'" % (RUNNER, sys.executable))
+        cmd = (f"{RUNNER} runnable-run -k exec-test -u {sys.executable} "
+               f"-a 'base64:LWM=' -a 'import sys; sys.exit(99)'")
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'returncode': 99", res.stdout)
@@ -59,8 +59,8 @@ class RunnableRun(unittest.TestCase):
     @skipUnlessPathExists('/bin/sh')
     def test_exec_test_echo(self):
         # 'base64:LW4=' becomes '-n' and prevents echo from printing a newline
-        cmd = ("%s runnable-run -k exec-test -u /bin/echo -a 'base64:LW4=' -a "
-               "_Avocado_Runner_" % RUNNER)
+        cmd = (f"{RUNNER} runnable-run -k exec-test -u /bin/echo "
+               f"-a 'base64:LW4=' -a _Avocado_Runner_")
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'log': b'_Avocado_Runner_'", res.stdout)
@@ -72,7 +72,7 @@ class RunnableRun(unittest.TestCase):
     def test_exec_recipe(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
                               "runnables", "exec_test_sh_echo_env_var.json")
-        cmd = "%s runnable-run-recipe %s" % (RUNNER, recipe)
+        cmd = f"{RUNNER} runnable-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
         if len(lines) == 1:
@@ -89,19 +89,19 @@ class RunnableRun(unittest.TestCase):
         self.assertEqual(res.exit_status, 0)
 
     def test_noop_valid_kwargs(self):
-        res = process.run("%s runnable-run -k noop foo=bar" % RUNNER,
+        res = process.run(f"{RUNNER} runnable-run -k noop foo=bar",
                           ignore_status=True)
         self.assertEqual(res.exit_status, 0)
 
     def test_noop_invalid_kwargs(self):
-        res = process.run("%s runnable-run -k noop foo" % RUNNER,
+        res = process.run(f"{RUNNER} runnable-run -k noop foo",
                           ignore_status=True)
         self.assertIn(b'Invalid keyword parameter: "foo"', res.stderr)
         self.assertEqual(res.exit_status, 2)
 
     @skipUnlessPathExists('/bin/env')
     def test_exec_test_kwargs(self):
-        cmd = "%s runnable-run -k exec-test -u /bin/env X=Y" % RUNNER
+        cmd = f"{RUNNER} runnable-run -k exec-test -u /bin/env X=Y"
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"X=Y\\n", res.stdout)
@@ -111,7 +111,7 @@ class RunnableRun(unittest.TestCase):
 class TaskRun(unittest.TestCase):
 
     def test_noop(self):
-        res = process.run("%s task-run -i XXXno-opXXX -k noop" % RUNNER,
+        res = process.run(f"{RUNNER} task-run -i XXXno-opXXX -k noop",
                           ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'id': 'XXXno-opXXX'", res.stdout)
@@ -121,7 +121,7 @@ class TaskRun(unittest.TestCase):
     def test_recipe_exec_test_1(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
                               "tasks", "exec-test", "1-uname.json")
-        cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
+        cmd = f"{RUNNER} task-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
         if len(lines) == 1:
@@ -139,7 +139,7 @@ class TaskRun(unittest.TestCase):
     def test_recipe_exec_test_2(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
                               "tasks", "exec-test", "2-echo.json")
-        cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
+        cmd = f"{RUNNER} task-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
         if len(lines) == 1:
@@ -159,7 +159,7 @@ class TaskRun(unittest.TestCase):
     def test_recipe_exec_test_3(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner", "recipes",
                               "tasks", "exec-test", "3-sleep.json")
-        cmd = "%s task-run-recipe %s" % (RUNNER, recipe)
+        cmd = f"{RUNNER} task-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
         # based on the :data:`avocado.core.nrunner.RUNNER_RUN_STATUS_INTERVAL`

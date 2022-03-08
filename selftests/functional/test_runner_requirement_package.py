@@ -5,14 +5,14 @@ import unittest
 from avocado.utils import process
 from selftests.utils import BASEDIR
 
-RUNNER = "%s -m avocado.core.runners.requirement_package" % sys.executable
+RUNNER = f"{sys.executable} -m avocado.core.runners.requirement_package"
 
 
 class RunnableRun(unittest.TestCase):
 
     def test_no_kwargs(self):
-        res = process.run("%s runnable-run -k package" %
-                          RUNNER, ignore_status=True)
+        res = process.run(f"{RUNNER} runnable-run -k package",
+                          ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'time': ", res.stdout)
@@ -20,8 +20,8 @@ class RunnableRun(unittest.TestCase):
 
     def test_action_check_alone(self):
         action = 'action=check'
-        res = process.run("%s runnable-run -k package %s"
-                          % (RUNNER, action), ignore_status=True)
+        res = process.run(f"{RUNNER} runnable-run -k package {action}",
+                          ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'time': ", res.stdout)
@@ -36,7 +36,7 @@ class RunnableRun(unittest.TestCase):
         recipe = os.path.join(BASEDIR, "examples", "nrunner",
                               "recipes", "runnables",
                               "requirement_package_check_foo.json")
-        cmd = "%s runnable-run-recipe %s" % (RUNNER, recipe)
+        cmd = f"{RUNNER} runnable-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()
         if len(lines) == 1:
@@ -55,9 +55,8 @@ class RunnableRun(unittest.TestCase):
 class TaskRun(unittest.TestCase):
 
     def test_no_kwargs(self):
-        res = process.run("%s task-run -i XXXreq-pacXXX"
-                          " -k package"
-                          % RUNNER, ignore_status=True)
+        res = process.run(f"{RUNNER} task-run -i XXXreq-pacXXX -k package",
+                          ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'result': 'error'", res.stdout)
         self.assertIn(b"'id': 'XXXreq-pacXXX'", res.stdout)

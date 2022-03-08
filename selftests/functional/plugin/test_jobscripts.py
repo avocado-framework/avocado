@@ -63,16 +63,15 @@ class JobScriptsTest(TestCaseTmpDir):
                                         SCRIPT_PRE_POST_CFG % (self.pre_dir,
                                                                self.post_dir))
         with config:
-            cmd = ('%s --config %s run --job-results-dir %s '
-                   '--disable-sysinfo %s'
-                   % (AVOCADO, config, self.tmpdir.name, test_check_touch))
+            cmd = (f'{AVOCADO} --config {config} run '
+                   f'--job-results-dir {self.tmpdir.name} --disable-sysinfo {test_check_touch}')
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertNotIn('Pre job script "%s" exited with status "1"' % touch_script,
+        self.assertNotIn(f'Pre job script "{touch_script}" exited with status "1"',
                          result.stderr_text)
-        self.assertNotIn('Post job script "%s" exited with status "1"' % rm_script,
+        self.assertNotIn(f'Post job script "{rm_script}" exited with status "1"',
                          result.stderr_text)
 
     def test_status_non_zero(self):
@@ -86,14 +85,13 @@ class JobScriptsTest(TestCaseTmpDir):
         config = script.TemporaryScript("non_zero.conf",
                                         SCRIPT_NON_ZERO_CFG % self.pre_dir)
         with config:
-            cmd = ('%s --config %s run --job-results-dir %s '
-                   '--disable-sysinfo examples/tests/passtest.py'
-                   % (AVOCADO, config, self.tmpdir.name))
+            cmd = (f'{AVOCADO} --config {config} run '
+                   f'--job-results-dir {self.tmpdir.name} --disable-sysinfo examples/tests/passtest.py')
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertIn('Pre job script "%s" exited with status "1"\n' % non_zero_script,
+        self.assertIn(f'Pre job script "{non_zero_script}" exited with status "1\"\n',
                       result.stderr_text)
 
     def test_non_existing_dir(self):
@@ -109,15 +107,14 @@ class JobScriptsTest(TestCaseTmpDir):
         config = script.TemporaryScript("non_existing_dir.conf",
                                         SCRIPT_NON_EXISTING_DIR_CFG % self.pre_dir)
         with config:
-            cmd = ('%s --config %s run --job-results-dir %s '
-                   '--disable-sysinfo examples/tests/passtest.py'
-                   % (AVOCADO, config, self.tmpdir.name))
+            cmd = (f'{AVOCADO} --config {config} run '
+                   f'--job-results-dir {self.tmpdir.name} --disable-sysinfo examples/tests/passtest.py')
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertIn(b'-job scripts has not been found', result.stderr)
-        self.assertNotIn('Pre job script "%s" exited with status "1"' % non_zero_script,
+        self.assertNotIn(f'Pre job script "{non_zero_script}" exited with status "1"',
                          result.stderr_text)
 
 

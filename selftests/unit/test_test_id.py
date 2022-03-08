@@ -13,7 +13,7 @@ class Test(unittest.TestCase):
         self.assertEqual(test_id.uid, 1)
         self.assertEqual(test_id.str_uid, '1')
         self.assertEqual(test_id.str_filesystem,
-                         astring.string_to_safe_path('%s-%s' % (uid, name)))
+                         astring.string_to_safe_path(f'{uid}-{name}'))
         self.assertIs(test_id.variant, None)
         self.assertIs(test_id.str_variant, '')
 
@@ -24,7 +24,7 @@ class Test(unittest.TestCase):
         self.assertEqual(test_id.uid, 1)
         self.assertEqual(test_id.str_uid, '01')
         self.assertEqual(test_id.str_filesystem,
-                         astring.string_to_safe_path('%s-%s' % ('01', name)))
+                         astring.string_to_safe_path(f"{'01'}-{name}"))
         self.assertIs(test_id.variant, None)
         self.assertIs(test_id.str_variant, '')
 
@@ -37,8 +37,8 @@ class Test(unittest.TestCase):
         name = 'test'
         test_id = TestID(uid, name, no_digits=255)
         self.assertEqual(test_id.uid, 1)
-        self.assertEqual(test_id.str_uid, '%0255i' % uid)
-        self.assertEqual(test_id.str_filesystem, '%0255i' % uid)
+        self.assertEqual(test_id.str_uid, '%0255i' % uid)  # pylint: disable=C0209
+        self.assertEqual(test_id.str_filesystem, '%0255i' % uid)  # pylint: disable=C0209
         self.assertIs(test_id.variant, None)
         self.assertIs(test_id.str_variant, '')
 
@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
         test_id = TestID(uid, name)
         self.assertEqual(test_id.uid, 1)
         # only 253 can fit for the test name
-        self.assertEqual(test_id.str_filesystem, '%s-%s' % (uid, name[:253]))
+        self.assertEqual(test_id.str_filesystem, f'{uid}-{name[:253]}')
         self.assertIs(test_id.variant, None)
         self.assertIs(test_id.str_variant, "")
 
@@ -77,9 +77,9 @@ class Test(unittest.TestCase):
         variant = {'variant_id': variant_id}
         test_id = TestID(uid, name, variant=variant)
         self.assertEqual(test_id.uid, 1)
-        self.assertEqual(test_id.str_filesystem, '%s_%s' % (uid, variant_id[:253]))
+        self.assertEqual(test_id.str_filesystem, f'{uid}_{variant_id[:253]}')
         self.assertIs(test_id.variant, variant_id)
-        self.assertEqual(test_id.str_variant, ";%s" % variant_id)
+        self.assertEqual(test_id.str_variant, f";{variant_id}")
 
 
 if __name__ == '__main__':

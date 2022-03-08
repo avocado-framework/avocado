@@ -47,25 +47,22 @@ class FetchAsset(unittest.TestCase):
         localpath = os.path.join(self.asset_dir, assetname)
         with open(localpath, 'w', encoding='utf-8') as f:
             f.write('Test!')
-        url = 'file://%s' % localpath
-        fetch_content = r"""
+        url = f'file://{localpath}'
+        fetch_content = (fr"""
         foo = self.fetch_asset(
-            '%s',
-            locations='%s',
+            '{assetname}',
+            locations='{url}',
             find_only=True)
         print(foo)
-        """ % (assetname, url)
+        """)
         test_content = TEST_TEMPLATE.format(content=fetch_content)
         test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
         expected_rc = exit_codes.AVOCADO_ALL_OK
-        cmd_line = ("%s --config %s run "
-                    "--test-runner=runner "
-                    "%s" % (AVOCADO,
-                            self.config_file.name,
-                            test_file.name))
+        cmd_line = (f'{AVOCADO} --config {self.config_file.name} run '
+                    f'--test-runner=runner {test_file.name}')
         result = process.run(cmd_line)
         os.remove(localpath)
         self.assertEqual(expected_rc, result.exit_status)
@@ -77,15 +74,15 @@ class FetchAsset(unittest.TestCase):
         """
         fake_assetname = 'fake_foo.tgz'
         localpath = os.path.join(self.asset_dir, fake_assetname)
-        fake_url = 'file://%s' % localpath
-        fetch_content = r"""
+        fake_url = f'file://{localpath}'
+        fetch_content = (fr"""
         foo = self.fetch_asset(
-            '%s',
-            locations='%s',
+            '{fake_assetname}',
+            locations='{fake_url}',
             find_only=True)
         if foo is None:
             raise OSError('Asset not found')
-        """ % (fake_assetname, fake_url)
+        """)
         test_content = TEST_TEMPLATE.format(content=fetch_content)
         test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
@@ -94,11 +91,8 @@ class FetchAsset(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         expected_stdout = "not found in the cache"
 
-        cmd_line = ("%s --config %s run "
-                    "--test-runner=runner "
-                    "%s" % (AVOCADO,
-                            self.config_file.name,
-                            test_file.name))
+        cmd_line = (f'{AVOCADO} --config {self.config_file.name} run '
+                    f'--test-runner=runner {test_file.name}')
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)
@@ -111,14 +105,14 @@ class FetchAsset(unittest.TestCase):
         """
         fake_assetname = 'fake_foo.tgz'
         localpath = os.path.join(self.asset_dir, fake_assetname)
-        fake_url = 'file://%s' % localpath
-        fetch_content = r"""
+        fake_url = f'file://{localpath}'
+        fetch_content = (fr"""
         foo = self.fetch_asset(
-            '%s',
-            locations='%s',
+            '{fake_assetname}',
+            locations='{fake_url}',
             find_only=True,
             cancel_on_missing=True)
-        """ % (fake_assetname, fake_url)
+        """)
         test_content = TEST_TEMPLATE.format(content=fetch_content)
         test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
@@ -127,11 +121,8 @@ class FetchAsset(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         expected_stdout = "Missing asset"
 
-        cmd_line = ("%s --config %s run "
-                    "--test-runner=runner "
-                    "%s" % (AVOCADO,
-                            self.config_file.name,
-                            test_file.name))
+        cmd_line = (f'{AVOCADO} --config {self.config_file.name} run '
+                    f'--test-runner=runner {test_file.name}')
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)
@@ -144,13 +135,13 @@ class FetchAsset(unittest.TestCase):
         """
         fake_assetname = 'fake_foo.tgz'
         localpath = os.path.join(self.asset_dir, fake_assetname)
-        fake_url = 'file://%s' % localpath
-        fetch_content = r"""
+        fake_url = f'file://{localpath}'
+        fetch_content = (fr"""
         foo = self.fetch_asset(
-            '%s',
-            locations='%s',
+            '{fake_assetname}',
+            locations='{fake_url}',
             cancel_on_missing=True)
-        """ % (fake_assetname, fake_url)
+        """)
         test_content = TEST_TEMPLATE.format(content=fetch_content)
         test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
@@ -159,11 +150,8 @@ class FetchAsset(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         expected_stdout = "Missing asset"
 
-        cmd_line = ("%s --config %s run "
-                    "--test-runner=runner "
-                    "%s " % (AVOCADO,
-                             self.config_file.name,
-                             test_file.name))
+        cmd_line = (f'{AVOCADO} --config {self.config_file.name} run '
+                    f'--test-runner=runner {test_file.name} ')
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)

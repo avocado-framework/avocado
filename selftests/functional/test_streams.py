@@ -12,7 +12,7 @@ class StreamsTest(TestCaseTmpDir):
         """
         Checks that the application output (<= level info) goes to stdout
         """
-        result = process.run('%s distro' % AVOCADO)
+        result = process.run(f'{AVOCADO} distro')
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertIn(b'Detected distribution', result.stdout)
 
@@ -20,7 +20,7 @@ class StreamsTest(TestCaseTmpDir):
         """
         Checks that the application error (> level info) goes to stderr
         """
-        result = process.run('%s unknown-whacky-command' % AVOCADO,
+        result = process.run(f'{AVOCADO} unknown-whacky-command',
                              ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
         self.assertIn(b"invalid choice: 'unknown-whacky-command'",
@@ -37,34 +37,34 @@ class StreamsTest(TestCaseTmpDir):
         Also checks the symmetry between `--show early` and the environment
         variable `AVOCADO_LOG_EARLY` being set.
         """
-        cmds = (('%s --show early run --disable-sysinfo '
-                 '--job-results-dir %s examples/tests/passtest.py'
-                 % (AVOCADO, self.tmpdir.name),
-                 {}),
-                ('%s run --disable-sysinfo --job-results-dir'
-                 ' %s examples/tests/passtest.py'
-                 % (AVOCADO, self.tmpdir.name),
-                 {'AVOCADO_LOG_EARLY': 'y'}))
+        cmds = ((f'{AVOCADO} --show early run --disable-sysinfo '
+                 f'--job-results-dir {self.tmpdir.name} '
+                 f'examples/tests/passtest.py', {}),
+                (f'{AVOCADO} run --disable-sysinfo '
+                 f'--job-results-dir {self.tmpdir.name} '
+                 f'examples/tests/passtest.py',
+                 {'AVOCADO_LOG_EARLY': 'y'})
+                )
         for cmd, env in cmds:
             result = process.run(cmd, env=env, shell=True)
             # Avocado will see the main module on the command line
             cmd_in_log = os.path.join(BASEDIR, 'avocado', '__main__.py')
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertIn("avocado.test: Command line: %s" % cmd_in_log,
+            self.assertIn(f"avocado.test: Command line: {cmd_in_log}",
                           result.stdout_text)
 
     def test_test(self):
         """
         Checks that the test stream (early in this case) goes to stdout
         """
-        cmd = ('%s --show=test run --disable-sysinfo --job-results-dir %s '
-               '--test-runner=runner '
-               'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
+        cmd = (f'{AVOCADO} --show=test run --disable-sysinfo '
+               f'--job-results-dir {self.tmpdir.name} '
+               f'--test-runner=runner examples/tests/passtest.py')
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         # Avocado will see the main module on the command line
         cmd_in_log = os.path.join(BASEDIR, 'avocado', '__main__.py')
-        self.assertIn("Command line: %s" % cmd_in_log,
+        self.assertIn(f"Command line: {cmd_in_log}",
                       result.stdout_text)
         self.assertIn(b"\nSTART 1-examples/tests/passtest.py:PassTest.test",
                       result.stdout)
@@ -75,8 +75,9 @@ class StreamsTest(TestCaseTmpDir):
         """
         Checks that only errors are output, and that they go to stderr
         """
-        cmd = ('%s --show none run --disable-sysinfo --job-results-dir %s '
-               'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
+        cmd = (f'{AVOCADO} --show none run --disable-sysinfo '
+               f'--job-results-dir {self.tmpdir.name} '
+               f'examples/tests/passtest.py')
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(b'', result.stdout)
@@ -85,7 +86,7 @@ class StreamsTest(TestCaseTmpDir):
         """
         Checks that only errors are output, and that they go to stderr
         """
-        cmd = '%s --show=none unknown-whacky-command' % AVOCADO
+        cmd = f'{AVOCADO} --show=none unknown-whacky-command'
         result = process.run(cmd, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
         self.assertEqual(b'', result.stdout)
@@ -96,17 +97,18 @@ class StreamsTest(TestCaseTmpDir):
         Checks if "--show stream:level" works for non-built-in-streams
         """
         def run(show, no_lines):
-            result = process.run("%s --show %s config" % (AVOCADO, show))
+            result = process.run(f"{AVOCADO} --show {show} config")
             out = result.stdout.splitlines()
             if no_lines == "more_than_one":
-                self.assertGreater(len(out), 1, "Output of %s should contain "
-                                   "more than 1 line, contains only %s\n%s"
-                                   % (result.command, len(out), result))
+                self.assertGreater(len(out), 1,
+                                   (f"Output of {result.command} should "
+                                    f"contain more than 1 line, contains only "
+                                    f"{len(out)}\n{result}"))
             else:
-                self.assertEqual(len(out), no_lines, "Output of %s should "
-                                 "contain %s lines, contains %s instead\n%s"
-                                 % (result.command, no_lines, len(out),
-                                    result))
+                self.assertEqual(len(out), no_lines,
+                                 (f"Output of {result.command} should "
+                                  f"contain {no_lines} lines, contains "
+                                  f"{len(out)} instead\n{result}"))
         run("avocado.app:dEbUg", "more_than_one")
         run("avocado.app:0", "more_than_one")
         run("avocado.app:InFo", 1)

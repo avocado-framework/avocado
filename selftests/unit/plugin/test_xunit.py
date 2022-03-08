@@ -80,7 +80,7 @@ class xUnitSucceedTest(unittest.TestCase):
         try:
             dom = minidom.parseString(xml)
         except Exception as details:
-            raise ParseXMLError("Error parsing XML: '%s'.\nXML Contents:\n%s" % (details, xml))
+            raise ParseXMLError(f"Error parsing XML: '{details}'.\nXML Contents:\n{xml}")
         self.assertTrue(dom)
 
         els = dom.getElementsByTagName('testsuite')
@@ -130,9 +130,9 @@ class xUnitSucceedTest(unittest.TestCase):
         with open(xunit_output, 'rb') as fp:
             limited_but_fits = fp.read()
         self.assertLess(len(limited), len(unlimited) - 500,
-                        "Length of xunit limited to 10 chars was greater "
-                        "than (unlimited - 500). Unlimited output:\n%s\n\n"
-                        "Limited output:\n%s" % (unlimited, limited))
+                        (f"Length of xunit limited to 10 chars was greater "
+                         f"than (unlimited - 500). Unlimited output:\n{unlimited}\n\n"
+                         f"Limited output:\n{limited}"))
         unlimited_output = get_system_out(unlimited)
         self.assertIn(log_content, unlimited_output)
         self.assertEqual(unlimited_output, get_system_out(limited_but_fits))

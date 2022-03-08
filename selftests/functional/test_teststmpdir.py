@@ -17,15 +17,15 @@ class MyTest(Test):
 
 """
 
-SIMPLE_SCRIPT = """#!/bin/bash
-mktemp ${{{0}}}/XXXXXX
-if [ $(ls ${{{0}}} | wc -l) == 1 ]
+SIMPLE_SCRIPT = (f"""#!/bin/bash
+mktemp ${{{test.COMMON_TMPDIR_NAME}}}/XXXXXX
+if [ $(ls ${{{test.COMMON_TMPDIR_NAME}}} | wc -l) == 1 ]
 then
     exit 0
 else
     exit 1
 fi
-""".format(test.COMMON_TMPDIR_NAME)
+""")
 
 
 class TestsTmpDirTests(TestCaseTmpDir):
@@ -44,22 +44,18 @@ class TestsTmpDirTests(TestCaseTmpDir):
     def run_and_check(self, cmd_line, expected_rc, env=None):
         result = process.run(cmd_line, ignore_status=True, env=env)
         self.assertEqual(result.exit_status, expected_rc,
-                         "Command %s did not return rc "
-                         "%d:\n%s" % (cmd_line, expected_rc, result))
+                         f"Command {cmd_line} did not return rc {expected_rc}:\n{result}")
         return result
 
     @unittest.skipIf(test.COMMON_TMPDIR_NAME in os.environ,
-                     "%s already set in os.environ"
-                     % test.COMMON_TMPDIR_NAME)
+                     f"{test.COMMON_TMPDIR_NAME} already set in os.environ")
     def test_tests_tmp_dir(self):
         """
         Tests whether automatically created teststmpdir is shared across
         all tests.
         """
-        cmd_line = ("%s run --disable-sysinfo "
-                    "--job-results-dir %s %s %s"
-                    % (AVOCADO, self.tmpdir.name, self.simple_test,
-                       self.instrumented_test))
+        cmd_line = (f"{AVOCADO} run --disable-sysinfo --job-results-dir {self.tmpdir.name} "
+                    f"{self.simple_test} {self.instrumented_test}")
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK)
 
     def test_manualy_created(self):
@@ -68,17 +64,16 @@ class TestsTmpDirTests(TestCaseTmpDir):
         avocado
         """
         with tempfile.TemporaryDirectory(dir=self.tmpdir.name) as shared_tmp:
-            cmd = ("%s run --disable-sysinfo --job-results-dir %s %%s"
-                   % (AVOCADO, self.tmpdir.name))
+            cmd = (f"{AVOCADO} run --disable-sysinfo --job-results-dir {self.tmpdir.name} %s")
             self.run_and_check(cmd % self.simple_test, exit_codes.AVOCADO_ALL_OK,
                                {test.COMMON_TMPDIR_NAME: shared_tmp})
             self.run_and_check(cmd % self.instrumented_test,
                                exit_codes.AVOCADO_ALL_OK,
                                {test.COMMON_TMPDIR_NAME: shared_tmp})
             content = os.listdir(shared_tmp)
-            self.assertEqual(len(content), 2, "The number of tests in manually "
-                             "set teststmpdir is not 2 (%s):\n%s"
-                             % (len(content), content))
+            self.assertEqual(len(content), 2,
+                             (f"The number of tests in manually set teststmpdir "
+                              f"is not 2 ({len(content)}):\n{content}"))
 
     def tearDown(self):
         super().tearDown()

@@ -276,7 +276,7 @@ class TestProcessRun(unittest.TestCase):
         encoded_text = b'Avok\xc3\xa1do'
         self.assertEqual(text.encode('utf-8'), encoded_text)
         self.assertEqual(encoded_text.decode('utf-8'), text)
-        cmd = "%s -n %s" % (ECHO_CMD, text)
+        cmd = f"{ECHO_CMD} -n {text}"
         result = process.run(cmd, encoding='utf-8')
         self.assertEqual(result.stdout, encoded_text)
         self.assertEqual(result.stdout_text, text)
@@ -287,15 +287,15 @@ class TestProcessRun(unittest.TestCase):
         :avocado: tags=parallel:1
         """
         with script.TemporaryScript("refuse_to_die", REFUSE_TO_DIE) as exe:
-            cmd = "%s '%s'" % (sys.executable, exe.path)
+            cmd = f"{sys.executable} '{exe.path}'"
             # Wait 1s to set the traps
             res = process.run(cmd, timeout=1, ignore_status=True)
-            self.assertLess(res.duration, 100, "Took longer than expected, "
-                            "process probably not interrupted by Avocado.\n%s"
-                            % res)
-            self.assertNotEqual(res.exit_status, 0, "Command finished without "
-                                "reporting failure but should be killed.\n%s"
-                                % res)
+            self.assertLess(res.duration, 100,
+                            (f"Took longer than expected, process probably "
+                             f"not interrupted by Avocado.\n{res}"))
+            self.assertNotEqual(res.exit_status, 0,
+                                (f"Command finished without reporting "
+                                 f"failure but should be killed.\n{res}"))
 
     @skipOnLevelsInferiorThan(2)
     def test_run_with_negative_timeout_ugly_cmd(self):
@@ -303,19 +303,19 @@ class TestProcessRun(unittest.TestCase):
         :avocado: tags=parallel:1
         """
         with script.TemporaryScript("refuse_to_die", REFUSE_TO_DIE) as exe:
-            cmd = "%s '%s'" % (sys.executable, exe.path)
+            cmd = f"{sys.executable} '{exe.path}'"
             # Wait 1s to set the traps
             proc = process.SubProcess(cmd)
             proc.start()
             time.sleep(1)
             proc.wait(-1)
             res = proc.result
-            self.assertLess(res.duration, 100, "Took longer than expected, "
-                            "process probably not interrupted by Avocado.\n%s"
-                            % res)
-            self.assertNotEqual(res.exit_status, 0, "Command finished without "
-                                "reporting failure but should be killed.\n%s"
-                                % res)
+            self.assertLess(res.duration, 100,
+                            (f"Took longer than expected, process probably "
+                             f"not interrupted by Avocado.\n{res}"))
+            self.assertNotEqual(res.exit_status, 0,
+                                (f"Command finished without reporting "
+                                 f"failure but should be killed.\n{res}"))
 
 
 class MiscProcessTests(unittest.TestCase):
@@ -385,7 +385,7 @@ class MiscProcessTests(unittest.TestCase):
         process_id = 123
         signal = 1
         owner_mocked.return_value = owner_id
-        expected_cmd = 'kill -%d %d' % (signal, process_id)
+        expected_cmd = f'kill -{signal} {process_id}'
 
         killed = process.safe_kill(process_id, signal)
         self.assertTrue(killed)
@@ -398,7 +398,7 @@ class MiscProcessTests(unittest.TestCase):
         process_id = 123
         signal = 1
         owner_mocked.return_value = owner_id
-        expected_cmd = 'kill -%d %d' % (signal, process_id)
+        expected_cmd = f'kill -{signal} {process_id}'
         run_mocked.side_effect = process.CmdError()
 
         killed = process.safe_kill(process_id, signal)
@@ -414,7 +414,7 @@ class MiscProcessTests(unittest.TestCase):
         returned_owner_id = process.get_owner_id(process_id)
 
         self.assertEqual(returned_owner_id, owner_user_id)
-        stat_mock.assert_called_with('/proc/%d/' % process_id)
+        stat_mock.assert_called_with(f'/proc/{process_id}/')
 
     @unittest.mock.patch('avocado.utils.process.os.stat')
     def test_process_get_owner_id_with_pid_not_found(self, stat_mock):
@@ -424,7 +424,7 @@ class MiscProcessTests(unittest.TestCase):
         returned_owner_id = process.get_owner_id(process_id)
 
         self.assertIsNone(returned_owner_id)
-        stat_mock.assert_called_with('/proc/%d/' % process_id)
+        stat_mock.assert_called_with(f'/proc/{process_id}/')
 
     @unittest.mock.patch('avocado.utils.process.time.sleep')
     @unittest.mock.patch('avocado.utils.process.safe_kill')

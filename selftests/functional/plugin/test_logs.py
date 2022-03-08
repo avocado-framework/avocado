@@ -21,8 +21,7 @@ class TestLogsUI(TestCaseTmpDir):
         cmd_line %= (AVOCADO, os.path.join(self.tmpdir.name, 'config'))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL,
-                         "Avocado did not return rc %d:\n%s"
-                         % (exit_codes.AVOCADO_ALL_OK, result))
+                         f'Avocado did not return rc {exit_codes.AVOCADO_ALL_OK}:\n {result}')
         stdout_lines = result.stdout_text.splitlines()
         self.assertNotIn('Log file "debug.log" content for test "1-examples/tests/passtest.py'
                          ':PassTest.test" (PASS)', stdout_lines)
@@ -44,13 +43,12 @@ class TestLogsFilesUI(TestCaseTmpDir):
 
     def test_simpletest_logfiles(self):
         fail_test = os.path.join(BASEDIR, 'examples', 'tests', 'failtest.sh')
-        cmd_line = ('%s --config %s run --job-results-dir %s --disable-sysinfo'
-                    ' -- %s' % (AVOCADO, self.config_file.path,
-                                self.tmpdir.name, fail_test))
+        cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
+                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo -- {fail_test}')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+                         f'Avocado did not return rc {expected_rc}:\n {result}')
         self.assertNotIn('Log file "debug.log" content', result.stdout_text)
         self.assertIn('Log file "stdout" content', result.stdout_text)
         self.assertIn('Log file "stderr" content', result.stdout_text)
@@ -66,8 +64,7 @@ class TestLogging(TestCaseTmpDir):
 
     def test_job_log(self):
         pass_test = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
-        cmd_line = ('%s run --job-results-dir %s %s' %
-                    (AVOCADO, self.tmpdir.name, pass_test))
+        cmd_line = f'{AVOCADO} run --job-results-dir {self.tmpdir.name} {pass_test}'
         process.run(cmd_line)
         log_file = os.path.join(self.tmpdir.name, 'latest', 'job.log')
         with open(log_file, 'r', encoding='utf-8') as fp:

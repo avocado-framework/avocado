@@ -58,8 +58,8 @@ class DataDirTest(Base):
         with unittest.mock.patch('avocado.core.data_dir.settings', stg):
             from avocado.core import data_dir
             for key in self.mapping.keys():
-                data_dir_func = getattr(data_dir, 'get_%s' % key)
-                namespace = 'datadir.paths.{}'.format(key)
+                data_dir_func = getattr(data_dir, f'get_{key}')
+                namespace = f'datadir.paths.{key}'
                 self.assertEqual(data_dir_func(), stg.as_dict().get(namespace))
 
     def test_unique_log_dir(self):
@@ -107,7 +107,7 @@ class DataDirTest(Base):
         # Create the id file.
         id_file_path = os.path.join(expected_jrd, 'id')
         with open(id_file_path, 'w', encoding='utf-8') as id_file:
-            id_file.write("%s\n" % unique_id)
+            id_file.write(f"{unique_id}\n")
             id_file.flush()
             os.fsync(id_file)
 
@@ -199,7 +199,7 @@ class AltDataDirTest(Base):
         with unittest.mock.patch('avocado.core.data_dir.settings', stg):
             from avocado.core import data_dir
             for key, value in self.mapping.items():
-                data_dir_func = getattr(data_dir, 'get_%s' % key)
+                data_dir_func = getattr(data_dir, f'get_{key}')
                 self.assertEqual(data_dir_func(), value)
 
         (self.alt_base_dir,  # pylint: disable=W0201
@@ -216,7 +216,7 @@ class AltDataDirTest(Base):
         alt_stg.merge_with_configs()
         with unittest.mock.patch('avocado.core.data_dir.settings', alt_stg):
             for key, value in alt_mapping.items():
-                data_dir_func = getattr(data_dir, 'get_%s' % key)
+                data_dir_func = getattr(data_dir, f'get_{key}')
                 self.assertEqual(data_dir_func(), value)
 
     def tearDown(self):

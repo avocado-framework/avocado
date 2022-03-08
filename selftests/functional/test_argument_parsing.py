@@ -12,27 +12,27 @@ class ArgumentParsingTest(unittest.TestCase):
 
     def test_unknown_command(self):
         os.chdir(BASEDIR)
-        cmd_line = '%s whacky-command-that-doesnt-exist' % AVOCADO
+        cmd_line = f'{AVOCADO} whacky-command-that-doesnt-exist'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc, result))
+                         'Avocado did not return rc {expected_rc}:\n{result}')
 
     def test_known_command_bad_choice(self):
         os.chdir(BASEDIR)
-        cmd_line = '%s run --disable-sysinfo=foo passtest' % AVOCADO
+        cmd_line = f'{AVOCADO} run --disable-sysinfo=foo passtest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc, result))
+                         'Avocado did not return rc {expected_rc}:\n{result}')
 
     def test_known_command_bad_argument(self):
         os.chdir(BASEDIR)
-        cmd_line = '%s run --disable-sysinfo --whacky-argument passtest' % AVOCADO
+        cmd_line = f'{AVOCADO} run --disable-sysinfo --whacky-argument passtest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc, result))
+                         'Avocado did not return rc {expected_rc}:\n{result}')
         subcommand_error_msg = (b'avocado run: error: unrecognized arguments: '
                                 b'--whacky-argument')
         self.assertIn(subcommand_error_msg, result.stderr)
@@ -54,12 +54,11 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
 
         self.assertIsNotNone(log_dir)
         job = job_id.create_unique_job_id()
-        cmd_line = '%s run --disable-sysinfo --force-job-id=%%s %%s' % AVOCADO
-        cmd_line %= (job, complement_args)
+        cmd_line = f'{AVOCADO} run --disable-sysinfo --force-job-id={job} {complement_args}'
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc, result))
-        path_job_glob = os.path.join(log_dir, "job-*-%s" % job[0:7])
+                         'Avocado did not return rc {expected_rc}:\n{result}')
+        path_job_glob = os.path.join(log_dir, f"job-*-{job[0:7]}")
         self.assertEqual(glob.glob(path_job_glob), [])
 
     def test_whacky_option(self):

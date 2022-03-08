@@ -16,7 +16,7 @@ DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
                 stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
                 stat.S_IROTH | stat.S_IXOTH)
 
-FAKE_VMSTAT_CONTENTS = """#!{python}
+FAKE_VMSTAT_CONTENTS = (f"""#!{sys.executable}
 import time
 import random
 import signal
@@ -112,13 +112,13 @@ class FakeVMStat:
 if __name__ == '__main__':
     vmstat = FakeVMStat(interval=float(sys.argv[1]), interrupt_delay=float(sys.argv[2]))
     vmstat.start()
-""".format(python=sys.executable)
+""")
 
-FAKE_UPTIME_CONTENTS = """#!{python}
+FAKE_UPTIME_CONTENTS = (f"""#!{sys.executable}
 if __name__ == '__main__':
     print("17:56:34 up  8:06,  7 users,  load average: 0.26, 0.20, 0.21")
 
-""".format(python=sys.executable)
+""")
 
 
 class ProcessTest(TestCaseTmpDir):
@@ -140,13 +140,13 @@ class ProcessTest(TestCaseTmpDir):
         """
         :avocado: tags=parallel:1
         """
-        proc = process.SubProcess('%s 1 0' % self.fake_vmstat)
+        proc = process.SubProcess(f'{self.fake_vmstat} 1 0')
         proc.start()
         time.sleep(3)
         proc.terminate()
         proc.wait(timeout=1)
         stdout = proc.get_stdout().decode()
-        self.assertIn('memory', stdout, 'result: %s' % stdout)
+        self.assertIn('memory', stdout, f'result: {stdout}')
         self.assertRegex(stdout, '[0-9]+')
 
     @skipOnLevelsInferiorThan(2)
@@ -154,7 +154,7 @@ class ProcessTest(TestCaseTmpDir):
         """
         :avocado: tags=parallel:1
         """
-        proc = process.SubProcess('%s 1 3' % self.fake_vmstat)
+        proc = process.SubProcess(f'{self.fake_vmstat} 1 3')
         proc.start()
         time.sleep(3)
         proc.stop(2)
@@ -166,7 +166,7 @@ class ProcessTest(TestCaseTmpDir):
         """
         :avocado: tags=parallel:1
         """
-        proc = process.SubProcess('%s 1 3' % self.fake_vmstat)
+        proc = process.SubProcess(f'{self.fake_vmstat} 1 3')
         proc.start()
         time.sleep(3)
         proc.stop(4)
@@ -176,7 +176,7 @@ class ProcessTest(TestCaseTmpDir):
     def test_process_run(self):
         proc = process.SubProcess(self.fake_uptime)
         result = proc.run()
-        self.assertEqual(result.exit_status, 0, 'result: %s' % result)
+        self.assertEqual(result.exit_status, 0, f'result: {result}')
         self.assertIn(b'load average', result.stdout)
 
 

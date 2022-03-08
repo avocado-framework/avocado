@@ -146,9 +146,9 @@ class ListTestFunctional(TestCaseTmpDir):
                                              'avocado_resolver_test',
                                              mode=mode)
         test_script.save()
-        cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
+        cmd_line = f'{AVOCADO} -V list {test_script.path}'
         result = process.run(cmd_line)
-        self.assertIn('%s: %s' % (exp_str, count), result.stdout_text)
+        self.assertIn(f'{exp_str}: {count}', result.stdout_text)
         test_script.remove()
 
     def _run_with_timeout(self, cmd_line, timeout):
@@ -160,7 +160,7 @@ class ListTestFunctional(TestCaseTmpDir):
         while not test_process.poll():
             if time.monotonic() > deadline:
                 os.killpg(os.getpgid(test_process.pid), signal.SIGKILL)
-                self.fail("Failed to run test under %s seconds" % timeout)
+                self.fail(f"Failed to run test under {timeout} seconds")
             time.sleep(0.05)
         self.assertEqual(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
 
@@ -172,12 +172,10 @@ class ListTestFunctional(TestCaseTmpDir):
 
     def test_list_filter_by_tags(self):
         examples_dir = os.path.join(BASEDIR, 'examples', 'tests')
-        cmd_line = "%s --verbose list -t fast -- %s" % (AVOCADO,
-                                                        examples_dir)
+        cmd_line = f"{AVOCADO} --verbose list -t fast -- {examples_dir}"
         result = process.run(cmd_line)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
-                         "Avocado did not return rc %d:\n%s"
-                         % (exit_codes.AVOCADO_ALL_OK, result))
+                         f"Avocado did not return rc {exit_codes.AVOCADO_ALL_OK}:\n{result}")
         stdout_lines = result.stdout_text.splitlines()
         self.assertIn("TEST TYPES SUMMARY", stdout_lines)
         self.assertIn("avocado-instrumented: 2", stdout_lines)
@@ -197,7 +195,7 @@ class ListTestFunctional(TestCaseTmpDir):
                                              'avocado_resolver_test',
                                              mode=self.MODE_0664)
         test_script.save()
-        cmd_line = ('%s -V list %s' % (AVOCADO, test_script.path))
+        cmd_line = f'{AVOCADO} -V list {test_script.path}'
         initial_time = time.monotonic()
         result = process.run(cmd_line, ignore_status=True)
         test_script.remove()
@@ -235,13 +233,13 @@ class ListTestFunctional(TestCaseTmpDir):
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES)
         os.chdir(BASEDIR)
         mytest.save()
-        cmd_line = "%s -V list %s" % (AVOCADO, mytest)
+        cmd_line = f"{AVOCADO} -V list {mytest}"
         result = process.run(cmd_line)
         self.assertIn(b'exec-test: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' "
-                    "-- '%s'" % (AVOCADO, self.tmpdir.name, mytest))
+        cmd_line = (f"{AVOCADO} run --disable-sysinfo --job-results-dir "
+                    f"'{self.tmpdir.name}' -- '{mytest}'")
         self._run_with_timeout(cmd_line, 5)
 
     @skipOnLevelsInferiorThan(2)
@@ -256,14 +254,14 @@ class ListTestFunctional(TestCaseTmpDir):
         os.chdir(BASEDIR)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ("%s run --disable-sysinfo --job-results-dir '%s' "
-                    "-- '%s'" % (AVOCADO, self.tmpdir.name, mytest))
+        cmd_line = (f"{AVOCADO} run --disable-sysinfo --job-results-dir "
+                    f"'{self.tmpdir.name}' -- '{mytest}'")
         self._run_with_timeout(cmd_line, 5)
 
     def test_python_unittest(self):
         test_path = os.path.join(BASEDIR, "selftests", ".data", "unittests.py")
-        cmd = ("%s run --disable-sysinfo --job-results-dir %s --json - "
-               "-- %s" % (AVOCADO, self.tmpdir.name, test_path))
+        cmd = (f"{AVOCADO} run --disable-sysinfo --job-results-dir "
+               f"{self.tmpdir.name} --json - -- {test_path}")
         result = process.run(cmd, ignore_status=True)
         jres = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, 1, result)
@@ -277,23 +275,22 @@ class ListTestFunctional(TestCaseTmpDir):
         for test in jres["tests"]:
             for exp in exps:
                 if exp[0] in test["id"]:
-                    self.assertEqual(test["status"], exp[1], "Status of %s not"
-                                     " as expected: %s" % (exp, result))
+                    self.assertEqual(test["status"], exp[1],
+                                     f"Status of {exp} not as expected: {result}")
                     exps.remove(exp)
                     if exp[2] is not None:
                         self.assertEqual(test["fail_reason"], exp[2],
-                                         'Fail reason "%s" not as expected: %s'
-                                         % (exp, result))
+                                         f'Fail reason "{exp}" not as expected: {result}')
                     break
             else:
-                self.fail("No expected result for %s\n%s\n\nexps = %s"
-                          % (test["id"], result, exps))
-        self.assertFalse(exps, "Some expected result not matched to actual"
-                         "results:\n%s\n\nexps = %s" % (result, exps))
+                self.fail(f"No expected result for {test['id']}\n"
+                          f"{result}\n\nexps = {exps}")
+        self.assertFalse(exps, (f"Some expected result not matched to actualresults:\n"
+                                f"{result}\n\nexps = {exps}"))
 
     def test_list_subtests_filter(self):
         """Check whether the subtests filter works for INSTRUMENTED tests."""
-        cmd = "%s list examples/tests/assert.py:test_fails" % AVOCADO
+        cmd = f"{AVOCADO} list examples/tests/assert.py:test_fails"
         result = process.run(cmd)
         expected = b"avocado-instrumented examples/tests/assert.py:Assert.test_fails_to_raise\n"
         self.assertEqual(expected, result.stdout)
