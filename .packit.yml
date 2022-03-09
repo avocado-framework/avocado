@@ -1,5 +1,6 @@
 specfile_path: python-avocado.spec
 downstream_package_name: python-avocado
+srpm_build_deps: []
 jobs:
   - job: copr_build
     trigger: pull_request
