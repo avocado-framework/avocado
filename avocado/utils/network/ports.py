@@ -60,7 +60,7 @@ def is_port_free(port, address):
                     if localhost:
                         return False
                 sock.close()
-        return True
+                return True
     finally:
         if sock is not None:
             sock.close()
