@@ -174,6 +174,20 @@ class PhoneHomeServer(HTTPServer):
         self.instance_id = instance_id
         self.instance_phoned_back = False
 
+    def wait_for_phone_home(self, new_call=False):
+        """Waits for this instance to call.
+
+        :param new_call: Default is False, so if this instance was called back
+                         already, this method will return immediately and will
+                         not wait for a new call.
+        :type new_call: bool
+        """
+        if new_call:
+            self.instance_phoned_back = False
+
+        while not self.instance_phoned_back:
+            self.handle_request()
+
     @classmethod
     def set_up_and_wait_for_phone_home(cls, address, instance_id):
         """
@@ -190,8 +204,7 @@ class PhoneHomeServer(HTTPServer):
         :type instance_id: str
         """
         s = cls(address, instance_id)
-        while not s.instance_phoned_back:
-            s.handle_request()
+        s.wait_for_phone_home()
 
 
 def wait_for_phone_home(address, instance_id):
