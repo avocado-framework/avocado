@@ -144,6 +144,13 @@ class RuntimeTask:
 
         return requirements_runtime_tasks
 
+    def is_dependencies_finished(self):
+        for dependencie in self.dependencies:
+            if not dependencie.status or not ("FINISHED" in dependencie.status
+                                              or "FAILED" in dependencie.status):
+                return False
+        return True
+
 
 class RuntimeTaskGraph:
     """Graph representing dependencies between runtime tasks."""
@@ -194,7 +201,6 @@ class RuntimeTaskGraph:
                 requirement_task = self.graph.get(requirement_task)
             else:
                 self.graph[requirement_task] = requirement_task
-            runtime_test.task.dependencies.add(requirement_task.task)
             runtime_test.dependencies.append(requirement_task)
 
     def get_tasks_in_topological_order(self):

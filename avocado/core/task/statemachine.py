@@ -151,7 +151,8 @@ class Worker:
     async def triage(self):
         """Reads from triaging, moves into either: ready or finished."""
         async def check_finished_dependencies(runtime_task):
-            for task in runtime_task.task.dependencies:
+            for dependency in runtime_task.dependencies:
+                task = dependency.task
                 # check if this dependency `task` failed on triage
                 # this is needed because this kind of task fail does not
                 # have information in the status repo
@@ -201,12 +202,9 @@ class Worker:
                 return
 
         # handle task dependencies
-        if runtime_task.task.dependencies:
+        if runtime_task.dependencies:
             # check of all the dependency tasks finished
-            async with self._state_machine.lock:
-                finished_tasks = [rt_task.task for rt_task
-                                  in self._state_machine.finished]
-            if not runtime_task.task.dependencies.issubset(finished_tasks):
+            if not runtime_task.is_dependencies_finished():
                 async with self._state_machine.lock:
                     self._state_machine.triaging.append(runtime_task)
                     runtime_task.status = 'WAITING DEPENDENCIES'
