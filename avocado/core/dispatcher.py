@@ -62,6 +62,32 @@ class JobPrePostDispatcher(EnabledExtensionManager):
         super().__init__('avocado.plugins.job.prepost')
 
 
+class TestPreDispatcher(EnabledExtensionManager):
+
+    """
+    Calls extensions before Test execution
+
+    Automatically adds all the extension with entry points registered under
+    'avocado.plugins.test.pre'
+    """
+
+    def __init__(self):
+        super().__init__('avocado.plugins.test.pre')
+
+
+class TestPostDispatcher(EnabledExtensionManager):
+
+    """
+    Calls extensions after Test execution
+
+    Automatically adds all the extension with entry points registered under
+    'avocado.plugins.test.post'
+    """
+
+    def __init__(self):
+        super().__init__('avocado.plugins.test.post')
+
+
 class ResultDispatcher(EnabledExtensionManager):
 
     def __init__(self):

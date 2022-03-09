@@ -175,10 +175,10 @@ test phases.  Here's a sequence of the job phases:
 Plugin writers can have their own code called at Avocado during a job
 by writing a that will be called at phase number 2 (``pre_tests``) by
 writing a method according to the
-:meth:`avocado.core.plugin_interfaces.JobPreTests` interface.
+:meth:`avocado.core.plugin_interfaces.PreTest` interface.
 Accordingly, plugin writers can have their own called at phase number
 4 (``post_tests``) by writing a method according to the
-:meth:`avocado.core.plugin_interfaces.JobPostTests` interface.
+:meth:`avocado.core.plugin_interfaces.PostTest` interface.
 
 Note that there's no guarantee that all of the first 3 job phases will
 be executed, so a failure in phase 1 (``create_test_suite``), may
