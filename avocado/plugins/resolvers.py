@@ -59,8 +59,8 @@ def python_resolver(name, reference, find_tests):
     # disabled tests not needed here
     class_methods_info, _ = find_tests(module_path)
     runnables = []
-    for klass, methods_tags_reqs in class_methods_info.items():
-        for (method, tags, reqs) in methods_tags_reqs:
+    for klass, methods_tags_depens in class_methods_info.items():
+        for (method, tags, depens) in methods_tags_depens:
             klass_method = "%s.%s" % (klass, method)
             if tests_filter is not None and not tests_filter.search(klass_method):
                 continue
@@ -68,7 +68,7 @@ def python_resolver(name, reference, find_tests):
             runnables.append(Runnable(name,
                                       uri=uri,
                                       tags=tags,
-                                      requirements=reqs))
+                                      dependencies=depens))
     if runnables:
         return ReferenceResolution(reference,
                                    ReferenceResolutionResult.SUCCESS,

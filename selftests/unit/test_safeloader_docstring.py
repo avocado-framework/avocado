@@ -2,7 +2,7 @@ import unittest
 
 from avocado.core.safeloader.docstring import (
     DOCSTRING_DIRECTIVE_RE, check_docstring_directive,
-    get_docstring_directives, get_docstring_directives_requirements,
+    get_docstring_directives, get_docstring_directives_dependencies,
     get_docstring_directives_tags)
 
 
@@ -46,10 +46,10 @@ class DocstringDirectives(unittest.TestCase):
                ":avocado: tags=SLOW,disk , invalid"]
 
     NO_REQS = [":AVOCADO: REQUIREMENT=['FOO':'BAR']",
-               ":avocado: requirement={'foo':'bar'}",
-               ":avocado: requirement={foo",
-               ":avocado: requirements=",
-               ":avocado: requirement="]
+               ":avocado: dependency={'foo':'bar'}",
+               ":avocado: dependency={foo",
+               ":avocado: dependencies=",
+               ":avocado: dependency="]
 
     def test_longline(self):
         docstring = ("This is a very long docstring in a single line. "
@@ -142,19 +142,19 @@ class DocstringDirectives(unittest.TestCase):
         exp = {"fast": None, "arch": set(["x86_64", "ppc64"])}
         self.assertEqual(get_docstring_directives_tags(raw), exp)
 
-    def test_get_requirement_empty(self):
-        for req in self.NO_REQS:
-            self.assertEqual([], get_docstring_directives_requirements(req))
+    def test_get_dependency_empty(self):
+        for dep in self.NO_REQS:
+            self.assertEqual([], get_docstring_directives_dependencies(dep))
 
-    def test_requirement_single(self):
-        raw = ":avocado: requirement={\"foo\":\"bar\"}"
+    def test_dependency_single(self):
+        raw = ":avocado: dependency={\"foo\":\"bar\"}"
         exp = [{"foo": "bar"}]
-        self.assertEqual(get_docstring_directives_requirements(raw), exp)
+        self.assertEqual(get_docstring_directives_dependencies(raw), exp)
 
-    def test_requirement_double(self):
-        raw = ":avocado: requirement={\"foo\":\"bar\"}\n:avocado: requirement={\"uri\":\"http://foo.bar\"}"
+    def test_dependency_double(self):
+        raw = ":avocado: dependency={\"foo\":\"bar\"}\n:avocado: dependency={\"uri\":\"http://foo.bar\"}"
         exp = [{"foo": "bar"}, {"uri": "http://foo.bar"}]
-        self.assertEqual(get_docstring_directives_requirements(raw), exp)
+        self.assertEqual(get_docstring_directives_dependencies(raw), exp)
 
     def test_directives_regex(self):
         """

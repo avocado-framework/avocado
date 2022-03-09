@@ -15,20 +15,20 @@
 from avocado.core.nrunner import Runnable
 
 
-class RequirementsResolver:
+class DependencyResolver:
 
-    name = 'requirements'
-    description = 'Requirements resolver for tests with requirements'
+    name = 'dependency'
+    description = 'Dependency resolver for tests with dependencies'
 
     @staticmethod
     def resolve(runnable):
-        requirements_runnables = []
-        for requirement in runnable.requirements:
+        dependency_runnables = []
+        for dependency in runnable.dependencies:
             # make a copy to change the dictionary and do not affect the
-            # original `requirements` dictionary from the test
-            requirement_copy = requirement.copy()
-            kind = 'requirement-%s' % requirement_copy.pop('type')
-            requirement_runnable = Runnable(kind, None, config=runnable.config,
-                                            **requirement_copy)
-            requirements_runnables.append(requirement_runnable)
-        return requirements_runnables
+            # original `dependencies` dictionary from the test
+            dependency_copy = dependency.copy()
+            kind = dependency_copy.pop('type')
+            dependency_runnable = Runnable(kind, None, config=runnable.config,
+                                           **dependency_copy)
+            dependency_runnables.append(dependency_runnable)
+        return dependency_runnables

@@ -125,16 +125,16 @@ class Runnable:
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop('tags', None)
-        self.requirements = kwargs.pop('requirements', None)
+        self.dependencies = kwargs.pop('dependencies', None)
         self.variant = kwargs.pop('variant', None)
         self.output_dir = kwargs.pop('output_dir', None)
         self.kwargs = kwargs
 
     def __repr__(self):
         fmt = ('<Runnable kind="{}" uri="{}" config="{}" args="{}" '
-               'kwargs="{}" tags="{}" requirements="{}"> variant="{}"')
+               'kwargs="{}" tags="{}" dependencies="{}"> variant="{}"')
         return fmt.format(self.kind, self.uri, self.config, self.args,
-                          self.kwargs, self.tags, self.requirements,
+                          self.kwargs, self.tags, self.dependencies,
                           self.variant)
 
     @property
@@ -978,11 +978,11 @@ class Task:
         return fmt.format(self.identifier, self.runnable, self.status_services,
                           self.category, self.job_id)
 
-    def are_requirements_available(self, runners_registry=None):
-        """Verifies if requirements needed to run this task are available.
+    def are_dependencies_available(self, runners_registry=None):
+        """Verifies if dependencies needed to run this task are available.
 
         This currently checks the runner command only, but can be expanded once
-        the handling of other types of requirements are implemented.  See
+        the handling of other types of dependencies are implemented.  See
         :doc:`/blueprints/BP002`.
         """
         if runners_registry is None:

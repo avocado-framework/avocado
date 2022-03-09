@@ -195,8 +195,8 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-runner-python-unittest
 %{_bindir}/avocado-runner-avocado-instrumented
 %{_bindir}/avocado-runner-tap
-%{_bindir}/avocado-runner-requirement-asset
-%{_bindir}/avocado-runner-requirement-package
+%{_bindir}/avocado-runner-asset
+%{_bindir}/avocado-runner-package
 %{_bindir}/avocado-runner-sysinfo
 %{_bindir}/avocado-software-manager
 %{_bindir}/avocado-external-runner
@@ -377,6 +377,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Feb 14 2022 Jan Richter <jarichte@redhat.com> - 95.0-2
+- Rename requirements to dependencies
+
 * Wed Feb 09 2022 Cleber Rosa <crosa@redhat.com> - 95.0-1
 - New release
 

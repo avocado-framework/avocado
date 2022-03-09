@@ -13,11 +13,11 @@ class SuccessTest(Test):
        pass
     def test_b(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
         """
     def test_c(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
         """
 '''
 
@@ -25,14 +25,14 @@ MULTIPLE_REQUIREMENT = '''from avocado import Test
 class FailTest(Test):
     def test_a(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "hello"}
         """
     def test_b(self):
         pass
     def test_c(self):
         """
-        :avocado: requirement={"type": "package", "name": "hello"}
-        :avocado: requirement={"type": "package", "name": "-foo-bar-"}
+        :avocado: dependency={"type": "package", "name": "hello"}
+        :avocado: dependency={"type": "package", "name": "-foo-bar-"}
         """
 '''
 
@@ -59,9 +59,9 @@ class Runtime(TestCase):
 
 class DependencyGraph(TestCaseTmpDir):
 
-    def test_one_requirement(self):
+    def test_one_dependency(self):
         with script.Script(os.path.join(self.tmpdir.name,
-                                        'test_single_requirement.py'),
+                                        'test_single_dependency.py'),
                            SINGLE_REQUIREMENT) as test:
             config = {'resolver.references': [test.path]}
             suite = TestSuite.from_config(config=config)
@@ -77,9 +77,9 @@ class DependencyGraph(TestCaseTmpDir):
             self.assertTrue(
                 runtime_tests[3].task.identifier.name.endswith("test_c"))
 
-    def test_multiple_requirement(self):
+    def test_multiple_dependencies(self):
         with script.Script(os.path.join(self.tmpdir.name,
-                                        'test_multiple_requirement.py'),
+                                        'test_multiple_dependencies.py'),
                            MULTIPLE_REQUIREMENT) as test:
             config = {'resolver.references': [test.path]}
             suite = TestSuite.from_config(config=config)

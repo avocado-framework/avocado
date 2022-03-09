@@ -14,7 +14,7 @@ class RunnableRun(unittest.TestCase):
                     'Skipping to run on CI only.')
 
     def test_no_kwargs(self):
-        res = process.run("%s runnable-run -k requirement-asset" % RUNNER,
+        res = process.run("%s runnable-run -k asset" % RUNNER,
                           ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
@@ -26,7 +26,7 @@ class RunnableRun(unittest.TestCase):
     def test_fetch(self):
         name = 'name=gpl-2.0.txt'
         locations = 'locations=https://mirrors.kernel.org/gnu/Licenses/gpl-2.0.txt'
-        res = process.run("%s runnable-run -k requirement-asset %s %s"
+        res = process.run("%s runnable-run -k asset %s %s"
                           % (RUNNER, name, locations), ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
@@ -51,7 +51,7 @@ class RunnableRun(unittest.TestCase):
 class TaskRun(unittest.TestCase):
 
     def test_no_kwargs(self):
-        res = process.run("%s task-run -i XXXreq-pacXXX -k requirement-asset"
+        res = process.run("%s task-run -i XXXreq-pacXXX -k asset"
                           % RUNNER, ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'result': 'error'", res.stdout)

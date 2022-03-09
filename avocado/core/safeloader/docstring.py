@@ -3,8 +3,8 @@ import re
 
 #: Gets the docstring directive value from a string. Used to tweak
 #: test behavior in various ways
-DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(requirement={.*}))\s*$'
-# the RE will match `:avocado: tags=category` or `:avocado: requirements={}`
+DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(dependency={.*}))\s*$'
+# the RE will match `:avocado: tags=category` or `:avocado: dependency={}`
 DOCSTRING_DIRECTIVE_RE = re.compile(DOCSTRING_DIRECTIVE_RE_RAW)
 
 
@@ -64,20 +64,20 @@ def get_docstring_directives_tags(docstring):
     return result
 
 
-def get_docstring_directives_requirements(docstring):
+def get_docstring_directives_dependencies(docstring):
     """
-    Returns the test requirements from docstring patterns like
-    `:avocado: requirement={}`.
+    Returns the test dependencies from docstring patterns like
+    `:avocado: dependencies={}`.
 
     :rtype: list
     """
-    requirements = []
+    dependencies = []
     for item in get_docstring_directives(docstring):
-        if item.startswith('requirement='):
-            _, requirement_str = item.split('requirement=', 1)
+        if item.startswith('dependency='):
+            _, dependency_str = item.split('dependency=', 1)
             try:
-                requirements.append(json.loads(requirement_str))
+                dependencies.append(json.loads(dependency_str))
             except json.decoder.JSONDecodeError:
-                # ignore requirement in case of malformed dictionary
+                # ignore dependencies in case of malformed dictionary
                 continue
-    return requirements
+    return dependencies

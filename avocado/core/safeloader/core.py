@@ -5,18 +5,18 @@ from importlib.machinery import PathFinder
 
 from avocado.core.safeloader.docstring import (
     check_docstring_directive, get_docstring_directives,
-    get_docstring_directives_requirements, get_docstring_directives_tags)
+    get_docstring_directives_dependencies, get_docstring_directives_tags)
 from avocado.core.safeloader.module import PythonModule
 
 
-def get_methods_info(statement_body, class_tags, class_requirements):
+def get_methods_info(statement_body, class_tags, class_dependencies):
     """Returns information on test methods.
 
     :param statement_body: the body of a "class" statement
     :param class_tags: the tags at the class level, to be combined with the
                        tags at the method level.
-    :param class_requirements: the requirements at the class level, to be
-                               combined with the requirements at the method
+    :param class_dependencies: the dependencies at the class level, to be
+                               combined with the dependencies at the method
                                level.
     """
     methods_info = []
@@ -37,12 +37,12 @@ def get_methods_info(statement_body, class_tags, class_requirements):
         mt_tags = get_docstring_directives_tags(docstring)
         mt_tags.update(class_tags)
 
-        mt_requirements = get_docstring_directives_requirements(docstring)
-        mt_requirements.extend(class_requirements)
+        mt_dependencies = get_docstring_directives_dependencies(docstring)
+        mt_dependencies.extend(class_dependencies)
 
         methods = [method for method, _, _ in methods_info]
         if st.name not in methods:
-            methods_info.append((st.name, mt_tags, mt_requirements))
+            methods_info.append((st.name, mt_tags, mt_dependencies))
 
     return methods_info
 
@@ -224,7 +224,7 @@ def _examine_class(target_module, target_class, determine_match, path,
 
         info = get_methods_info(klass.body,
                                 get_docstring_directives_tags(docstring),
-                                get_docstring_directives_requirements(
+                                get_docstring_directives_dependencies(
                                     docstring))
 
         # Getting the list of parents of the current class
@@ -328,7 +328,7 @@ def find_python_tests(target_module, target_class, determine_match, path):
         if check_docstring_directive(docstring, 'enable'):
             info = get_methods_info(klass.body,
                                     get_docstring_directives_tags(docstring),
-                                    get_docstring_directives_requirements(
+                                    get_docstring_directives_dependencies(
                                         docstring))
             result[klass.name] = info
             continue
@@ -344,7 +344,7 @@ def find_python_tests(target_module, target_class, determine_match, path):
             match = module.is_matching_klass(klass)
         info = get_methods_info(klass.body,
                                 get_docstring_directives_tags(docstring),
-                                get_docstring_directives_requirements(
+                                get_docstring_directives_dependencies(
                                     docstring))
         # Getting the list of parents of the current class
         parents = klass.bases
