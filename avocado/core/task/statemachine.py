@@ -205,7 +205,7 @@ class Worker:
         # handle task dependencies
         if runtime_task.dependencies:
             # check of all the dependency tasks finished
-            if not runtime_task.is_dependencies_finished():
+            if not runtime_task.are_dependencies_finished():
                 async with self._state_machine.lock:
                     self._state_machine.triaging.append(runtime_task)
                     runtime_task.status = 'WAITING DEPENDENCIES'

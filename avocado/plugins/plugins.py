@@ -54,6 +54,8 @@ class Plugins(CLICmd):
              'Plugins that add new options to commands (cli):'),
             (dispatcher.JobPrePostDispatcher(),
              'Plugins that run before/after the execution of jobs (job.prepost):'),
+            (dispatcher.TestPreDispatcher(),
+             'Plugins that run before the execution of each test (test.pre):'),
             (dispatcher.ResultDispatcher(),
              'Plugins that generate job result in different formats (result):'),
             (dispatcher.ResultEventsDispatcher(config),
