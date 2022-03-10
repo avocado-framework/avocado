@@ -371,6 +371,7 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.test.pre': [
                   'package = avocado.plugins.pretest.package:PackagePreTest',
+                  'asset = avocado.plugins.asset:AssetPreTest',
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
