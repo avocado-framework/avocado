@@ -23,7 +23,7 @@ from datetime import datetime
 from avocado.core import exit_codes, safeloader
 from avocado.core.nrunner import Runnable
 from avocado.core.output import LOG_UI
-from avocado.core.plugin_interfaces import CLICmd, JobPreTests
+from avocado.core.plugin_interfaces import CLICmd, JobPreTests, PreTest
 from avocado.core.settings import settings
 from avocado.utils import data_structures
 from avocado.utils.asset import SUPPORTED_OPERATORS, Asset
@@ -277,6 +277,31 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
 
         for candidate in candidates:
             fetch_assets(*candidate, logger)
+
+
+class AssetPreTest(PreTest):
+    """Implements the asset pre tests plugin.
+
+    It will create pre-test tasks for fetching assets based on the
+     `:avocado: dependency=` definition inside the test’s docstring.
+    """
+    name = "asset requirement"
+    description = "Fetch of files using the Avocado Assets utility."
+
+    def pre_test_runnables(self, test_runnable):
+        asset_runnables = []
+        if test_runnable.dependencies:
+            for dependency in test_runnable.dependencies:
+                if dependency['type'] == "asset":
+                    # make a copy to change the dictionary and do not affect
+                    # the original `dependencies` dictionary from the test
+                    dependency_copy = dependency.copy()
+                    kind = dependency_copy.pop('type')
+                    asset_runnable = Runnable(kind, None,
+                                              config=test_runnable.config,
+                                              **dependency_copy)
+                    asset_runnables.append(asset_runnable)
+        return asset_runnables
 
 
 class Assets(CLICmd):
