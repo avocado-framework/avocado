@@ -370,6 +370,9 @@ if __name__ == '__main__':
                   'human = avocado.plugins.human:HumanJob',
                   'testlogsui = avocado.plugins.testlogs:TestLogsUI',
                   ],
+              'avocado.plugins.test.pre': [
+                  'package = avocado.plugins.package:PackagePreTest',
+                  ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
                   'json = avocado.plugins.jsonresult:JSONResult',

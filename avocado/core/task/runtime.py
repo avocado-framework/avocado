@@ -1,7 +1,6 @@
 from copy import deepcopy
 from itertools import chain
 
-from avocado.core.dependencies.resolver import DependencyResolver
 from avocado.core.dispatcher import TestPostDispatcher, TestPreDispatcher
 from avocado.core.nrunner import RUNNERS_REGISTRY_PYTHON_CLASS, Task
 from avocado.core.test_id import TestID
@@ -148,10 +147,6 @@ class RuntimeTask:
         post_runnables = list(chain.from_iterable(
             TestPostDispatcher().map_method_with_return('post_test_runnables',
                                                         runnable)))
-
-        # creates the runnables for the dependencies
-        if runnable.dependencies:
-            pre_runnables = pre_runnables + DependencyResolver.resolve(runnable)
 
         return (_crete_runtime_tasks(pre_runnables),
                 _crete_runtime_tasks(post_runnables))
