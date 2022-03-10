@@ -1,7 +1,6 @@
 from copy import deepcopy
 from itertools import chain
 
-from avocado.core.dependencies.resolver import DependencyResolver
 from avocado.core.dispatcher import TestPreDispatcher
 from avocado.core.nrunner.task import Task
 from avocado.core.test_id import TestID
@@ -161,8 +160,6 @@ class PreRuntimeTask(RuntimeTask):
         pre_runnables = list(chain.from_iterable(
             TestPreDispatcher().map_method_with_return('pre_test_runnables',
                                                        runnable)))
-        if runnable.dependencies:
-            pre_runnables = pre_runnables + DependencyResolver.resolve(runnable)
         pre_test_tasks = []
         for pre_runnable in pre_runnables:
             pre_task = cls.from_runnable(pre_runnable,
