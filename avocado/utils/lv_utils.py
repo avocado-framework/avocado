@@ -475,7 +475,7 @@ def lv_remove(vg_name, lv_name):
     if not lv_check(vg_name, lv_name):
         raise LVException("Logical volume could not be found")
 
-    cmd = "lvremove -f %s/%s" % (vg_name, lv_name)
+    cmd = "lvremove -f /dev/%s/%s" % (vg_name, lv_name)
     process.run(cmd, sudo=True)
 
 
