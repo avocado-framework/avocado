@@ -23,7 +23,7 @@ need pycdlib module installed in your environment.
 
 :see: http://cloudinit.readthedocs.io.
 """
-
+import warnings
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from avocado.utils import astring, iso9660
@@ -174,21 +174,46 @@ class PhoneHomeServer(HTTPServer):
         self.instance_id = instance_id
         self.instance_phoned_back = False
 
+    def wait_for_phone_home(self, new_call=False):
+        """Waits for this instance to call.
+
+        :param new_call: Default is False, so if this instance was called back
+                         already, this method will return immediately and will
+                         not wait for a new call.
+        :type new_call: bool
+        """
+        if new_call:
+            self.instance_phoned_back = False
+
+        while not self.instance_phoned_back:
+            self.handle_request()
+
+    @classmethod
+    def set_up_and_wait_for_phone_home(cls, address, instance_id):
+        """
+        Sets up a phone home server and waits for the given instance to call
+
+        This is a shorthand for setting up a server that will keep handling
+        requests, until it has heard from the specific instance requested.
+
+        :param address: a hostname or IP address and port, in the same format
+                        given to socket and other servers
+        :type address: tuple
+        :param instance_id: the identification for the instance that should be
+                            calling back, and the condition for the wait to end
+        :type instance_id: str
+        """
+        s = cls(address, instance_id)
+        s.wait_for_phone_home()
+
 
 def wait_for_phone_home(address, instance_id):
     """
-    Sets up a phone home server and waits for the given instance to call
+    This method is deprecated.
 
-    This is a shorthand for setting up a server that will keep handling
-    requests, until it has heard from the specific instance requested.
-
-    :param address: a hostname or IP address and port, in the same format
-                    given to socket and other servers
-    :type address: tuple
-    :param instance_id: the identification for the instance that should be
-                        calling back, and the condition for the wait to end
-    :type instance_id: str
+    Please use :meth:`.PhoneHomeServer.set_up_and_wait_for_phone_home`.
     """
-    s = PhoneHomeServer(address, instance_id)
-    while not s.instance_phoned_back:
-        s.handle_request()
+    warnings.warn(("wait_for_phone_home is deprecated. Please use "
+                   "PhoneHomeServer.set_up_and_wait_for_phone_home()"),
+                  DeprecationWarning)
+    PhoneHomeServer.set_up_and_wait_for_phone_home(address, instance_id)
