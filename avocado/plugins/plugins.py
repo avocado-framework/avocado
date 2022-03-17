@@ -19,6 +19,7 @@ from avocado.core import dispatcher
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.resolver import Resolver
+from avocado.core.settings import settings
 from avocado.utils import astring
 
 
@@ -30,6 +31,19 @@ class Plugins(CLICmd):
 
     name = 'plugins'
     description = 'Displays plugin information'
+
+    def configure(self, parser):
+        parser = super().configure(parser)
+        help_msg = 'Will list the plugins in execution order'
+        settings.register_option(section='plugins',
+                                 key='ordered_list',
+                                 default=False,
+                                 key_type=bool,
+                                 action='store_true',
+                                 help_msg=help_msg,
+                                 parser=parser,
+                                 long_arg='--ordered',
+                                 short_arg='-o')
 
     def run(self, config):
         plugin_types = [
@@ -58,7 +72,11 @@ class Plugins(CLICmd):
         for plugins_active, msg in plugin_types:
             LOG_UI.info(msg)
             plugin_matrix = []
-            for plugin in sorted(plugins_active, key=lambda x: x.name):
+            if config.get('plugins.ordered_list'):
+                sorted_plugins = plugins_active.get_extentions_by_priority()
+            else:
+                sorted_plugins = plugins_active.get_extentions_by_name()
+            for plugin in sorted_plugins:
                 plugin_matrix.append((plugin.name, plugin.obj.description))
 
             if not plugin_matrix:

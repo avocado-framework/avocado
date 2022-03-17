@@ -20,6 +20,7 @@ own look and feel.
 """
 
 import copy
+import enum
 import logging
 import sys
 
@@ -30,6 +31,15 @@ from avocado.utils import stacktrace
 # This is also defined in avocado.core.output, but this avoids a
 # circular import
 LOG_UI = logging.getLogger("avocado.app")
+
+
+class PluginPriority(enum.IntEnum):
+    VERY_HIGH = 100
+    HIGH = 70
+    NORMAL = 50
+    LOW = 30
+    VERY_LOW = 1
+    LAST_RESORT = 0
 
 
 class Extension:
@@ -43,6 +53,27 @@ class Extension:
         self.entry_point = entry_point
         self.plugin = plugin
         self.obj = obj
+        self.priority = getattr(self.obj, 'priority', PluginPriority.NORMAL)
+
+    def __lt__(self, other):
+        if self.priority == other.priority:
+            return self.name < other.name
+        return self.priority > other.priority
+
+    def __le__(self, other):
+        if self.priority == other.priority:
+            return self.name <= other.name
+        return self.priority >= other.priority
+
+    def __ge__(self, other):
+        if self.priority == other.priority:
+            return self.name >= other.name
+        return self.priority <= other.priority
+
+    def __gt__(self, other):
+        if self.priority == other.priority:
+            return self.name > other.name
+        return self.priority < other.priority
 
 
 class ExtensionManager:
@@ -68,7 +99,7 @@ class ExtensionManager:
                 ext = Extension(ep.name, ep, plugin, obj)
                 if self.enabled(ext):  # lgtm [py/init-calls-subclass]
                     self.extensions.append(ext)
-        self.extensions.sort(key=lambda x: x.name)
+        self.extensions = sorted(self.extensions)
 
     def enabled(self, extension):  # pylint: disable=W0613,R0201
         """
@@ -116,6 +147,18 @@ class ExtensionManager:
         :func:`sorted`.
         """
         return sorted(super().names())
+
+    def get_extentions_by_priority(self):
+        """
+        Returns extensions in execution order
+        """
+        return self.extensions
+
+    def get_extentions_by_name(self):
+        """
+        Returns extensions in alphabetical order
+        """
+        return sorted(self.extensions, key=lambda x: x.name)
 
     def map_method_with_return(self, method_name, *args, **kwargs):
         """

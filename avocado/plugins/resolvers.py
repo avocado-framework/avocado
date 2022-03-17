@@ -19,6 +19,7 @@ Test resolver for builtin test types
 import os
 import re
 
+from avocado.core.extension_manager import PluginPriority
 from avocado.core.nrunner import Runnable
 from avocado.core.plugin_interfaces import Resolver
 from avocado.core.references import reference_split
@@ -31,6 +32,7 @@ class ExecTestResolver(Resolver):
 
     name = 'exec-test'
     description = 'Test resolver for executable files to be handled as tests'
+    priority = PluginPriority.VERY_LOW
 
     def resolve(self, reference):
 
@@ -98,6 +100,7 @@ class AvocadoInstrumentedResolver(Resolver):
 
     name = 'avocado-instrumented'
     description = 'Test resolver for Avocado Instrumented tests'
+    priority = PluginPriority.HIGH
 
     def resolve(self, reference):
         return python_resolver(AvocadoInstrumentedResolver.name,
@@ -109,6 +112,7 @@ class TapResolver(Resolver):
 
     name = 'tap'
     description = 'Test resolver for executable files to be handled as TAP tests'
+    priority = PluginPriority.LAST_RESORT
 
     def resolve(self, reference):
 
