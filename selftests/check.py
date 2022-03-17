@@ -614,13 +614,6 @@ def create_suites(args):  # pylint: disable=W0621
     return suites
 
 
-def print_failed_tests(tests):
-    if tests:
-        print("Failed tests:")
-        for test in tests:
-            print(test.get('name'), test.get('status'))
-
-
 def main(args):  # pylint: disable=W0621
 
     args.dict_tests = {
@@ -706,7 +699,6 @@ def main(args):  # pylint: disable=W0621
 
     with Job(config, suites) as j:
         exit_code = j.run()
-    print_failed_tests(j.get_failed_tests())
     return exit_code
 
 
