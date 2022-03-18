@@ -162,7 +162,8 @@ class ListTestFunctional(TestCaseTmpDir):
                 os.killpg(os.getpgid(test_process.pid), signal.SIGKILL)
                 self.fail("Failed to run test under %s seconds" % timeout)
             time.sleep(0.05)
-        self.assertEqual(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
+        self.assertEqual(test_process.returncode,
+            exit_codes.AVOCADO_TESTS_FAIL)
 
     def test_simple(self):
         self._test('simpletest.sh', SIMPLE_TEST, 'exec-test', self.MODE_0775)
@@ -213,7 +214,8 @@ class ListTestFunctional(TestCaseTmpDir):
                    'avocado-instrumented', self.MODE_0664, 2)
 
     def test_multiple_methods_same_name(self):
-        self._test('multiplemethods.py', AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME,
+        self._test('multiplemethods.py',
+                    AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME,
                    'avocado-instrumented', self.MODE_0664, 1)
 
     def test_load_not_a_test(self):

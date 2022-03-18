@@ -107,7 +107,8 @@ class Solver:
                         for pair in range(len(constraint[c])):
                             constraint_array.add(constraint[c][pair])
                     constraint_array = sorted(constraint_array,
-                                              key=lambda x: int(x[self.CON_NAME]))
+                                              key=lambda x: int(
+                                                  x[self.CON_NAME]))
 
                     has_subset = False
                     remove = set()
@@ -160,11 +161,13 @@ class Solver:
                     counter = 0
                     for value in c:
                         if value == constraint[counter][self.CON_NAME]:
-                            value_array.append([constraint[counter][self.CON_VAL]])
+                            value_array.append(
+                                [constraint[counter][self.CON_VAL]])
                             if (counter + 1) != len(constraint):
                                 counter += 1
                         else:
-                            value_array.append(list(range(0, self.data[value])))
+                            value_array.append(
+                                list(range(0, self.data[value])))
                     for key in itertools.product(*value_array):
                         combination_matrix.del_cell(c, key)
 
@@ -192,7 +195,8 @@ class Solver:
             for constraints in one_value_constraints:
                 is_ok = False
                 for constraint in constraints:
-                    if row[constraint[self.CON_NAME]] != constraint[self.CON_VAL]:
+                    if row[constraint[
+                        self.CON_NAME]] != constraint[self.CON_VAL]:
                         is_ok = True
                         break
                 if not is_ok:

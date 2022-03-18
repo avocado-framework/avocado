@@ -44,7 +44,8 @@ class TestSubProcess(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.process.SubProcess.get_pid')
     @unittest.mock.patch('avocado.utils.process.get_children_pids')
     @unittest.mock.patch('avocado.utils.process.run')
-    def test_send_signal_sudo_enabled(self, run, get_children, get_pid, sudo, _):
+    def test_send_signal_sudo_enabled(self, run, get_children,
+        get_pid, sudo, _):
         signal = 1
         pid = 122
         child_pid = 123
@@ -351,7 +352,8 @@ class MiscProcessTests(unittest.TestCase):
         '''
         Gets the list of children process.  Linux only.
         '''
-        self.assertGreaterEqual(len(process.get_children_pids(os.getppid())), 1)
+        self.assertGreaterEqual(len(process.get_children_pids(
+            os.getppid())), 1)
 
     @unittest.mock.patch('avocado.utils.process.os.kill')
     @unittest.mock.patch('avocado.utils.process.get_owner_id')
@@ -393,7 +395,8 @@ class MiscProcessTests(unittest.TestCase):
 
     @unittest.mock.patch('avocado.utils.process.run')
     @unittest.mock.patch('avocado.utils.process.get_owner_id')
-    def test_safe_kill_sudo_enabled_with_exception(self, owner_mocked, run_mocked):
+    def test_safe_kill_sudo_enabled_with_exception(self, owner_mocked,
+        run_mocked):
         owner_id = 0
         process_id = 123
         signal = 1
@@ -661,7 +664,8 @@ class GetCommandOutputPattern(unittest.TestCase):
 
     @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
     def test_matches_multiple(self):
-        res = process.get_command_output_matching("echo -e 'foo\nfoo\n'", "foo")
+        res = process.get_command_output_matching("echo -e 'foo\nfoo\n'",
+        "foo")
         self.assertEqual(res, ["foo", "foo"])
 
     @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")

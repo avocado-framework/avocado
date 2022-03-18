@@ -22,7 +22,8 @@ parallel_1 = {
 
 vmimage = {
     'resolver.references': [os.path.join(TESTS_DIR, 'vmimage.py')],
-    'yaml_to_mux.files': [os.path.join(TESTS_DIR, 'vmimage.py.data', 'variants.yml')],
+    'yaml_to_mux.files': [os.path.join(TESTS_DIR, 'vmimage.py.data',
+    'variants.yml')],
     'nrunner.max_parallel_tasks': 1,
     }
 

@@ -36,8 +36,10 @@ setup(name='avocado-framework-plugin-result-upload',
       install_requires=['avocado-framework==%s' % VERSION],
       entry_points={
           'avocado.plugins.cli': [
-              'results_upload = avocado_result_upload.result_upload:ResultUploadCLI',
+              'results_upload = ' +
+              'avocado_result_upload.result_upload:ResultUploadCLI',
               ],
           'avocado.plugins.result': [
-              'results_upload = avocado_result_upload.result_upload:ResultUpload',
+              'results_upload = ' +
+              'avocado_result_upload.result_upload:ResultUpload',
               ]})

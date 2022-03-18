@@ -22,7 +22,8 @@ class GetData(Test):
         self.assertEqual(file_data,
                          self.get_data('file_data', source='file',
                                        must_exist=False))
-        self.assertEqual(open(file_data, encoding='utf-8').read(), 'get_data.py')
+        self.assertEqual(open(
+            file_data, encoding='utf-8').read(), 'get_data.py')
 
         # Test-level checks
         test_data = self.get_data('test_data')
@@ -75,7 +76,8 @@ class GetData(Test):
         """
         file_data = self.get_data('file_data')
         self.assertIsNotNone(file_data)
-        self.assertEqual(open(file_data, encoding='utf-8').read(), 'get_data.py')
+        self.assertEqual(open(
+            file_data, encoding='utf-8').read(), 'get_data.py')
 
         test_data = self.get_data('test_data')
         self.assertIsNotNone(test_data)

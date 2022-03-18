@@ -29,7 +29,8 @@ from setuptools import Command, find_packages, setup
 
 
 BASE_PATH = os.path.dirname(__file__)
-with open(os.path.join(BASE_PATH, 'VERSION'), 'r', encoding='utf-8') as version_file:
+with open(os.path.join(BASE_PATH, 'VERSION'),
+    'r', encoding='utf-8') as version_file:
     VERSION = version_file.read().strip()
 
 
@@ -41,7 +42,7 @@ def get_long_description():
 
 
 def walk_plugins_setup_py(action, action_name=None,
-                          directory=os.path.join(BASE_PATH, "optional_plugins")):
+    directory=os.path.join(BASE_PATH, "optional_plugins")):
 
     if action_name is None:
         action_name = action[0].upper()
@@ -189,7 +190,8 @@ class Linter(SimpleCommand):
     description = 'Run logical, stylistic, analytical and formatter checks.'
 
     def run(self):
-        print("This command is deprecated, please use instead: python3 setup.py test --static-checks")
+        print("This command is deprecated, please use instead: python3 "
+        + "setup.py test --static-checks")
         sys.exit()
 
 
@@ -198,9 +200,12 @@ class Test(SimpleCommand):
 
     description = 'Run selftests'
     user_options = [
-        ("skip=", None, "Run all tests and skip listed tests, separated by comma"),
-        ("select=", None, "Do not run any test, only these listed after, separated by comma"),
-        ("disable-plugin-checks=", None, "Disable checks for one or more plugins (by directory name), separated by comma"),
+        ("skip=", None, "Run all tests and skip listed tests, separated by "
+        + "comma"),
+        ("select=", None, "Do not run any test, only these listed after, "
+        + "separated by comma"),
+        ("disable-plugin-checks=", None, "Disable checks for one or more "
+        + "plugins (by directory name), separated by comma"),
         ("list-features", None, "Show the features tested by this test")
     ]
 
@@ -214,10 +219,12 @@ class Test(SimpleCommand):
         args = argparse.Namespace()
         args.skip = self.skip if len(self.skip) == 0 else [self.skip]
         args.select = self.select if len(self.select) == 0 else [self.select]
-        args.disable_plugin_checks = self.disable_plugin_checks if len(self.disable_plugin_checks) == 0 else [self.disable_plugin_checks]
+        args.disable_plugin_checks = self.disable_plugin_checks if len(
+            self.disable_plugin_checks) == 0 else [self.disable_plugin_checks]
         args.list_features = self.list_features
 
-        # Import here on purpose, otherwise it'll mess with install/develop commands
+        # Import here on purpose, otherwise it'll mess with
+        # install/develop commands
         import selftests.check
         sys.exit(selftests.check.main(args))
 
@@ -273,9 +280,11 @@ class Plugin(SimpleCommand):
             if self.user:
                 action += ["--user"]
             parent_dir = os.path.join(directory, self.install)
-            run([sys.executable, "setup.py"] + action, cwd=parent_dir, check=True)
+            run([sys.executable, "setup.py"] + action, cwd=parent_dir,
+            check=True)
         else:
-            print(self.install, "is not a known plugin. Please, check the list of available plugins.")
+            print(self.install, "is not a known plugin. "
+            + "Please, check the list of available plugins.")
             return
 
 
@@ -294,7 +303,8 @@ if __name__ == '__main__':
           classifiers=[
               "Development Status :: 5 - Production/Stable",
               "Intended Audience :: Developers",
-              "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+              "License :: OSI Approved :: GNU General Public License "
+              + "v2 or later (GPLv2+)",
               "Natural Language :: English",
               "Operating System :: POSIX",
               "Topic :: Software Development :: Quality Assurance",
@@ -316,12 +326,16 @@ if __name__ == '__main__':
                   'avocado-runner-dry-run = avocado.core.nrunner:main',
                   'avocado-runner-exec-test = avocado.core.nrunner:main',
                   'avocado-runner-python-unittest = avocado.core.nrunner:main',
-                  'avocado-runner-avocado-instrumented = avocado.core.runners.avocado_instrumented:main',
+                  'avocado-runner-avocado-instrumented = avocado.core' +
+                  '.runners.avocado_instrumented:main',
                   'avocado-runner-tap = avocado.core.runners.tap:main',
-                  'avocado-runner-requirement-asset = avocado.core.runners.requirement_asset:main',
-                  'avocado-runner-requirement-package = avocado.core.runners.requirement_package:main',
+                  'avocado-runner-requirement-asset = avocado.core.runners' +
+                  '.requirement_asset:main',
+                  'avocado-runner-requirement-package = avocado.core.runners' +
+                  '.requirement_package:main',
                   'avocado-runner-sysinfo = avocado.core.runners.sysinfo:main',
-                  'avocado-software-manager = avocado.utils.software_manager.main:main',
+                  'avocado-software-manager = avocado.utils' +
+                  '.software_manager.main:main',
                   'avocado-external-runner = scripts.external_runner:main',
                   ],
               "avocado.plugins.init": [
@@ -330,8 +344,10 @@ if __name__ == '__main__':
                   "sysinfo = avocado.plugins.sysinfo:SysinfoInit",
                   "tap = avocado.plugins.tap:TAPInit",
                   "jobscripts = avocado.plugins.jobscripts:JobScriptsInit",
-                  "dict_variants = avocado.plugins.dict_variants:DictVariantsInit",
-                  "json_variants = avocado.plugins.json_variants:JsonVariantsInit",
+                  "dict_variants = avocado.plugins" +
+                  ".dict_variants:DictVariantsInit",
+                  "json_variants = avocado.plugins" +
+                  ".json_variants:JsonVariantsInit",
                   "run = avocado.plugins.run:RunInit",
                   "podman = avocado.plugins.spawners.podman:PodmanSpawnerInit",
                   "nrunner = avocado.plugins.runner_nrunner:RunnerInit",
@@ -345,7 +361,8 @@ if __name__ == '__main__':
                   'journal = avocado.plugins.journal:Journal',
                   'tap = avocado.plugins.tap:TAP',
                   'zip_archive = avocado.plugins.archive:ArchiveCLI',
-                  'json_variants = avocado.plugins.json_variants:JsonVariantsCLI',
+                  'json_variants = avocado.plugins' +
+                  '.json_variants:JsonVariantsCLI',
                   'nrunner = avocado.plugins.runner_nrunner:RunnerCLI',
                   'podman = avocado.plugins.spawners.podman:PodmanCLI',
                   ],
@@ -390,8 +407,10 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.resolver': [
                   'exec-test = avocado.plugins.resolvers:ExecTestResolver',
-                  'python-unittest = avocado.plugins.resolvers:PythonUnittestResolver',
-                  'avocado-instrumented = avocado.plugins.resolvers:AvocadoInstrumentedResolver',
+                  'python-unittest = avocado.plugins' +
+                  '.resolvers:PythonUnittestResolver',
+                  'avocado-instrumented = avocado.plugins' +
+                  '.resolvers:AvocadoInstrumentedResolver',
                   'tap = avocado.plugins.resolvers:TapResolver',
                   ],
               'avocado.plugins.runner': [
@@ -400,14 +419,18 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.runnable.runner': [
                   ('avocado-instrumented = avocado.core.'
-                   'runners.avocado_instrumented:AvocadoInstrumentedTestRunner'),
+                  'runners.avocado_instrumented:' +
+                  'AvocadoInstrumentedTestRunner'),
                   'tap = avocado.core.runners.tap:TAPRunner',
                   'noop = avocado.core.nrunner:NoOpRunner',
                   'dry-run = avocado.core.nrunner:DryRunRunner',
                   'exec-test = avocado.core.nrunner:ExecTestRunner',
-                  'python-unittest = avocado.core.nrunner:PythonUnittestRunner',
-                  'requirement-asset = avocado.core.runners.requirement_asset:RequirementAssetRunner',
-                  'requirement-package = avocado.core.runners.requirement_package:RequirementPackageRunner',
+                  'python-unittest = avocado.core' +
+                  '.nrunner:PythonUnittestRunner',
+                  'requirement-asset = avocado.core.runners' +
+                  '.requirement_asset:RequirementAssetRunner',
+                  'requirement-package = avocado.core.runners' +
+                  '.requirement_package:RequirementPackageRunner',
                   'sysinfo = avocado.core.runners.sysinfo:SysinfoRunner',
                   ],
               'avocado.plugins.spawner': [

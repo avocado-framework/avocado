@@ -42,10 +42,11 @@ class WrapperTest(TestCaseTmpDir):
         self.dummy.save()
 
     @unittest.skipIf(missing_binary('cc'),
-                     "C compiler is required by the underlying datadir.py test")
+                    "C compiler is required by the underlying datadir.py test")
     def test_global_wrapper(self):
         os.chdir(BASEDIR)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --wrapper %s '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--wrapper %s '
                     '--test-runner=runner '
                     'examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir.name, self.script.path))
@@ -60,7 +61,7 @@ class WrapperTest(TestCaseTmpDir):
                         (self.tmpfile, result.stdout, cmd_line))
 
     @unittest.skipIf(missing_binary('cc'),
-                     "C compiler is required by the underlying datadir.py test")
+                    "C compiler is required by the underlying datadir.py test")
     def test_process_wrapper(self):
         os.chdir(BASEDIR)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
@@ -78,10 +79,11 @@ class WrapperTest(TestCaseTmpDir):
                         (self.tmpfile, cmd_line, result.stdout))
 
     @unittest.skipIf(missing_binary('cc'),
-                     "C compiler is required by the underlying datadir.py test")
+                    "C compiler is required by the underlying datadir.py test")
     def test_both_wrappers(self):
         os.chdir(BASEDIR)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --wrapper %s '
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
+                    '--wrapper %s '
                     '--test-runner=runner '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir.name, self.dummy.path,

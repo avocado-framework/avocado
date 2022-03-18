@@ -42,7 +42,8 @@ class Parser:
                 match = rx_parameter_value.search(line)
                 if match is None:
                     raise ValueError('Parameter values are missing')
-                parameter_values = [x.strip() for x in match.group(1).split(',')]
+                parameter_values = [x.strip() for x in match.group(1).split(
+                    ',')]
                 if len(parameter_values) != len(set(parameter_values)):
                     raise ValueError('Parameter values has duplicities')
 
@@ -54,25 +55,32 @@ class Parser:
                     value_index = 1
                     if not rx_constraint.match(constraint):
                         raise ValueError("Invalid format of constraint")
-                    constraint_data = [x.strip() for x in constraint.split("!=")]
+                    constraint_data = [x.strip() for x in constraint.split(
+                        "!=")]
                     # Searching for parameter name in constraint
                     constraint_name = next((i for i, p in enumerate(parameters)
-                                            if p[0] == constraint_data[0]), None)
+                                            if p[0] == constraint_data[0]),
+                                            None)
                     if constraint_name is None:
-                        # If first value inside constraint wasn't parameter name try second value
+                        # If first value inside constraint
+                        # wasn't parameter name try second value
                         try:
                             constraint_name = next((i for i, p in
                                                     enumerate(parameters)
-                                                    if p[0] == constraint_data[1]))
+                                                    if p[0] ==
+                                                    constraint_data[1]))
                             value_index = 0
                         except StopIteration:
-                            raise ValueError('Name in constraint not match with names in parameters')
+                            raise ValueError('Name in constraint not match ' +
+                            'with names in parameters')
                     try:
-                        # Checking if value in constraint is matching with parameter values
+                        # Checking if value in constraint is
+                        # matching with parameter values
                         constraint_value = parameters[constraint_name][1]\
                             .index(constraint_data[value_index])
                     except ValueError:
-                        raise ValueError('Value in constraint not match with values in parameters')
+                        raise ValueError('Value in constraint not match with' +
+                        ' values in parameters')
                     array.append((constraint_name, constraint_value))
                 array.sort(key=lambda x: int(x[0]))
                 constraints.add(tuple(array))

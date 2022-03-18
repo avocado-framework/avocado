@@ -137,7 +137,7 @@ class InterruptTest(TestCaseTmpDir):
                       'twice.')
 
         self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                                      timeout=10), 'Avocado left processes behind.')
+                                timeout=10), 'Avocado left processes behind.')
 
         output = proc.stdout.read()
         # Make sure the Interrupted requested sentence is there
@@ -181,7 +181,7 @@ class InterruptTest(TestCaseTmpDir):
                       'twice.')
 
         self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                                      timeout=10), 'Avocado left processes behind.')
+                                timeout=10), 'Avocado left processes behind.')
 
         # Make sure the Interrupted test sentence is there
         self.assertIn(b'Terminated\n', proc.stdout.read())
@@ -201,7 +201,8 @@ class InterruptTest(TestCaseTmpDir):
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run --test-runner=runner %s --disable-sysinfo --job-results-dir %s ' %
+        cmd = ('%s run --test-runner=runner %s --disable-sysinfo '
+                '--job-results-dir %s ' %
                (AVOCADO, self.test_module, self.tmpdir.name))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -221,7 +222,7 @@ class InterruptTest(TestCaseTmpDir):
                       'twice.')
 
         self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                                      timeout=10), 'Avocado left processes behind.')
+                                timeout=10), 'Avocado left processes behind.')
 
         output = proc.stdout.read()
         # Make sure the Interrupted requested sentence is there
@@ -265,7 +266,7 @@ class InterruptTest(TestCaseTmpDir):
                       'twice.')
 
         self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                                      timeout=10), 'Avocado left processes behind.')
+                                timeout=10), 'Avocado left processes behind.')
 
         # Make sure the Interrupted test sentence is there
         self.assertIn(b'Terminated\n', proc.stdout.read())

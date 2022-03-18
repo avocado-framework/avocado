@@ -41,14 +41,16 @@ class Base(unittest.TestCase):
     @unittest.skipUnless(process.has_capability("cap_sys_admin"),
                          "Capability to mount is required (cap_sys_admin)")
     @unittest.skipIf(os.getenv('TRAVIS') and
-                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
+                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le',
+                     's390x'],
                      'TRAVIS Environment is unsuitable for these tests')
     def setUp(self):
         prefix = temp_dir_prefix(self)
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
         self.mountpoint = os.path.join(self.tmpdir.name, "disk")
         os.mkdir(self.mountpoint)
-        self.disk = partition.Partition(os.path.join(self.tmpdir.name, "block"), 1,
+        self.disk = partition.Partition(os.path.join(self.tmpdir.name,
+                                        "block"), 1,
                                         self.mountpoint)
 
     def tearDown(self):
@@ -91,7 +93,8 @@ class TestPartitionMkfsMount(Base):
     def run_process_to_use_mnt(self):
         proc = process.SubProcess(self.use_mnt_cmd, sudo=True)
         proc.start()
-        self.assertTrue(wait.wait_for(lambda: os.path.exists(self.use_mnt_file),
+        self.assertTrue(wait.wait_for(lambda: os.path.exists(
+                                      self.use_mnt_file),
                                       timeout=1, first=0.1, step=0.1),
                         "File was not created within mountpoint")
         return proc
@@ -139,10 +142,12 @@ class TestPartitionMkfsMount(Base):
         proc = self.run_process_to_use_mnt()
         with unittest.mock.patch('avocado.utils.partition.process.run',
                                  side_effect=process.CmdError):
-            with unittest.mock.patch('avocado.utils.partition.process.system_output',
-                                     side_effect=OSError) as mocked_system_output:
+            with unittest.mock.patch(
+                'avocado.utils.partition.process.system_output',
+                 side_effect=OSError) as mocked_system_output:
                 self.assertRaises(partition.PartitionError, self.disk.unmount)
-                mocked_system_output.assert_called_with('lsof ' + self.mountpoint,
+                mocked_system_output.assert_called_with('lsof ' + 
+                                                        self.mountpoint,
                                                         sudo=True)
         self.disk.unmount()
         proc.wait(timeout=1)
@@ -189,7 +194,8 @@ class TestMtabLock(unittest.TestCase):
         """ Check double-lock raises exception after 60s (in 0.1s) """
         with partition.MtabLock():
             with unittest.mock.patch('avocado.utils.filelock.time.time',
-                                     unittest.mock.MagicMock(side_effect=[1, 2, 62])):
+                                     unittest.mock.MagicMock(
+                                         side_effect=[1, 2, 62])):
                 self.assertRaises(partition.PartitionError,
                                   partition.MtabLock().__enter__)
 

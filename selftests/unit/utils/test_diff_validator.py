@@ -45,9 +45,12 @@ class ChangeValidationTest(unittest.TestCase):
             f.write("this line is not removed\nthis is a new line again\n")
 
         changes = diff_validator.extract_changes(change.get_target_files())
-        change_success = diff_validator.assert_change(changes, change.files_dict)
-        change_dict = diff_validator.assert_change_dict(changes, change.files_dict)
-        self.assertTrue(change_success, "The change must be valid:\n%s" % diff_validator.create_diff_report(change_dict))
+        change_success = diff_validator.assert_change(
+            changes, change.files_dict)
+        change_dict = diff_validator.assert_change_dict(
+            changes, change.files_dict)
+        self.assertTrue(change_success, "The change must be valid:\n%s" %
+                diff_validator.create_diff_report(change_dict))
 
     def test_change_wrong_no_change(self):
         files = self.files
@@ -62,9 +65,12 @@ class ChangeValidationTest(unittest.TestCase):
         diff_validator.make_temp_file_copies(change.get_target_files())
 
         changes = diff_validator.extract_changes(change.get_target_files())
-        change_success = diff_validator.assert_change(changes, change.files_dict)
-        change_dict = diff_validator.assert_change_dict(changes, change.files_dict)
-        self.assertFalse(change_success, "The change must not be valid:\n%s" % diff_validator.create_diff_report(change_dict))
+        change_success = diff_validator.assert_change(
+            changes, change.files_dict)
+        change_dict = diff_validator.assert_change_dict(
+            changes, change.files_dict)
+        self.assertFalse(change_success, "The change must not be valid:\n%s" %
+            diff_validator.create_diff_report(change_dict))
 
     def test_change_wrong_add(self):
         files = self.files
@@ -81,9 +87,12 @@ class ChangeValidationTest(unittest.TestCase):
             f.write("this is a wrong new line\n")
 
         changes = diff_validator.extract_changes(change.get_target_files())
-        change_success = diff_validator.assert_change(changes, change.files_dict)
-        change_dict = diff_validator.assert_change_dict(changes, change.files_dict)
-        self.assertFalse(change_success, "The change must not be valid:\n%s" % diff_validator.create_diff_report(change_dict))
+        change_success = diff_validator.assert_change(
+            changes, change.files_dict)
+        change_dict = diff_validator.assert_change_dict(
+            changes, change.files_dict)
+        self.assertFalse(change_success, "The change must not be valid:\n%s" %
+            diff_validator.create_diff_report(change_dict))
 
     def test_change_unexpected_remove(self):
         files = self.files
@@ -99,9 +108,12 @@ class ChangeValidationTest(unittest.TestCase):
             f.write("this is a new line\n")
 
         changes = diff_validator.extract_changes(change.get_target_files())
-        change_success = diff_validator.assert_change(changes, change.files_dict)
-        change_dict = diff_validator.assert_change_dict(changes, change.files_dict)
-        self.assertFalse(change_success, "The change must not be valid:\n%s" % diff_validator.create_diff_report(change_dict))
+        change_success = diff_validator.assert_change(
+            changes, change.files_dict)
+        change_dict = diff_validator.assert_change_dict(
+            changes, change.files_dict)
+        self.assertFalse(change_success, "The change must not be valid:\n%s" %
+        diff_validator.create_diff_report(change_dict))
 
     def test_change_unexpected_add(self):
         files = self.files
@@ -117,9 +129,12 @@ class ChangeValidationTest(unittest.TestCase):
             f.write("this is an unexpected new line\n")
 
         changes = diff_validator.extract_changes(change.get_target_files())
-        change_success = diff_validator.assert_change(changes, change.files_dict)
-        change_dict = diff_validator.assert_change_dict(changes, change.files_dict)
-        self.assertFalse(change_success, "The change must not be valid:\n%s" % diff_validator.create_diff_report(change_dict))
+        change_success = diff_validator.assert_change(
+            changes, change.files_dict)
+        change_dict = diff_validator.assert_change_dict(
+            changes, change.files_dict)
+        self.assertFalse(change_success, "The change must not be valid:\n%s" %
+            diff_validator.create_diff_report(change_dict))
 
 
 if __name__ == '__main__':

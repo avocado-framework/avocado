@@ -38,9 +38,11 @@ setup(name='avocado-framework-plugin-varianter-cit',
       test_suite='tests',
       entry_points={
           'avocado.plugins.cli': [
-              'varianter_cit = avocado_varianter_cit.varianter_cit:VarianterCitCLI',
+              'varianter_cit = ' +
+              'avocado_varianter_cit.varianter_cit:VarianterCitCLI',
           ],
           "avocado.plugins.varianter": [
-              "varianter_cit = avocado_varianter_cit.varianter_cit:VarianterCit",
+              "varianter_cit = " +
+              "avocado_varianter_cit.varianter_cit:VarianterCit",
           ]}
       )

@@ -141,8 +141,9 @@ class VarianterPict(Varianter):
         else:
             pict_binary = os.path.expanduser(pict_binary)
             if not os.access(pict_binary, os.R_OK | os.X_OK):
-                LOG_UI.error("pict binary '%s' can not be executed, please check "
-                             "the option given with --pict-binary and/or the file "
+                LOG_UI.error("pict binary '%s' can not be executed, " +
+                             "please check the option given with " +
+                             "--pict-binary and/or the file "
                              "permissions", pict_binary)
                 error = True
 

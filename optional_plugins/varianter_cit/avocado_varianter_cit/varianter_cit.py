@@ -97,7 +97,8 @@ class VarianterCit(Varianter):
                 self.error_exit(config)
 
         try:
-            parameters, constraints = Parser.parse(open(cit_parameter_file, encoding='utf-8'))
+            parameters, constraints = Parser.parse(
+                open(cit_parameter_file, encoding='utf-8'))
         except ValueError as details:
             LOG_UI.error("Cannot parse parameter file: %s", details)
             self.error_exit(config)
@@ -107,7 +108,8 @@ class VarianterCit(Varianter):
         cit = Cit(input_data, order, constraints)
         final_list = cit.compute()
         self.headers = [parameter[0] for parameter in parameters]  # pylint: disable=W0201
-        results = [[parameters[j][1][final_list[i][j]] for j in range(len(final_list[i]))]
+        results = [[parameters[j][1][final_list[i][j]] for j in range(
+            len(final_list[i]))]
                    for i in range(len(final_list))]
         self.variants = []  # pylint: disable=W0201
         for combination in results:

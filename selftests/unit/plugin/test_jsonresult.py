@@ -33,7 +33,8 @@ class JSONResultTest(TestCaseTmpDir):
         self.test_result = Result(UNIQUE_ID, LOGFILE)
         self.test_result.filename = json_output_path
         self.test_result.tests_total = 1
-        self.test1 = SimpleTest(config=self.job.config, base_logdir=self.tmpdir.name)
+        self.test1 = SimpleTest(config=self.job.config,
+            base_logdir=self.tmpdir.name)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
 
@@ -43,7 +44,8 @@ class JSONResultTest(TestCaseTmpDir):
         self.test_result.end_tests()
         json_result = jsonresult.JSONResult()
         json_result.render(self.test_result, self.job)
-        with open(self.job.config.get('job.run.result.json.output'), encoding='utf-8') as fp:
+        with open(self.job.config.get('job.run.result.json.output'),
+            encoding='utf-8') as fp:
             j = fp.read()
         obj = json.loads(j)
         self.assertTrue(obj)

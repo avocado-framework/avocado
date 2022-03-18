@@ -61,8 +61,10 @@ class TreeNode(unittest.TestCase):
     def test_fingerprint(self):
         self.assertEqual(tree.TreeNode("foo").fingerprint(),
                          "/foo{},{},FilterSet([]),FilterSet([])")
-        self.assertEqual(tree.TreeNode("bar", value={"key": "val"}).fingerprint(),
-                         "/bar{key: val},{key: /bar},FilterSet([]),FilterSet([])")
+        self.assertEqual(tree.TreeNode(
+                         "bar", value={"key": "val"}).fingerprint(),
+                         "/bar{key: val},{key: /bar},"
+                         "FilterSet([]),FilterSet([])")
 
     def test_is_leaf(self):
         self.assertTrue(tree.TreeNode().is_leaf)

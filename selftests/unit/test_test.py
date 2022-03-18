@@ -110,7 +110,8 @@ class TestClassTestUnit(unittest.TestCase):
         """
         max_length_name = os.path.join(self.tmpdir.name, "a" * 250)
         tst = self._get_fake_filename_test(max_length_name)
-        self.assertEqual(os.path.join(self.tmpdir.name, max_length_name + ".data"),
+        self.assertEqual(os.path.join(
+                         self.tmpdir.name, max_length_name + ".data"),
                          tst.get_data('', 'file', False))
 
     def test_no_data_dir(self):
@@ -130,8 +131,10 @@ class TestClassTestUnit(unittest.TestCase):
 
     def test_try_override_test_variable(self):
         dummy_test = self.DummyTest(base_logdir=self.tmpdir.name)
-        self.assertRaises(AttributeError, setattr, dummy_test, "name", "whatever")
-        self.assertRaises(AttributeError, setattr, dummy_test, "status", "whatever")
+        self.assertRaises(AttributeError, setattr, dummy_test,
+            "name", "whatever")
+        self.assertRaises(AttributeError, setattr, dummy_test,
+            "status", "whatever")
 
     def test_check_reference_success(self):
         '''
@@ -200,7 +203,8 @@ class TestClassTest(unittest.TestCase):
         whiteboard_file = os.path.join(
             self.tst_instance_pass.logdir, 'whiteboard')
         self.assertTrue(os.path.isfile(whiteboard_file))
-        with open(whiteboard_file, 'r', encoding='utf-8') as whiteboard_file_obj:
+        with open(
+            whiteboard_file, 'r', encoding='utf-8') as whiteboard_file_obj:
             whiteboard_contents = whiteboard_file_obj.read().strip()
             self.assertTrue(whiteboard_contents, 'foo')
 

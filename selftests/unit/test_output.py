@@ -20,8 +20,8 @@ class TestStdOutput(unittest.TestCase):
         """Check that without paginator command we proceed without changes"""
         std = output.StdOutput()
         with unittest.mock.patch('avocado.utils.path.find_command',
-                                 side_effect=utils_path.CmdNotFoundError('just',
-                                                                         ['mocking'])):
+                                side_effect=utils_path.CmdNotFoundError('just',
+                                                                ['mocking'])):
             std.enable_paginator()
         self.assertEqual(self.stdout, sys.stdout)
         self.assertEqual(self.stderr, sys.stderr)

@@ -84,7 +84,8 @@ class JobTest(unittest.TestCase):
             self.assertNotEqual(job1.logdir, job2.logdir)
             self.assertNotEqual(job1.tmpdir, job2.tmpdir)
             # due to config logdirs should share the same base-dir
-            self.assertEqual(os.path.dirname(job1.logdir), os.path.dirname(job2.logdir))
+            self.assertEqual(os.path.dirname(job1.logdir),
+                os.path.dirname(job2.logdir))
 
     def test_job_test_suite_not_created(self):
         config = {'run.results_dir': self.tmpdir.name,
@@ -102,7 +103,8 @@ class JobTest(unittest.TestCase):
         self.assertEqual(suite.status, TestSuiteStatus.TESTS_FOUND)
 
     def test_suite_tests_not_found(self):
-        suite = TestSuite.from_config({'resolver.references': ['/bin/not-found'],
+        suite = TestSuite.from_config({'resolver.references':
+                                       ['/bin/not-found'],
                                        'run.ignore_missing_references': True})
         self.assertEqual(suite.status, TestSuiteStatus.TESTS_NOT_FOUND)
 
@@ -158,7 +160,8 @@ class JobTest(unittest.TestCase):
     def test_job_post_tests(self):
         class JobLogPost(job.Job):
             def post_tests(self):
-                with open(os.path.join(self.logdir, "reversed_id"), "w", encoding='utf-8') as f:
+                with open(os.path.join(self.logdir, "reversed_id"), "w",
+                    encoding='utf-8') as f:
                     f.write(self.unique_id[::-1])
                 super().post_tests()
         simple_tests_found = self._find_simple_test_candidates()
@@ -173,7 +176,8 @@ class JobTest(unittest.TestCase):
             self.job.run_tests()
         finally:
             self.job.post_tests()
-        with open(os.path.join(self.job.logdir, "reversed_id"), encoding='utf-8') as reverse_id_file:
+        with open(os.path.join(self.job.logdir, "reversed_id"),
+            encoding='utf-8') as reverse_id_file:
             self.assertEqual(self.job.unique_id[::-1],
                              reverse_id_file.read())
 
@@ -190,7 +194,8 @@ class JobTest(unittest.TestCase):
                     super().pre_tests()
 
             def post_tests(self):
-                with open(os.path.join(self.logdir, "reversed_id"), "w", encoding='utf-8') as f:
+                with open(os.path.join(self.logdir, "reversed_id"),
+                    "w", encoding='utf-8') as f:
                     f.write(self.unique_id[::-1])
                 super().post_tests()
         simple_tests_found = self._find_simple_test_candidates()
@@ -202,7 +207,8 @@ class JobTest(unittest.TestCase):
         self.assertEqual(self.job.run(),
                          exit_codes.AVOCADO_ALL_OK)
         self.assertLessEqual(len(self.job.test_suites), 1)
-        with open(os.path.join(self.job.logdir, "reversed_id"), encoding='utf-8') as reverse_id_file:
+        with open(os.path.join(self.job.logdir, "reversed_id"),
+            encoding='utf-8') as reverse_id_file:
             self.assertEqual(self.job.unique_id[::-1],
                              reverse_id_file.read())
 
@@ -245,7 +251,8 @@ class JobTest(unittest.TestCase):
         suite_config = {'resolver.references': ['/bin/false']}
         self.job = job.Job.from_config(config, [suite_config])
         self.job.setup()
-        self.assertEqual(self.job.config.get('resolver.references'), ['/bin/true'])
+        self.assertEqual(self.job.config.get('resolver.references'),
+            ['/bin/true'])
 
     def test_job_dryrun_no_unique_job_id(self):
         config = {'run.results_dir': self.tmpdir.name,
@@ -275,7 +282,8 @@ class JobTest(unittest.TestCase):
         # Manual/Custom method
         suite = TestSuite('foo-test', config=suite_config, job_config=config)
         with job.Job(config, [suite]) as self.job:
-            self.assertEqual(self.job.test_suites[0].config.get('run.results_dir'),
+            self.assertEqual(self.job.test_suites[0].config.get(
+                            'run.results_dir'),
                              self.tmpdir.name)
 
         # Automatic method passing suites
@@ -296,7 +304,8 @@ class JobTest(unittest.TestCase):
         self.job = job.Job(config)
         with self.job:
             self.assertTrue(os.path.isdir(self.job.logdir))
-            self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))
+            self.assertTrue(os.path.isfile(os.path.join(self.job.logdir,
+                'id')))
         self.assertFalse(os.path.isdir(self.job.logdir))
 
     def test_job_make_test_suite_resolver(self):
@@ -308,7 +317,8 @@ class JobTest(unittest.TestCase):
         self.job.setup()
         self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
         if self.job.test_suite:
-            self.assertIsInstance(self.job.test_suite.tests[0], nrunner.Runnable)
+            self.assertIsInstance(self.job.test_suite.tests[0],
+                nrunner.Runnable)
 
     def test_job_get_failed_tests(self):
         config = {'resolver.references': ['/bin/true', '/bin/false'],

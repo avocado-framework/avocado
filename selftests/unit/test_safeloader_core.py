@@ -168,7 +168,8 @@ def get_this_file():
 class UnlimitedDiff(unittest.TestCase):
 
     """
-    Serves two purposes: as a base class to test safeloader.find_class_and_methods
+    Serves two purposes: as a base class to test
+    safeloader.find_class_and_methods
     and, while at it, to set unlimited diff on failure results.
     """
 
@@ -183,10 +184,10 @@ class FindClassAndMethods(UnlimitedDiff):
             'UnlimitedDiff': [],
 
             'FindClassAndMethods': [('test_self', {}, []),
-                                    ('test_methods_order', {}, []),
-                                    ('test_import_not_on_parent', {}, []),
-                                    ('test_recursive_discovery', {}, []),
-                                    ('test_recursive_discovery_python_unittest', {}, [])],
+                                ('test_methods_order', {}, []),
+                                ('test_import_not_on_parent', {}, []),
+                                ('test_recursive_discovery', {}, []),
+                                ('test_recursive_discovery_python_unittest', {}, [])],
 
             'MultiLevel': [('test_base_level0', {}, []),
                            ('test_relative_level0_name_from_level1', {}, []),
@@ -230,7 +231,8 @@ class FindClassAndMethods(UnlimitedDiff):
             RECURSIVE_DISCOVERY_TEST2)
         avocado_recursive_discovery_test2.save()
 
-        sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
+        sys.path.append(os.path.dirname(
+            avocado_recursive_discovery_test1.path))
         tests = find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
         expected = {'ThirdChild': [('test_third_child', {}, []),
                                    ('test_second_child', {}, []),

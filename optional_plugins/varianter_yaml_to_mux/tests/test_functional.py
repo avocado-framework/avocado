@@ -62,8 +62,8 @@ class MultiplexTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, (4, 0))
         # Also check whether jobdata contains correct parameter paths
-        with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                               "variants-1.json"), encoding='utf-8') as variants_file:
+        with open(os.path.join(self.tmpdir.name, "latest",
+            "jobdata", "variants-1.json"), encoding='utf-8') as variants_file:
             variants = variants_file.read()
         self.assertIn('["/run/*"]', variants, "parameter paths stored in "
                       "jobdata does not contains [\"/run/*\"]\n%s" % variants)
@@ -77,8 +77,8 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir.name))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (8, 0))
         # Also check whether jobdata contains correct parameter paths
-        with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
-                               "variants-1.json"), encoding='utf-8') as variants_file:
+        with open(os.path.join(self.tmpdir.name, "latest",
+            "jobdata", "variants-1.json"), encoding='utf-8') as variants_file:
             variants = variants_file.read()
         exp = '["/foo/*", "/bar/*", "/baz/*"]'
         self.assertIn(exp, variants, "parameter paths stored in jobdata "
@@ -92,11 +92,14 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn(b"(1/8) examples/tests/passtest.py:PassTest.test;run-short-beaf",
+        self.assertIn(
+            b"(1/8) examples/tests/passtest.py:PassTest.test;run-short-beaf",
                       result.stdout)
-        self.assertIn(b"(2/8) examples/tests/passtest.py:PassTest.test;run-medium-5595",
+        self.assertIn(
+            b"(2/8) examples/tests/passtest.py:PassTest.test;run-medium-5595",
                       result.stdout)
-        self.assertIn(b"(8/8) examples/tests/failtest.py:FailTest.test;run-longest-efc4",
+        self.assertIn(
+            b"(8/8) examples/tests/failtest.py:FailTest.test;run-longest-efc4",
                       result.stdout)
 
     def test_run_mplex_failtest_tests_per_variant(self):
@@ -108,11 +111,14 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn(b"(1/8) examples/tests/passtest.py:PassTest.test;run-short-beaf",
+        self.assertIn(
+            b"(1/8) examples/tests/passtest.py:PassTest.test;run-short-beaf",
                       result.stdout)
-        self.assertIn(b"(2/8) examples/tests/failtest.py:FailTest.test;run-short-beaf",
+        self.assertIn(
+            b"(2/8) examples/tests/failtest.py:FailTest.test;run-short-beaf",
                       result.stdout)
-        self.assertIn(b"(8/8) examples/tests/failtest.py:FailTest.test;run-longest-efc4",
+        self.assertIn(
+            b"(8/8) examples/tests/failtest.py:FailTest.test;run-longest-efc4",
                       result.stdout)
 
     def test_run_double_mplex(self):
@@ -127,24 +133,26 @@ class MultiplexTests(unittest.TestCase):
     def test_empty_file(self):
         cmd_line = ("%s run --job-results-dir %s -m optional_plugins/"
                     "varianter_yaml_to_mux/tests/.data/empty_file "
-                    "-- examples/tests/passtest.py" % (AVOCADO, self.tmpdir.name))
+                    "-- examples/tests/passtest.py" % (AVOCADO,
+                        self.tmpdir.name))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (1, 0))
 
     def test_run_mplex_params(self):
         for variant_msg in (('/run/short', 'A'),
                             ('/run/medium', 'ASDFASDF'),
-                            ('/run/long', 'This is very long\nmultiline\ntext.')):
+                            ('/run/long',
+                                'This is very long\nmultiline\ntext.')):
             variant, msg = variant_msg
             cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                        'examples/tests/custom_env_variable.sh '
-                        '-m examples/tests/custom_env_variable.sh.data/variants.yaml '
-                        '--mux-filter-only %s'
-                        % (AVOCADO, self.tmpdir.name, variant))
+                'examples/tests/custom_env_variable.sh '
+                '-m examples/tests/custom_env_variable.sh.data/variants.yaml '
+                '--mux-filter-only %s'
+                % (AVOCADO, self.tmpdir.name, variant))
             expected_rc = exit_codes.AVOCADO_ALL_OK
             result = self.run_and_check(cmd_line, expected_rc)
 
             log_files = glob.glob(os.path.join(self.tmpdir.name, 'latest',
-                                               'test-results', '*', 'debug.log'))
+                'test-results', '*', 'debug.log'))
             result = ''
             for log_file in log_files:
                 result += genio.read_file(log_file)
@@ -157,9 +165,9 @@ class MultiplexTests(unittest.TestCase):
                           % (msg_header, "\n  ".join(result.splitlines())))
             for msg_remain in msg_lines[1:]:
                 self.assertIn('[stdout] %s' % msg_remain, result,
-                              "Multiplexed variable should produce:"
-                              "\n  %s\nwhich is not present in the output:\n  %s"
-                              % (msg_remain, "\n  ".join(result.splitlines())))
+                            "Multiplexed variable should produce:"
+                            "\n  %s\nwhich is not present in the output:\n  %s"
+                            % (msg_remain, "\n  ".join(result.splitlines())))
 
     def test_mux_inject(self):
         cmd = ("%s run --disable-sysinfo --json - "
@@ -176,14 +184,16 @@ class MultiplexTests(unittest.TestCase):
             log += genio.read_file(debuglog)
         # Remove the result dir
         shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
-        self.assertIn(tempfile.gettempdir(), log)   # Use tmp dir, not default location
+        self.assertIn(tempfile.gettempdir(), log)
+        # Use tmp dir, not default location
         # Check if all params are listed
         # The "/:bar ==> 2 is in the tree, but not in any leave so inaccessible
         # from test.
         for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
                      "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
             self.assertEqual(log.count(line), number_of_tests,
-                             "Avocado log count for param '%s' not as expected:\n%s" % (line, log))
+                "Avocado log count for param '%s' not as expected:\n%s" % (
+                    line, log))
 
     def tearDown(self):
         self.tmpdir.cleanup()
@@ -200,7 +210,8 @@ class ReplayTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir.name))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
-        self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
+        self.jobdir = ''.join(glob.glob(os.path.join(
+            self.tmpdir.name, 'job-*')))
         idfile = ''.join(os.path.join(self.jobdir, 'id'))
         with open(idfile, 'r', encoding='utf-8') as f:
             self.jobid = f.read().strip('\n')

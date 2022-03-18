@@ -62,7 +62,8 @@ class ResolverFunctional(unittest.TestCase):
         """
         config = "[plugins.resolver]\norder = ['python-unittest',]\n"
         with script.TemporaryScript('config', config) as config_path:
-            test_path = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
+            test_path = os.path.join(BASEDIR, 'examples', 'tests',
+                'passtest.py')
             cmd_line = ('%s --config %s --verbose list %s' % (AVOCADO,
                                                               config_path.path,
                                                               test_path))
@@ -78,7 +79,8 @@ class ResolverFunctional(unittest.TestCase):
         config = ("[plugins]\ndisable = ['resolver.python-unittest', "
                   "'resolver.avocado-instrumented']\n")
         with script.TemporaryScript('config', config) as config_path:
-            test_path = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
+            test_path = os.path.join(BASEDIR, 'examples', 'tests',
+                'passtest.py')
             cmd_line = ('%s --config %s --verbose list %s' % (AVOCADO,
                                                               config_path.path,
                                                               test_path))
@@ -88,14 +90,17 @@ class ResolverFunctional(unittest.TestCase):
         self.assertEqual(lines[-1], "==================")
 
     def test_recursive_by_default(self):
-        test_path = os.path.join(BASEDIR, 'examples', 'tests', 'skip_conditional.py')
+        test_path = os.path.join(BASEDIR, 'examples', 'tests',
+            'skip_conditional.py')
         cmd_line = ('%s --verbose list %s' % (AVOCADO, test_path))
         result = process.run(cmd_line)
         lines = result.stdout_text.splitlines()
         # two random tests that should be among the 10 tests found
-        self.assertIn('examples/tests/skip_conditional.py:BareMetal.test_specific',
+        self.assertIn('examples/tests/skip_conditional.py:BareMetal'
+                      '.test_specific',
                       lines[1])
-        self.assertIn('examples/tests/skip_conditional.py:NonBareMetal.test_bare_metal',
+        self.assertIn('examples/tests/skip_conditional.py:NonBareMetal'
+                      '.test_bare_metal',
                       lines[7])
         self.assertEqual('avocado-instrumented: 10', lines[-1])
 

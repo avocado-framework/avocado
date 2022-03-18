@@ -77,7 +77,8 @@ class Test(unittest.TestCase):
         variant = {'variant_id': variant_id}
         test_id = TestID(uid, name, variant=variant)
         self.assertEqual(test_id.uid, 1)
-        self.assertEqual(test_id.str_filesystem, '%s_%s' % (uid, variant_id[:253]))
+        self.assertEqual(test_id.str_filesystem, '%s_%s' % (
+            uid, variant_id[:253]))
         self.assertIs(test_id.variant, variant_id)
         self.assertEqual(test_id.str_variant, ";%s" % variant_id)
 

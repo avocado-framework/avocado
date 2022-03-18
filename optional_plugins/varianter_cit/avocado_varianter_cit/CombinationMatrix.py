@@ -6,10 +6,12 @@ from avocado_varianter_cit.CombinationRow import CombinationRow as Row
 class CombinationMatrix:
     """
     CombinationMatrix object stores Rows of combinations into dictionary.
-    And also stores which rows are not covered. Keys in dictionary are parameters
-    of combinations and values are CombinationRow objects. CombinationMatrix object
-    has information about how many combinations are uncovered and how many of them
-    are covered more than ones.
+    And also stores which rows are not covered.
+    Keys in dictionary are parameters
+    of combinations and values are CombinationRow objects.
+    CombinationMatrix object has information about
+    how many combinations are uncovered
+    and how many of them are covered more than ones.
     """
 
     def __init__(self, input_data, t_value):
@@ -52,7 +54,8 @@ class CombinationMatrix:
 
     def cover_combination(self, row, parameters):
         """
-        Cover combination of specific parameters by one row from possible solution
+        Cover combination of specific parameters
+        by one row from possible solution
 
         :param row: one row from solution
         :param parameters: parameters which has to be covered
@@ -99,7 +102,8 @@ class CombinationMatrix:
 
     def uncover_combination(self, row, parameters):
         """
-        Uncover combination of specific parameters by one row from possible solution
+        Uncover combination of specific parameters
+        by one row from possible solution
 
         :param row: one row from solution
         :param parameters: parameters which has to be covered
@@ -190,5 +194,6 @@ class CombinationMatrix:
 
     def __eq__(self, other):
         return (self.total_uncovered == other.total_uncovered and
-                self.total_covered_more_than_ones == other.total_covered_more_than_ones and
+                self.total_covered_more_than_ones ==
+                other.total_covered_more_than_ones and
                 self.hash_table == other.hash_table)

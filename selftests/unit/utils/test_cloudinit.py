@@ -17,8 +17,10 @@ def has_iso_create_write():
 class CloudInit(unittest.TestCase):
 
     def test_iso_no_create_write(self):
-        with unittest.mock.patch('avocado.utils.iso9660.iso9660', return_value=None):
-            self.assertRaises(RuntimeError, cloudinit.iso, os.devnull, "INSTANCE_ID")
+        with unittest.mock.patch('avocado.utils.iso9660.iso9660',
+            return_value=None):
+            self.assertRaises(RuntimeError, cloudinit.iso, os.devnull,
+            "INSTANCE_ID")
 
 
 class CloudInitISO(unittest.TestCase):

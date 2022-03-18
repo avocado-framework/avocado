@@ -137,7 +137,8 @@ class AssetsClass(unittest.TestCase):
         mocked_safeloader.find_avocado_tests.return_value = [[]]
         tree = ast.parse(NOT_TEST_CLASS_SOURCE)
         node = tree.body[1]
-        with patch("builtins.open", mock_open(read_data=NOT_TEST_CLASS_SOURCE)):
+        with patch("builtins.open", mock_open(
+            read_data=NOT_TEST_CLASS_SOURCE)):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler,
@@ -166,7 +167,8 @@ class AssetsClass(unittest.TestCase):
                         handler = assets.FetchAssetHandler("fake_file.py")
                         handler.visit_ClassDef(node_class)
                         handler.visit_FunctionDef(node_function)
-                        self.assertEqual(handler.current_method, expected_method)
+                        self.assertEqual(handler.current_method,
+                            expected_method)
 
     @patch('avocado.plugins.assets.safeloader')
     def test_visit_fuctiondef_invalid_class(self, mocked_safeloader):
@@ -176,7 +178,8 @@ class AssetsClass(unittest.TestCase):
         mocked_safeloader.find_avocado_tests.return_value = [[]]
         tree = ast.parse(NOT_TEST_CLASS_SOURCE)
         node = tree.body[1].body[0]
-        with patch("builtins.open", mock_open(read_data=NOT_TEST_CLASS_SOURCE)):
+        with patch("builtins.open", mock_open(
+            read_data=NOT_TEST_CLASS_SOURCE)):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler,
@@ -220,7 +223,8 @@ class AssetsClass(unittest.TestCase):
         mocked_safeloader.find_avocado_tests.return_value = [[]]
         tree = ast.parse(NOT_TEST_CLASS_SOURCE)
         node = tree.body[1].body[0].body[0]
-        with patch("builtins.open", mock_open(read_data=NOT_TEST_CLASS_SOURCE)):
+        with patch("builtins.open", mock_open(
+            read_data=NOT_TEST_CLASS_SOURCE)):
             with patch.object(assets.ast, "parse"):
                 with patch.object(assets.FetchAssetHandler, "visit"):
                     with patch.object(assets.FetchAssetHandler,

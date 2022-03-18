@@ -68,7 +68,8 @@ class ReportModel:
     @staticmethod
     def _icon_data(icon_name):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'templates', 'images', icon_name), 'rb') as icon:
+                               'templates', 'images', icon_name),
+                               'rb') as icon:
             icon_base64 = base64.b64encode(icon.read()).decode()
         return icon_base64
 
@@ -210,7 +211,8 @@ class HTMLResult(Result):
 
     @staticmethod
     def _render(result, output_path):
-        # Workaround for systems with older versions of jinja2 (before version 3)
+        # Workaround for systems with older versions of jinja2
+        # (before version 3)
         try:
             env = jinja.Environment(
                 loader=jinja.PackageLoader('avocado_result_html'),
@@ -222,7 +224,8 @@ class HTMLResult(Result):
                 autoescape=True,
             )
         template = env.get_template('results.html')
-        report_contents = template.render({'data': ReportModel(result, output_path)})
+        report_contents = template.render({'data': ReportModel(
+            result, output_path)})
 
         with codecs.open(output_path, 'w', 'utf-8') as report_file:
             report_file.write(report_contents)
@@ -234,7 +237,8 @@ class HTMLResult(Result):
                 job.config.get('job.run.result.html.output')):
             return
 
-        open_browser = job.config.get('job.run.result.html.open_browser', False)
+        open_browser = job.config.get(
+            'job.run.result.html.open_browser', False)
         if job.config.get('job.run.result.html.enabled'):
             html_path = os.path.join(job.logdir, 'results.html')
             self._render(result, html_path)

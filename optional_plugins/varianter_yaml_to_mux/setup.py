@@ -21,7 +21,8 @@ try:
 except ImportError:
     packages = ['avocado_varianter_yaml_to_mux']
 else:
-    packages = find_namespace_packages(include=['avocado_varianter_yaml_to_mux'])
+    packages = find_namespace_packages(
+        include=['avocado_varianter_yaml_to_mux'])
 
 VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
 
@@ -37,10 +38,13 @@ setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
       test_suite='tests',
       entry_points={
           "avocado.plugins.init": [
-              "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxInit",
+              "yaml_to_mux = avocado" +
+              "_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxInit",
           ],
           "avocado.plugins.cli": [
-              "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxCLI",
+              "yaml_to_mux = avocado" +
+              "_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxCLI",
           ],
           "avocado.plugins.varianter": [
-              "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMux"]})
+              "yaml_to_mux = avocado" +
+              "_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMux"]})

@@ -47,7 +47,8 @@ class VMImageHtmlParser(unittest.TestCase):
         self.parser.feed(html)
         self.assertTrue(self.parser.items)
         self.assertEqual(len(self.parser.items), len(versions))
-        self.assertTrue(all(version in self.parser.items for version in versions))
+        self.assertTrue(all(
+          version in self.parser.items for version in versions))
 
 
 class ImageProviderBase(unittest.TestCase):
@@ -61,7 +62,8 @@ class ImageProviderBase(unittest.TestCase):
         html_fixture = self.get_html_with_versions([10, 11, 12])
         urlread_mocked = unittest.mock.Mock(return_value=html_fixture)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
-        base_image = vmimage.ImageProviderBase(version='[0-9]+', build=None, arch=None)
+        base_image = vmimage.ImageProviderBase(
+          version='[0-9]+', build=None, arch=None)
         self.assertEqual(base_image.get_version(), 12)
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
@@ -69,7 +71,8 @@ class ImageProviderBase(unittest.TestCase):
         html_fixture = self.get_html_with_versions([10.1, 10.3, 10.2])
         urlread_mocked = unittest.mock.Mock(return_value=html_fixture)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
-        base_image = vmimage.ImageProviderBase(version=r'[0-9]+\.[0-9]+', build=None, arch=None)
+        base_image = vmimage.ImageProviderBase(
+          version=r'[0-9]+\.[0-9]+', build=None, arch=None)
         self.assertEqual(base_image.get_version(), 10.3)
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
@@ -77,13 +80,15 @@ class ImageProviderBase(unittest.TestCase):
         html_fixture = self.get_html_with_versions(['abc', 'abcd', 'abcde'])
         urlread_mocked = unittest.mock.Mock(return_value=html_fixture)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
-        base_image = vmimage.ImageProviderBase(version=r'[\w]+', build=None, arch=None)
+        base_image = vmimage.ImageProviderBase(
+          version=r'[\w]+', build=None, arch=None)
         self.assertEqual(base_image.get_version(), 'abcde')
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
     def test_get_version_from_bad_url_open(self, urlopen_mock):
         urlopen_mock.side_effect = HTTPError(None, None, None, None, None)
-        base_image = vmimage.ImageProviderBase(version='[0-9]+', build=None, arch=None)
+        base_image = vmimage.ImageProviderBase(
+          version='[0-9]+', build=None, arch=None)
 
         with self.assertRaises(vmimage.ImageProviderError) as exc:
             base_image.get_version()
@@ -95,7 +100,8 @@ class ImageProviderBase(unittest.TestCase):
         html_fixture = self.get_html_with_versions([])
         urlread_mocked = unittest.mock.Mock(return_value=html_fixture)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
-        base_image = vmimage.ImageProviderBase(version='[0-9]+', build=None, arch=None)
+        base_image = vmimage.ImageProviderBase(
+            version='[0-9]+', build=None, arch=None)
 
         with self.assertRaises(vmimage.ImageProviderError) as exc:
             base_image.get_version()
@@ -103,12 +109,14 @@ class ImageProviderBase(unittest.TestCase):
         self.assertIn('Version not available at', exc.exception.args[0])
 
     def test_get_image_url_with_none_url_images_and_image_pattern(self):
-        base_image = vmimage.ImageProviderBase(version='[0-9]+', build=None, arch=None)
+        base_image = vmimage.ImageProviderBase(
+          version='[0-9]+', build=None, arch=None)
 
         with self.assertRaises(vmimage.ImageProviderError) as exc:
             base_image.get_image_url()
 
-        self.assertIn('attributes are required to get image url', exc.exception.args[0])
+        self.assertIn('attributes are required to get image url',
+          exc.exception.args[0])
 
 
 class DebianImageProvider(unittest.TestCase):
@@ -257,7 +265,8 @@ class DebianImageProvider(unittest.TestCase):
 
 class OpenSUSEImageProvider(unittest.TestCase):
 
-    #: extracted from https://download.opensuse.org/pub/opensuse/distribution/leap/
+    #: extracted from
+    # https://download.opensuse.org/pub/opensuse/distribution/leap/
     VERSION_LISTING = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -404,7 +413,8 @@ class OpenSUSEImageProvider(unittest.TestCase):
 """
 
     def setUp(self):
-        self.suse_available_versions = ['15.0', '15.1', '15.2', '15.3', '42.3']
+        self.suse_available_versions = [
+          '15.0', '15.1', '15.2', '15.3', '42.3']
         self.base_images_url = 'https://download.opensuse.org/pub/opensuse/distribution/leap/15.3/appliances/'
 
     @staticmethod
@@ -418,13 +428,16 @@ class OpenSUSEImageProvider(unittest.TestCase):
     def test_get_best_version_default(self):
         suse_latest_version = 15.3
         suse_provider = vmimage.OpenSUSEImageProvider(arch='x86_64')
-        self.assertEqual(suse_provider.get_best_version(self.suse_available_versions),
+        self.assertEqual(suse_provider.get_best_version(
+                         self.suse_available_versions),
                          suse_latest_version)
 
     def test_get_best_version_leap_4_series(self):
         suse_latest_version = 42.3
-        suse_provider = vmimage.OpenSUSEImageProvider(version='4(.)*', arch='x86_64')
-        self.assertEqual(suse_provider.get_best_version(self.suse_available_versions),
+        suse_provider = vmimage.OpenSUSEImageProvider(
+          version='4(.)*', arch='x86_64')
+        self.assertEqual(suse_provider.get_best_version(
+                         self.suse_available_versions),
                          suse_latest_version)
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
@@ -507,10 +520,12 @@ class FedoraImageProvider(unittest.TestCase):
         expected_build = '1234'
         urlread_mocked = unittest.mock.Mock(return_value=self.VERSION_LISTING)
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
-        provider = vmimage.FedoraImageProvider(expected_version, expected_build,
-                                               expected_arch)
-        image = "Fedora-Cloud-Base-%s-%s.%s.qcow2" % (expected_version, expected_build,
-                                                      expected_arch)
+        provider = vmimage.FedoraImageProvider(
+            expected_version, expected_build,
+            expected_arch)
+        image = "Fedora-Cloud-Base-%s-%s.%s.qcow2" % (
+            expected_version, expected_build,
+            expected_arch)
         parameters = provider.get_image_parameters(image)
         self.assertEqual(expected_version, parameters['version'])
         self.assertEqual(expected_build, parameters['build'])
@@ -525,7 +540,8 @@ class FedoraImageProvider(unittest.TestCase):
                                                'x86_64')
         image = 'openSUSE-Leap-15.0-OpenStack.x86_64-1.1.1-Buildlp111.11.11.qcow2'
         parameters = provider.get_image_parameters(image)
-        self.assertIsNone(parameters, "get_image_parameters() finds parameters "
+        self.assertIsNone(parameters, "get_image_parameters() "
+                                      "finds parameters "
                                       "where there should be none")
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')

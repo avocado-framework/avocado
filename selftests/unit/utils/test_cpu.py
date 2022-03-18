@@ -36,7 +36,8 @@ class Cpu(Test):
         with unittest.mock.patch('avocado.utils.cpu.platform.machine',
                                  return_value='x86_64'):
             with unittest.mock.patch('builtins.open',
-                                     return_value=self._get_data_mock('x86_64')):
+                                     return_value=self._get_data_mock(
+                                         'x86_64')):
                 self.assertEqual(len(cpu.online_list()), 8)
 
     def test_cpu_arch_i386(self):
@@ -54,9 +55,11 @@ class Cpu(Test):
                                  return_value=self._get_data_mock('x86_64')):
             self.assertTrue(cpu.cpu_has_flags('flexpriority'))
             self.assertTrue(cpu.cpu_has_flags(['sse4_2', 'xsaveopt']))
-            self.assertFalse(cpu.cpu_has_flags('THIS_WILL_NEVER_BE_A_FLAG_NAME'))
-            self.assertFalse(cpu.cpu_has_flags(['THIS_WILL_NEVER_BE_A_FLAG_NAME',
-                                                'NEITHER_WILL_THIS_WILL_EVER_BE']))
+            self.assertFalse(cpu.cpu_has_flags(
+                'THIS_WILL_NEVER_BE_A_FLAG_NAME'))
+            self.assertFalse(cpu.cpu_has_flags([
+                'THIS_WILL_NEVER_BE_A_FLAG_NAME',
+                'NEITHER_WILL_THIS_WILL_EVER_BE']))
 
     def test_cpu_arch_power8(self):
         with unittest.mock.patch('builtins.open',
@@ -116,21 +119,24 @@ class Cpu(Test):
         with unittest.mock.patch('avocado.utils.cpu.platform.machine',
                                  return_value='x86_64'):
             with unittest.mock.patch('builtins.open',
-                                     return_value=self._get_data_mock('x86_64')):
+                                     return_value=self._get_data_mock(
+                                         'x86_64')):
                 self.assertEqual(cpu.get_version(), "i7-4710MQ")
 
     def test_power8_get_version(self):
         with unittest.mock.patch('avocado.utils.cpu.platform.machine',
                                  return_value='powerpc'):
             with unittest.mock.patch('builtins.open',
-                                     return_value=self._get_data_mock('power8')):
+                                     return_value=self._get_data_mock(
+                                         'power8')):
                 self.assertEqual(cpu.get_version(), "2.1")
 
     def test_power9_get_version(self):
         with unittest.mock.patch('avocado.utils.cpu.platform.machine',
                                  return_value='powerpc'):
             with unittest.mock.patch('builtins.open',
-                                     return_value=self._get_data_mock('power9')):
+                                     return_value=self._get_data_mock(
+                                         'power9')):
                 self.assertEqual(cpu.get_version(), "1.0")
 
     def test_s390x_get_family(self):
@@ -154,13 +160,16 @@ class Cpu(Test):
         with unittest.mock.patch('avocado.utils.cpu.get_arch',
                                  return_value='powerpc'):
             with unittest.mock.patch('builtins.open',
-                                     return_value=self._get_data_mock('power8')):
+                                     return_value=self._get_data_mock(
+                                         'power8')):
                 self.assertEqual(cpu.get_family(), "power8")
 
     def test_power9_get_family(self):
-        with unittest.mock.patch('avocado.utils.cpu.get_arch', return_value='powerpc'):
+        with unittest.mock.patch('avocado.utils.cpu.get_arch',
+            return_value='powerpc'):
             with unittest.mock.patch('builtins.open',
-                                     return_value=self._get_data_mock('power9')):
+                                     return_value=self._get_data_mock(
+                                         'power9')):
                 self.assertEqual(cpu.get_family(), "power9")
 
     def test_get_idle_state_off(self):
@@ -168,7 +177,8 @@ class Cpu(Test):
         with unittest.mock.patch('avocado.utils.cpu.online_list',
                                  return_value=[0]):
             with unittest.mock.patch('glob.glob',
-                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
+                            return_value=[
+                            '/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with unittest.mock.patch('builtins.open',
                                          return_value=io.BytesIO(b'0')):
                     self.assertEqual(cpu.get_idle_state(), retval)
@@ -178,7 +188,8 @@ class Cpu(Test):
         with unittest.mock.patch('avocado.utils.cpu.online_list',
                                  return_value=[0]):
             with unittest.mock.patch('glob.glob',
-                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
+                            return_value=[
+                            '/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with unittest.mock.patch('builtins.open',
                                          return_value=io.BytesIO(b'1')):
                     self.assertEqual(cpu.get_idle_state(), retval)
@@ -188,7 +199,8 @@ class Cpu(Test):
         with unittest.mock.patch('avocado.utils.cpu.online_list',
                                  return_value=[0]):
             with unittest.mock.patch('glob.glob',
-                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
+                            return_value=[
+                            '/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with unittest.mock.patch('builtins.open',
                                          return_value=output):
                     cpu.set_idle_state()
@@ -199,7 +211,8 @@ class Cpu(Test):
         with unittest.mock.patch('avocado.utils.cpu.online_list',
                                  return_value=[0]):
             with unittest.mock.patch('glob.glob',
-                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state2']):
+                            return_value=[
+                            '/sys/devices/system/cpu/cpu0/cpuidle/state2']):
                 with unittest.mock.patch('builtins.open',
                                          return_value=output):
                     cpu.set_idle_state(disable=False, state_number='2')
@@ -210,7 +223,8 @@ class Cpu(Test):
         with unittest.mock.patch('avocado.utils.cpu.online_list',
                                  return_value=[0, 2]):
             with unittest.mock.patch('glob.glob',
-                                     return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
+                            return_value=[
+                            '/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with unittest.mock.patch('builtins.open',
                                          return_value=output):
                     cpu.set_idle_state(setstate={0: {0: True}, 2: {0: False}})

@@ -17,7 +17,8 @@ class SettingsTest(TestCaseTmpDir):
 
     def setUp(self):
         super().setUp()
-        self.config_file = tempfile.NamedTemporaryFile('w', dir=self.tmpdir.name, delete=False)
+        self.config_file = tempfile.NamedTemporaryFile('w',
+            dir=self.tmpdir.name, delete=False)
         self.config_file.write(example)
         self.config_file.close()
 

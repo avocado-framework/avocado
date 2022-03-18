@@ -84,7 +84,8 @@ class VMImagePlugin(unittest.TestCase):
                          'base_dir = %(base_dir)s\n'
                          'data_dir = %(data_dir)s\n'
                          'cache_dirs = %(cache_dirs)s\n') % mapping
-        config_file = tempfile.NamedTemporaryFile('w', dir=base_dir.name, delete=False)
+        config_file = tempfile.NamedTemporaryFile('w',
+            dir=base_dir.name, delete=False)
         config_file.write(temp_settings)
         config_file.close()
         return base_dir, mapping, config_file.name
@@ -92,24 +93,33 @@ class VMImagePlugin(unittest.TestCase):
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
     def _create_test_files(self, urlopen_mock):
         with unittest.mock.patch('avocado.core.data_dir.settings', self.stg):
-            expected_images = [{'name': 'Fedora', 'file': 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2',
-                                'url': FEDORA_PAGE},
-                               {'name': 'JeOS', 'file': 'jeos-{version}-{arch}.qcow2.xz', 'url': JEOS_PAGE},
-                               {'name': 'CirrOS', 'file': 'cirros-{version}-{arch}-disk.img', 'url': CIRROS_PAGE}
-                               ]
+            expected_images = [{'name': 'Fedora', 'file':
+                            'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2',
+                            'url': FEDORA_PAGE},
+                            {'name': 'JeOS', 'file':
+                            'jeos-{version}-{arch}.qcow2.xz',
+                            'url': JEOS_PAGE},
+                            {'name': 'CirrOS',
+                            'file':'cirros-{version}-{arch}-disk.img',
+                            'url': CIRROS_PAGE}
+                            ]
             cache_dir = self.mapping.get('cache_dirs')[0]
-            providers = [provider() for provider in vmimage_util.list_providers()]
+            providers = [
+                provider() for provider in vmimage_util.list_providers()]
 
             for provider in providers:
                 for image in expected_images:
                     if image['name'] == provider.name:
-                        urlread_mocked = unittest.mock.Mock(return_value=image["url"])
-                        urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
+                        urlread_mocked = unittest.mock.Mock(
+                            return_value=image["url"])
+                        urlopen_mock.return_value = unittest.mock.Mock(
+                            read=urlread_mocked)
                         image['type'] = "vmimage"
                         image['version'] = provider.version
                         image['arch'] = provider.arch
                         image['build'] = "1234"
-                        image['file'] = os.path.join(cache_dir, image['file'].format(
+                        image['file'] = os.path.join(
+                            cache_dir, image['file'].format(
                             version=image['version'],
                             build=image['build'],
                             arch=image['arch']))
@@ -130,32 +140,40 @@ class VMImagePlugin(unittest.TestCase):
 
     def test_list_downloaded_images(self):
         with unittest.mock.patch('avocado.core.data_dir.settings', self.stg):
-            with unittest.mock.patch('avocado.utils.vmimage.ImageProviderBase.get_version'):
-                images = sorted(vmimage_plugin.list_downloaded_images(), key=lambda i: i['name'])
+            with unittest.mock.patch(
+                'avocado.utils.vmimage.ImageProviderBase.get_version'):
+                images = sorted(vmimage_plugin.list_downloaded_images(),
+                key=lambda i: i['name'])
                 for index, image in enumerate(images):
                     for key in image:
-                        self.assertEqual(self.expected_images[index][key], image[key],
-                                         "Found image is different from the expected one")
+                        self.assertEqual(self.expected_images[index][key],
+                                        image[key],
+                                        "Found image is different "
+                                        "from the expected one")
 
     @skipOnLevelsInferiorThan(2)
     @unittest.skipIf(missing_binary('qemu-img'),
-                     "QEMU disk image utility is required by the vmimage utility ")
+                     "QEMU disk image utility is required"
+                     " by the vmimage utility ")
     def test_download_image(self):
         """
         :avocado: tags=parallel:1
         """
         with unittest.mock.patch('avocado.core.data_dir.settings', self.stg):
             try:
-                expected_image_info = vmimage_util.get_best_provider(name="CirrOS")
-                image_info = vmimage_plugin.download_image(distro="CirrOS")
+                expected_image_info = vmimage_util.get_best_provider(
+                    name="CirrOS")
+                image_info = vmimage_plugin.download_image(
+                    distro="CirrOS")
             except URLError as details:
                 raise unittest.SkipTest(details)
             self.assertEqual(expected_image_info.name, image_info['name'],
-                             "Downloaded image is different from the expected one")
-            self.assertEqual(expected_image_info.version, image_info['version'],
-                             "Downloaded image is different from the expected one")
+                        "Downloaded image is different from the expected one")
+            self.assertEqual(expected_image_info.version, image_info[
+                        'version'],
+                        "Downloaded image is different from the expected one")
             self.assertEqual(expected_image_info.arch, image_info['arch'],
-                             "Downloaded image is different from the expected one")
+                        "Downloaded image is different from the expected one")
             self.assertTrue(os.path.isfile(image_info["file"]),
                             "The image wasn't downloaded")
 

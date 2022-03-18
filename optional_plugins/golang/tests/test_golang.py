@@ -20,7 +20,8 @@ class ResolverModule(unittest.TestCase):
 
     def test_resolver_no_go_bin(self):
         with unittest.mock.patch('avocado_golang.golang.GO_BIN', None):
-            res = avocado_golang.golang.GolangResolver().resolve('countavocados')
+            res = avocado_golang.golang.GolangResolver().resolve(
+                'countavocados')
         self.assertEqual(res.reference, 'countavocados')
         self.assertEqual(res.result, ReferenceResolutionResult.NOTFOUND)
 
@@ -30,7 +31,8 @@ class ResolverModule(unittest.TestCase):
         self.assertEqual(len(res.resolutions), 3)
         empty_container = res.resolutions[0]
         self.assertEqual(empty_container.kind, 'golang')
-        self.assertEqual(empty_container.uri, 'countavocados:TestEmptyContainers')
+        self.assertEqual(empty_container.uri,
+         'countavocados:TestEmptyContainers')
         no_container = res.resolutions[1]
         self.assertEqual(no_container.kind, 'golang')
         self.assertEqual(no_container.uri, 'countavocados:TestNoContainers')

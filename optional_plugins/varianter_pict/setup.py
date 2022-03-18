@@ -36,9 +36,11 @@ setup(name='avocado-framework-plugin-varianter-pict',
       install_requires=['avocado-framework==%s' % VERSION],
       entry_points={
           'avocado.plugins.cli': [
-              'varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPictCLI',
+              'varianter_pict = ' +
+              'avocado_varianter_pict.varianter_pict:VarianterPictCLI',
           ],
           "avocado.plugins.varianter": [
-              "varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPict",
+              "varianter_pict = " +
+              "avocado_varianter_pict.varianter_pict:VarianterPict",
           ]}
       )

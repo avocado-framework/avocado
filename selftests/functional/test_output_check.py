@@ -120,7 +120,8 @@ class PassTest(Test):
 """
 
 
-@unittest.skip('Skipping until output-check-record feature will be in nrunner #3882.')
+@unittest.skip('Skipping until output-check-record '
+    'feature will be in nrunner #3882.')
 class RunnerSimpleTest(TestCaseTmpDir):
 
     def assertIsFile(self, path):
@@ -230,7 +231,8 @@ class RunnerSimpleTest(TestCaseTmpDir):
         stdout_file = "%s.data/stdout.expected" % self.output_script.path
         with open(stdout_file, 'wb') as stdout_file_obj:  # pylint: disable=W1514
             stdout_file_obj.write(tampered_msg)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --xunit -'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+            '--xunit -'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -245,7 +247,8 @@ class RunnerSimpleTest(TestCaseTmpDir):
         output_file = "%s.data/output.expected" % self.output_script.path
         with open(output_file, 'wb') as output_file_obj:  # pylint: disable=W1514
             output_file_obj.write(tampered_msg)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s --xunit -'
+        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo %s '
+            '--xunit -'
                     % (AVOCADO, self.tmpdir.name, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -297,10 +300,12 @@ class RunnerSimpleTest(TestCaseTmpDir):
         with open(job_log, 'rb') as job_log_obj:  # pylint: disable=W1514
             job_log_content = job_log_obj.read()
         self.assertIn(b'Stdout Diff:', job_log_content)
-        self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!', job_log_content)
+        self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!',
+            job_log_content)
         self.assertIn(b'+' + STDOUT, job_log_content)
         self.assertIn(b'Stdout Diff:', job_log_content)
-        self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDERR!', job_log_content)
+        self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDERR!',
+            job_log_content)
         self.assertIn(b'+' + STDERR, job_log_content)
 
     def test_disable_output_check(self):
@@ -342,10 +347,14 @@ class RunnerSimpleTest(TestCaseTmpDir):
         process.run(cmd_line, ignore_status=True)
         self.assertIsNotFile("%s.data/stdout.expected" % simple_test)
         self.assertIsNotFile("%s.data/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_1/stdout.expected" %
+            simple_test)
+        self.assertIsFile("%s.data/PassTest.test_1/stderr.expected" %
+            simple_test)
+        self.assertIsFile("%s.data/PassTest.test_2/stdout.expected" %
+            simple_test)
+        self.assertIsFile("%s.data/PassTest.test_2/stderr.expected" %
+            simple_test)
 
     def test_merge_records_different_output_variants(self):
         simple_test, variants_file = self._setup_simple_test(
@@ -356,12 +365,18 @@ class RunnerSimpleTest(TestCaseTmpDir):
         process.run(cmd_line, ignore_status=True)
         self.assertIsNotFile("%s.data/stdout.expected" % simple_test)
         self.assertIsNotFile("%s.data/stderr.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_2/bar/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_2/foo/stderr.expected" % simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_1/stdout.expected" %
+            simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_1/stderr.expected" %
+            simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_2/stdout.expected" %
+            simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" %
+            simple_test)
+        self.assertIsFile("%s.data/PassTest.test_2/bar/stderr.expected" %
+            simple_test)
+        self.assertIsFile("%s.data/PassTest.test_2/foo/stderr.expected" %
+            simple_test)
 
     def test_merge_records_different_and_same_output(self):
         simple_test, variants_file = self._setup_simple_test(
@@ -372,10 +387,14 @@ class RunnerSimpleTest(TestCaseTmpDir):
         process.run(cmd_line, ignore_status=True)
         self.assertIsFile("%s.data/stdout.expected" % simple_test)
         self.assertIsFile("%s.data/stderr.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_1/stdout.expected" % simple_test)
-        self.assertIsFile("%s.data/PassTest.test_1/stderr.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_2/stdout.expected" % simple_test)
-        self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" % simple_test)
+        self.assertIsFile("%s.data/PassTest.test_1/stdout.expected" %
+            simple_test)
+        self.assertIsFile("%s.data/PassTest.test_1/stderr.expected" %
+            simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_2/stdout.expected" %
+            simple_test)
+        self.assertIsNotFile("%s.data/PassTest.test_2/stderr.expected" %
+            simple_test)
 
     def tearDown(self):
         super().tearDown()

@@ -312,7 +312,8 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--journal --xunit %s --json - examples/tests/passtest.py' %
+                    '--journal --xunit %s --json - '
+                    'examples/tests/passtest.py' %
                     (AVOCADO, self.tmpdir.name, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -346,7 +347,8 @@ class OutputPluginTest(TestCaseTmpDir):
         tmpfile2 = tempfile.mktemp(dir=self.tmpdir.name)
         # Verify --show=none can be supplied as app argument
         cmd_line = ('%s --show=none run --job-results-dir %s '
-                    '--disable-sysinfo --xunit %s --json %s --tap-include-logs '
+                    '--disable-sysinfo --xunit %s --json %s '
+                    '--tap-include-logs '
                     'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name,
                                                     tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
@@ -364,7 +366,8 @@ class OutputPluginTest(TestCaseTmpDir):
         minidom.parse(tmpfile)
 
     def test_show_test(self):
-        cmd_line = ('%s --show=test run --job-results-dir %s --disable-sysinfo '
+        cmd_line = ('%s --show=test run --job-results-dir %s '
+                    '--disable-sysinfo '
                     'examples/tests/passtest.py' % (AVOCADO, self.tmpdir.name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -449,12 +452,15 @@ class OutputPluginTest(TestCaseTmpDir):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         self.assertEqual(result.stdout, b'',
-                         'After redirecting to file, output is not empty: %s' % result.stdout)
-        with open(redirected_output_path, 'r', encoding='utf-8') as redirected_output_file_obj:
+                         'After redirecting to file, output is not empty: %s'
+                          % result.stdout)
+        with open(redirected_output_path, 'r',
+            encoding='utf-8') as redirected_output_file_obj:
             redirected_output = redirected_output_file_obj.read()
             for code in TermSupport.ESCAPE_CODES:
                 self.assertNotIn(code, redirected_output,
-                                 'Found terminal support code %s in redirected output\n%s' %
+                                 'Found terminal support code %s '
+                                 'in redirected output\n%s' %
                                  (code, redirected_output))
 
     @unittest.skipIf(perl_tap_parser_uncapable(),

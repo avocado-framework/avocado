@@ -21,16 +21,18 @@ class PythonModuleSelf(unittest.TestCase):
 
     def test_add_imported_symbols_from_module(self):
         import_stm = ast.ImportFrom(module='foo', names=[ast.Name(name='bar',
-                                                                  asname=None)])
+                                                                asname=None)])
         self.module.add_imported_symbol(import_stm)
-        self.assertEqual(self.module.imported_symbols['bar'].module_path, 'foo')
+        self.assertEqual(self.module.imported_symbols['bar'].module_path,
+            'foo')
         self.assertEqual(self.module.imported_symbols['bar'].symbol, 'bar')
 
     def test_add_imported_object_from_module_asname(self):
         import_stm = ast.ImportFrom(module='foo', names=[ast.Name(name='bar',
-                                                                  asname='baz')])
+                                                                asname='baz')])
         self.module.add_imported_symbol(import_stm)
-        self.assertEqual(self.module.imported_symbols['baz'].module_path, 'foo')
+        self.assertEqual(self.module.imported_symbols['baz'].module_path,
+            'foo')
         self.assertEqual(self.module.imported_symbols['baz'].symbol, 'bar')
 
     def test_is_not_avocado_test(self):
@@ -47,7 +49,8 @@ class PythonModuleTest(unittest.TestCase):
     """
 
     def test_is_avocado_test(self):
-        passtest_path = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
+        passtest_path = os.path.join(BASEDIR, 'examples', 'tests',
+            'passtest.py')
         passtest_module = PythonModule(passtest_path)
         classes = [klass for klass in passtest_module.iter_classes()]
         # there's only one class and one *worthy* Test import in passtest.py
@@ -71,7 +74,8 @@ class PythonModuleTest(unittest.TestCase):
 
     def test_import_relative(self):
         """Tests if relative imports are tracked on the module object."""
-        path = os.path.join(BASEDIR, 'selftests', 'functional', 'test_basic.py')
+        path = os.path.join(BASEDIR, 'selftests', 'functional',
+            'test_basic.py')
         module = PythonModule(path)
         for _ in module.iter_classes():
             pass

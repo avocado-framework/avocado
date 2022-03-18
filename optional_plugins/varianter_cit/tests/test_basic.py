@@ -55,7 +55,8 @@ class Run(TestCaseTmpDir):
         # all values of shape should be looked for at least once
         self.assertIn(b"PARAMS (key=shape, path=*, default=None) => 'square'",
                       all_tests_content)
-        self.assertIn(b"PARAMS (key=shape, path=*, default=None) => 'triangle'",
+        self.assertIn(b"PARAMS (key=shape, path=*, default=None)" +
+        "=> 'triangle'",
                       all_tests_content)
         self.assertIn(b"PARAMS (key=shape, path=*, default=None) => 'circle'",
                       all_tests_content)
@@ -67,16 +68,21 @@ class Run(TestCaseTmpDir):
         self.assertIn(b"PARAMS (key=state, path=*, default=None) => 'gas'",
                       all_tests_content)
         # all values of material should be looked for at least once
-        self.assertIn(b"PARAMS (key=material, path=*, default=None) => 'leather'",
+        self.assertIn(b"PARAMS (key=material, path=*, default=None) " +
+        "=> 'leather'",
                       all_tests_content)
-        self.assertIn(b"PARAMS (key=material, path=*, default=None) => 'plastic'",
+        self.assertIn(b"PARAMS (key=material, path=*, default=None) " +
+        "=> 'plastic'",
                       all_tests_content)
-        self.assertIn(b"PARAMS (key=material, path=*, default=None) => 'aluminum'",
+        self.assertIn(b"PARAMS (key=material, path=*, default=None) " +
+        "=> 'aluminum'",
                       all_tests_content)
         # all values of coating should be looked for at least once
-        self.assertIn(b"PARAMS (key=coating, path=*, default=None) => 'anodic'",
+        self.assertIn(b"PARAMS (key=coating, path=*, default=None) " +
+        "=> 'anodic'",
                       all_tests_content)
-        self.assertIn(b"PARAMS (key=coating, path=*, default=None) => 'cathodic'",
+        self.assertIn(b"PARAMS (key=coating, path=*, default=None) " +
+        "=> 'cathodic'",
                       all_tests_content)
 
 

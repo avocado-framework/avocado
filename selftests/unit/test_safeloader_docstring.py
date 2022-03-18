@@ -66,17 +66,26 @@ class DocstringDirectives(unittest.TestCase):
         self.assertIsNotNone(get_docstring_directives(docstring))
 
     def test_enabled(self):
-        self.assertTrue(check_docstring_directive(":avocado: enable", 'enable'))
-        self.assertTrue(check_docstring_directive(":avocado:\tenable", 'enable'))
-        self.assertTrue(check_docstring_directive(":avocado: enable\n:avocado: tags=fast", 'enable'))
-        self.assertFalse(check_docstring_directive(":AVOCADO: ENABLE", 'enable'))
-        self.assertFalse(check_docstring_directive(":avocado: enabled", 'enable'))
+        self.assertTrue(check_docstring_directive(
+            ":avocado: enable", 'enable'))
+        self.assertTrue(check_docstring_directive(
+            ":avocado:\tenable", 'enable'))
+        self.assertTrue(check_docstring_directive(
+            ":avocado: enable\n:avocado: tags=fast", 'enable'))
+        self.assertFalse(check_docstring_directive(
+            ":AVOCADO: ENABLE", 'enable'))
+        self.assertFalse(check_docstring_directive(
+            ":avocado: enabled", 'enable'))
 
     def test_disabled(self):
-        self.assertTrue(check_docstring_directive(":avocado: disable", 'disable'))
-        self.assertTrue(check_docstring_directive(":avocado:\tdisable", 'disable'))
-        self.assertFalse(check_docstring_directive(":AVOCADO: DISABLE", 'disable'))
-        self.assertFalse(check_docstring_directive(":avocado: disabled", 'disable'))
+        self.assertTrue(check_docstring_directive(
+            ":avocado: disable", 'disable'))
+        self.assertTrue(check_docstring_directive(
+            ":avocado:\tdisable", 'disable'))
+        self.assertFalse(check_docstring_directive(
+            ":AVOCADO: DISABLE", 'disable'))
+        self.assertFalse(check_docstring_directive(
+            ":avocado: disabled", 'disable'))
 
     def test_get_tags_empty(self):
         for tag in self.NO_TAGS:

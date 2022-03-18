@@ -7,19 +7,23 @@ from avocado.core.safeloader.imported import ImportedSymbol
 class ModulePathComponents(unittest.TestCase):
 
     def test_single(self):
-        self.assertEqual(ImportedSymbol._split_last_module_path_component('os'),
+        self.assertEqual(ImportedSymbol._split_last_module_path_component(
+                         'os'),
                          ('', 'os'))
 
     def test_compound(self):
-        self.assertEqual(ImportedSymbol._split_last_module_path_component('os.path'),
+        self.assertEqual(ImportedSymbol._split_last_module_path_component(
+                         'os.path'),
                          ('os', 'path'))
 
     def test_relative_simple(self):
-        self.assertEqual(ImportedSymbol._split_last_module_path_component('..utils'),
+        self.assertEqual(ImportedSymbol._split_last_module_path_component(
+                         '..utils'),
                          ('', 'utils'))
 
     def test_relative_compound(self):
-        res = ImportedSymbol._split_last_module_path_component('...a.b.c.d')
+        res = ImportedSymbol._split_last_module_path_component(
+                         '...a.b.c.d')
         self.assertEqual(res, ('a.b.c', 'd'))
 
 

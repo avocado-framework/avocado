@@ -22,11 +22,13 @@ class HintTest(TestCaseTmpDir):
     def setUp(self):
         super().setUp()
 
-        self.wrong_file = tempfile.NamedTemporaryFile('w', dir=self.tmpdir.name, delete=False)
+        self.wrong_file = tempfile.NamedTemporaryFile('w',
+            dir=self.tmpdir.name, delete=False)
         self.wrong_file.write(BAD)
         self.wrong_file.close()
 
-        self.good_file = tempfile.NamedTemporaryFile('w', dir=self.tmpdir.name, delete=False)
+        self.good_file = tempfile.NamedTemporaryFile('w',
+            dir=self.tmpdir.name, delete=False)
         self.good_file.write(GOOD)
         self.good_file.close()
 

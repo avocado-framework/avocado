@@ -159,7 +159,8 @@ class ProcessTest(TestCaseTmpDir):
         time.sleep(3)
         proc.stop(2)
         result = proc.result
-        self.assertIn('timeout after', result.interrupted, "Process wasn't interrupted")
+        self.assertIn('timeout after', result.interrupted,
+            "Process wasn't interrupted")
 
     @skipOnLevelsInferiorThan(2)
     def test_process_stop_uninterrupted(self):
@@ -171,7 +172,8 @@ class ProcessTest(TestCaseTmpDir):
         time.sleep(3)
         proc.stop(4)
         result = proc.result
-        self.assertFalse(result.interrupted, "Process was interrupted to early")
+        self.assertFalse(result.interrupted,
+            "Process was interrupted to early")
 
     def test_process_run(self):
         proc = process.SubProcess(self.fake_uptime)

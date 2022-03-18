@@ -54,8 +54,8 @@ class Cit:
         """
         Searching for the best solution. It creates one solution and from that,
         it tries to create smaller solution. This searching process is limited
-        by ITERATIONS_SIZE. When ITERATIONS_SIZE is 0 the last found solution is
-        the best solution.
+        by ITERATIONS_SIZE. When ITERATIONS_SIZE is 0 the last found solution
+        is the best solution.
 
         :return: The best solution
         """
@@ -71,7 +71,8 @@ class Cit:
                 deleted_rows.append(delete_row)
             LOG.debug("I'm trying solution with size %s and %s iterations",
                       len(matrix), iterations)
-            matrix, is_better_solution = self.find_better_solution(iterations, matrix)
+            matrix, is_better_solution = self.find_better_solution(
+                iterations, matrix)
             if is_better_solution:
                 self.final_matrix = matrix[:]
                 deleted_rows = []
@@ -118,7 +119,8 @@ class Cit:
         It chooses algorithm by random in proportion 1:1:8
 
         :param matrix: matrix to be changed
-        :return: new row of matrix, index of row inside matrix and parameters which has been changed
+        :return: new row of matrix, index of row inside matrix
+        and parameters which has been changed
         """
         switch = random.randint(0, 9)
         if switch == 0:
@@ -126,7 +128,8 @@ class Cit:
         elif switch == 1:
             solution, row_index, parameters = self.change_one_column(matrix)
         else:
-            solution, row_index, parameters = self.cover_missing_combination(matrix)
+            solution, row_index, parameters = self.cover_missing_combination(
+                matrix)
         return solution, row_index, parameters
 
     def compute_row(self):
@@ -141,12 +144,17 @@ class Cit:
             row = [-1] * len(self.data)
             while len(possible_parameters) != 0:
                 # finding uncovered combination
-                combination_parameters_index = random.randint(0, len(possible_parameters) - 1)
-                combination_parameters = possible_parameters[combination_parameters_index]
+                combination_parameters_index = random.randint(0, len(
+                    possible_parameters) - 1)
+                combination_parameters = possible_parameters[
+                    combination_parameters_index]
                 del possible_parameters[combination_parameters_index]
-                combination_row = self.combination_matrix.get_row(combination_parameters)
-                possible_combinations = list(combination_row.get_all_uncovered_combinations())
-                combination_index = random.randint(0, len(possible_combinations) - 1)
+                combination_row = self.combination_matrix.get_row(
+                    combination_parameters)
+                possible_combinations = list(
+                    combination_row.get_all_uncovered_combinations())
+                combination_index = random.randint(0, len(
+                    possible_combinations) - 1)
                 combination = possible_combinations[combination_index]
                 is_parameter_used = False
                 # Are parameters already used in row?
@@ -168,7 +176,8 @@ class Cit:
                     is_valid = False
                     while not is_valid:
                         row[index] = random.randint(0, self.data[index] - 1)
-                        is_valid = self.combination_matrix.is_valid_solution(row)
+                        is_valid = self.combination_matrix.is_valid_solution(
+                            row)
             is_valid_row = self.combination_matrix.is_valid_solution(row)
 
         return row
@@ -179,7 +188,8 @@ class Cit:
         row of the matrix. The row with the best coverage is the solution
 
         :param matrix: matrix to be changed
-        :return: solution, index of solution inside matrix and parameters which has been changed
+        :return: solution, index of solution inside matrix
+        and parameters which has been changed
         """
         parameters, combination = self.get_missing_combination_random()
         best_uncover = float("inf")
@@ -189,15 +199,20 @@ class Cit:
             solution = [x for x in matrix[row_index]]
             for index, item in enumerate(parameters):
                 solution[item] = combination[index]
-            if self.combination_matrix.is_valid_combination(solution, parameters):
-                self.combination_matrix.uncover_combination(matrix[row_index], parameters)
-                self.combination_matrix.cover_combination(solution, parameters)
+            if self.combination_matrix.is_valid_combination(
+                solution, parameters):
+                self.combination_matrix.uncover_combination(
+                    matrix[row_index], parameters)
+                self.combination_matrix.cover_combination(
+                    solution, parameters)
                 if self.combination_matrix.total_uncovered < best_uncover:
                     best_uncover = self.combination_matrix.total_uncovered
                     best_solution = solution
                     best_row_index = row_index
-                self.combination_matrix.uncover_combination(solution, parameters)
-                self.combination_matrix.cover_combination(matrix[row_index], parameters)
+                self.combination_matrix.uncover_combination(
+                    solution, parameters)
+                self.combination_matrix.cover_combination(
+                    matrix[row_index], parameters)
                 if best_uncover == 0:
                     break
         return best_solution, best_row_index, parameters
@@ -209,10 +224,14 @@ class Cit:
         :return: parameter of combination and values of combination
         """
         possible_parameters = list(self.combination_matrix.uncovered_rows)
-        combination_parameters_index = random.randint(0, len(possible_parameters) - 1)
-        combination_parameters = possible_parameters[combination_parameters_index]
-        combination_row = self.combination_matrix.get_row(combination_parameters)
-        possible_combinations = list(combination_row.get_all_uncovered_combinations())
+        combination_parameters_index = random.randint(
+            0, len(possible_parameters) - 1)
+        combination_parameters = possible_parameters[
+            combination_parameters_index]
+        combination_row = self.combination_matrix.get_row(
+            combination_parameters)
+        possible_combinations = list(
+            combination_row.get_all_uncovered_combinations())
         combination_index = random.randint(0, len(possible_combinations) - 1)
         combination = possible_combinations[combination_index]
         return combination_parameters, combination
@@ -223,7 +242,8 @@ class Cit:
         changes value. The row with the best coverage is the solution.
 
         :param matrix: matrix to be changed
-        :return: solution, index of solution inside matrix and parameters which has been changed
+        :return: solution, index of solution inside matrix
+        and parameters which has been changed
         """
         column_index = random.randint(0, len(self.data) - 1)
         best_uncover = float("inf")
@@ -231,17 +251,20 @@ class Cit:
         best_row_index = 0
         for row_index in range(len(matrix)):
             try:
-                solution, row_index, parameters = self.change_one_value(matrix, row_index, column_index)
+                solution, row_index, parameters = self.change_one_value(
+                    matrix, row_index, column_index)
             except ValueError:
                 continue
-            self.combination_matrix.uncover_combination(matrix[row_index], parameters)
+            self.combination_matrix.uncover_combination(
+                matrix[row_index], parameters)
             self.combination_matrix.cover_combination(solution, parameters)
             if self.combination_matrix.total_uncovered < best_uncover:
                 best_uncover = self.combination_matrix.total_uncovered
                 best_solution = solution
                 best_row_index = row_index
             self.combination_matrix.uncover_combination(solution, parameters)
-            self.combination_matrix.cover_combination(matrix[row_index], parameters)
+            self.combination_matrix.cover_combination(
+                matrix[row_index], parameters)
             if best_uncover == 0:
                 break
         return best_solution, best_row_index, [column_index]
@@ -252,8 +275,10 @@ class Cit:
 
         :param matrix: matrix to be changed
         :param row_index: row inside matrix. If it's None it is chosen randomly
-        :param column_index: column inside matrix. If it's None it is chosen randomly
-        :return: solution, index of solution inside matrix and parameters which has been changed
+        :param column_index: column inside matrix.
+        If it's None it is chosen randomly
+        :return: solution, index of solution inside matrix
+        and parameters which has been changed
         """
         is_cell_chosen = True
         if row_index is None:
@@ -266,7 +291,8 @@ class Cit:
         possible_numbers = list(range(0, row[column_index])) + list(
             range(row[column_index] + 1, self.data[column_index]))
         row[column_index] = random.choice(possible_numbers)
-        while not self.combination_matrix.is_valid_combination(row, [column_index]):
+        while not self.combination_matrix.is_valid_combination(
+            row, [column_index]):
             possible_numbers.remove(row[column_index])
             if len(possible_numbers) == 0:
                 if is_cell_chosen:
@@ -285,7 +311,8 @@ class Cit:
         """
         row_1 = self.create_random_row_with_constraints()
         row_2 = self.create_random_row_with_constraints()
-        if self.compute_hamming_distance(row_1) >= self.compute_hamming_distance(row_2):
+        if self.compute_hamming_distance(
+            row_1) >= self.compute_hamming_distance(row_2):
             return row_1
         else:
             return row_2

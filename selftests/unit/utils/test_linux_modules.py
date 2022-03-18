@@ -26,7 +26,8 @@ class Lsmod(Test):
         self.assertEqual(lsmod_info, {})
 
     def test_parse_lsmod_no_submodules(self):
-        lsmod_info = linux_modules.parse_lsmod_for_module(self.lsmod_out, "ccm")
+        lsmod_info = linux_modules.parse_lsmod_for_module(self.lsmod_out,
+            "ccm")
         self.assertEqual(lsmod_info, {'name': "ccm",
                                       'size': 17773,
                                       'used': 2,
@@ -54,7 +55,8 @@ class Modules(Test):
 
     def test_is_module_loaded(self):
         with unittest.mock.patch('builtins.open',
-                                 return_value=self._get_data_mock('proc_modules')):
+                                 return_value=self._get_data_mock(
+                                     'proc_modules')):
             self.assertTrue(linux_modules.module_is_loaded("rfcomm"))
             self.assertFalse(linux_modules.module_is_loaded("unknown_module"))
 

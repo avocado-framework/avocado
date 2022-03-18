@@ -25,19 +25,22 @@ def create_metadata_file(image_file, metadata):
 
 class VMImagePlugin(unittest.TestCase):
 
-    @unittest.skipUnless(os.environ.get('AVOCADO_SELFTESTS_NETWORK_ENABLED', False),
+    @unittest.skipUnless(os.environ.get(
+        'AVOCADO_SELFTESTS_NETWORK_ENABLED', False),
                          "Network required to run these tests")
     def setUp(self):
-        (self.base_dir, self.mapping, self.config_file) = get_temporary_config(self)
+        (self.base_dir, self.mapping, self.config_file) = get_temporary_config(
+            self)
 
     @unittest.skipIf(missing_binary('qemu-img'),
-                     "QEMU disk image utility is required by the vmimage utility ")
+                "QEMU disk image utility is required by the vmimage utility ")
     def test_download_image(self):
         expected_output = "Fedora-Cloud-Base-30-1.2.x86_64.qcow2"
         image_dir = os.path.join(self.mapping['cache_dir'], 'by_location',
                                  '89b7a3293bbc1dd73bb143b15fa06f0f9c7188b8')
         os.makedirs(image_dir)
-        open(os.path.join(image_dir, expected_output), "w", encoding='utf-8').close()
+        open(os.path.join(image_dir, expected_output), "w",
+            encoding='utf-8').close()
         cmd_line = "%s --config %s vmimage get --distro fedora --distro-version " \
                    "30 --arch x86_64" % (AVOCADO, self.config_file.name)
         result = process.run(cmd_line)

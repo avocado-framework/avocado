@@ -102,7 +102,8 @@ class Runnable(unittest.TestCase):
         try:
             runnable.pick_runner_class()
         except ValueError as e:
-            self.assertEqual(str(e), 'Unsupported kind of runnable: unsupported_kind')
+            self.assertEqual(str(e),
+                'Unsupported kind of runnable: unsupported_kind')
 
 
 class RunnableFromCommandLineArgs(unittest.TestCase):
@@ -407,11 +408,13 @@ class RunnerCommandSelection(unittest.TestCase):
         cmd = ['sh', '-c',
                'test $0 = capabilities && '
                'echo -n {\\"runnables\\": [\\"otherkind\\"]}']
-        self.assertFalse(self.runnable.is_kind_supported_by_runner_command(cmd))
+        self.assertFalse(self.runnable.is_kind_supported_by_runner_command(
+            cmd))
 
     def test_is_task_kind_supported_no_output(self):
         cmd = ['sh', '-c', 'echo -n ""']
-        self.assertFalse(self.runnable.is_kind_supported_by_runner_command(cmd))
+        self.assertFalse(self.runnable.is_kind_supported_by_runner_command(
+            cmd))
 
 
 class PickRunner(unittest.TestCase):

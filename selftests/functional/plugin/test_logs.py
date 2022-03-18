@@ -12,7 +12,8 @@ class TestLogsUI(TestCaseTmpDir):
 
     def setUp(self):
         super().setUp()
-        with open(os.path.join(self.tmpdir.name, 'config'), 'w', encoding='utf-8') as config:
+        with open(os.path.join(self.tmpdir.name, 'config'), 'w',
+            encoding='utf-8') as config:
             config.write(CONFIG)
 
     def test(self):
@@ -24,10 +25,15 @@ class TestLogsUI(TestCaseTmpDir):
                          "Avocado did not return rc %d:\n%s"
                          % (exit_codes.AVOCADO_ALL_OK, result))
         stdout_lines = result.stdout_text.splitlines()
-        self.assertNotIn('Log file "debug.log" content for test "1-examples/tests/passtest.py'
-                         ':PassTest.test" (PASS)', stdout_lines)
-        self.assertIn('Log file "debug.log" content for test "2-examples/tests/failtest.py:FailTest.test" (FAIL):', stdout_lines)
-        self.assertIn('Log file "debug.log" content for test "3-examples/tests/canceltest.py'
+        self.assertNotIn(
+            'Log file "debug.log" content for ' +
+            'test "1-examples/tests/passtest.py'
+            ':PassTest.test" (PASS)', stdout_lines)
+        self.assertIn('Log file "debug.log" content for ' +
+            'test "2-examples/tests/failtest.py:FailTest.test" (FAIL):',
+            stdout_lines)
+        self.assertIn('Log file "debug.log" content for ' +
+            'test "3-examples/tests/canceltest.py'
                       ':CancelTest.test" (CANCEL):', stdout_lines)
 
 
@@ -50,7 +56,8 @@ class TestLogsFilesUI(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+                         "Avocado did not return rc %d:\n%s" % (
+                             expected_rc, result))
         self.assertNotIn('Log file "debug.log" content', result.stdout_text)
         self.assertIn('Log file "stdout" content', result.stdout_text)
         self.assertIn('Log file "stderr" content', result.stdout_text)

@@ -54,11 +54,13 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         Setup configuration file and folders
         """
         warnings.simplefilter("ignore", ResourceWarning)
-        self.base_dir, self.mapping, self.config_file = get_temporary_config(self)
+        self.base_dir, self.mapping, self.config_file = get_temporary_config(
+            self)
         asset_dir = os.path.join(self.mapping['cache_dir'], 'by_location',
                                  'a784600d3e01b346e8813bbd065d00048be8a482')
         os.makedirs(asset_dir)
-        open(os.path.join(asset_dir, 'hello-2.9.tar.gz'), "w", encoding='utf-8').close()
+        open(os.path.join(asset_dir, 'hello-2.9.tar.gz'),
+            "w", encoding='utf-8').close()
 
     def test_asset_fetch_success(self):
         """
@@ -71,7 +73,8 @@ class AssetsFetchSuccess(TestCaseTmpDir):
             locations='https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz')
         """
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -118,7 +121,8 @@ class AssetsFetchSuccess(TestCaseTmpDir):
     def test_asset_purge(self):
         """Make sure that we can remove a asset from cache."""
         # creates a single byte asset
-        asset_file = tempfile.NamedTemporaryFile(dir=self.base_dir.name, delete=False)
+        asset_file = tempfile.NamedTemporaryFile(dir=self.base_dir.name,
+            delete=False)
         asset_file.write(b'\xff')
         asset_file.close()
 
@@ -133,7 +137,8 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         self.assertIn("Now you can reference it by name {}".format(name),
                       result.stdout_text)
 
-        cmd_line = "%s --config %s assets purge --by-size-filter '==1'" % (AVOCADO, config)
+        cmd_line = "%s --config %s assets purge --by-size-filter '==1'"% (
+            AVOCADO, config)
         process.run(cmd_line)
 
         cmd_line = "%s --config %s assets list" % (AVOCADO, config)
@@ -161,7 +166,8 @@ class AssetsFetchSuccess(TestCaseTmpDir):
     def test_asset_purge_by_overall_cache_size(self):
         """Make sure that we can set cache limits."""
         # creates a single byte asset
-        asset_file = tempfile.NamedTemporaryFile(dir=self.base_dir.name, delete=False)
+        asset_file = tempfile.NamedTemporaryFile(dir=self.base_dir.name,
+            delete=False)
         asset_file.write(b'\xff')
         asset_file.close()
 
@@ -176,8 +182,8 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         self.assertIn("Now you can reference it by name {}".format(name),
                       result.stdout_text)
 
-        cmd_line = "%s --config %s assets purge --by-overall-limit 2" % (AVOCADO,
-                                                                         config)
+        cmd_line = "%s --config %s assets purge --by-overall-limit 2" % (
+            AVOCADO, config)
         process.run(cmd_line)
 
         cmd_line = "%s --config %s assets list" % (AVOCADO, config)
@@ -204,7 +210,8 @@ class AssetsPlugin(unittest.TestCase):
         Setup configuration file and folders
         """
         warnings.simplefilter("ignore", ResourceWarning)
-        self.base_dir, self.mapping, self.config_file = get_temporary_config(self)
+        self.base_dir, self.mapping, self.config_file = get_temporary_config(
+            self)
 
     def test_asset_fetch(self):
         """
@@ -233,7 +240,8 @@ class AssetsPlugin(unittest.TestCase):
             locations='https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz')
         """
         test_content = NOT_TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -260,7 +268,8 @@ class AssetsPlugin(unittest.TestCase):
             locations='https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz')
         """
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".c",  dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".c",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -288,7 +297,8 @@ class AssetsPlugin(unittest.TestCase):
             locations='http://localhost/hello-2.9.tar.gz')
         """
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -315,7 +325,8 @@ class AssetsPlugin(unittest.TestCase):
             locations='http://localhost/hello-2.9.tar.gz')
         """
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -335,7 +346,8 @@ class AssetsPlugin(unittest.TestCase):
     def test_asset_purge_by_days(self):
         """Make sure that we can remove assets by days."""
         # creates a single byte asset
-        asset_file = tempfile.NamedTemporaryFile(dir=self.base_dir.name, delete=False)
+        asset_file = tempfile.NamedTemporaryFile(dir=self.base_dir.name,
+            delete=False)
         asset_file.write(b'\xff')
         asset_file.close()
 

@@ -227,7 +227,8 @@ class TapParserTests(unittest.TestCase):
         self.assert_last(events)
 
     def test_too_few_bailout(self):
-        events = self.parse_tap('1..3\nok 1\nnot ok 2\nBail out! no third test')
+        events = self.parse_tap(
+            '1..3\nok 1\nnot ok 2\nBail out! no third test')
         self.assert_plan(events, count=3, late=False)
         self.assert_test(events, number=1, name='', result=TestResult.PASS)
         self.assert_test(events, number=2, name='', result=TestResult.FAIL)
@@ -277,7 +278,8 @@ class TapParserTests(unittest.TestCase):
         self.assert_last(events)
 
     def test_yaml(self):
-        events = self.parse_tap_v13('ok\n ---\n foo: abc\n  bar: def\n ...\nok 2')
+        events = self.parse_tap_v13(
+            'ok\n ---\n foo: abc\n  bar: def\n ...\nok 2')
         self.assert_test(events, number=1, name='', result=TestResult.PASS)
         self.assert_test(events, number=2, name='', result=TestResult.PASS)
         self.assert_last(events)
@@ -287,7 +289,8 @@ class TapParserTests(unittest.TestCase):
         self.assert_error(events)
         self.assert_last(events)
 
-        events = self.parse_tap_v13('ok 1\n ---\n foo: abc\n  bar: def\nnot ok 2')
+        events = self.parse_tap_v13(
+            'ok 1\n ---\n foo: abc\n  bar: def\nnot ok 2')
         self.assert_test(events, number=1, name='', result=TestResult.PASS)
         self.assert_error(events)
         self.assert_test(events, number=2, name='', result=TestResult.FAIL)

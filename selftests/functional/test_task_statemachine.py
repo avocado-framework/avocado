@@ -25,7 +25,8 @@ class StateMachine(TestCase):
         spawner = Spawner()
         status_repo = StatusRepo()
 
-        state_machine = statemachine.TaskStateMachine(runtime_tasks, status_repo)
+        state_machine = statemachine.TaskStateMachine(runtime_tasks,
+                status_repo)
         workers = [statemachine.Worker(state_machine, spawner).run()
                    for _ in range(number_of_workers)]
 

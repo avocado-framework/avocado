@@ -24,7 +24,8 @@ class Cache(TestCaseTmpDir):
 
     def test_entries(self):
         with unittest.mock.patch(
-                'avocado.core.requirements.cache.backends.sqlite.CACHE_DATABASE_PATH',
+                'avocado.core.requirements.cache.backends.sqlite'
+                '.CACHE_DATABASE_PATH',
                 os.path.join(self.tmpdir.name,
                              'requirements.sqlite')):
             for entry in ENTRIES:
@@ -33,7 +34,8 @@ class Cache(TestCaseTmpDir):
 
     def test_empty(self):
         with unittest.mock.patch(
-                'avocado.core.requirements.cache.backends.sqlite.CACHE_DATABASE_PATH',
+                'avocado.core.requirements.cache.backends.sqlite'
+                '.CACHE_DATABASE_PATH',
                 os.path.join(self.tmpdir.name,
                              'requirements.sqlite')):
             self.assertFalse(cache.get_requirement(*ENTRIES[0]))

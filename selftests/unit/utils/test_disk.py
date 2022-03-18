@@ -67,7 +67,8 @@ class Disk(unittest.TestCase):
     def test_get_filesystem_type(self):
         open_mocked = unittest.mock.mock_open(read_data=PROC_MOUNTS)
         with unittest.mock.patch('builtins.open', open_mocked):
-            self.assertEqual('ext2', disk.get_filesystem_type(mount_point='/home'))
+            self.assertEqual('ext2', disk.get_filesystem_type(
+                mount_point='/home'))
 
 
 if __name__ == '__main__':

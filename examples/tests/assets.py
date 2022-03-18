@@ -8,7 +8,8 @@ class Hello(Test):
 
     def setUp(self):
         tarball_locations = [
-            'https://mirrors.peers.community/mirrors/gnu/hello/hello-2.9.tar.gz',
+            'https://mirrors.peers.community' +
+            '/mirrors/gnu/hello/hello-2.9.tar.gz',
             'https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz',
             'http://gnu.c3sl.ufpr.br/ftp/hello-2.9.tar.gz',
             'ftp://ftp.funet.fi/pub/gnu/prep/hello/hello-2.9.tar.gz'
@@ -19,7 +20,8 @@ class Hello(Test):
             locations=tarball_locations)
 
         sig_locations = [
-            'https://mirrors.peers.community/mirrors/gnu/hello/hello-2.9.tar.gz.sig',
+            'https://mirrors.peers.community' +
+            '/mirrors/gnu/hello/hello-2.9.tar.gz.sig',
             'https://mirrors.kernel.org/gnu/hello/hello-2.9.tar.gz.sig',
             'http://gnu.c3sl.ufpr.br/ftp/hello-2.9.tar.gz.sig',
             'ftp://ftp.funet.fi/pub/gnu/prep/hello/hello-2.9.tar.gz.sig'

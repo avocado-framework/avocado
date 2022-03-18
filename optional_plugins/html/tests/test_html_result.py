@@ -64,7 +64,8 @@ class HtmlResultTest(unittest.TestCase):
                          (expected_rc, result))
         error_excerpt = b"HTML to stdout not supported"
         self.assertIn(error_excerpt, output,
-                      "Missing excerpt error message from output:\n%s" % output)
+                      "Missing excerpt error message" +
+                      " from output:\n%s" % output)
 
     def test_output_compatible_setup_2(self):
         prefix = 'avocado_' + __name__
@@ -74,7 +75,8 @@ class HtmlResultTest(unittest.TestCase):
         tmpfile3 = os.path.join(tmpdir, "result.html")
         cmd_line = ('avocado run --job-results-dir %s --disable-sysinfo '
                     '--xunit %s --json %s --html %s --tap-include-logs '
-                    'examples/tests/passtest.py' % (self.tmpdir.name, tmpfile, tmpfile2, tmpfile3))
+                    'examples/tests/passtest.py'
+                    % (self.tmpdir.name, tmpfile, tmpfile2, tmpfile3))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK

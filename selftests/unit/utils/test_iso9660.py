@@ -18,17 +18,23 @@ class Capabilities(unittest.TestCase):
             os.path.join(os.path.dirname(os.path.dirname(__file__)),
                          os.path.pardir, ".data", "sample.iso"))
 
-    @unittest.mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=True)
+    @unittest.mock.patch('avocado.utils.iso9660.has_pycdlib',
+        return_value=True)
     def test_capabilities_pycdlib(self, has_pycdlib_mocked):
         instance = iso9660.iso9660(self.iso_path, ['read', 'create', 'write'])
         self.assertIsInstance(instance, iso9660.ISO9660PyCDLib)
         self.assertTrue(has_pycdlib_mocked.called)
 
-    @unittest.mock.patch('avocado.utils.iso9660.has_pycdlib', return_value=False)
-    @unittest.mock.patch('avocado.utils.iso9660.has_isoinfo', return_value=False)
-    @unittest.mock.patch('avocado.utils.iso9660.has_isoread', return_value=False)
-    @unittest.mock.patch('avocado.utils.iso9660.can_mount', return_value=False)
-    def test_capabilities_nobackend(self, has_pycdlib_mocked, has_isoinfo_mocked,
+    @unittest.mock.patch('avocado.utils.iso9660.has_pycdlib',
+        return_value=False)
+    @unittest.mock.patch('avocado.utils.iso9660.has_isoinfo',
+        return_value=False)
+    @unittest.mock.patch('avocado.utils.iso9660.has_isoread',
+        return_value=False)
+    @unittest.mock.patch('avocado.utils.iso9660.can_mount',
+        return_value=False)
+    def test_capabilities_nobackend(self, has_pycdlib_mocked,
+                                    has_isoinfo_mocked,
                                     has_isoread_mocked, can_mount_mocked):
         self.assertIsNone(iso9660.iso9660(self.iso_path, ['read']))
         self.assertTrue(has_pycdlib_mocked.called)
@@ -66,7 +72,8 @@ class BaseIso9660:
                          b"file content\n")
         dst = os.path.join(self.tmpdir.name, "file")
         self.iso.copy(os.path.join("Dir", "in_dir_file"), dst)
-        self.assertEqual(open(dst, encoding='utf-8').read(), "content of in-dir-file\n")
+        self.assertEqual(open(dst, encoding='utf-8').read(),
+            "content of in-dir-file\n")
         self.iso.close()
         self.iso.close()    # check that double-close won't fail
 
@@ -75,7 +82,8 @@ class BaseIso9660:
     @unittest.skipUnless(process.has_capability("cap_sys_admin"),
                          "Capability to mount is required (cap_sys_admin)")
     @unittest.skipIf(os.getenv('TRAVIS') and
-                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
+                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le',
+                     's390x'],
                      'TRAVIS Environment is unsuitable for these tests')
     def test_mnt_dir_workflow(self):
         """
@@ -136,7 +144,8 @@ class IsoMount(BaseIso9660, unittest.TestCase):
     @unittest.skipUnless(process.has_capability("cap_sys_admin"),
                          "Capability to mount is required (cap_sys_admin)")
     @unittest.skipIf(os.getenv('TRAVIS') and
-                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le', 's390x'],
+                     os.getenv('TRAVIS_CPU_ARCH') in ['arm64', 'ppc64le',
+                     's390x'],
                      'TRAVIS Environment is unsuitable for these tests')
     def setUp(self):
         super().setUp()
@@ -159,7 +168,8 @@ class PyCDLib(BaseIso9660, unittest.TestCase):
         new_iso = iso9660.ISO9660PyCDLib(new_iso_path)
         new_iso.create()
         content = b"AVOCADO"
-        for path in ("README", "/readme", "readme.txt", "quite-long-readme.txt"):
+        for path in ("README", "/readme", "readme.txt",
+            "quite-long-readme.txt"):
             new_iso.write(path, content)
             new_iso.close()
             read_iso = iso9660.ISO9660PyCDLib(new_iso_path)

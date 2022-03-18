@@ -157,8 +157,10 @@ class TestMuxTree(unittest.TestCase):
         tree3.add_child(mux.MuxTreeNode('hw', {'another_value': 'bbb'}))
         tree3.children[0].add_child(mux.MuxTreeNode('nic'))
         tree3.children[0].children[0].add_child(mux.MuxTreeNode('default'))
-        tree3.children[0].children[0].add_child(mux.MuxTreeNode('virtio', {'nic': 'virtio'}))
-        tree3.children[0].add_child(mux.MuxTreeNode('cpu', {'test_value': ['z']}))
+        tree3.children[0].children[0].add_child(mux.MuxTreeNode('virtio',
+            {'nic': 'virtio'}))
+        tree3.children[0].add_child(mux.MuxTreeNode('cpu',
+            {'test_value': ['z']}))
         tree2.merge(tree3)
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'default', 'virtio',
                'fedora', '\u0161mint', 'prod']
@@ -174,7 +176,7 @@ class TestMuxTree(unittest.TestCase):
 
     def test_advanced_yaml(self):
         tree2_yaml_path = os.path.join(BASEDIR,
-                                       'tests/.data/mux-selftest-advanced.yaml')
+                                    'tests/.data/mux-selftest-advanced.yaml')
         tree2_yaml_url = '/:%s' % tree2_yaml_path
         tree2 = yaml_to_mux.create_from_yaml([tree2_yaml_url])
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', '6',
@@ -306,7 +308,8 @@ class TestMultiplex(unittest.TestCase):
 class TestAvocadoParams(unittest.TestCase):
 
     def setUp(self):
-        yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest-params.yaml')
+        yaml_path = os.path.join(
+            BASEDIR, 'tests/.data/mux-selftest-params.yaml')
         yaml_url = '/:%s' % yaml_path
         yamls = yaml_to_mux.create_from_yaml([yaml_url])
         self.yamls = iter(mux.MuxTree(yamls))

@@ -45,9 +45,10 @@ def main():
  the example above.
  """
 
-    parser = argparse.ArgumentParser(description='Process some integers.',
-                                     formatter_class=argparse.RawTextHelpFormatter,
-                                     epilog=epilog)
+    parser = argparse.ArgumentParser(
+        description='Process some integers.',
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=epilog)
     parser.add_argument('runner',
                         metavar='RUNNER',
                         type=str,

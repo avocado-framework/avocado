@@ -37,7 +37,8 @@ class VariantsDumpLoadTests(TestCaseTmpDir):
                    '  "variant_id": "bar-d06d"}]')
         with open(self.variants_file, 'w', encoding='utf-8') as file_obj:
             file_obj.write(content)
-        cmd_line = ('%s run examples/tests/passtest.py --json-variants-load %s '
+        cmd_line = ('%s run examples/tests/passtest.py '
+                    '--json-variants-load %s '
                     '--test-runner=runner '
                     '--job-results-dir %s --json -' %
                     (AVOCADO, self.variants_file, self.tmpdir.name))

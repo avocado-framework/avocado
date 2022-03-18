@@ -6,15 +6,16 @@ class CombinationRow:
     """
     Row object store all combinations between two parameters into dictionary.
     Keys in dictionary are values of combinations and values in dictionary are
-    information about coverage. Row object has information how many combinations
-    are uncovered and how many of them are covered more than ones.
+    information about coverage. Row object has information how many
+    combinations are uncovered and how many of them are covered more than ones.
     """
 
     def __init__(self, input_data, t_value, parameters):
         """
         :param input_data: list of data from user
         :param t_value: t number from user
-        :param parameters: the tuple of parameters whose combinations Row object represents
+        :param parameters: the tuple of parameters whose
+        combinations Row object represents
         """
 
         self.hash_table = {}
@@ -33,7 +34,8 @@ class CombinationRow:
         Cover one combination inside Row
 
         :param key: combination to be covered
-        :return: number of new covered combinations and number of new covered combinations more than ones
+        :return: number of new covered combinations
+        and number of new covered combinations more than ones
         """
 
         old_uncovered = self.uncovered
@@ -53,7 +55,8 @@ class CombinationRow:
         Uncover one combination inside Row
 
         :param key: combination to be uncovered
-        :return: number of new covered combinations and number of new covered combinations more than ones
+        :return: number of new covered combinations
+        and number of new covered combinations more than ones
         """
 
         old_uncovered = self.uncovered
@@ -122,5 +125,6 @@ class CombinationRow:
         return combinations
 
     def __eq__(self, other):
-        return (self.covered_more_than_ones == other.covered_more_than_ones and self.uncovered == other.uncovered and
+        return (self.covered_more_than_ones ==
+        other.covered_more_than_ones and self.uncovered == other.uncovered and
                 self.hash_table == other.hash_table)

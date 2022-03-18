@@ -78,7 +78,8 @@ class AvocadoInstrumented(unittest.TestCase):
         uri = '%s:%s' % (passtest, test)
         res = AvocadoInstrumentedResolver().resolve(passtest)
         self.assertEqual(res.reference, passtest)
-        self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
+        self.assertEqual(res.result,
+            resolver.ReferenceResolutionResult.SUCCESS)
         self.assertIsNone(res.info)
         self.assertIsNone(res.origin)
         self.assertEqual(len(res.resolutions), 1)
@@ -95,7 +96,8 @@ class AvocadoInstrumented(unittest.TestCase):
         reference = '%s:%s' % (passtest, test_filter)
         res = AvocadoInstrumentedResolver().resolve(reference)
         self.assertEqual(res.reference, reference)
-        self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
+        self.assertEqual(res.result,
+            resolver.ReferenceResolutionResult.SUCCESS)
         self.assertEqual(len(res.resolutions), 1)
 
     def test_passtest_filter_notfound(self):
@@ -104,7 +106,8 @@ class AvocadoInstrumented(unittest.TestCase):
         reference = '%s:%s' % (passtest, test_filter)
         res = AvocadoInstrumentedResolver().resolve(reference)
         self.assertEqual(res.reference, reference)
-        self.assertEqual(res.result, resolver.ReferenceResolutionResult.NOTFOUND)
+        self.assertEqual(res.result,
+            resolver.ReferenceResolutionResult.NOTFOUND)
 
 
 class ExecTest(unittest.TestCase):
@@ -114,7 +117,8 @@ class ExecTest(unittest.TestCase):
                                     'test_resolver_exec_test') as exec_test:
             res = ExecTestResolver().resolve(exec_test.path)
         self.assertEqual(res.reference, exec_test.path)
-        self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
+        self.assertEqual(res.result,
+            resolver.ReferenceResolutionResult.SUCCESS)
         self.assertEqual(len(res.resolutions), 1)
         resolution = res.resolutions[0]
         self.assertEqual(resolution.kind, 'exec-test')
@@ -129,7 +133,8 @@ class ExecTest(unittest.TestCase):
                                     mode=DEFAULT_NON_EXEC_MODE) as exec_test:
             res = ExecTestResolver().resolve(exec_test.path)
         self.assertEqual(res.reference, exec_test.path)
-        self.assertEqual(res.result, resolver.ReferenceResolutionResult.NOTFOUND)
+        self.assertEqual(res.result,
+            resolver.ReferenceResolutionResult.NOTFOUND)
         self.assertEqual(len(res.resolutions), 0)
 
 
@@ -151,7 +156,8 @@ class PythonUnittest(unittest.TestCase):
             res = PythonUnittestResolver().resolve(python_unittest.path)
 
         self.assertEqual(res.reference, python_unittest.path)
-        self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
+        self.assertEqual(res.result,
+            resolver.ReferenceResolutionResult.SUCCESS)
         self.assertEqual(len(res.resolutions), 1)
         resolution = res.resolutions[0]
         self.assertEqual(resolution.kind, 'python-unittest')
@@ -176,7 +182,8 @@ class PythonUnittest(unittest.TestCase):
 
         res = PythonUnittestResolver().resolve(path)
         self.assertEqual(res.reference, path)
-        self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
+        self.assertEqual(res.result,
+            resolver.ReferenceResolutionResult.SUCCESS)
         self.assertEqual(len(res.resolutions), 3)
 
         _check_resolution(res.resolutions[0], "StaticallyNotAvocadoTest.test")

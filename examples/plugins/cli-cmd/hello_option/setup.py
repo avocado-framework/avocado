@@ -6,6 +6,7 @@ if __name__ == '__main__':
           description='Avocado Hello World CLI command with config option',
           py_modules=['hello_option'],
           entry_points={
-              'avocado.plugins.cli.cmd': ['hello_option = hello_option:HelloWorld'],
+              'avocado.plugins.cli.cmd':
+                ['hello_option = hello_option:HelloWorld'],
               }
           )

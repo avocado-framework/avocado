@@ -70,13 +70,15 @@ class TestsTmpDirTests(TestCaseTmpDir):
         with tempfile.TemporaryDirectory(dir=self.tmpdir.name) as shared_tmp:
             cmd = ("%s run --disable-sysinfo --job-results-dir %s %%s"
                    % (AVOCADO, self.tmpdir.name))
-            self.run_and_check(cmd % self.simple_test, exit_codes.AVOCADO_ALL_OK,
+            self.run_and_check(cmd % self.simple_test,
+                                exit_codes.AVOCADO_ALL_OK,
                                {test.COMMON_TMPDIR_NAME: shared_tmp})
             self.run_and_check(cmd % self.instrumented_test,
                                exit_codes.AVOCADO_ALL_OK,
                                {test.COMMON_TMPDIR_NAME: shared_tmp})
             content = os.listdir(shared_tmp)
-            self.assertEqual(len(content), 2, "The number of tests in manually "
+            self.assertEqual(len(content), 2,
+                             "The number of tests in manually "
                              "set teststmpdir is not 2 (%s):\n%s"
                              % (len(content), content))
 

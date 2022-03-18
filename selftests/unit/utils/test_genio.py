@@ -34,7 +34,8 @@ class TestGenio(unittest.TestCase):
         with tempfile.NamedTemporaryFile(mode='w') as temp_file:
             temp_file.write('123')
             temp_file.seek(0)
-            self.assertFalse(genio.is_pattern_in_file(temp_file.name, r'\D{3}'))
+            self.assertFalse(genio.is_pattern_in_file(temp_file.name,
+                r'\D{3}'))
 
     def test_are_files_equal(self):
         file_1 = tempfile.NamedTemporaryFile(mode='w')

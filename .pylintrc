@@ -81,7 +81,6 @@ disable=W0212,
   C0200,
   C0201,
   C0209,
-  C0301,
   C0302,
   C0321,
   C0325,
@@ -382,7 +381,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=79
 
 # Maximum number of lines in a module.
 max-module-lines=1000

@@ -36,7 +36,7 @@ class BasicTests(unittest.TestCase):
 
     def test_post_fail(self):
         kwargs = {'sysinfo': {'fail_commands': ['uptime', 'dmidecode'],
-                              'fail_files': ['/proc/version', '/proc/meminfo']},
+                            'fail_files': ['/proc/version', '/proc/meminfo']},
                   'test_fail': True}
         runnable = Runnable('sysinfo', 'post', **kwargs,
                             config=settings.as_dict())

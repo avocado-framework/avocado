@@ -31,7 +31,8 @@ class FetchAsset(unittest.TestCase):
         Setup configuration file and folders
         """
         warnings.simplefilter("ignore", ResourceWarning)
-        self.base_dir, self.mapping, self.config_file = get_temporary_config(self)
+        self.base_dir, self.mapping, self.config_file = get_temporary_config(
+                                                                    self)
 
         self.asset_dir = os.path.join(self.mapping['cache_dir'],
                                       'by_location',
@@ -56,7 +57,8 @@ class FetchAsset(unittest.TestCase):
         print(foo)
         """ % (assetname, url)
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -87,7 +89,8 @@ class FetchAsset(unittest.TestCase):
             raise OSError('Asset not found')
         """ % (fake_assetname, fake_url)
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -120,7 +123,8 @@ class FetchAsset(unittest.TestCase):
             cancel_on_missing=True)
         """ % (fake_assetname, fake_url)
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 
@@ -152,7 +156,8 @@ class FetchAsset(unittest.TestCase):
             cancel_on_missing=True)
         """ % (fake_assetname, fake_url)
         test_content = TEST_TEMPLATE.format(content=fetch_content)
-        test_file = tempfile.NamedTemporaryFile(suffix=".py", dir=self.base_dir.name, delete=False)
+        test_file = tempfile.NamedTemporaryFile(suffix=".py",
+            dir=self.base_dir.name, delete=False)
         test_file.write(test_content.encode())
         test_file.close()
 

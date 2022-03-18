@@ -16,7 +16,8 @@ class ArgumentParsingTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc, result))
+                         'Avocado did not return rc %d:\n%s' % (
+                             expected_rc, result))
 
     def test_known_command_bad_choice(self):
         os.chdir(BASEDIR)
@@ -24,7 +25,8 @@ class ArgumentParsingTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc, result))
+                         'Avocado did not return rc %d:\n%s' % (
+                             expected_rc, result))
 
     def test_known_command_bad_argument(self):
         os.chdir(BASEDIR)
@@ -32,7 +34,8 @@ class ArgumentParsingTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc, result))
+                         'Avocado did not return rc %d:\n%s' % (
+                             expected_rc, result))
         subcommand_error_msg = (b'avocado run: error: unrecognized arguments: '
                                 b'--whacky-argument')
         self.assertIn(subcommand_error_msg, result.stderr)
@@ -58,7 +61,8 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
         cmd_line %= (job, complement_args)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc, result))
+                         'Avocado did not return rc %d:\n%s' % (
+                             expected_rc, result))
         path_job_glob = os.path.join(log_dir, "job-*-%s" % job[0:7])
         self.assertEqual(glob.glob(path_job_glob), [])
 
