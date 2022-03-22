@@ -242,3 +242,8 @@ def start_logging(config, queue):
         output_logger = logging.getLogger(enabled_logger)
         output_logger.addHandler(store_stream_handler)
         output_logger.setLevel(log_level)
+
+        if not enabled_logger.startswith('avocado.'):
+            output_logger.addHandler(log_handler)
+            output_logger.propagate = False
+

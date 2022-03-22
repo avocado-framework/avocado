@@ -16,6 +16,10 @@ Currently Avocado will store any log information that is part of the
 'avocado.*' namespaces. You just need to choose a namespace when setting up
 your logger.
 
+.. note:: Sometimes you might want to store logs, which is not part of 
+   `avocado.*` name space. For that, you can use `--store-logging-stream`
+   option.
+
 The result is that, besides all the other log files commonly generated, as part
 of the `debug.log` file at the job results dir, you can get your logging
 information.  During the test run, one could watch the progress with::
