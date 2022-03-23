@@ -18,6 +18,7 @@ Module with network related utility functions
 
 import random
 import socket
+import warnings
 
 from avocado.utils.data_structures import Borg
 
@@ -27,46 +28,46 @@ FAMILIES = (socket.AF_INET, socket.AF_INET6)
 PROTOCOLS = (socket.SOCK_STREAM, socket.SOCK_DGRAM)
 
 
+def is_port_available(port, address, family=socket.AF_INET,
+                      protocol=socket.SOCK_STREAM):
+    """Return True if the given port is available for use.
+
+    :param port: Port value to check.
+    :type port: int
+    :param address: Address to use this port.
+    :type address: str
+    :param family: Default is socket.AF_INET. Accepted values are:
+                   socket.AF_INET or socket.AF_INET6.
+    :type type: socket.AddressFamily.AF_*
+    :param protocol: Protocol type. Default is socket.SOCK_STREAM (TCP).
+                     Accepted values are: socket.SOCK_STREAM or
+                     socket.SOCK_DGRAM.
+    :type type: socket.AddressFamily.SOCK_*
+    """
+    try:
+        with socket.socket(family, protocol) as sock:
+            sock.bind((address, port))
+    except PermissionError:
+        # Permission denied, can't be sure
+        return False
+    except OSError:
+        # Address already in use or cannot assign requested address
+        return False
+    return True
+
+
 def is_port_free(port, address):
     """
-    Return True if the given port is available for use.
-
-    Currently we only check for TCP/UDP connections on IPv4/6
-
-    :param port: Port number
-    :param address: Socket address to bind or connect
+    This method is deprecated. Please use is_port_available().
     """
-    if address == "localhost" or not address:
-        localhost = True
-        protocols = PROTOCOLS
-    else:
-        localhost = False
-        # sock.connect always connects for UDP
-        protocols = (socket.SOCK_STREAM, )
-    sock = None
-    try:
-        for family in FAMILIES:
-            for protocol in protocols:
-                try:
-                    sock = socket.socket(family, protocol)
-                    if localhost:
-                        sock.bind(("", port))
-                    else:
-                        sock.connect((address, port))
-                        return False
-                except socket.error as exc:
-                    if exc.errno in (93, 94):   # Unsupported combinations
-                        continue
-                    if localhost:
-                        return False
-                sock.close()
-        return True
-    finally:
-        if sock is not None:
-            sock.close()
+    warnings.warn("deprecated, use is_port_available() instead.",
+                  DeprecationWarning)
+    return is_port_available(port, address)
 
 
-def find_free_port(start_port=1024, end_port=65535, address="localhost", sequent=False):
+def find_free_port(start_port=1024, end_port=65535, address="localhost",
+                   sequent=False, family=socket.AF_INET,
+                   protocol=socket.SOCK_STREAM):
     """
     Return a host free port in the range [start_port, end_port].
 
@@ -74,15 +75,25 @@ def find_free_port(start_port=1024, end_port=65535, address="localhost", sequent
     :param end_port: ender of candidate port range, defaults to 65535
     :param address: Socket address to bind or connect
     :param sequent: Find port sequentially, random order if it's False
+    :param family: Default is socket.AF_INET. Accepted values are:
+                   socket.AF_INET or socket.AF_INET6.
+    :type family: socket.AddressFamily.AF_*
+    :param protocol: Protocol type. Default is socket.SOCK_STREAM (TCP).
+                     Accepted values are: socket.SOCK_STREAM or
+                     socket.SOCK_DGRAM.
+    :type protocol: socket.AddressFamily.SOCK_*
     :rtype: int or None if no free port found
     """
-    ports = find_free_ports(start_port, end_port, 1, address, sequent)
+    ports = find_free_ports(start_port, end_port, 1, address, sequent,
+                            family, protocol)
     if ports:
         return ports[0]
     return None
 
 
-def find_free_ports(start_port, end_port, count, address="localhost", sequent=False):
+def find_free_ports(start_port, end_port, count, address="localhost",
+                    sequent=False, family=socket.AF_INET,
+                    protocol=socket.SOCK_STREAM):
     """
     Return count of host free ports in the range [start_port, end_port].
 
@@ -91,6 +102,13 @@ def find_free_ports(start_port, end_port, count, address="localhost", sequent=Fa
     :param count: Initial number of ports known to be free in the range.
     :param address: Socket address to bind or connect
     :param sequent: Find port sequentially, random order if it's False
+    :param family: Default is socket.AF_INET. Accepted values are:
+                   socket.AF_INET or socket.AF_INET6.
+    :type family: socket.AddressFamily.AF_*
+    :param protocol: Protocol type. Default is socket.SOCK_STREAM (TCP).
+                     Accepted values are: socket.SOCK_STREAM or
+                     socket.SOCK_DGRAM.
+    :type protocol: socket.AddressFamily.SOCK_*
     """
     ports = []
 
@@ -98,7 +116,7 @@ def find_free_ports(start_port, end_port, count, address="localhost", sequent=Fa
     if not sequent:
         random.shuffle(port_range)
     for i in port_range:
-        if is_port_free(i, address):
+        if is_port_available(i, address, family, protocol):
             ports.append(i)
         if len(ports) >= count:
             break

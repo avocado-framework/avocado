@@ -1,4 +1,3 @@
-import socket
 import unittest.mock
 
 from avocado.utils.network import ports
@@ -56,45 +55,18 @@ def get_all_local_addrs():
 
 class FreePort(unittest.TestCase):
 
-    @unittest.skipUnless(HAS_NETIFACES,
-                         "netifaces library not available")
-    def test_is_port_free(self):
+    def test_is_port_available(self):
         port = ports.find_free_port(sequent=False)
-        self.assertTrue(ports.is_port_free(port, "localhost"))
-        ipv4_addrs, ipv6_addrs = get_all_local_addrs()
-        good = []
-        bad = []
-        skip = []
-        sock = None
-        for family in ports.FAMILIES:
-            if family == socket.AF_INET:
-                addrs = ipv4_addrs
-            else:
-                addrs = ipv6_addrs
-            for addr in addrs:
-                for protocol in ports.PROTOCOLS:
-                    try:
-                        sock = socket.socket(family, protocol)
-                        sock.bind((addr, port))
-                        if ports.is_port_free(port, "localhost"):
-                            bad.append(f"{family}, {protocol}, {addr}: "
-                                       f"reports free")
-                        else:
-                            good.append(f"{family}, {protocol}, {addr}")
-                    except Exception as exc:
-                        if getattr(exc, 'errno', None) in (-2, 2, 22, 94):
-                            skip.append(f"{family}, {protocol}, {addr}: "
-                                        f"Not supported: {exc}")
-                        else:
-                            bad.append(f"{family}, {protocol}, {addr}: "
-                                       f"Failed to bind: {exc}")
-                    finally:
-                        if sock is not None:
-                            sock.close()
-        self.assertFalse(bad, "Following combinations failed:\n%s\n\n"
-                         "Following combinations passed:\n%s\n\n"
-                         "Following combinations were skipped:\n%s"
-                         % ("\n".join(bad), "\n".join(good), "\n".join(skip)))
+        result = ports.is_port_available(port, 'localhost')
+        self.assertTrue(result)
+
+    def test_find_free_port(self):
+        port = ports.find_free_port(sequent=False)
+        self.assertEqual(type(port), int)
+
+    def test_find_free_ports(self):
+        port = ports.find_free_ports(1000, 2000, 10)
+        self.assertEqual(type(port), list)
 
 
 if __name__ == "__main__":
