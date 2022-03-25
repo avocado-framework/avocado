@@ -104,7 +104,8 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        bad_test_basename = f'wontquit-{data_factory.generate_random_string(5)}'
+        bad_test_basename = \
+            f'wontquit-{data_factory.generate_random_string(5)}'
         bad_test = script.TemporaryScript(bad_test_basename, BAD_TEST,
                                           'avocado_interrupt_test',
                                           mode=DEFAULT_MODE)
@@ -151,7 +152,8 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        bad_test_basename = f'wontquit-{data_factory.generate_random_string(5)}'
+        bad_test_basename = \
+            f'wontquit-{data_factory.generate_random_string(5)}'
         bad_test = script.TemporaryScript(bad_test_basename, BAD_TEST,
                                           'avocado_interrupt_test',
                                           mode=DEFAULT_MODE)
@@ -190,7 +192,8 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        good_test_basename = f'goodtest-{data_factory.generate_random_string(5)}.py'
+        good_test_basename = \
+            f'goodtest-{data_factory.generate_random_string(5)}.py'
         good_test = script.TemporaryScript(good_test_basename, GOOD_TEST,
                                            'avocado_interrupt_test',
                                            mode=DEFAULT_MODE)
@@ -233,7 +236,8 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        good_test_basename = f'goodtest-{data_factory.generate_random_string(5)}.py'
+        good_test_basename = \
+            f'goodtest-{data_factory.generate_random_string(5)}.py'
         good_test = script.TemporaryScript(good_test_basename, GOOD_TEST,
                                            'avocado_interrupt_test',
                                            mode=DEFAULT_MODE)

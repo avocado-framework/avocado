@@ -123,7 +123,8 @@ class DiskSpace(unittest.TestCase):
         pre = glob.glob("/dev/sd*")
         process.system("modprobe scsi_debug", sudo=True)
         disks = set(glob.glob("/dev/sd*")).difference(pre)
-        self.assertEqual(len(disks), 1, f"pre: {disks}\npost: {glob.glob('/dev/sd*')}")
+        self.assertEqual(len(disks), 1,
+                         f"pre: {disks}\npost: {glob.glob('/dev/sd*')}")
         disk = disks.pop()
         self.assertEqual(lv_utils.get_diskspace(disk), "8388608")
 

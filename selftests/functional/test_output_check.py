@@ -327,7 +327,8 @@ class RunnerSimpleTest(TestCaseTmpDir):
         simple_test, variants_file = self._setup_simple_test(
             TEST_WITH_DIFFERENT_EXPECTED_OUTPUT)
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo {simple_test} --output-check-record both '
+                    f'--disable-sysinfo {simple_test} '
+                    f'--output-check-record both '
                     f'--json-variants-load {variants_file}')
         process.run(cmd_line, ignore_status=True)
         self.assertIsNotFile(f"{simple_test}.data/stdout.expected")

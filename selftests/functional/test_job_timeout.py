@@ -55,7 +55,8 @@ class JobTimeOutTest(TestCaseTmpDir):
         try:
             xunit_doc = xml.dom.minidom.parseString(xml_output)
         except Exception as detail:
-            raise ParseXMLError(f"Failed to parse content: {detail}\n{xml_output}")
+            raise ParseXMLError(f"Failed to parse content: {detail}\n"
+                                f"{xml_output}")
 
         testsuite_list = xunit_doc.getElementsByTagName('testsuite')
         self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
@@ -67,19 +68,23 @@ class JobTimeOutTest(TestCaseTmpDir):
 
         n_tests = int(testsuite_tag.attributes['tests'].value)
         self.assertEqual(n_tests, e_ntests,
-                         f"Unexpected number of executed tests, XML:\n{xml_output}")
+                         (f"Unexpected number of executed tests, XML:\n"
+                          f"{xml_output}"))
 
         n_errors = int(testsuite_tag.attributes['errors'].value)
         self.assertEqual(n_errors, e_nerrors,
-                         f"Unexpected number of test errors, XML:\n{xml_output}")
+                         (f"Unexpected number of test errors, XML:\n"
+                          f"{xml_output}"))
 
         n_failures = int(testsuite_tag.attributes['failures'].value)
         self.assertEqual(n_failures, e_nfailures,
-                         f"Unexpected number of test failures, XML:\n{xml_output}")
+                         (f"Unexpected number of test failures, XML:\n"
+                          f"{xml_output}"))
 
         n_skip = int(testsuite_tag.attributes['skipped'].value)
         self.assertEqual(n_skip, e_nskip,
-                         f"Unexpected number of test skips, XML:\n{xml_output}")
+                         (f"Unexpected number of test skips, XML:\n"
+                          f"{xml_output}"))
 
     def _check_timeout_msg(self, idx):
         res_dir = os.path.join(self.tmpdir.name, "latest", "test-results")
@@ -89,20 +94,23 @@ class JobTimeOutTest(TestCaseTmpDir):
                       (f"Runner error occurred: Timeout reached message not "
                        f"in the {idx}st test's debug.log:\n{debug_log}"))
         self.assertIn("Traceback (most recent call last)", debug_log,
-                      f"Traceback not present in the {idx}st test's debug.log:\n{debug_log}")
+                      (f"Traceback not present in the {idx}st test's "
+                       f"debug.log:\n{debug_log}"))
 
     @skipOnLevelsInferiorThan(1)
     def test_sleep_longer_timeout(self):
         """:avocado: tags=parallel:1"""
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
                     f'--disable-sysinfo --test-runner=runner --xunit - '
-                    f'--job-timeout=5 {self.script.path} examples/tests/passtest.py')
+                    f'--job-timeout=5 {self.script.path} '
+                    f'examples/tests/passtest.py')
         self.run_and_check(cmd_line, 0, 2, 0, 0, 0)
 
     def test_sleep_short_timeout(self):
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
                     f'--disable-sysinfo --test-runner=runner --xunit - '
-                    f'--job-timeout=1 {self.script.path} examples/tests/passtest.py')
+                    f'--job-timeout=1 {self.script.path} '
+                    f'examples/tests/passtest.py')
         self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED,
                            2, 1, 0, 1)
         self._check_timeout_msg(1)

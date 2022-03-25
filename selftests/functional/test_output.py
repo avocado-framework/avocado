@@ -165,7 +165,8 @@ class OutputTest(TestCaseTmpDir):
         test = script.Script(os.path.join(self.tmpdir.name, "output_test.py"),
                              OUTPUT_TEST_CONTENT)
         test.save()
-        result = process.run(f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+        result = process.run(f"{AVOCADO} run "
+                             f"--job-results-dir {self.tmpdir.name} "
                              f"--disable-sysinfo --json - -- {test}")
         res = json.loads(result.stdout_text)
         logfile = res["tests"][0]["logfile"]
@@ -202,7 +203,8 @@ class OutputTest(TestCaseTmpDir):
         test = script.Script(os.path.join(self.tmpdir.name, "output_test.py"),
                              OUTPUT_TEST_CONTENT)
         test.save()
-        result = process.run(f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+        result = process.run(f"{AVOCADO} run "
+                             f"--job-results-dir {self.tmpdir.name} "
                              f"--disable-sysinfo --json - -- {test}")
         res = json.loads(result.stdout_text)
         logfile = res["tests"][0]["logfile"]
@@ -222,7 +224,8 @@ class OutputTest(TestCaseTmpDir):
             self.assertEqual(expected, stderr_file.read())
 
         # With the nrunner, output combined result are inside job.log
-        result = process.run(f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+        result = process.run(f"{AVOCADO} run "
+                             f"--job-results-dir {self.tmpdir.name} "
                              f"--disable-sysinfo --json - -- {test}")
         res = json.loads(result.stdout_text)
         with open(logfile, 'rb') as output_file:  # pylint: disable=W1514
@@ -293,12 +296,14 @@ class OutputPluginTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
+                         (f"Avocado did not return rc {expected_rc}:"
+                          f"\n{result}"))
         error_regex = re.compile(r'.*Options ((--xunit --json)|'
                                  '(--json --xunit)) are trying to use stdout '
                                  'simultaneously.', re.MULTILINE | re.DOTALL)
         self.assertIsNotNone(error_regex.match(result.stderr_text),
-                             f"Missing error message from output:\n{result.stderr}")
+                             (f"Missing error message from output:\n"
+                              f"{result.stderr}"))
 
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
@@ -308,7 +313,8 @@ class OutputPluginTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
+                         (f"Avocado did not return rc {expected_rc}:"
+                          f"\n{result}"))
         # Check if we are producing valid outputs
         json.loads(result.stdout_text)
         minidom.parse(tmpfile)
@@ -321,7 +327,8 @@ class OutputPluginTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
+                         (f"Avocado did not return rc {expected_rc}:"
+                          f"\n{result}"))
         # Check if we are producing valid outputs
         with open(tmpfile, 'r', encoding='utf-8') as fp:
             json_results = json.load(fp)
@@ -333,13 +340,15 @@ class OutputPluginTest(TestCaseTmpDir):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         tmpfile2 = tempfile.mktemp(dir=self.tmpdir.name)
         # Verify --show=none can be supplied as app argument
-        cmd_line = (f'{AVOCADO} --show=none run --job-results-dir {self.tmpdir.name} '
+        cmd_line = (f'{AVOCADO} --show=none run '
+                    f'--job-results-dir {self.tmpdir.name} '
                     f'--disable-sysinfo --xunit {tmpfile} --json {tmpfile2} '
                     f'--tap-include-logs examples/tests/passtest.py')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
+                         (f"Avocado did not return rc {expected_rc}:"
+                          f"\n{result}"))
         self.assertEqual(result.stdout, b"",
                          f"Output is not empty:\n{result.stdout}")
         # Check if we are producing valid outputs
@@ -350,12 +359,14 @@ class OutputPluginTest(TestCaseTmpDir):
         minidom.parse(tmpfile)
 
     def test_show_test(self):
-        cmd_line = (f'{AVOCADO} --show=test run --job-results-dir {self.tmpdir.name} '
+        cmd_line = (f'{AVOCADO} --show=test run '
+                    f'--job-results-dir {self.tmpdir.name} '
                     f'--disable-sysinfo examples/tests/passtest.py')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
+                         (f"Avocado did not return rc {expected_rc}:"
+                          f"\n{result}"))
         job_id_list = re.findall('Job ID: (.*)', result.stdout_text,
                                  re.MULTILINE)
         self.assertTrue(job_id_list, f'No Job ID in stdout:\n{result.stdout}')
@@ -370,7 +381,8 @@ class OutputPluginTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
+                         (f"Avocado did not return rc {expected_rc}:"
+                          f"\n{result}"))
         self.assertEqual(result.stdout, b"")
 
     def test_verify_whiteboard_save(self):
@@ -381,11 +393,13 @@ class OutputPluginTest(TestCaseTmpDir):
         script.Script(config, content).save()
         cmd_line = (f'{AVOCADO} --config {config} --show all run '
                     f'--job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo examples/tests/whiteboard.py --json {tmpfile}')
+                    f'--disable-sysinfo examples/tests/whiteboard.py '
+                    f'--json {tmpfile}')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
+                         (f"Avocado did not return rc {expected_rc}:"
+                          f"\n{result}"))
         with open(tmpfile, 'r', encoding='utf-8') as fp:
             json_results = json.load(fp)
             logfile = json_results['tests'][0]['logfile']
@@ -402,7 +416,8 @@ class OutputPluginTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
+                         (f"Avocado did not return rc {expected_rc}:"
+                          f"\n{result}"))
         with open(tmpfile, 'r', encoding='utf-8') as fp:
             json_results = json.load(fp)
             json_dir = None

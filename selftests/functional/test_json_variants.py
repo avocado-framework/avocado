@@ -13,7 +13,8 @@ class VariantsDumpLoadTests(TestCaseTmpDir):
         self.variants_file = os.path.join(self.tmpdir.name, 'variants.json')
 
     def test_variants_dump(self):
-        cmd_line = f'{AVOCADO} variants --json-variants-dump {self.variants_file}'
+        cmd_line = (f'{AVOCADO} variants '
+                    f'--json-variants-dump {self.variants_file}')
         process.run(cmd_line)
         with open(self.variants_file, 'r', encoding='utf-8') as file_obj:
             file_content = file_obj.read()
@@ -36,7 +37,8 @@ class VariantsDumpLoadTests(TestCaseTmpDir):
                    '  "variant_id": "bar-d06d"}]')
         with open(self.variants_file, 'w', encoding='utf-8') as file_obj:
             file_obj.write(content)
-        cmd_line = (f'{AVOCADO} run examples/tests/passtest.py --json-variants-load {self.variants_file} '
+        cmd_line = (f'{AVOCADO} run examples/tests/passtest.py '
+                    f'--json-variants-load {self.variants_file} '
                     f'--test-runner=runner '
                     f'--job-results-dir {self.tmpdir.name} --json -')
         result = process.run(cmd_line)

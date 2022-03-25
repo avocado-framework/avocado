@@ -64,7 +64,8 @@ class JobScriptsTest(TestCaseTmpDir):
                                                                self.post_dir))
         with config:
             cmd = (f'{AVOCADO} --config {config} run '
-                   f'--job-results-dir {self.tmpdir.name} --disable-sysinfo {test_check_touch}')
+                   f'--job-results-dir {self.tmpdir.name} '
+                   f'--disable-sysinfo {test_check_touch}')
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
@@ -86,7 +87,8 @@ class JobScriptsTest(TestCaseTmpDir):
                                         SCRIPT_NON_ZERO_CFG % self.pre_dir)
         with config:
             cmd = (f'{AVOCADO} --config {config} run '
-                   f'--job-results-dir {self.tmpdir.name} --disable-sysinfo examples/tests/passtest.py')
+                   f'--job-results-dir {self.tmpdir.name} '
+                   f'--disable-sysinfo examples/tests/passtest.py')
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
@@ -108,7 +110,8 @@ class JobScriptsTest(TestCaseTmpDir):
                                         SCRIPT_NON_EXISTING_DIR_CFG % self.pre_dir)
         with config:
             cmd = (f'{AVOCADO} --config {config} run '
-                   f'--job-results-dir {self.tmpdir.name} --disable-sysinfo examples/tests/passtest.py')
+                   f'--job-results-dir {self.tmpdir.name} '
+                   f'--disable-sysinfo examples/tests/passtest.py')
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status

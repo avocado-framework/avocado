@@ -32,7 +32,8 @@ class SysInfoTest(TestCaseTmpDir):
         self.assertIsNotNone(sysinfo_dir,
                              ('Could not find sysinfo dir from human output. '
                               'Output produced: "%s" % output'))
-        msg = f"Avocado didn't create sysinfo directory {sysinfo_dir}:\n{result}"
+        msg = (f"Avocado didn't create sysinfo directory {sysinfo_dir}:"
+               f"\n{result}")
         self.assertTrue(os.path.isdir(sysinfo_dir), msg)
         msg = f'The sysinfo directory is empty:\n{result}'
         self.assertGreater(len(os.listdir(sysinfo_dir)), 0, msg)
@@ -73,14 +74,14 @@ class SysInfoTest(TestCaseTmpDir):
         if timeout > 0:
             self.assertLess(result.duration, exp_duration,
                             (f"Execution took "
-                             f"longer than {exp_duration}s which is likely due to "
-                             f"malfunctioning commands_timeout "
+                             f"longer than {exp_duration}s which is likely "
+                             f"due to malfunctioning commands_timeout "
                              f"sysinfo.collect feature:\n{result}"))
         else:
             self.assertGreater(result.duration, exp_duration,
                                (f"Execution took "
-                                f"less than {exp_duration}s which is likely due to "
-                                f"malfunctioning commands_timeout "
+                                f"less than {exp_duration}s which is likely "
+                                f"due to malfunctioning commands_timeout "
                                 f"sysinfo.collect feature:\n{result}"))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -94,8 +95,9 @@ class SysInfoTest(TestCaseTmpDir):
                 if tmp == path:
                     break
                 path = tmp
-            raise AssertionError(f"Sleep output not recorded in '{sleep_log}', first "
-                                 f"existing location '{path}' contains:\n{os.listdir(path)}")
+            raise AssertionError(f"Sleep output not recorded in '{sleep_log}',"
+                                 f"first existing location '{path}' contains:"
+                                 f"\n{os.listdir(path)}")
 
     @skipOnLevelsInferiorThan(2)
     def test_sysinfo_interrupted(self):

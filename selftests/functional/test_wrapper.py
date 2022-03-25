@@ -61,8 +61,8 @@ class WrapperTest(TestCaseTmpDir):
     def test_process_wrapper(self):
         os.chdir(BASEDIR)
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner '
-                    f'--wrapper {self.script.path}:*/datadir examples/tests/datadir.py')
+                    f'--disable-sysinfo --test-runner=runner --wrapper '
+                    f'{self.script.path}:*/datadir examples/tests/datadir.py')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -76,8 +76,10 @@ class WrapperTest(TestCaseTmpDir):
     def test_both_wrappers(self):
         os.chdir(BASEDIR)
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --wrapper {self.dummy.path} --test-runner=runner '
-                    f'--wrapper {self.script.path}:*/datadir examples/tests/datadir.py')
+                    f'--disable-sysinfo '
+                    f'--wrapper {self.dummy.path} --test-runner=runner '
+                    f'--wrapper '
+                    f'{self.script.path}:*/datadir examples/tests/datadir.py')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

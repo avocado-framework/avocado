@@ -148,7 +148,8 @@ class ArchiveTest(unittest.TestCase):
     def test_empty_tbz2(self):
         ret = archive.uncompress(os.path.join(BASEDIR, 'selftests', '.data',
                                               'empty.tar.bz2'), self.decompressdir)
-        self.assertEqual(ret, None, f"Empty archive should return None ({ret})")
+        self.assertEqual(ret, None, (f"Empty archive should return None "
+                                     f"({ret})"))
 
     def test_is_gzip_file(self):
         gz_path = os.path.join(BASEDIR, 'selftests', '.data', 'avocado.gz')

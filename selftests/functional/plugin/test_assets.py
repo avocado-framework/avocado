@@ -76,7 +76,8 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         test_file.close()
 
         expected_output = (f"Fetching assets from {test_file.name}.\n"
-                           f"  File hello-2.9.tar.gz fetched or already on cache.\n")
+                           f"  File hello-2.9.tar.gz fetched or "
+                           f"already on cache.\n")
         expected_rc = exit_codes.AVOCADO_ALL_OK
 
         cmd_line = (f"{AVOCADO} --config {self.config_file.name} "
@@ -124,7 +125,8 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         self.assertIn(f"Now you can reference it by name {name}",
                       result.stdout_text)
 
-        cmd_line = f"{AVOCADO} --config {config} assets purge --by-size-filter '==1'"
+        cmd_line = (f"{AVOCADO} --config {config} assets purge "
+                    f"--by-size-filter '==1'")
         process.run(cmd_line)
 
         cmd_line = f"{AVOCADO} --config {config} assets list"
@@ -160,7 +162,8 @@ class AssetsFetchSuccess(TestCaseTmpDir):
         self.assertIn(f"Now you can reference it by name {name}",
                       result.stdout_text)
 
-        cmd_line = f"{AVOCADO} --config {config} assets purge --by-overall-limit 2"
+        cmd_line = (f"{AVOCADO} --config {config} assets purge "
+                    f"--by-overall-limit 2")
         process.run(cmd_line)
 
         cmd_line = f"{AVOCADO} --config {config} assets list"
@@ -222,7 +225,8 @@ class AssetsPlugin(unittest.TestCase):
         expected_stdout = f"Fetching assets from {test_file.name}.\n"
         expected_rc = exit_codes.AVOCADO_ALL_OK
 
-        cmd_line = f"{AVOCADO} --config {self.config_file.name} assets fetch {test_file.name} "
+        cmd_line = (f"{AVOCADO} --config {self.config_file.name} "
+                    f"assets fetch {test_file.name} ")
         result = process.run(cmd_line, ignore_status=True)
         os.remove(test_file.name)
 
@@ -244,10 +248,12 @@ class AssetsPlugin(unittest.TestCase):
         test_file.write(test_content.encode())
         test_file.close()
 
-        expected_stderr = f"No such file or file not supported: {test_file.name}\n"
+        expected_stderr = (f"No such file or file not supported: "
+                           f"{test_file.name}\n")
         expected_rc = exit_codes.AVOCADO_FAIL
 
-        cmd_line = f"{AVOCADO} --config {self.config_file.name} assets fetch {test_file.name} "
+        cmd_line = (f"{AVOCADO} --config {self.config_file.name} "
+                    f"assets fetch {test_file.name} ")
         result = process.run(cmd_line, ignore_status=True)
         os.remove(test_file.name)
 
@@ -272,7 +278,8 @@ class AssetsPlugin(unittest.TestCase):
         expected_stderr = "Failed to fetch hello-2.9.tar.gz"
         expected_rc = exit_codes.AVOCADO_FAIL
 
-        cmd_line = f"{AVOCADO} --config {self.config_file.name} assets fetch {test_file.name} "
+        cmd_line = (f"{AVOCADO} --config {self.config_file.name} "
+                    f"assets fetch {test_file.name} ")
         result = process.run(cmd_line, ignore_status=True)
         os.remove(test_file.name)
 

@@ -15,7 +15,8 @@ class ReplayTests(TestCaseTmpDir):
                     f'examples/tests/passtest.py '
                     f'examples/tests/passtest.py '
                     f'examples/tests/passtest.py '
-                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo --json -')
+                    f'--job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo --json -')
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
         self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
@@ -34,7 +35,8 @@ class ReplayTests(TestCaseTmpDir):
     def run_and_check(self, cmd_line, expected_rc):
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
-                         f"Command {cmd_line} did not return rc {expected_rc}:\n{result}")
+                         (f"Command {cmd_line} did not return rc "
+                          f"{expected_rc}:\n{result}"))
         return result
 
     def test_run_replay_noid(self):
@@ -67,7 +69,8 @@ class ReplayTests(TestCaseTmpDir):
         """
         Runs a replay job.
         """
-        cmd_line = f'{AVOCADO} --config={self.config_path} replay {self.jobdir}'
+        cmd_line = (f'{AVOCADO} --config={self.config_path} '
+                    f'replay {self.jobdir}')
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 

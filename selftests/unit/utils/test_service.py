@@ -68,7 +68,8 @@ class TestSystemd(unittest.TestCase):
                                        '--type=service', '--no-pager',
                                        '--full'])
             else:
-                self.assertEqual(ret, ["systemctl", cmd, f"{self.service_name}.service"])
+                self.assertEqual(ret, ["systemctl", cmd,
+                                       f"{self.service_name}.service"])
 
     def test_set_target(self):
         ret = getattr(

@@ -54,7 +54,8 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
 
         self.assertIsNotNone(log_dir)
         job = job_id.create_unique_job_id()
-        cmd_line = f'{AVOCADO} run --disable-sysinfo --force-job-id={job} {complement_args}'
+        cmd_line = (f'{AVOCADO} run --disable-sysinfo '
+                    f'--force-job-id={job} {complement_args}')
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc {expected_rc}:\n{result}')

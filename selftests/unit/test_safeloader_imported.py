@@ -51,7 +51,8 @@ class SymbolAndModulePathCommon(unittest.TestCase):
         msg = f'Expected symbol name "{input_symbol}", found "{symbol}"'
         self.assertEqual(symbol, input_symbol, msg)
         module_path = ImportedSymbol.get_module_path_from_statement(statement)
-        msg = f'Expected module path "{input_module_path}", found "{module_path}"'
+        msg = (f'Expected module path "{input_module_path}", '
+               f'found "{module_path}"')
         self.assertEqual(module_path, input_module_path, msg)
         imported_symbol = ImportedSymbol(module_path, symbol)
         self.assertEqual(imported_symbol,
