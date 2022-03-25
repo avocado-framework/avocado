@@ -51,13 +51,11 @@ class TestClassTestUnit(unittest.TestCase):
     def test_ugly_name(self):
         def run(name, path_name):
             """ Initialize test and check the dirs were created """
-            config = {"run.test_runner": 'runner'}
             tst = self.DummyTest("test", TestID(1, name),
-                                 base_logdir=self.tmpdir.name,
-                                 config=config)
-            self.assertEqual(os.path.basename(tst.logdir), path_name)
-            self.assertTrue(os.path.exists(tst.logdir))
-            self.assertEqual(os.path.dirname(os.path.dirname(tst.logdir)),
+                                 base_logdir=self.tmpdir.name)
+            self.assertEqual(os.path.basename(tst.workdir), path_name)
+            self.assertTrue(os.path.exists(tst.workdir))
+            self.assertEqual(os.path.dirname(os.path.dirname(tst.workdir)),
                              self.tmpdir.name)
 
         run("/absolute/path", "1-_absolute_path")
@@ -78,11 +76,9 @@ class TestClassTestUnit(unittest.TestCase):
 
     def test_long_name(self):
         def check(uid, name, variant, exp_logdir):
-            config = {"run.test_runner": 'runner'}
             tst = self.DummyTest("test", TestID(uid, name, variant),
-                                 base_logdir=self.tmpdir.name,
-                                 config=config)
-            self.assertEqual(os.path.basename(tst.logdir), exp_logdir)
+                                 base_logdir=self.tmpdir.name)
+            self.assertEqual(os.path.basename(tst.workdir), exp_logdir)
             return tst
 
         # Everything fits
@@ -94,15 +90,9 @@ class TestClassTestUnit(unittest.TestCase):
         # Shrink variant
         check("a" * 253, "whatever", {"variant_id": 99}, "a" * 253 + "_9")
         check("a" * 254, "whatever", {"variant_id": 99}, "a" * 254 + "_")
-        # No variant
-        tst = check("a" * 255, "whatever", {"variant_id": "whatever-else"},
-                    "a" * 255)
         # Impossible to store (uid does not fit
         self.assertRaises(RuntimeError, check, "a" * 256, "whatever",
                           {"variant_id": "else"}, None)
-
-        self.assertEqual(os.path.basename(tst.workdir),
-                         os.path.basename(tst.logdir))
 
     def test_data_dir(self):
         """
