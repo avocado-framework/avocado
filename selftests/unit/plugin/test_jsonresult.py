@@ -55,8 +55,8 @@ class JSONResultTest(TestCaseTmpDir):
             self.test_result.check_test(status)
 
         def check_item(name, value, exp):
-            self.assertEqual(value, exp, "Result%s is %s and not %s\n%s"
-                             % (name, value, exp, res))
+            self.assertEqual(value, exp,
+                             f"Result{name} is {value} and not {exp}\n{res}")
 
         # Set the number of tests to all tests + 3
         self.test_result.tests_total = 13
@@ -89,8 +89,8 @@ class JSONResultTest(TestCaseTmpDir):
 
     def test_negative_status(self):
         def check_item(name, value, exp):
-            self.assertEqual(value, exp, "Result%s is %s and not %s\n%s"
-                             % (name, value, exp, res))
+            self.assertEqual(value, exp,
+                             f"Result{name} is {value} and not {exp}\n{res}")
 
         self.test_result.tests_total = 0
         self.test_result.start_test(self.test1)

@@ -20,12 +20,12 @@ class ProcessSpawnerTest(TestCaseTmpDir):
         test = script.Script(os.path.join(self.tmpdir.name, "logdir_test.py"),
                              TEST_LOGDIR)
         test.save()
-        result = process.run("%s run --job-results-dir %s --disable-sysinfo "
-                             "--json - -- %s" % (AVOCADO, self.tmpdir.name,
-                                                 test))
+        result = process.run(f"{AVOCADO} run "
+                             f"--job-results-dir {self.tmpdir.name}"
+                             f"--disable-sysinfo --json - -- {test}")
         res = json.loads(result.stdout_text)
         logfile = res["tests"][0]["logfile"]
         testdir = res["tests"][0]["logdir"]
         with open(logfile, 'r', encoding='utf-8') as debug_file:
-            expected = "logdir is: %s" % testdir
+            expected = f"logdir is: {testdir}"
             self.assertIn(expected, debug_file.read())

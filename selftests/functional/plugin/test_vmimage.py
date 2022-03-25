@@ -17,7 +17,7 @@ def missing_binary(binary):
 
 def create_metadata_file(image_file, metadata):
     basename = os.path.splitext(image_file)[0]
-    metadata_file = "%s_metadata.json" % basename
+    metadata_file = f"{basename}_metadata.json"
     metadata = json.dumps(metadata)
     with open(metadata_file, "w", encoding='utf-8') as f:
         f.write(metadata)
@@ -38,14 +38,14 @@ class VMImagePlugin(unittest.TestCase):
                                  '89b7a3293bbc1dd73bb143b15fa06f0f9c7188b8')
         os.makedirs(image_dir)
         open(os.path.join(image_dir, expected_output), "w", encoding='utf-8').close()
-        cmd_line = "%s --config %s vmimage get --distro fedora --distro-version " \
-                   "30 --arch x86_64" % (AVOCADO, self.config_file.name)
+        cmd_line = (f"{AVOCADO} --config {self.config_file.name} vmimage "
+                    f"get --distro fedora --distro-version 30 --arch x86_64")
         result = process.run(cmd_line)
         self.assertIn(expected_output, result.stdout_text)
 
     def test_download_image_fail(self):
-        cmd_line = "%s --config %s vmimage get --distro=SHOULD_NEVER_EXIST " \
-                   "999 --arch zzz_64" % (AVOCADO, self.config_file.name)
+        cmd_line = (f"{AVOCADO} --config {self.config_file.name} vmimage "
+                    f"get --distro=SHOULD_NEVER_EXIST 999 --arch zzz_64")
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
 
@@ -59,8 +59,7 @@ class VMImagePlugin(unittest.TestCase):
         expected_file = os.path.join(image_dir, expected_output)
         open(expected_file, "w", encoding='utf-8').close()
         create_metadata_file(expected_file, metadata)
-        cmd_line = "%s --config %s vmimage list" % (AVOCADO,
-                                                    self.config_file.name)
+        cmd_line = f"{AVOCADO} --config {self.config_file.name} vmimage list"
         result = process.run(cmd_line)
         self.assertIn(expected_output, result.stdout_text)
 

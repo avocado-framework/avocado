@@ -19,7 +19,7 @@ class TestAsset(TestCaseTmpDir):
         self.localpath = os.path.join(self.assetdir, self.assetname)
         with open(self.localpath, 'w', encoding='utf-8') as f:
             f.write('Test!')
-        self.url = 'file://%s' % self.localpath
+        self.url = f'file://{self.localpath}'
         self.cache_dir = tempfile.mkdtemp(dir=self.tmpdir.name)
 
     def test_fetch_url_cache_by_location(self):
@@ -69,7 +69,7 @@ class TestAsset(TestCaseTmpDir):
         new_assetdir = tempfile.mkdtemp(dir=self.tmpdir.name)
         new_localpath = os.path.join(new_assetdir, self.assetname)
         new_hash = '9f1ad57044be4799f288222dc91d5eab152921e9'
-        new_url = 'file://%s' % new_localpath
+        new_url = f'file://{new_localpath}'
         with open(new_localpath, 'w', encoding='utf-8') as f:
             f.write('Changed!')
 
@@ -127,7 +127,7 @@ class TestAsset(TestCaseTmpDir):
         second_asset_content = 'This is not your first asset content!'
         with open(second_asset_local_path, 'w', encoding='utf-8') as f:
             f.write(second_asset_content)
-        second_asset_origin_url = 'file://%s' % second_asset_local_path
+        second_asset_origin_url = f'file://{second_asset_local_path}'
 
         a1 = asset.Asset(self.url, self.assethash, 'sha1', None,
                          [self.cache_dir], None)
@@ -145,7 +145,7 @@ class TestAsset(TestCaseTmpDir):
         third_asset_content = 'Another content!'
         with open(third_asset_local_path, 'w', encoding='utf-8') as f:
             f.write(third_asset_content)
-        third_asset_origin_url = 'file://%s' % third_asset_local_path
+        third_asset_origin_url = f'file://{third_asset_local_path}'
         a3 = asset.Asset(third_asset_origin_url, None, None,
                          None, [self.cache_dir], None)
         a3_path = a3.fetch()
@@ -161,7 +161,7 @@ class TestAsset(TestCaseTmpDir):
                                   cache_dirs=[self.cache_dir],
                                   expire=None,
                                   metadata=expected_metadata).fetch()
-        expected_file = "%s_metadata.json" % os.path.splitext(foo_tarball)[0]
+        expected_file = f"{os.path.splitext(foo_tarball)[0]}_metadata.json"
         self.assertTrue(os.path.exists(expected_file))
 
     def test_get_metadata_file_exists(self):

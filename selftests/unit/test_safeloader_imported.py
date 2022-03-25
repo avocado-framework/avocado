@@ -48,12 +48,11 @@ class SymbolAndModulePathCommon(unittest.TestCase):
         """Checks all but to_str(), returning the imported_symbol instance."""
         statement = ast.parse(input_statement).body[0]
         symbol = ImportedSymbol.get_symbol_from_statement(statement)
-        msg = 'Expected symbol name "%s", found "%s"' % (input_symbol,
-                                                         symbol)
+        msg = f'Expected symbol name "{input_symbol}", found "{symbol}"'
         self.assertEqual(symbol, input_symbol, msg)
         module_path = ImportedSymbol.get_module_path_from_statement(statement)
-        msg = 'Expected module path "%s", found "%s"' % (input_module_path,
-                                                         module_path)
+        msg = (f'Expected module path "{input_module_path}", '
+               f'found "{module_path}"')
         self.assertEqual(module_path, input_module_path, msg)
         imported_symbol = ImportedSymbol(module_path, symbol)
         self.assertEqual(imported_symbol,

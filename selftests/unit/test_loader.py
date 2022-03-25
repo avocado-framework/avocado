@@ -131,9 +131,10 @@ class SampleTest(TestCase):
 class LoaderTest(unittest.TestCase):
 
     def _check_discovery(self, exps, tests):
-        self.assertEqual(len(exps), len(tests), "Total count of tests not "
-                         "as expected (%s != %s)\nexps: %s\ntests: %s"
-                         % (len(exps), len(tests), exps, tests))
+        self.assertEqual(len(exps), len(tests),
+                         (f'Total count of tests not '
+                          f'as expected ({len(exps)} != {len(tests)}) '
+                          f'\nexps: {exps}\ntests: {tests}'))
         try:
             for exp, tst in zip(exps, tests):
                 # Test class
@@ -143,8 +144,7 @@ class LoaderTest(unittest.TestCase):
                 self.assertEqual(os.path.abspath(tst[1]['name']),
                                  os.path.abspath(exp[1]))
         except AssertionError as details:
-            raise AssertionError("%s\nexps: %s\ntests:%s"
-                                 % (details, exps, tests))
+            raise AssertionError(f"{details}\nexps: {exps}\ntests:{tests}")
 
     def setUp(self):
         self.loader = loader.FileLoader(None, {})

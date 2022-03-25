@@ -275,8 +275,8 @@ class Base(TestCaseTmpDir):
                     'run',
                     '--disable-sysinfo',
                     '--job-results-dir',
-                    '%s' % self.tmpdir.name,
-                    '%s' % os.path.join(self.tmpdir.name, self.SCRIPT_TO_EXEC),
+                    f'{self.tmpdir.name}',
+                    f'{os.path.join(self.tmpdir.name, self.SCRIPT_TO_EXEC)}',
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -380,8 +380,8 @@ class SkipTearDown(Base):
                     'run',
                     '--disable-sysinfo',
                     '--job-results-dir',
-                    '%s' % self.tmpdir.name,
-                    '%s' % os.path.join(self.tmpdir.name, self.SCRIPT_TO_EXEC),
+                    f'{self.tmpdir.name}',
+                    f'{os.path.join(self.tmpdir.name, self.SCRIPT_TO_EXEC)}',
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL)

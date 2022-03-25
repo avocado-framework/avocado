@@ -67,7 +67,7 @@ class TestUnpickableObject(unittest.TestCase):
             act = stacktrace.str_unpickable_object(obj)
             for exp in exps:
                 if not re.search(exp, act):
-                    self.fail("%r no match in:\n%s" % (exp, act))
+                    self.fail(f"{exp!r} no match in:\n{act}")
         check(["this => .*Unpickable"], Unpickable())
         check([r"this\[0\]\[0\]\[foo\]\.troublemaker => .*Unpickable"],
               [[{"foo": InClassUnpickable()}]])

@@ -75,7 +75,7 @@ class AvocadoInstrumented(unittest.TestCase):
     def test_passtest(self):
         passtest = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
         test = 'PassTest.test'
-        uri = '%s:%s' % (passtest, test)
+        uri = f'{passtest}:{test}'
         res = AvocadoInstrumentedResolver().resolve(passtest)
         self.assertEqual(res.reference, passtest)
         self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
@@ -92,7 +92,7 @@ class AvocadoInstrumented(unittest.TestCase):
     def test_passtest_filter_found(self):
         passtest = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
         test_filter = 'test'
-        reference = '%s:%s' % (passtest, test_filter)
+        reference = f'{passtest}:{test_filter}'
         res = AvocadoInstrumentedResolver().resolve(reference)
         self.assertEqual(res.reference, reference)
         self.assertEqual(res.result, resolver.ReferenceResolutionResult.SUCCESS)
@@ -101,7 +101,7 @@ class AvocadoInstrumented(unittest.TestCase):
     def test_passtest_filter_notfound(self):
         passtest = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
         test_filter = 'test_other'
-        reference = '%s:%s' % (passtest, test_filter)
+        reference = f'{passtest}:{test_filter}'
         res = AvocadoInstrumentedResolver().resolve(reference)
         self.assertEqual(res.reference, reference)
         self.assertEqual(res.result, resolver.ReferenceResolutionResult.NOTFOUND)
@@ -156,7 +156,7 @@ class PythonUnittest(unittest.TestCase):
         resolution = res.resolutions[0]
         self.assertEqual(resolution.kind, 'python-unittest')
         self.assertEqual(resolution.uri,
-                         "%s:%s" % (python_unittest.path, "SampleTest.test"))
+                         f"{python_unittest.path}:{'SampleTest.test'}")
         self.assertEqual(resolution.args, ())
         self.assertEqual(resolution.kwargs, {})
         self.assertEqual(resolution.tags, {"flattag": None, "foo": {"bar"}})
@@ -164,7 +164,7 @@ class PythonUnittest(unittest.TestCase):
     def test_dont_detect_non_avocado(self):
         def _check_resolution(resolution, name):
             self.assertEqual(resolution.kind, 'python-unittest')
-            self.assertEqual(resolution.uri, "%s:%s" % (path, name))
+            self.assertEqual(resolution.uri, f"{path}:{name}")
             self.assertEqual(resolution.args, ())
             self.assertEqual(resolution.kwargs, {})
             self.assertEqual(resolution.tags, {})

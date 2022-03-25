@@ -45,56 +45,48 @@ class WrapperTest(TestCaseTmpDir):
                      "C compiler is required by the underlying datadir.py test")
     def test_global_wrapper(self):
         os.chdir(BASEDIR)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --wrapper %s '
-                    '--test-runner=runner '
-                    'examples/tests/datadir.py'
-                    % (AVOCADO, self.tmpdir.name, self.script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo --wrapper {self.script.path} '
+                    f'--test-runner=runner examples/tests/datadir.py')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
         self.assertTrue(os.path.exists(self.tmpfile),
-                        "Wrapper did not touch the tmp file %s\nStdout: "
-                        "%s\nCmdline: %s" %
-                        (self.tmpfile, result.stdout, cmd_line))
+                        (f"Wrapper did not touch the tmp file {self.tmpfile}\n"
+                         f"Stdout: {result.stdout}\nCmdline: {cmd_line}"))
 
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying datadir.py test")
     def test_process_wrapper(self):
         os.chdir(BASEDIR)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '--test-runner=runner '
-                    '--wrapper %s:*/datadir examples/tests/datadir.py'
-                    % (AVOCADO, self.tmpdir.name, self.script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo --test-runner=runner --wrapper '
+                    f'{self.script.path}:*/datadir examples/tests/datadir.py')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
         self.assertTrue(os.path.exists(self.tmpfile),
-                        "Wrapper did not touch the tmp file %s\nStdout: "
-                        "%s\nStdout: %s" %
-                        (self.tmpfile, cmd_line, result.stdout))
+                        (f"Wrapper did not touch the tmp file {self.tmpfile}\n"
+                         f"Stdout: {cmd_line}\nStdout: {result.stdout}"))
 
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying datadir.py test")
     def test_both_wrappers(self):
         os.chdir(BASEDIR)
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo --wrapper %s '
-                    '--test-runner=runner '
-                    '--wrapper %s:*/datadir examples/tests/datadir.py'
-                    % (AVOCADO, self.tmpdir.name, self.dummy.path,
-                       self.script.path))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo '
+                    f'--wrapper {self.dummy.path} --test-runner=runner '
+                    f'--wrapper '
+                    f'{self.script.path}:*/datadir examples/tests/datadir.py')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
         self.assertTrue(os.path.exists(self.tmpfile),
-                        "Wrapper did not touch the tmp file %s\nStdout: "
-                        "%s\nStdout: %s" %
-                        (self.tmpfile, cmd_line, result.stdout))
+                        (f"Wrapper did not touch the tmp file {self.tmpfile}\n"
+                         f"Stdout: {cmd_line}\nStdout: {result.stdout}"))
 
     def tearDown(self):
         super().tearDown()

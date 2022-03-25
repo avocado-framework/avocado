@@ -68,8 +68,8 @@ class TestSystemd(unittest.TestCase):
                                        '--type=service', '--no-pager',
                                        '--full'])
             else:
-                self.assertEqual(ret, ["systemctl", cmd, "%s.service" %
-                                       self.service_name])
+                self.assertEqual(ret, ["systemctl", cmd,
+                                       f"{self.service_name}.service"])
 
     def test_set_target(self):
         ret = getattr(
@@ -142,13 +142,13 @@ class TestSpecificServiceManager(unittest.TestCase):
     def test_start(self):
         srv = "lldpad"
         self.service_manager.start()
-        cmd = "service boot.%s start" % srv
+        cmd = f"service boot.{srv} start"
         self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_stop_with_args(self):
         srv = "lldpad"
         self.service_manager.stop(ignore_status=True)
-        cmd = "service boot.%s stop" % srv
+        cmd = f"service boot.{srv} stop"
         self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_list_is_not_present_in_SpecifcServiceManager(self):
@@ -181,7 +181,7 @@ class TestSystemdServiceManager(unittest.TestCase):
     def test_start(self):
         srv = "lldpad"
         self.service_manager.start(srv)
-        cmd = ("systemctl start %s.service" % srv)
+        cmd = f"systemctl start {srv}.service"
         self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_list(self):
@@ -243,7 +243,7 @@ class TestSysVInitServiceManager(unittest.TestCase):
     def test_start(self):
         srv = "lldpad"
         self.service_manager.start(srv)
-        cmd = ("service %s start" % srv)
+        cmd = f"service {srv} start"
         self.assertEqual(self.run_mock.call_args[0][0], cmd)  # pylint: disable=E1136
 
     def test_list(self):

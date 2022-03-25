@@ -32,7 +32,7 @@ class Base(Test):
                                default=self.DEFAULTS.get('arch'))
         # Distros may use slightly different values for their architecture names.
         # For instance, Cirros ppc images are called powerpc, so we look
-        distro_arch_path = '/run/distro/%s/%s/*' % (self.vmimage_name, arch)
+        distro_arch_path = f'/run/distro/{self.vmimage_name}/{arch}/*'
         self.vmimage_arch = self.params.get('arch', path=distro_arch_path, default=arch)
 
 

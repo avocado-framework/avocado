@@ -5,7 +5,7 @@ import unittest
 from avocado.utils import process
 from selftests.utils import BASEDIR
 
-RUNNER = "%s -m avocado.core.runners.requirement_asset" % sys.executable
+RUNNER = f"{sys.executable} -m avocado.core.runners.requirement_asset"
 
 
 class RunnableRun(unittest.TestCase):
@@ -14,7 +14,7 @@ class RunnableRun(unittest.TestCase):
                     'Skipping to run on CI only.')
 
     def test_no_kwargs(self):
-        res = process.run("%s runnable-run -k asset" % RUNNER,
+        res = process.run(f"{RUNNER} runnable-run -k asset",
                           ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
@@ -26,8 +26,8 @@ class RunnableRun(unittest.TestCase):
     def test_fetch(self):
         name = 'name=gpl-2.0.txt'
         locations = 'locations=https://mirrors.kernel.org/gnu/Licenses/gpl-2.0.txt'
-        res = process.run("%s runnable-run -k asset %s %s"
-                          % (RUNNER, name, locations), ignore_status=True)
+        res = process.run(f"{RUNNER} runnable-run -k asset {name} {locations}",
+                          ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'time': ", res.stdout)
@@ -40,7 +40,7 @@ class RunnableRun(unittest.TestCase):
         recipe = os.path.join(BASEDIR, "examples", "nrunner",
                               "recipes", "runnables",
                               "requirement_asset.json")
-        cmd = "%s runnable-run-recipe %s" % (RUNNER, recipe)
+        cmd = f"{RUNNER} runnable-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
         self.assertIn(b"'status': 'finished'", res.stdout)
@@ -51,8 +51,8 @@ class RunnableRun(unittest.TestCase):
 class TaskRun(unittest.TestCase):
 
     def test_no_kwargs(self):
-        res = process.run("%s task-run -i XXXreq-pacXXX -k asset"
-                          % RUNNER, ignore_status=True)
+        res = process.run(f"{RUNNER} task-run -i XXXreq-pacXXX -k asset",
+                          ignore_status=True)
         self.assertIn(b"'status': 'finished'", res.stdout)
         self.assertIn(b"'result': 'error'", res.stdout)
         self.assertIn(b"'id': 'XXXreq-pacXXX'", res.stdout)

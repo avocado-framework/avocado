@@ -104,17 +104,16 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        bad_test_basename = ('wontquit-%s' %
-                             data_factory.generate_random_string(5))
+        bad_test_basename = \
+            f'wontquit-{data_factory.generate_random_string(5)}'
         bad_test = script.TemporaryScript(bad_test_basename, BAD_TEST,
                                           'avocado_interrupt_test',
                                           mode=DEFAULT_MODE)
         bad_test.save()
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s '
-               '--test-runner=runner'
-               % (AVOCADO, self.test_module, self.tmpdir.name))
+        cmd = (f'{AVOCADO} run {self.test_module} --disable-sysinfo '
+               f'--job-results-dir {self.tmpdir.name} --test-runner=runner')
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
@@ -153,16 +152,16 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        bad_test_basename = ('wontquit-%s' %
-                             data_factory.generate_random_string(5))
+        bad_test_basename = \
+            f'wontquit-{data_factory.generate_random_string(5)}'
         bad_test = script.TemporaryScript(bad_test_basename, BAD_TEST,
                                           'avocado_interrupt_test',
                                           mode=DEFAULT_MODE)
         bad_test.save()
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
-               (AVOCADO, self.test_module, self.tmpdir.name))
+        cmd = (f'{AVOCADO} run {self.test_module} --disable-sysinfo '
+               f'--job-results-dir {self.tmpdir.name} ')
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
@@ -193,16 +192,16 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        good_test_basename = ('goodtest-%s.py' %
-                              data_factory.generate_random_string(5))
+        good_test_basename = \
+            f'goodtest-{data_factory.generate_random_string(5)}.py'
         good_test = script.TemporaryScript(good_test_basename, GOOD_TEST,
                                            'avocado_interrupt_test',
                                            mode=DEFAULT_MODE)
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run --test-runner=runner %s --disable-sysinfo --job-results-dir %s ' %
-               (AVOCADO, self.test_module, self.tmpdir.name))
+        cmd = (f'{AVOCADO} run --test-runner=runner {self.test_module} '
+               f'--disable-sysinfo --job-results-dir {self.tmpdir.name} ')
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
@@ -237,16 +236,16 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        good_test_basename = ('goodtest-%s.py' %
-                              data_factory.generate_random_string(5))
+        good_test_basename = \
+            f'goodtest-{data_factory.generate_random_string(5)}.py'
         good_test = script.TemporaryScript(good_test_basename, GOOD_TEST,
                                            'avocado_interrupt_test',
                                            mode=DEFAULT_MODE)
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = ('%s run %s --disable-sysinfo --job-results-dir %s ' %
-               (AVOCADO, self.test_module, self.tmpdir.name))
+        cmd = (f'{AVOCADO} run {self.test_module} --disable-sysinfo '
+               f'--job-results-dir {self.tmpdir.name} ')
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)

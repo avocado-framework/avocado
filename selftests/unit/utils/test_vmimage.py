@@ -34,15 +34,15 @@ class VMImageHtmlParser(unittest.TestCase):
 
     def test_handle_starttag_with_a_pattern_match(self):
         version = '12'
-        self.parser.feed('<html><head><title>Test</title></head>'
+        self.parser.feed('<html><head><title>Test</title></head>'  # pylint: disable=C0209
                          '<body><a href="%s/" /></body></html>' % version)
         self.assertTrue(self.parser.items)
         self.assertEqual(self.parser.items[0], version)
 
     def test_handle_starttag_with_a_pattern_match_multiple(self):
         versions = ['12', '13', '14']
-        links = ['<a href="%s/" />' % version for version in versions]
-        html = ('<html><head><title>Test</title></head>'
+        links = [f'<a href="{version}/" />' for version in versions]
+        html = ('<html><head><title>Test</title></head>'  # pylint: disable=C0209
                 '<body>%s</body></html>' % ''.join(links))
         self.parser.feed(html)
         self.assertTrue(self.parser.items)
@@ -54,7 +54,7 @@ class ImageProviderBase(unittest.TestCase):
     @staticmethod
     def get_html_with_versions(versions):
         html = '<html><head><title>Test</title></head><body>%s</body></html>'
-        return html % ''.join(['<a href="%s/" />' % v for v in versions])
+        return html % ''.join([f'<a href="{v}/" />' for v in versions])
 
     @unittest.mock.patch('avocado.utils.vmimage.urlopen')
     def test_get_version(self, urlopen_mock):
@@ -409,6 +409,7 @@ class OpenSUSEImageProvider(unittest.TestCase):
 
     @staticmethod
     def get_html_with_image_link(image_link):
+        # pylint: disable=C0209
         return '''
             <a href="openSUSE-Leap-15.0-OpenStack.x86_64-0.0.4-Buildlp150.12.30.packages"></a>
             <a href="%s"></a>
@@ -509,8 +510,7 @@ class FedoraImageProvider(unittest.TestCase):
         urlopen_mock.return_value = unittest.mock.Mock(read=urlread_mocked)
         provider = vmimage.FedoraImageProvider(expected_version, expected_build,
                                                expected_arch)
-        image = "Fedora-Cloud-Base-%s-%s.%s.qcow2" % (expected_version, expected_build,
-                                                      expected_arch)
+        image = f"Fedora-Cloud-Base-{expected_version}-{expected_build}.{expected_arch}.qcow2"
         parameters = provider.get_image_parameters(image)
         self.assertEqual(expected_version, parameters['version'])
         self.assertEqual(expected_build, parameters['build'])

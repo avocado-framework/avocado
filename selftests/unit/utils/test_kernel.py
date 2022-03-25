@@ -17,7 +17,7 @@ class TestKernelBuild(unittest.TestCase):
 
     def test_build_overrided_url(self):
         base_url = 'https://mykernel.com/'
-        expected_url = '{}linux-4.4.133.tar.gz'.format(base_url)
+        expected_url = f'{base_url}linux-4.4.133.tar.gz'
         self.assertEqual(self.kernel._build_kernel_url(base_url=base_url), expected_url)
 
     def tearDown(self):

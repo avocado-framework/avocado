@@ -11,7 +11,7 @@ class Path(unittest.TestCase):
                                  return_value=False) as mocked_exists:
             with self.assertRaises(OSError) as cm:
                 path.check_readable(os.devnull)
-            self.assertEqual('File "%s" does not exist' % os.devnull,
+            self.assertEqual(f'File "{os.devnull}" does not exist',
                              cm.exception.args[0])
             mocked_exists.assert_called_with(os.devnull)
 
@@ -20,7 +20,7 @@ class Path(unittest.TestCase):
                                  return_value=False) as mocked_access:
             with self.assertRaises(OSError) as cm:
                 path.check_readable(os.devnull)
-            self.assertEqual('File "%s" can not be read' % os.devnull,
+            self.assertEqual(f'File "{os.devnull}" can not be read',
                              cm.exception.args[0])
             mocked_access.assert_called_with(os.devnull, os.R_OK)
 

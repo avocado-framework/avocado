@@ -116,7 +116,7 @@ class JobAPIFeaturesTest(Test):
 
         # Asserts
         self.check_exit_code(result)
-        archive_path = '%s.zip' % logdir
+        archive_path = f'{logdir}.zip'
         self.check_file_exists(archive_path)
 
     def test_check_category_directory_exists(self):
@@ -237,7 +237,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     suites = []
 
     def get_ref(method_short_name):
-        return ['%s:JobAPIFeaturesTest.test_%s' % (__file__, method_short_name)]
+        return [f'{__file__}:JobAPIFeaturesTest.test_{method_short_name}']
 
     # ========================================================================
     # Test if the archive file was created
@@ -253,7 +253,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     }
 
     suites.append(TestSuite.from_config(config_check_archive_file_exists,
-                                        "job-api-%s" % (len(suites) + 1)))
+                                        f"job-api-{len(suites) + 1}"))
 
     # ========================================================================
     # Test if the category directory was created
@@ -269,7 +269,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     }
 
     suites.append(TestSuite.from_config(config_check_category_directory_exists,
-                                        "job-api-%s" % (len(suites) + 1)))
+                                        f"job-api-{len(suites) + 1}"))
 
     # ========================================================================
     # Test if a directory was created
@@ -291,7 +291,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     }
 
     suites.append(TestSuite.from_config(config_check_directory_exists,
-                                        "job-api-%s" % (len(suites) + 1)))
+                                        f"job-api-{len(suites) + 1}"))
 
     # ========================================================================
     # Test the content of a file
@@ -372,7 +372,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     }
 
     suites.append(TestSuite.from_config(config_check_file_content,
-                                        "job-api-%s" % (len(suites) + 1)))
+                                        f"job-api-{len(suites) + 1}"))
 
     # ========================================================================
     # Test if the result file was created
@@ -450,7 +450,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
              'assert': False})
 
     suites.append(TestSuite.from_config(config_check_file_exists,
-                                        "job-api-%s" % (len(suites) + 1)))
+                                        f"job-api-{len(suites) + 1}"))
 
     # ========================================================================
     # Test if a file was created
@@ -483,7 +483,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
              'assert': True})
 
     suites.append(TestSuite.from_config(config_check_output_file,
-                                        "job-api-%s" % (len(suites) + 1)))
+                                        f"job-api-{len(suites) + 1}"))
 
     # ========================================================================
     # Test if the temporary directory was created
@@ -499,7 +499,7 @@ def create_suite_job_api(args):  # pylint: disable=W0621
     }
 
     suites.append(TestSuite.from_config(config_check_tmp_directory_exists,
-                                        "job-api-%s" % (len(suites) + 1)))
+                                        f"job-api-{len(suites) + 1}"))
     return suites
 
 
@@ -605,7 +605,7 @@ def create_suites(args):  # pylint: disable=W0621
         for optional_plugin in glob.glob('optional_plugins/*'):
             plugin_name = os.path.basename(optional_plugin)
             if plugin_name not in args.disable_plugin_checks:
-                pattern = '%s/tests/*' % optional_plugin
+                pattern = f'{optional_plugin}/tests/*'
                 config_check_optional['resolver.references'] += glob.glob(pattern)
 
         suites.append(TestSuite.from_config(config_check_optional,
@@ -645,7 +645,7 @@ def main(args):  # pylint: disable=W0621
                     features.append(variants['namespace'])
 
         unique_features = sorted(set(features))
-        print('Features covered (%i):' % len(unique_features))
+        print(f'Features covered ({len(unique_features)}):')
         print('\n'.join(unique_features))
         exit(0)
 
