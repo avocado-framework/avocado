@@ -40,7 +40,7 @@ class EnvironmentVariablesTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc {expected_rc}:\n{result}")
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
 
     def tearDown(self):
         super().tearDown()
