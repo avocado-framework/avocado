@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import exceptions, test
+from avocado.core import test
 from avocado.core.test_id import TestID
 from avocado.utils import script
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
@@ -111,13 +111,6 @@ class TestClassTestUnit(unittest.TestCase):
         tst = self._get_fake_filename_test(above_limit_name)
         self.assertFalse(tst.get_data('', 'file', False))
 
-    def test_all_dirs_exists_no_hang(self):
-        config = {"run.test_runner": 'runner'}
-        with unittest.mock.patch('os.path.exists', return_value=True):
-            self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
-                              TestID(1, "name"), base_logdir=self.tmpdir.name,
-                              config=config)
-
     def test_try_override_test_variable(self):
         dummy_test = self.DummyTest(base_logdir=self.tmpdir.name)
         self.assertRaises(AttributeError, setattr, dummy_test, "name", "whatever")
@@ -191,16 +184,6 @@ class TestClassTest(unittest.TestCase):
         with open(whiteboard_file, 'r', encoding='utf-8') as whiteboard_file_obj:
             whiteboard_contents = whiteboard_file_obj.read().strip()
             self.assertTrue(whiteboard_contents, 'foo')
-
-    def test_running_test_twice_with_the_same_uid_failure(self):
-        class AvocadoPass(test.Test):
-
-            def test(self):
-                pass
-
-        config = {"run.test_runner": 'runner'}
-        self.assertRaises(exceptions.TestSetupFail, AvocadoPass,
-                          base_logdir=self.base_logdir.name, config=config)
 
     def tearDown(self):
         self.base_logdir.cleanup()
