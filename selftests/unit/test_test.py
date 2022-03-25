@@ -170,11 +170,9 @@ class TestClassTest(unittest.TestCase):
                 self.assertTrue(variable)
                 self.whiteboard = 'foo'
 
-        config = {"run.test_runner": 'runner'}
         prefix = temp_dir_prefix(self)
         self.base_logdir = tempfile.TemporaryDirectory(prefix=prefix)
-        self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir.name,
-                                             config=config)
+        self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir.name)
         self.tst_instance_pass.run_avocado()
 
     def test_class_attributes_name(self):
