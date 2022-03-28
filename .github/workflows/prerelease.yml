@@ -69,7 +69,7 @@ jobs:
     container:
       image: fedora:36
     env:
-      GIT_URL: 'git://github.com/avocado-framework/avocado'
+      GIT_URL: 'https://github.com/avocado-framework/avocado'
       INVENTORY: 'selftests/deployment/inventory'
       PLAYBOOK: 'selftests/deployment/deployment.yml'
     steps:
