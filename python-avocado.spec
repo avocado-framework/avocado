@@ -25,6 +25,13 @@
 # You can disable them with rpmbuild ... --without tests
 %bcond_without tests
 
+# EL 8 (but not EL 9) and the Fedoras have python3-resultsdb_api
+%if 0%{?rhel} <= 8 || 0%{?fedora}
+%global with_resultsdb 1
+%else
+%global with_resultsdb 0
+%endif
+
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 95.0
@@ -47,7 +54,7 @@ BuildRequires: python3-lxml
 BuildRequires: python3-psutil
 BuildRequires: python3-setuptools
 
-%if 0%{?fedora} > 35
+%if %{with_resultsdb}
 BuildRequires: python3-resultsdb_api
 %endif
 
@@ -102,12 +109,10 @@ sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to
 pushd optional_plugins/html
 %py3_build
 popd
-%if ! 0%{?rhel}
-%if ! 0%{?fedora} > 35
+%if %{with_resultsdb}
 pushd optional_plugins/resultsdb
 %py3_build
 popd
-%endif
 %endif
 pushd optional_plugins/varianter_yaml_to_mux
 %py3_build
@@ -132,12 +137,10 @@ mv %{buildroot}%{python3_sitelib}/avocado/etc %{buildroot}
 pushd optional_plugins/html
 %py3_install
 popd
-%if ! 0%{?rhel}
-%if ! 0%{?fedora} > 35
+%if %{with_resultsdb}
 pushd optional_plugins/resultsdb
 %py3_install
 popd
-%endif
 %endif
 pushd optional_plugins/varianter_yaml_to_mux
 %py3_install
@@ -257,8 +260,7 @@ arbitrary filesystem location.
 %{python3_sitelib}/avocado_result_html*
 %{python3_sitelib}/avocado_framework_plugin_result_html*
 
-%if ! 0%{?rhel}
-%if ! 0%{?fedora} > 35
+%if %{with_resultsdb}
 %package -n python3-avocado-plugins-resultsdb
 Summary: Avocado plugin to propagate job results to ResultsDB
 License: GPLv2+
@@ -272,7 +274,6 @@ server.
 %files -n python3-avocado-plugins-resultsdb
 %{python3_sitelib}/avocado_resultsdb*
 %{python3_sitelib}/avocado_framework_plugin_resultsdb*
-%endif
 %endif
 
 %package -n python3-avocado-plugins-varianter-yaml-to-mux
@@ -381,6 +382,8 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Tue Mar 22 2022 Cleber Rosa <crosa@redhat.com> - 95.0-3
 - Use python3-pycdlib during build on EL9
+- Introduced a variable to control the building of the resultsdb
+  plugins
 
 * Mon Feb 14 2022 Jan Richter <jarichte@redhat.com> - 95.0-2
 - Rename requirements to dependencies
