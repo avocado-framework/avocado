@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 95.0
-Release: 1%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -47,10 +47,12 @@ BuildRequires: python3-lxml
 BuildRequires: python3-psutil
 BuildRequires: python3-setuptools
 
-%if ! 0%{?rhel}
-%if ! 0%{?fedora} > 35
+%if 0%{?fedora} > 35
 BuildRequires: python3-resultsdb_api
 %endif
+
+# EL 9 (but not EL 8) and the Fedoras have python3-pycdlib
+%if 0%{?rhel} >= 9 || 0%{?fedora}
 BuildRequires: python3-pycdlib
 %endif
 
@@ -377,6 +379,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Mar 22 2022 Cleber Rosa <crosa@redhat.com> - 95.0-3
+- Use python3-pycdlib during build on EL9
+
 * Mon Feb 14 2022 Jan Richter <jarichte@redhat.com> - 95.0-2
 - Rename requirements to dependencies
 
