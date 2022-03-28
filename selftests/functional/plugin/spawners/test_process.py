@@ -21,7 +21,7 @@ class ProcessSpawnerTest(TestCaseTmpDir):
                              TEST_LOGDIR)
         test.save()
         result = process.run(f"{AVOCADO} run "
-                             f"--job-results-dir {self.tmpdir.name}"
+                             f"--job-results-dir {self.tmpdir.name} "
                              f"--disable-sysinfo --json - -- {test}")
         res = json.loads(result.stdout_text)
         logfile = res["tests"][0]["logfile"]
