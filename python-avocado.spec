@@ -102,7 +102,7 @@ these days a framework) to perform automated testing.
 %endif
 
 %build
-%if 0%{?rhel}
+%if 0%{?rhel} <= 8
 sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
 %py3_build
@@ -384,6 +384,8 @@ Again Shell code (and possibly other similar shells).
 - Use python3-pycdlib during build on EL9
 - Introduced a variable to control the building of the resultsdb
   plugins
+- Only monkey-patch optional_plugins/varianter_yaml_to_mux/setup.py
+  if building on EL 8
 
 * Mon Feb 14 2022 Jan Richter <jarichte@redhat.com> - 95.0-2
 - Rename requirements to dependencies
