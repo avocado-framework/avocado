@@ -15,7 +15,7 @@ jobs:
       image: fedora:34
     env:
       RUN_BEFORE: 'dnf install -y git ansible'
-      GIT_URL: 'git://github.com/${{github.repository}}'
+      GIT_URL: 'https://github.com/${{github.repository}}'
       INVENTORY: 'selftests/deployment/inventory'
       PLAYBOOK: 'selftests/deployment/deployment.yml'
     strategy:
