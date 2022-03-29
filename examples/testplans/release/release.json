@@ -20,6 +20,10 @@
          "description": "Follow the instructions on:\n\nhttps://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/releasing.html#how-to-refresh-fedora-epel-modules\n\nand work with the package maintainer by sending a PR to update the Avocado version on the `avocado:latest` stream."
 	 },
          {
+	 "name": "Update website",
+         "description": "Update https://github.com/avocado-framework/avocado-framework.github.io/blob/master/index.md and add the new release."
+	 }
+         {
 	 "name": "Send e-emails",
          "description": "Send the e-email with the release notes to avocado-devel and virt-test-devel."
 	 }
