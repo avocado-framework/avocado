@@ -183,6 +183,35 @@ has to be executed early in the code so try to keep the required deps
 minimal (for example the `avocado.core.settings.settings` is not yet
 available).
 
+Plugins execution order
+=======================
+Avocado lets plugin developers to define plugin priority, which ensures the
+default execution order.The plugins with higher priority will be executed
+earlier than the plugins with lower priority. The priorities are on the scale
+between 0-100 and as default all plugins have priority set to
+NORMAL (50). For easier usage, avocado has predefined
+values in: 
+
+.. autoclass:: avocado.core.extension_manager.PluginPriority
+   :members:
+   :undoc-members:
+
+To define a priority for plugin, you have to create class attribute ``priority``
+same as you're defining ``name`` and ``description``:
+
+.. literalinclude:: ../../../../../examples/plugins/cli-cmd/hello_priority/hello_priority.py
+
+Now, the plugin ``HelloWorld`` has priority high and will be executed before
+every plugin without priority variable (default priority).
+
+As a plugin developer, you have to consider that users can change the execution
+order by ``plugins.$type.order`` option. In such case, at first will be executed
+the plugins from ``plugins.$type.order`` and then the rest of plugins by its
+priority. For example the default order is [plugin1, plugin2, plugin3, plugin4]
+the ``plugins.$type.order`` is [plugin2, plugin4] then the real order will be
+[plugin2, plugin4, plugin1, plugin3]
+
+
 New test type plugin example
 ============================
 

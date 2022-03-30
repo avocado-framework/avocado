@@ -87,19 +87,12 @@ Plugin execution order
 ----------------------
 
 In many situations, such as result generation, not one, but all of the enabled
-plugin types will be executed.  The order in which the plugins are executed
-follows the lexical order of the entry point name.
+plugin types will be executed. The execution order is set up by plugins
+developers to make execution more effective. To list the plugins in execution
+order, you can use ``avocado plugins --ordered``.
 
-For example, for the JSON result plugin, whose fully qualified name is
-``result.json``, has an entry point name of ``json``.
-
-So, plugins of the same type, a plugin named ``automated`` will be executed
-before the plugin named ``uploader``.
-
-In the default Avocado set of result plugins, it means that the JSON plugin
-(``json``) will be executed before the XUnit plugin (``xunit``).  If the HTML
-result plugin is installed and enabled (``html``) it will be executed before
-both JSON and XUnit.
+.. note:: For more information about how the execution order is set, please
+   visit visit the Plugin section on Contributor's Guide.
 
 Changing the plugin execution order
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
