@@ -39,11 +39,10 @@ class RuntimeTask:
 
     def __repr__(self):
         if self.status is None:
-            return '<RuntimeTask Task Identifier: "%s">' % self.task.identifier
+            return f'<RuntimeTask Task Identifier: "{self.task.identifier}">'
         else:
-            return '<RuntimeTask Task Identifier: "%s" Status: "%s">' % (
-                self.task.identifier,
-                self.status)
+            return (f'<RuntimeTask Task Identifier: "{self.task.identifier}"'
+                    f'Status: "{self.status}">')
 
     def __hash__(self):
         if self.task.category == "test":
@@ -82,7 +81,7 @@ class RuntimeTask:
 
         # create test ID
         if test_suite_name:
-            prefix = "{}-{}".format(test_suite_name, index)
+            prefix = f"{test_suite_name}-{index}"
         else:
             prefix = index
         test_id = TestID(prefix,
@@ -124,8 +123,8 @@ class RuntimeTask:
         dependencies_runtime_tasks = []
         # creates the tasks and runtime tasks for the dependencies
         for dependency_runnable in dependencies_runnables:
-            name = '%s-%s' % (dependency_runnable.kind,
-                              dependency_runnable.kwargs.get('name'))
+            name = (f"{dependency_runnable.kind}-"
+                    f"{dependency_runnable.kwargs.get('name')}")
             prefix = 0
             # the human UI works with TestID objects, so we need to
             # use it to name Task

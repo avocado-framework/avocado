@@ -60,7 +60,7 @@ def _get_settings_dir(dir_name):
     """
     Returns a given "datadir" directory as set by the configuration system
     """
-    namespace = 'datadir.paths.{}'.format(dir_name)
+    namespace = f'datadir.paths.{dir_name}'
     path = settings.as_dict().get(namespace)
     return os.path.abspath(path)
 
@@ -192,7 +192,7 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
     if unique_id is None:
         unique_id = job_id.create_unique_job_id()
 
-    logdir = os.path.join(base_dir, 'job-%s-%s' % (start_time, unique_id[:7]))
+    logdir = os.path.join(base_dir, f'job-{start_time}-{unique_id[:7]}')
     for i in range(7, len(unique_id)):
         try:
             os.mkdir(logdir)
@@ -207,8 +207,8 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
         except OSError:
             continue
         return logdir + str(i)
-    raise IOError("Unable to create unique logdir in 1000 iterations: %s"
-                  % (logdir))
+    raise IOError(f"Unable to create unique logdir"
+                  f" in 1000 iterations: {logdir}")
 
 
 def get_cache_dirs():
@@ -278,9 +278,8 @@ def get_tmp_dir(basedir=None):
     tmp_dir = _tmp_tracker.get(basedir)
     # This assert is a security mechanism for avoiding re-creating
     # the temporary directory, since that's a security breach.
-    msg = ('Temporary dir %s no longer exists. This likely means the '
-           'directory was incorrectly deleted before the end of the job' %
-           tmp_dir)
+    msg = (f'Temporary dir {tmp_dir} no longer exists. This likely means the '
+           f'directory was incorrectly deleted before the end of the job')
     assert os.path.isdir(tmp_dir), msg
     return tmp_dir
 
@@ -349,7 +348,7 @@ def get_job_results_dir(job_ref, logs_dir=None):
     short_jobid = job_ref[:7]
     if len(short_jobid) < 7:
         short_jobid += '*'
-    idfile_pattern = os.path.join(logs_dir, 'job-*-%s' % short_jobid, 'id')
+    idfile_pattern = os.path.join(logs_dir, f'job-*-{short_jobid}', 'id')
     for id_file in glob.glob(idfile_pattern):
         with open(id_file, 'r', encoding='utf-8') as fid:
             line = fid.read().strip('\n')
@@ -357,7 +356,7 @@ def get_job_results_dir(job_ref, logs_dir=None):
                 match_file = id_file
                 matches += 1
             if matches > 1:
-                raise ValueError("hash '%s' is not unique enough" % job_ref)
+                raise ValueError(f"hash '{job_ref}' is not unique enough")
     if matches == 1:
         return os.path.dirname(match_file)
     return None

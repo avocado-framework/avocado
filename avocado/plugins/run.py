@@ -56,8 +56,8 @@ class Run(CLICmd):
     def _test_parameter(string):
         param_name_value = string.split('=', 1)
         if len(param_name_value) < 2:
-            msg = ('Invalid --test-parameter option: "%s". Valid option must '
-                   'be a "NAME=VALUE" like expression' % string)
+            msg = (f'Invalid --test-parameter option: "{string}". '
+                   f'Valid option must be a "NAME=VALUE" like expression')
             raise argparse.ArgumentTypeError(msg)
         return param_name_value
 

@@ -56,7 +56,7 @@ class TaskStatusService:
             self.connection.close()
 
     def __repr__(self):
-        return '<TaskStatusService uri="{}">'.format(self.uri)
+        return f'<TaskStatusService uri="{self.uri}">'
 
 
 class Task:

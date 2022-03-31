@@ -24,12 +24,12 @@ from avocado.core.utils.path import prepend_base_path
 
 
 def register_core_options():
-    streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.items()] +
-               ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.items()])
+    streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.items()] +  # pylint: disable=C0209
+               ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.items()])  # pylint: disable=C0209
     streams = "; ".join(streams)
-    help_msg = ("List of comma separated builtin logs, or logging streams "
-                "optionally followed by LEVEL (DEBUG,INFO,...). Builtin "
-                "streams are: %s. By default: 'app'" % streams)
+    help_msg = (f"List of comma separated builtin logs, or logging streams "
+                f"optionally followed by LEVEL (DEBUG,INFO,...). Builtin "
+                f"streams are: {streams}. By default: 'app'")
     stgs.register_option(section='core',
                          key='show',
                          key_type=lambda x: set(x.split(',')),
@@ -228,7 +228,7 @@ def initialize_plugin_infrastructure():
     plugin_types = [kind[8:] for kind in kinds
                     if kind.startswith('avocado.plugins.')]
     for plugin_type in plugin_types:
-        help_msg = 'Execution order for "%s" plugins' % plugin_type
+        help_msg = f'Execution order for "{plugin_type}" plugins'
         stgs.register_option(section=plugin_type,
                              key='order',
                              key_type=list,

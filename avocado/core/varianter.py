@@ -90,10 +90,7 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
     else:
         color = output.TERM_SUPPORT.LOWLIGHT
         cend = output.TERM_SUPPORT.ENDC
-        paths = ', '.join(["%s%s@%s%s" % (_.name, color,
-                                          getattr(_, 'yaml',
-                                                  "Unknown"),
-                                          cend)
+        paths = ', '.join([f"{_.name}{color}@{getattr(_, 'yaml', 'Unknown')}{cend}"
                            for _ in variant["variant"]])
     out.append('%sVariant %s:    %s' % ('\n' if verbosity else '',
                                         variant["variant_id"],
@@ -103,10 +100,10 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
         for node in variant["variant"]:
             for key, value in node.environment.items():
                 origin = node.environment.origin[key].path
-                env.add(("%s:%s" % (origin, key), astring.to_text(value)))
+                env.add((f"{origin}:{key}", astring.to_text(value)))
         if not env:
             return out
-        fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+        fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])  # pylint: disable=C0209
         for record in sorted(env):
             out.append(fmt % record)
     return out
@@ -174,16 +171,15 @@ class FakeVariantDispatcher:
         out = []
         for variant in self.variants:
             paths = ', '.join([x.path for x in variant["variant"]])
-            out.append('\nVariant %s:    %s' % (variant["variant_id"],
-                                                paths))
+            out.append(f"\nVariant {variant['variant_id']}:    {paths}")
             env = set()
             for node in variant["variant"]:
                 for key, value in node.environment.items():
                     origin = node.environment.origin[key].path
-                    env.add(("%s:%s" % (origin, key), astring.to_text(value)))
+                    env.add((f"{origin}:{key}", astring.to_text(value)))
             if not env:
                 continue
-            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])  # pylint: disable=C0209
             for record in sorted(env):
                 out.append(fmt % record)
         return "\n".join(out)

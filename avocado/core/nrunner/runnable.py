@@ -180,22 +180,22 @@ class Runnable:
         for arg in self.args:
             args.append('-a')
             if arg.startswith('-'):
-                arg = 'base64:%s' % base64.b64encode(arg.encode()).decode('ascii')
+                arg = f"base64:{base64.b64encode(arg.encode()).decode('ascii')}"
             args.append(arg)
 
         if self.tags is not None:
-            args.append('tags=json:%s' % json.dumps(self.get_serializable_tags()))
+            args.append(f'tags=json:{json.dumps(self.get_serializable_tags())}')
 
         if self.variant is not None:
-            args.append('variant=json:%s' % json.dumps(self.variant))
+            args.append(f'variant=json:{json.dumps(self.variant)}')
 
         if self.output_dir is not None:
-            args.append('output_dir=%s' % self.output_dir)
+            args.append(f'output_dir={self.output_dir}')
 
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):
-                val = "json:%s" % json.dumps(val)
-            args.append('%s=%s' % (key, val))
+                val = f"json:{json.dumps(val)}"
+            args.append(f'{key}={val}')
 
         return args
 
@@ -272,7 +272,7 @@ class Runnable:
     @staticmethod
     def _module_exists(module_name):
         """Returns whether a nrunner "runner" module exists."""
-        module_filename = '%s.py' % module_name
+        module_filename = f'{module_name}.py'
         mod_path = os.path.join('core', 'runners', module_filename)
         return pkg_resources.resource_exists('avocado', mod_path)
 
@@ -307,7 +307,7 @@ class Runnable:
         env = os.environ.copy()
         env['PYTHONPATH'] = ':'.join(p for p in sys.path)
 
-        standalone_executable_cmd = ['avocado-runner-%s' % self.kind]
+        standalone_executable_cmd = [f'avocado-runner-{self.kind}']
         if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
             runners_registry[self.kind] = standalone_executable_cmd
             return standalone_executable_cmd
@@ -318,7 +318,7 @@ class Runnable:
         # and should be a lot faster
         module_name = self.kind.replace('-', '_')
         if self._module_exists(module_name):
-            full_module_name = 'avocado.core.runners.%s' % module_name
+            full_module_name = f'avocado.core.runners.{module_name}'
             candidate_cmd = [sys.executable, '-m', full_module_name]
             if self.is_kind_supported_by_runner_command(candidate_cmd,
                                                         env):
@@ -366,4 +366,4 @@ class Runnable:
         runner = self.pick_runner_class_from_entry_point()
         if runner is not None:
             return runner
-        raise ValueError('Unsupported kind of runnable: %s' % self.kind)
+        raise ValueError(f'Unsupported kind of runnable: {self.kind}')

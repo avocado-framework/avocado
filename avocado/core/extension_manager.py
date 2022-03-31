@@ -130,13 +130,13 @@ class ExtensionManager:
         :param extension: an Extension instance
         :type extension: :class:`Extension`
         """
-        return "%s.%s" % (self.plugin_type(), extension.entry_point.name)
+        return f"{self.plugin_type()}.{extension.entry_point.name}"
 
     def settings_section(self):
         """
         Returns the config section name for the plugin type handled by itself
         """
-        return "plugins.%s" % self.plugin_type()
+        return f"plugins.{self.plugin_type()}"
 
     def names(self):
         """

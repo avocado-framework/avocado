@@ -107,12 +107,12 @@ class TestData:
             file_datadir = self.filename + '.data'
         self._data_sources_mapping = {
             "variant": [lambda: file_datadir,
-                        lambda: "%s.%s" % (self.__class__.__name__,
-                                           self._testMethodName),
+                        lambda: (f"{self.__class__.__name__}."
+                                 f"{self._testMethodName}"),
                         lambda: self.name.variant],
             "test": [lambda: file_datadir,
-                     lambda: "%s.%s" % (self.__class__.__name__,
-                                        self._testMethodName)],
+                     lambda: (f"{self.__class__.__name__}."
+                              f"{self._testMethodName}")],
             "file": [lambda: file_datadir]
         }
 
@@ -197,17 +197,17 @@ class TestData:
                     path = os.path.join(datadir, filename)
                 if not must_exist:
                     self.log.debug(log_fmt, filename, path,
-                                   ("assumed to be located at %s source "
-                                    "dir" % attempt_source))
+                                   (f"assumed to be located at "
+                                    f"{attempt_source} source dir"))
                     return path
                 else:
                     if os.path.exists(path):
                         self.log.debug(log_fmt, filename, path,
-                                       "found at %s source dir" % attempt_source)
+                                       f"found at {attempt_source} source dir")
                         return path
 
         self.log.debug(log_fmt, filename, "NOT FOUND",
-                       "data sources: %s" % ', '.join(sources))
+                       f"data sources: {', '.join(sources)}")
 
 
 class Test(unittest.TestCase, TestData):
@@ -286,9 +286,9 @@ class Test(unittest.TestCase, TestData):
             logdir = os.path.join(self.__base_logdir, self.name.str_filesystem)
 
             if os.path.exists(logdir):
-                raise exceptions.TestSetupFail("Log dir already exists, this "
-                                               "should never happen: %s"
-                                               % logdir)
+                raise exceptions.TestSetupFail(f"Log dir already exists, "
+                                               f"this should never happen: "
+                                               f"{logdir}")
             self.__logdir = utils_path.init_dir(logdir)
         self.__logfile = os.path.join(self.logdir, 'debug.log')
 
@@ -452,7 +452,7 @@ class Test(unittest.TestCase, TestData):
         env_var = COMMON_TMPDIR_NAME
         path = os.environ.get(env_var)
         if path is None:
-            msg = 'Environment Variable %s is not set.' % env_var
+            msg = f'Environment Variable {env_var} is not set.'
             raise EnvironmentError(msg)
         return path
 
@@ -494,9 +494,9 @@ class Test(unittest.TestCase, TestData):
         Override the runner_queue
         """
         if self.__runner_queue is not None:
-            raise RuntimeError("Overriding of runner_queue multiple "
-                               "times is not allowed -> old=%s new=%s"
-                               % (self.__runner_queue, runner_queue))
+            raise RuntimeError(f"Overriding of runner_queue multiple times "
+                               f"is not allowed -> old={self.__runner_queue} "
+                               f"new={runner_queue}")
         self.__runner_queue = runner_queue
 
     @property
@@ -538,7 +538,7 @@ class Test(unittest.TestCase, TestData):
         return str(self.name)
 
     def __repr__(self):
-        return "Test(%r)" % self.name
+        return f"Test({self.name!r})"
 
     def _tag_start(self):
         self.log.info('START %s', self.name)
@@ -701,7 +701,7 @@ class Test(unittest.TestCase, TestData):
                 self.log.debug('%s Diff:', name)
                 for line in diff_content:
                     log_diff.debug(line)
-                self.fail('Actual test %s differs from expected one' % name)
+                self.fail(f'Actual test {name} differs from expected one')
             else:
                 return True
         return False
@@ -761,7 +761,7 @@ class Test(unittest.TestCase, TestData):
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 details = sys.exc_info()[1]
                 if not isinstance(details, Exception):  # Avoid passing nasty exc
-                    details = exceptions.TestError("%r: %s" % (details, details))
+                    details = exceptions.TestError(f"{details!r}: {details}")
                 self.log.debug("Local variables:")
                 local_vars = inspect.trace()[1][0].f_locals
                 for key, value in local_vars.items():
@@ -780,11 +780,10 @@ class Test(unittest.TestCase, TestData):
                 self.tearDown()
         except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-            skip_illegal_msg = ('Using skip decorators in tearDown() '
-                                'is not allowed in '
-                                'avocado, you must fix your '
-                                'test. Original skip exception: %s' %
-                                details)
+            skip_illegal_msg = (f'Using skip decorators in tearDown() '
+                                f'is not allowed in '
+                                f'avocado, you must fix your '
+                                f'test. Original skip exception: {details}')
             raise exceptions.TestError(skip_illegal_msg)
         except exceptions.TestCancel:
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
@@ -991,7 +990,7 @@ class Test(unittest.TestCase, TestData):
                                                      asset_hash)
             except OSError as e:
                 if cancel_on_missing:
-                    self.cancel("Missing asset {}".format(name))
+                    self.cancel(f"Missing asset {name}")
                 raise e
 
         asset_obj = asset.Asset(name, asset_hash, algorithm, locations,
@@ -1008,7 +1007,7 @@ class Test(unittest.TestCase, TestData):
             # the asset
             if cancel_on_missing:
                 # cancel when requested
-                self.cancel("Missing asset {}".format(name))
+                self.cancel(f"Missing asset {name}")
             # otherwise re-throw OSError
             raise e
 
@@ -1081,11 +1080,11 @@ class SimpleTest(Test):
         failure_fields = self._config.get('simpletests.status.failure_fields')
         msgs = []
         if 'status' in failure_fields:
-            msgs.append("Exited with status: '%u'" % cmd_error.result.exit_status)
+            msgs.append(f"Exited with status: '{int(cmd_error.result.exit_status)}'")
         if 'stdout' in failure_fields:
-            msgs.append("stdout: %r" % cmd_error.result.stdout_text)
+            msgs.append(f"stdout: {cmd_error.result.stdout_text!r}")
         if 'stderr' in failure_fields:
-            msgs.append("stderr: %r" % cmd_error.result.stdout_text)
+            msgs.append(f"stderr: {cmd_error.result.stdout_text!r}")
         return ", ".join(msgs)
 
     def _execute_cmd(self):
@@ -1115,30 +1114,30 @@ class SimpleTest(Test):
 
         # Keeping compatibility with 'avocado_warn' libexec
         for regex in [warn_regex, r'^\d\d:\d\d:\d\d WARN \|']:
-            warn_msg = ("Test passed but there were warnings on %s during "
+            warn_msg = ("Test passed but there were warnings on {st} during "
                         "execution. Check the log for details.")
             if regex is not None:
                 re_warn = re.compile(regex, re.MULTILINE)
                 if warn_location in ['all', 'stdout']:
                     if re_warn.search(result.stdout_text):
-                        raise exceptions.TestWarn(warn_msg % 'stdout')
+                        raise exceptions.TestWarn(warn_msg.format(st='stdout'))
 
                 if warn_location in ['all', 'stderr']:
                     if re_warn.search(result.stderr_text):
-                        raise exceptions.TestWarn(warn_msg % 'stderr')
+                        raise exceptions.TestWarn(warn_msg.format(st='stderr'))
 
         if skip_regex is not None:
             re_skip = re.compile(skip_regex, re.MULTILINE)
-            skip_msg = ("Test passed but %s indicates test was skipped. "
+            skip_msg = ("Test passed but {st} indicates test was skipped. "
                         "Check the log for details.")
 
             if skip_location in ['all', 'stdout']:
                 if re_skip.search(result.stdout_text):
-                    raise exceptions.TestSkipError(skip_msg % 'stdout')
+                    raise exceptions.TestSkipError(skip_msg.format(st='stdout'))
 
             if skip_location in ['all', 'stderr']:
                 if re_skip.search(result.stderr_text):
-                    raise exceptions.TestSkipError(skip_msg % 'stderr')
+                    raise exceptions.TestSkipError(skip_msg.format(st='stderr'))
 
     def test(self):
         """
@@ -1172,8 +1171,7 @@ class TapTest(SimpleTest):
             raise exceptions.TestFail(details)
 
         if result.exit_status != 0:
-            self.fail('TAP Test execution returned a '
-                      'non-0 exit code (%s)' % result)
+            self.fail(f'TAP Test execution returned a non-0 exit code ({result})')
         parser = tapparser.TapParser(io.StringIO(result.stdout_text))
         fail = 0
         count = 0

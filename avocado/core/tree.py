@@ -58,8 +58,8 @@ class FilterSet(set):
         return super().update([self.__normalize(item) for item in items])
 
     def __str__(self):
-        return ('FilterSet([%s])'
-                % ', '.join(sorted(["'%s'" % i for i in self])))
+        fs = ', '.join(sorted([f"'{i}'" for i in self]))
+        return (f'FilterSet([{fs}])')
 
 
 class TreeEnvironment(dict):
@@ -101,11 +101,11 @@ class TreeEnvironment(dict):
 
         # Use __str__ instead of __repr__ to improve readability
         if self:
-            _values = ["%s: %s" % _ for _ in sort_fn(list(self.items()))]
-            values = "{%s}" % ", ".join(_values)
-            _origin = ["%s: %s" % (key, node.path)
+            _values = ["%s: %s" % _ for _ in sort_fn(list(self.items()))]  # pylint: disable=C0209
+            values = "{%s}" % ", ".join(_values)  # pylint: disable=C0209
+            _origin = [f"{key}: {node.path}"
                        for key, node in sort_fn(list(self.origin.items()))]
-            origin = "{%s}" % ", ".join(_origin)
+            origin = "{%s}" % ", ".join(_origin)  # pylint: disable=C0209
         else:
             values = "{}"
             origin = "{}"
@@ -148,7 +148,7 @@ class TreeNodeEnvOnly:
         return True
 
     def fingerprint(self):
-        return "%s%s" % (self.path, self.environment.to_text(True))
+        return f"{self.path}{self.environment.to_text(True)}"
 
     def get_environment(self):
         return self.environment
@@ -192,11 +192,11 @@ class TreeNode:
             self.add_child(child)
 
     def __repr__(self):
-        return 'TreeNode(name=%r)' % self.name
+        return f'TreeNode(name={self.name!r})'
 
     def __str__(self):
-        variables = ['%s=%s' % (k, v) for k, v in self.environment.items()]
-        return '%s: %s' % (self.path, ', '.join(variables))
+        variables = [f'{k}={v}' for k, v in self.environment.items()]
+        return f"{self.path}: {', '.join(variables)}"
 
     def __len__(self):
         """ Return number of descended leaf nodes """
@@ -240,7 +240,7 @@ class TreeNode:
         """
         Reports string which represents the value of this node.
         """
-        return "%s%s" % (self.path, self.environment.to_text(True))
+        return f"{self.path}{self.environment.to_text(True)}"
 
     def add_child(self, node):
         """
@@ -372,8 +372,8 @@ class TreeNode:
                     node.add_child(child)
                     node = child
                 else:
-                    raise ValueError("Path %s does not exists in this tree\n%s"
-                                     % (path, tree_view(self.root)))
+                    raise ValueError(f"Path {path} does not exists in this "
+                                     f"tree\n{tree_view(self.root)}")
         return node
 
     def iter_children_preorder(self):
@@ -463,7 +463,7 @@ def tree_view(root, verbose=None, use_utf8=None):
             else:
                 val_prefix = '  '
             for key, value in values:
-                out.extend(prefixed_write(val_prefix, "%s%s: " % (val, key),
+                out.extend(prefixed_write(val_prefix, f"{val}{key}: ",
                                           value))
         if node.children:
             for child in node.children[:-1]:
