@@ -323,7 +323,7 @@ def systemd_command_generator(command):
         command = "reset-failed"
 
     def _method(service_name):
-        return [command_name, command, "%s.service" % service_name]
+        return [command_name, command, f"{service_name}.service"]
     return _method
 
 
@@ -609,7 +609,7 @@ def convert_sysv_runlevel(level):
     elif runlevel == '6':
         target = "reboot.target"
     else:
-        raise ValueError("unknown runlevel %s" % level)
+        raise ValueError(f"unknown runlevel {level}")
     return target
 
 
@@ -634,7 +634,7 @@ def convert_systemd_target_to_runlevel(target):
     elif target == "reboot.target":
         runlevel = '6'
     else:
-        raise ValueError("unknown target %s" % target)
+        raise ValueError(f"unknown target {target}")
     return runlevel
 
 
@@ -656,7 +656,7 @@ class _SystemdServiceManager(_GenericServiceManager):
         :type runlevel: str
         """
         tmp_symlink = mkstemp(dir="/etc/systemd/system")
-        os.symlink("/usr/lib/systemd/system/%s" % runlevel, tmp_symlink)
+        os.symlink(f"/usr/lib/systemd/system/{runlevel}", tmp_symlink)
         os.rename(tmp_symlink, "/etc/systemd/system/default.target")
 
 

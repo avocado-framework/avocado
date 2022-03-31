@@ -40,8 +40,8 @@ class CmdNotFoundError(Exception):
         self.paths = paths
 
     def __str__(self):
-        return ("Command '%s' could not be found in any of the PATH dirs: %s" %
-                (self.cmd, self.paths))
+        return (f"Command '{self.cmd}' could not be found in any "
+                f"of the PATH dirs: {self.paths}")
 
 
 def get_path(base_path, user_path):
@@ -214,6 +214,6 @@ def check_readable(path):
     :rtype: None
     """
     if not os.path.exists(path):
-        raise OSError('File "%s" does not exist' % path)
+        raise OSError(f'File "{path}" does not exist')
     if not os.access(path, os.R_OK):
-        raise OSError('File "%s" can not be read' % path)
+        raise OSError(f'File "{path}" can not be read')

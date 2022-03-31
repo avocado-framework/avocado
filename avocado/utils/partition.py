@@ -44,8 +44,7 @@ class PartitionError(Exception):
         self.partition = partition
 
     def __str__(self):
-        return "Partition(%s): %s" % (self.partition.device,
-                                      super().__str__())
+        return f"Partition({self.partition.device}): {super().__str__()}"
 
 
 class MtabLock:
@@ -62,8 +61,8 @@ class MtabLock:
         try:
             self.lock.__enter__()
         except (filelock.LockFailed, filelock.AlreadyLocked) as e:
-            reason = "Unable to obtain '%s' lock in %ds" % (self.device,
-                                                            self.timeout)
+            reason = (f"Unable to obtain '{self.device}' "
+                      f"lock in {int(self.timeout)}s")
             raise PartitionError(self, reason, e)
         self.mtab = open(self.device)  # pylint: disable=W1514
         return self
@@ -96,11 +95,11 @@ class Partition:
         self.mkfs_flags = mkfs_flags
         self.mount_options = mount_options
         if self.loop:
-            process.run('dd if=/dev/zero of=%s bs=1M count=%d'
-                        % (device, self.loop))
+            process.run(f'dd if=/dev/zero of={device} bs=1M '
+                        f'count={int(self.loop)}')
 
     def __repr__(self):
-        return '<Partition: %s>' % self.device
+        return f'<Partition: {self.device}>'
 
     @staticmethod
     def list_mount_devices():
@@ -186,14 +185,14 @@ class Partition:
 
         # If there isn't already a '-t <type>' argument, add one.
         if "-t" not in args:
-            args = "-t %s %s" % (fstype, args)
+            args = f"-t {fstype} {args}"
 
         args = args.strip()
 
-        mkfs_cmd = "mkfs %s %s" % (args, self.device)
+        mkfs_cmd = f"mkfs {args} {self.device}"
 
         try:
-            process.system_output("yes | %s" % mkfs_cmd, shell=True)
+            process.system_output(f"yes | {mkfs_cmd}", shell=True)
         except process.CmdError as error:
             raise PartitionError(self, "Failed to mkfs", error)
         else:
@@ -236,11 +235,11 @@ class Partition:
                 os.makedirs(mountpoint)
             try:
                 if self.loop:
-                    losetup_cmd = "losetup --find --show -f %s" % self.device
+                    losetup_cmd = f"losetup --find --show -f {self.device}"
                     self.device = process.run(losetup_cmd,
                                               sudo=True).stdout_text.strip()
-                process.system("mount %s %s %s"
-                               % (args, self.device, mountpoint), sudo=True)
+                process.system(f"mount {args} {self.device} {mountpoint}",
+                               sudo=True)
             except process.CmdError as details:
                 raise PartitionError(self, "Mount failed", details)
         # Update the fstype as the mount command passed
@@ -255,11 +254,11 @@ class Partition:
             out = process.system_output(cmd, sudo=True)
             return [int(line.split()[1]) for line in out.splitlines()[1:]]
         except OSError as details:
-            msg = 'Could not run lsof to identify processes using "%s"' % mnt
+            msg = f'Could not run lsof to identify processes using "{mnt}"'
             LOG.error(msg)
             raise PartitionError(self, msg, details)
         except process.CmdError as details:
-            msg = 'Failure executing "%s"' % cmd
+            msg = f'Failure executing "{cmd}"'
             LOG.error(msg)
             raise PartitionError(self, msg, details)
 
@@ -272,15 +271,16 @@ class Partition:
         """
         for pid in self._get_pids_on_mountpoint(mountpoint):
             try:
-                process.system("kill -9 %d" % pid, ignore_status=True, sudo=True)
+                process.system(f"kill -9 {int(pid)}",
+                               ignore_status=True, sudo=True)
             except process.CmdError as details:
                 raise PartitionError(self, "Failed to kill processes", details)
         # Unmount
         try:
-            process.run("umount -f %s" % mountpoint, sudo=True)
+            process.run(f"umount -f {mountpoint}", sudo=True)
         except process.CmdError as details:
             try:
-                process.run("umount -l %s" % mountpoint, sudo=True)
+                process.run(f"umount -l {mountpoint}", sudo=True)
             except process.CmdError as details:
                 raise PartitionError(self, "Force unmount failed", details)
 
@@ -318,7 +318,7 @@ class Partition:
                                          details)
         if self.loop:
             try:
-                process.run("losetup -d %s" % self.device, sudo=True)
+                process.run(f"losetup -d {self.device}", sudo=True)
             except process.CmdError as details:
                 raise PartitionError(self, "Unable to cleanup loop device",
                                      details)

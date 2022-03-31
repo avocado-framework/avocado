@@ -83,18 +83,18 @@ class Session:
         """
         Transforms tuples into options that should be given by "-o Key=Val"
         """
-        return " ".join(["-o '%s=%s'" % (_[0], _[1]) for _ in opts])
+        return " ".join([f"-o '{_[0]}={_[1]}'" for _ in opts])
 
     def _ssh_cmd(self, dash_o_opts=(), opts=(), command=''):
         cmd = self._dash_o_opts_to_str(dash_o_opts)
         if self.user is not None:
-            cmd += " -l %s" % self.user
+            cmd += f" -l {self.user}"
             if self.key is not None:
-                cmd += " -i %s" % self.key
+                cmd += f" -i {self.key}"
         if self.port is not None:
-            cmd += " -p %s" % self.port
-        cmd = "%s %s %s %s '%s'" % (SSH_CLIENT_BINARY, cmd,
-                                    " ".join(opts), self.host, command)
+            cmd += f" -p {self.port}"
+        cmd = (f"{SSH_CLIENT_BINARY} {cmd} {' '.join(opts)} "
+               f"{self.host} '{command}'")
         return cmd
 
     def _master_connection(self):
@@ -113,7 +113,7 @@ class Session:
 
         This basically writes to stdout the password given
         """
-        script = "#!%s\nprint('%s')" % (sys.executable, self.password)
+        script = f"#!{sys.executable}\nprint('{self.password}')"
         fd, path = tempfile.mkstemp()
         os.write(fd, script.encode())
         os.fchmod(fd, stat.S_IRUSR | stat.S_IXUSR)
@@ -176,9 +176,7 @@ class Session:
 
     @property
     def control_master(self):
-        control = "~/.ssh/avocado-master-{}@{}:{}".format(self.user,
-                                                          self.host,
-                                                          self.port)
+        control = f"~/.ssh/avocado-master-{self.user}@{self.host}:{self.port}"
         control = os.path.expanduser(control)
         if os.path.exists(control):
             return control
@@ -221,7 +219,7 @@ class Session:
             if exc.result.exit_status == 255:
                 exc.additional_text = 'SSH connection failed'
             else:
-                exc.additional_text = "Command '%s' failed" % command
+                exc.additional_text = f"Command '{command}' failed"
                 exc.stderr = exc.result.stderr
                 exc.stdout = exc.result.stdout
             raise exc
@@ -259,10 +257,10 @@ class Session:
         options = self._dash_o_opts_to_str(options)
         if recursive:
             options += ' -r'
-        options += " {} {}".format(source, destination)
+        options += f" {source} {destination}"
         try:
-            result = process.run("{} {}".format(cmd, options),
+            result = process.run(f"{cmd} {options}",
                                  ignore_status=True)
             return result.exit_status == 0
         except process.CmdError as exc:
-            raise NWException("failed to copy file {}".format(exc))
+            raise NWException(f"failed to copy file {exc}")

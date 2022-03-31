@@ -54,11 +54,11 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
         mpath_fp.write("    find_multipaths yes\n")
         mpath_fp.write("    user_friendly_names yes\n")
         if defaults_extra:
-            mpath_fp.write("    %s\n" % defaults_extra)
+            mpath_fp.write(f"    {defaults_extra}\n")
         mpath_fp.write("}\n")
         if blacklist:
             mpath_fp.write("blacklist {\n")
-            mpath_fp.write("    %s\n" % blacklist)
+            mpath_fp.write(f"    {blacklist}\n")
             mpath_fp.write("}\n")
     LOG.debug(open(conf_file, "r", encoding='utf-8').read())
     # The reason for sleep here is to give some time for change in
@@ -94,7 +94,7 @@ def get_mpath_name(wwid):
     :rtype: str
     """
     if device_exists(wwid):
-        cmd = "multipath -l %s" % wwid
+        cmd = f"multipath -l {wwid}"
         return process.run(cmd,
                            sudo=True).stdout_text.split()[0]
 
@@ -125,7 +125,7 @@ def get_multipath_wwid(mpath):
         wwids = process.run(cmd, ignore_status=True,
                             sudo=True, shell=True).stdout_text
     except process.CmdError as ex:
-        raise MPException("Multipathd Command Failed : %s " % ex)
+        raise MPException(f"Multipathd Command Failed : {ex} ")
     for wwid in wwids.splitlines():
         if mpath in wwid:
             return wwid.split()[1]
@@ -143,7 +143,7 @@ def is_mpath_dev(mpath):
         mpaths = process.run(cmd, ignore_status=True,
                              sudo=True, shell=True).stdout_text
     except process.CmdError as ex:
-        raise MPException("Multipath Command Failed : %s " % ex)
+        raise MPException(f"Multipath Command Failed : {ex} ")
     if mpath in mpaths.strip('\n').split("\n"):
         return True
     return False
@@ -158,7 +158,7 @@ def get_paths(wwid):
     """
     if not device_exists(wwid):
         return
-    cmd = "multipath -ll %s" % wwid
+    cmd = f"multipath -ll {wwid}"
     lines = process.run(cmd,
                         sudo=True).stdout_text.strip("\n")
     paths = []
@@ -194,7 +194,7 @@ def is_path_a_multipath(disk_path):
     :param disk_path: disk path. Example: sda, sdb.
     :return: True if part of multipath, else False.
     """
-    if not process.system("multipath -c /dev/%s" % disk_path, sudo=True,
+    if not process.system(f"multipath -c /dev/{disk_path}", sudo=True,
                           ignore_status=True, shell=True):
         return True
     return False
@@ -231,7 +231,7 @@ def fail_path(path):
             return True
         return False
 
-    cmd = 'multipathd -k"fail path %s"' % path
+    cmd = f'multipathd -k"fail path {path}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_failed, timeout=10) or False
     return False
@@ -249,7 +249,7 @@ def reinstate_path(path):
         if path_stat[0] == 'active' and path_stat[2] == 'ready':
             return True
         return False
-    cmd = 'multipathd -k"reinstate path %s"' % path
+    cmd = f'multipathd -k"reinstate path {path}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_reinstated, timeout=10) or False
     return False
@@ -263,7 +263,7 @@ def get_policy(wwid):
     :rtype: str
     """
     if device_exists(wwid):
-        cmd = "multipath -ll %s" % wwid
+        cmd = f"multipath -ll {wwid}"
         lines = process.run(cmd, sudo=True).stdout_text.strip("\n")
         for line in lines.split("\n"):
             if 'policy' in line:
@@ -278,7 +278,7 @@ def get_size(wwid):
     :rtype: str
     """
     if device_exists(wwid):
-        cmd = "multipath -ll %s" % wwid
+        cmd = f"multipath -ll {wwid}"
         lines = process.run(cmd, sudo=True).stdout_text.strip("\n")
         for line in lines.split("\n"):
             if 'size' in line:
@@ -291,7 +291,7 @@ def flush_path(path_name):
 
     :return: Returns False if command fails, True otherwise.
     """
-    cmd = "multipath -f %s" % path_name
+    cmd = f"multipath -f {path_name}"
     if process.system(cmd, ignore_status=True, sudo=True, shell=True):
         return False
     return True
@@ -304,7 +304,7 @@ def get_mpath_status(mpath):
     :param mpath: mpath names. Example: mpatha, mpathb.
     :return: state of mpathX eg: Active, Suspend, None
     """
-    cmd = 'multipathd -k"show maps status" | grep -i %s' % mpath
+    cmd = f'multipathd -k"show maps status" | grep -i {mpath}'
     mpath_status = process.getoutput(cmd).split()[-2]
     return mpath_status
 
@@ -321,7 +321,7 @@ def suspend_mpath(mpath):
             return True
         return False
 
-    cmd = 'multipathd -k"suspend map %s"' % mpath
+    cmd = f'multipathd -k"suspend map {mpath}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_mpath_suspended, timeout=10) or False
     return False
@@ -339,7 +339,7 @@ def resume_mpath(mpath):
             return True
         return False
 
-    cmd = 'multipathd -k"resume map %s"' % mpath
+    cmd = f'multipathd -k"resume map {mpath}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_mpath_resumed, timeout=10) or False
     return False
@@ -357,7 +357,7 @@ def remove_mpath(mpath):
             return False
         return True
 
-    cmd = 'multipathd -k"remove map %s"' % mpath
+    cmd = f'multipathd -k"remove map {mpath}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_mpath_removed, timeout=10) or False
     return False
@@ -375,7 +375,7 @@ def add_mpath(mpath):
             return True
         return False
 
-    cmd = 'multipathd -k"add map %s"' % mpath
+    cmd = f'multipathd -k"add map {mpath}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_mpath_added, timeout=10) or False
     return False
@@ -393,7 +393,7 @@ def remove_path(path):
             return True
         return False
 
-    cmd = 'multipathd -k"remove path %s"' % path
+    cmd = f'multipathd -k"remove path {path}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_path_removed, timeout=10) or False
     return False
@@ -411,7 +411,7 @@ def add_path(path):
             return False
         return True
 
-    cmd = 'multipathd -k"add path %s"' % path
+    cmd = f'multipathd -k"add path {path}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_path_added, timeout=10) or False
     return False

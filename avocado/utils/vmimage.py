@@ -99,7 +99,7 @@ class ImageProviderBase:
 
     @property
     def version_pattern(self):
-        return '^%s/$' % self._version
+        return f'^{self._version}/$'
 
     @property
     def file_name(self):
@@ -114,7 +114,7 @@ class ImageProviderBase:
             data = urlopen(url).read()
             parser.feed(astring.to_text(data, self.HTML_ENCODING))
         except HTTPError:
-            raise ImageProviderError('Cannot open %s' % self.url_versions)
+            raise ImageProviderError(f'Cannot open {self.url_versions}')
 
     @staticmethod
     def get_best_version(versions):
@@ -150,8 +150,8 @@ class ImageProviderBase:
             self._best_version = self.get_best_version(resulting_versions)
             return self._best_version
         else:
-            raise ImageProviderError('Version not available at %s' %
-                                     self.url_versions)
+            raise ImageProviderError(f'Version not available at '
+                                     f'{self.url_versions}')
 
     def get_image_url(self):
         """
@@ -174,8 +174,8 @@ class ImageProviderBase:
         if parser.items:
             return url_images + max(parser.items)
         else:
-            raise ImageProviderError("No images matching '%s' at '%s'. "
-                                     "Wrong arch?" % (image, url_images))
+            raise ImageProviderError(f"No images matching '{image}' "
+                                     f"at '{url_images}'. Wrong arch?")
 
     def get_image_parameters(self, image_file_name):
         """
@@ -483,10 +483,8 @@ class Image:
         return self._base_image or self.download()
 
     def __repr__(self):
-        return "<%s name=%s version=%s arch=%s>" % (self.__class__.__name__,
-                                                    self.name,
-                                                    self.version,
-                                                    self.arch)
+        return (f"<{self.__class__.__name__} name={self.name} "
+                f"version={self.version} arch={self.arch}>")
 
     def download(self):
         metadata = {"type": "vmimage", "name": self.name,
@@ -524,14 +522,13 @@ class Image:
         else:
             qemu_img = QEMU_IMG
         name, extension = os.path.splitext(self.base_image)
-        new_image = '%s-%s%s' % (name, str(uuid.uuid4()).split('-', maxsplit=1)[0],
-                                 extension)
+        new_image = \
+            f"{name}-{str(uuid.uuid4()).split('-', maxsplit=1)[0]}{extension}"
         if self.snapshot_dir is not None:
             new_image = os.path.join(self.snapshot_dir,
                                      os.path.basename(new_image))
-        cmd = '%s create -f qcow2 -b %s -F qcow2 %s' % (qemu_img,
-                                                        self.base_image,
-                                                        new_image)
+        cmd = (f'{qemu_img} create -f qcow2 -b {self.base_image} -F '
+               f'qcow2 {new_image}')
         process.run(cmd)
         return new_image
 

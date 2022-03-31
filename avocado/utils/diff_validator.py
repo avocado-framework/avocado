@@ -223,8 +223,8 @@ def create_diff_report(change_diffs):
         if not (change_diff[0] or change_diff[1] or
                 change_diff[2] or change_diff[3]):
             continue
-        diff_strings.append("--- %s" % get_temp_file_path(file_path))
-        diff_strings.append("+++ %s" % file_path)
+        diff_strings.append(f"--- {get_temp_file_path(file_path)}")
+        diff_strings.append(f"+++ {file_path}")
         for iter_category in range(4):
             change_category = change_diff[iter_category]
             if iter_category == 0 and change_category:

@@ -67,14 +67,13 @@ def create_loop_device(size, blocksize=4096, directory='./'):
                        sudo=True).stdout_text.strip('\n')
 
     loop_file = os.path.join(directory,
-                             "tmp_%s.img" % loop.split('/')[-1])
-    cmd = "dd if=/dev/zero of={} bs={} count={}".format(loop_file,
-                                                        blocksize,
-                                                        int(size / blocksize))
+                             f"tmp_{loop.split('/')[-1]}.img")
+    cmd = (f"dd if=/dev/zero of={loop_file} bs={blocksize} "
+           f"count={int(size / blocksize)}")
     if process.system(cmd, ignore_status=True, sudo=True) != 0:
         raise DiskError("Unable to create backing file for loop device")
 
-    cmd = "losetup %s %s -P" % (loop, loop_file)
+    cmd = f"losetup {loop} {loop_file} -P"
     if process.system(cmd, ignore_status=True, sudo=True) != 0:
         raise DiskError("Unable to create the loop device")
     return loop
@@ -99,7 +98,7 @@ def delete_loop_device(device):
             loop_file = loop_dev['back-file']
     if not loop_file:
         raise DiskError("Unable to find backing file for loop device")
-    cmd = "losetup -d %s" % device
+    cmd = f"losetup -d {device}"
     if process.system(cmd, ignore_status=True, sudo=True) != 0:
         raise DiskError("Unable to delete the loop device")
     os.remove(loop_file)

@@ -46,7 +46,7 @@ def ask(question, auto=False):
     if auto:
         LOG.info("%s (y/n) y", question)
         return "y"
-    return input("%s (y/n) " % question)
+    return input(f"{question} (y/n) ")
 
 
 def read_file(filename):
@@ -144,8 +144,7 @@ def write_file_or_fail(filename, data):
         with open(filename, 'w', encoding='utf-8') as file_obj:
             file_obj.write(data)
     except OSError as details:
-        raise GenIOError("The write to %s failed: %s" % (
-                         filename, details))
+        raise GenIOError(f"The write to {filename} failed: {details}")
 
 
 def append_file(filename, data):
@@ -187,8 +186,8 @@ def is_pattern_in_file(filename,  pattern):
     :rtype: boolean
     """
     if not os.path.isfile(filename):
-        raise GenIOError('invalid file %s to match pattern %s'
-                         % (filename, pattern))
+        raise GenIOError(f'invalid file {filename} '
+                         f'to match pattern {pattern}')
     with open(filename, 'r', encoding='utf-8') as content_file:
         if re.search(pattern, content_file.read(), re.MULTILINE):
             return True

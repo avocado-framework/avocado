@@ -78,7 +78,7 @@ def get_num_interfaces_in_pci(dom_pci_address):
     output = process.run(cmd, ignore_status=True,
                          shell=True).stdout_text
     if output:
-        filt = '/%s' % dom_pci_address
+        filt = f'/{dom_pci_address}'
         count = 0
         for line in output.splitlines():
             if filt in line:
@@ -98,7 +98,7 @@ def get_disks_in_pci_address(pci_address):
     disk_list = []
     for device in os.listdir('/sys/block'):
         if pci_address in os.path.realpath(os.path.join('/sys/block', device)):
-            disk_list.append('/dev/%s' % device)
+            disk_list.append(f'/dev/{device}')
     return disk_list
 
 
@@ -126,7 +126,7 @@ def get_interfaces_in_pci_address(pci_address, pci_class):
     :param class: Adapter type (FC(fc_host), FCoE(net), NIC(net), SCSI(scsi)..)
     :return: list of generic interfaces in a PCI address.
     """
-    pci_class_path = "/sys/class/%s/" % pci_class
+    pci_class_path = f"/sys/class/{pci_class}/"
     ifaces = []
     if not os.path.isdir(pci_class_path):
         raise ValueError("Please provide valid class name")
@@ -154,11 +154,11 @@ def get_pci_class_name(pci_address):
     pci_class_id = get_pci_prop(pci_address, "Class")
     if pci_class_id not in pci_class_dic:
         if pci_class_id is None:
-            raise ValueError("Unable to get 'Class' property of given pci "
-                             "address %s" % pci_address)
+            raise ValueError(f"Unable to get 'Class' property of given pci "
+                             f"address {pci_address}")
         else:
-            raise ValueError("Class ID %s is not defined in this library"
-                             "please send an update" % pci_class_id)
+            raise ValueError(f"Class ID {pci_class_id} is not defined "
+                             f"in this library please send an update")
     return pci_class_dic.get(pci_class_id)
 
 
@@ -185,20 +185,20 @@ def get_slot_from_sysfs(full_pci_address):
     :return: Removed port related details using re, only returns till
              physical slot of the adapter.
     """
-    if not os.path.isfile('/sys/bus/pci/devices/%s/devspec' % full_pci_address):
+    if not os.path.isfile(f'/sys/bus/pci/devices/{full_pci_address}/devspec'):
         return
-    devspec = genio.read_file("/sys/bus/pci/devices/%s/devspec"
-                              % full_pci_address).strip()
-    if not os.path.isfile("/proc/device-tree/%s/ibm,loc-code" % devspec):
+    devspec = genio.read_file(f"/sys/bus/pci/devices/"
+                              f"{full_pci_address}/devspec").strip()
+    if not os.path.isfile(f"/proc/device-tree/{devspec}/ibm,loc-code"):
         return
-    slot = genio.read_file("/proc/device-tree/%s/ibm,loc-code" % devspec)
+    slot = genio.read_file(f"/proc/device-tree/{devspec}/ibm,loc-code")
     slot_ibm = re.match(r'((\w+)[.])+(\w+)-[PC(\d+)-]*C(\d+)', slot)
     if slot_ibm:
         return slot_ibm.group()
     slot_openpower = re.match(r'(\w+)[\s]*(\w+)(\d*)', slot)
     if slot_openpower:
         return slot_openpower.group()
-    raise ValueError("Failed to get slot from: '%s'" % slot)
+    raise ValueError(f"Failed to get slot from: '{slot}'")
 
 
 def get_slot_list():
@@ -220,10 +220,10 @@ def get_pci_id_from_sysfs(full_pci_address):
 
     :return: PCI ID of a PCI address from sysfs.
     """
-    path = "/sys/bus/pci/devices/%s" % full_pci_address
+    path = f"/sys/bus/pci/devices/{full_pci_address}"
     if os.path.isdir(path):
-        path = "%s/%%s" % path
-        return ":".join(["%04x" % int(open(path % param).read(), 16)  # pylint: disable=W1514
+        path = "%s/%%s" % path  # pylint: disable=C0209
+        return ":".join([f"{int(open(path % param).read(), 16):04x}"  # pylint: disable=W1514
                          for param in ['vendor', 'device', 'subsystem_vendor',
                                        'subsystem_device']])
 
@@ -238,7 +238,7 @@ def get_pci_prop(pci_address, prop):
     :return: specific PCI ID of a PCI address.
     :rtype: str
     """
-    cmd = "lspci -Dnvmm -s %s" % pci_address
+    cmd = f"lspci -Dnvmm -s {pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         for line in output.splitlines():
@@ -273,7 +273,7 @@ def get_driver(pci_address):
     :return: driver of a PCI address.
     :rtype: str
     """
-    cmd = "lspci -ks %s" % pci_address
+    cmd = f"lspci -ks {pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         for line in output.splitlines():
@@ -293,12 +293,12 @@ def get_memory_address(pci_address):
     :return: memory address of a pci_address.
     :rtype: str
     """
-    cmd = "lspci -bv -s %s" % pci_address
+    cmd = f"lspci -bv -s {pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         for line in output.splitlines():
             if 'Memory at' in line:
-                return "0x%s" % line.split()[2]
+                return f"0x{line.split()[2]}"
 
 
 def get_mask(pci_address):
@@ -313,7 +313,7 @@ def get_mask(pci_address):
     :return: mask of a PCI address.
     :rtype: str
     """
-    cmd = "lspci -vv -s %s" % pci_address
+    cmd = f"lspci -vv -s {pci_address}"
     output = process.run(cmd, ignore_status=True, shell=True).stdout_text
     if output:
         dic = {'K': 1024, 'M': 1048576, 'G': 1073741824}
@@ -339,7 +339,7 @@ def get_vpd(dom_pci_address):
     :return: dictionary of VPD of a PCI address.
     :rtype: dict
     """
-    cmd = "lsvpd -l %s" % dom_pci_address
+    cmd = f"lsvpd -l {dom_pci_address}"
     vpd = process.run(cmd).stdout_text
     vpd_dic = {}
     dev_list = []
@@ -374,10 +374,10 @@ def get_cfg(dom_pci_address):
     :return: dictionary of configuration data of a PCI address.
     :rtype: dict
     """
-    cmd = "lscfg -vl %s" % dom_pci_address
+    cmd = f"lscfg -vl {dom_pci_address}"
     cfg = process.run(cmd).stdout_text
     cfg_dic = {}
-    desc = re.match(r'  (%s)( [-\w+,\.]+)+([ \n])+([-\w+, \(\)])+'
+    desc = re.match(r'  (%s)( [-\w+,\.]+)+([ \n])+([-\w+, \(\)])+'  # pylint: disable=C0209
                     % dom_pci_address, cfg).group()
     cfg_dic['Description'] = desc
     for line in cfg.splitlines():

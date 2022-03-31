@@ -52,7 +52,7 @@ def geometric_mean(values):
     try:
         values = [int(value) for value in values]
     except ValueError:
-        raise ValueError('Invalid inputs %s. Provide valid inputs' % values)
+        raise ValueError(f'Invalid inputs {values}. Provide valid inputs')
     no_values = len(values)
     if no_values == 0:
         return None
@@ -100,7 +100,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
                     new_line.append(".")
                     same += 1
                 else:
-                    new_line.append("error_%s/%s" % (element2, element1))
+                    new_line.append(f"error_{element2}/{element1}")
                     improvements += 1
                 try:
                     element1, element2 = next(elements)
@@ -112,7 +112,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
                 new_line.append(100 * ratio - 100)
             elif ratio > (1 + threshold):   # handling improvements
                 improvements += 1
-                new_line.append("+%.6g" % (100 * ratio - 100))
+                new_line.append(f"+{100 * ratio - 100:.6g}")
             else:
                 same += 1
                 new_line.append(".")
@@ -259,9 +259,9 @@ def time_to_seconds(time):
             else:
                 seconds = int(time)
         except (ValueError, TypeError):
-            raise ValueError("Invalid value '%s' for time. Use a string with "
-                             "the number and optionally the time unit (s, m, "
-                             "h or d)." % time)
+            raise ValueError(f"Invalid value '{time}' for time. Use a string "
+                             f"with the number and optionally the time unit "
+                             f"(s, m, h or d).")
     else:
         seconds = 0
     return seconds

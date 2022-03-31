@@ -45,7 +45,7 @@ def get_blk_string(block):
     :rtype: string
     """
     if not block.startswith("memory"):
-        return "memory%s" % block
+        return f"memory{block}"
     return block
 
 
@@ -59,7 +59,7 @@ def _check_memory_state(block):
     :rtype: bool
     """
     def _is_online():
-        path = '/sys/devices/system/memory/%s/state' % get_blk_string(block)
+        path = f'/sys/devices/system/memory/{get_blk_string(block)}/state'
         if genio.read_file(path) == 'online\n':
             return True
         return False
@@ -88,7 +88,7 @@ def is_hot_pluggable(block):
     :return: True if hotpluggable, else False
     :rtype: 'bool'
     """
-    path = '/sys/devices/system/memory/%s/removable' % get_blk_string(block)
+    path = f'/sys/devices/system/memory/{get_blk_string(block)}/removable'
     return bool(int(genio.read_file(path)))
 
 
@@ -100,11 +100,11 @@ def hotplug(block):
     :type string: like 198
     """
     block = get_blk_string(block)
-    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:  # pylint: disable=W1514
+    with open(f'/sys/devices/system/memory/{block}/state', 'w') as state_file:  # pylint: disable=W1514
         state_file.write('online')
     if not _check_memory_state(block):
         raise MemError(
-            "unable to hot-plug %s block, not supported ?" % block)
+            f"unable to hot-plug {block} block, not supported ?")
 
 
 def hotunplug(block):
@@ -115,11 +115,11 @@ def hotunplug(block):
     :type string: like 198 or memory198
     """
     block = get_blk_string(block)
-    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:  # pylint: disable=W1514
+    with open(f'/sys/devices/system/memory/{block}/state', 'w') as state_file:  # pylint: disable=W1514
         state_file.write('offline')
     if _check_memory_state(block):
         raise MemError(
-            "unable to hot-unplug %s block. Device busy?" % block)
+            f"unable to hot-unplug {block} block. Device busy?")
 
 
 def read_from_meminfo(key):
@@ -292,7 +292,7 @@ def set_num_huge_pages(num):
 
     :param num: Target number of huge pages.
     """
-    process.system('/sbin/sysctl vm.nr_hugepages=%d' % num)
+    process.system(f'/sbin/sysctl vm.nr_hugepages={int(num)}')
 
 
 def drop_caches():
@@ -316,7 +316,7 @@ def read_from_vmstat(key):
     """
     with open("/proc/vmstat") as vmstat:  # pylint: disable=W1514
         vmstat_info = vmstat.read()
-        return int(re.findall(r"%s\s+(\d+)" % key, vmstat_info)[0])
+        return int(re.findall(r"%s\s+(\d+)" % key, vmstat_info)[0])  # pylint: disable=C0209
 
 
 def read_from_smaps(pid, key):
@@ -330,11 +330,11 @@ def read_from_smaps(pid, key):
     :return: The value of the item in kb
     :rtype: int
     """
-    with open("/proc/%s/smaps" % pid) as smaps:  # pylint: disable=W1514
+    with open(f"/proc/{pid}/smaps") as smaps:  # pylint: disable=W1514
         smaps_info = smaps.read()
 
         memory_size = 0
-        for each_number in re.findall(r"%s:\s+(\d+)" % key, smaps_info):
+        for each_number in re.findall(r"%s:\s+(\d+)" % key, smaps_info):  # pylint: disable=C0209
             memory_size += int(each_number)
 
         return memory_size
@@ -352,11 +352,11 @@ def read_from_numa_maps(pid, key):
     :return: A dict using the address as the keys
     :rtype: dict
     """
-    with open("/proc/%s/numa_maps" % pid) as numa_maps:  # pylint: disable=W1514
+    with open(f"/proc/{pid}/numa_maps") as numa_maps:  # pylint: disable=W1514
         numa_map_info = numa_maps.read()
 
         numa_maps_dict = {}
-        numa_pattern = r"(^[\dabcdfe]+)\s+.*%s[=:](\d+)" % key
+        numa_pattern = r"(^[\dabcdfe]+)\s+.*%s[=:](\d+)" % key  # pylint: disable=C0209
         for address, number in re.findall(numa_pattern, numa_map_info, re.M):
             numa_maps_dict[address] = number
 
@@ -404,7 +404,7 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     if nodes == "all":
         re_buddyinfo += r"(\d+)"
     else:
-        re_buddyinfo += "(%s)" % "|".join(nodes.split())
+        re_buddyinfo += f"({'|'.join(nodes.split())})"
 
     if not re.findall(re_buddyinfo, buddy_info_content):
         LOG.warning("Can not find Nodes %s", nodes)
@@ -413,7 +413,7 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     if zones == "all":
         re_buddyinfo += r"(\w+)"
     else:
-        re_buddyinfo += "(%s)" % "|".join(zones.split())
+        re_buddyinfo += f"({'|'.join(zones.split())})"
     if not re.findall(re_buddyinfo, buddy_info_content):
         LOG.warning("Can not find zones %s", zones)
         return None
@@ -424,7 +424,7 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     if re.findall("[<>=]", chunk_sizes) and buddy_list:
         size_list = len(buddy_list[-1][-1].strip().split())
         chunk_sizes = [str(_) for _ in range(size_list)
-                       if eval("%s %s" % (_, chunk_sizes))]  # pylint: disable=W0123
+                       if eval(f"{_} {chunk_sizes}")]  # pylint: disable=W0123
 
         chunk_sizes = ' '.join(chunk_sizes)
 
@@ -477,7 +477,7 @@ class _MemInfoItem:
         self.name = name
 
     def __getattr__(self, attr):
-        datasize = DataSize('%sk' % read_from_meminfo(self.name))
+        datasize = DataSize(f'{read_from_meminfo(self.name)}k')
         return getattr(datasize, attr)
 
 
