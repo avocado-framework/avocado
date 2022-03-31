@@ -57,7 +57,7 @@ class Host:
         try:
             names = run_command(cmd, self).split()
         except Exception as ex:
-            raise NWException("Failed to get interfaces: {}".format(ex))
+            raise NWException(f"Failed to get interfaces: {ex}")
 
         if "bonding_masters" in names:
             names.remove("bonding_masters")
@@ -81,7 +81,8 @@ class Host:
             result = json.loads(output)
             return [str(item['dev']) for item in result]
         except Exception as ex:
-            raise NWException("could not get default route interface name: {}".format(ex))
+            raise NWException(f"could not get default route interface name:"
+                              f" {ex}")
 
 
 class LocalHost(Host):
@@ -141,6 +142,5 @@ class RemoteHost(Host):
                           password=self.password)
         if session.connect():
             return session
-        msg = "Failed connecting {}:{}".format(self.host,
-                                               self.port)
+        msg = f"Failed connecting {self.host}:{self.port}"
         raise NWException(msg)

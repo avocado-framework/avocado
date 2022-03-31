@@ -56,9 +56,8 @@ class Script:
         self.open_mode = open_mode
 
     def __repr__(self):
-        return '%s(path="%s", stored=%s)' % (self.__class__.__name__,
-                                             self.path,
-                                             self.stored)
+        return (f'{self.__class__.__name__}(path="{self.path}", '
+                f'stored={self.stored})')
 
     def __str__(self):
         return self.path

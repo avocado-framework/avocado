@@ -139,7 +139,7 @@ class ZypperBackend(RpmBackend):
         Keyword argument:
         name -- name of the package
         """
-        s_cmd = '%s source-install -d %s' % (self.base_command, name)
+        s_cmd = f'{self.base_command} source-install -d {name}'
 
         try:
             process.system(s_cmd, sudo=True)
@@ -157,12 +157,12 @@ class ZypperBackend(RpmBackend):
 
         :return path: path of the spec file
         """
-        s_cmd = '%s source-install %s' % (self.base_command, name)
+        s_cmd = f'{self.base_command} source-install {name}'
 
         try:
             process.system(s_cmd, sudo=True)
             if self.build_dep(name):
-                return '/usr/src/packages/SPECS/%s.spec' % name
+                return f'/usr/src/packages/SPECS/{name}.spec'
         except process.CmdError:
             log.error('Installing source failed')
             return ""

@@ -32,8 +32,8 @@ class SoftwareManager:
             backend_type = inspector.get_package_management()
 
             if backend_type not in SUPPORTED_PACKAGE_MANAGERS:
-                raise NotImplementedError('Unimplemented package management '
-                                          'system: %s.' % backend_type)
+                raise NotImplementedError(f'Unimplemented package management '
+                                          f'system: {backend_type}.')
 
             backend = SUPPORTED_PACKAGE_MANAGERS[backend_type]
             self.backend = backend()
@@ -69,5 +69,5 @@ class SoftwareManager:
         for backend in SUPPORTED_PACKAGE_MANAGERS.values():
             if backend.is_valid(package_path):
                 return backend.extract_from_package(package_path, dest_path)
-        raise NotImplementedError('No package manager supported was found for '
-                                  'package %s.' % package_path)
+        raise NotImplementedError(f'No package manager supported was found '
+                                  f'for package {package_path}.')

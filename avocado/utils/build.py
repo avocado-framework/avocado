@@ -72,14 +72,14 @@ def run_make(path, make='make', extra_args='', process_kwargs=None):  # pylint: 
     args_makeflags = process_kwargs['env'].get('MAKEFLAGS', '')
 
     if '-j' not in os_makeflags and '-j' not in args_makeflags:
-        args_makeflags += ' -j%s' % (multiprocessing.cpu_count() + 1)
+        args_makeflags += f' -j{multiprocessing.cpu_count() + 1}'
         process_kwargs['env'].update({'MAKEFLAGS': args_makeflags})
 
     makeopts = os.environ.get('MAKEOPTS', '')
     if makeopts:
-        cmd += ' %s' % makeopts
+        cmd += f' {makeopts}'
     if extra_args:
-        cmd += ' %s' % extra_args
+        cmd += f' {extra_args}'
 
     make_process = process.run(cmd, **process_kwargs)
     os.chdir(cwd)

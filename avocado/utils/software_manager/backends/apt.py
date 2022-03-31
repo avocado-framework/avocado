@@ -93,7 +93,7 @@ class AptBackend(DpkgBackend):
                 'deb http://archive.ubuntu.com/ubuntu/ maverick universe'
         """
         def _add_repo_file():
-            add_cmd = "bash -c \"echo '%s' > %s\"" % (repo, self.repo_file_path)
+            add_cmd = f"bash -c \"echo '{repo}' > {self.repo_file_path}\""
             process.system(add_cmd, shell=True, sudo=True)
 
         def _get_repo_file_contents():
@@ -130,8 +130,7 @@ class AptBackend(DpkgBackend):
             with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
                 tmp_file.write(new_file_contents)
                 tmp_file.flush()    # Sync the content
-                process.system('cp %s %s'
-                               % (tmp_file.name, self.repo_file_path),
+                process.system(f'cp {tmp_file.name} {self.repo_file_path}',
                                sudo=True)
         except (OSError, process.CmdError) as details:
             log.error(details)
@@ -221,7 +220,7 @@ class AptBackend(DpkgBackend):
                 log.info("SoftwareManager (AptBackend) can't install packages "
                          "from local .deb files with dependency resolution: "
                          "Package 'dpkg-dev' could not be installed")
-        src_cmd = '%s source %s' % (self.base_command, name)
+        src_cmd = f'{self.base_command} source {name}'
         try:
             if self.build_dep(name):
                 if not os.path.exists(path):
@@ -249,7 +248,7 @@ class AptBackend(DpkgBackend):
                          "from local .deb files with dependency resolution: "
                          "Package 'dpkg-dev' could not be installed")
 
-        src_cmd = '%s build-dep %s' % (self.base_command, name)
+        src_cmd = f'{self.base_command} build-dep {name}'
         try:
             process.system_output(src_cmd)
             return True

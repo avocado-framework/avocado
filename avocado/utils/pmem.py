@@ -31,7 +31,7 @@ class PMemException(Exception):
         self.additional_text = additional_text
 
     def __str__(self):
-        return ("Command failed.\ninfo: %s" % self.additional_text)
+        return (f"Command failed.\ninfo: {self.additional_text}")
 
 
 class PMem:
@@ -68,7 +68,7 @@ class PMem:
         :return: True if sub command is available
         :rtype: bool
         """
-        cmd = "%s --list-cmds" % binary
+        cmd = f"{binary} --list-cmds"
         out = process.system_output(cmd).decode().splitlines()
         if command in out:
             return True
@@ -92,7 +92,7 @@ class PMem:
         :rtype: list of json objects
         """
         try:
-            cmd = '%s list %s' % (self.ndctl, option)
+            cmd = f'{self.ndctl} list {option}'
             json_op = json.loads(process.system_output(cmd))
         except ValueError:
             json_op = []
@@ -121,7 +121,7 @@ class PMem:
         :return: By default returns entire list of json objects
         :rtype: list of json objects
         """
-        cmd = '%s list %s' % (self.daxctl, options)
+        cmd = f'{self.daxctl} list {options}'
         return json.loads(process.system_output(cmd))
 
     def set_dax_memory_online(self, device, region=None, no_movable=False):
@@ -135,13 +135,13 @@ class PMem:
         :rtype: bool
         :raise: :class:`PMemException`, if command fails.
         """
-        cmd = '%s online-memory %s' % (self.daxctl, device)
+        cmd = f'{self.daxctl} online-memory {device}'
         if region:
-            cmd += ' -r %s' % region
+            cmd += f' -r {region}'
         if no_movable:
             cmd += ' --no-movable'
         if process.system(cmd, shell=True, ignore_status=True):
-            raise PMemException("Failed to online memory with %s" % device)
+            raise PMemException(f"Failed to online memory with {device}")
         return True
 
     def set_dax_memory_offline(self, device, region=None):
@@ -154,11 +154,11 @@ class PMem:
         :rtype: bool
         :raise: :class:`PMemException`, if command fails.
         """
-        cmd = '%s offline-memory %s' % (self.daxctl, device)
+        cmd = f'{self.daxctl} offline-memory {device}'
         if region:
-            cmd += ' -r %s' % region
+            cmd += f' -r {region}'
         if process.system(cmd, shell=True, ignore_status=True):
-            raise PMemException("Failed to offline memory with %s" % device)
+            raise PMemException(f"Failed to offline memory with {device}")
         return True
 
     def reconfigure_dax_device(self, device, mode='devdax', region=None,
@@ -175,16 +175,16 @@ class PMem:
         :rtype: str
         :raise: :class:`PMemException`, if command fails.
         """
-        cmd = '%s reconfigure-device %s -m %s' % (self.daxctl, device, mode)
+        cmd = f'{self.daxctl} reconfigure-device {device} -m {mode}'
         if region:
-            cmd += ' -r %s' % region
+            cmd += f' -r {region}'
         if no_online:
             cmd += ' -N'
         if no_movable:
             cmd += ' --no-movable'
         device_property = process.run(cmd, shell=True, ignore_status=True)
         if device_property.exit_status:
-            raise PMemException("Failed to reconfigure device %s" % device)
+            raise PMemException(f"Failed to reconfigure device {device}")
         return device_property.stdout_text
 
     def get_slot_count(self, region):
@@ -200,7 +200,7 @@ class PMem:
         nmem = "nmem%s" % re.findall(r'\d+', region)[0]
         try:
             json_op = json.loads(process.system_output(
-                '%s read-labels -j %s ' % (self.ndctl, nmem), shell=True))
+                f'{self.ndctl} read-labels -j {nmem} ', shell=True))
         except ValueError:
             return []
         first_dict = json_op[0]
@@ -216,8 +216,8 @@ class PMem:
         :param region: Region for which legacy check is made
         :return: True if given region is legacy, else False
         """
-        nstype = genio.read_file("/sys/bus/nd/devices/%s"
-                                 "/nstype" % region).rstrip("\n")
+        reg = f"/sys/bus/nd/devices/{region}/nstype"
+        nstype = genio.read_file(reg).rstrip("\n")
         if nstype == "4":
             return True
         return False
@@ -240,9 +240,9 @@ class PMem:
         :return: True on success
         :raise: :class:`PMemException`, if command fails.
         """
-        if process.system('%s disable-region %s' % (self.ndctl, name),
+        if process.system(f'{self.ndctl} disable-region {name}',
                           shell=True, ignore_status=True):
-            raise PMemException("Failed to disable %s region(s)" % name)
+            raise PMemException(f"Failed to disable {name} region(s)")
         return True
 
     def enable_region(self, name='all'):
@@ -253,9 +253,9 @@ class PMem:
         :return: True on success
         :raise: :class:`PMemException`, if command fails.
         """
-        if process.system('%s enable-region %s' % (self.ndctl, name),
+        if process.system(f'{self.ndctl} enable-region {name}',
                           shell=True, ignore_status=True):
-            raise PMemException("Failed to enable %s region(s)" % name)
+            raise PMemException(f"Failed to enable {name} region(s)")
         return True
 
     def disable_namespace(self, namespace='all', region='', bus='',
@@ -273,15 +273,15 @@ class PMem:
         """
         args = namespace
         if region:
-            args = '%s -r %s' % (args, region)
+            args = f'{args} -r {region}'
         if bus:
-            args = '%s -b %s' % (args, bus)
+            args = f'{args} -b {bus}'
         if verbose:
-            args = '%s -v' % args
+            args = f'{args} -v'
 
-        if process.system('%s disable-namespace %s' % (self.ndctl, args),
+        if process.system(f'{self.ndctl} disable-namespace {args}',
                           shell=True, ignore_status=True):
-            raise PMemException('Namespace disable failed for %s' % namespace)
+            raise PMemException(f'Namespace disable failed for {namespace}')
         return True
 
     def enable_namespace(self, namespace='all', region='', bus='',
@@ -299,15 +299,15 @@ class PMem:
         """
         args = namespace
         if region:
-            args = '%s -r %s' % (args, region)
+            args = f'{args} -r {region}'
         if bus:
-            args = '%s -b %s' % (args, bus)
+            args = f'{args} -b {bus}'
         if verbose:
-            args = '%s -v' % args
+            args = f'{args} -v'
 
-        if process.system('%s enable-namespace %s' % (self.ndctl, args),
+        if process.system(f'{self.ndctl} enable-namespace {args}',
                           shell=True, ignore_status=True):
-            raise PMemException('Namespace enable failed for "%s"' % namespace)
+            raise PMemException(f'Namespace enable failed for "{namespace}"')
         return True
 
     def create_namespace(self, region='', bus='', n_type='pmem', mode='fsdax',
@@ -338,22 +338,22 @@ class PMem:
                      uuid: '-u', sector_size: '-l', align: '-a',
                      reconfig: '-e'}
         minor_dict = {force: '-f', autolabel: '-L'}
-        args = '-t %s -m %s ' % (n_type, mode)
+        args = f'-t {n_type} -m {mode} '
 
         if mode in ['fsdax', 'devdax']:
-            args += ' -M %s' % memmap
+            args += f' -M {memmap}'
         for option in list(args_dict.keys()):
             if option:
-                args += ' %s %s' % (args_dict[option], option)
+                args += f' {args_dict[option]} {option}'
         for option in list(minor_dict.keys()):
             if option:
-                args += ' %s' % minor_dict[option]
+                args += f' {minor_dict[option]}'
 
         if (self.is_region_legacy(region) and not reconfig):
             namespace = "namespace%s.0" % re.findall(r'\d+', region)[0]
             args += " -f -e " + namespace
 
-        if process.system('%s create-namespace %s' % (self.ndctl, args),
+        if process.system(f'{self.ndctl} create-namespace {args}',
                           shell=True, ignore_status=True):
             raise PMemException('Namespace create command failed')
         return True
@@ -378,11 +378,11 @@ class PMem:
         args_dict = {region: '-r', bus: '-b'}
         for option in list(args_dict.keys()):
             if option:
-                args += ' %s %s' % (args_dict[option], option)
+                args += f' {args_dict[option]} {option}'
         if force:
             args += ' -f'
 
-        if process.system('%s destroy-namespace %s' % (self.ndctl, args),
+        if process.system(f'{self.ndctl} destroy-namespace {args}',
                           shell=True, ignore_status=True):
             raise PMemException('Namespace destroy command failed')
         return True
@@ -397,8 +397,8 @@ class PMem:
     def _check_add_arg(args_dict, key, kwargs, pop=False):
         if PMem._check_arg(key, kwargs):
             if pop:
-                return " %s" % args_dict[key] % kwargs.pop(key)
-            return " %s" % args_dict[key] % kwargs.get(key)
+                return f" {args_dict[key]}" % kwargs.pop(key)
+            return f" {args_dict[key]}" % kwargs.get(key)
         return ""
 
     @staticmethod
@@ -439,21 +439,21 @@ class PMem:
         elif stdout:
             args = "-c"
         elif output:
-            args = "-o %s" % output
+            args = f"-o {output}"
 
         args += self._filter_ns_infoblock(namespace, args_dict, kwargs)
-        args += " %s" % args_dict['mode'] % kwargs.pop('mode', 'fsdax')
-        args += " %s" % args_dict['memmap'] % kwargs.pop('memmap', 'dev')
+        args += f" {args_dict['mode']}" % kwargs.pop('mode', 'fsdax')
+        args += f" {args_dict['memmap']}" % kwargs.pop('memmap', 'dev')
 
         for key, value in kwargs.items():
             if not value:
                 continue
             if key in args_dict:
-                args += " %s" % args_dict[key] % value
+                args += f" {args_dict[key]}" % value
             else:
                 raise PMemException("Input not supported for write-infoblock")
 
-        write_cmd = "%s write-infoblock %s" % (self.ndctl, args)
+        write_cmd = f"{self.ndctl} write-infoblock {args}"
         if process.system(write_cmd, shell=True, ignore_status=True):
             raise PMemException("write-infoblock command failed")
         return True
@@ -481,7 +481,7 @@ class PMem:
         if namespace:
             args = namespace
         elif inp_file:
-            args = "-i %s" % inp_file
+            args = f"-i {inp_file}"
 
         args += self._filter_ns_infoblock(namespace, args_dict, kwargs)
         args += self._check_add_arg(args_dict, 'op_file', kwargs)
@@ -493,7 +493,7 @@ class PMem:
         if json_form:
             args += " -j"
 
-        read_cmd = "%s read-infoblock %s" % (self.ndctl, args)
+        read_cmd = f"{self.ndctl} read-infoblock {args}"
         ret = process.run(read_cmd, shell=True, ignore_status=True)
         if ret.exit_status:
             raise PMemException("read-infoblock command failed")
