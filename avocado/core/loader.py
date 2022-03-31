@@ -62,11 +62,12 @@ class LoaderUnhandledReferenceError(LoaderError):
         self.plugins = [_.name for _ in plugins]
 
     def __str__(self):
-        return ("Unable to resolve reference(s) '%s' with plugins(s) '%s', "
-                "try running 'avocado -V list %s' to see the details."
-                % ("', '" .join(self.unhandled_references),
-                   "', '".join(self.plugins),
-                   " ".join(self.unhandled_references)))
+        ref1 = "', '" .join(self.unhandled_references)
+        plugins = "', '".join(self.plugins)
+        ref2 = " ".join(self.unhandled_references)
+        return (f"Unable to resolve reference(s) '{ref1}' "
+                f"with plugins(s) '{plugins}', try running "
+                f"'avocado -V list {ref2}' to see the details.")
 
 
 class TestLoaderProxy:
@@ -86,8 +87,8 @@ class TestLoaderProxy:
             else:
                 raise ValueError
         except ValueError:
-            raise InvalidLoaderPlugin("Object %s is not an instance of "
-                                      "TestLoader" % plugin)
+            raise InvalidLoaderPlugin(f"Object {plugin} is not an instance "
+                                      f"of TestLoader")
 
     def load_plugins(self, config):
         if self._initialized_plugins:
@@ -112,8 +113,8 @@ class TestLoaderProxy:
             """
             out = ""
             for plugin in self.registered_plugins:
-                out += "  %s: %s\n" % (plugin.name,
-                                       ", ".join(_good_test_types(plugin)))
+                out += (f"  {plugin.name}: "
+                        f"{', '.join(_good_test_types(plugin))}\n")
             return out.rstrip('\n')
 
         # When running from the JobAPI there is no subcommand
@@ -128,8 +129,7 @@ class TestLoaderProxy:
             supported_types.extend(_good_test_types(plugin))
 
         # Here is one of the few exceptions that has a hardcoded default
-        loaders = config.get("{}.loaders".format(subcommand)) or ['file',
-                                                                  '@DEFAULT']
+        loaders = config.get(f"{subcommand}.loaders") or ['file', '@DEFAULT']
         if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
@@ -145,9 +145,9 @@ class TestLoaderProxy:
             if name in supported_types:
                 name, extra_params['allowed_test_types'] = name.split('.', 1)
             elif name not in supported_loaders:
-                raise InvalidLoaderPlugin("Unknown loader '%s'. Available "
-                                          "plugins are:\n%s"
-                                          % (name, _str_loaders()))
+                raise InvalidLoaderPlugin(f"Unknown loader '{name}'. "
+                                          f"Available plugins are:\n"
+                                          f"{ _str_loaders()}")
             if len(loaders[i]) == 2:
                 extra_params['loader_options'] = loaders[i][1]
             plugin = self.registered_plugins[supported_loaders.index(name)]
@@ -202,8 +202,8 @@ class TestLoaderProxy:
         """
         def handle_exception(plugin, details):
             # FIXME: Introduce avocado.exceptions logger and use here
-            stacktrace.log_message("Test discovery plugin %s failed: "
-                                   "%s" % (plugin, details),
+            stacktrace.log_message((f"Test discovery plugin {plugin} "
+                                    f"failed: {details}"),
                                    LOG_UI.getChild("exceptions"))
             # FIXME: Introduce avocado.traceback logger and use here
             stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
@@ -262,26 +262,25 @@ class TestLoader:
             mapping = self.get_type_label_mapping()
             types = extra_params.pop("allowed_test_types")
             if len(mapping) != 1:
-                msg = ("Loader '%s' supports multiple test types but does not "
-                       "handle the 'allowed_test_types'. Either don't use "
-                       "'%s' instead of '%s.%s' or take care of the "
-                       "'allowed_test_types' in the plugin."
-                       % (self.name, self.name, self.name, types))
+                msg = (f"Loader '{self.name}' supports multiple test types "
+                       f"but does not handle the 'allowed_test_types'. "
+                       f"Either don't use '{self.name}' instead of "
+                       f"'{self.name}.{types}' or take care of the "
+                       f"'allowed_test_types' in the plugin.")
                 raise LoaderError(msg)
             elif next(iter(mapping.values())) != types:
-                raise LoaderError("Loader '%s' doesn't support test type '%s',"
-                                  " it supports only '%s'"
-                                  % (self.name, types,
-                                     next(iter(mapping.values()))))
+                raise LoaderError(f"Loader '{self.name}' doesn't support "
+                                  f"test type '{types}', it supports only "
+                                  f"'{next(iter(mapping.values()))}'")
         if "loader_options" in extra_params:
-            raise LoaderError("Loader '%s' doesn't support 'loader_options', "
-                              "please don't use --loader %s:%s"
-                              % (self.name, self.name,
-                                 extra_params.get("loader_options")))
+            raise LoaderError(f"Loader '{self.name}' doesn't support "
+                              f"'loader_options', please don't use "
+                              f"--loader {self.name}:"
+                              f"{extra_params.get('loader_options')}")
         if extra_params:
-            raise LoaderError("Loader '%s' doesn't handle extra params %s, "
-                              "please adjust your plugin to take care of them."
-                              % (self.name, extra_params))
+            raise LoaderError(f"Loader '{self.name}' doesn't handle extra "
+                              f"params {extra_params}, please adjust your "
+                              f"plugin to take care of them.")
         self.config = config
 
     def get_extra_listing(self):
@@ -493,8 +492,8 @@ class SimpleFileLoader(TestLoader):
     @staticmethod
     def _make_nonexisting_file_tests(test_path, make_broken,
                                      subtests_filter, test_name):  # pylint: disable=W0613
-        return make_broken(NotATest, test_name, "File not found "
-                           "('%s'; '%s')" % (test_name, test_path))
+        return make_broken(NotATest, test_name,
+                           f"File not found ('{test_name}'; '{test_path}')")
 
     @staticmethod
     def _make_test(klass, uid, description=None, subtests_filter=None,
@@ -511,7 +510,7 @@ class SimpleFileLoader(TestLoader):
             return []
 
         if description:
-            uid = "%s: %s" % (uid, description)
+            uid = f"{uid}: {description}"
         test_arguments["name"] = uid
         return [(klass, test_arguments)]
 
@@ -597,7 +596,7 @@ class FileLoader(SimpleFileLoader):
                 test_path = test_path[:-3]
             test_module_name = os.path.relpath(test_path)
             test_module_name = test_module_name.replace(os.path.sep, ".")
-            candidates = [("%s.%s.%s" % (test_module_name, klass, method),
+            candidates = [(f"{test_module_name}.{klass}.{method}",
                            tags) for (method, tags, _) in methods]
             if subtests_filter:
                 result += [_ for _ in candidates if subtests_filter.search(_)]
@@ -618,7 +617,7 @@ class FileLoader(SimpleFileLoader):
                     if isinstance(test_class, str):
                         for test_method, tags, _ in info:
                             name = test_name + \
-                                ':%s.%s' % (test_class, test_method)
+                                f':{test_class}.{test_method}'
                             if (subtests_filter and
                                     not subtests_filter.search(name)):
                                 continue
@@ -675,8 +674,9 @@ class FileLoader(SimpleFileLoader):
                                                         make_broken,
                                                         subtests_filter,
                                                         test_name)
-            return make_broken(NotATest, test_name, "File not found "
-                               "('%s'; '%s')" % (test_name, test_path))
+            return make_broken(NotATest, test_name,
+                               (f"File not found ('{test_name}'; "
+                                f"'{test_path}')"))
 
 
 class TapLoader(SimpleFileLoader):

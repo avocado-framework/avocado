@@ -63,7 +63,7 @@ def record(job, cmdline=None):
     references = job.config.get('resolver.references')
     if references:
         with open(path_references, 'w', encoding='utf-8') as references_file:
-            references_file.write('%s' % references)
+            references_file.write(f'{references}')
             references_file.flush()
             os.fsync(references_file)
 
@@ -74,14 +74,14 @@ def record(job, cmdline=None):
 
     for idx, suite in enumerate(job.test_suites, 1):
         if suite.name:
-            suite_var_name = "variants-{}-{}.json".format(idx, suite.name)
+            suite_var_name = f"variants-{idx}-{suite.name}.json"
         else:
-            suite_var_name = "variants-{}.json".format(idx)
+            suite_var_name = f"variants-{idx}.json"
         path_suite_variant = os.path.join(base_dir, suite_var_name)
         record_suite_variant(path_suite_variant, suite)
 
     with open(path_pwd, 'w', encoding='utf-8') as pwd_file:
-        pwd_file.write('%s' % os.getcwd())
+        pwd_file.write(f'{os.getcwd()}')
         pwd_file.flush()
         os.fsync(pwd_file)
 
@@ -92,7 +92,7 @@ def record(job, cmdline=None):
         os.fsync(job_config_file)
 
     with open(path_cmdline, 'w', encoding='utf-8') as cmdline_file:
-        cmdline_file.write('%s' % cmdline)
+        cmdline_file.write(f'{cmdline}')
         cmdline_file.flush()
         os.fsync(cmdline_file)
 

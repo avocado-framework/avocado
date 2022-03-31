@@ -239,22 +239,22 @@ class Runnable:
         for arg in self.args:
             args.append('-a')
             if arg.startswith('-'):
-                arg = 'base64:%s' % base64.b64encode(arg.encode()).decode('ascii')
+                arg = f"base64:{base64.b64encode(arg.encode()).decode('ascii')}"
             args.append(arg)
 
         if self.tags is not None:
-            args.append('tags=json:%s' % json.dumps(self.get_serializable_tags()))
+            args.append(f'tags=json:{json.dumps(self.get_serializable_tags())}')
 
         if self.variant is not None:
-            args.append('variant=json:%s' % json.dumps(self.variant))
+            args.append(f'variant=json:{json.dumps(self.variant)}')
 
         if self.output_dir is not None:
-            args.append('output_dir=%s' % self.output_dir)
+            args.append(f'output_dir={self.output_dir}')
 
         for key, val in self.kwargs.items():
             if not isinstance(val, str) or isinstance(val, int):
-                val = "json:%s" % json.dumps(val)
-            args.append('%s=%s' % (key, val))
+                val = f"json:{json.dumps(val)}"
+            args.append(f'{key}={val}')
 
         return args
 
@@ -331,7 +331,7 @@ class Runnable:
     @staticmethod
     def _module_exists(module_name):
         """Returns whether a nrunner "runner" module exists."""
-        module_filename = '%s.py' % module_name
+        module_filename = f'{module_name}.py'
         if PKG_RESOURCES_AVAILABLE:
             mod_path = os.path.join('core', 'runners', module_filename)
             return pkg_resources.resource_exists('avocado', mod_path)
@@ -371,7 +371,7 @@ class Runnable:
         env = os.environ.copy()
         env['PYTHONPATH'] = ':'.join(p for p in sys.path)
 
-        standalone_executable_cmd = ['avocado-runner-%s' % self.kind]
+        standalone_executable_cmd = [f'avocado-runner-{self.kind}']
         if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
             runners_registry[self.kind] = standalone_executable_cmd
             return standalone_executable_cmd
@@ -382,7 +382,7 @@ class Runnable:
         # and should be a lot faster
         module_name = self.kind.replace('-', '_')
         if self._module_exists(module_name):
-            full_module_name = 'avocado.core.runners.%s' % module_name
+            full_module_name = f'avocado.core.runners.{module_name}'
             candidate_cmd = [sys.executable, '-m', full_module_name]
             if self.is_kind_supported_by_runner_command(candidate_cmd,
                                                         env):
@@ -439,7 +439,7 @@ class Runnable:
             runner = self.pick_runner_class_from_entry_point()
         if runner is not None:
             return runner
-        raise ValueError('Unsupported kind of runnable: %s' % self.kind)
+        raise ValueError(f'Unsupported kind of runnable: {self.kind}')
 
 
 class BaseRunner(abc.ABC):
@@ -826,8 +826,8 @@ RUNNERS_REGISTRY_PYTHON_CLASS['python-unittest'] = PythonUnittestRunner
 def _parse_key_val(argument):
     key_value = argument.split('=', 1)
     if len(key_value) < 2:
-        msg = ('Invalid keyword parameter: "%s". Valid option must '
-               'be a "KEY=VALUE" like expression' % argument)
+        msg = (f'Invalid keyword parameter: "{argument}". Valid option must '
+               f'be a "KEY=VALUE" like expression')
         raise argparse.ArgumentTypeError(msg)
     return tuple(key_value)
 
@@ -914,7 +914,7 @@ class TaskStatusService:
             self.connection.close()
 
     def __repr__(self):
-        return '<TaskStatusService uri="{}">'.format(self.uri)
+        return f'<TaskStatusService uri="{self.uri}">'
 
 
 class Task:
@@ -1113,12 +1113,11 @@ class BaseRunnerApp:
          {'type': str, 'required': True, 'help': 'Task unique identifier'}),
         (('-t', '--category'),
          {'type': str, 'required': False, 'default': TASK_DEFAULT_CATEGORY,
-          'help': ('The category for tasks. Only tasks with category set '
-                   'to "%s" (the default) will be included in the '
-                   'test results of its parent job. Other categories '
-                   'may be used for purposes that do include test results '
-                   'such as requirements resolution tasks'
-                   % TASK_DEFAULT_CATEGORY)}),
+          'help': (f'The category for tasks. Only tasks with category set '
+                   f'to "{TASK_DEFAULT_CATEGORY}" (the default) will be '
+                   f'included in the test results of its parent job. Other '
+                   f'categories may be used for purposes that do include '
+                   f'test results such as requirements resolution tasks')}),
         (('-s', '--status-uri'),
          {'action': 'append', 'default': None,
           'help': 'URIs of status services to report to'}),
@@ -1154,7 +1153,7 @@ class BaseRunnerApp:
         subcommands = self.parser.add_subparsers(dest='subcommand')
         subcommands.required = True
         for command, method in self._class_commands_method.items():
-            command_args = "CMD_%s_ARGS" % command.upper().replace('-', '_')
+            command_args = f"CMD_{command.upper().replace('-', '_')}_ARGS"
             command_parser = subcommands.add_parser(
                 command,
                 help=self._get_command_method_help_message(method))
@@ -1224,7 +1223,7 @@ class BaseRunnerApp:
         runner = self.RUNNABLE_KINDS_CAPABLE.get(runnable.kind, None)
         if runner is not None:
             return runner(runnable)
-        raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
+        raise ValueError(f'Unsupported kind of runnable: {runnable.kind}')
 
     def command_capabilities(self, _):
         """

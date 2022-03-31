@@ -210,8 +210,8 @@ class Runner(RunnerInterface):
     def _abort_if_missing_runners(runnables):
         if runnables:
             missing_kinds = set([runnable.kind for runnable in runnables])
-            msg = ("Could not find runners for runnable(s) of kind(s): %s"
-                   % ", ".join(missing_kinds))
+            msg = (f"Could not find runners for runnable(s) of kind(s): "
+                   f"{', '.join(missing_kinds)}")
             raise JobError(msg)
 
     def run_suite(self, job, test_suite):

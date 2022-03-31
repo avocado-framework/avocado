@@ -53,17 +53,18 @@ class Replay(CLICmd):
     def _retrieve_source_job_config(source_job_id):
         results_dir = get_job_results_dir(source_job_id)
         if not results_dir:
-            msg = ('Could not find the results directory for Job "%s"' %
-                   source_job_id)
+            msg = (f'Could not find the results directory '
+                   f'for Job "{source_job_id}"')
             Replay._exit_fail(msg)
         try:
             return retrieve_job_config(results_dir)
         except OSError:
-            msg = 'Could not open the %s Job configuration' % source_job_id
+            msg = (f'Could not open the {source_job_id} '
+                   f'Job configuration')
             Replay._exit_fail(msg)
         except json.decoder.JSONDecodeError:
-            msg = ('Could not read a valid configuration of Job "%s"' %
-                   source_job_id)
+            msg = (f'Could not read a valid configuration '
+                   f'of Job "{source_job_id}"')
             Replay._exit_fail(msg)
 
     def run(self, config):

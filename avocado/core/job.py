@@ -163,7 +163,8 @@ class Job:
         #: The total amount of time the job took from start to finish,
         #: or `-1` if it has not been started by means of the `run()` method
         self.time_elapsed = -1
-        self.funcatexit = CallbackRegister("JobExit %s" % self.unique_id, LOG_JOB)
+        self.funcatexit = CallbackRegister(f"JobExit {self.unique_id}",
+                                           LOG_JOB)
         self._stdout_stderr = None
         self.replay_sourcejob = self.config.get('replay_sourcejob')
         self.exitcode = exit_codes.AVOCADO_ALL_OK
@@ -304,8 +305,8 @@ class Job:
             return
 
         if category != astring.string_to_safe_path(category):
-            msg = ("Unable to set category in job results: name is not "
-                   "filesystem safe: %s" % category)
+            msg = (f"Unable to set category in job results: name is not "
+                   f"filesystem safe: {category}")
             LOG_UI.warning(msg)
             LOG_JOB.warning(msg)
             return
@@ -324,11 +325,11 @@ class Job:
             os.symlink(os.path.relpath(self.logdir, category_path),
                        os.path.join(category_path, os.path.basename(self.logdir)))
         except NotImplementedError:
-            msg = "Unable to link this job to category %s" % category
+            msg = f"Unable to link this job to category {category}"
             LOG_UI.warning(msg)
             LOG_JOB.warning(msg)
         except OSError:
-            msg = "Permission denied to link this job to category %s" % category
+            msg = f"Permission denied to link this job to category {category}"
             LOG_UI.warning(msg)
             LOG_JOB.warning(msg)
 
@@ -348,7 +349,7 @@ class Job:
         self.logfile = os.path.join(self.logdir, "job.log")
         idfile = os.path.join(self.logdir, "id")
         with open(idfile, 'w', encoding='utf-8') as id_file_obj:
-            id_file_obj.write("%s\n" % self.unique_id)
+            id_file_obj.write(f"{self.unique_id}\n")
             id_file_obj.flush()
             os.fsync(id_file_obj)
 
@@ -361,24 +362,24 @@ class Job:
             LOG_JOB.warning("Unable to update the latest link: %s", msg)
         basedir = os.path.dirname(self.logdir)
         basename = os.path.basename(self.logdir)
-        proc_latest = os.path.join(basedir, "latest.%s" % os.getpid())
+        proc_latest = os.path.join(basedir, f"latest.{os.getpid()}")
         latest = os.path.join(basedir, "latest")
         if os.path.exists(latest) and not os.path.islink(latest):
-            soft_abort('"%s" already exists and is not a symlink' % latest)
+            soft_abort(f'"{latest}" already exists and is not a symlink')
             return
 
         if os.path.exists(proc_latest):
             try:
                 os.unlink(proc_latest)
             except OSError as details:
-                soft_abort("Unable to remove %s: %s" % (proc_latest, details))
+                soft_abort(f"Unable to remove {proc_latest}: {details}")
                 return
 
         try:
             os.symlink(basename, proc_latest)
             os.rename(proc_latest, latest)
         except OSError as details:
-            soft_abort("Unable to create create latest symlink: %s" % details)
+            soft_abort(f"Unable to create create latest symlink: {details}")
             return
         finally:
             if os.path.exists(proc_latest):
@@ -486,8 +487,8 @@ class Job:
             self.test_suite = TestSuite.from_config(self.config)
             if self.test_suite and self.test_suite.size == 0:
                 refs = self.test_suite.references
-                msg = ("No tests found for given test references, try "
-                       "'avocado -V list %s' for details") % " ".join(refs)
+                msg = (f"No tests found for given test references, try "
+                       f"'avocado -V list {' '.join(refs)}' for details")
                 raise exceptions.JobTestSuiteEmptyError(msg)
         except TestSuiteError as details:
             raise exceptions.JobBaseException(details)
@@ -634,9 +635,9 @@ class Job:
                                if all_names.count(name) > 1])
         if duplicate_names:
             duplicate_names = ", ".join(duplicate_names)
-            msg = ('Job contains suites with the following duplicate name(s): '
-                   '%s. Test suite names must be unique to guarantee that '
-                   'results will not be overwritten' % duplicate_names)
+            msg = (f'Job contains suites with the following duplicate '
+                   f'name(s) {duplicate_names}. Test suite names must be '
+                   f'unique to guarantee that results will not be overwritten')
             raise exceptions.JobTestSuiteDuplicateNameError(msg)
 
     def setup(self):

@@ -32,10 +32,10 @@ class TestID:
             self.str_variant = ""
         else:
             self.variant = variant["variant_id"]
-            self.str_variant = ";%s" % self.variant
+            self.str_variant = f";{self.variant}"
 
     def __str__(self):
-        return "%s-%s%s" % (self.str_uid, self.name, self.str_variant)
+        return f"{self.str_uid}-{self.name}{self.str_variant}"
 
     def __hash__(self):
         return id(self)
@@ -81,9 +81,9 @@ class TestID:
         elif len(self.str_uid) <= len(test_id_fs):   # full uid
             return astring.string_to_safe_path(self.str_uid + self.str_variant)
         else:       # not even uid could be stored in fs
-            raise RuntimeError('Test ID is too long to be stored on the '
-                               'filesystem: "%s"\nFull Test ID: "%s"'
-                               % (self.str_uid, str(self)))
+            raise RuntimeError(f'Test ID is too long to be stored on the '
+                               f'filesystem: "{self.str_uid}"\n'
+                               f'Full Test ID: "{str(self)}"')
 
     @classmethod
     def from_identifier(cls, identifier):

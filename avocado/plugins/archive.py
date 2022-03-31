@@ -26,7 +26,7 @@ class Archive(Result):
 
     def render(self, result, job):
         if job.config.get('run.results.archive'):
-            archive.compress("%s.zip" % job.logdir, job.logdir)
+            archive.compress(f"{job.logdir}.zip", job.logdir)
 
 
 class ArchiveCLI(CLI):

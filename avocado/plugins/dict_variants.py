@@ -94,7 +94,7 @@ class DictVariants(Varianter):
 
         if variants:
             # variants == 0 means disable, but in plugin it's brief
-            out.append("Dict Variants (%s):" % len(self))
+            out.append(f"Dict Variants ({len(self)}):")
             for variant in self:
                 out.extend(varianter.variant_to_str(variant, variants - 1,
                                                     kwargs, False))

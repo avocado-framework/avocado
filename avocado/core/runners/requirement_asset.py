@@ -40,7 +40,7 @@ class RequirementAssetRunner(nrunner.BaseRunner):
         stderr = ''
         try:
             asset_file = asset_manager.fetch()
-            stdout = 'File fetched at %s' % asset_file
+            stdout = f'File fetched at {asset_file}'
         except OSError as exc:
             result = 'error'
             stderr = str(exc)

@@ -303,8 +303,8 @@ class TestSuite:
                 try:
                     variants.parse(self.config)
                 except (IOError, ValueError) as details:
-                    raise OptionValidationError("Unable to parse "
-                                                "variant: %s" % details)
+                    raise OptionValidationError(f"Unable to parse variant: "
+                                                f"{details}")
             self._variants = variants
         return self._variants
 

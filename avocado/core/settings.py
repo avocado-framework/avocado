@@ -69,8 +69,8 @@ class ConfigFileNotFound(SettingsError):
         self.path_list = path_list
 
     def __str__(self):
-        return ("Could not find the avocado config file after looking in: %s" %
-                self.path_list)
+        return (f"Could not find the avocado config file after looking in: "
+                f"{self.path_list}")
 
 
 class DuplicatedNamespace(SettingsError):
@@ -202,7 +202,7 @@ class ConfigOption:
         if isinstance(value, list):
             return value
 
-        raise ValueError("{} could not be converted into a list".format(value))
+        raise ValueError(f"{value} could not be converted into a list")
 
     def _update_argparser(self):
         if not self.parser:
@@ -417,7 +417,7 @@ class Settings:
         try:
             option = self._namespaces[namespace]
         except KeyError:
-            msg = "Namespace not found: {}".format(namespace)
+            msg = f"Namespace not found: {namespace}"
             raise NamespaceNotRegistered(msg)
 
         if option and option.parser and not allow_multiple:
@@ -508,7 +508,7 @@ class Settings:
         for section in self.config:
             items = self.config.items(section)
             for key, value in items:
-                namespace = "{}.{}".format(section, key)
+                namespace = f"{section}.{key}"
                 self.update_option(namespace, value, convert=True)
 
     def process_config_path(self, path):
@@ -621,12 +621,12 @@ class Settings:
                   action) are only necessary if you would like to add a
                   command-line option.
         """
-        namespace = "{}.{}".format(section, key)
+        namespace = f"{section}.{key}"
         # Check if namespace is already registered
         if namespace in self._namespaces:
             if not allow_multiple:
-                msg = 'Key "{}" already registered under section "{}"'.format(key,
-                                                                              section)
+                msg = (f'Key "{key}" already registered under '
+                       f'section "{section}"')
                 raise DuplicatedNamespace(msg)
             else:
                 self.add_argparser_to_option(namespace, parser, long_arg,

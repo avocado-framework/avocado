@@ -41,7 +41,7 @@ class Jobs(CLICmd):
     @staticmethod
     def _get_data_from_file(filename):
         if not filename or not os.path.isfile(filename):
-            raise FileNotFoundError('File not found {}'.format(filename))
+            raise FileNotFoundError(f'File not found {filename}')
 
         with open(filename, 'r', encoding='utf-8') as fp:
             return json.load(fp)
@@ -61,7 +61,7 @@ class Jobs(CLICmd):
             end = datetime.fromtimestamp(test.get('end'))
             test_matrix.append((test.get('id'),
                                 end.strftime(date_fmt),
-                                "%5f" % float(test.get('time')),
+                                f"{float(test.get('time')):5f}",
                                 decorator(status, '')))
         header = (output.TERM_SUPPORT.header_str('Test ID'),
                   output.TERM_SUPPORT.header_str('End Time'),

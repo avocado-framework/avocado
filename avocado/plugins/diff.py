@@ -153,8 +153,8 @@ class Diff(CLICmd):
                 job2_results.append(cmdline2)
 
         if 'time' in diff_filter:
-            time1 = '%.2f s\n' % job1_data['time']
-            time2 = '%.2f s\n' % job2_data['time']
+            time1 = f"{job1_data['time']:.2f} s\n"
+            time2 = f"{job2_data['time']:.2f} s\n"
 
             if str(time1) != str(time2):
                 total_time_header = ['\n',
@@ -183,13 +183,11 @@ class Diff(CLICmd):
             else:
                 get_name = _get_name
             for test in job1_data['tests']:
-                test_result = '%s: %s\n' % (get_name(test),
-                                            str(test['status']))
+                test_result = f"{get_name(test)}: {str(test['status'])}\n"
                 results1.append(test_result)
             results2 = []
             for test in job2_data['tests']:
-                test_result = '%s: %s\n' % (get_name(test),
-                                            str(test['status']))
+                test_result = f"{get_name(test)}: {str(test['status'])}\n"
                 results2.append(test_result)
 
             if str(results1) != str(results2):
@@ -237,7 +235,7 @@ class Diff(CLICmd):
 
         if config.get('diff.create_reports'):
             self.std_diff_output = False
-            prefix = 'avocado_diff_%s_' % job1_id[:7]
+            prefix = f'avocado_diff_{job1_id[:7]}_'
             tmp_file1 = tempfile.NamedTemporaryFile(mode='w',
                                                     prefix=prefix,
                                                     suffix='.txt',
@@ -245,7 +243,7 @@ class Diff(CLICmd):
             tmp_file1.writelines(job1_results)
             tmp_file1.close()
 
-            prefix = 'avocado_diff_%s_' % job2_id[:7]
+            prefix = f'avocado_diff_{job2_id[:7]}_'
             tmp_file2 = tempfile.NamedTemporaryFile(mode='w',
                                                     prefix=prefix,
                                                     suffix='.txt',
@@ -258,7 +256,7 @@ class Diff(CLICmd):
         html_file = config.get('diff.html')
         open_browser = config.get('diff.open_browser')
         if open_browser and html_file is None:
-            prefix = 'avocado_diff_%s_%s_' % (job1_id[:7], job2_id[:7])
+            prefix = f'avocado_diff_{job1_id[:7]}_{job2_id[:7]}_'
             tmp_file = tempfile.NamedTemporaryFile(mode='w',
                                                    prefix=prefix,
                                                    suffix='.html',
@@ -342,7 +340,7 @@ class Diff(CLICmd):
         invalid = input_filter.difference(include_options +
                                           exclude_options + ["all"])
         if invalid:
-            msg = "Invalid option(s) '%s'" % ','.join(invalid)
+            msg = f"Invalid option(s) '{','.join(invalid)}'"
             raise argparse.ArgumentTypeError(msg)
         if input_filter.intersection(exclude_options):
             output_filter = [_ for _ in include_options
@@ -378,7 +376,7 @@ class Diff(CLICmd):
     def _get_command_line(resultsdir):
         command_line = jobdata.retrieve_cmdline(resultsdir)
         if command_line is not None:
-            return '%s\n' % ' '.join(command_line)
+            return f"{' '.join(command_line)}\n"
 
         return 'Not found\n'
 
@@ -409,14 +407,13 @@ class Diff(CLICmd):
         sysinfo = []
         for path, _, files in os.walk(sysinfo_dir):
             for name in sorted(files):
-                name_header = ['\n', '** %s **\n' % name]
+                name_header = ['\n', f'** {name} **\n']
                 sysinfo.extend(name_header)
                 with open(os.path.join(path, name), 'r', encoding='utf-8') as sysinfo_file:
                     try:
                         sysinfo.extend(sysinfo_file.readlines())
                     except UnicodeDecodeError:
-                        msg = ("Ignoring file %s as it cannot be decoded."
-                               % name)
+                        msg = f"Ignoring file {name} as it cannot be decoded."
                         LOG_UI.debug(msg)
                         continue
 

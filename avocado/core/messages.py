@@ -242,7 +242,7 @@ class BaseRunningMessageHandler(BaseMessageHandler):
         """
         message = message.decode(encoding)
         if not message.endswith("\n"):
-            message = "%s\n" % message
+            message = f"{message}\n"
         return message
 
     @staticmethod
@@ -448,5 +448,5 @@ class OutputMessageHandler(BaseRunningMessageHandler):
         encoding = message.get('encoding', 'utf-8')
         output = message['log'].decode(encoding)
         task_id = TestID.from_identifier(task.identifier)
-        output = "%s: %s" % (task_id, output)
+        output = f"{task_id}: {output}"
         LOG_UI.debug(output)

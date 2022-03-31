@@ -53,12 +53,12 @@ def handle_exception(*exc_info):
     os.write(tmp, msg.encode('utf-8'))
     os.close(tmp)
     if exc_info[0] is KeyboardInterrupt:
-        msg = "%s\nYou can find details in %s\n" % (exc_info[0].__doc__, name)
+        msg = f"{exc_info[0].__doc__}\nYou can find details in {name}\n"
         exit_code = exit_codes.AVOCADO_JOB_INTERRUPTED
     else:
         # Print friendly message in console-like output
-        msg = ("Avocado crashed unexpectedly: %s\nYou can find details in %s\n"
-               % (exc_info[1], name))
+        msg = (f"Avocado crashed unexpectedly: {exc_info[1]}\n"
+               f"You can find details in {name}\n")
         exit_code = exit_codes.AVOCADO_GENERIC_CRASH
     os.write(2, msg.encode('utf-8'))
     sys.exit(exit_code)

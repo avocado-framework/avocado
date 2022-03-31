@@ -111,8 +111,8 @@ class RequirementPackageRunner(nrunner.BaseRunner):
         cmd = self.runnable.kwargs.get('action', 'install')
         # avoid invalid arguments
         if cmd not in ['install', 'check', 'remove']:
-            stderr = ("Invalid action %s. Use one of 'install', 'check' or"
-                      " 'remove'" % cmd)
+            stderr = (f"Invalid action {cmd}. Use one of 'install', 'check' "
+                      f"or 'remove'")
             yield messages.StderrMessage.get(stderr.encode())
             yield messages.FinishedMessage.get('error')
             return
