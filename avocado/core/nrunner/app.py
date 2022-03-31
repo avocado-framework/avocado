@@ -25,8 +25,8 @@ def _get_kind_options_from_executable_name():
 def _parse_key_val(argument):
     key_value = argument.split('=', 1)
     if len(key_value) < 2:
-        msg = ('Invalid keyword parameter: "%s". Valid option must '
-               'be a "KEY=VALUE" like expression' % argument)
+        msg = (f'Invalid keyword parameter: "{argument}". Valid option must '
+               f'be a "KEY=VALUE" like expression')
         raise argparse.ArgumentTypeError(msg)
     return tuple(key_value)
 
@@ -78,12 +78,11 @@ class BaseRunnerApp:
          {'type': str, 'required': True, 'help': 'Task unique identifier'}),
         (('-t', '--category'),
          {'type': str, 'required': False, 'default': TASK_DEFAULT_CATEGORY,
-          'help': ('The category for tasks. Only tasks with category set '
-                   'to "%s" (the default) will be included in the '
-                   'test results of its parent job. Other categories '
-                   'may be used for purposes that do include test results '
-                   'such as requirements resolution tasks'
-                   % TASK_DEFAULT_CATEGORY)}),
+          'help': (f'The category for tasks. Only tasks with category set '
+                   f'to "{TASK_DEFAULT_CATEGORY}" (the default) will be '
+                   f'included in the test results of its parent job. Other '
+                   f'categories may be used for purposes that do include '
+                   f'test results such as requirements resolution tasks')}),
         (('-s', '--status-uri'),
          {'action': 'append', 'default': None,
           'help': 'URIs of status services to report to'}),
@@ -119,7 +118,7 @@ class BaseRunnerApp:
         subcommands = self.parser.add_subparsers(dest='subcommand')
         subcommands.required = True
         for command, method in self._class_commands_method.items():
-            command_args = "CMD_%s_ARGS" % command.upper().replace('-', '_')
+            command_args = f"CMD_{command.upper().replace('-', '_')}_ARGS"
             command_parser = subcommands.add_parser(
                 command,
                 help=self._get_command_method_help_message(method))
@@ -189,7 +188,7 @@ class BaseRunnerApp:
         runner = runnable.pick_runner_class()
         if runner is not None:
             return runner()
-        raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
+        raise ValueError(f'Unsupported kind of runnable: {runnable.kind}')
 
     def command_capabilities(self, _):
         """

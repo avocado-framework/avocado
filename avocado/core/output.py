@@ -589,9 +589,9 @@ class Paginator:
         paginator = os.environ.get('PAGER')
         if not paginator:
             try:
-                paginator = "%s -FRX" % utils_path.find_command('less')
+                paginator = f"{utils_path.find_command('less')} -FRX"
             except utils_path.CmdNotFoundError as details:
-                raise RuntimeError("Unable to enable pagination: %s" % details)
+                raise RuntimeError(f"Unable to enable pagination: {details}")
 
         self.pipe = os.popen(paginator, 'w')
 
@@ -688,9 +688,9 @@ class LoggingFile:
         # splitlines() discards a trailing blank line, so use split() instead
         data_lines = data.split('\n')
         if len(data_lines) > 1:     # when not last line, contains \n
-            self._log_line("%s\n" % data_lines[0])
+            self._log_line(f"{data_lines[0]}\n")
         for line in data_lines[1:-1]:
-            self._log_line("%s\n" % line)
+            self._log_line(f"{line}\n")
         if data_lines[-1]:  # Last line does not contain \n
             self._log_line(data_lines[-1])
 

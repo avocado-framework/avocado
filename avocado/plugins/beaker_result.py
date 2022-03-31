@@ -56,7 +56,7 @@ class BeakerResult(ResultEvents):
 
     def post_result(self, state):
         reqdict = {
-            'path': "%s/%s" % (self.job_id, state.get('name')),
+            'path': f"{self.job_id}/{state.get('name')}",
         }
 
         result = state.get('status').lower().capitalize()

@@ -60,7 +60,7 @@ class ImportedSymbol:
 
     def _walk_importable_components(self, symbol_is_module=False):
         if symbol_is_module:
-            full_name = "%s.%s" % (self.module_path, self.symbol)
+            full_name = f"{self.module_path}.{self.symbol}"
         else:
             full_name = self.module_path
         # Stripping leading dots, as relative paths will be handled with
@@ -208,8 +208,8 @@ class ImportedSymbol:
     def to_str(self):
         """Returns a string representation of the plausible statement used."""
         if not self.symbol:
-            return "import %s" % self.module_path
-        return "from %s import %s" % (self.module_path, self.symbol)
+            return f"import {self.module_path}"
+        return f"from {self.module_path} import {self.symbol}"
 
     def is_relative(self):
         """Returns whether the imported symbol is on a relative path."""
@@ -245,10 +245,9 @@ class ImportedSymbol:
         return parent_path
 
     def __repr__(self):
-        return ('<ImportedSymbol module_path="%s" symbol="%s" '
-                'importer_fs_path="%s">' % (self.module_path,
-                                            self.symbol,
-                                            self.importer_fs_path))
+        return (f'<ImportedSymbol module_path="{self.module_path}"'
+                f'symbol="{self.symbol}"'
+                f'importer_fs_path="{self.importer_fs_path}">')
 
     def __eq__(self, other):
         return ((self.module_path == other.module_path) and

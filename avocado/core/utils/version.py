@@ -20,8 +20,8 @@ def get_avocado_git_version():
         return
 
     git_dir = os.path.abspath(base_dir)
-    cmd = "%s -C %s show --summary --pretty='%%H'" % (git, git_dir)
+    cmd = f"{git} -C {git_dir} show --summary --pretty='%H'"
     res = process.run(cmd, ignore_status=True, verbose=False)
     if res.exit_status == 0:
         top_commit = res.stdout_text.splitlines()[0][:8]
-        return " (GIT commit %s)" % top_commit
+        return f" (GIT commit {top_commit})"

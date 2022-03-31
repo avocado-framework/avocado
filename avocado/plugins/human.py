@@ -32,8 +32,8 @@ class HumanInit(Init):
     description = "Initialize human ui plugin settings"
 
     def initialize(self):
-        help_msg = ("Status that will be omitted from the Human UI. "
-                    "Valid statuses: %s" % ", ".join(COMPLETE_STATUSES))
+        help_msg = (f"Status that will be omitted from the Human UI. "
+                    f"Valid statuses: {', '.join(COMPLETE_STATUSES)}")
         settings.register_option(section='human_ui.omit',
                                  key='statuses',
                                  key_type=list,
@@ -119,7 +119,7 @@ class Human(ResultEvents):
 
         if status == "TEST_NA":
             status = "SKIP"
-        duration = (" (%.2f s)" % state.get('time_elapsed', -1)
+        duration = (f" ({state.get('time_elapsed', -1):.2f} s)"
                     if status != "SKIP"
                     else "")
         if "name" in state:

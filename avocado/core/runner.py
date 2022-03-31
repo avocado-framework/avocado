@@ -36,13 +36,12 @@ def add_runner_failure(test_state, new_status, message):
     :param message: The error message
     """
     # Try to propagate the message everywhere
-    message = ("Runner error occurred: %s\nOriginal status: %s\n%s"
-               % (message, test_state.get("status"), test_state))
+    message = (f"Runner error occurred: {message}\n"
+               f"Original status: {test_state.get('status')}\n{test_state}")
     TEST_LOG.error(message)
     test_log = test_state.get("logfile")
     if test_state.get("text_output"):
-        test_state["text_output"] = "%s\n%s\n" % (test_state["text_output"],
-                                                  message)
+        test_state["text_output"] = f"{test_state['text_output']}\n{message}\n"
     else:
         test_state["text_output"] = message + "\n"
     if test_log:
@@ -50,12 +49,11 @@ def add_runner_failure(test_state, new_status, message):
             log_file.write('\n' + message + '\n')
     # Update the results
     if test_state.get("fail_reason"):
-        test_state["fail_reason"] = "%s\n%s" % (test_state["fail_reason"],
-                                                message)
+        test_state["fail_reason"] = f"{test_state['fail_reason']}\n{message}"
     else:
         test_state["fail_reason"] = message
     if test_state.get("fail_class"):
-        test_state["fail_class"] = "%s\nRUNNER" % test_state["fail_class"]
+        test_state["fail_class"] = f"{test_state['fail_class']}\nRUNNER"
     else:
         test_state["fail_class"] = "RUNNER"
     test_state["status"] = new_status
@@ -141,9 +139,9 @@ class TestStatus:
                 os.kill(proc.pid, signal.SIGTERM)
                 if not wait.wait_for(lambda: not proc.is_alive(), 1, 0, 0.01):
                     os.kill(proc.pid, signal.SIGKILL)
-                msg = ("Unable to receive test's early-status in %ss, "
-                       "something wrong happened probably in the "
-                       "avocado framework." % timeout)
+                msg = (f"Unable to receive test's early-status in {timeout}, "
+                       f"something wrong happened probably in the "
+                       f"avocado framework.")
                 raise exceptions.TestError(msg)
             time.sleep(step)
 
@@ -242,6 +240,6 @@ class TestStatus:
                         break
                     time.sleep(0.1)
                 else:
-                    raise exceptions.TestError("Unable to destroy test's "
-                                               "process (%s)" % proc.pid)
+                    raise exceptions.TestError(f"Unable to destroy test's "
+                                               f"process ({proc.pid})")
         return self._add_status_failures(test_state)

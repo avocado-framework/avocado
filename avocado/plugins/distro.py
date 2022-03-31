@@ -360,7 +360,7 @@ class Distro(CLICmd):
 
         type_choices = tuple(DISTRO_PKG_INFO_LOADERS.keys())
         type_choices_hlp = ', '.join(type_choices)
-        help_msg = 'Distro type (one of: %s)' % type_choices_hlp
+        help_msg = f'Distro type (one of: {type_choices_hlp})'
         settings.register_option(section='distro',
                                  key='distro_def_type',
                                  default='',
@@ -378,9 +378,9 @@ class Distro(CLICmd):
         adapt the output file name to that
         """
         if release:
-            return '%s-%s.%s-%s.distro' % (name, version, release, arch)
+            return f'{name}-{version}.{release}-{arch}.distro'
         else:
-            return '%s-%s-%s.distro' % (name, version, arch)
+            return f'{name}-{version}-{arch}.distro'
 
     def run(self, config):
         name = config.get('distro.distro_def_name')

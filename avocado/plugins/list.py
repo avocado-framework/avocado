@@ -30,7 +30,7 @@ def _get_tags_as_string(tags):
     tags_repr = []
     for tag, values in tags.items():
         if values:
-            tags_repr.append("%s(%s)" % (tag, ",".join(values)))
+            tags_repr.append(f"{tag}({','.join(values)})")
         else:
             tags_repr.append(tag)
     return ",".join(tags_repr)
@@ -164,7 +164,7 @@ class List(CLICmd):
 
     @staticmethod
     def save_recipes(suite, directory, matrix_len):
-        fmt = '%%0%uu.json' % len(str(matrix_len))
+        fmt = f'%0{len(str(matrix_len))}u.json'
         index = 1
         for resolution in suite.resolutions:
             if resolution.result == ReferenceResolutionResult.SUCCESS:

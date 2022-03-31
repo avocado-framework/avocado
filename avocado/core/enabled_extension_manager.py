@@ -24,7 +24,7 @@ class EnabledExtensionManager(ExtensionManager):
 
     def __init__(self, namespace, invoke_kwds=None):
         super().__init__(namespace, invoke_kwds)
-        namespace = "%s.order" % self.settings_section()
+        namespace = f"{self.settings_section()}.order"
         configured_order = settings.as_dict().get(namespace)
         ordered = []
         if configured_order:

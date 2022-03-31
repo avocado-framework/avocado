@@ -52,7 +52,7 @@ class TapParser:
                 yield self.Test(num, name, result, explanation)
                 return
             else:
-                yield self.Error('invalid directive "%s"' % (directive,))
+                yield self.Error(f'invalid directive "{directive}"')
 
         result = TestResult.PASS if ok else TestResult.FAIL
         yield self.Test(num, name, result, explanation)
@@ -91,7 +91,7 @@ class TapParser:
                     continue
                 if line.startswith(yaml_indent):
                     continue
-                yield self.Error('YAML block not terminated (started on line %d)' % (yaml_lineno,))
+                yield self.Error(f'YAML block not terminated (started on line {int(yaml_lineno)})')
                 state = self._MAIN
 
             assert state == self._MAIN
@@ -154,12 +154,12 @@ class TapParser:
                 continue
 
         if state == self._YAML:
-            yield self.Error('YAML block not terminated (started on line %d)' % (yaml_lineno,))
+            yield self.Error(f'YAML block not terminated (started on line {int(yaml_lineno)})')
 
         if not bailed_out and plan and num_tests != plan.count:
             if num_tests < plan.count:
-                yield self.Error('Too few tests run (expected %d, got %d)'
-                                 % (plan.count, num_tests))
+                yield self.Error(f'Too few tests run (expected '
+                                 f'{int(plan.count)}, got {int(num_tests)})')
             else:
-                yield self.Error('Too many tests run (expected %d, got %d)'
-                                 % (plan.count, num_tests))
+                yield self.Error(f'Too many tests run (expected '
+                                 f'{int(plan.count)}, got {int(num_tests)})')

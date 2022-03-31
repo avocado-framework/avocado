@@ -147,8 +147,8 @@ class TestRunner(Runner):
             if not proc:    # Ignore ctrl+z when proc not yet started
                 return
             with sigtstp:
-                msg = "ctrl+z pressed, %%s test (%s)" % proc.pid
-                app_log_msg = '\n%s' % msg
+                msg = "ctrl+z pressed, %%s test (%s)" % proc.pid  # pylint: disable=C0209
+                app_log_msg = '\n%s' % msg  # pylint: disable=C0209
                 if self.sigstopped:
                     APP_LOG.info(app_log_msg, "resumming")
                     TEST_LOG.info(msg, "resumming")
@@ -328,8 +328,8 @@ class TestRunner(Runner):
                     for variant in test_suite.variants.itertests()
                     for template in test_suite.tests)
         else:
-            raise NotImplementedError("Suite_order %s is not supported"
-                                      % execution_order)
+            raise NotImplementedError(f"Suite_order {execution_order} "
+                                      f"is not supported")
 
     def run_suite(self, job, test_suite):
         """
@@ -360,7 +360,7 @@ class TestRunner(Runner):
                 test_parameters["config"] = job.config
                 name = test_parameters.get("name")
                 if test_suite.name:
-                    prefix = "{}-{}".format(test_suite.name, index)
+                    prefix = f"{test_suite.name}-{index}"
                 else:
                     prefix = index
                 test_parameters["name"] = TestID(prefix,

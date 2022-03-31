@@ -56,7 +56,7 @@ def deco_factory(behavior, signal):
             return wrapper
         return decorate(func) if func else decorate
 
-    name = "{behavior}_on".format(behavior=behavior)
+    name = f"{behavior}_on"
     signal_on.__name__ = signal_on.__qualname__ = name
     signal_on.__doc__ = signal_on.__doc__.format(behavior.capitalize(),
                                                  behavior.upper())

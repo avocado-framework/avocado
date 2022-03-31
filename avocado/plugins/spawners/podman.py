@@ -34,15 +34,14 @@ class PodmanSpawnerInit(Init):
 
         this_distro = distro.detect()
         if this_distro != distro.UNKNOWN_DISTRO:
-            default_distro = '{0}:{1}'.format(this_distro.name,
-                                              this_distro.version)
+            default_distro = f'{this_distro.name}:{this_distro.version}'
         else:
             default_distro = 'fedora:latest'
-        help_msg = ('Image name to use when creating the container. '
-                    'The first default choice is a container image '
-                    'matching the current OS. If unable to detect, '
-                    'default becomes the latest Fedora release. Default '
-                    'on this system: {0}'.format(default_distro))
+        help_msg = (f'Image name to use when creating the container. '
+                    f'The first default choice is a container image '
+                    f'matching the current OS. If unable to detect, '
+                    f'default becomes the latest Fedora release. Default '
+                    f'on this system: {default_distro}')
         settings.register_option(
             section=section,
             key='image',
@@ -105,7 +104,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             return False
         podman_bin = self.config.get('spawner.podman.bin')
         cmd = [podman_bin, "ps", "--all", "--format={{.State}}",
-               "--filter=id=%s" % runtime_task.spawner_handle]
+               f"--filter=id={runtime_task.spawner_handle}"]
         process = subprocess.Popen(cmd,
                                    stdin=subprocess.DEVNULL,
                                    stdout=subprocess.PIPE,
@@ -190,8 +189,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         if mount_status_server_socket:
             status_server_opts = (
                 "--privileged",
-                "-v", "%s:%s" % (status_server_uri,
-                                 mounted_status_server_socket)
+                "-v", f"{status_server_uri}:{mounted_status_server_socket}"
             )
         else:
             status_server_opts = ("--net=host", )
@@ -199,8 +197,9 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         output_opts = ()
         if test_output:
             podman_output = runtime_task.task.runnable.output_dir
-            output_opts = ("-v", "%s:%s" % (test_output,
-                                            os.path.expanduser(podman_output)))
+            output_opts = ("-v",
+                           (f"{test_output}:"
+                            f"{os.path.expanduser(podman_output)}"))
 
         image = self.config.get('spawner.podman.image')
 
