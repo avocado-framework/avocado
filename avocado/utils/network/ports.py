@@ -138,7 +138,7 @@ class PortTracker(Borg):
             self._reset_retained_ports()
 
     def __str__(self):
-        return 'Ports tracked: %r' % self.retained_ports
+        return f'Ports tracked: {self.retained_ports!r}'
 
     def _reset_retained_ports(self):
         self.retained_ports = []
@@ -147,7 +147,7 @@ class PortTracker(Borg):
         if (port not in self.retained_ports) and is_port_free(port, self.address):
             self.retained_ports.append(port)
         else:
-            raise ValueError('Port %d in use' % port)
+            raise ValueError(f'Port {int(port)} in use')
         return port
 
     def find_free_port(self, start_port=None):

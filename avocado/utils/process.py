@@ -68,8 +68,10 @@ class CmdError(Exception):
         self.additional_text = additional_text
 
     def __str__(self):
-        return ("Command '%s' failed.\nstdout: %r\nstderr: %r\nadditional_info: %s" %
-                (self.command, self.result.stdout, self.result.stderr, self.additional_text))
+        return (f"Command '{self.command}' failed.\nstdout: "
+                f"{self.result.stdout!r}\nstderr: "
+                f"{self.result.stderr!r}\nadditional_info: "
+                f"{self.additional_text}")
 
 
 class CmdInputError(Exception):
@@ -118,7 +120,7 @@ def get_capabilities(pid=None):
     """
     if pid is None:
         pid = os.getpid()
-    result = run('getpcaps %u' % pid, ignore_status=True)
+    result = run(f'getpcaps {int(pid)}', ignore_status=True)
     if result.exit_status != 0:
         return []
     if result.stderr_text.startswith('Capabilities '):
@@ -167,7 +169,7 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
     :param signal: Signal number.
     """
     if get_owner_id(int(pid)) == 0:
-        kill_cmd = 'kill -%d %d' % (int(signal), int(pid))
+        kill_cmd = f'kill -{int(int(signal))} {int(int(pid))}'
         try:
             run(kill_cmd, sudo=True)
             return True
@@ -191,7 +193,7 @@ def get_parent_pid(pid):
     :returns: The parent PID
     :rtype: int
     """
-    with open('/proc/%d/stat' % pid, 'rb') as proc_stat:
+    with open(f'/proc/{int(pid)}/stat', 'rb') as proc_stat:
         parent_pid = proc_stat.read().split(b' ')[-49]
         return int(parent_pid)
 
@@ -272,8 +274,8 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
     elif timeout > 0:
         if not wait_for(_all_pids_dead, timeout + start - time.monotonic(),
                         step=0.01, args=(killed_pids[::-1],)):
-            raise RuntimeError("Timeout reached when waiting for pid %s "
-                               "and children to die (%s)" % (pid, timeout))
+            raise RuntimeError(f"Timeout reached when waiting for pid {pid} "
+                               f"and children to die ({timeout})")
     else:
         while not _all_pids_dead(killed_pids[::-1]):
             time.sleep(0.01)
@@ -286,7 +288,7 @@ def kill_process_by_pattern(pattern):
 
     :param pattern: normally only matched against the process name
     """
-    cmd = "pkill -f %s" % pattern
+    cmd = f"pkill -f {pattern}"
     result = run(cmd, ignore_status=True)
     if result.exit_status:
         LOG.error("Failed to run '%s': %s", cmd, result)
@@ -310,7 +312,7 @@ def process_in_ptree_is_defunct(ppid):
     except CmdError:  # Process doesn't exist
         return True
     for pid in pids:
-        cmd = "ps --no-headers -o cmd %d" % int(pid)
+        cmd = f"ps --no-headers -o cmd {int(int(pid))}"
         proc_name = system_output(cmd, ignore_status=True, verbose=False)
         if '<defunct>' in proc_name:
             defunct = True
@@ -332,7 +334,7 @@ def binary_from_shell_cmd(cmd):
     for item in cmds:
         if not _RE_BASH_SET_VARIABLE.match(item):
             return item
-    raise ValueError("Unable to parse first binary from '%s'" % cmd)
+    raise ValueError(f"Unable to parse first binary from '{cmd}'")
 
 
 #: This is kept for compatibility purposes, but is now deprecated and
@@ -381,7 +383,7 @@ class CmdResult:
         self.encoding = encoding
 
     def __str__(self):
-        return '\n'.join("%s: %r" % (key, getattr(self, key, "MISSING"))
+        return '\n'.join(f"{key}: {getattr(self, key, 'MISSING')!r}"
                          for key in ('command', 'exit_status', 'duration',
                                      'interrupted', 'pid', 'encoding',
                                      'stdout', 'stderr'))
@@ -588,7 +590,7 @@ class SubProcess:
             rc = '(running)'
         else:
             rc = self.result.exit_status
-        return '%s(cmd=%r, rc=%r)' % (self.__class__.__name__, self.cmd, rc)
+        return f'{self.__class__.__name__}(cmd={self.cmd!r}, rc={rc!r})'
 
     def __str__(self):
         if self._popen is None:
@@ -596,14 +598,14 @@ class SubProcess:
         elif self.result.exit_status is None:
             rc = '(running)'
         else:
-            rc = '(finished with exit status=%d)' % self.result.exit_status
-        return '%s %s' % (self.cmd, rc)
+            rc = f'(finished with exit status={int(self.result.exit_status)})'
+        return f'{self.cmd} {rc}'
 
     @staticmethod
     def _prepend_sudo(cmd, shell):
         if os.getuid() != 0:
             try:
-                sudo_cmd = '%s -n' % path.find_command('sudo', check_exec=False)
+                sudo_cmd = f"{path.find_command('sudo', check_exec=False)} -n"
             except path.CmdNotFoundError as details:
                 LOG.error(details)
                 LOG.error('Parameter sudo=True provided, but sudo was '
@@ -612,8 +614,8 @@ class SubProcess:
                 return cmd
             if shell:
                 if ' -s' not in sudo_cmd:
-                    sudo_cmd = '%s -s' % sudo_cmd
-            cmd = '%s %s' % (sudo_cmd, cmd)
+                    sudo_cmd = f'{sudo_cmd} -s'
+            cmd = f'{sudo_cmd} {cmd}'
         return cmd
 
     def _init_subprocess(self):
@@ -638,7 +640,7 @@ class SubProcess:
                                            shell=self.shell,
                                            env=self.env)
         except OSError as details:
-            details.strerror += " (%s)" % self.cmd
+            details.strerror += f" ({self.cmd})"
             raise details
 
         self.start_time = time.monotonic()  # pylint: disable=W0201
@@ -647,7 +649,7 @@ class SubProcess:
         self._stdout_drainer = FDDrainer(
             self._popen.stdout.fileno(),
             self.result,
-            name="%s-stdout" % self.cmd,
+            name=f"{self.cmd}-stdout",
             logger=self.logger,
             logger_prefix="[stdout] %s",
             stream_logger=None,
@@ -656,7 +658,7 @@ class SubProcess:
         self._stderr_drainer = FDDrainer(
             self._popen.stderr.fileno(),
             self.result,
-            name="%s-stderr" % self.cmd,
+            name=f"{self.cmd}-stderr",
             logger=self.logger,
             logger_prefix="[stderr] %s",
             stream_logger=None,
@@ -759,7 +761,7 @@ class SubProcess:
             pids = get_children_pids(self.get_pid())
             pids.append(self.get_pid())
             for pid in pids:
-                kill_cmd = 'kill -%d %d' % (int(sig), pid)
+                kill_cmd = f'kill -{int(int(sig))} {int(pid)}'
                 with contextlib.suppress(Exception):
                     run(kill_cmd, sudo=True)
         else:
@@ -789,8 +791,8 @@ class SubProcess:
                     the specified timeout.
         """
         def nuke_myself():
-            self.result.interrupted = ("timeout after %.9fs"
-                                       % (time.monotonic() - self.start_time))
+            timeout = time.monotonic() - self.start_time
+            self.result.interrupted = f"timeout after {timeout:.9f}s"
             try:
                 kill_process_tree(self.get_pid(), sig, timeout=1)
             except RuntimeError:
@@ -831,7 +833,7 @@ class SubProcess:
 
         if rc is None:
             # If all this work fails, we're dealing with a zombie process.
-            raise AssertionError('Zombie Process %s' % self._popen.pid)
+            raise AssertionError(f'Zombie Process {self._popen.pid}')
         self._fill_results(rc)
         return rc
 
@@ -914,7 +916,7 @@ class WrapSubProcess(SubProcess):
         self.wrapper = wrapper
         if self.wrapper:
             if not os.path.exists(self.wrapper):
-                raise IOError("No such wrapper: '%s'" % self.wrapper)
+                raise IOError(f"No such wrapper: '{self.wrapper}'")
             cmd = wrapper + ' ' + cmd
         super().__init__(cmd, verbose, shell, env, sudo,
                          ignore_bg_processes, encoding, logger)
@@ -1221,7 +1223,7 @@ def get_owner_id(pid):
     :return: user id of the process owner
     """
     try:
-        return os.stat('/proc/%d/' % pid).st_uid
+        return os.stat(f'/proc/{int(pid)}/').st_uid
     except OSError:
         return None
 

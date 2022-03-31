@@ -40,7 +40,7 @@ class YumBackend(RpmBackend):
         """
         super().__init__()
         self.cmd = cmd
-        self.base_command = '%s -y ' % utils_path.find_command(cmd)
+        self.base_command = f'{utils_path.find_command(cmd)} -y '
         self._cfgparser = None
         self._set_version(cmd)
         self._yum_base = None
@@ -136,8 +136,7 @@ class YumBackend(RpmBackend):
             with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
                 self.repo_config_parser.write(tmp_file)
                 tmp_file.flush()    # Sync the content
-                process.system('cp %s %s'
-                               % (tmp_file.name, self.REPO_FILE_PATH),
+                process.system(f'cp {tmp_file.name} {self.REPO_FILE_PATH}',
                                sudo=True)
             return True
         except (OSError, process.CmdError) as details:
@@ -159,8 +158,7 @@ class YumBackend(RpmBackend):
                             self.repo_config_parser.remove_section(section)
                 self.repo_config_parser.write(tmp_file.file)
                 tmp_file.flush()    # Sync the content
-                process.system('cp %s %s'
-                               % (tmp_file.name, self.REPO_FILE_PATH),
+                process.system(f'cp {tmp_file.name} {self.REPO_FILE_PATH}',
                                sudo=True)
                 return True
         except (OSError, process.CmdError) as details:
@@ -223,7 +221,7 @@ class YumBackend(RpmBackend):
         """
 
         try:
-            process.system('yum-builddep -y --tolerant %s' % name, sudo=True)
+            process.system(f'yum-builddep -y --tolerant {name}', sudo=True)
             return True
         except process.CmdError as details:
             log.error(details)
@@ -252,8 +250,8 @@ class YumBackend(RpmBackend):
                                   " '%s' could not be installed", pkg)
                         return ""
             try:
-                process.run('yumdownloader --assumeyes --verbose --source %s '
-                            '--destdir %s' % (name, path))
+                process.run(f'yumdownloader --assumeyes --verbose '
+                            f'--source {name} --destdir {path}')
                 src_rpms = [_ for _ in next(os.walk(path))[2]
                             if _.endswith(".src.rpm")]
                 if len(src_rpms) != 1:
@@ -263,7 +261,7 @@ class YumBackend(RpmBackend):
                 if self.rpm_install(os.path.join(path, src_rpms[-1])):
                     spec_path = os.path.join(os.environ['HOME'],
                                              "rpmbuild", "SPECS",
-                                             "%s.spec" % name)
+                                             f"{name}.spec")
                     if self.build_dep(spec_path):
                         return self.prepare_source(spec_path, dest_path)
                     else:

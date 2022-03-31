@@ -102,7 +102,7 @@ class GitRepoHelper:
                 not suppress them (False).
         """
         os.chdir(self.destination_dir)
-        return process.run(r"%s %s" % (self.cmd, astring.shell_escape(cmd)),
+        return process.run(r"%s %s" % (self.cmd, astring.shell_escape(cmd)),  # pylint: disable=C0209
                            ignore_status=ignore_status)
 
     def fetch(self, uri):
@@ -111,8 +111,7 @@ class GitRepoHelper:
         """
         LOG.info("Fetching git [REP '%s' BRANCH '%s'] -> %s",
                  uri, self.branch, self.destination_dir)
-        self.git_cmd("fetch -q -f -u -t %s %s:%s" %
-                     (uri, self.branch, self.lbranch))
+        self.git_cmd(f"fetch -q -f -u -t {uri} {self.branch}:{self.lbranch}")
 
     def get_top_commit(self):
         """
@@ -144,14 +143,14 @@ class GitRepoHelper:
             branch = self.branch
 
         LOG.debug('Checking out branch %s', branch)
-        self.git_cmd("checkout %s" % branch)
+        self.git_cmd(f"checkout {branch}")
 
         if commit is None:
             commit = self.commit
 
         if commit is not None:
             LOG.debug('Checking out commit %s', self.commit)
-            self.git_cmd("checkout %s" % self.commit)
+            self.git_cmd(f"checkout {self.commit}")
         else:
             LOG.debug('Specific commit not specified')
 
@@ -160,7 +159,7 @@ class GitRepoHelper:
         if top_tag is None:
             top_tag_desc = 'no tag found'
         else:
-            top_tag_desc = 'tag %s' % top_tag
+            top_tag_desc = f'tag {top_tag}'
         LOG.info("git commit ID is %s (%s)", top_commit, top_tag_desc)
 
     def execute(self):

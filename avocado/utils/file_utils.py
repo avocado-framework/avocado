@@ -50,13 +50,13 @@ def check_owner(owner, group, file_name_pattern, check_recursive=False):
         actual_id = os.stat(file_name).st_uid
         if actual_id != getpwnam(owner).pw_uid:
             raise RuntimeError(
-                'file {0} has wrong owner {1} (should be {2})'
-                .format(file_name, getpwuid(actual_id).pw_name, owner))
+                f'file {file_name} has wrong owner '
+                f'{getpwuid(actual_id).pw_name} (should be {owner})')
         actual_id = os.stat(file_name).st_gid
         if actual_id != getgrnam(group).gr_gid:
             raise RuntimeError(
-                'file {0} has wrong group {1} (should be {2})'
-                .format(file_name, getgrgid(actual_id).gr_name, group))
+                f'file {file_name} has wrong group '
+                f'{getgrgid(actual_id).gr_name} (should be {group})')
         LOG.debug('checked owner %s:%s of file %s',
                   owner, group, file_name)
 
@@ -78,7 +78,7 @@ def check_permissions(perms, file_name_pattern):
         actual_perms = S_IMODE(os.stat(file_name).st_mode)
         if perms != actual_perms:
             raise RuntimeError(
-                'file {0} has permissions {1} (should be {2})!'
-                .format(file_name, oct(actual_perms), oct(perms)))
+                f'file {file_name} has permissions {oct(actual_perms)} '
+                f'(should be {oct(perms)})!')
         LOG.debug('checked permissions %s of file %s',
                   oct(perms), file_name)

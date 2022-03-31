@@ -111,7 +111,7 @@ def parse_mi(line):
     :returns: a parsed GDB/MI response
     """
     if not line.endswith('\n'):
-        line = "%s\n" % line
+        line = f"{line}\n"
     return gdbmi_parser.session().process(line)
 
 
@@ -124,7 +124,7 @@ def encode_mi_cli(command):
     :returns: the encoded (escaped) MI command
     :rtype: str
     """
-    return '-interpreter-exec console "%s"' % command
+    return f'-interpreter-exec console "{command}"'
 
 
 def is_stopped_exit(parsed_mi_msg):
@@ -197,7 +197,7 @@ def format_as_hex(char):
     :returns: the character formatted as a lower case hex string
     :rtype: str
     """
-    return "%2x" % ord(char)
+    return f"{ord(char):2x}"
 
 
 def string_to_hex(text):
@@ -244,7 +244,7 @@ class CommandResult:
         return "".join([m.value for m in self.stream_messages])
 
     def __repr__(self):
-        return "%s at %.9f" % (self.command, self.timestamp)
+        return f"{self.command} at {self.timestamp:.9f}"
 
 
 class GDB:
@@ -274,7 +274,7 @@ class GDB:
                                             close_fds=True)
         except OSError as details:
             if details.errno == 2:
-                exc = OSError("File '%s' not found" % args[0])
+                exc = OSError(f"File '{args[0]}' not found")
                 exc.errno = 2
                 raise exc
             else:
@@ -351,7 +351,7 @@ class GDB:
         :returns: None
         """
         if not command.endswith('\n'):
-            command = "%s\n" % command
+            command = f"{command}\n"
         self.process.stdin.write(command.encode())
         self.process.stdin.flush()
 
@@ -415,7 +415,7 @@ class GDB:
         :returns: either True or False
         :rtype: bool
         """
-        gdb_info_command = "-info-gdb-mi-command %s" % command[1:]
+        gdb_info_command = f"-info-gdb-mi-command {command[1:]}"
         r = self.cmd(gdb_info_command)
         return r.result.result.command.exists == 'true'
 
@@ -428,13 +428,13 @@ class GDB:
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
         """
-        cmd = "-file-exec-and-symbols %s" % path
+        cmd = f"-file-exec-and-symbols {path}"
         r = self.cmd(cmd)
         if not r.result.class_ == 'done':
             raise UnexpectedResponseError
 
         if self.connected_to is not None:
-            cmd = 'set remote exec-file %s' % path
+            cmd = f'set remote exec-file {path}'
             r = self.cmd(cmd)
             if not r.result.class_ == 'done':
                 raise UnexpectedResponseError
@@ -449,7 +449,7 @@ class GDB:
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
         """
-        cmd = "-break-insert %s" % location
+        cmd = f"-break-insert {location}"
         r = self.cmd(cmd)
         if not r.result.class_ == 'done':
             if not ignore_error:
@@ -465,7 +465,7 @@ class GDB:
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
         """
-        cmd = "-break-delete %s" % number
+        cmd = f"-break-delete {number}"
         r = self.cmd(cmd)
         if not r.result.class_ == 'done':
             raise UnexpectedResponseError
@@ -483,7 +483,7 @@ class GDB:
         """
         if args:
             args_text = ' '.join(args)
-            cmd = '-exec-arguments %s' % args_text
+            cmd = f'-exec-arguments {args_text}'
             r = self.cmd(cmd)
             if not r.result.class_ == 'done':
                 raise UnexpectedResponseError
@@ -504,7 +504,7 @@ class GDB:
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
         """
-        cmd = '-target-select extended-remote :%s' % port
+        cmd = f'-target-select extended-remote :{port}'
         r = self.cmd(cmd)
         if not r.result.class_ == 'connected':
             raise UnexpectedResponseError
@@ -579,9 +579,9 @@ class GDBServer:
             self.port = ports.find_free_port(*self.PORT_RANGE)
         else:
             self.port = port
-        args.append(":%s" % self.port)
+        args.append(f":{self.port}")
 
-        prefix = 'avocado_gdbserver_%s_' % self.port
+        prefix = f'avocado_gdbserver_{self.port}_'
         _, self.stdout_path = tempfile.mkstemp(prefix=prefix + 'stdout_')
         self.stdout = open(self.stdout_path, 'w', encoding='utf-8')
         _, self.stderr_path = tempfile.mkstemp(prefix=prefix + 'stderr_')
@@ -595,7 +595,7 @@ class GDBServer:
                                             close_fds=True)
         except OSError as details:
             if details.errno == 2:
-                exc = OSError("File '%s' not found" % args[0])
+                exc = OSError(f"File '{args[0]}' not found")
                 exc.errno = 2
                 raise exc
             else:

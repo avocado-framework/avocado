@@ -29,7 +29,7 @@ class DnfBackend(YumBackend):
         :return True: If build dependencies are installed properly
         """
         try:
-            process.system('%s builddep %s' % (self.base_command, name),
+            process.system(f'{self.base_command} builddep {name}',
                            sudo=True)
             return True
         except process.CmdError as details:

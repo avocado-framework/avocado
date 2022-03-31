@@ -187,8 +187,8 @@ class MixInMntDirMount:
         """
         if self._mount_instance is None:
             if not self.path:
-                raise RuntimeError("Path to iso image not available: %s"
-                                   % self.path)
+                raise RuntimeError(f"Path to iso image not available: "
+                                   f"{self.path}")
             self._mount_instance = Iso9660Mount(self.path)
         return self._mount_instance.mnt_dir
 
@@ -221,7 +221,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         """
         Get and store the image's extensions
         """
-        cmd = 'isoinfo -i %s -d' % path
+        cmd = f'isoinfo -i {path} -d'
         output = process.system_output(cmd)
         if b"\nJoliet" in output:
             self.joliet = True
@@ -243,16 +243,16 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         """
         Locate the path in the list of files inside the iso image
         """
-        cmd = 'isoinfo -i %s -f' % self.path
+        cmd = f'isoinfo -i {self.path} -f'
         flist = process.system_output(cmd)
 
-        fname = re.findall("(%s.*)" % self._normalize_path(path), flist, re.I)
+        fname = re.findall(f"({self._normalize_path(path)}.*)", flist, re.I)
         if fname:
             return fname[0]
         return None
 
     def read(self, path):
-        cmd = ['isoinfo', '-i %s' % self.path]
+        cmd = ['isoinfo', f'-i {self.path}']
 
         fname = self._normalize_path(path)
         if self.joliet:
@@ -266,7 +266,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
                     "Could not find '%s' in iso '%s'", path, self.path)
                 return ""
 
-        cmd.append("-x %s" % fname)
+        cmd.append(f"-x {fname}")
         result = process.run(" ".join(cmd), verbose=False)
         return result.stdout
 
@@ -285,13 +285,13 @@ class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
 
     def read(self, path):
         temp_path = os.path.join(self.temp_dir, path)
-        cmd = 'iso-read -i %s -e %s -o %s' % (self.path, path, temp_path)
+        cmd = f'iso-read -i {self.path} -e {path} -o {temp_path}'
         process.run(cmd)
         with open(temp_path, 'rb') as temp_file:
             return bytes(temp_file.read())
 
     def copy(self, src, dst):
-        cmd = 'iso-read -i %s -e %s -o %s' % (self.path, src, dst)
+        cmd = f'iso-read -i {self.path} -e {src} -o {dst}'
         process.run(cmd)
 
     def close(self):
@@ -318,8 +318,8 @@ class Iso9660Mount(BaseIso9660):
             fs_type = 'cd9660'
         else:
             fs_type = 'iso9660'
-        process.run('mount -t %s -v -o loop,ro %s %s' %
-                    (fs_type, path, self.mnt_dir), sudo=True)
+        process.run(f'mount -t {fs_type} -v -o loop,ro {path} {self.mnt_dir}',
+                    sudo=True)
 
     def read(self, path):
         """
@@ -353,17 +353,17 @@ class Iso9660Mount(BaseIso9660):
         """
         if self._mnt_dir:
             if os.path.ismount(self._mnt_dir):
-                process.run('fuser -k %s' % self.mnt_dir, ignore_status=True,
+                process.run(f'fuser -k {self.mnt_dir}', ignore_status=True,
                             sudo=True)
-                process.run('umount %s' % self.mnt_dir, sudo=True)
+                process.run(f'umount {self.mnt_dir}', sudo=True)
             shutil.rmtree(self._mnt_dir)
             self._mnt_dir = None
 
     @property
     def mnt_dir(self):
         if not self._mnt_dir:
-            raise RuntimeError("Trying to get mnt_dir of already closed iso %s"
-                               % self.path)
+            raise RuntimeError(f"Trying to get mnt_dir of already closed "
+                               f"iso {self.path}")
         return self._mnt_dir
 
 
