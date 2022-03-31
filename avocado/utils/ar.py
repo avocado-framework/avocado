@@ -34,9 +34,8 @@ class ArMember:
         self.offset = offset
 
     def __repr__(self):
-        return '<ArMember "%s" size=%u offset=%u>' % (self.identifier,
-                                                      self.size,
-                                                      self.offset)
+        return (f'<ArMember "{self.identifier}" size={int(self.size)} '
+                f'offset={int(self.offset)}>')
 
 
 class Ar:

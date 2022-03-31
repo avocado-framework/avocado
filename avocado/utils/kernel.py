@@ -61,12 +61,11 @@ class KernelBuild:
             self.data_dirs = data_dirs
         else:
             self.data_dirs = [self.work_dir]
-        self._build_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
+        self._build_dir = os.path.join(self.work_dir, f'linux-{self.version}')
 
     def __repr__(self):
-        return "KernelBuild('%s, %s, %s')" % (self.version,
-                                              self.config_path,
-                                              self.work_dir)
+        return (f"KernelBuild('{self.version}, {self.config_path}, "
+                f"{self.work_dir}')")
 
     @property
     def vmlinux(self):
@@ -130,20 +129,20 @@ class KernelBuild:
                               CONFIG_NAME=VALUE.
         :type extra_configs: list of str
         """
-        build.make(self._build_dir, extra_args='-C %s mrproper' %
-                   self._build_dir)
+        build.make(self._build_dir,
+                   extra_args=f'-C {self._build_dir} mrproper')
         if self.config_path is not None:
             dotconfig = os.path.join(self._build_dir, '.config')
             shutil.copy(self.config_path, dotconfig)
-            build.make(self._build_dir, extra_args='-C %s olddefconfig' %
-                       self._build_dir)
+            build.make(self._build_dir,
+                       extra_args=f'-C {self._build_dir} olddefconfig')
         else:
             if isinstance(targets, list):
                 _targets = " ".join(targets)
             else:
                 _targets = targets
             build.make(self.build_dir,
-                       extra_args='-C %s %s' % (self.build_dir, _targets))
+                       extra_args=f'-C {self.build_dir} {_targets}')
         if extra_configs:
             with tempfile.NamedTemporaryFile(mode='w+t',
                                              prefix='avocado_') as config_file:
@@ -190,8 +189,8 @@ class KernelBuild:
         """
         LOG.info("Starting kernel install")
         if self.distro.name == "Ubuntu":
-            process.run('dpkg -i %s/*.deb' %
-                        self.work_dir, shell=True, sudo=True)
+            process.run(f'dpkg -i {self.work_dir}/*.deb',
+                        shell=True, sudo=True)
         else:
             LOG.info("Skipping kernel install")
 

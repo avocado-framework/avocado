@@ -107,7 +107,7 @@ def loaded_module_info(module_name):
     l_raw = process.system_output('/sbin/lsmod').decode('utf-8')
     modinfo_dic = parse_lsmod_for_module(l_raw, module_name)
     output = process.system_output(
-        "/sbin/modinfo %s" % module_name).decode('utf-8')
+        f"/sbin/modinfo {module_name}").decode('utf-8')
     if output:
         param_list = []
         for line in output.splitlines():
@@ -180,9 +180,9 @@ def unload_module(module_name):
             LOG.info("Module %s is already unloaded", module_name)
             return
         if module_used != 0:
-            raise RuntimeError("Module %s is still in use. "
-                               "Can not unload it." % module_name)
-        process.system("/sbin/modprobe -r %s" % module_name)
+            raise RuntimeError(f"Module {module_name} is still in use. "
+                               f"Can not unload it.")
+        process.system(f"/sbin/modprobe -r {module_name}")
         LOG.info("Module %s unloaded", module_name)
 
 
@@ -247,4 +247,4 @@ def get_modules_dir():
     """
     kernel_version = platform.uname()[2]
 
-    return '/lib/modules/%s/kernel' % kernel_version
+    return f'/lib/modules/{kernel_version}/kernel'

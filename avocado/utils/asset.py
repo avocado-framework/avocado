@@ -101,7 +101,7 @@ class Asset:
         hash_file = self._get_hash_file(asset_path)
         with FileLock(hash_file, 30):
             with open(hash_file, 'w', encoding='utf-8') as fp:
-                fp.write('%s %s\n' % (self.algorithm, result))
+                fp.write(f'{self.algorithm} {result}\n')
 
     def _create_metadata_file(self, asset_file):
         """
@@ -113,7 +113,7 @@ class Asset:
         """
         if self.metadata is not None:
             basename = os.path.splitext(asset_file)[0]
-            metadata_path = "%s_metadata.json" % basename
+            metadata_path = f"{basename}_metadata.json"
             with open(metadata_path, "w", encoding='utf-8') as metadata_file:
                 json.dump(self.metadata, metadata_file)
 
@@ -131,7 +131,7 @@ class Asset:
         timeout = timeout or DOWNLOAD_TIMEOUT
         try:
             # Temporary unique name to use while downloading
-            temp = '%s.%s' % (asset_path, str(uuid.uuid4()))
+            temp = f'{asset_path}.{str(uuid.uuid4())}'
 
             # To avoid parallel downloads of the same asset, and errors during
             # the write after download, let's get the lock before start the
@@ -166,7 +166,7 @@ class Asset:
         :returns: the CHECKSUM path
         :rtype: str
         """
-        return '%s-CHECKSUM' % asset_path
+        return f'{asset_path}-CHECKSUM'
 
     def _get_hash_from_file(self, asset_path):
         """
@@ -264,9 +264,9 @@ class Asset:
         else:
             # the URI is on self.parsed_name
             if self.parsed_name.query:
-                base_url = "%s://%s%s" % (self.parsed_name.scheme,
-                                          self.parsed_name.netloc,
-                                          self.parsed_name.path)
+                base_url = (f"{self.parsed_name.scheme}://"
+                            f"{self.parsed_name.netloc}"
+                            f"{self.parsed_name.path}")
             else:
                 base_url = os.path.dirname(self.parsed_name.geturl())
 
@@ -380,8 +380,8 @@ class Asset:
             elif url.startswith(('/', './')):
                 fetch = self._get_local_file
             else:
-                raise UnsupportedProtocolError("Unsupported protocol"
-                                               ": %s" % urlobj.scheme)
+                raise UnsupportedProtocolError(f"Unsupported protocol: "
+                                               f"{urlobj.scheme}")
             asset_file = os.path.join(cache_dir,
                                       self.relative_dir)
             dirname = os.path.dirname(asset_file)
@@ -398,7 +398,7 @@ class Asset:
                 LOG.error('%s: %s', exc_type.__name__, exc_value)
                 error = exc_value
 
-        raise OSError("Failed to fetch %s (%s)." % (self.asset_name, error))
+        raise OSError(f"Failed to fetch {self.asset_name} ({error}).")
 
     def find_asset_file(self, create_metadata=False):
         """
@@ -435,7 +435,7 @@ class Asset:
             LOG.info("Asset already exists in cache.")
             return asset_file
 
-        raise OSError("File %s not found in the cache." % self.asset_name)
+        raise OSError(f"File {self.asset_name} not found in the cache.")
 
     def get_metadata(self):
         """
@@ -450,7 +450,7 @@ class Asset:
             raise OSError("Metadata not available.")
 
         basename = os.path.splitext(asset_file)[0]
-        metadata_file = "%s_metadata.json" % basename
+        metadata_file = f"{basename}_metadata.json"
         if os.path.isfile(metadata_file):
             with open(metadata_file, "r", encoding='utf-8') as f:
                 metadata = json.load(f)
@@ -519,7 +519,7 @@ class Asset:
 
             return asset_file
 
-        raise OSError("File %s not found in the cache." % name)
+        raise OSError(f"File {name} not found in the cache.")
 
     @classmethod
     def get_assets_unused_for_days(cls, days, cache_dirs):
@@ -645,7 +645,7 @@ class Asset:
         :param asset_path: full path of the asset file.
         """
         os.remove(asset_path)
-        filename = "{}-CHECKSUM".format(asset_path)
+        filename = f"{asset_path}-CHECKSUM"
         os.remove(filename)
 
     @property

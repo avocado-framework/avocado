@@ -65,11 +65,11 @@ def _log_calls(func, length=None, cls_name=None):
     """
     def wrapper(*args, **kwargs):
         """ Wrapper function """
-        msg = ("CALL: %s:%s%s(%s, %s)"
+        msg = ("CALL: %s:%s%s(%s, %s)"  # pylint: disable=C0209
                % (os.path.relpath(func.__code__.co_filename),
                   cls_name, func.__name__,
                   ", ".join([str(_) for _ in args]),
-                  ", ".join(["%s=%s" % (key, value)
+                  ", ".join(["%s=%s" % (key, value)  # pylint: disable=C0209
                              for key, value in kwargs.items()])))
         if length:
             msg = msg[:length]

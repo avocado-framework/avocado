@@ -48,7 +48,7 @@ class GenericScanner:
 
     def makeRE(self, name):
         doc = getattr(self, name).__doc__
-        rv = '(?P<%s>%s)' % (name[2:], doc)
+        rv = f'(?P<{name[2:]}>{doc})'
         return rv
 
     def reflect(self):
@@ -62,7 +62,7 @@ class GenericScanner:
 
     @staticmethod
     def error(s, pos):  # pylint: disable=W0613
-        print("Lexical error at position %s" % pos)
+        print(f"Lexical error at position {pos}")
         raise SystemExit
 
     def tokenize(self, s):
@@ -213,7 +213,7 @@ class GenericParser:
                 self.addRule(doc, func)
 
     def augment(self, start):
-        rule = '%s ::= %s %s' % (self._START, self._BOF, start)
+        rule = f'{self._START} ::= {self._BOF} {start}'
         self.addRule(rule, lambda args: args[1], 0)
 
     def computeNull(self):
@@ -306,7 +306,7 @@ class GenericParser:
 
     @staticmethod
     def error(token):
-        print("Syntax error at or near `%s' token" % token)
+        print(f"Syntax error at or near `{token}' token")
         raise SystemExit
 
     def parse(self, tokens):

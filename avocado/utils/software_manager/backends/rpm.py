@@ -80,7 +80,7 @@ class RpmBackend(BaseBackend):
 
         if software_components:
             cmd_format = "rpm -qa --qf '%s' | sort"
-            query_format = "%s\n" % self.SOFTWARE_COMPONENT_QRY
+            query_format = f"{self.SOFTWARE_COMPONENT_QRY}\n"
             cmd_format %= query_format
             cmd_result = process.run(cmd_format, verbose=False, shell=True)
         else:
@@ -131,7 +131,7 @@ class RpmBackend(BaseBackend):
 
         nodeps = "--nodeps " if no_dependencies else ""
         update = "-U" if replace else "-i"
-        cmd = "rpm %s %s%s" % (update, nodeps, file_path)
+        cmd = f"rpm {update} {nodeps}{file_path}"
 
         try:
             process.system(cmd)
@@ -191,12 +191,12 @@ class RpmBackend(BaseBackend):
 
         build_option = "-bp"
         if dest_path is not None:
-            build_option += " --define '_builddir %s'" % dest_path
+            build_option += f" --define '_builddir {dest_path}'"
         else:
             LOG.error("Please provide a valid path")
             return ""
         try:
-            process.system("rpmbuild %s %s" % (build_option, spec_file))
+            process.system(f"rpmbuild {build_option} {spec_file}")
             return os.path.join(dest_path, os.listdir(dest_path)[0])
         except process.CmdError as details:
             LOG.error(details)
@@ -235,7 +235,7 @@ class RpmBackend(BaseBackend):
         """
         abs_path = os.path.abspath(os.path.expanduser((package_path)))
         try:
-            result = process.run("rpm -qp {}".format(abs_path))
+            result = process.run(f"rpm -qp {abs_path}")
         except process.CmdError:
             return False
         if result.exit_status == 0:
@@ -257,8 +257,7 @@ class RpmBackend(BaseBackend):
         dest = dest_path or os.path.curdir
 
         # If something goes wrong process.run will raise a CmdError exception
-        process.run("rpm2cpio {} | cpio -dium -D {}".format(abs_path,
-                                                            dest),
+        process.run(f"rpm2cpio {abs_path} | cpio -dium -D {dest}",
                     shell=True)
         return dest
 

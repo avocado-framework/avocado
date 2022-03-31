@@ -8,5 +8,5 @@ def run_command(command, host, sudo=False):
         return process.system_output(command, sudo=sudo).decode('utf-8')
 
     if sudo:
-        command = "sudo {}".format(command)
+        command = f"sudo {command}"
     return host.remote_session.cmd(command).stdout.decode('utf-8')

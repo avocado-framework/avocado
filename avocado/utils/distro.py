@@ -73,8 +73,8 @@ class LinuxDistro:
         self.arch = arch
 
     def __repr__(self):
-        return '<LinuxDistro: name=%s, version=%s, release=%s, arch=%s>' % (
-            self.name, self.version, self.release, self.arch)
+        return (f'<LinuxDistro: name={self.name}, version={self.version}, '
+                f'release={self.release}, arch={self.arch}>')
 
 
 UNKNOWN_DISTRO_NAME = 'unknown'
@@ -128,7 +128,7 @@ class Probe:
         :returns: whether the file exists in remote machine or not
         :rtype: bool
         """
-        if self.session and self.session.cmd("test -f %s" % file_name).exit_status == 0:
+        if self.session and self.session.cmd(f"test -f {file_name}").exit_status == 0:
             return True
         else:
             return False
@@ -186,7 +186,7 @@ class Probe:
         if self.check_name_for_file_contains():
             check_file = None
             if self.check_for_remote_file(self.CHECK_FILE):
-                check_file = self.session.cmd("cat %s" % self.CHECK_FILE).stdout_text.split('/n')
+                check_file = self.session.cmd(f"cat {self.CHECK_FILE}").stdout_text.split('/n')
             elif os.path.exists(self.CHECK_FILE):
                 try:
                     check_file = open(self.CHECK_FILE, encoding='utf-8')
@@ -220,14 +220,14 @@ class Probe:
         """
         if self.check_version():
             if self.session:
-                if self.session.cmd("test -f %s" % self.CHECK_FILE).exit_status != 0:
+                if self.session.cmd(f"test -f {self.CHECK_FILE}").exit_status != 0:
                     return None
             elif not os.path.exists(self.CHECK_FILE):
                 return None
 
             version_file_content = None
             if self.session:
-                version_file_content = self.session.cmd("cat %s" % self.CHECK_FILE).stdout_text
+                version_file_content = self.session.cmd(f"cat {self.CHECK_FILE}").stdout_text
             else:
                 try:
                     version_file_content = open(self.CHECK_FILE, encoding='utf-8').read()

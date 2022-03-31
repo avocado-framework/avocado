@@ -52,7 +52,7 @@ class DpkgBackend(BaseBackend):
         for line in raw_list:
             parts = line.split()
             if parts[0] == "ii":  # only grab "installed" packages
-                installed_packages.append("%s-%s" % (parts[1], parts[2]))
+                installed_packages.append(f"{parts[1]}-{parts[2]}")
         return installed_packages
 
     @staticmethod

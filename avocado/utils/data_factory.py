@@ -51,7 +51,7 @@ def generate_random_string(length, ignore=string.punctuation,
     while length > 0:
         tmp = _RAND_POOL.choice(chars)
         if convert and (tmp in convert):
-            tmp = "\\%s" % tmp
+            tmp = f"\\{tmp}"
         result += tmp
         length -= 1
     return result
