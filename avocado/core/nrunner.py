@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import abc
 import argparse
 import base64
 import collections
@@ -20,6 +19,8 @@ from unittest import TestLoader, TextTestRunner
 from uuid import uuid1
 
 import pkg_resources
+
+from avocado.core.plugin_interfaces import RunnableRunner
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -430,10 +431,7 @@ class Runnable:
         raise ValueError('Unsupported kind of runnable: %s' % self.kind)
 
 
-class BaseRunner(abc.ABC):
-    """
-    Base interface for a Runner
-    """
+class BaseRunner(RunnableRunner):
 
     @staticmethod
     def prepare_status(status_type, additional_info=None):
@@ -456,17 +454,6 @@ class BaseRunner(abc.ABC):
                        'time': time.monotonic()})
         return status
 
-    @abc.abstractmethod
-    def run(self, runnable):
-        """Runner main method
-
-        :param runnable: the runnable to be run
-        :type runnable: :class:`Runnable`
-
-        Yields dictionary as output, containing status as well as relevant
-        information concerning the results.
-        """
-
 
 class NoOpRunner(BaseRunner):
     """
@@ -478,6 +465,9 @@ class NoOpRunner(BaseRunner):
 
      * args: not used
     """
+
+    name = 'noop'
+    description = 'Sample runner that performs no action before reporting FINISHED status'
 
     def run(self, runnable):
         yield self.prepare_status('started')
@@ -499,6 +489,9 @@ class DryRunRunner(BaseRunner):
 
      * args: not used
     """
+
+    name = 'dry-run'
+    description = 'Runner for --dry-run'
 
     def run(self, runnable):
         yield self.prepare_status('started')
@@ -529,6 +522,9 @@ class ExecTestRunner(BaseRunner):
      * kwargs: key=val to be set as environment variables to the
        process
     """
+
+    name = 'exec-test'
+    description = 'Runner for standalone executables treated as tests'
 
     def _process_final_status(self, process,
                               stdout=None, stderr=None):  # pylint: disable=W0613
@@ -678,6 +674,9 @@ class PythonUnittestRunner(BaseRunner):
 
      * kwargs: not used
     """
+
+    name = 'python-unittest'
+    description = 'Runner for Python unittests'
 
     @property
     def unittest(self):

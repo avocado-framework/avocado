@@ -14,7 +14,6 @@
 """
 Plugins information plugin
 """
-
 from avocado.core import dispatcher
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
@@ -68,6 +67,8 @@ class Plugins(CLICmd):
              'Plugins that run test suites on a job (runners): '),
             (dispatcher.SpawnerDispatcher(),
              'Plugins that spawn tasks and know about their status (spawner): '),
+            (dispatcher.RunnableRunnerDispatcher(),
+             'Plugins that run runnables (under a task and spawner) (runnable.runner): '),
         ]
         for plugins_active, msg in plugin_types:
             LOG_UI.info(msg)

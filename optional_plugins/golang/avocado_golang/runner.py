@@ -26,6 +26,9 @@ class GolangRunner(nrunner.BaseRunner):
                            uri='countavocados:ExampleContainers')
     """
 
+    name = 'golang'
+    description = 'Runner for Golang tests'
+
     def run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable

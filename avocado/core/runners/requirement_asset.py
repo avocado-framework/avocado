@@ -28,6 +28,9 @@ class RequirementAssetRunner(nrunner.BaseRunner):
         - expire: time in seconds for the asset to expire (optional)
     """
 
+    name = 'requirement-asset'
+    description = 'Runner for dependencies of type package'
+
     @staticmethod
     def _fetch_asset(name, asset_hash, algorithm, locations, cache_dirs,
                      expire, queue):

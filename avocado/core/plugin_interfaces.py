@@ -370,3 +370,18 @@ class DeploymentSpawner(Spawner):
 
         This method should also be executed before spawning the task.
         """
+
+
+class RunnableRunner(Plugin):
+    """Base interface for a nrunner Runner."""
+
+    @abc.abstractmethod
+    def run(self, runnable):
+        """Runner main method
+
+        Yields dictionary as output, containing status as well as relevant
+        information concerning the results.
+
+        :param runnable: a Runnable instance that describes what is to be run
+        :type runnable: :class:`avocado.core.nrunner.Runnable`
+        """
