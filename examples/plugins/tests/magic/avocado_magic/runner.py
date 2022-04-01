@@ -21,10 +21,10 @@ class MagicRunner(nrunner.BaseRunner):
                            uri='pass')
     """
 
-    def run(self):
+    def run(self, runnable):
         yield StartedMessage.get()
-        if self.runnable.uri in ['pass', 'fail']:
-            result = self.runnable.uri
+        if runnable.uri in ['pass', 'fail']:
+            result = runnable.uri
         else:
             result = 'error'
         yield FinishedMessage.get(result)

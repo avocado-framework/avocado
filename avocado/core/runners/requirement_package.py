@@ -105,7 +105,9 @@ class RequirementPackageRunner(nrunner.BaseRunner):
                   'stderr': stderr}
         queue.put(output)
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
         yield messages.StartedMessage.get()
         # check if there is a valid 'action' argument
         cmd = self.runnable.kwargs.get('action', 'install')

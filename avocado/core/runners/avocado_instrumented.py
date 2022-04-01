@@ -96,7 +96,9 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
             queue.put(messages.StderrMessage.get(traceback.format_exc()))
             queue.put(messages.FinishedMessage.get('error', fail_reason=str(e)))
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
         yield messages.StartedMessage.get()
         try:
             queue = multiprocessing.SimpleQueue()

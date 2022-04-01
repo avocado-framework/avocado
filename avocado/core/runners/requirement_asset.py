@@ -50,7 +50,9 @@ class RequirementAssetRunner(nrunner.BaseRunner):
                   'stderr': stderr}
         queue.put(output)
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
         yield self.prepare_status('started')
 
         name = self.runnable.kwargs.get('name')

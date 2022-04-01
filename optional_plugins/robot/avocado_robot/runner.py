@@ -71,7 +71,9 @@ class RobotRunner(nrunner.BaseRunner):
         stderr.close()
         queue.put(output)
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
         file_name, suite_name, test_name = self._uri_to_file_suite_test()
         if not all([file_name, suite_name, test_name]):
 
