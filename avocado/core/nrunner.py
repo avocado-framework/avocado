@@ -19,12 +19,7 @@ import time
 from unittest import TestLoader, TextTestRunner
 from uuid import uuid1
 
-try:
-    import pkg_resources
-    PKG_RESOURCES_AVAILABLE = True
-except ImportError:
-    PKG_RESOURCES_AVAILABLE = False
-
+import pkg_resources
 
 #: The amount of time (in seconds) between each internal status check
 RUNNER_RUN_CHECK_INTERVAL = 0.01
@@ -332,13 +327,8 @@ class Runnable:
     def _module_exists(module_name):
         """Returns whether a nrunner "runner" module exists."""
         module_filename = '%s.py' % module_name
-        if PKG_RESOURCES_AVAILABLE:
-            mod_path = os.path.join('core', 'runners', module_filename)
-            return pkg_resources.resource_exists('avocado', mod_path)
-
-        core_dir = os.path.dirname(os.path.abspath(__file__))
-        mod_path = os.path.join(core_dir, 'runners', module_filename)
-        return os.path.exists(mod_path)
+        mod_path = os.path.join('core', 'runners', module_filename)
+        return pkg_resources.resource_exists('avocado', mod_path)
 
     def pick_runner_command(self, runners_registry=None):
         """Selects a runner command based on the runner.
@@ -409,8 +399,6 @@ class Runnable:
 
         :returns: a class that inherits from :class:`BaseRunner` or None
         """
-        if not PKG_RESOURCES_AVAILABLE:
-            return
         namespace = 'avocado.plugins.runnable.runner'
         for ep in pkg_resources.iter_entry_points(namespace):
             if ep.name == self.kind:
@@ -582,12 +570,11 @@ class ExecTestRunner(BaseRunner):
     def _get_avocado_version():
         """Return the Avocado package version, if installed"""
         version = "unknown.unknown"
-        if PKG_RESOURCES_AVAILABLE:
-            try:
-                version = pkg_resources.get_distribution(
-                    'avocado-framework').version
-            except pkg_resources.DistributionNotFound:
-                pass
+        try:
+            version = pkg_resources.get_distribution(
+                'avocado-framework').version
+        except pkg_resources.DistributionNotFound:
+            pass
         return version
 
     def _get_env_variables(self):
