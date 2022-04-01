@@ -20,7 +20,7 @@ import os
 import re
 
 from avocado.core.extension_manager import PluginPriority
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.plugin_interfaces import Resolver
 from avocado.core.references import reference_split
 from avocado.core.resolver import (ReferenceResolution,

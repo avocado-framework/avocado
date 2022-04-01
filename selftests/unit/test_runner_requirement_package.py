@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.runners.requirement_package import RequirementPackageRunner
 
 

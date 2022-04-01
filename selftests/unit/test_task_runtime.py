@@ -1,7 +1,8 @@
 import os
 from unittest import TestCase
 
-from avocado.core.nrunner import Runnable, Task
+from avocado.core.nrunner.runnable import Runnable
+from avocado.core.nrunner.task import Task
 from avocado.core.suite import TestSuite
 from avocado.core.task.runtime import RuntimeTask, RuntimeTaskGraph
 from avocado.utils import script

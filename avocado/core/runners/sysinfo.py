@@ -3,7 +3,10 @@ import os
 import time
 import traceback
 
-from avocado.core import nrunner
+from avocado.core.nrunner.app import BaseRunnerApp
+from avocado.core.nrunner.runner import (RUNNER_RUN_CHECK_INTERVAL,
+                                         RUNNER_RUN_STATUS_INTERVAL,
+                                         BaseRunner)
 from avocado.core.runners.utils import messages
 from avocado.utils import sysinfo as sysinfo_collectible
 from avocado.utils.software_manager import manager
@@ -111,7 +114,7 @@ class PostSysInfo(PreSysInfo):
                 self.collectibles.add(sysinfo_collectible.Logfile(fail_filename))
 
 
-class SysinfoRunner(nrunner.BaseRunner):
+class SysinfoRunner(BaseRunner):
     """
     Runner for gathering sysinfo
 
@@ -156,12 +159,12 @@ class SysinfoRunner(nrunner.BaseRunner):
 
             most_current_execution_state_time = None
             while True:
-                time.sleep(nrunner.RUNNER_RUN_CHECK_INTERVAL)
+                time.sleep(RUNNER_RUN_CHECK_INTERVAL)
                 now = time.monotonic()
                 if queue.empty():
                     if most_current_execution_state_time is not None:
                         next_execution_state_mark = (most_current_execution_state_time +
-                                                     nrunner.RUNNER_RUN_STATUS_INTERVAL)
+                                                     RUNNER_RUN_STATUS_INTERVAL)
                     if (most_current_execution_state_time is None or
                             now > next_execution_state_mark):
                         most_current_execution_state_time = now
@@ -176,14 +179,15 @@ class SysinfoRunner(nrunner.BaseRunner):
             yield messages.FinishedMessage.get('error')
 
 
-class RunnerApp(nrunner.BaseRunnerApp):
+class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner-sysinfo'
     PROG_DESCRIPTION = 'nrunner application for gathering sysinfo'
     RUNNABLE_KINDS_CAPABLE = ['sysinfo']
 
 
 def main():
-    nrunner.main(RunnerApp)
+    app = RunnerApp(print)
+    app.run()
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 import unittest
 
-from avocado.core import nrunner
+from avocado.core.nrunner.runnable import Runnable
+from avocado.core.nrunner.task import Task
 from avocado.core.spawners.mock import MockRandomAliveSpawner, MockSpawner
 from avocado.core.task.runtime import RuntimeTask
 from avocado.plugins.spawners.process import ProcessSpawner
@@ -8,8 +9,8 @@ from avocado.plugins.spawners.process import ProcessSpawner
 
 class Process(unittest.TestCase):
     def setUp(self):
-        runnable = nrunner.Runnable('noop', 'uri')
-        task = nrunner.Task(runnable, '1')
+        runnable = Runnable('noop', 'uri')
+        task = Task(runnable, '1')
         self.runtime_task = RuntimeTask(task)
         self.spawner = ProcessSpawner()
 
@@ -25,8 +26,8 @@ class Process(unittest.TestCase):
 class Mock(Process):
 
     def setUp(self):
-        runnable = nrunner.Runnable('noop', 'uri')
-        task = nrunner.Task(runnable, '1')
+        runnable = Runnable('noop', 'uri')
+        task = Task(runnable, '1')
         self.runtime_task = RuntimeTask(task)
         self.spawner = MockSpawner()
 
@@ -39,8 +40,8 @@ class Mock(Process):
 class RandomMock(Mock):
 
     def setUp(self):
-        runnable = nrunner.Runnable('noop', 'uri')
-        task = nrunner.Task(runnable, '1')
+        runnable = Runnable('noop', 'uri')
+        task = Task(runnable, '1')
         self.runtime_task = RuntimeTask(task)
         self.spawner = MockRandomAliveSpawner()
 

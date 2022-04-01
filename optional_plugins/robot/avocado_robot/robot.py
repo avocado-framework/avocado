@@ -19,7 +19,7 @@ Plugin to run Robot Framework tests in Avocado
 from robot.api import TestSuite, get_model
 from robot.output.logger import LOGGER
 
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.plugin_interfaces import Resolver
 from avocado.core.resolver import (ReferenceResolution,
                                    ReferenceResolutionResult, check_file)
