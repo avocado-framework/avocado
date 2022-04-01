@@ -29,6 +29,9 @@ from avocado.core.runners.utils import messages
 
 class RobotRunner(nrunner.BaseRunner):
 
+    name = 'robot'
+    description = 'Runner for Robot Framework tests'
+
     def _uri_to_file_suite_test(self):
         """Converts the uri to a file name, suit name and test name"""
         if not self.runnable.uri:

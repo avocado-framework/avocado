@@ -27,6 +27,9 @@ class RequirementPackageRunner(nrunner.BaseRunner):
           to 'install')
     """
 
+    name = 'requirement-package'
+    description = 'Runner for dependencies of type package'
+
     @staticmethod
     def _check(software_manager, package):
         if software_manager.check_installed(package):

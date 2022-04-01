@@ -25,6 +25,10 @@ class AvocadoInstrumentedTestRunner(nrunner.BaseRunner):
 
      * args: not used
     """
+
+    name = 'avocado-instrumented'
+    description = 'Runner for Avocado INSTRUMENTED tests'
+
     DEFAULT_TIMEOUT = 86400
 
     @staticmethod

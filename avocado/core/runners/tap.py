@@ -29,6 +29,9 @@ class TAPRunner(nrunner.ExecTestRunner):
                            DEBUG='false') # kwargs 1 (environment)
     """
 
+    name = 'tap'
+    description = 'Runner for standalone executables treated as TAP'
+
     @staticmethod
     def _get_tap_result(stdout):
         parser = TapParser(io.StringIO(stdout.decode()))
