@@ -1,7 +1,7 @@
 import tempfile
 import unittest
 
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolution
 from avocado.core.settings import SettingsError

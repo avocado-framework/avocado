@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from avocado.core.dependencies.resolver import DependencyResolver
-from avocado.core.nrunner import Task
+from avocado.core.nrunner.task import Task
 from avocado.core.test_id import TestID
 from avocado.core.varianter import dump_variant
 

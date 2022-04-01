@@ -23,10 +23,10 @@ import platform
 import random
 import tempfile
 
-from avocado.core import nrunner
 from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.exceptions import JobError, TestFailFast
 from avocado.core.messages import MessageHandler
+from avocado.core.nrunner.runner import check_runnables_runner_requirements
 from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init
 from avocado.core.plugin_interfaces import Runner as RunnerInterface
@@ -221,7 +221,7 @@ class Runner(RunnerInterface):
             job.interrupted_reason = f"Suite {test_suite.name} is disabled."
             return summary
 
-        test_suite.tests, missing_requirements = nrunner.check_runnables_runner_requirements(
+        test_suite.tests, missing_requirements = check_runnables_runner_requirements(
             test_suite.tests)
         self._abort_if_missing_runners(missing_requirements)
 
