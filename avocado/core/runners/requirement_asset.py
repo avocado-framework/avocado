@@ -107,7 +107,7 @@ class RequirementAssetRunner(nrunner.BaseRunner):
 class RunnerApp(nrunner.BaseRunnerApp):
     PROG_NAME = 'avocado-runner-asset'
     PROG_DESCRIPTION = ('nrunner application for dependencies of type asset')
-    RUNNABLE_KINDS_CAPABLE = {'asset': RequirementAssetRunner}
+    RUNNABLE_KINDS_CAPABLE = ['asset']
 
 
 def main():

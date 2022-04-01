@@ -77,7 +77,7 @@ class GolangRunner(nrunner.BaseRunner):
 class RunnerApp(nrunner.BaseRunnerApp):
     PROG_NAME = 'avocado-runner-golang'
     PROG_DESCRIPTION = 'nrunner application for golang tests'
-    RUNNABLE_KINDS_CAPABLE = {'golang': GolangRunner}
+    RUNNABLE_KINDS_CAPABLE = ['golang']
 
 
 def main():

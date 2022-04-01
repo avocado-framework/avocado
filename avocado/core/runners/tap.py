@@ -68,7 +68,7 @@ class RunnerApp(nrunner.BaseRunnerApp):
     PROG_NAME = 'avocado-runner-tap'
     PROG_DESCRIPTION = ('nrunner application for executable tests that '
                         'produce TAP')
-    RUNNABLE_KINDS_CAPABLE = {'tap': TAPRunner}
+    RUNNABLE_KINDS_CAPABLE = ['tap']
 
 
 def main():

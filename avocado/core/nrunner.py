@@ -33,12 +33,6 @@ RUNNER_RUN_STATUS_INTERVAL = 0.5
 #: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
 RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 
-#: All known runner Python classes.  This is a dictionary keyed by a
-#: runnable kind, and value is a class that inherits from
-#: :class:`BaseRunner`.  Suitable for spawners compatible with
-#: SpawnMethod.PYTHON_CLASS
-RUNNERS_REGISTRY_PYTHON_CLASS = {}
-
 #: The default category for tasks, and the value that will cause the
 #: task results to be included in the job results
 TASK_DEFAULT_CATEGORY = 'test'
@@ -394,9 +388,7 @@ class Runnable:
     def pick_runner_class_from_entry_point(self):
         """Selects a runner class from entry points based on kind.
 
-        This is related to the :data:`SpawnMethod.PYTHON_CLASS`. This
-        complements the :data:`RUNNERS_REGISTRY_PYTHON_CLASS` on systems
-        that have setuptools available.
+        This is related to the :data:`SpawnMethod.PYTHON_CLASS`.
 
         :returns: a class that inherits from :class:`BaseRunner` or None
         """
@@ -409,7 +401,7 @@ class Runnable:
                 except ImportError:
                     return
 
-    def pick_runner_class(self, runners_registry=None):
+    def pick_runner_class(self):
         """Selects a runner class from the registry based on kind.
 
         This is related to the :data:`SpawnMethod.PYTHON_CLASS`
@@ -420,12 +412,7 @@ class Runnable:
         :returns: a class that inherits from :class:`BaseRunner`
         :raises: ValueError if kind there's no runner from kind of runnable
         """
-        if runners_registry is None:
-            runners_registry = RUNNERS_REGISTRY_PYTHON_CLASS
-
-        runner = runners_registry.get(self.kind, None)
-        if runner is None:
-            runner = self.pick_runner_class_from_entry_point()
+        runner = self.pick_runner_class_from_entry_point()
         if runner is not None:
             return runner
         raise ValueError('Unsupported kind of runnable: %s' % self.kind)
@@ -474,9 +461,6 @@ class NoOpRunner(BaseRunner):
         yield self.prepare_status('finished', {'result': 'pass'})
 
 
-RUNNERS_REGISTRY_PYTHON_CLASS['noop'] = NoOpRunner
-
-
 class DryRunRunner(BaseRunner):
     """
     Runner for --dry-run.
@@ -499,9 +483,6 @@ class DryRunRunner(BaseRunner):
                                   {'result': 'cancel',
                                    'fail_reason': 'Test cancelled due to '
                                                   '--dry-run'})
-
-
-RUNNERS_REGISTRY_PYTHON_CLASS['dry-run'] = DryRunRunner
 
 
 class ExecTestRunner(BaseRunner):
@@ -651,9 +632,6 @@ class ExecTestRunner(BaseRunner):
         yield self.prepare_status('running', {'type': 'stderr', 'log': stderr})
         yield self._process_final_status(process, stdout, stderr)
         self._cleanup()
-
-
-RUNNERS_REGISTRY_PYTHON_CLASS['exec-test'] = ExecTestRunner
 
 
 class PythonUnittestRunner(BaseRunner):
@@ -812,9 +790,6 @@ class PythonUnittestRunner(BaseRunner):
         yield status
 
 
-RUNNERS_REGISTRY_PYTHON_CLASS['python-unittest'] = PythonUnittestRunner
-
-
 def _parse_key_val(argument):
     key_value = argument.split('=', 1)
     if len(key_value) < 2:
@@ -919,8 +894,7 @@ class Task:
     """
 
     def __init__(self, runnable, identifier=None, status_uris=None,
-                 known_runners=None, category=TASK_DEFAULT_CATEGORY,
-                 job_id=None):
+                 category=TASK_DEFAULT_CATEGORY, job_id=None):
         """Instantiates a new Task.
 
         :param runnable: the "description" of what the task should run.
@@ -935,8 +909,6 @@ class Task:
         :param status_uri: the URIs for the status servers that this task
                            should send updates to.
         :type status_uri: list
-        :param known_runners: a mapping of runnable kinds to runners.
-        :type known_runners: dict
         :param category: category of this task. Defaults to
                          :data:`TASK_DEFAULT_CATEGORY`.
         :type category: str
@@ -959,9 +931,6 @@ class Task:
                 status_uris = [status_uris]
             for status_uri in status_uris:
                 self.status_services.append(TaskStatusService(status_uri))
-        if known_runners is None:
-            known_runners = {}
-        self.known_runners = known_runners
         self.spawn_handle = None
         self.metadata = {}
 
@@ -988,12 +957,11 @@ class Task:
             self.runnable.output_dir = output_dir
 
     @classmethod
-    def from_recipe(cls, task_path, known_runners):
+    def from_recipe(cls, task_path):
         """
         Creates a task (which contains a runnable) from a task recipe file
 
         :param task_path: Path to a recipe file
-        :param known_runners: Dictionary with runner names and implementations
 
         :rtype: instance of :class:`Task`
         """
@@ -1008,8 +976,7 @@ class Task:
                             config=runnable_recipe.get('config'))
         status_uris = recipe.get('status_uris')
         category = recipe.get('category')
-        return cls(runnable, identifier, status_uris, known_runners,
-                   category)
+        return cls(runnable, identifier, status_uris, category)
 
     def get_command_args(self):
         """
@@ -1032,7 +999,7 @@ class Task:
 
     def run(self):
         self.setup_output_dir()
-        runner_klass = self.runnable.pick_runner_class(self.known_runners)
+        runner_klass = self.runnable.pick_runner_class()
         runner = runner_klass()
         for status in runner.run(self.runnable):
             if status['status'] == 'started':
@@ -1071,9 +1038,8 @@ class BaseRunnerApp:
     #: command line parser
     PROG_DESCRIPTION = ''
 
-    #: The types of runnables that this runner can handle.  Dictionary key
-    #: is a name, and value is a class that inherits from :class:`BaseRunner`
-    RUNNABLE_KINDS_CAPABLE = {}
+    #: The names of types of runnables that this runner can handle.
+    RUNNABLE_KINDS_CAPABLE = []
 
     #: The command line arguments to the "runnable-run" command
     CMD_RUNNABLE_RUN_ARGS = (
@@ -1204,7 +1170,7 @@ class BaseRunnerApp:
 
         :rtype: dict
         """
-        return {"runnables": list(self.RUNNABLE_KINDS_CAPABLE.keys()),
+        return {"runnables": self.RUNNABLE_KINDS_CAPABLE,
                 "commands": self.get_commands()}
 
     def get_runner_from_runnable(self, runnable):
@@ -1214,7 +1180,7 @@ class BaseRunnerApp:
         :rtype: instance of class inheriting from :class:`BaseRunner`
         :raises: ValueError if runnable is now supported
         """
-        runner = self.RUNNABLE_KINDS_CAPABLE.get(runnable.kind, None)
+        runner = runnable.pick_runner_class()
         if runner is not None:
             return runner()
         raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
@@ -1267,7 +1233,6 @@ class BaseRunnerApp:
         runnable = Runnable.from_args(args)
         task = Task(runnable, args.get('identifier'),
                     args.get('status_uri', []),
-                    known_runners=self.RUNNABLE_KINDS_CAPABLE,
                     category=args.get('category', TASK_DEFAULT_CATEGORY),
                     job_id=args.get('job_id'))
         for status in task.run():
@@ -1280,8 +1245,7 @@ class BaseRunnerApp:
         :param args: parsed command line arguments turned into a dictionary
         :type args: dict
         """
-        task = Task.from_recipe(args.get('recipe'),
-                                self.RUNNABLE_KINDS_CAPABLE)
+        task = Task.from_recipe(args.get('recipe'))
         for status in task.run():
             self.echo(status)
 
@@ -1289,7 +1253,7 @@ class BaseRunnerApp:
 class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner'
     PROG_DESCRIPTION = 'nrunner base application'
-    RUNNABLE_KINDS_CAPABLE = RUNNERS_REGISTRY_PYTHON_CLASS
+    RUNNABLE_KINDS_CAPABLE = ['noop', 'dry-run', 'exec-test',  'python-unittest']
 
 
 def main(app_class=RunnerApp):
