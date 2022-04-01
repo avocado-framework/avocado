@@ -196,8 +196,8 @@ class Runner(unittest.TestCase):
     def test_runner_noop(self):
         runnable = nrunner.Runnable('noop', None)
         runner_klass = runnable.pick_runner_class()
-        runner = runner_klass(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
         self.assertIn('time', last_result)
@@ -206,8 +206,8 @@ class Runner(unittest.TestCase):
         runnable = nrunner.Runnable('exec-test', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')
         runner_klass = runnable.pick_runner_class()
-        runner = runner_klass(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
         stdout_result = results[-3]
         stderr_result = results[-2]
         last_result = results[-1]
@@ -223,8 +223,8 @@ class Runner(unittest.TestCase):
         runnable = nrunner.Runnable('exec-test', sys.executable,
                                     '-c', 'import time; time.sleep(0.01)')
         runner_klass = runnable.pick_runner_class()
-        runner = runner_klass(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
         stdout_result = results[-3]
         stderr_result = results[-2]
         last_result = results[-1]
@@ -241,8 +241,8 @@ class Runner(unittest.TestCase):
     def test_runner_exec_test_fail(self):
         runnable = nrunner.Runnable('exec-test', '/bin/false')
         runner_klass = runnable.pick_runner_class()
-        runner = runner_klass(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
         stdout_result = results[-3]
         stderr_result = results[-2]
         last_result = results[-1]
@@ -258,8 +258,8 @@ class Runner(unittest.TestCase):
     def test_runner_python_unittest_error(self):
         runnable = nrunner.Runnable('python-unittest', 'error')
         runner_klass = runnable.pick_runner_class()
-        runner = runner_klass(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
         output = ("Invalid URI: could not be converted to an unittest "
                   "dotted name.")
         result = results[-1]
@@ -270,8 +270,8 @@ class Runner(unittest.TestCase):
     def test_runner_python_unittest_empty_uri_error(self):
         runnable = nrunner.Runnable('python-unittest', '')
         runner_klass = runnable.pick_runner_class()
-        runner = runner_klass(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_klass()
+        results = [status for status in runner.run(runnable)]
         output = ("Invalid URI: could not be converted to an unittest "
                   "dotted name.")
         result = results[-1]
@@ -299,8 +299,8 @@ echo 'not ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = runner_tap.TAPRunner(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_tap.TAPRunner()
+        results = [status for status in runner.run(runnable)]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'fail')
@@ -319,8 +319,8 @@ echo 'ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = runner_tap.TAPRunner(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_tap.TAPRunner()
+        results = [status for status in runner.run(runnable)]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'pass')
@@ -339,8 +339,8 @@ echo 'ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = runner_tap.TAPRunner(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_tap.TAPRunner()
+        results = [status for status in runner.run(runnable)]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'skip')
@@ -359,8 +359,8 @@ echo 'ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = runner_tap.TAPRunner(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_tap.TAPRunner()
+        results = [status for status in runner.run(runnable)]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'error')
@@ -379,8 +379,8 @@ echo 'ok 2 - description 2'"""
             fp.write(tap_script)
 
         runnable = nrunner.Runnable('tap', '/bin/sh', tap_path)
-        runner = runner_tap.TAPRunner(runnable)
-        results = [status for status in runner.run()]
+        runner = runner_tap.TAPRunner()
+        results = [status for status in runner.run(runnable)]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'error')

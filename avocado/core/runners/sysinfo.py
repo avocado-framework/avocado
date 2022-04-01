@@ -124,7 +124,9 @@ class SysinfoRunner(nrunner.BaseRunner):
                performed during the sysinfo collection.
     """
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
         yield self.prepare_status('started')
         sysinfo_config = self.runnable.kwargs.get('sysinfo', {})
         test_fail = self.runnable.kwargs.get('test_fail', False)

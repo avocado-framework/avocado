@@ -435,9 +435,6 @@ class BaseRunner(abc.ABC):
     Base interface for a Runner
     """
 
-    def __init__(self, runnable):
-        self.runnable = runnable
-
     @staticmethod
     def prepare_status(status_type, additional_info=None):
         """Prepare a status dict with some basic information.
@@ -460,8 +457,11 @@ class BaseRunner(abc.ABC):
         return status
 
     @abc.abstractmethod
-    def run(self):
+    def run(self, runnable):
         """Runner main method
+
+        :param runnable: the runnable to be run
+        :type runnable: :class:`Runnable`
 
         Yields dictionary as output, containing status as well as relevant
         information concerning the results.
@@ -479,7 +479,7 @@ class NoOpRunner(BaseRunner):
      * args: not used
     """
 
-    def run(self):
+    def run(self, runnable):
         yield self.prepare_status('started')
         yield self.prepare_status('finished', {'result': 'pass'})
 
@@ -500,7 +500,7 @@ class DryRunRunner(BaseRunner):
      * args: not used
     """
 
-    def run(self):
+    def run(self, runnable):
         yield self.prepare_status('started')
         yield self.prepare_status('finished',
                                   {'result': 'cancel',
@@ -595,7 +595,10 @@ class ExecTestRunner(BaseRunner):
                 self.runnable.output_dir
         return avocado_test_env_variables
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
+
         env = dict(os.environ)
         if self.runnable.kwargs:
             env.update(self.runnable.kwargs)
@@ -771,7 +774,10 @@ class PythonUnittestRunner(BaseRunner):
         stream.close()
         queue.put(output)
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
+
         if not self.module_class_method:
             error_msg = ("Invalid URI: could not be converted to an unittest "
                          "dotted name.")
@@ -940,6 +946,7 @@ class Task:
                        into the job's results.
         :type job_id: str
         """
+        # pylint: disable=W0201
         self.runnable = runnable
         self.identifier = identifier or str(uuid1())
         #: Category of the task.  If the category is not "test", it
@@ -1027,8 +1034,8 @@ class Task:
     def run(self):
         self.setup_output_dir()
         runner_klass = self.runnable.pick_runner_class(self.known_runners)
-        runner = runner_klass(self.runnable)
-        for status in runner.run():
+        runner = runner_klass()
+        for status in runner.run(self.runnable):
             if status['status'] == 'started':
                 status.update({'output_dir': self.runnable.output_dir})
             status.update({"id": self.identifier})
@@ -1210,7 +1217,7 @@ class BaseRunnerApp:
         """
         runner = self.RUNNABLE_KINDS_CAPABLE.get(runnable.kind, None)
         if runner is not None:
-            return runner(runnable)
+            return runner()
         raise ValueError('Unsupported kind of runnable: %s' % runnable.kind)
 
     def command_capabilities(self, _):
@@ -1236,7 +1243,7 @@ class BaseRunnerApp:
         """
         runnable = Runnable.from_args(args)
         runner = self.get_runner_from_runnable(runnable)
-        for status in runner.run():
+        for status in runner.run(runnable):
             self.echo(status)
 
     def command_runnable_run_recipe(self, args):
@@ -1248,7 +1255,7 @@ class BaseRunnerApp:
         """
         runnable = Runnable.from_recipe(args.get('recipe'))
         runner = self.get_runner_from_runnable(runnable)
-        for status in runner.run():
+        for status in runner.run(runnable):
             self.echo(status)
 
     def command_task_run(self, args):

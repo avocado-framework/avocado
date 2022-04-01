@@ -26,7 +26,9 @@ class GolangRunner(nrunner.BaseRunner):
                            uri='countavocados:ExampleContainers')
     """
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
         error_msgs = []
         if not GO_BIN:
             error_msgs.append('"go" binary is not available')
