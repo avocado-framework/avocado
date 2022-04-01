@@ -179,7 +179,7 @@ class SysinfoRunner(nrunner.BaseRunner):
 class RunnerApp(nrunner.BaseRunnerApp):
     PROG_NAME = 'avocado-runner-sysinfo'
     PROG_DESCRIPTION = 'nrunner application for gathering sysinfo'
-    RUNNABLE_KINDS_CAPABLE = {'sysinfo': SysinfoRunner}
+    RUNNABLE_KINDS_CAPABLE = ['sysinfo']
 
 
 def main():

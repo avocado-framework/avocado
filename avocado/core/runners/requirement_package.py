@@ -156,7 +156,7 @@ class RequirementPackageRunner(nrunner.BaseRunner):
 class RunnerApp(nrunner.BaseRunnerApp):
     PROG_NAME = 'avocado-runner-package'
     PROG_DESCRIPTION = ('nrunner application for dependencies of type package')
-    RUNNABLE_KINDS_CAPABLE = {'package': RequirementPackageRunner}
+    RUNNABLE_KINDS_CAPABLE = ['package']
 
 
 def main():

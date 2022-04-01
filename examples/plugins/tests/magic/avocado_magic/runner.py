@@ -33,7 +33,7 @@ class MagicRunner(nrunner.BaseRunner):
 class RunnerApp(nrunner.BaseRunnerApp):
     PROG_NAME = 'avocado-runner-magic'
     PROG_DESCRIPTION = 'nrunner application for magic tests'
-    RUNNABLE_KINDS_CAPABLE = {'magic': MagicRunner}
+    RUNNABLE_KINDS_CAPABLE = ['magic']
 
 
 def main():
