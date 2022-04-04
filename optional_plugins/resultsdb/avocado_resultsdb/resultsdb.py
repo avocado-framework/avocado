@@ -58,7 +58,7 @@ class ResultsdbResultEvent(ResultEvents):
 
         ref_url = None
         if self.rdblogs is not None:
-            ref_url = '%s/%s' % (self.rdblogs, self.job_logdir)
+            ref_url = f'{self.rdblogs}/{self.job_logdir}'
 
         self.rdbapi.create_group(self.job_id, ref_url, self.job_logdir)
 
@@ -76,7 +76,7 @@ class ResultsdbResultEvent(ResultEvents):
         outcome = self._status_map(state['status'])
         name = state['name'].name
         if state['name'].variant is not None:
-            name += ';%s' % state['name'].variant
+            name += f";{state['name'].variant}"
         group = [self.job_id]
 
         note = None
@@ -88,13 +88,12 @@ class ResultsdbResultEvent(ResultEvents):
         ref_url = None
         if self.rdblogs is not None:
             logdir = os.path.basename(state['logdir'])
-            ref_url = '%s/%s/test-results/%s' % (self.rdblogs,
-                                                 self.job_logdir,
-                                                 logdir)
+            ref_url = (f'{self.rdblogs}/{self.job_logdir}/'
+                       f'test-results/{logdir}')
 
         local_time_start = time.localtime(state['time_start'])
         local_time_end = time.localtime(state['time_end'])
-        data = {'time_elapsed': "%.2f s" % state['time_elapsed'],
+        data = {'time_elapsed': f"{state['time_elapsed']:.2f} s",
                 'time_start': time.strftime("%Y-%m-%d %H:%M:%S",
                                             local_time_start),
                 'time_end': time.strftime("%Y-%m-%d %H:%M:%S",
@@ -107,7 +106,7 @@ class ResultsdbResultEvent(ResultEvents):
         params = {}
         if state['params']:
             for path, key, value in state['params']:
-                params['param %s' % key] = '%s (path: %s)' % (value, path)
+                params[f'param {key}'] = f'{value} (path: {path})'
             data.update(params)
 
         self.rdbapi.create_result(outcome, name, group, note, ref_url, **data)

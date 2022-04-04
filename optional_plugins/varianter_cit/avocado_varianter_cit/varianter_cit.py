@@ -45,7 +45,7 @@ class VarianterCitCLI(CLI):
             if subparser is None:
                 continue
             subparser.add_argument_group('CIT varianter options')
-            settings.register_option(section="{}.cit".format(name),
+            settings.register_option(section=f"{name}.cit",
                                      key='parameter_file',
                                      metavar='PATH',
                                      help_msg='Paths to a parameter file',
@@ -54,7 +54,7 @@ class VarianterCitCLI(CLI):
                                      long_arg='--cit-parameter-file')
 
             help_msg = "Order of combinations. Maximum number is 6"
-            settings.register_option(section="{}.cit".format(name),
+            settings.register_option(section=f"{name}.cit",
                                      key='combination_order',
                                      key_type=int,
                                      parser=subparser,
@@ -80,12 +80,12 @@ class VarianterCit(Varianter):
     def initialize(self, config):
         subcommand = config.get('subcommand')
         self.variants = None  # pylint: disable=W0201
-        order = config.get("{}.cit.combination_order".format(subcommand))
+        order = config.get(f"{subcommand}.cit.combination_order")
         if order and order > 6:
             LOG_UI.error("The order of combinations is bigger then 6")
             self.error_exit(config)
 
-        section_key = "{}.cit.parameter_file".format(subcommand)
+        section_key = f"{subcommand}.cit.parameter_file"
         cit_parameter_file = config.get(section_key)
         if cit_parameter_file is None:
             return
@@ -155,7 +155,7 @@ class VarianterCit(Varianter):
 
         if variants:
             # variants == 0 means disable, but in plugin it's brief
-            out.append("CIT Variants (%s):" % len(self))
+            out.append(f"CIT Variants ({len(self)}):")
             for variant in self:
                 out.extend(varianter.variant_to_str(variant, variants - 1,
                                                     kwargs, False))

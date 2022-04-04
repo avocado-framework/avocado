@@ -26,7 +26,7 @@ def combine(leaves_pools):
 class TestMuxTree(unittest.TestCase):
     # Share tree with all tests
     tree_yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest.yaml')
-    tree_yaml_url = '/:%s' % tree_yaml_path
+    tree_yaml_url = f'/:{tree_yaml_path}'
     tree = yaml_to_mux.create_from_yaml([tree_yaml_url])
 
     def test_node_order(self):
@@ -136,8 +136,8 @@ class TestMuxTree(unittest.TestCase):
             # In ascii mode we replace non-ascii character using
             # xmlcharrefreplace, make sure this is performed
             leaf = leaf.encode('ascii', errors='xmlcharrefreplace')
-            self.assertIn(leaf, tree_view, "Leaf %s not in ascii:\n%s"
-                          % (leaf, tree_view))
+            self.assertIn(leaf, tree_view,
+                          f"Leaf {leaf} not in ascii:\n{tree_view}")
 
     def test_filters(self):
         tree2 = copy.deepcopy(self.tree)
@@ -175,7 +175,7 @@ class TestMuxTree(unittest.TestCase):
     def test_advanced_yaml(self):
         tree2_yaml_path = os.path.join(BASEDIR,
                                        'tests/.data/mux-selftest-advanced.yaml')
-        tree2_yaml_url = '/:%s' % tree2_yaml_path
+        tree2_yaml_url = f'/:{tree2_yaml_path}'
         tree2 = yaml_to_mux.create_from_yaml([tree2_yaml_url])
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', '6',
                '7', 'gentoo', '\u0161mint', 'prod', 'new_node', 'on', 'dict']
@@ -237,7 +237,7 @@ class TestMuxTree(unittest.TestCase):
         str(variant1)
         variant_list = []
         for item in variant1:
-            variant_list.append("'%s': '%s'" % (item, variant1[item]))
+            variant_list.append(f"'{item}': '{variant1[item]}'")
         expected_items = ["'paths': ''",
                           "'variant': '[TreeNode(name='child1'), "
                           "TreeNode(name='child2')]'",
@@ -252,7 +252,7 @@ class TestMultiplex(unittest.TestCase):
 
     def setUp(self):
         tree_yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest.yaml')
-        tree_yaml_url = '/:%s' % tree_yaml_path
+        tree_yaml_url = f'/:{tree_yaml_path}'
         self.mux_tree = yaml_to_mux.create_from_yaml([tree_yaml_url])
         self.mux_full = tuple(mux.MuxTree(self.mux_tree))
 
@@ -271,7 +271,7 @@ class TestMultiplex(unittest.TestCase):
 
     def test_create_variants(self):
         tree_yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest.yaml')
-        tree_yaml_url = '/:%s' % tree_yaml_path
+        tree_yaml_url = f'/:{tree_yaml_path}'
         from_file = yaml_to_mux.create_from_yaml([tree_yaml_url])
         from_file = mux.MuxTree(from_file)
         self.assertEqual(self.mux_full, tuple(from_file))
@@ -280,7 +280,7 @@ class TestMultiplex(unittest.TestCase):
     def test_filter_only(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'])
         tree_yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest.yaml')
-        tree_yaml_url = '/:%s' % tree_yaml_path
+        tree_yaml_url = f'/:{tree_yaml_path}'
         act = yaml_to_mux.create_from_yaml([tree_yaml_url])
         act = mux.apply_filters(act, ('/hw/cpu/intel', '/distro/fedora',
                                       '/hw'))
@@ -289,7 +289,7 @@ class TestMultiplex(unittest.TestCase):
 
     def test_filter_out(self):
         tree_yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest.yaml')
-        tree_yaml_url = '/:%s' % tree_yaml_path
+        tree_yaml_url = f'/:{tree_yaml_path}'
         act = yaml_to_mux.create_from_yaml([tree_yaml_url])
         act = mux.apply_filters(act, None, ('/hw/cpu/intel', '/distro/fedora',
                                             '/distro'))
@@ -307,7 +307,7 @@ class TestAvocadoParams(unittest.TestCase):
 
     def setUp(self):
         yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest-params.yaml')
-        yaml_url = '/:%s' % yaml_path
+        yaml_url = f'/:{yaml_path}'
         yamls = yaml_to_mux.create_from_yaml([yaml_url])
         self.yamls = iter(mux.MuxTree(yamls))
         self.params1 = parameters.AvocadoParams(next(self.yamls),
@@ -436,7 +436,7 @@ class TestMultipleLoaders(unittest.TestCase):
         Verifies that `create_from_yaml` does not affects the main yaml.Loader
         """
         yaml_path = os.path.join(BASEDIR, 'tests/.data/mux-selftest.yaml')
-        yaml_url = '/:%s' % yaml_path
+        yaml_url = f'/:{yaml_path}'
         treenode = yaml_to_mux.create_from_yaml([yaml_url])
         self.assertEqual(type(treenode), mux.MuxTreeNode)
         self.assertEqual(type(treenode.children[0]), mux.MuxTreeNode)

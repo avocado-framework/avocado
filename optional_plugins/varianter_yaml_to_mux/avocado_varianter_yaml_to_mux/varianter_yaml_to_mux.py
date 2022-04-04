@@ -87,8 +87,8 @@ def _handle_control_tag(path, node, value):
         if not os.path.isabs(ypath):
             ypath = os.path.join(os.path.dirname(path), ypath)
         if not os.path.exists(ypath):
-            raise ValueError("File '%s' included from '%s' does not "
-                             "exist." % (ypath, path))
+            raise ValueError(f"File '{ypath}' included from '{path}' "
+                             f"does not exist.")
         node.merge(_create_from_yaml('/:' + ypath))
     elif value[0].code in (YAML_REMOVE_NODE, YAML_REMOVE_VALUE):
         value[0].value = value[1]   # set the name
@@ -118,8 +118,8 @@ def _handle_control_tag_using(path, name, using, value):
     :param value: the value of the node
     """
     if using:
-        raise ValueError("!using can be used only once per "
-                         "node! (%s:%s)" % (path, name))
+        raise ValueError(f"!using can be used only once "
+                         f"per node! ({path}:{name})")
     using = value
     if using[0] == '/':
         using = using[1:]
@@ -347,9 +347,9 @@ def create_from_yaml(paths):
     except (yaml.YAMLError, IndexError) as details:
         if ('mapping values are not allowed in this context' in
                 astring.to_text(details)):
-            details = ("%s\nMake sure !tags and colons are separated by a "
-                       "space (eg. !include :)" % details)
-        msg = "Invalid multiplex file '%s': %s" % (path, details)
+            details = (f"{details}\nMake sure !tags and colons are separated "
+                       f"by a space (eg. !include :)")
+        msg = f"Invalid multiplex file '{path}': {details}"
         raise IOError(2, msg, path)
     return data
 
@@ -421,7 +421,7 @@ class YamlToMuxCLI(CLI):
                 continue
             agroup = subparser.add_argument_group("yaml to mux options")
             settings.add_argparser_to_option(
-                namespace="%s.%s" % (self.name, 'files'),
+                namespace=f"{self.name}.{'files'}",
                 parser=agroup,
                 long_arg='--mux-yaml',
                 short_arg='-m',
@@ -430,7 +430,7 @@ class YamlToMuxCLI(CLI):
                 allow_multiple=True)
 
             settings.add_argparser_to_option(
-                namespace="%s.%s" % (self.name, 'filter_only'),
+                namespace=f"{self.name}.{'filter_only'}",
                 parser=agroup,
                 long_arg='--mux-filter-only',
                 nargs='+',
@@ -438,7 +438,7 @@ class YamlToMuxCLI(CLI):
                 metavar='FILTER')
 
             settings.add_argparser_to_option(
-                namespace="%s.%s" % (self.name, 'filter_out'),
+                namespace=f"{self.name}.{'filter_out'}",
                 parser=agroup,
                 long_arg='--mux-filter-out',
                 nargs='+',
@@ -446,7 +446,7 @@ class YamlToMuxCLI(CLI):
                 metavar='FILTER')
 
             settings.add_argparser_to_option(
-                namespace="%s.%s" % (self.name, 'parameter_paths'),
+                namespace=f"{self.name}.{'parameter_paths'}",
                 parser=agroup,
                 long_arg='--mux-path',
                 nargs='+',
@@ -454,7 +454,7 @@ class YamlToMuxCLI(CLI):
                 metavar='PATH')
 
             settings.add_argparser_to_option(
-                namespace="%s.%s" % (self.name, 'inject'),
+                namespace=f"{self.name}.{'inject'}",
                 parser=agroup,
                 long_arg='--mux-inject',
                 nargs='+',
@@ -487,7 +487,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             try:
                 data.merge(create_from_yaml(multiplex_files))
             except IOError as details:
-                error_msg = "%s : %s" % (details.strerror, details.filename)
+                error_msg = f"{details.strerror} : {details.filename}"
                 LOG_UI.error(error_msg)
                 if subcommand == 'run':
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -498,8 +498,8 @@ class YamlToMux(mux.MuxPlugin, Varianter):
         for inject in config.get("yaml_to_mux.inject"):
             entry = inject.split(':', 2)
             if len(entry) < 2:
-                raise ValueError("key:entry pairs required, found only %s"
-                                 % (entry))
+                raise ValueError(f"key:entry pairs required, "
+                                 f"found only {entry}")
             elif len(entry) == 2:   # key, entry
                 entry.insert(0, '')  # add path='' (root)
             # We try to maintain the data type of the provided value

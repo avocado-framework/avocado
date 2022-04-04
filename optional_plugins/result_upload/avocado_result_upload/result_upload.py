@@ -47,10 +47,9 @@ class ResultUpload(Result):
             return
         if self.upload_cmd is None:
             return
-        ret = process.run("%s %s %s" % (self.upload_cmd, job.logdir,
-                                        self.upload_url))
+        ret = process.run(f"{self.upload_cmd} {job.logdir} {self.upload_url}")
         if ret.exit_status:
-            job.log.error("ResultUploader failed msg=%s" % result.stderr)
+            job.log.error(f"ResultUploader failed msg={result.stderr}")
 
 
 class ResultUploadCLI(CLI):
@@ -83,7 +82,7 @@ class ResultUploadCLI(CLI):
             def_ssh = ('ssh -oLogLevel=error -o stricthostkeychecking=no'
                        ' -o userknownhostsfile=/dev/null'
                        ' -o batchmode=yes -o passwordauthentication=no')
-            def_upload_cmd = '%s -arz -e \'%s \'' % (rsync_bin, def_ssh)
+            def_upload_cmd = f'{rsync_bin} -arz -e \'{def_ssh} \''
         except utils_path.CmdNotFoundError:
             def_upload_cmd = None
 

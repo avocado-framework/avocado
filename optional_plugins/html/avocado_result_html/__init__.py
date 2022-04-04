@@ -62,7 +62,7 @@ class ReportModel:
             with open(sysinfo_path, 'r', encoding='utf-8') as sysinfo_file:
                 sysinfo_contents = sysinfo_file.read()
         except (OSError, IOError) as details:
-            sysinfo_contents = "Error reading %s: %s" % (sysinfo_path, details)
+            sysinfo_contents = f"Error reading {sysinfo_path}: {details}"
         return sysinfo_contents
 
     @staticmethod
@@ -104,7 +104,7 @@ class ReportModel:
                 try:
                     parameters = 'Params:\n'
                     for path, key, value in tst['params']:
-                        parameters += '  %s:%s => %s\n' % (path, key, value)
+                        parameters += f'  {path}:{key} => {value}\n'
                 except KeyError:
                     pass
                 else:
@@ -120,7 +120,7 @@ class ReportModel:
             formatted['logfile'] = os.path.relpath(logfile,
                                                    self.html_output_dir)
             formatted['logfile_basename'] = os.path.basename(logfile)
-            formatted['time'] = "%.2f" % tst['time_elapsed']
+            formatted['time'] = f"{tst['time_elapsed']:.2f}"
             local_time_start = time.localtime(tst['actual_time_start'])
             formatted['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
                                                     local_time_start)
@@ -152,8 +152,8 @@ class ReportModel:
             sysinfo_dict = {}
             sysinfo_path = os.path.join(base_path, s_f)
             sysinfo_dict['file'] = s_f
-            sysinfo_dict['element_id'] = '%s_heading_%s' % (phase, s_id)
-            sysinfo_dict['collapse_id'] = '%s_collapse_%s' % (phase, s_id)
+            sysinfo_dict['element_id'] = f'{phase}_heading_{s_id}'
+            sysinfo_dict['collapse_id'] = f'{phase}_collapse_{s_id}'
             try:
                 with codecs.open(sysinfo_path, 'r',
                                  encoding="utf-8") as sysinfo_file:

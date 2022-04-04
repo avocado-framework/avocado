@@ -33,7 +33,7 @@ setup(name='avocado-framework-plugin-golang',
       url='http://avocado-framework.github.io/',
       packages=packages,
       include_package_data=True,
-      install_requires=['avocado-framework==%s' % VERSION],
+      install_requires=[f'avocado-framework=={VERSION}'],
       test_suite='tests',
       entry_points={
           'console_scripts': [

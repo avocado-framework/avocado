@@ -25,7 +25,7 @@ setup(name='avocado-framework-plugin-result-html',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['avocado-framework==%s' % VERSION, 'jinja2'],
+      install_requires=[f'avocado-framework=={VERSION}', 'jinja2'],
       entry_points={
           'avocado.plugins.cli': [
               'html = avocado_result_html:HTML',

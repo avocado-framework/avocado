@@ -33,7 +33,7 @@ setup(name='avocado-framework-plugin-result-upload',
       url='http://avocado-framework.github.io/',
       packages=packages,
       include_package_data=True,
-      install_requires=['avocado-framework==%s' % VERSION],
+      install_requires=[f'avocado-framework=={VERSION}'],
       entry_points={
           'avocado.plugins.cli': [
               'results_upload = avocado_result_upload.result_upload:ResultUploadCLI',
