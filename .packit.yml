@@ -9,3 +9,5 @@ jobs:
       - fedora-all
       - centos-stream-8
       - centos-stream-9
+      - epel-8
+      - epel-9
