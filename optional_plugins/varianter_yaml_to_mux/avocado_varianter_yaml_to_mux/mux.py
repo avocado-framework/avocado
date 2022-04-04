@@ -198,7 +198,7 @@ class MuxPlugin:
 
         if variants:
             # variants == 0 means disable, but in plugin it's brief
-            out.append("Multiplex variants (%s):" % len(self))
+            out.append(f"Multiplex variants ({len(self)}):")
             for variant in self:
                 out.extend(varianter.variant_to_str(variant, variants - 1,
                                                     kwargs))
@@ -223,10 +223,8 @@ class OutputValue:  # only container pylint: disable=R0903
         self.yaml = srcyaml
 
     def __str__(self):
-        return "%s%s@%s:%s%s" % (self.value,
-                                 output.TERM_SUPPORT.LOWLIGHT,
-                                 self.yaml, self.node.path,
-                                 output.TERM_SUPPORT.ENDC)
+        return (f"{self.value}{output.TERM_SUPPORT.LOWLIGHT}@{self.yaml}:"
+                f"{self.node.path}{output.TERM_SUPPORT.ENDC}")
 
 
 class OutputList(list):  # only container pylint: disable=R0903
@@ -248,8 +246,7 @@ class OutputList(list):  # only container pylint: disable=R0903
     def __str__(self):
         color = output.TERM_SUPPORT.LOWLIGHT
         cend = output.TERM_SUPPORT.ENDC
-        return ' + '.join("%s%s@%s:%s%s"
-                          % (_[0], color, _[1], _[2].path, cend)
+        return ' + '.join(f"{_[0]}{color}@{_[1]}:{_[2].path}{cend}"
                           for _ in zip(self, self.yamls,
                                        self.nodes))
 
@@ -315,10 +312,10 @@ class MuxTreeNode(tree.TreeNode):
         self.multiplex = None
 
     def __repr__(self):
-        return '%s(name=%r)' % (self.__class__.__name__, self.name)
+        return f'{self.__class__.__name__}(name={self.name!r})'
 
     def fingerprint(self):
-        return "%s%s" % (super().fingerprint(), self.ctrl)
+        return f"{super().fingerprint()}{self.ctrl}"
 
     def merge(self, other):
         """

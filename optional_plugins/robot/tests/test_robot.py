@@ -33,7 +33,7 @@ class Resolver(unittest.TestCase):
     @unittest.skipUnless(python_module_available('avocado-framework-plugin-robot'),
                          'avocado-framework-plugin-robot python module missing')
     @unittest.skipUnless(os.path.isfile(ROBOT_AVOCADO),
-                         'Robot test file not found at "%s"' % ROBOT_AVOCADO)
+                         f'Robot test file not found at "{ROBOT_AVOCADO}"')
     def test_resolver(self):
         res = avocado_robot.robot.RobotResolver().resolve(ROBOT_AVOCADO)
         self.assertEqual(res.result, ReferenceResolutionResult.SUCCESS)

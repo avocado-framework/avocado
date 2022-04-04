@@ -33,7 +33,7 @@ setup(name='avocado-framework-plugin-resultsdb',
       url='http://avocado-framework.github.io/',
       packages=packages,
       include_package_data=True,
-      install_requires=['avocado-framework==%s' % VERSION,
+      install_requires=[f'avocado-framework=={VERSION}',
                         'resultsdb-api==2.1.5'],
       entry_points={
           'avocado.plugins.cli': [
