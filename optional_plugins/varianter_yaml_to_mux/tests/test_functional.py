@@ -19,77 +19,80 @@ class MultiplexTests(unittest.TestCase):
         os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
-                         "Command %s did not return rc "
-                         "%d:\n%s" % (cmd_line, expected_rc, result))
+                         (f"Command {cmd_line} did not return rc "
+                          f"{expected_rc}:\n{result}"))
         if tests is not None:
-            exp = ("PASS %s | ERROR 0 | FAIL %s | SKIP 0 | WARN 0 | "
+            exp = ("PASS %s | ERROR 0 | FAIL %s | SKIP 0 | WARN 0 | "  # pylint: disable=C0209
                    "INTERRUPT 0" % tests)
-            self.assertIn(exp, result.stdout_text, "%s not in stdout:\n%s"
-                          % (exp, result))
+            self.assertIn(exp, result.stdout_text,
+                          f"{exp} not in stdout:\n{result}")
         return result
 
     def test_mplex_plugin(self):
-        cmd_line = ('%s variants -m examples/tests/sleeptest.py.data/'
-                    'sleeptest.yaml' % AVOCADO)
+        cmd_line = (f'{AVOCADO} variants -m examples/tests/sleeptest.py.data/'
+                    f'sleeptest.yaml')
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
     def test_mplex_plugin_nonexistent(self):
-        cmd_line = '%s variants -m nonexist' % AVOCADO
+        cmd_line = f'{AVOCADO} variants -m nonexist'
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn('No such file or directory', result.stderr_text)
 
     def test_mplex_plugin_using(self):
-        cmd_line = ('%s variants -m /:optional_plugins/varianter_yaml_to_mux/'
-                    'tests/.data/mux-selftest-using.yaml' % AVOCADO)
+        cmd_line = (f'{AVOCADO} variants '
+                    f'-m /:optional_plugins/varianter_yaml_to_mux/'
+                    f'tests/.data/mux-selftest-using.yaml')
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(b' /foo/baz/bar', result.stdout)
 
     def test_run_mplex_noid(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    '-m examples/tests/sleeptest.py.data/sleeptest.yaml'
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo '
+                    f'-m examples/tests/sleeptest.py.data/sleeptest.yaml')
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_passtest(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'examples/tests/passtest.py -m '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml'
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo '
+                    f'examples/tests/passtest.py -m '
+                    f'examples/tests/sleeptest.py.data/sleeptest.yaml')
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, (4, 0))
         # Also check whether jobdata contains correct parameter paths
         with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
                                "variants-1.json"), encoding='utf-8') as variants_file:
             variants = variants_file.read()
-        self.assertIn('["/run/*"]', variants, "parameter paths stored in "
-                      "jobdata does not contains [\"/run/*\"]\n%s" % variants)
+        self.assertIn('["/run/*"]', variants,
+                      (f'parameter paths stored in jobdata does not contains '
+                       f'[\"/run/*\"]\n{variants}"'))
 
     def test_run_mplex_doublepass(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'examples/tests/passtest.py '
-                    'examples/tests/passtest.py -m '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    '--mux-path /foo/\\* /bar/\\* /baz/\\*'
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo '
+                    f'examples/tests/passtest.py '
+                    f'examples/tests/passtest.py -m '
+                    f'examples/tests/sleeptest.py.data/sleeptest.yaml '
+                    f'--mux-path /foo/\\* /bar/\\* /baz/\\*')
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (8, 0))
         # Also check whether jobdata contains correct parameter paths
         with open(os.path.join(self.tmpdir.name, "latest", "jobdata",
                                "variants-1.json"), encoding='utf-8') as variants_file:
             variants = variants_file.read()
         exp = '["/foo/*", "/bar/*", "/baz/*"]'
-        self.assertIn(exp, variants, "parameter paths stored in jobdata "
-                      "does not contains %s\n%s" % (exp, variants))
+        self.assertIn(exp, variants,
+                      (f"parameter paths stored in jobdata does not contains "
+                       f"{exp}\n{variants}"))
 
     def test_run_mplex_failtest(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'examples/tests/passtest.py '
-                    'examples/tests/failtest.py -m '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml'
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo '
+                    f'examples/tests/passtest.py '
+                    f'examples/tests/failtest.py -m '
+                    f'examples/tests/sleeptest.py.data/sleeptest.yaml')
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
         self.assertIn(b"(1/8) examples/tests/passtest.py:PassTest.test;run-short-beaf",
@@ -100,12 +103,12 @@ class MultiplexTests(unittest.TestCase):
                       result.stdout)
 
     def test_run_mplex_failtest_tests_per_variant(self):
-        cmd_line = ("%s run --job-results-dir %s --disable-sysinfo "
-                    "examples/tests/passtest.py "
-                    "examples/tests/failtest.py -m "
-                    "examples/tests/sleeptest.py.data/sleeptest.yaml "
-                    "--execution-order tests-per-variant"
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+                    f"--disable-sysinfo "
+                    f"examples/tests/passtest.py "
+                    f"examples/tests/failtest.py -m "
+                    f"examples/tests/sleeptest.py.data/sleeptest.yaml "
+                    f"--execution-order tests-per-variant")
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
         self.assertIn(b"(1/8) examples/tests/passtest.py:PassTest.test;run-short-beaf",
@@ -116,18 +119,19 @@ class MultiplexTests(unittest.TestCase):
                       result.stdout)
 
     def test_run_double_mplex(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'examples/tests/passtest.py -m '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml'
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo '
+                    f'examples/tests/passtest.py -m '
+                    f'examples/tests/sleeptest.py.data/sleeptest.yaml '
+                    f'examples/tests/sleeptest.py.data/sleeptest.yaml')
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, (4, 0))
 
     def test_empty_file(self):
-        cmd_line = ("%s run --job-results-dir %s -m optional_plugins/"
-                    "varianter_yaml_to_mux/tests/.data/empty_file "
-                    "-- examples/tests/passtest.py" % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f"{AVOCADO} run --job-results-dir {self.tmpdir.name} "
+                    f" -m optional_plugins/"
+                    f"varianter_yaml_to_mux/tests/.data/empty_file "
+                    f"-- examples/tests/passtest.py")
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (1, 0))
 
     def test_run_mplex_params(self):
@@ -135,11 +139,11 @@ class MultiplexTests(unittest.TestCase):
                             ('/run/medium', 'ASDFASDF'),
                             ('/run/long', 'This is very long\nmultiline\ntext.')):
             variant, msg = variant_msg
-            cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                        'examples/tests/custom_env_variable.sh '
-                        '-m examples/tests/custom_env_variable.sh.data/variants.yaml '
-                        '--mux-filter-only %s'
-                        % (AVOCADO, self.tmpdir.name, variant))
+            cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
+                        f'--disable-sysinfo '
+                        f'examples/tests/custom_env_variable.sh '
+                        f'-m examples/tests/custom_env_variable.sh.data/'
+                        f'variants.yaml --mux-filter-only {variant}')
             expected_rc = exit_codes.AVOCADO_ALL_OK
             result = self.run_and_check(cmd_line, expected_rc)
 
@@ -150,24 +154,24 @@ class MultiplexTests(unittest.TestCase):
                 result += genio.read_file(log_file)
 
             msg_lines = msg.splitlines()
-            msg_header = '[stdout] Custom variable: %s' % msg_lines[0]
+            msg_header = f'[stdout] Custom variable: {msg_lines[0]}'
             self.assertIn(msg_header, result,
                           "Multiplexed variable should produce:"
                           "\n  %s\nwhich is not present in the output:\n  %s"
                           % (msg_header, "\n  ".join(result.splitlines())))
             for msg_remain in msg_lines[1:]:
-                self.assertIn('[stdout] %s' % msg_remain, result,
+                self.assertIn(f'[stdout] {msg_remain}', result,
                               "Multiplexed variable should produce:"
                               "\n  %s\nwhich is not present in the output:\n  %s"
                               % (msg_remain, "\n  ".join(result.splitlines())))
 
     def test_mux_inject(self):
-        cmd = ("%s run --disable-sysinfo --json - "
-               "--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
-               "foo:bar:b foo:baz:c bar:bar:bar "
-               "-- examples/tests/params.py "
-               "examples/tests/params.py "
-               "examples/tests/params.py " % AVOCADO)
+        cmd = (f"{AVOCADO} run --disable-sysinfo --json - "
+               f"--mux-inject foo:1 bar:2 baz:3 foo:foo:a "
+               f"foo:bar:b foo:baz:c bar:bar:bar "
+               f"-- examples/tests/params.py "
+               f"examples/tests/params.py "
+               f"examples/tests/params.py ")
         number_of_tests = 3
         result = json.loads(process.run(cmd).stdout_text)
         log = ''
@@ -183,7 +187,8 @@ class MultiplexTests(unittest.TestCase):
         for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
                      "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
             self.assertEqual(log.count(line), number_of_tests,
-                             "Avocado log count for param '%s' not as expected:\n%s" % (line, log))
+                             (f"Avocado log count for param '{line}' "
+                              f"not as expected:\n{log}"))
 
     def tearDown(self):
         self.tmpdir.cleanup()
@@ -192,12 +197,12 @@ class MultiplexTests(unittest.TestCase):
 class ReplayTests(unittest.TestCase):
 
     def setUp(self):
-        prefix = 'avocado__%s__%s__%s__' % (__name__, 'ReplayTests', 'setUp')
+        prefix = f"avocado__{__name__}__{'ReplayTests'}__{'setUp'}__"
         self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        cmd_line = ('%s run passtest.py '
-                    '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    '--job-results-dir %s --disable-sysinfo --json -'
-                    % (AVOCADO, self.tmpdir.name))
+        cmd_line = (f'{AVOCADO} run passtest.py '
+                    f'-m examples/tests/sleeptest.py.data/sleeptest.yaml '
+                    f'--job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo --json -')
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
         self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir.name, 'job-*')))
@@ -209,8 +214,8 @@ class ReplayTests(unittest.TestCase):
         os.chdir(BASEDIR)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
-                         "Command %s did not return rc "
-                         "%d:\n%s" % (cmd_line, expected_rc, result))
+                         (f"Command {cmd_line} did not return rc "
+                          f"{expected_rc}:\n{result}"))
         return result
 
     def tearDown(self):

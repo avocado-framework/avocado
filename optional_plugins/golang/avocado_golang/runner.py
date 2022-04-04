@@ -50,7 +50,7 @@ class GolangRunner(nrunner.BaseRunner):
 
         cmd = [GO_BIN, 'test', '-v', module]
         if test is not None:
-            cmd += ['-run', '%s$' % test]
+            cmd += ['-run', f'{test}$']
 
         process = subprocess.Popen(
             cmd,

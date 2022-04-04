@@ -64,9 +64,8 @@ class RobotResolver(Resolver):
         runnables = []
         for key, value in robot_suite.items():
             for robot_test in value:
-                uri = "%s:%s.%s" % (robot_test['test_source'],
-                                    key,
-                                    robot_test['test_name'])
+                uri = (f"{robot_test['test_source']}:"
+                       f"{key}.{robot_test['test_name']}")
 
                 runnables.append(Runnable('robot', uri=uri))
 

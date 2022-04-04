@@ -36,7 +36,7 @@ except path.CmdNotFoundError:
 
 def generate_reference():
     avocado = os.path.join(API_SOURCE_DIR, '__main__.py')
-    result = process.run("%s %s  config reference" % (sys.executable, avocado))
+    result = process.run(f"{sys.executable} {avocado}  config reference")
     reference_path = os.path.join(ROOT_PATH, 'docs', 'source',
                                   'config', 'reference.rst')
     with open(reference_path, 'w', encoding='utf-8') as reference:
@@ -66,13 +66,11 @@ def generate_vmimage_distro():
             vmimage_name = vmimage_params.get('name')
             vmimage_version = vmimage_params.get('version')
             vmimage_arch = vmimage_params.get('arch', path='*/architectures/*')
-            distro_arch_path = '/run/distro/%s/%s/*' % (vmimage_name,
-                                                        vmimage_arch)
+            distro_arch_path = f'/run/distro/{vmimage_name}/{vmimage_arch}/*'
             vmimage_arch = vmimage_params.get('arch', path=distro_arch_path,
                                               default=vmimage_arch)
-            reference.write("%s,%s,%s\n" % (str(vmimage_name),
-                                            str(vmimage_version),
-                                            str(vmimage_arch)))
+            reference.write(f"{str(vmimage_name)},{str(vmimage_version)},"
+                            f"{str(vmimage_arch)}\n")
 
 
 generate_reference()
@@ -109,7 +107,7 @@ API_SECTIONS = {"Test APIs": (None,
                                             "")}
 
 # clean up all previous rst files. RTD is known to keep them from previous runs
-process.run("find %s -name '*.rst' -delete" % BASE_API_OUTPUT_DIR)
+process.run(f"find {BASE_API_OUTPUT_DIR} -name '*.rst' -delete")
 
 for (section, params) in API_SECTIONS.items():
     output_dir = os.path.join(BASE_API_OUTPUT_DIR, params[2])
@@ -133,7 +131,7 @@ for (section, params) in API_SECTIONS.items():
                                 "avocado.rst")
     else:
         main_rst = os.path.join(output_dir,
-                                "avocado.%s.rst" % second_level_module_name)
+                                f"avocado.{second_level_module_name}.rst")
     if not APIDOC:
         main_rst_content = []
         try:
@@ -172,7 +170,7 @@ The following pages document the private APIs of optional Avocado plugins.
 
     """)
     for path in next(os.walk(OPTIONAL_PLUGINS_PATH))[1]:
-        name = "avocado_%s" % os.path.basename(path)
+        name = f"avocado_{os.path.basename(path)}"
         try:
             importlib.import_module(name)
         except ImportError:
@@ -187,7 +185,7 @@ The following pages document the private APIs of optional Avocado plugins.
         process.run(APIDOC_TEMPLATE % params)
         # Remove the unnecessary generated files
         os.unlink(os.path.join(output_dir, "modules.rst"))
-        optional_plugins_toc.write("\n   %s" % os.path.join(name, name))
+        optional_plugins_toc.write(f"\n   {os.path.join(name, name)}")
 
 extensions = ['sphinx.ext.autodoc',  # pylint: disable=C0103
               'sphinx.ext.intersphinx',

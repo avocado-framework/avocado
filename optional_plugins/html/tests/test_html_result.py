@@ -15,15 +15,15 @@ class HtmlResultTest(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory(prefix='avocado_' + __name__)
 
     def test_sysinfo_html_output(self):
-        html_output = "{}/output.html".format(self.tmpdir.name)
-        cmd_line = ('{} run --html {} --job-results-dir {} '
-                    'examples/tests/passtest.py'.format(AVOCADO, html_output,
-                                                        self.tmpdir.name))
+        html_output = f"{self.tmpdir.name}/output.html"
+        cmd_line = (f'{AVOCADO} run --html {html_output} '
+                    f'--job-results-dir {self.tmpdir.name} '
+                    f'examples/tests/passtest.py')
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
-                         'Avocado did not return rc %d:\n%s' % (expected_rc,
-                                                                result))
+                         (f'Avocado did not return rc '
+                          f'{int(expected_rc)}:\n{result}'))
         with open(html_output, 'rt', encoding='utf-8') as fp:
             output = fp.read()
 
@@ -45,8 +45,8 @@ class HtmlResultTest(unittest.TestCase):
             minidom.parse(xunit_output_path)
         except Exception as details:
             xunit_output_content = genio.read_file(xunit_output_path)
-            raise AssertionError("Unable to parse xunit output: %s\n\n%s"
-                                 % (details, xunit_output_content))
+            raise AssertionError(f"Unable to parse xunit output: "
+                                 f"{details}\n\n{xunit_output_content}")
         tap_output = os.path.join(base_dir, "results.tap")
         self.assertTrue(os.path.isfile(tap_output))
         tap = genio.read_file(tap_output)
@@ -54,17 +54,18 @@ class HtmlResultTest(unittest.TestCase):
         self.assertIn("\n# debug.log of ", tap)
 
     def test_output_incompatible_setup(self):
-        cmd_line = ('avocado run --job-results-dir %s --disable-sysinfo '
-                    '--html - passtest.py' % self.tmpdir.name)
+        cmd_line = (f'avocado run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo '
+                    f'--html - passtest.py')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         output = result.stdout + result.stderr
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         (f'Avocado did not return rc '
+                          f'{int(expected_rc)}:\n{result}'))
         error_excerpt = b"HTML to stdout not supported"
         self.assertIn(error_excerpt, output,
-                      "Missing excerpt error message from output:\n%s" % output)
+                      f"Missing excerpt error message from output:\n{output}")
 
     def test_output_compatible_setup_2(self):
         prefix = 'avocado_' + __name__
@@ -72,19 +73,20 @@ class HtmlResultTest(unittest.TestCase):
         tmpfile2 = tempfile.mktemp(prefix=prefix, dir=self.tmpdir.name)
         tmpdir = tempfile.mkdtemp(prefix=prefix, dir=self.tmpdir.name)
         tmpfile3 = os.path.join(tmpdir, "result.html")
-        cmd_line = ('avocado run --job-results-dir %s --disable-sysinfo '
-                    '--xunit %s --json %s --html %s --tap-include-logs '
-                    'examples/tests/passtest.py' % (self.tmpdir.name, tmpfile, tmpfile2, tmpfile3))
+        cmd_line = (f'avocado run --job-results-dir {self.tmpdir.name} '
+                    f'--disable-sysinfo --xunit {tmpfile} --json {tmpfile2} '
+                    f'--html {tmpfile3} --tap-include-logs '
+                    f'examples/tests/passtest.py')
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
         tmpdir_contents = os.listdir(tmpdir)
-        self.assertEqual(len(tmpdir_contents), 1, "Html plugin generated "
-                         "extra files in the result dir: %s"
-                         % tmpdir_contents)
+        self.assertEqual(len(tmpdir_contents), 1,
+                         f"Html plugin generated "
+                         f"extra files in the result dir: {tmpdir_contents}")
         self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         (f'Avocado did not return rc '
+                          f'{int(expected_rc)}:\n{result}'))
         self.assertNotEqual(output, "", "Output is empty")
         # Check if we are producing valid outputs
         with open(tmpfile2, 'r', encoding='utf-8') as fp:

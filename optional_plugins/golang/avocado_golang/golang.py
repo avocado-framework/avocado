@@ -95,8 +95,7 @@ class GolangResolver(Resolver):
                     common_prefix = os.path.commonprefix([package_path,
                                                           test_file])
                     match_package = os.path.relpath(test_file, common_prefix)
-                    test_name = "%s:%s" % (os.path.dirname(match_package),
-                                           item)
+                    test_name = f"{os.path.dirname(match_package)}:{item}"
                     runnables.append(Runnable('golang', uri=test_name))
 
         if runnables:
