@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.core import exceptions, test
+from avocado.core import test
 from avocado.core.test_id import TestID
 from avocado.utils import script
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
@@ -51,13 +51,11 @@ class TestClassTestUnit(unittest.TestCase):
     def test_ugly_name(self):
         def run(name, path_name):
             """ Initialize test and check the dirs were created """
-            config = {"run.test_runner": 'runner'}
             tst = self.DummyTest("test", TestID(1, name),
-                                 base_logdir=self.tmpdir.name,
-                                 config=config)
-            self.assertEqual(os.path.basename(tst.logdir), path_name)
-            self.assertTrue(os.path.exists(tst.logdir))
-            self.assertEqual(os.path.dirname(os.path.dirname(tst.logdir)),
+                                 base_logdir=self.tmpdir.name)
+            self.assertEqual(os.path.basename(tst.workdir), path_name)
+            self.assertTrue(os.path.exists(tst.workdir))
+            self.assertEqual(os.path.dirname(os.path.dirname(tst.workdir)),
                              self.tmpdir.name)
 
         run("/absolute/path", "1-_absolute_path")
@@ -78,11 +76,9 @@ class TestClassTestUnit(unittest.TestCase):
 
     def test_long_name(self):
         def check(uid, name, variant, exp_logdir):
-            config = {"run.test_runner": 'runner'}
             tst = self.DummyTest("test", TestID(uid, name, variant),
-                                 base_logdir=self.tmpdir.name,
-                                 config=config)
-            self.assertEqual(os.path.basename(tst.logdir), exp_logdir)
+                                 base_logdir=self.tmpdir.name)
+            self.assertEqual(os.path.basename(tst.workdir), exp_logdir)
             return tst
 
         # Everything fits
@@ -94,15 +90,9 @@ class TestClassTestUnit(unittest.TestCase):
         # Shrink variant
         check("a" * 253, "whatever", {"variant_id": 99}, "a" * 253 + "_9")
         check("a" * 254, "whatever", {"variant_id": 99}, "a" * 254 + "_")
-        # No variant
-        tst = check("a" * 255, "whatever", {"variant_id": "whatever-else"},
-                    "a" * 255)
         # Impossible to store (uid does not fit
         self.assertRaises(RuntimeError, check, "a" * 256, "whatever",
                           {"variant_id": "else"}, None)
-
-        self.assertEqual(os.path.basename(tst.workdir),
-                         os.path.basename(tst.logdir))
 
     def test_data_dir(self):
         """
@@ -120,13 +110,6 @@ class TestClassTestUnit(unittest.TestCase):
         above_limit_name = os.path.join(self.tmpdir.name, "a" * 251)
         tst = self._get_fake_filename_test(above_limit_name)
         self.assertFalse(tst.get_data('', 'file', False))
-
-    def test_all_dirs_exists_no_hang(self):
-        config = {"run.test_runner": 'runner'}
-        with unittest.mock.patch('os.path.exists', return_value=True):
-            self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
-                              TestID(1, "name"), base_logdir=self.tmpdir.name,
-                              config=config)
 
     def test_try_override_test_variable(self):
         dummy_test = self.DummyTest(base_logdir=self.tmpdir.name)
@@ -180,11 +163,9 @@ class TestClassTest(unittest.TestCase):
                 self.assertTrue(variable)
                 self.whiteboard = 'foo'
 
-        config = {"run.test_runner": 'runner'}
         prefix = temp_dir_prefix(self)
         self.base_logdir = tempfile.TemporaryDirectory(prefix=prefix)
-        self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir.name,
-                                             config=config)
+        self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir.name)
         self.tst_instance_pass.run_avocado()
 
     def test_class_attributes_name(self):
@@ -203,16 +184,6 @@ class TestClassTest(unittest.TestCase):
         with open(whiteboard_file, 'r', encoding='utf-8') as whiteboard_file_obj:
             whiteboard_contents = whiteboard_file_obj.read().strip()
             self.assertTrue(whiteboard_contents, 'foo')
-
-    def test_running_test_twice_with_the_same_uid_failure(self):
-        class AvocadoPass(test.Test):
-
-            def test(self):
-                pass
-
-        config = {"run.test_runner": 'runner'}
-        self.assertRaises(exceptions.TestSetupFail, AvocadoPass,
-                          base_logdir=self.base_logdir.name, config=config)
 
     def tearDown(self):
         self.base_logdir.cleanup()

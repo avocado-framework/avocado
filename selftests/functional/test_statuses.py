@@ -130,10 +130,6 @@ EXPECTED_RESULTS = {'SkipSetup.test': ('SKIP',
                                                 'test post',
                                                 'teardown pre',
                                                 'teardown status: PASS']),
-                    'KillTest.test': ('ERROR',
-                                      ['setup pre',
-                                       'setup post',
-                                       'test pre']),
                     }
 
 
@@ -147,8 +143,7 @@ class TestStatuses(TestCaseTmpDir):
                                                  'test_statuses.py'))
 
         cmd = (f'{AVOCADO} run {test_file} --disable-sysinfo '
-               f'--job-results-dir {self.tmpdir.name} --json - '
-               f'--test-runner=runner ')
+               f'--job-results-dir {self.tmpdir.name} --json - ')
 
         results = process.run(cmd, ignore_status=True)
         self.results = json.loads(results.stdout_text)
