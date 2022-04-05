@@ -27,7 +27,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 95.0
+Version: 96.0
 Release: 1%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
@@ -377,6 +377,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Apr 05 2022 Cleber Rosa <crosa@redhat.com> - 96.0-1
+- New release
+
 * Mon Feb 14 2022 Jan Richter <jarichte@redhat.com> - 95.0-2
 - Rename requirements to dependencies
 
