@@ -183,6 +183,8 @@ has to be executed early in the code so try to keep the required deps
 minimal (for example the `avocado.core.settings.settings` is not yet
 available).
 
+.. _plugins_execution_order:
+
 Plugins execution order
 =======================
 Avocado lets plugin developers to define plugin priority, which ensures the

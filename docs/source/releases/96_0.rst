@@ -1,0 +1,59 @@
+=================
+96.0 Nueve reinas
+=================
+
+The Avocado team is proud to present another release: Avocado 96.0,
+AKA "Nueve reinas", is now available!
+
+Release documentation: `Avocado 96.0
+<http://avocado-framework.readthedocs.io/en/96.0/>`_
+
+Users/Test Writers
+==================
+
+* Plugins can now have a builtin priority in relation to other plugins
+  of the same type that will affect its :ref:`execution order
+  <plugins_execution_order>`.  This is in addition to the configurable
+  ``plugins.$type.order`` settings.
+
+* Avocado will now print a more descriptive list of tests that
+  finished with a particular status at the end of the job (``FAIL``
+  and ``ERROR`` by default).
+
+Bug Fixes
+=========
+
+* Python logging streams other than the ones in the ``avocado.*``
+  namespace will now be saved to the ``debug.log`` files when set with
+  ``--store-logging-stream`` option.
+
+Utility APIs
+============
+
+* The :mod:`avocado.utils.cloudinit` now allows for a finer grained
+  usage of the functionality in
+  :class:`avocado.utils.cloudinit.PhoneHomeServer`.
+
+* The :mod:`avocado.utils.network.ports` fixed some wrong premises
+  regarding the availability of open ports for different protocols
+  (such as a free TCP versus a free UDP port).
+
+Internal Changes
+================
+
+* Modernization of Python code with a switch to f-strings.
+
+* A :class:`avocado.core.nrunner.Task`'s set of requirements are now
+  *called *dependencies** instead.
+
+* The dependencies of a :class:`avocado.core.nrunner.Task` are now
+  tracked on the more suitable
+  :class:`avocado.core.task.runtime.RuntimeTask`.
+
+* SRPMs for packit builds are now built in COPR.
+
+---
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/95.0...96.0>`_.
