@@ -366,9 +366,9 @@ class TestSuite:
         """
         suite_config = config
         config = settings.as_dict()
-        config.update(suite_config)
         if job_config:
             config.update(job_config)
+        config.update(suite_config)
         runner = config.get('run.test_runner')
         if runner == 'nrunner':
             suite = cls._from_config_with_resolver(config, name)
