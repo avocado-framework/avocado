@@ -51,7 +51,7 @@ class AvocadoParams:
         for i, path in enumerate(paths):
             path_leaves = self._get_matching_leaves(path, leaves)
             self._rel_paths.append(AvocadoParam(path_leaves,
-                                                '%d: %s' % (i, path)))
+                                                f'{int(i)}: {path}'))
         # Don't use non-mux-path params for relative paths
         path_leaves = self._get_matching_leaves('/*', leaves)
         self._abs_path = AvocadoParam(path_leaves, '*: *')
@@ -70,10 +70,10 @@ class AvocadoParams:
         return not (self == other)
 
     def __repr__(self):
-        return "<AvocadoParams %s>" % self._str()
+        return f"<AvocadoParams {self._str()}>"
 
     def __str__(self):
-        return "params {%s}" % self._str()
+        return f"params {self._str()}"
 
     def _str(self):
         out = ",".join(_.str_leaves_variant for _ in self._rel_paths)
@@ -224,7 +224,7 @@ class AvocadoParam:
     @property
     def str_leaves_variant(self):
         """ String with identifier and all params """
-        return "%s (%s)" % (self.name, self._leaf_names)
+        return f"{self.name} ({self._leaf_names})"
 
     def _get_leaves(self, path):
         """
@@ -245,15 +245,15 @@ class AvocadoParam:
                for leaf in leaves
                if key in leaf.environment]
         if not ret:
-            raise NoMatchError("No matches to %s => %s in %s"
-                               % (path.pattern, key, self.str_leaves_variant))
+            raise NoMatchError(f"No matches to {path.pattern} => "
+                               f" {key} in {self.str_leaves_variant}")
         # make sure all params come from the same origin
         if len(set([_[1].path for _ in ret])) == 1:
             return ret[0][0]
         else:
-            raise ValueError("Multiple %s leaves contain the key '%s'; %s"
+            raise ValueError("Multiple %s leaves contain the key '%s'; %s"  # pylint: disable=C0209
                              % (path.pattern, key,
-                                ["%s=>%s" % (_[1].path, _[0])
+                                ["%s=>%s" % (_[1].path, _[0])  # pylint: disable=C0209
                                  for _ in ret]))
 
     def iteritems(self):

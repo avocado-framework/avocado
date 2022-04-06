@@ -138,7 +138,7 @@ class ArchiveFile:
             raise ArchiveException('file is not an archive')
 
     def __repr__(self):
-        return "ArchiveFile('%s', '%s')" % (self.filename, self.mode)
+        return f"ArchiveFile('{self.filename}', '{self.mode}')"
 
     def __enter__(self):
         return self

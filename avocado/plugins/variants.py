@@ -47,9 +47,9 @@ class Variants(CLICmd):
 
     def configure(self, parser):
         parser = super().configure(parser)
-        verbosity_levels = ("(positive integer - 0, 1, ... - or %s)"
-                            % ", ".join(sorted(_VERBOSITY_LEVELS,
-                                               key=lambda _: _VERBOSITY_LEVELS[_])))
+        lvl = ', '.join(sorted(_VERBOSITY_LEVELS,
+                               key=lambda _: _VERBOSITY_LEVELS[_]))
+        verbosity_levels = f"(positive integer - 0, 1, ... - or {lvl}"
 
         help_msg = 'Verbosity of the variants summary. ' + verbosity_levels
         settings.register_option(section='variants',

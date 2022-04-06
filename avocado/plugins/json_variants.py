@@ -132,7 +132,7 @@ class JsonVariants(Varianter):
             out.append("No tree representation for JSON serialized variants")
 
         if variants:
-            out.append("JSON Serialized Variants (%i):" % len(self))
+            out.append(f"JSON Serialized Variants ({len(self)}):")
             for variant in self:
                 paths = ', '.join([x.path for x in variant["variant"]])
 
@@ -145,10 +145,10 @@ class JsonVariants(Varianter):
                 for node in variant["variant"]:
                     for key, value in node.environment.items():
                         origin = node.environment.origin[key].path
-                        env.add(("%s:%s" % (origin, key), str(value)))
+                        env.add((f"{origin}:{key}", str(value)))
                 if not env:
                     return out
-                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])  # pylint: disable=C0209
                 for record in sorted(env):
                     out.append(fmt % record)
 

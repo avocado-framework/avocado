@@ -120,11 +120,11 @@ def strip_console_codes(output, custom_codes=None):
     old_word = ""
     return_str = ""
     index = 0
-    output = "\x1b[m%s" % output
+    output = f"[m{output}"
     console_codes = "%[G@8]|\\[[@A-HJ-MPXa-hl-nqrsu\\`]"
     console_codes += "|\\[[\\d;]+[HJKgqnrm]|#8|\\([B0UK]|\\)"
     if custom_codes is not None and custom_codes not in console_codes:
-        console_codes += "|%s" % custom_codes
+        console_codes += f"|{custom_codes}"
     while index < len(output):
         tmp_index = 0
         tmp_word = ""
@@ -141,8 +141,8 @@ def strip_console_codes(output, custom_codes=None):
             special_code = re.findall(console_codes, tmp_word)[0]
         except IndexError:
             if index + tmp_index < len(output):
-                raise ValueError("%s is not included in the known console "
-                                 "codes list %s" % (tmp_word, console_codes))
+                raise ValueError(f"{tmp_word} is not included in the known "
+                                 f"console codes list {console_codes}")
             continue
         if special_code == tmp_word:
             continue
@@ -204,7 +204,7 @@ def iter_tabular_output(matrix, header=None, strip=False):
         out = []
         padding = [" " * (lengths[i] - row_lens[i])
                    for i in range(len(row_lens))]
-        out = ["%s%s" % line for line in zip(row, padding)]
+        out = ["%s%s" % line for line in zip(row, padding)]  # pylint: disable=C0209
         try:
             out.append(row[-1])
         except IndexError:

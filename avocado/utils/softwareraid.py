@@ -75,7 +75,7 @@ class SoftwareRaid:
         :return: True if add is successful, False otherwise.
         :rtype: bool
         """
-        cmd = "mdadm %s --add %s" % (self.name, disk)
+        cmd = f"mdadm {self.name} --add {disk}"
         return self._run_command(cmd)
 
     def assemble(self):
@@ -85,9 +85,9 @@ class SoftwareRaid:
         :return: True if assembled, False otherwise.
         :rtype: bool
         """
-        cmd = "mdadm --assemble %s %s" % (self.name, " ".join(self.disks))
+        cmd = f"mdadm --assemble {self.name} {' '.join(self.disks)}"
         if self.spare_disks:
-            cmd += " %s" % " ".join(self.spare_disks)
+            cmd += f" {' '.join(self.spare_disks)}"
         return self._run_command(cmd, check_recovery=True)
 
     def clear_superblock(self):
@@ -97,9 +97,9 @@ class SoftwareRaid:
         :return: True if zeroed, False otherwise.
         :rtype: bool
         """
-        cmd = "mdadm --zero-superblock %s" % " ".join(self.disks)
+        cmd = f"mdadm --zero-superblock {' '.join(self.disks)}"
         if self.spare_disks:
-            cmd += " %s" % " ".join(self.spare_disks)
+            cmd += f" {' '.join(self.spare_disks)}"
         return self._run_command(cmd, log_details=False)
 
     def create(self):
@@ -109,14 +109,13 @@ class SoftwareRaid:
         :return: True if raid is created. False otherwise.
         :rtype: bool
         """
-        cmd = "yes | mdadm --create --assume-clean %s" % self.name
-        cmd += " --level=%s" % self.level
-        cmd += " --raid-devices=%d %s" % (len(self.disks),
-                                          " ".join(self.disks))
-        cmd += " --metadata=%s" % self.metadata
+        cmd = f"yes | mdadm --create --assume-clean {self.name}"
+        cmd += f" --level={self.level}"
+        cmd += f" --raid-devices={len(self.disks)} {' '.join(self.disks)}"
+        cmd += f" --metadata={self.metadata}"
         if self.spare_disks:
-            cmd += " --spare-devices=%d %s" % (len(self.spare_disks),
-                                               " ".join(self.spare_disks))
+            cmd += (f" --spare-devices={len(self.spare_disks)} "
+                    f"{' '.join(self.spare_disks)}")
         cmd += " --verbose --force"
         return self._run_command(cmd)
 
@@ -127,7 +126,7 @@ class SoftwareRaid:
         :return: mdadm --detail output
         :rtype: str
         """
-        cmd = "mdadm --detail %s" % self.name
+        cmd = f"mdadm --detail {self.name}"
         output = process.run(cmd, ignore_status=True, shell=True)
         return output.stdout_text
 
@@ -154,7 +153,7 @@ class SoftwareRaid:
         :return: True if remove is successful, False otherwise.
         :rtype: bool
         """
-        cmd = "mdadm %s --fail %s --remove %s" % (self.name, disk, disk)
+        cmd = f"mdadm {self.name} --fail {disk} --remove {disk}"
         return self._run_command(cmd)
 
     def stop(self):
@@ -164,5 +163,5 @@ class SoftwareRaid:
         :return: True if stopped, False otherwise.
         :rtype: bool
         """
-        cmd = "mdadm --manage %s --stop" % self.name
+        cmd = f"mdadm --manage {self.name} --stop"
         return self._run_command(cmd, log_details=False)

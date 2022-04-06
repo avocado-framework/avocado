@@ -93,7 +93,7 @@ class VarianterPictCLI(CLI):
 
 
 def run_pict(binary, parameter_file, order):
-    cmd = "%s %s /o:%s" % (binary, parameter_file, order)
+    cmd = f"{binary} {parameter_file} /o:{order}"
     return process.run(cmd, shell=True).stdout_text
 
 
@@ -122,7 +122,7 @@ class VarianterPict(Varianter):
 
         subcommand = config.get('subcommand', 'run')
 
-        namespace = "{}.pict_parameter_file".format(subcommand)
+        namespace = f"{subcommand}.pict_parameter_file"
         pict_parameter_file = config.get(namespace)
         if pict_parameter_file is None:
             return
@@ -132,7 +132,7 @@ class VarianterPict(Varianter):
                 LOG_UI.error("pict parameter file '%s' could not be found or "
                              "is not readable", pict_parameter_file)
                 error = True
-        pict_binary = config.get("{}.pict_binary".format(subcommand))
+        pict_binary = config.get(f"{subcommand}.pict_binary")
         if pict_binary is None:
             LOG_UI.error("pict binary could not be found in $PATH. Please set "
                          "its location with --pict-binary or put it in your "
@@ -152,10 +152,10 @@ class VarianterPict(Varianter):
             else:
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-        path_namespace = "{}.pict_parameter_path".format(subcommand)
+        path_namespace = f"{subcommand}.pict_parameter_path"
         self.parameter_path = config.get(path_namespace)  # pylint: disable=W0201
 
-        order_namespace = "{}.pict_combinations_order".format(subcommand)
+        order_namespace = f"{subcommand}.pict_combinations_order"
         output = run_pict(pict_binary,
                           pict_parameter_file,
                           config.get(order_namespace))
@@ -200,7 +200,7 @@ class VarianterPict(Varianter):
 
         out = []
         verbose = variants > 1
-        out.append("Pict Variants (%i):" % len(self))
+        out.append(f"Pict Variants ({len(self)}):")
         for variant in self:
             out.append('%sVariant %s:    %s' % ('\n' if verbose else '',
                                                 variant["variant_id"],
@@ -211,10 +211,10 @@ class VarianterPict(Varianter):
             for node in variant["variant"]:
                 for key, value in node.environment.items():
                     origin = node.environment.origin[key].path
-                    env.add(("%s:%s" % (origin, key), str(value)))
+                    env.add((f"{origin}:{key}", str(value)))
             if not env:
                 return out
-            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])  # pylint: disable=C0209
             for record in sorted(env):
                 out.append(fmt % record)
 

@@ -30,7 +30,7 @@ def gather_collectibles_config(config):
     sysinfo_files = {}
 
     for collectible in ['commands', 'files', 'fail_commands', 'fail_files']:
-        tmp_file = config.get('sysinfo.collectibles.%s' % collectible)
+        tmp_file = config.get(f'sysinfo.collectibles.{collectible}')
         if os.path.isfile(tmp_file):
             log.info('%s configured by file: %s', collectible.title(),
                      tmp_file)
@@ -132,8 +132,7 @@ class SysInfo:
                     return sysinfo.LogWatcher(logpath)
                 except PermissionError as e:
                     log.debug(e.args[0])
-        raise ValueError("System log file not found (looked for %s)" %
-                         logpaths)
+        raise ValueError(f"System log file not found (looked for {logpaths})")
 
     def _set_collectibles(self):
         timeout = self.config.get('sysinfo.collect.commands_timeout')
@@ -253,7 +252,7 @@ def collect_sysinfo(basedir):
     if not basedir:
         cwd = os.getcwd()
         timestamp = time.strftime('%Y-%m-%d-%H.%M.%S')
-        basedir = os.path.join(cwd, 'sysinfo-%s' % timestamp)
+        basedir = os.path.join(cwd, f'sysinfo-{timestamp}')
 
     sysinfo_logger = SysInfo(basedir=basedir)
     sysinfo_logger.start()

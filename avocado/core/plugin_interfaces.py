@@ -80,7 +80,7 @@ class CLICmd(Plugin):
         """
         help_msg = self.description
         if help_msg is None:
-            help_msg = 'Runs the %s command' % self.name
+            help_msg = f'Runs the {self.name} command'
 
         parser = parser.subcommands.add_parser(self.name,
                                                help=help_msg)

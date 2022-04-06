@@ -12,9 +12,9 @@ class TestLogsUIInit(Init):
     description = "Initialize testlogs plugin settings"
 
     def initialize(self):
-        help_msg = ("Status that will trigger the output of a test's logs "
-                    "after the job ends. "
-                    "Valid statuses: %s" % ", ".join(STATUSES))
+        help_msg = (f"Status that will trigger the output of a test's logs "
+                    f"after the job ends. "
+                    f"Valid statuses: {', '.join(STATUSES)}")
         settings.register_option(section='job.output.testlogs',
                                  key='statuses',
                                  key_type=list,
@@ -30,10 +30,10 @@ class TestLogsUIInit(Init):
                                  default=['debug.log'],
                                  help_msg=help_msg)
 
-        help_msg = ("Status that will trigger the output of a summary "
-                    "after the job ends. This is useful to list failed "
-                    "tests for instances at the end of a job run. "
-                    "Valid statuses: %s" % ", ".join(STATUSES))
+        help_msg = (f"Status that will trigger the output of a summary "
+                    f"after the job ends. This is useful to list failed "
+                    f"tests for instances at the end of a job run. "
+                    f"Valid statuses: {', '.join(STATUSES)}")
         settings.register_option(section='job.output.testlogs',
                                  key='summary_statuses',
                                  key_type=list,

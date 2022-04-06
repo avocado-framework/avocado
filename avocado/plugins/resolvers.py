@@ -63,10 +63,10 @@ def python_resolver(name, reference, find_tests):
     runnables = []
     for klass, methods_tags_depens in class_methods_info.items():
         for (method, tags, depens) in methods_tags_depens:
-            klass_method = "%s.%s" % (klass, method)
+            klass_method = f"{klass}.{method}"
             if tests_filter is not None and not tests_filter.search(klass_method):
                 continue
-            uri = "%s:%s" % (module_path, klass_method)
+            uri = f"{module_path}:{klass_method}"
             runnables.append(Runnable(name,
                                       uri=uri,
                                       tags=tags,

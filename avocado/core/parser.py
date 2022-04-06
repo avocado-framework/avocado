@@ -60,9 +60,10 @@ class FileOrStdoutAction(argparse.Action):
         if values == '-':
             stdout_claimed_by = getattr(namespace, 'stdout_claimed_by', None)
             if stdout_claimed_by is not None:
-                msg = ('Options %s %s are trying to use stdout simultaneously.'
-                       ' Please set at least one of them to a file to avoid '
-                       'conflicts' % (stdout_claimed_by, option_string))
+                msg = (f'Options {stdout_claimed_by} {option_string} '
+                       f'are trying to use stdout simultaneously.'
+                       f' Please set at least one of them to a file to avoid '
+                       f'conflicts')
                 raise argparse.ArgumentError(self, msg)
             else:
                 setattr(namespace, 'stdout_claimed_by', option_string)
@@ -83,7 +84,7 @@ class Parser:
                                           add_help=False,  # see parent parsing
                                           description=DESCRIPTION)
         self.application.add_argument('-v', '--version', action='version',
-                                      version='Avocado %s' % VERSION)
+                                      version=f'Avocado {VERSION}')
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       nargs='?',
                                       help='Use custom configuration from a file')
@@ -154,7 +155,7 @@ class Parser:
         """
         args, extra = self.application.parse_known_args(namespace=self.args)
         if extra:
-            msg = 'unrecognized arguments: %s' % ' '.join(extra)
+            msg = f"unrecognized arguments: {' '.join(extra)}"
             for sub in self.application._subparsers._actions:  # pylint: disable=W0212
                 if sub.dest == 'subcommand':
                     sub.choices[self.args.subcommand].error(msg)
@@ -249,5 +250,5 @@ class HintParser:
 
         uri = self._get_uri_from_section(kind)
         if uri is None:
-            msg = "uri needs to be defined inside {}".format(kind)
+            msg = f"uri needs to be defined inside {kind}"
             raise SettingsError(msg)

@@ -85,7 +85,7 @@ def _get_status(cpu):
     :return: `bool` True if online or False if not
     :rtype: bool
     """
-    with open('/sys/devices/system/cpu/cpu%s/online' % cpu, 'rb') as cpu_online:  # pylint: disable=W1514
+    with open(f'/sys/devices/system/cpu/cpu{cpu}/online', 'rb') as cpu_online:  # pylint: disable=W1514
         if b'1' in cpu_online.read():
             return True
     return False
@@ -201,7 +201,7 @@ def get_family():
             with open('/sys/devices/cpu/caps/pmu_name', 'rb') as mico_arch:  # pylint: disable=W1514
                 family = mico_arch.read().decode('utf-8').strip('\n').lower()
         except FileNotFoundError as err:
-            msg = "Could not find micro-architecture/family, Error: %s" % err
+            msg = f"Could not find micro-architecture/family, Error: {err}"
             LOG.warning(msg)
             raise FamilyException(msg)
     elif arch == 'powerpc':
@@ -213,7 +213,7 @@ def get_family():
                     break
             family = res[0].decode('utf-8').lower()
         except IndexError as err:
-            msg = "Unable to parse cpu family %s" % err
+            msg = f"Unable to parse cpu family {err}"
             LOG.warning(msg)
             raise FamilyException(msg)
     elif arch == 's390':
@@ -224,7 +224,7 @@ def get_family():
         try:
             family = zfamily_map[get_version()].lower()
         except KeyError as err:
-            msg = "Could not find family for %s\nError: %s" % (get_version(), err)
+            msg = f"Could not find family for {get_version()}\nError: {err}"
             LOG.warning(msg)
             raise FamilyException(msg)
     else:
@@ -260,7 +260,7 @@ def online_count():
 def online(cpu):
     """Online given CPU."""
     if _get_status(cpu) is False:
-        with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:  # pylint: disable=W1514
+        with open(f"/sys/devices/system/cpu/cpu{cpu}/online", "wb") as fd:  # pylint: disable=W1514
             fd.write(b'1')
         if _get_status(cpu):
             return 0
@@ -270,7 +270,7 @@ def online(cpu):
 def offline(cpu):
     """Offline given CPU."""
     if _get_status(cpu):
-        with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:  # pylint: disable=W1514
+        with open(f"/sys/devices/system/cpu/cpu{cpu}/online", "wb") as fd:  # pylint: disable=W1514
             fd.write(b'0')
         if _get_status(cpu):
             return 1
@@ -290,7 +290,7 @@ def get_idle_state():
     for cpu in cpus_list:
         cpu_idlestate[cpu] = {}
         for state_no in range(states):
-            state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+            state_file = f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
             try:
                 cpu_idlestate[cpu][state_no] = bool(int(open(state_file, 'rb').read()))  # pylint: disable=W1514
             except IOError as err:
@@ -309,7 +309,7 @@ def _bool_to_binary(value):
         return b'1'
     if value is False:
         return b'0'
-    raise TypeError("Value is not a boolean: %s" % value)
+    raise TypeError(f"Value is not a boolean: {value}")
 
 
 def set_idle_state(state_number="all", disable=True, setstate=None):
@@ -334,7 +334,7 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
         disable = _bool_to_binary(disable)
         for cpu in cpus_list:
             for state_no in states:
-                state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                state_file = f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
                 try:
                     open(state_file, "wb").write(disable)  # pylint: disable=W1514
                 except IOError as err:
@@ -343,7 +343,7 @@ def set_idle_state(state_number="all", disable=True, setstate=None):
     else:
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
-                state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                state_file = f"/sys/devices/system/cpu/cpu{cpu}/cpuidle/state{state_no}/disable"
                 disable = _bool_to_binary(value)
                 try:
                     open(state_file, "wb").write(disable)  # pylint: disable=W1514
@@ -382,7 +382,7 @@ def set_freq_governor(governor="random"):
         LOG.warning("Trying to change unknown frequency "
                     "governor: %s", governor)
     for cpu in range(cpus_list):
-        cur_gov_file = "/sys/devices/system/cpu/cpu%s/cpufreq/scaling_governor" % cpu
+        cur_gov_file = f"/sys/devices/system/cpu/cpu{cpu}/cpufreq/scaling_governor"
         try:
             with open(cur_gov_file, 'w') as fl:  # pylint: disable=W1514
                 fl.write(governor)
@@ -418,7 +418,7 @@ def get_pid_cpus(pid):
     # access has no misleading whitespaces
     processor_id_index = -14
     cpus = set()
-    proc_stat_files = glob.glob('/proc/%s/task/[123456789]*/stat' % pid)
+    proc_stat_files = glob.glob(f'/proc/{pid}/task/[123456789]*/stat')
 
     for proc_stat_file in proc_stat_files:
         try:
@@ -440,8 +440,8 @@ def _deprecated(newfunc, oldfuncname):
     :rtype: `function`
     """
     def wrap(*args, **kwargs):
-        fmt_str = "avocado.utils.cpu.{}() it is getting deprecat".format(oldfuncname)
-        fmt_str += "ed, Use avocado.utils.cpu.{}() instead".format(newfunc.__name__)
+        fmt_str = f"avocado.utils.cpu.{oldfuncname}() it is getting deprecat"
+        fmt_str += f"ed, Use avocado.utils.cpu.{newfunc.__name__}() instead"
         warnings.warn((fmt_str), DeprecationWarning, stacklevel=2)
         return newfunc(*args, **kwargs)
     return wrap

@@ -64,8 +64,8 @@ class Config(CLICmd):
             for line in help_lines:
                 print_function(line)
             print_function("")
-            print_function("* Default: %s" % option.get('default'))
-            print_function("* Type: %s" % option.get('type'))
+            print_function(f"* Default: {option.get('default')}")
+            print_function(f"* Type: {option.get('type')}")
             print_function("")
 
     @staticmethod

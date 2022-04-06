@@ -41,7 +41,7 @@ def display_data_size(size):
         size /= factor
         i += 1
 
-    return '%.2f %s' % (size, prefixes[i])
+    return f'{size:.2f} {prefixes[i]}'
 
 
 class ProgressBar:
@@ -118,11 +118,12 @@ class ProgressBar:
         hashes = int(round(hashes))
 
         if hashes == 0:
-            screen_text = "[>%s]" % (' '*(all_full-1))
+            screen_text = f"[>{' ' * (all_full - 1)}]"
         elif hashes == all_full:
-            screen_text = "[%s]" % ('='*all_full)
+            screen_text = f"[{'=' * all_full}]"
         else:
-            screen_text = "[%s>%s]" % ('='*(hashes-1), ' '*(all_full-hashes))
+            screen_text = \
+                f"[{'=' * (hashes - 1)}>{' ' * (all_full - hashes)}]"
 
         percent_string = str(done) + "%"
 
@@ -130,8 +131,7 @@ class ProgressBar:
         screen_text = ' '.join([screen_text, percent_string])
 
         if self.title:
-            screen_text = '%s: %s' % (self.title,
-                                      screen_text)
+            screen_text = f'{self.title}: {screen_text}'
         self.prog_bar = screen_text
 
     def draw(self):

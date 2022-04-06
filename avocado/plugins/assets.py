@@ -289,9 +289,9 @@ class Assets(CLICmd):
     @staticmethod
     def _count_filter_args(config):
         sub_command = config.get('assets_subcommand')
-        args = [config.get("assets.{}.days".format(sub_command)),
-                config.get("assets.{}.size_filter".format(sub_command)),
-                config.get("assets.{}.overall_limit".format(sub_command))]
+        args = [config.get(f"assets.{sub_command}.days"),
+                config.get(f"assets.{sub_command}.size_filter"),
+                config.get(f"assets.{sub_command}.overall_limit")]
         return len([a for a in args if a is not None])
 
     def configure(self, parser):
@@ -479,7 +479,7 @@ class Assets(CLICmd):
         for asset in assets:
             stat = os.stat(asset)
             basename = os.path.basename(asset)
-            hash_path = "{}-CHECKSUM".format(asset)
+            hash_path = f"{asset}-CHECKSUM"
             atime = datetime.fromtimestamp(stat.st_atime)
             _, checksum = Asset.read_hash_from_file(hash_path)
             matrix.append((basename,

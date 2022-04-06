@@ -158,19 +158,19 @@ def check_file(path, reference, suffix='.py',
             return ReferenceResolution(
                 reference,
                 ReferenceResolutionResult.NOTFOUND,
-                info='File "%s" does not end with "%s"' % (path, suffix))
+                info=f'File "{path}" does not end with "{suffix}"')
 
     if not type_check(path):
         return ReferenceResolution(
             reference,
             ReferenceResolutionResult.NOTFOUND,
-            info='File "%s" does not exist or is not a %s' % (path, type_name))
+            info=f'File "{path}" does not exist or is not a {type_name}')
 
     if not os.access(path, access_check):
         return ReferenceResolution(
             reference,
             ReferenceResolutionResult.NOTFOUND,
-            info='File "%s" does not exist or is not %s' % (path, access_name))
+            info=f'File "{path}" does not exist or is not {access_name}')
 
     return True
 
@@ -238,7 +238,7 @@ def resolve(references, hint=None, ignore_missing=True, config=None):
         # resolution process
         missing = [_ for _ in missing if not os.path.isdir(_)]
         if missing:
-            msg = "Could not resolve references: %s" % ",".join(missing)
+            msg = f"Could not resolve references: {','.join(missing)}"
             raise JobTestSuiteReferenceResolutionError(msg)
 
     return resolutions

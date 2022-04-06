@@ -33,7 +33,7 @@ setup(name='avocado-framework-plugin-robot',
       url='http://avocado-framework.github.io/',
       packages=packages,
       include_package_data=True,
-      install_requires=['avocado-framework==%s' % VERSION,
+      install_requires=[f'avocado-framework=={VERSION}',
                         'robotframework>=4.1'],
       test_suite='tests',
       entry_points={

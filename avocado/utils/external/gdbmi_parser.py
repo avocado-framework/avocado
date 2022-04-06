@@ -126,7 +126,7 @@ class GdbMiScannerBase(spark.GenericScanner):
 
     def t_default(self, s):
         r'( . | \n )+'
-        raise Exception("Specification error: unmatched input for '%s'" % s)
+        raise Exception(f"Specification error: unmatched input for '{s}'")
 
     @staticmethod
     def __unescape(s):
@@ -201,8 +201,9 @@ class GdbMiParser(spark.GenericASTBuilder):
 
     def error(self, token, i=0, tokens=None):  # pylint: disable=W0221
         if i > 2:
-            print('%s %s %s %s' % (tokens[i-3], tokens[i-2], tokens[i-1], tokens[i]))
-        raise Exception("Syntax error at or near %d:'%s' token" % (i, token))
+            print(f'{tokens[i - 3]} {tokens[i - 2]} '
+                  f'{tokens[i - 1]} {tokens[i]}')
+        raise Exception(f"Syntax error at or near {int(i)}:'{token}' token")
 
 
 class GdbMiInterpreter(spark.GenericASTTraversal):

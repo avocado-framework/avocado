@@ -33,7 +33,7 @@ setup(name='avocado-framework-plugin-varianter-pict',
       url='http://avocado-framework.github.io/',
       packages=packages,
       include_package_data=True,
-      install_requires=['avocado-framework==%s' % VERSION],
+      install_requires=[f'avocado-framework=={VERSION}'],
       entry_points={
           'avocado.plugins.cli': [
               'varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPictCLI',

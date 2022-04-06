@@ -47,7 +47,7 @@ def url_open(url, data=None, timeout=5):
     try:
         result = urlopen(url, data=data, timeout=timeout)
     except (socket.timeout, HTTPError) as ex:
-        msg = "Failed downloading file: {}".format(str(ex))
+        msg = f"Failed downloading file: {str(ex)}"
         log.error(msg)
         return None
 
@@ -188,11 +188,10 @@ def get_file(src, dst, permissions=None, hash_expected=None,
             log.error("It seems that dst %s is corrupted", dst)
             download_failures += 1
         if download_failures > download_retries:
-            raise EnvironmentError("Failed to retrieve %s. "
-                                   "Possible reasons - Network connectivity "
-                                   "problems or incorrect hash_expected "
-                                   "provided -> '%s'" %
-                                   (src, hash_expected))
+            raise EnvironmentError(f"Failed to retrieve {src}. "
+                                   f"Possible reasons - Network connectivity "
+                                   f"problems or incorrect hash_expected "
+                                   f"provided -> '{hash_expected}'")
         else:
             log.error("Retrying download of src %s", src)
 

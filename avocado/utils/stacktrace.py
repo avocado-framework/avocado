@@ -112,8 +112,8 @@ def str_unpickable_object(obj):
     except pickle.PickleError:
         pass
     else:
-        raise ValueError("This object is pickable:\n%s" % pformat(obj))
+        raise ValueError(f"This object is pickable:\n{pformat(obj)}")
     unpickables = analyze_unpickable_item("this", obj)
     return ("Unpickable object in:\n  %s\nItems causing troubles:\n  "
             % "\n  ".join(pformat(obj).splitlines()) +
-            "\n  ".join("%s => %s" % obj for obj in unpickables))
+            "\n  ".join("%s => %s" % obj for obj in unpickables))  # pylint: disable=C0209

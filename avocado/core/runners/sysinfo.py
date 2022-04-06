@@ -64,8 +64,9 @@ class PreSysInfo:
         except sysinfo_collectible.CollectibleException as e:
             self.queue.put(messages.LogMessage.get(e.args[0]))
         except Exception as exc:  # pylint: disable=W0703
-            self.queue.put(messages.StderrMessage.get("Collection %s failed: %s"
-                                                      % (type(log_hook), exc)))
+            self.queue.put(messages.StderrMessage.get(f"Collection "
+                                                      f"{type(log_hook)} "
+                                                      f"failed: {exc}"))
 
     def collect(self):
         """Log all collectibles at the start of the event."""
@@ -137,9 +138,9 @@ class SysinfoRunner(BaseRunner):
         sysinfo_config = self.runnable.kwargs.get('sysinfo', {})
         test_fail = self.runnable.kwargs.get('test_fail', False)
         if self.runnable.uri not in ['pre', 'post']:
-            yield messages.StderrMessage.get("Unsupported uri %s. Possible "
-                                             "values, 'pre', 'post'" %
-                                             self.runnable.uri)
+            yield messages.StderrMessage.get(f"Unsupported uri"
+                                             f"{self.runnable.uri}. "
+                                             f"Possible values, 'pre', 'post'")
             yield messages.FinishedMessage.get('error')
 
         try:

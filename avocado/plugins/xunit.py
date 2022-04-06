@@ -38,12 +38,12 @@ class XUnitResult(Result):
     PRINTABLE = string.ascii_letters + string.digits + string.punctuation + '\n\r '
 
     def _escape_attr(self, attrib):
-        attrib = ''.join(_ if _ in self.PRINTABLE else "\\x%02x" % ord(_)
+        attrib = ''.join(_ if _ in self.PRINTABLE else f"\\x{ord(_):02x}"
                          for _ in astring.to_text(attrib, encoding='utf-8'))
         return attrib
 
     def _escape_cdata(self, cdata):
-        cdata = ''.join(_ if _ in self.PRINTABLE else "\\x%02x" % ord(_)
+        cdata = ''.join(_ if _ in self.PRINTABLE else f"\\x{ord(_):02x}"
                         for _ in str(cdata))
         return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
 
@@ -52,7 +52,7 @@ class XUnitResult(Result):
 
     @staticmethod
     def _format_time(time):
-        return "{:.3f}".format(float(time))
+        return f"{float(time):.3f}"
 
     def _create_testcase_element(self, document, state):
         testcase = document.createElement('testcase')
