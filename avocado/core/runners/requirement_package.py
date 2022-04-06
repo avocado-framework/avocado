@@ -1,13 +1,14 @@
 import time
 from multiprocessing import Process, SimpleQueue
 
-from avocado.core import nrunner
+from avocado.core.nrunner.app import BaseRunnerApp
+from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
 from avocado.core.runners.utils import messages
 from avocado.utils.software_manager.main import MESSAGES
 from avocado.utils.software_manager.manager import SoftwareManager
 
 
-class RequirementPackageRunner(nrunner.BaseRunner):
+class RequirementPackageRunner(BaseRunner):
     """Runner for dependencies of type package
 
     This runner handles, the installation, verification and removal of
@@ -26,6 +27,9 @@ class RequirementPackageRunner(nrunner.BaseRunner):
         - action: one of 'install', 'check', or 'remove' (optional, defaults
           to 'install')
     """
+
+    name = 'requirement-package'
+    description = 'Runner for dependencies of type package'
 
     @staticmethod
     def _check(software_manager, package):
@@ -105,7 +109,9 @@ class RequirementPackageRunner(nrunner.BaseRunner):
                   'stderr': stderr}
         queue.put(output)
 
-    def run(self):
+    def run(self, runnable):
+        # pylint: disable=W0201
+        self.runnable = runnable
         yield messages.StartedMessage.get()
         # check if there is a valid 'action' argument
         cmd = self.runnable.kwargs.get('action', 'install')
@@ -129,7 +135,7 @@ class RequirementPackageRunner(nrunner.BaseRunner):
             process.start()
 
             while queue.empty():
-                time.sleep(nrunner.RUNNER_RUN_STATUS_INTERVAL)
+                time.sleep(RUNNER_RUN_STATUS_INTERVAL)
                 yield messages.RunningMessage.get()
 
             output = queue.get()
@@ -148,14 +154,15 @@ class RequirementPackageRunner(nrunner.BaseRunner):
         yield messages.FinishedMessage.get(result)
 
 
-class RunnerApp(nrunner.BaseRunnerApp):
+class RunnerApp(BaseRunnerApp):
     PROG_NAME = 'avocado-runner-package'
     PROG_DESCRIPTION = ('nrunner application for dependencies of type package')
-    RUNNABLE_KINDS_CAPABLE = {'package': RequirementPackageRunner}
+    RUNNABLE_KINDS_CAPABLE = ['package']
 
 
 def main():
-    nrunner.main(RunnerApp)
+    app = RunnerApp(print)
+    app.run()
 
 
 if __name__ == '__main__':

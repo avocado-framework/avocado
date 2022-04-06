@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.runners.sysinfo import SysinfoRunner
 from avocado.core.settings import settings
 
@@ -21,8 +21,8 @@ class BasicTests(unittest.TestCase):
                               'files': ['/proc/version', '/proc/meminfo']}}
         runnable = Runnable('sysinfo', 'pre', **kwargs,
                             config=settings.as_dict())
-        runner = SysinfoRunner(runnable)
-        status = runner.run()
+        runner = SysinfoRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -40,8 +40,8 @@ class BasicTests(unittest.TestCase):
                   'test_fail': True}
         runnable = Runnable('sysinfo', 'post', **kwargs,
                             config=settings.as_dict())
-        runner = SysinfoRunner(runnable)
-        status = runner.run()
+        runner = SysinfoRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:

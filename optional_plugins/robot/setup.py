@@ -40,6 +40,9 @@ setup(name='avocado-framework-plugin-robot',
           'console_scripts': [
               'avocado-runner-robot = avocado_robot.runner:main',
           ],
+          'avocado.plugins.runnable.runner': [
+              'robot = avocado_robot.runner:RobotRunner'
+          ],
           'avocado.plugins.resolver': [
               'robot = avocado_robot.robot:RobotResolver'
           ]}

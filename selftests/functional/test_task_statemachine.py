@@ -1,7 +1,8 @@
 import asyncio
 from unittest import TestCase
 
-from avocado.core.nrunner import Runnable, Task
+from avocado.core.nrunner.runnable import Runnable
+from avocado.core.nrunner.task import Task
 from avocado.core.status.repo import StatusRepo
 from avocado.core.task import statemachine
 from avocado.core.task.runtime import RuntimeTask

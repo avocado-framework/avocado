@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.runners.requirement_package import RequirementPackageRunner
 
 
@@ -10,8 +10,8 @@ class BasicTests(unittest.TestCase):
 
     def test_no_kwargs(self):
         runnable = Runnable(kind='package', uri=None)
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -26,8 +26,8 @@ class BasicTests(unittest.TestCase):
     def test_wrong_action(self):
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -58,8 +58,8 @@ class ActionTests(unittest.TestCase):
         self.mock_sm.return_value.install = lambda install: True
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'install', 'name': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -76,8 +76,8 @@ class ActionTests(unittest.TestCase):
         self.mock_sm.return_value.check_installed = lambda check_installed: True
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'install', 'name': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -95,8 +95,8 @@ class ActionTests(unittest.TestCase):
         self.mock_sm.return_value.install = lambda install: False
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'install', 'name': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -114,8 +114,8 @@ class ActionTests(unittest.TestCase):
         self.mock_sm.return_value.remove = lambda remove: True
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'remove', 'name': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -132,8 +132,8 @@ class ActionTests(unittest.TestCase):
         self.mock_sm.return_value.check_installed = lambda check_installed: False
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'remove', 'name': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -151,8 +151,8 @@ class ActionTests(unittest.TestCase):
         self.mock_sm.return_value.remove = lambda remove: False
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'remove', 'name': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -169,8 +169,8 @@ class ActionTests(unittest.TestCase):
         self.mock_sm.return_value.check_installed = lambda check_installed: True
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'check', 'name': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -187,8 +187,8 @@ class ActionTests(unittest.TestCase):
         self.mock_sm.return_value.check_installed = lambda check_installed: False
         runnable = Runnable(kind='package', uri=None,
                             **{'action': 'check', 'name': 'foo'})
-        runner = RequirementPackageRunner(runnable)
-        status = runner.run()
+        runner = RequirementPackageRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:

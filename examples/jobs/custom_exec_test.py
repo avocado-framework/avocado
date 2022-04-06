@@ -3,7 +3,7 @@
 import sys
 
 from avocado.core.job import Job
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.suite import TestSuite
 
 # an exec-test runnable consists of a runnable type (exec-test),

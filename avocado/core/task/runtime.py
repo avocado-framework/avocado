@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from avocado.core.dependencies.resolver import DependencyResolver
-from avocado.core.nrunner import RUNNERS_REGISTRY_PYTHON_CLASS, Task
+from avocado.core.nrunner.task import Task
 from avocado.core.test_id import TestID
 from avocado.core.varianter import dump_variant
 
@@ -95,7 +95,6 @@ class RuntimeTask:
         # handles the test task
         task = Task(runnable,
                     identifier=test_id,
-                    known_runners=RUNNERS_REGISTRY_PYTHON_CLASS,
                     status_uris=status_server_uri,
                     job_id=job_id)
         return cls(task)

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from avocado.core.nrunner import Runnable
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.runners.requirement_asset import RequirementAssetRunner
 
 
@@ -10,8 +10,8 @@ class BasicTests(unittest.TestCase):
 
     def test_no_kwargs(self):
         runnable = Runnable(kind='asset', uri=None)
-        runner = RequirementAssetRunner(runnable)
-        status = runner.run()
+        runner = RequirementAssetRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -26,8 +26,8 @@ class BasicTests(unittest.TestCase):
     def test_wrong_name(self):
         runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'foo'})
-        runner = RequirementAssetRunner(runnable)
-        status = runner.run()
+        runner = RequirementAssetRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -57,8 +57,8 @@ class FetchTests(unittest.TestCase):
         self.mock_sm.return_value.fetch.return_value = '/tmp/asset.txt'
         runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'asset.txt'})
-        runner = RequirementAssetRunner(runnable)
-        status = runner.run()
+        runner = RequirementAssetRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
@@ -76,8 +76,8 @@ class FetchTests(unittest.TestCase):
             OSError('Failed to fetch asset.txt'))
         runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'asset.txt'})
-        runner = RequirementAssetRunner(runnable)
-        status = runner.run()
+        runner = RequirementAssetRunner()
+        status = runner.run(runnable)
         messages = []
         while True:
             try:
