@@ -29,8 +29,8 @@ class SysinfoInit(Init):
     description = 'Initializes sysinfo settings'
 
     def initialize(self):
-        help_msg = ('Enable or disable sysinfo information. Like hardware '
-                    'details, profiles, etc.')
+        help_msg = ('Enable or disable sysinfo collection (like hardware '
+                    'details, profiles, etc.)')
         settings.register_option(section='sysinfo.collect',
                                  key='enabled',
                                  default=True,

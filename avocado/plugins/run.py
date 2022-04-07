@@ -185,10 +185,13 @@ class Run(CLICmd):
                                  parser=parser,
                                  long_arg='--ignore-missing-references')
 
+        help_msg = ('Disable sysinfo collection (like hardware details, '
+                    'profiles, etc).')
         settings.add_argparser_to_option(namespace='sysinfo.collect.enabled',
                                          parser=parser,
                                          action='store_false',
-                                         long_arg='--disable-sysinfo')
+                                         long_arg='--disable-sysinfo',
+                                         help_msg=help_msg)
 
         settings.add_argparser_to_option('run.execution_order',
                                          parser=parser,
