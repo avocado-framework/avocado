@@ -73,3 +73,15 @@ class Interface(Test):
         cmd = f"{runner} runnable-run-recipe {recipe}"
         result = process.run(cmd, ignore_status=True)
         self.assertEqual(result.exit_status, 0)
+
+    def test_task_run_no_args(self):
+        cmd = f"{self.get_runner()} task-run"
+        result = process.run(cmd, ignore_status=True)
+        self.assertEqual(result.exit_status, 2)
+
+    def test_task_run_identifier_only(self):
+        cmd = f"{self.get_runner()} task-run -i some_identifier"
+        result = process.run(cmd, ignore_status=True)
+        expected = int(self.params.get('task-run-id-only-exit-code',
+                                       default=2))
+        self.assertEqual(result.exit_status, expected)
