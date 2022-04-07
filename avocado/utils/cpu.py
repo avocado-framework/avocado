@@ -262,7 +262,7 @@ def online(cpu):
     if _get_status(cpu) is False:
         with open(f"/sys/devices/system/cpu/cpu{cpu}/online", "wb") as fd:  # pylint: disable=W1514
             fd.write(b'1')
-        if _get_status(cpu):
+        if _get_status(cpu) is False:
             return 0
     return 1
 
