@@ -61,12 +61,12 @@ class RunnableTest(unittest.TestCase):
 
     def test_recipe_exec(self):
         open_mocked = unittest.mock.mock_open(
-            read_data=('{"kind": "exec", "uri": "/bin/sh", '
+            read_data=('{"kind": "exec-test", "uri": "/bin/sh", '
                        '"args": ["/etc/profile"], '
                        '"kwargs": {"TERM": "vt3270"}}'))
         with unittest.mock.patch("builtins.open", open_mocked):
             runnable = Runnable.from_recipe("fake_path")
-        self.assertEqual(runnable.kind, "exec")
+        self.assertEqual(runnable.kind, "exec-test")
         self.assertEqual(runnable.uri, "/bin/sh")
         self.assertEqual(runnable.args, ("/etc/profile",))
         self.assertEqual(runnable.kwargs, {"TERM": "vt3270"})
@@ -99,8 +99,8 @@ class RunnableTest(unittest.TestCase):
         self.assertEqual(runnable.get_json(), expected)
 
     def test_runner_from_runnable_error(self):
-        runnable = Runnable('unsupported_kind', '')
         try:
+            runnable = Runnable('unsupported_kind', '')
             runnable.pick_runner_class()
         except ValueError as e:
             self.assertEqual(str(e), 'Unsupported kind of runnable: unsupported_kind')
@@ -115,20 +115,20 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
         self.assertIsNone(runnable.uri)
 
     def test_exec_args(self):
-        parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
+        parsed_args = {'kind': 'exec-test', 'uri': '/path/to/executable',
                        'arg': ['-a', '-b', '-c']}
         runnable = Runnable.from_args(parsed_args)
-        self.assertEqual(runnable.kind, 'exec')
+        self.assertEqual(runnable.kind, 'exec-test')
         self.assertEqual(runnable.uri, '/path/to/executable')
         self.assertEqual(runnable.args, ('-a', '-b', '-c'))
         self.assertEqual(runnable.kwargs, {})
 
     def test_exec_args_kwargs(self):
-        parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
+        parsed_args = {'kind': 'exec-test', 'uri': '/path/to/executable',
                        'arg': ['-a', '-b', '-c'],
                        'kwargs': [('DEBUG', '1'), ('LC_ALL', 'C')]}
         runnable = Runnable.from_args(parsed_args)
-        self.assertEqual(runnable.kind, 'exec')
+        self.assertEqual(runnable.kind, 'exec-test')
         self.assertEqual(runnable.uri, '/path/to/executable')
         self.assertEqual(runnable.args, ('-a', '-b', '-c'))
         self.assertEqual(runnable.kwargs.get('DEBUG'), '1')
@@ -170,21 +170,21 @@ class RunnableToRecipe(unittest.TestCase):
         self.assertEqual(loaded_runnable.kind, 'noop')
 
     def test_runnable_to_recipe_uri(self):
-        runnable = Runnable('exec', '/bin/true')
+        runnable = Runnable('exec-test', '/bin/true')
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
         loaded_runnable = Runnable.from_recipe(recipe_path)
-        self.assertEqual(loaded_runnable.kind, 'exec')
+        self.assertEqual(loaded_runnable.kind, 'exec-test')
         self.assertEqual(loaded_runnable.uri, '/bin/true')
 
     def test_runnable_to_recipe_args(self):
-        runnable = Runnable('exec', '/bin/sleep', '0.01')
+        runnable = Runnable('exec-test', '/bin/sleep', '0.01')
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
         loaded_runnable = Runnable.from_recipe(recipe_path)
-        self.assertEqual(loaded_runnable.kind, 'exec')
+        self.assertEqual(loaded_runnable.kind, 'exec-test')
         self.assertEqual(loaded_runnable.uri, '/bin/sleep')
         self.assertEqual(loaded_runnable.args, ('0.01', ))
 
