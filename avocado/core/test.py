@@ -34,7 +34,7 @@ import unittest
 import warnings
 from difflib import unified_diff
 
-from avocado.core import exceptions, output, parameters, sysinfo, tapparser
+from avocado.core import exceptions, output, parameters, tapparser
 from avocado.core.decorators import skip
 from avocado.core.output import LOG_JOB
 from avocado.core.settings import settings
@@ -298,13 +298,6 @@ class Test(unittest.TestCase, TestData):
         self._logging_handlers = {}
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
-
-        self.__sysinfo_enabled = self._config.get('sysinfo.collect.per_test',
-                                                  False)
-
-        if self.__sysinfo_enabled:
-            self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
-            self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)
 
         self.__log = LOG_JOB
         original_log_warn = self.log.warning
@@ -714,8 +707,6 @@ class Test(unittest.TestCase, TestData):
         testMethod = getattr(self, self._testMethodName)
         if self._config.get("run.test_runner") != 'nrunner':
             self._start_logging()
-        if self.__sysinfo_enabled:
-            self.__sysinfo_logger.start()
         skip_test_condition = getattr(testMethod, '__skip_test_condition__', False)
         skip_test_condition_negate = getattr(testMethod, '__skip_test_condition_negate__', False)
         if skip_test_condition:
@@ -802,8 +793,6 @@ class Test(unittest.TestCase, TestData):
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
-        if self.__sysinfo_enabled:
-            os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
 
     def _catch_test_status(self, method):
         """Wrapper around test methods for catching and logging failures."""
@@ -848,8 +837,6 @@ class Test(unittest.TestCase, TestData):
         self._catch_test_status(self._tearDown)
         whiteboard_file = os.path.join(self.logdir, 'whiteboard')
         genio.write_file(whiteboard_file, self.whiteboard)
-        if self.__sysinfo_enabled:
-            self.__sysinfo_logger.end(self.__status)
         self.__phase = 'FINISHED'
         self._tag_end()
         self._report()

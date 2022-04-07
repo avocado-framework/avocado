@@ -37,13 +37,6 @@ class SysinfoInit(Init):
                                  key_type=bool,
                                  help_msg=help_msg)
 
-        help_msg = 'Enable sysinfo collection per-test'
-        settings.register_option(section='sysinfo.collect',
-                                 key='per_test',
-                                 default=False,
-                                 key_type=bool,
-                                 help_msg=help_msg)
-
         help_msg = ('Overall timeout to collect commands, when <=0'
                     'no timeout is enforced')
         settings.register_option(section='sysinfo.collect',
