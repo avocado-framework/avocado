@@ -1,11 +1,14 @@
+import json
 import os
 import sys
 import tempfile
 import unittest.mock
 
+from avocado.core.nrunner.config import ConfigEncoder
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.task import Task
 from avocado.core.runners import tap as runner_tap
+from avocado.core.settings import settings
 from selftests.utils import skipUnlessPathExists, temp_dir_prefix
 
 
@@ -79,23 +82,27 @@ class RunnableTest(unittest.TestCase):
 
     def test_runnable_command_args(self):
         runnable = Runnable('noop', 'uri', 'arg1', 'arg2')
+        config = json.dumps(settings.as_dict(), cls=ConfigEncoder)
         actual_args = runnable.get_command_args()
-        exp_args = ['-k', 'noop', '-u', 'uri', '-a', 'arg1', '-a', 'arg2']
+        exp_args = ['-k', 'noop', '-u', 'uri', '-c', config, '-a', 'arg1', '-a',
+                    'arg2']
         self.assertEqual(actual_args, exp_args)
 
     def test_get_dict(self):
         runnable = Runnable('noop', '_uri_', 'arg1', 'arg2')
-        self.assertEqual(runnable.get_dict(),
-                         {'kind': 'noop', 'uri': '_uri_',
-                          'args': ('arg1', 'arg2'),
-                          'config': {}})
+        runnable_dict = runnable.get_dict()
+        self.assertEqual(runnable_dict['kind'], 'noop')
+        self.assertEqual(runnable_dict['uri'], '_uri_')
+        self.assertEqual(runnable_dict['config'], settings.as_dict())
+        self.assertEqual(runnable_dict['args'], ('arg1', 'arg2'))
 
     def test_get_json(self):
         runnable = Runnable('noop', '_uri_', 'arg1', 'arg2')
-        expected = ('{"kind": "noop", '
+        config = json.dumps(settings.as_dict(), cls=ConfigEncoder)
+        expected = ('{"kind": "noop", '  # pylint: disable=C0209
                     '"uri": "_uri_", '
-                    '"config": {}, '
-                    '"args": ["arg1", "arg2"]}')
+                    '"config": %s, '
+                    '"args": ["arg1", "arg2"]}') % config
         self.assertEqual(runnable.get_json(), expected)
 
     def test_runner_from_runnable_error(self):

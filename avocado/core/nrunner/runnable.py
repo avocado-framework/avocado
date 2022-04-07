@@ -8,6 +8,7 @@ import sys
 import pkg_resources
 
 from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
+from avocado.core.settings import settings
 
 #: All known runner commands, capable of being used by a
 #: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
@@ -63,7 +64,8 @@ class Runnable:
     def __init__(self, kind, uri, *args, config=None, **kwargs):
         self.kind = kind
         self.uri = uri
-        self.config = config or {}
+        self.config = settings.as_dict()
+        self.config.update(config or {})
         self.args = args
         self.tags = kwargs.pop('tags', None)
         self.dependencies = kwargs.pop('dependencies', None)
