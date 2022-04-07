@@ -5,6 +5,8 @@ import os
 import re
 import sys
 
+import pkg_resources
+
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY, Task
 
@@ -176,7 +178,8 @@ class BaseRunnerApp:
         :rtype: dict
         """
         return {"runnables": self.RUNNABLE_KINDS_CAPABLE,
-                "commands": self.get_commands()}
+                "commands": self.get_commands(),
+                "configuration_used": self.get_configuration_used_by_runners()}
 
     def get_runner_from_runnable(self, runnable):
         """
@@ -189,6 +192,24 @@ class BaseRunnerApp:
         if runner is not None:
             return runner()
         raise ValueError(f'Unsupported kind of runnable: {runnable.kind}')
+
+    def get_configuration_used_by_runners(self):
+        """Returns the configuration keys used by capable runners.
+
+        :returns: the configuration keys (aka namespaces) used by known runners
+        :rtype: list
+        """
+        config_used = []
+        for kind in self.RUNNABLE_KINDS_CAPABLE:
+            for ep in pkg_resources.iter_entry_points(
+                    'avocado.plugins.runnable.runner',
+                    kind):
+                try:
+                    runner = ep.load()
+                    config_used += runner.CONFIGURATION_USED
+                except ImportError:
+                    continue
+        return list(set(config_used))
 
     def command_capabilities(self, _):
         """

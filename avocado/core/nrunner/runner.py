@@ -43,6 +43,10 @@ def check_runnables_runner_requirements(runnables, runners_registry=None):
 
 class BaseRunner(RunnableRunner):
 
+    #: The "main Avocado" configuration keys (AKA namespaces) that
+    #: this runners makes use of.
+    CONFIGURATION_USED = []
+
     @staticmethod
     def prepare_status(status_type, additional_info=None):
         """Prepare a status dict with some basic information.

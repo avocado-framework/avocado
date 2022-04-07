@@ -41,6 +41,7 @@ class Interface(Test):
         capabilities = json.loads(result.stdout_text)
         self.assertIn("runnables", capabilities)
         self.assertIn("commands", capabilities)
+        self.assertIn("configuration_used", capabilities)
 
     def test_runnable_run_no_args(self):
         cmd = f"{self.get_runner()} runnable-run"

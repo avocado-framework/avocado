@@ -32,6 +32,8 @@ class AssetRunner(BaseRunner):
     name = 'asset'
     description = 'Runner for dependencies of type package'
 
+    CONFIGURATION_USED = ['datadir.paths.cache_dirs']
+
     @staticmethod
     def _fetch_asset(name, asset_hash, algorithm, locations, cache_dirs,
                      expire, queue):
