@@ -8,6 +8,7 @@ import sys
 import pkg_resources
 
 from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
+from avocado.core.settings import settings
 
 #: All known runner commands, capable of being used by a
 #: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
@@ -64,6 +65,8 @@ class Runnable:
     """
 
     def __init__(self, kind, uri, *args, config=None, **kwargs):
+        if config is None:
+            config = {}
         self.kind = kind
         #: The main reference to what needs to be run.  This is free
         #: form, but commonly set to the path to a file containing the
@@ -74,13 +77,16 @@ class Runnable:
         #: that is passed to runners, as long as a runner declares
         #: its interest in using them with
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
-        self.config = config or {}
+        self._config = {}
+        self.config = config
         self.args = args
         self.tags = kwargs.pop('tags', None)
         self.dependencies = kwargs.pop('dependencies', None)
         self.variant = kwargs.pop('variant', None)
         self.output_dir = kwargs.pop('output_dir', None)
         self.kwargs = kwargs
+        self._identifier_format = config.get("runner.identifier_format",
+                                             "{uri}")
 
     def __repr__(self):
         fmt = ('<Runnable kind="{}" uri="{}" config="{}" args="{}" '
@@ -115,7 +121,7 @@ class Runnable:
         Since this is formatter, combined values can be used. Example:
         "{uri}-{args}".
         """
-        fmt = self.config.get("runner.identifier_format")
+        fmt = self._identifier_format
 
         # For the cases where there is no config (when calling the Runnable
         # directly
@@ -139,6 +145,30 @@ class Runnable:
                    'kwargs': kwargs}
 
         return fmt.format(**options)
+
+    @property
+    def config(self):
+        if self._config is None:
+            return {}
+        return self._config
+
+    @config.setter
+    def config(self, config):
+        """Sets the config values based on the runnable kind.
+
+        :param config: A config dict with new values for Runnable.
+        :type config: dict
+        """
+        command = self.pick_runner_command()
+        if command is not None:
+            self._config = {}
+            default_config = settings.as_dict()
+            default_config.update(config)
+            command = " ".join(command)
+            configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
+            for config_item in configuration_used:
+                if config_item in default_config:
+                    self._config[config_item] = default_config.get(config_item)
 
     @classmethod
     def from_args(cls, args):
