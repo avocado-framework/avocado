@@ -13,8 +13,8 @@ class Interface(Test):
         return self.params.get("runner", default=default_runner)
 
     @staticmethod
-    def guess_recipe_runnable_from_runner(runner):
-        recipe_file_name = "recipe_runnable"
+    def guess_recipe_from_runner(runner, recipe_type):
+        recipe_file_name = f"recipe_{recipe_type}"
         match = re.match(r'^avocado-runner-(.*)$', runner)
         if match:
             underlined = match.group(1).replace('-', '_')
@@ -66,7 +66,7 @@ class Interface(Test):
 
     def test_runnable_run_recipe_specific_kind(self):
         runner = self.get_runner()
-        recipe_file = self.guess_recipe_runnable_from_runner(runner)
+        recipe_file = self.guess_recipe_from_runner(runner, "runnable")
         recipe = self.get_data(recipe_file)
         if not recipe:
             self.cancel("Recipe file not found for this kind of runner")
@@ -85,3 +85,21 @@ class Interface(Test):
         expected = int(self.params.get('task-run-id-only-exit-code',
                                        default=2))
         self.assertEqual(result.exit_status, expected)
+
+    def test_task_run_recipe_no_args(self):
+        """
+        Makes sure the recipe argument is required
+        """
+        cmd = f"{self.get_runner()} task-run-recipe"
+        result = process.run(cmd, ignore_status=True)
+        self.assertEqual(result.exit_status, 2)
+
+    def test_task_run_recipe_specific_kind(self):
+        runner = self.get_runner()
+        recipe_file = self.guess_recipe_from_runner(runner, "task")
+        recipe = self.get_data(recipe_file)
+        if not recipe:
+            self.cancel("Recipe file not found for this kind of runner")
+        cmd = f"{runner} task-run-recipe {recipe}"
+        result = process.run(cmd, ignore_status=True)
+        self.assertEqual(result.exit_status, 0)
