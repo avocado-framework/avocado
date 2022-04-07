@@ -74,7 +74,7 @@ class RunnerInit(Init):
                     'is in another host, or different port')
         settings.register_option(section=section,
                                  key='status_server_uri',
-                                 default='127.0.0.1:8888',
+                                 default=None,
                                  metavar="HOST:PORT",
                                  help_msg=help_msg)
 
