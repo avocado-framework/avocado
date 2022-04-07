@@ -33,13 +33,13 @@ class Interface(Test):
     def test_runnable_run_no_args(self):
         cmd = f"{self.get_runner()} runnable-run"
         result = process.run(cmd, ignore_status=True)
-        expected = self.params.get('runnable-run-no-args-exit-code',
-                                   default=2)
+        expected = int(self.params.get('runnable-run-no-args-exit-code',
+                                       default=2))
         self.assertEqual(result.exit_status, expected)
 
     def test_runnable_run_uri_only(self):
         cmd = f"{self.get_runner()} runnable-run -u some_uri"
         result = process.run(cmd, ignore_status=True)
-        expected = self.params.get('runnable-run-uri-only-exit-code',
-                                   default=2)
+        expected = int(self.params.get('runnable-run-uri-only-exit-code',
+                                       default=2))
         self.assertEqual(result.exit_status, expected)
