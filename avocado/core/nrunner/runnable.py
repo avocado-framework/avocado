@@ -249,8 +249,12 @@ class Runnable:
         with open(recipe_path, 'w', encoding='utf-8') as recipe_file:
             recipe_file.write(self.get_json())
 
-    def is_kind_supported_by_runner_command(self, runner_command, env=None):
-        """Checks if a runner command that seems a good fit declares support."""
+    @staticmethod
+    def get_capabilities_from_runner_command(runner_command, env=None):
+        """Returns the capabilities of a given runner from a command.
+
+        In case of failures, an empty capabilities dictionary is returned.
+        """
         cmd = runner_command + ['capabilities']
         try:
             process = subprocess.Popen(cmd,
@@ -259,14 +263,21 @@ class Runnable:
                                        stderr=subprocess.DEVNULL,
                                        env=env)
         except (FileNotFoundError, PermissionError):
-            return False
+            return {}
         out, _ = process.communicate()
 
         try:
-            capabilities = json.loads(out.decode())
+            return json.loads(out.decode())
         except json.decoder.JSONDecodeError:
-            return False
+            return {}
 
+    def is_kind_supported_by_runner_command(self, runner_cmd,
+                                            capabilities=None, env=None):
+        """Checks if a runner command that seems a good fit declares support."""
+        if capabilities is None:
+            capabilities = self.get_capabilities_from_runner_command(
+                runner_cmd,
+                env)
         return self.kind in capabilities.get('runnables', [])
 
     @staticmethod
@@ -321,14 +332,14 @@ class Runnable:
             full_module_name = f'avocado.core.runners.{module_name}'
             candidate_cmd = [sys.executable, '-m', full_module_name]
             if self.is_kind_supported_by_runner_command(candidate_cmd,
-                                                        env):
+                                                        env=env):
                 runners_registry[self.kind] = candidate_cmd
                 return candidate_cmd
 
         # look for the runner commands implemented in the base nrunner module
         candidate_cmd = [sys.executable, '-m', 'avocado.core.nrunner']
         if self.is_kind_supported_by_runner_command(candidate_cmd,
-                                                    env):
+                                                    env=env):
             runners_registry[self.kind] = candidate_cmd
             return candidate_cmd
 
