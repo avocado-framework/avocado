@@ -344,13 +344,12 @@ class Runnable:
         :returns: a class that inherits from :class:`BaseRunner` or None
         """
         namespace = 'avocado.plugins.runnable.runner'
-        for ep in pkg_resources.iter_entry_points(namespace):
-            if ep.name == self.kind:
-                try:
-                    obj = ep.load()
-                    return obj
-                except ImportError:
-                    return
+        for ep in pkg_resources.iter_entry_points(namespace, self.kind):
+            try:
+                obj = ep.load()
+                return obj
+            except ImportError:
+                return
 
     def pick_runner_class(self):
         """Selects a runner class from the registry based on kind.
