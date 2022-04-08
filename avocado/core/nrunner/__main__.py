@@ -9,8 +9,8 @@ class RunnerApp(BaseRunnerApp):
                               'exec-test',
                               'noop',
                               'python-unittest',
-                              'requirement-asset',
-                              'requirement-package',
+                              'asset',
+                              'package',
                               'sysinfo',
                               'tap']
 
