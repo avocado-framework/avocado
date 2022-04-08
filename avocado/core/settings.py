@@ -89,7 +89,8 @@ class ConfigOption:
     def __init__(self, namespace, help_msg, key_type=str, default=None,
                  parser=None, short_arg=None, long_arg=None,
                  positional_arg=False, choices=None, nargs=None,
-                 metavar=None, required=None, action=None, argparse_type=None):
+                 metavar=None, required=None, action=None, argparse_type=None,
+                 argparse_help_msg=None):
         self.namespace = namespace
         self.help_msg = help_msg
         self.key_type = key_type
@@ -105,6 +106,7 @@ class ConfigOption:
         self._action = action
         self._value = None
         self._argparse_type = argparse_type
+        self._argparse_help_msg = argparse_help_msg
 
         self._update_argparser()
 
@@ -161,6 +163,16 @@ class ConfigOption:
         self._argparse_type = value
 
     @property
+    def argparse_help_msg(self):
+        if self._argparse_help_msg is not None:
+            return self._argparse_help_msg
+        return self.help_msg
+
+    @argparse_help_msg.setter
+    def argparse_help_msg(self, value):
+        self._argparse_help_msg = value
+
+    @property
     def metavar(self):
         if self.positional_arg:
             if self._metavar is None:
@@ -169,7 +181,7 @@ class ConfigOption:
 
     @property
     def arg_parse_args(self):
-        args = {'help': self.help_msg,
+        args = {'help': self.argparse_help_msg,
                 'default': None}
 
         if self.nargs:
@@ -216,7 +228,7 @@ class ConfigOption:
     def add_argparser(self, parser, long_arg, short_arg=None,
                       positional_arg=False, choices=None, nargs=None,
                       metavar=None, required=None, action=None,
-                      argparse_type=None):
+                      argparse_type=None, argparse_help_msg=None):
         """Add an command-line argparser to this option."""
 
         self.parser = parser
@@ -229,6 +241,7 @@ class ConfigOption:
         self.required = required
         self._action = action
         self._argparse_type = argparse_type
+        self._argparse_help_msg = argparse_help_msg
 
         self._update_argparser()
 
@@ -343,7 +356,8 @@ class Settings:
                                 short_arg=None, positional_arg=False,
                                 choices=None, nargs=None, metavar=None,
                                 required=None, action=None,
-                                allow_multiple=False, argparse_type=None):
+                                allow_multiple=False, argparse_type=None,
+                                help_msg=None):
         """Add a command-line argument parser to an existing option.
 
         This method is useful to add a parser when the option is registered
@@ -407,6 +421,12 @@ class Settings:
             will, for instance, split a comma separated list may be used,
             resulting in command line users being able to provide convenient
             input.
+
+        help_msg : str
+            A help message, different from the original ConfigOption
+            help message, to be shown on the command line.  To be used when
+            the command line usage and the original help message do not make
+            sense together.
         """
         if not any([long_arg, short_arg, positional_arg]):
             raise SettingsError("To add an argument parser to an option, it "
@@ -426,7 +446,7 @@ class Settings:
 
         option.add_argparser(parser, long_arg, short_arg, positional_arg,
                              choices, nargs, metavar, required, action,
-                             argparse_type)
+                             argparse_type, help_msg)
 
     def as_dict(self, regex=None):
         """Return an dictionary with the current active settings.
