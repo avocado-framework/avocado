@@ -18,8 +18,7 @@ class BasicTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'error'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'error')
         stderr = b'At least name should be passed as kwargs'
         self.assertIn(stderr, messages[-2]['log'])
 
@@ -34,8 +33,7 @@ class BasicTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'error'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'error')
         stderr = b"Failed to fetch foo ("
         self.assertIn(stderr, messages[-2]['log'])
 
@@ -65,8 +63,7 @@ class FetchTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'pass'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'pass')
         stdout = b'File fetched at /tmp/asset.txt'
         self.assertIn(stdout, messages[-3]['log'])
 
@@ -84,8 +81,7 @@ class FetchTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'error'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'error')
         stderr = b'Failed to fetch asset.txt'
         self.assertIn(stderr, messages[-2]['log'])
 
