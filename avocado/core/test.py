@@ -34,7 +34,6 @@ import warnings
 from difflib import unified_diff
 
 from avocado.core import exceptions, output, parameters
-from avocado.core.decorators import skip
 from avocado.core.output import LOG_JOB
 from avocado.core.settings import settings
 from avocado.core.test_id import TestID
@@ -1130,46 +1129,3 @@ class SimpleTest(Test):
         Run the test and postprocess the results
         """
         self._execute_cmd()
-
-
-class MockingTest(Test):
-
-    """
-    Class intended as generic substitute for avocado tests which will
-    not be executed for some reason. This class is expected to be
-    overridden by specific reason-oriented sub-classes.
-    """
-
-    def __init__(self, *args, **kwargs):
-        """
-        This class substitutes other classes. Let's just ignore the remaining
-        arguments and only set the ones supported by avocado.Test
-        """
-        super_kwargs = {}
-        args = list(reversed(args))
-        for arg in ["methodName", "name", "params", "base_logdir", "config",
-                    "runner_queue"]:
-            if arg in kwargs:
-                super_kwargs[arg] = kwargs[arg]
-            elif args:
-                super_kwargs[arg] = args.pop()
-        # The methodName might not exist, make sure it's self.test
-        super_kwargs["methodName"] = "test"
-        super().__init__(**super_kwargs)
-
-    def test(self):
-        pass
-
-
-class TimeOutSkipTest(MockingTest):
-
-    """
-    Skip test due job timeout.
-
-    This test is skipped due a job timeout.
-    It will never have a chance to execute.
-    """
-
-    @skip('Test skipped due a job timeout!')
-    def test(self):
-        pass
