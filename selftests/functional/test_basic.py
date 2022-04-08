@@ -1067,7 +1067,7 @@ class PluginsXunitTest(TestCaseTmpDir):
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner '
+                    f'--disable-sysinfo '
                     f'--xunit - {testname}')
         result = process.run(cmd_line, ignore_status=True)
         xml_output = result.stdout
@@ -1140,7 +1140,7 @@ class PluginsJSONTest(TestCaseTmpDir):
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip, e_ncancel=0):
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner --json - '
+                    f'--disable-sysinfo --json - '
                     f'--archive {testname}')
         result = process.run(cmd_line, ignore_status=True)
         json_output = result.stdout_text
