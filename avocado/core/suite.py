@@ -25,7 +25,6 @@ from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolutionResult, resolve
 from avocado.core.settings import settings
 from avocado.core.tags import filter_test_tags, filter_test_tags_runnable
-from avocado.core.test import DryRunTest
 from avocado.core.tree import TreeNode
 from avocado.core.varianter import Varianter, is_empty_variant
 
@@ -146,9 +145,6 @@ class TestSuite:
         if self.config.get('run.test_runner') == 'nrunner':
             for runnable in self.tests:
                 runnable.kind = 'dry-run'
-        else:
-            for i in range(self.size):
-                self.tests[i] = [DryRunTest, self.tests[i][1]]
 
     @classmethod
     def _from_config_with_loader(cls, config, name=None):

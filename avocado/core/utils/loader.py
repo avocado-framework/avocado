@@ -57,8 +57,6 @@ def load_test(test_factory):
                 if issubclass(obj, test.Test):
                     test_class = obj
                     break
-    if test_class is test.DryRunTest:
-        test_parameters['modulePath'] = test_path
     if 'run.results_dir' in test_parameters:
         test_parameters['base_logdir'] = test_parameters.pop('run.results_dir')
     test_instance = test_class(**test_parameters)

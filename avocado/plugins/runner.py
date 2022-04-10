@@ -26,15 +26,47 @@ import time
 from queue import Full as queueFullException
 
 from avocado.core import output, tree, varianter
+from avocado.core.decorators import skip
 from avocado.core.output import LOG_JOB as TEST_LOG
 from avocado.core.output import LOG_UI as APP_LOG
 from avocado.core.plugin_interfaces import Runner
 from avocado.core.runner import TestStatus, add_runner_failure
-from avocado.core.test import TimeOutSkipTest
+from avocado.core.test import Test
 from avocado.core.test_id import TestID
 from avocado.core.teststatus import STATUSES, STATUSES_MAPPING
 from avocado.core.utils import loader
 from avocado.utils import process, stacktrace, wait
+
+
+class TimeOutSkipTest(Test):
+
+    """
+    Skip test due job timeout.
+
+    This test is skipped due a job timeout.
+    It will never have a chance to execute.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        This class substitutes other classes. Let's just ignore the remaining
+        arguments and only set the ones supported by avocado.Test
+        """
+        super_kwargs = {}
+        args = list(reversed(args))
+        for arg in ["methodName", "name", "params", "base_logdir", "config",
+                    "runner_queue"]:
+            if arg in kwargs:
+                super_kwargs[arg] = kwargs[arg]
+            elif args:
+                super_kwargs[arg] = args.pop()
+        # The methodName might not exist, make sure it's self.test
+        super_kwargs["methodName"] = "test"
+        super().__init__(**super_kwargs)
+
+    @skip('Test skipped due a job timeout!')
+    def test(self):
+        pass
 
 
 class TestRunner(Runner):

@@ -21,7 +21,6 @@ framework tests.
 import asyncio
 import functools
 import inspect
-import io
 import logging
 import os
 import pipes
@@ -34,8 +33,7 @@ import unittest
 import warnings
 from difflib import unified_diff
 
-from avocado.core import exceptions, output, parameters, tapparser
-from avocado.core.decorators import skip
+from avocado.core import exceptions, output, parameters
 from avocado.core.output import LOG_JOB
 from avocado.core.settings import settings
 from avocado.core.test_id import TestID
@@ -1131,132 +1129,3 @@ class SimpleTest(Test):
         Run the test and postprocess the results
         """
         self._execute_cmd()
-
-
-class TapTest(SimpleTest):
-
-    """
-    Run a test command as a TAP test.
-    """
-
-    def _execute_cmd(self):
-        try:
-            test_params = {
-                str(key): str(val)
-                for _, key, val in self.params.iteritems()
-            }
-
-            input_encoding = self._config.get('core.input_encoding')
-            result = process.run(self._command,
-                                 verbose=True,
-                                 env=test_params,
-                                 encoding=input_encoding)
-
-            self._log_detailed_cmd_info(result)
-        except process.CmdError as details:
-            self._log_detailed_cmd_info(details.result)
-            raise exceptions.TestFail(details)
-
-        if result.exit_status != 0:
-            self.fail(f'TAP Test execution returned a non-0 exit code ({result})')
-        parser = tapparser.TapParser(io.StringIO(result.stdout_text))
-        fail = 0
-        count = 0
-        bad_errormsg = 'there were test failures'
-        for event in parser.parse():
-            if isinstance(event, tapparser.TapParser.Error):
-                self.error('TAP parsing error: ' + event.message)
-                continue
-            if isinstance(event, tapparser.TapParser.Bailout):
-                self.error(event.message)
-                continue
-            if isinstance(event, tapparser.TapParser.Test):
-                bad = event.result in (tapparser.TestResult.XPASS, tapparser.TestResult.FAIL)
-                if event.result != tapparser.TestResult.SKIP:
-                    count += 1
-                if bad:
-                    self.log.error('%s %s %s', event.result.name, event.number, event.name)
-                    fail += 1
-                    if event.result == tapparser.TestResult.XPASS:
-                        bad_errormsg = 'there were test failures or unexpected passes'
-                else:
-                    self.log.info('%s %s %s', event.result.name, event.number, event.name)
-
-        if not count:
-            raise exceptions.TestSkipError('no tests were run')
-        if fail:
-            self.fail(bad_errormsg)
-
-
-class MockingTest(Test):
-
-    """
-    Class intended as generic substitute for avocado tests which will
-    not be executed for some reason. This class is expected to be
-    overridden by specific reason-oriented sub-classes.
-    """
-
-    def __init__(self, *args, **kwargs):
-        """
-        This class substitutes other classes. Let's just ignore the remaining
-        arguments and only set the ones supported by avocado.Test
-        """
-        super_kwargs = {}
-        args = list(reversed(args))
-        for arg in ["methodName", "name", "params", "base_logdir", "config",
-                    "runner_queue"]:
-            if arg in kwargs:
-                super_kwargs[arg] = kwargs[arg]
-            elif args:
-                super_kwargs[arg] = args.pop()
-        # The methodName might not exist, make sure it's self.test
-        super_kwargs["methodName"] = "test"
-        super().__init__(**super_kwargs)
-
-    def test(self):
-        pass
-
-
-class TimeOutSkipTest(MockingTest):
-
-    """
-    Skip test due job timeout.
-
-    This test is skipped due a job timeout.
-    It will never have a chance to execute.
-    """
-
-    @skip('Test skipped due a job timeout!')
-    def test(self):
-        pass
-
-
-class DryRunTest(MockingTest):
-
-    """
-    Fake test which logs itself and reports as CANCEL
-    """
-
-    def __init__(self, *args, **kwargs):
-        if 'modulePath' in kwargs:
-            self._filename = kwargs.pop('modulePath')
-        if self._filename is None:
-            self._filename = kwargs["name"].name
-        super().__init__(**kwargs)
-
-    def setUp(self):
-        self.log.info("Test params:")
-        for path, key, value in self.params.iteritems():
-            self.log.info("%s:%s ==> %s", path, key, value)
-        self.cancel('Test cancelled due to --dry-run')
-
-    @property
-    def filename(self):
-        try:
-            source = os.path.abspath(self._filename)
-            if os.path.exists(source):
-                return source
-            else:
-                return None
-        except AttributeError:
-            return None

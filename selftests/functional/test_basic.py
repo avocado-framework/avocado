@@ -682,22 +682,22 @@ class RunnerHumanOutputTest(TestCaseTmpDir):
                       result.stdout)
 
 
-class RunnerSimpleTest(TestCaseTmpDir):
+class RunnerExecTest(TestCaseTmpDir):
 
     def setUp(self):
         super().setUp()
         self.pass_script = script.TemporaryScript(
             '\u00e1 \u00e9 \u00ed \u00f3 \u00fa',
             "#!/bin/sh\ntrue",
-            'avocado_simpletest_functional')
+            'avocado_exec_test_functional')
         self.pass_script.save()
         self.fail_script = script.TemporaryScript('avocado_fail.sh',
                                                   "#!/bin/sh\nfalse",
-                                                  'avocado_simpletest_'
+                                                  'avocado_exec_test_'
                                                   'functional')
         self.fail_script.save()
 
-    def test_simpletest_pass(self):
+    def test_exec_test_pass(self):
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
                     f'--disable-sysinfo "{self.pass_script.path}"')
         result = process.run(cmd_line, ignore_status=True)
@@ -705,7 +705,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, expected_rc,
                          f"Avocado did not return rc {expected_rc}:\n{result}")
 
-    def test_simpletest_fail(self):
+    def test_exec_test_fail(self):
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
                     f'--disable-sysinfo {self.fail_script.path}')
         result = process.run(cmd_line, ignore_status=True)
@@ -802,7 +802,7 @@ class RunnerSimpleTest(TestCaseTmpDir):
         super().tearDown()
 
 
-class RunnerSimpleTestStatus(TestCaseTmpDir):
+class RunnerExecTestStatus(TestCaseTmpDir):
 
     def setUp(self):
         super().setUp()
@@ -813,12 +813,12 @@ class RunnerSimpleTestStatus(TestCaseTmpDir):
                                                   "skip_location = stdout\n")
         self.config_file.save()
 
-    def test_simpletest_status(self):
+    def test_exec_test_status(self):
         # Multi-line warning in STDERR should by default be handled
         warn_script = script.TemporaryScript('avocado_warn.sh',
                                              '#!/bin/sh\n'
                                              '>&2 echo -e "\\n\\nWARN\\n"',
-                                             'avocado_simpletest_'
+                                             'avocado_exec_test_'
                                              'functional')
         warn_script.save()
         cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
@@ -831,7 +831,7 @@ class RunnerSimpleTestStatus(TestCaseTmpDir):
         # Skip in STDOUT should be handled because of config
         skip_script = script.TemporaryScript('avocado_skip.sh',
                                              "#!/bin/sh\necho SKIP",
-                                             'avocado_simpletest_'
+                                             'avocado_exec_test_'
                                              'functional')
         skip_script.save()
         cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
@@ -844,7 +844,7 @@ class RunnerSimpleTestStatus(TestCaseTmpDir):
         # STDERR skip should not be handled
         skip2_script = script.TemporaryScript('avocado_skip.sh',
                                               "#!/bin/sh\n>&2 echo SKIP",
-                                              'avocado_simpletest_'
+                                              'avocado_exec_test_'
                                               'functional')
         skip2_script.save()
         cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
@@ -883,7 +883,7 @@ class RunnerReferenceFromConfig(TestCaseTmpDir):
         self.config_file.remove()
 
 
-class RunnerSimpleTestFailureFields(TestCaseTmpDir):
+class RunnerExecTestFailureFields(TestCaseTmpDir):
 
     def setUp(self):
         super().setUp()
@@ -893,11 +893,11 @@ class RunnerSimpleTestFailureFields(TestCaseTmpDir):
             "failure_fields = ['stdout', 'stderr']\n")
         self.config_file.save()
 
-    def test_simpletest_failure_fields(self):
+    def test_exec_test_failure_fields(self):
         fail_test = os.path.join(BASEDIR, 'examples', 'tests', 'failtest.sh')
         cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
                     f'--job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner -- {fail_test}')
+                    f'--disable-sysinfo -- {fail_test}')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -1067,7 +1067,7 @@ class PluginsXunitTest(TestCaseTmpDir):
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner '
+                    f'--disable-sysinfo '
                     f'--xunit - {testname}')
         result = process.run(cmd_line, ignore_status=True)
         xml_output = result.stdout
@@ -1140,7 +1140,7 @@ class PluginsJSONTest(TestCaseTmpDir):
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip, e_ncancel=0):
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner --json - '
+                    f'--disable-sysinfo --json - '
                     f'--archive {testname}')
         result = process.run(cmd_line, ignore_status=True)
         json_output = result.stdout_text
