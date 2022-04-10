@@ -45,5 +45,3 @@ results directory.
 .. note:: You have to specify separated logging streams. You can't use the
  built-in streams in this function.
 
-.. note:: Currently the custom streams are stored only per job, not per each
- individual test.
