@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 
 from avocado.core.plugin_interfaces import Spawner
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
@@ -25,6 +26,10 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         runner = task.runnable.pick_runner_command()
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
+        # When running Avocado Python modules, the interpreter on the new
+        # process needs to know where Avocado can be found.
+        env = os.environ.copy()
+        env['PYTHONPATH'] = ':'.join(p for p in sys.path)
 
         # pylint: disable=E1133
         try:
@@ -32,7 +37,8 @@ class ProcessSpawner(Spawner, SpawnerMixin):
                 runner,
                 *args,
                 stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL)
+                stderr=asyncio.subprocess.DEVNULL,
+                env=env)
         except (FileNotFoundError, PermissionError):
             return False
         asyncio.ensure_future(self._collect_task(runtime_task.spawner_handle))
