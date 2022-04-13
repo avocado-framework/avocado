@@ -133,6 +133,7 @@ endif
 
 ifdef TRAVIS
 PARALLEL_ARG=--nrunner-max-parallel-tasks=1
+PYTHON_DEVELOP_ARGS=
 else
 PARALLEL_ARG=
 endif
