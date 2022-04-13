@@ -33,7 +33,7 @@ import unittest
 import warnings
 from difflib import unified_diff
 
-from avocado.core import exceptions, output, parameters
+from avocado.core import exceptions, parameters
 from avocado.core.output import LOG_JOB
 from avocado.core.settings import settings
 from avocado.core.test_id import TestID
@@ -276,18 +276,6 @@ class Test(unittest.TestCase, TestData):
             self.__base_logdir_tmp = tempfile.TemporaryDirectory(prefix=prefix)
             self.__base_logdir = self.__base_logdir_tmp.name
 
-        if self._config.get("run.test_runner") == 'nrunner':
-            logdir = self.__base_logdir
-            self.__logdir = logdir
-        else:
-            self.__base_logdir = os.path.join(self.__base_logdir, 'test-results')
-            logdir = os.path.join(self.__base_logdir, self.name.str_filesystem)
-
-            if os.path.exists(logdir):
-                raise exceptions.TestSetupFail(f"Log dir already exists, "
-                                               f"this should never happen: "
-                                               f"{logdir}")
-            self.__logdir = utils_path.init_dir(logdir)
         self.__logfile = os.path.join(self.logdir, 'debug.log')
 
         self._stdout_file = os.path.join(self.logdir, 'stdout')
@@ -301,9 +289,6 @@ class Test(unittest.TestCase, TestData):
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
-
-        # Initialized by _start_logging and terminated by _stop_logging
-        self._file_handler = None
 
         self.log.info('INIT %s', self.name)
 
@@ -382,7 +367,7 @@ class Test(unittest.TestCase, TestData):
         """
         Path to this test's logging dir
         """
-        return self.__logdir
+        return self.__base_logdir
 
     @property
     def logfile(self):
@@ -584,63 +569,6 @@ class Test(unittest.TestCase, TestData):
         logger.addHandler(file_handler)
         self._logging_handlers[logger.name] = file_handler
 
-    def _start_logging(self):
-        """
-        Simple helper for adding a file logger to the main logger.
-        """
-        self._file_handler = logging.FileHandler(filename=self.logfile)
-        self._file_handler.setLevel(logging.DEBUG)
-
-        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
-        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
-
-        self._file_handler.setFormatter(formatter)
-        self.log.addHandler(self._file_handler)
-        self.log.propagate = False
-
-        # Adding the test log FileHandler to the Avocado's main logger so
-        # that everything logged while the test is running, for every logger,
-        # also makes its way into the test log file
-        logger = logging.getLogger('avocado')
-        logger.addHandler(self._file_handler)
-
-        stream_fmt = '%(message)s'
-        stream_formatter = logging.Formatter(fmt=stream_fmt)
-
-        log_test_stdout = LOG_JOB.getChild("stdout")
-        log_test_stderr = LOG_JOB.getChild("stderr")
-        log_test_output = LOG_JOB.getChild("output")
-
-        self._register_log_file_handler(log_test_stdout,
-                                        stream_formatter,
-                                        self._stdout_file,
-                                        raw=True)
-        self._register_log_file_handler(log_test_stderr,
-                                        stream_formatter,
-                                        self._stderr_file,
-                                        raw=True)
-        self._register_log_file_handler(log_test_output,
-                                        stream_formatter,
-                                        self._output_file,
-                                        raw=True)
-
-        if isinstance(sys.stdout, output.LoggingFile):
-            sys.stdout.add_logger(log_test_stdout)
-        if isinstance(sys.stderr, output.LoggingFile):
-            sys.stderr.add_logger(log_test_stderr)
-
-    def _stop_logging(self):
-        """
-        Stop the logging activity of the test by cleaning the logger handlers.
-        """
-        self.log.removeHandler(self._file_handler)
-        if isinstance(sys.stderr, output.LoggingFile):
-            sys.stderr.rm_logger(LOG_JOB.getChild("stderr"))
-        if isinstance(sys.stdout, output.LoggingFile):
-            sys.stdout.rm_logger(LOG_JOB.getChild("stdout"))
-        for name, handler in self._logging_handlers.items():
-            logging.getLogger(name).removeHandler(handler)
-
     def _check_reference(self, produced_file_path, reference_file_name,
                          diff_file_name, child_log_name, name='Content'):
         '''
@@ -703,8 +631,6 @@ class Test(unittest.TestCase, TestData):
         """
         self._tag_start()
         testMethod = getattr(self, self._testMethodName)
-        if self._config.get("run.test_runner") != 'nrunner':
-            self._start_logging()
         skip_test_condition = getattr(testMethod, '__skip_test_condition__', False)
         skip_test_condition_negate = getattr(testMethod, '__skip_test_condition_negate__', False)
         if skip_test_condition:
@@ -839,8 +765,6 @@ class Test(unittest.TestCase, TestData):
         self._tag_end()
         self._report()
         self.log.info("")
-        if self._config.get("run.test_runner") != 'nrunner':
-            self._stop_logging()
 
     def _report(self):
         """
