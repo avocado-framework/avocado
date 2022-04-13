@@ -62,7 +62,15 @@ class Runnable:
 
     def __init__(self, kind, uri, *args, config=None, **kwargs):
         self.kind = kind
+        #: The main reference to what needs to be run.  This is free
+        #: form, but commonly set to the path to a file containing the
+        #: test or being the test, or an actual URI with multiple
+        #: parts
         self.uri = uri
+        #: This attributes holds configuration from Avocado proper
+        #: that is passed to runners, as long as a runner declares
+        #: its interest in using them with
+        #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop('tags', None)

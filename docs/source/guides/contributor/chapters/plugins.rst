@@ -258,6 +258,17 @@ for ``magic`` test types.
 
 .. literalinclude:: ../../../../../examples/plugins/tests/magic/avocado_magic/runner.py
 
+A runner is free to make use of all the information in the
+:class:`avocado.core.nrunner.runnable.Runnable` that the resolver
+implementation populates.  In this particular example it only makes
+use of the :attr:`uri <avocado.core.nrunner.runnable.Runnable.uri>`
+attribute.  If a runner needs to behave accordingly to some
+Avocado configuration, you need to declare that configuration in
+the :attr:`CONFIGURATION_USED
+<avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED>` class
+attribute and then you can access it in :attr:`config
+<avocado.core.nrunner.runnable.Runnable.config>`.
+
 Activating the new test type plugins
 ------------------------------------
 
