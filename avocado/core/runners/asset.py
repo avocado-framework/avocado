@@ -8,7 +8,7 @@ from avocado.utils import data_structures
 from avocado.utils.asset import Asset
 
 
-class RequirementAssetRunner(BaseRunner):
+class AssetRunner(BaseRunner):
     """Runner for dependencies of type package
 
     This runner handles the fetch of files using the Avocado Assets utility.
@@ -29,7 +29,7 @@ class RequirementAssetRunner(BaseRunner):
         - expire: time in seconds for the asset to expire (optional)
     """
 
-    name = 'requirement-asset'
+    name = 'asset'
     description = 'Runner for dependencies of type package'
 
     @staticmethod

@@ -2,15 +2,15 @@ import unittest
 from unittest.mock import patch
 
 from avocado.core.nrunner.runnable import Runnable
-from avocado.core.runners.requirement_asset import RequirementAssetRunner
+from avocado.core.runners.asset import AssetRunner
 
 
 class BasicTests(unittest.TestCase):
-    """Basic unit tests for the RequirementAssetRunner class"""
+    """Basic unit tests for the AssetRunner class"""
 
     def test_no_kwargs(self):
         runnable = Runnable(kind='asset', uri=None)
-        runner = RequirementAssetRunner()
+        runner = AssetRunner()
         status = runner.run(runnable)
         messages = []
         while True:
@@ -25,7 +25,7 @@ class BasicTests(unittest.TestCase):
     def test_wrong_name(self):
         runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'foo'})
-        runner = RequirementAssetRunner()
+        runner = AssetRunner()
         status = runner.run(runnable)
         messages = []
         while True:
@@ -45,7 +45,7 @@ class FetchTests(unittest.TestCase):
         """Mock SoftwareManager"""
 
         self.asset_patcher = patch(
-            'avocado.core.runners.requirement_asset.Asset',
+            'avocado.core.runners.asset.Asset',
             autospec=True)
         self.mock_asset = self.asset_patcher.start()
         self.addCleanup(self.asset_patcher.stop)
@@ -55,7 +55,7 @@ class FetchTests(unittest.TestCase):
         self.mock_asset.return_value.fetch.return_value = '/tmp/asset.txt'
         runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'asset.txt'})
-        runner = RequirementAssetRunner()
+        runner = AssetRunner()
         status = runner.run(runnable)
         messages = []
         while True:
@@ -73,7 +73,7 @@ class FetchTests(unittest.TestCase):
             OSError('Failed to fetch asset.txt'))
         runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'asset.txt'})
-        runner = RequirementAssetRunner()
+        runner = AssetRunner()
         status = runner.run(runnable)
         messages = []
         while True:

@@ -8,7 +8,7 @@ from avocado.utils.software_manager.main import MESSAGES
 from avocado.utils.software_manager.manager import SoftwareManager
 
 
-class RequirementPackageRunner(BaseRunner):
+class PackageRunner(BaseRunner):
     """Runner for dependencies of type package
 
     This runner handles, the installation, verification and removal of
@@ -28,7 +28,7 @@ class RequirementPackageRunner(BaseRunner):
           to 'install')
     """
 
-    name = 'requirement-package'
+    name = 'package'
     description = 'Runner for dependencies of type package'
 
     @staticmethod
