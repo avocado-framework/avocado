@@ -44,15 +44,15 @@ class FetchTests(unittest.TestCase):
     def setUp(self):
         """Mock SoftwareManager"""
 
-        self.sm_patcher = patch(
+        self.asset_patcher = patch(
             'avocado.core.runners.requirement_asset.Asset',
             autospec=True)
-        self.mock_sm = self.sm_patcher.start()
-        self.addCleanup(self.sm_patcher.stop)
+        self.mock_asset = self.asset_patcher.start()
+        self.addCleanup(self.asset_patcher.stop)
 
     def test_success_fetch(self):
 
-        self.mock_sm.return_value.fetch.return_value = '/tmp/asset.txt'
+        self.mock_asset.return_value.fetch.return_value = '/tmp/asset.txt'
         runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'asset.txt'})
         runner = RequirementAssetRunner()
@@ -69,7 +69,7 @@ class FetchTests(unittest.TestCase):
 
     def test_fail_fetch(self):
 
-        self.mock_sm.return_value.fetch = lambda: (_ for _ in ()).throw(
+        self.mock_asset.return_value.fetch = lambda: (_ for _ in ()).throw(
             OSError('Failed to fetch asset.txt'))
         runnable = Runnable(kind='asset', uri=None,
                             **{'name': 'asset.txt'})
