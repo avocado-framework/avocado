@@ -245,13 +245,14 @@ and transform the reference given into its **url**:
 Runner example
 --------------
 
-The runner will receive the ``Runnable`` information created by the
-resolver plugin.   Runners can be written in any language, but this
-implementation reuses some base Python classes.
+The runner will receive the
+:class:`avocado.core.nrunner.runnable.Runnable` information
+created by the resolver plugin.  Runners can be written in any
+language, but this implementation reuses some base Python classes.
 
-First, :class:`avocado.core.nrunner.BaseRunner` is used to write the
+First, :class:`avocado.core.nrunner.runner.BaseRunner` is used to write the
 runner **class**.  And second, the
-:class:`avocado.core.nrunner.BaseRunner` is used to create the command
+:class:`avocado.core.nrunner.app.BaseRunnerApp` is used to create the command
 line application, which uses the previously implemented runner class
 for ``magic`` test types.
 
