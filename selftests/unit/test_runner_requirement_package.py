@@ -66,8 +66,7 @@ class ActionTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'pass'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'pass')
         stdout = b'Package(s) foo installed successfully'
         self.assertIn(stdout, messages[-3]['log'])
 
@@ -84,8 +83,7 @@ class ActionTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'pass'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'pass')
         stdout = b'Package foo already installed'
         self.assertIn(stdout, messages[-3]['log'])
 
@@ -103,8 +101,7 @@ class ActionTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'error'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'error')
         stderr = b'Failed to install foo.'
         self.assertIn(stderr, messages[-2]['log'])
 
@@ -122,8 +119,7 @@ class ActionTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'pass'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'pass')
         stdout = b'Package(s) foo removed successfully'
         self.assertIn(stdout, messages[-3]['log'])
 
@@ -140,8 +136,7 @@ class ActionTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'pass'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'pass')
         stdout = b'Package foo not installed'
         self.assertIn(stdout, messages[-3]['log'])
 
@@ -159,8 +154,7 @@ class ActionTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'error'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'error')
         stderr = b'Failed to remove foo.'
         self.assertIn(stderr, messages[-2]['log'])
 
@@ -177,8 +171,7 @@ class ActionTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'pass'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'pass')
         stdout = b'Package foo already installed'
         self.assertIn(stdout, messages[-3]['log'])
 
@@ -195,8 +188,7 @@ class ActionTests(unittest.TestCase):
                 messages.append(next(status))
             except StopIteration:
                 break
-        result = 'error'
-        self.assertIn(result, messages[-1]['result'])
+        self.assertEqual(messages[-1]['result'], 'error')
         stderr = b'Package foo not installed'
         self.assertIn(stderr, messages[-2]['log'])
 
