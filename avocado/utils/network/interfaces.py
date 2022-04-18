@@ -471,6 +471,22 @@ class NetworkInterface:
             msg = f'Failed to remove ipaddr. {ex}'
             raise NWException(msg)
 
+    def flush_ipaddr(self):
+        """Flush all the IP address for this interface.
+
+        This method will try to flush the ip address from this interface
+        and if fails it will raise a NWException. Be careful, you can
+        lost connection.
+
+        You must have sudo permissions to run this method on a host.
+        """
+        cmd = f'ip addr flush dev {self.name}'
+        try:
+            run_command(cmd, self.host, sudo=True)
+        except Exception as ex:
+            msg = f'Failed to flush ipaddr. {ex}'
+            raise NWException(msg)
+
     def remove_link(self):
         """Deletes virtual interface link.
 
