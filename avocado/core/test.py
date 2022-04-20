@@ -29,7 +29,6 @@ import tempfile
 import time
 import unittest
 import warnings
-from difflib import unified_diff
 
 from avocado.core import exceptions, parameters
 from avocado.core.output import LOG_JOB
@@ -566,62 +565,6 @@ class Test(unittest.TestCase, TestData):
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
         self._logging_handlers[logger.name] = file_handler
-
-    def _check_reference(self, produced_file_path, reference_file_name,
-                         diff_file_name, child_log_name, name='Content'):
-        '''
-        Compares the file produced by the test with the reference file
-
-        :param produced_file_path: the location of the file that was produced
-                                   by this test execution
-        :type produced_file_path: str
-        :param reference_file_name: the name of the file that will compared
-                                    with the content produced by this test
-        :type reference_file_name: str
-        :param diff_file_name: in case of differences between the produced
-                               and reference file, a file with this name will
-                               be saved to the test results directory, with
-                               the differences in unified diff format
-        :type diff_file_name: str
-        :param child_log_name: the name of a logger, child of :data:`LOG_JOB`,
-                               to be used when logging the content differences
-        :type child_log_name: str
-        :param name: optional parameter for a descriptive name of the type of
-                     content being checked here
-        :type name: str
-        :returns: True if the check was performed (there was a reference file) and
-                  was successful, and False otherwise (there was no such reference
-                  file and thus no check was performed).
-        :raises: :class:`exceptions.TestFail` when the check is performed and fails
-        '''
-        reference_path = self.get_data(reference_file_name)
-        if reference_path is not None:
-            expected = genio.read_file(reference_path)
-            actual = genio.read_file(produced_file_path)
-            diff_path = os.path.join(self.logdir, diff_file_name)
-
-            fmt = '%(message)s'
-            formatter = logging.Formatter(fmt=fmt)
-            log_diff = LOG_JOB.getChild(child_log_name)
-            self._register_log_file_handler(log_diff,
-                                            formatter,
-                                            diff_path)
-
-            diff = unified_diff(expected.splitlines(), actual.splitlines(),
-                                fromfile=reference_path,
-                                tofile=produced_file_path)
-            diff_content = []
-            for diff_line in diff:
-                diff_content.append(diff_line.rstrip('\n'))
-
-            if diff_content:
-                self.log.debug('%s Diff:', name)
-                for line in diff_content:
-                    log_diff.debug(line)
-                self.fail(f'Actual test {name} differs from expected one')
-            else:
-                return True
-        return False
 
     def _run_test(self):
         """
