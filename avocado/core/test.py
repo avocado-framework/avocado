@@ -24,7 +24,6 @@ import inspect
 import logging
 import os
 import pipes
-import re
 import shutil
 import sys
 import tempfile
@@ -1015,38 +1014,6 @@ class SimpleTest(Test):
             self._log_detailed_cmd_info(details.result)
             test_failure = self._cmd_error_to_test_failure(details)
             raise exceptions.TestFail(test_failure)
-
-        warn_regex = self._config.get('simpletests.status.warn_regex')
-        warn_location = self._config.get('simpletests.status.warn_location')
-        skip_regex = self._config.get('simpletests.status.skip_regex')
-        skip_location = self._config.get('simpletests.status.skip_location')
-
-        # Keeping compatibility with 'avocado_warn' libexec
-        for regex in [warn_regex, r'^\d\d:\d\d:\d\d WARN \|']:
-            warn_msg = ("Test passed but there were warnings on {st} during "
-                        "execution. Check the log for details.")
-            if regex is not None:
-                re_warn = re.compile(regex, re.MULTILINE)
-                if warn_location in ['all', 'stdout']:
-                    if re_warn.search(result.stdout_text):
-                        raise exceptions.TestWarn(warn_msg.format(st='stdout'))
-
-                if warn_location in ['all', 'stderr']:
-                    if re_warn.search(result.stderr_text):
-                        raise exceptions.TestWarn(warn_msg.format(st='stderr'))
-
-        if skip_regex is not None:
-            re_skip = re.compile(skip_regex, re.MULTILINE)
-            skip_msg = ("Test passed but {st} indicates test was skipped. "
-                        "Check the log for details.")
-
-            if skip_location in ['all', 'stdout']:
-                if re_skip.search(result.stdout_text):
-                    raise exceptions.TestSkipError(skip_msg.format(st='stdout'))
-
-            if skip_location in ['all', 'stderr']:
-                if re_skip.search(result.stderr_text):
-                    raise exceptions.TestSkipError(skip_msg.format(st='stderr'))
 
     def test(self):
         """

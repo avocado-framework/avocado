@@ -717,34 +717,6 @@ class RunnerExecTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, expected_rc,
                          f"Avocado did not return rc {expected_rc}:\n{result}")
 
-    def test_simplewarning(self):
-        """
-        simplewarning.sh uses the avocado-bash-utils
-        """
-        # simplewarning.sh calls "avocado" without specifying a path
-        # let's add the path that was defined at the global module
-        # scope here
-        os.environ['PATH'] += ":" + os.path.dirname(AVOCADO)
-        # simplewarning.sh calls "avocado exec-path" which hasn't
-        # access to an installed location for the libexec scripts
-        os.environ['PATH'] += ":" + os.path.join(BASEDIR, 'libexec')
-        cmd_line = (f'{AVOCADO} --show=test run '
-                    f'--job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner '
-                    f'examples/tests/simplewarning.sh')
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
-        self.assertIn(b'DEBUG| Debug message', result.stdout, result)
-        self.assertIn(b'INFO | Info message', result.stdout, result)
-        self.assertIn(b'WARN | Warning message (should cause this test to '
-                      b'finish with warning)', result.stdout, result)
-        self.assertIn(b'ERROR| Error message (ordinary message not changing '
-                      b'the results)', result.stdout, result)
-        self.assertIn(b'Test passed but there were warnings', result.stdout,
-                      result)
-
     def test_non_absolute_path(self):
         test_base_dir = os.path.dirname(self.pass_script.path)
         os.chdir(test_base_dir)
@@ -760,64 +732,6 @@ class RunnerExecTest(TestCaseTmpDir):
         self.pass_script.remove()
         self.fail_script.remove()
         super().tearDown()
-
-
-class RunnerExecTestStatus(TestCaseTmpDir):
-
-    def setUp(self):
-        super().setUp()
-        self.config_file = script.TemporaryScript('avocado.conf',
-                                                  "[simpletests.status]\n"
-                                                  "warn_regex = ^WARN$\n"
-                                                  "skip_regex = ^SKIP$\n"
-                                                  "skip_location = stdout\n")
-        self.config_file.save()
-
-    def test_exec_test_status(self):
-        # Multi-line warning in STDERR should by default be handled
-        warn_script = script.TemporaryScript('avocado_warn.sh',
-                                             '#!/bin/sh\n'
-                                             '>&2 echo -e "\\n\\nWARN\\n"',
-                                             'avocado_exec_test_'
-                                             'functional')
-        warn_script.save()
-        cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
-                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo '
-                    f'--test-runner=runner {warn_script.path} --json -')
-        result = process.run(cmd_line, ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-        self.assertEqual(json_results['tests'][0]['status'], 'WARN')
-        warn_script.remove()
-        # Skip in STDOUT should be handled because of config
-        skip_script = script.TemporaryScript('avocado_skip.sh',
-                                             "#!/bin/sh\necho SKIP",
-                                             'avocado_exec_test_'
-                                             'functional')
-        skip_script.save()
-        cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
-                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo '
-                    f' --test-runner=runner {skip_script.path} --json -')
-        result = process.run(cmd_line, ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-        self.assertEqual(json_results['tests'][0]['status'], 'SKIP')
-        skip_script.remove()
-        # STDERR skip should not be handled
-        skip2_script = script.TemporaryScript('avocado_skip.sh',
-                                              "#!/bin/sh\n>&2 echo SKIP",
-                                              'avocado_exec_test_'
-                                              'functional')
-        skip2_script.save()
-        cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
-                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo '
-                    f' --test-runner=runner {skip2_script.path} --json -')
-        result = process.run(cmd_line, ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-        self.assertEqual(json_results['tests'][0]['status'], 'PASS')
-        skip2_script.remove()
-
-    def tearDown(self):
-        super().tearDown()
-        self.config_file.remove()
 
 
 class RunnerReferenceFromConfig(TestCaseTmpDir):
