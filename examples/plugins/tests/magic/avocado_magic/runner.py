@@ -1,6 +1,6 @@
 from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import BaseRunner
-from avocado.core.runners.utils.messages import FinishedMessage, StartedMessage
+from avocado.core.utils.messages import FinishedMessage, StartedMessage
 
 
 class MagicRunner(BaseRunner):

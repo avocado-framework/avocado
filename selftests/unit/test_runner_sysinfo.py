@@ -2,8 +2,8 @@ import os
 import unittest
 
 from avocado.core.nrunner.runnable import Runnable
-from avocado.core.runners.sysinfo import SysinfoRunner
 from avocado.core.settings import settings
+from avocado.plugins.runners.sysinfo import SysinfoRunner
 
 
 class BasicTests(unittest.TestCase):

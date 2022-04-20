@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from avocado.core.nrunner.runnable import Runnable
-from avocado.core.runners.asset import AssetRunner
+from avocado.plugins.runners.asset import AssetRunner
 
 
 class BasicTests(unittest.TestCase):
@@ -45,7 +45,7 @@ class FetchTests(unittest.TestCase):
         """Mock SoftwareManager"""
 
         self.asset_patcher = patch(
-            'avocado.core.runners.asset.Asset',
+            'avocado.plugins.runners.asset.Asset',
             autospec=True)
         self.mock_asset = self.asset_patcher.start()
         self.addCleanup(self.asset_patcher.stop)
