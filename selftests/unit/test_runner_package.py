@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from avocado.core.nrunner.runnable import Runnable
-from avocado.core.runners.package import PackageRunner
+from avocado.plugins.runners.package import PackageRunner
 
 
 class BasicTests(unittest.TestCase):
@@ -47,7 +47,7 @@ class ActionTests(unittest.TestCase):
         """Mock SoftwareManager"""
 
         self.sm_patcher = patch(
-            'avocado.core.runners.package.SoftwareManager',
+            'avocado.plugins.runners.package.SoftwareManager',
             autospec=True)
         self.mock_sm = self.sm_patcher.start()
         self.addCleanup(self.sm_patcher.stop)

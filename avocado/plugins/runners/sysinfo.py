@@ -7,7 +7,7 @@ from avocado.core.nrunner.app import BaseRunnerApp
 from avocado.core.nrunner.runner import (RUNNER_RUN_CHECK_INTERVAL,
                                          RUNNER_RUN_STATUS_INTERVAL,
                                          BaseRunner)
-from avocado.core.runners.utils import messages
+from avocado.core.utils import messages
 from avocado.utils import sysinfo as sysinfo_collectible
 from avocado.utils.software_manager import manager
 

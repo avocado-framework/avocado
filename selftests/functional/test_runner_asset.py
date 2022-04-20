@@ -5,7 +5,7 @@ import unittest
 from avocado.utils import process
 from selftests.utils import BASEDIR
 
-RUNNER = f"{sys.executable} -m avocado.core.runners.asset"
+RUNNER = f"{sys.executable} -m avocado.plugins.runners.asset"
 
 
 class RunnableRun(unittest.TestCase):
