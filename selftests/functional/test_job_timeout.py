@@ -101,7 +101,7 @@ class JobTimeOutTest(TestCaseTmpDir):
     def test_sleep_longer_timeout(self):
         """:avocado: tags=parallel:1"""
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner --xunit - '
+                    f'--disable-sysinfo --xunit - '
                     f'--job-timeout=5 {self.script.path} '
                     f'examples/tests/passtest.py')
         self.run_and_check(cmd_line, 0, 2, 0, 0, 0)

@@ -201,11 +201,7 @@ number of arguments that will be given to that class initialization.
 
 So the primary "code payload" for every Avocado test in the legacy
 architecture will always be Python code that inherits from
-:class:`avocado.core.test.Test`.  Even when the user wants to run a
-standalone executable (a ``SIMPLE`` test in the legacy architecture
-terminology), that still means loading and instantiating (effectively
-executing) the Python class' :class:`avocado.core.test.SimpleTest`
-code.
+:class:`avocado.core.test.Test`.
 
 Once all the test factories are found by :mod:`avocado.core.loader`,
 as described in the previous section, the legacy architecture runs
