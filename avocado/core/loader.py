@@ -376,14 +376,12 @@ class SimpleFileLoader(TestLoader):
     @staticmethod
     def get_type_label_mapping():
         return {NotATest: 'NOT_A_TEST',
-                MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
                 AccessDeniedPath: 'ACCESS_DENIED'}
 
     @staticmethod
     def get_decorator_mapping():
         return {NotATest: output.TERM_SUPPORT.warn_header_str,
-                MissingTest: output.TERM_SUPPORT.fail_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
                 AccessDeniedPath: output.TERM_SUPPORT.fail_header_str}
 
