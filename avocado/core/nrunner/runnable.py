@@ -306,7 +306,7 @@ class Runnable:
     def _module_exists(module_name):
         """Returns whether a nrunner "runner" module exists."""
         module_filename = f'{module_name}.py'
-        mod_path = os.path.join('core', 'runners', module_filename)
+        mod_path = os.path.join('plugins', 'runners', module_filename)
         return pkg_resources.resource_exists('avocado', mod_path)
 
     def pick_runner_command(self, runners_registry=None):
@@ -346,12 +346,12 @@ class Runnable:
             return standalone_executable_cmd
 
         # attempt to find Python module files that are named after the
-        # runner convention within the avocado.core namespace dir.
+        # runner convention within the avocado.plugins.runners namespace dir.
         # Looking for the file only avoids an attempt to load the module
         # and should be a lot faster
         module_name = self.kind.replace('-', '_')
         if self._module_exists(module_name):
-            full_module_name = f'avocado.core.runners.{module_name}'
+            full_module_name = f'avocado.plugins.runners.{module_name}'
             candidate_cmd = [sys.executable, '-m', full_module_name]
             if self.is_kind_supported_by_runner_command(candidate_cmd,
                                                         env=env):

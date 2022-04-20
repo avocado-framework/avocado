@@ -1,9 +1,9 @@
 import io
 
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.runners.exec_test import ExecTestRunner
 from avocado.core.runners.utils.messages import FinishedMessage
 from avocado.core.tapparser import TapParser, TestResult
+from avocado.plugins.runners.exec_test import ExecTestRunner
 
 
 class TAPRunner(ExecTestRunner):
