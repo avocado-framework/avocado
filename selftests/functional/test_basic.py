@@ -748,8 +748,7 @@ class RunnerExecTest(TestCaseTmpDir):
         os.chdir(test_base_dir)
         test_file_name = os.path.basename(self.pass_script.path)
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo '
-                    f'--test-runner=runner "{test_file_name}"')
+                    f'--disable-sysinfo  "{test_file_name}"')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
