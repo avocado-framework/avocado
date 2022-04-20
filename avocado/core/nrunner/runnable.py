@@ -13,6 +13,9 @@ from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
 #: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
 RUNNERS_REGISTRY_STANDALONE_EXECUTABLE = {}
 
+#: The configuration that is known to be used by standalone runners
+STANDALONE_EXECUTABLE_CONFIG_USED = {}
+
 
 def _arg_decode_base64(arg):
     """
@@ -62,7 +65,15 @@ class Runnable:
 
     def __init__(self, kind, uri, *args, config=None, **kwargs):
         self.kind = kind
+        #: The main reference to what needs to be run.  This is free
+        #: form, but commonly set to the path to a file containing the
+        #: test or being the test, or an actual URI with multiple
+        #: parts
         self.uri = uri
+        #: This attributes holds configuration from Avocado proper
+        #: that is passed to runners, as long as a runner declares
+        #: its interest in using them with
+        #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop('tags', None)
@@ -249,8 +260,15 @@ class Runnable:
         with open(recipe_path, 'w', encoding='utf-8') as recipe_file:
             recipe_file.write(self.get_json())
 
-    def is_kind_supported_by_runner_command(self, runner_command, env=None):
-        """Checks if a runner command that seems a good fit declares support."""
+    @staticmethod
+    def get_capabilities_from_runner_command(runner_command, env=None):
+        """Returns the capabilities of a given runner from a command.
+
+        In case of failures, an empty capabilities dictionary is returned.
+
+        When the capabilities are obtained, it also updates the
+        :data:`STANDALONE_EXECUTABLE_CONFIG_USED` info.
+        """
         cmd = runner_command + ['capabilities']
         try:
             process = subprocess.Popen(cmd,
@@ -259,14 +277,29 @@ class Runnable:
                                        stderr=subprocess.DEVNULL,
                                        env=env)
         except (FileNotFoundError, PermissionError):
-            return False
+            return {}
         out, _ = process.communicate()
 
         try:
             capabilities = json.loads(out.decode())
         except json.decoder.JSONDecodeError:
-            return False
+            capabilities = {}
 
+        # lists are not hashable, and here it'd make more sense to have
+        # a command as it'd be seen in a command line anyway
+        cmd = " ".join(runner_command)
+        if cmd not in STANDALONE_EXECUTABLE_CONFIG_USED:
+            STANDALONE_EXECUTABLE_CONFIG_USED[cmd] = capabilities.get(
+                'configuration_used', [])
+        return capabilities
+
+    def is_kind_supported_by_runner_command(self, runner_cmd,
+                                            capabilities=None, env=None):
+        """Checks if a runner command that seems a good fit declares support."""
+        if capabilities is None:
+            capabilities = self.get_capabilities_from_runner_command(
+                runner_cmd,
+                env)
         return self.kind in capabilities.get('runnables', [])
 
     @staticmethod
@@ -321,14 +354,14 @@ class Runnable:
             full_module_name = f'avocado.core.runners.{module_name}'
             candidate_cmd = [sys.executable, '-m', full_module_name]
             if self.is_kind_supported_by_runner_command(candidate_cmd,
-                                                        env):
+                                                        env=env):
                 runners_registry[self.kind] = candidate_cmd
                 return candidate_cmd
 
         # look for the runner commands implemented in the base nrunner module
         candidate_cmd = [sys.executable, '-m', 'avocado.core.nrunner']
         if self.is_kind_supported_by_runner_command(candidate_cmd,
-                                                    env):
+                                                    env=env):
             runners_registry[self.kind] = candidate_cmd
             return candidate_cmd
 
@@ -344,13 +377,12 @@ class Runnable:
         :returns: a class that inherits from :class:`BaseRunner` or None
         """
         namespace = 'avocado.plugins.runnable.runner'
-        for ep in pkg_resources.iter_entry_points(namespace):
-            if ep.name == self.kind:
-                try:
-                    obj = ep.load()
-                    return obj
-                except ImportError:
-                    return
+        for ep in pkg_resources.iter_entry_points(namespace, self.kind):
+            try:
+                obj = ep.load()
+                return obj
+            except ImportError:
+                return
 
     def pick_runner_class(self):
         """Selects a runner class from the registry based on kind.

@@ -34,6 +34,9 @@ class ExecTestRunner(BaseRunner):
     name = 'exec-test'
     description = 'Runner for standalone executables treated as tests'
 
+    CONFIGURATION_USED = ['run.keep_tmp',
+                          'runner.exectest.exitcodes.skip']
+
     def _process_final_status(self, process,
                               stdout=None, stderr=None):  # pylint: disable=W0613
         # Since Runners are standalone, and could be executed on a remote

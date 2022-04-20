@@ -5,7 +5,7 @@ import unittest
 from avocado.utils import process
 from selftests.utils import BASEDIR
 
-RUNNER = f"{sys.executable} -m avocado.core.runners.requirement_package"
+RUNNER = f"{sys.executable} -m avocado.core.runners.package"
 
 
 class RunnableRun(unittest.TestCase):
@@ -35,7 +35,7 @@ class RunnableRun(unittest.TestCase):
     def test_recipe(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner",
                               "recipes", "runnables",
-                              "requirement_package_check_foo.json")
+                              "package_check_foo.json")
         cmd = f"{RUNNER} runnable-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         lines = res.stdout_text.splitlines()

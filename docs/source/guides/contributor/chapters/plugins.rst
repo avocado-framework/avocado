@@ -245,17 +245,29 @@ and transform the reference given into its **url**:
 Runner example
 --------------
 
-The runner will receive the ``Runnable`` information created by the
-resolver plugin.   Runners can be written in any language, but this
-implementation reuses some base Python classes.
+The runner will receive the
+:class:`avocado.core.nrunner.runnable.Runnable` information
+created by the resolver plugin.  Runners can be written in any
+language, but this implementation reuses some base Python classes.
 
-First, :class:`avocado.core.nrunner.BaseRunner` is used to write the
+First, :class:`avocado.core.nrunner.runner.BaseRunner` is used to write the
 runner **class**.  And second, the
-:class:`avocado.core.nrunner.BaseRunner` is used to create the command
+:class:`avocado.core.nrunner.app.BaseRunnerApp` is used to create the command
 line application, which uses the previously implemented runner class
 for ``magic`` test types.
 
 .. literalinclude:: ../../../../../examples/plugins/tests/magic/avocado_magic/runner.py
+
+A runner is free to make use of all the information in the
+:class:`avocado.core.nrunner.runnable.Runnable` that the resolver
+implementation populates.  In this particular example it only makes
+use of the :attr:`uri <avocado.core.nrunner.runnable.Runnable.uri>`
+attribute.  If a runner needs to behave accordingly to some
+Avocado configuration, you need to declare that configuration in
+the :attr:`CONFIGURATION_USED
+<avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED>` class
+attribute and then you can access it in :attr:`config
+<avocado.core.nrunner.runnable.Runnable.config>`.
 
 Activating the new test type plugins
 ------------------------------------

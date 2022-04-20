@@ -131,6 +131,10 @@ class SysinfoRunner(BaseRunner):
     name = 'sysinfo'
     description = 'Runner for gathering sysinfo'
 
+    CONFIGURATION_USED = ['sysinfo.collect.installed_packages',
+                          'sysinfo.collect.commands_timeout',
+                          'sysinfo.collect.locale']
+
     def run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable

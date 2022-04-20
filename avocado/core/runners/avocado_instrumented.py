@@ -32,6 +32,12 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
     name = 'avocado-instrumented'
     description = 'Runner for Avocado INSTRUMENTED tests'
 
+    CONFIGURATION_USED = ['run.test_parameters',
+                          'datadir.paths.cache_dirs',
+                          'core.show',
+                          'job.output.loglevel',
+                          'job.run.store_logging_stream']
+
     DEFAULT_TIMEOUT = 86400
 
     @staticmethod

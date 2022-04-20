@@ -26,6 +26,8 @@ import tempfile
 from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.exceptions import JobError, TestFailFast
 from avocado.core.messages import MessageHandler
+from avocado.core.nrunner.runnable import (
+    RUNNERS_REGISTRY_STANDALONE_EXECUTABLE, STANDALONE_EXECUTABLE_CONFIG_USED)
 from avocado.core.nrunner.runner import check_runnables_runner_requirements
 from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init
@@ -169,6 +171,25 @@ class Runner(RunnerInterface):
     name = 'nrunner'
     description = 'nrunner based implementation of job compliant runner'
 
+    @staticmethod
+    def _update_avocado_configuration_used_on_runnables(runnables, config):
+        """Updates the config used on runnables with this suite's config values
+
+        :param runnables: the tasks whose runner requirements will be checked
+        :type runnables: list of :class:`Runnable`
+        :param config: A config dict to be used on the desired test suite.
+        :type config: dict
+        """
+        for runnable in runnables:
+            command = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE.get(runnable.kind)
+            if command is None:
+                continue
+            command = " ".join(command)
+            configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
+            for config_item in configuration_used:
+                if config_item in config:
+                    runnable.config[config_item] = config.get(config_item)
+
     def _determine_status_server_uri(self, test_suite):
         # pylint: disable=W0201
         self.status_server_dir = None
@@ -223,6 +244,10 @@ class Runner(RunnerInterface):
 
         test_suite.tests, missing_requirements = check_runnables_runner_requirements(
             test_suite.tests)
+
+        self._update_avocado_configuration_used_on_runnables(test_suite.tests,
+                                                             test_suite.config)
+
         self._abort_if_missing_runners(missing_requirements)
 
         job.result.tests_total = test_suite.variants.get_number_of_tests(test_suite.tests)

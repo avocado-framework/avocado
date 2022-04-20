@@ -5,7 +5,7 @@ import unittest
 from avocado.utils import process
 from selftests.utils import BASEDIR
 
-RUNNER = f"{sys.executable} -m avocado.core.runners.requirement_asset"
+RUNNER = f"{sys.executable} -m avocado.core.runners.asset"
 
 
 class RunnableRun(unittest.TestCase):
@@ -39,7 +39,7 @@ class RunnableRun(unittest.TestCase):
     def test_recipe(self):
         recipe = os.path.join(BASEDIR, "examples", "nrunner",
                               "recipes", "runnables",
-                              "requirement_asset.json")
+                              "asset.json")
         cmd = f"{RUNNER} runnable-run-recipe {recipe}"
         res = process.run(cmd, ignore_status=True)
         self.assertIn(b"'status': 'started'", res.stdout)
