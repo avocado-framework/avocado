@@ -26,6 +26,7 @@ from avocado.utils.distro import detect as distro_detect
 from avocado.utils.network.common import run_command
 from avocado.utils.network.exceptions import NWException
 from avocado.utils.wait import wait_for
+from avocado.utils import process
 
 LOG = logging.getLogger(__name__)
 
@@ -571,3 +572,22 @@ class NetworkInterface:
                     os.remove(slave_config)
             except Exception as ex:
                 raise NWException(f"Could not restore the config file {ex}")
+
+    def check_packet_loss(self, peer_ip, count, option=None, flood=False):
+        """
+        Function to check packet loss during Ping.
+        Return True for 0% packet loss and False if packet loss occurs
+        """
+        cmd = "ping -I {} {} -c {}".format(self.name, peer_ip, count)
+        if flood is True:
+            cmd = "{} -f".format(cmd)
+        elif option is not None:
+            cmd = "{} {}".format(cmd, option)
+        try:
+            output = process.run(cmd, shell=True, verbose=True,
+                                 ignore_status=True)
+            if "0% packet loss" in output.stdout_text:
+                return True
+            return False
+        except Exception as ex:
+            raise NWException("Failed to ping: {}".format(ex))
