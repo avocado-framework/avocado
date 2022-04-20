@@ -21,7 +21,6 @@ framework tests.
 import asyncio
 import functools
 import inspect
-import logging
 import os
 import shutil
 import sys
@@ -52,31 +51,6 @@ TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
                          'actual_time_start', 'actual_time_end',
                          'fail_reason', 'fail_class', 'traceback',
                          'tags', 'timeout', 'whiteboard', 'phase')
-
-
-class RawFileHandler(logging.FileHandler):
-
-    """
-    File Handler that doesn't include arbitrary characters to the
-    logged stream but still respects the formatter.
-    """
-
-    def emit(self, record):
-        """
-        Modifying the original emit() to avoid including a new line
-        in streams that should be logged in its purest form, like in
-        stdout/stderr recordings.
-        """
-        if self.stream is None:
-            self.stream = self._open()
-        try:
-            msg = self.format(record)
-            stream = self.stream
-            stream.write(astring.to_text(msg, self.encoding,
-                                         'xmlcharrefreplace'))
-            self.flush()
-        except Exception:  # pylint: disable=W0703
-            self.handleError(record)
 
 
 class TestData:
@@ -553,18 +527,6 @@ class Test(unittest.TestCase, TestData):
                            for path, key, value
                            in self.__params.iteritems()]
         return state
-
-    def _register_log_file_handler(self, logger, formatter, filename,
-                                   log_level=logging.DEBUG, raw=False):
-        if raw:
-            file_handler = RawFileHandler(filename=filename,
-                                          encoding=astring.ENCODING)
-        else:
-            file_handler = logging.FileHandler(filename=filename)
-        file_handler.setLevel(log_level)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-        self._logging_handlers[logger.name] = file_handler
 
     def _run_test(self):
         """
