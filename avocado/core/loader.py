@@ -359,14 +359,15 @@ def add_loader_options(parser, section='run'):
                              metavar='LOADER_NAME_OR_TEST_TYPE')
 
 
-class SimpleFileLoader(TestLoader):
+class FileLoader(TestLoader):
 
     """
     Test loader class.
     """
 
     name = 'file'
-    NOT_TEST_STR = ("Not a supported test")
+    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based) or SIMPLE "
+                    "(executable) test")
 
     def __init__(self, config, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
@@ -377,17 +378,26 @@ class SimpleFileLoader(TestLoader):
     def get_type_label_mapping():
         return {NotATest: 'NOT_A_TEST',
                 BrokenSymlink: 'BROKEN_SYMLINK',
-                AccessDeniedPath: 'ACCESS_DENIED'}
+                AccessDeniedPath: 'ACCESS_DENIED',
+                test.SimpleTest: 'SIMPLE',
+                test.Test: 'INSTRUMENTED'}
 
     @staticmethod
     def get_decorator_mapping():
         return {NotATest: output.TERM_SUPPORT.warn_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
-                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str}
+                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
+                test.SimpleTest: output.TERM_SUPPORT.healthy_str,
+                test.Test: output.TERM_SUPPORT.healthy_str}
 
     @staticmethod
     def _is_matching_test_class(tst, test_class):
-        return issubclass(tst, test_class)
+        if test_class is test.Test:
+            # Instrumented tests are defined as string and loaded at the
+            # execution time.
+            return isinstance(tst, str)
+        else:
+            return not isinstance(tst, str) and issubclass(tst, test_class)
 
     def discover(self, reference, which_tests=DiscoverMode.DEFAULT):
         """
@@ -484,13 +494,36 @@ class SimpleFileLoader(TestLoader):
 
     def _make_existing_file_tests(self, test_path, make_broken,
                                   subtests_filter):
-        return self._make_simple_or_broken_test(test_path, subtests_filter, make_broken)
+        if test_path.endswith('.py'):
+            return self._make_python_file_tests(test_path, make_broken,
+                                                subtests_filter)
+        else:
+            return self._make_simple_or_broken_test(test_path,
+                                                    subtests_filter,
+                                                    make_broken)
 
-    @staticmethod
-    def _make_nonexisting_file_tests(test_path, make_broken,
-                                     subtests_filter, test_name):  # pylint: disable=W0613
-        return make_broken(NotATest, test_name,
-                           f"File not found ('{test_name}'; '{test_path}')")
+    def _make_nonexisting_file_tests(self, test_path, make_broken,
+                                     subtests_filter, test_name):
+        # Try to resolve test ID (keep compatibility)
+        test_path = os.path.join(data_dir.get_test_dir(), test_name)
+        if os.path.exists(test_path):
+            return self._make_python_file_tests(test_path, make_broken,
+                                                subtests_filter,
+                                                test_name)
+        else:
+            if not subtests_filter and ':' in test_name:
+                test_name, subtests_filter = test_name.split(':', 1)
+                test_path = os.path.join(data_dir.get_test_dir(),
+                                         test_name)
+                if os.path.exists(test_path):
+                    subtests_filter = re.compile(subtests_filter)
+                    return self._make_python_file_tests(test_path,
+                                                        make_broken,
+                                                        subtests_filter,
+                                                        test_name)
+            return make_broken(NotATest, test_name,
+                               (f"File not found ('{test_name}'; "
+                                f"'{test_path}')"))
 
     @staticmethod
     def _make_test(klass, uid, description=None, subtests_filter=None,
@@ -546,42 +579,6 @@ class SimpleFileLoader(TestLoader):
                                                      subtests_filter,
                                                      test_name)
 
-
-class FileLoader(SimpleFileLoader):
-
-    """
-    Test loader class.
-    """
-
-    name = 'file'
-    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based) or SIMPLE "
-                    "(executable) test")
-
-    @staticmethod
-    def get_type_label_mapping():
-        mapping = SimpleFileLoader.get_type_label_mapping()
-        mapping.update(
-            {test.SimpleTest: 'SIMPLE',
-             test.Test: 'INSTRUMENTED'})
-        return mapping
-
-    @staticmethod
-    def get_decorator_mapping():
-        mapping = SimpleFileLoader.get_decorator_mapping()
-        mapping.update(
-            {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
-             test.Test: output.TERM_SUPPORT.healthy_str})
-        return mapping
-
-    @staticmethod
-    def _is_matching_test_class(tst, test_class):
-        if test_class is test.Test:
-            # Instrumented tests are defined as string and loaded at the
-            # execution time.
-            return isinstance(tst, str)
-        else:
-            return not isinstance(tst, str) and issubclass(tst, test_class)
-
     def _make_python_file_tests(self, test_path, make_broken,
                                 subtests_filter, test_name=None):
         if test_name is None:
@@ -622,39 +619,6 @@ class FileLoader(SimpleFileLoader):
                 return self._make_simple_or_broken_test(test_path,
                                                         subtests_filter,
                                                         make_broken)
-
-    def _make_existing_file_tests(self, test_path, make_broken,
-                                  subtests_filter):
-        if test_path.endswith('.py'):
-            return self._make_python_file_tests(test_path, make_broken,
-                                                subtests_filter)
-        else:
-            return self._make_simple_or_broken_test(test_path,
-                                                    subtests_filter,
-                                                    make_broken)
-
-    def _make_nonexisting_file_tests(self, test_path, make_broken,
-                                     subtests_filter, test_name):
-        # Try to resolve test ID (keep compatibility)
-        test_path = os.path.join(data_dir.get_test_dir(), test_name)
-        if os.path.exists(test_path):
-            return self._make_python_file_tests(test_path, make_broken,
-                                                subtests_filter,
-                                                test_name)
-        else:
-            if not subtests_filter and ':' in test_name:
-                test_name, subtests_filter = test_name.split(':', 1)
-                test_path = os.path.join(data_dir.get_test_dir(),
-                                         test_name)
-                if os.path.exists(test_path):
-                    subtests_filter = re.compile(subtests_filter)
-                    return self._make_python_file_tests(test_path,
-                                                        make_broken,
-                                                        subtests_filter,
-                                                        test_name)
-            return make_broken(NotATest, test_name,
-                               (f"File not found ('{test_name}'; "
-                                f"'{test_path}')"))
 
 
 loader = TestLoaderProxy()
