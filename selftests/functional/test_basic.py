@@ -541,14 +541,13 @@ class RunnerOperationTest(TestCaseTmpDir):
     def test_invalid_python(self):
         test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),
                                   INVALID_PYTHON_TEST)
-        cmd_line = (f'{AVOCADO} --show test run --disable-sysinfo '
-                    f'--job-results-dir {self.tmpdir.name} '
-                    f'--test-runner=runner {test}')
+        cmd_line = (f'{AVOCADO} run --disable-sysinfo '
+                    f'--job-results-dir {self.tmpdir.name} {test}')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          f"Avocado did not return rc {expected_rc}:\n{result}")
-        self.assertIn(f'1-{test}:MyTest.test_my_name -> TestError',
+        self.assertIn(f'{test}:MyTest.test_my_name:  ERROR',
                       result.stdout_text)
 
     @unittest.skipIf(not READ_BINARY, "read binary not available.")
