@@ -554,8 +554,8 @@ class FileLoader(SimpleFileLoader):
     """
 
     name = 'file'
-    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based), PyUNITTEST ("
-                    "unittest.TestCase based) or SIMPLE (executable) test")
+    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based) or SIMPLE "
+                    "(executable) test")
 
     @staticmethod
     def get_type_label_mapping():
@@ -581,25 +581,6 @@ class FileLoader(SimpleFileLoader):
             return isinstance(tst, str)
         else:
             return not isinstance(tst, str) and issubclass(tst, test_class)
-
-    @staticmethod
-    def _find_python_unittests(test_path, disabled, subtests_filter):
-        result = []
-        class_methods = safeloader.find_python_unittests(test_path)
-        for klass, methods in class_methods.items():
-            if klass in disabled:
-                continue
-            if test_path.endswith(".py"):
-                test_path = test_path[:-3]
-            test_module_name = os.path.relpath(test_path)
-            test_module_name = test_module_name.replace(os.path.sep, ".")
-            candidates = [(f"{test_module_name}.{klass}.{method}",
-                           tags) for (method, tags, _) in methods]
-            if subtests_filter:
-                result += [_ for _ in candidates if subtests_filter.search(_)]
-            else:
-                result += candidates
-        return result
 
     def _make_python_file_tests(self, test_path, make_broken,
                                 subtests_filter, test_name=None):
