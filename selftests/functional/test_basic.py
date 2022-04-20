@@ -250,15 +250,13 @@ class RunnerOperationTest(TestCaseTmpDir):
                                     "avocado_unsupported_status") as tst:
             res = process.run((f"{AVOCADO} run --disable-sysinfo "
                                f"--job-results-dir {self.tmpdir.name} {tst} "
-                               f"--test-runner=runner --json -"),
+                               f"--json -"),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
             results = json.loads(res.stdout_text)
             self.assertEqual(results["tests"][0]["status"], "ERROR",
                              (f"{results['tests'][0]['status']} != "
                               f"{'ERROR'}\n{res}"))
-            self.assertIn("Runner error occurred: Test reports unsupported",
-                          results["tests"][0]["fail_reason"])
 
     @skipOnLevelsInferiorThan(1)
     def test_hanged_test_with_status(self):

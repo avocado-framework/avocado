@@ -1,6 +1,7 @@
 import logging
 
 from avocado.core.status.utils import json_loads
+from avocado.core.teststatus import STATUSES
 
 LOG = logging.getLogger(__name__)
 
@@ -37,6 +38,14 @@ class StatusRepo:
 
     def _handle_task_finished(self, message):
         task_id = message['id']
+
+        result = message.get('result')
+        if result is not None and result.upper() not in STATUSES:
+            overriden = 'error'
+            LOG.error('Task "%s" finished message with unsupported status '
+                      '"%s", changing to "%s"', task_id, result, overriden)
+            message['result'] = overriden
+
         self._set_by_result(message)
         self._set_task_data(message)
         LOG.debug('Task "%s" finished message: "%s"', task_id, message)
