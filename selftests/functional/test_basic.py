@@ -816,8 +816,8 @@ class RunnerExecTestStatus(TestCaseTmpDir):
                                                   "skip_location = stdout\n")
         self.config_file.save()
 
-    def test_exec_test_status(self):
-        # Multi-line warning in STDERR should by default be handled
+    def test_warn(self):
+        """Multi-line warning in STDERR should by default be handled"""
         warn_script = script.TemporaryScript('avocado_warn.sh',
                                              '#!/bin/sh\n'
                                              '>&2 echo -e "\\n\\nWARN\\n"',
@@ -831,7 +831,9 @@ class RunnerExecTestStatus(TestCaseTmpDir):
         json_results = json.loads(result.stdout_text)
         self.assertEqual(json_results['tests'][0]['status'], 'WARN')
         warn_script.remove()
-        # Skip in STDOUT should be handled because of config
+
+    def test_skip_stdout(self):
+        """Skip in STDOUT should be handled because of config"""
         skip_script = script.TemporaryScript('avocado_skip.sh',
                                              "#!/bin/sh\necho SKIP",
                                              'avocado_exec_test_'
@@ -844,7 +846,9 @@ class RunnerExecTestStatus(TestCaseTmpDir):
         json_results = json.loads(result.stdout_text)
         self.assertEqual(json_results['tests'][0]['status'], 'SKIP')
         skip_script.remove()
-        # STDERR skip should not be handled
+
+    def test_skip_stderr(self):
+        """STDERR skip should not be handled"""
         skip2_script = script.TemporaryScript('avocado_skip.sh',
                                               "#!/bin/sh\n>&2 echo SKIP",
                                               'avocado_exec_test_'
