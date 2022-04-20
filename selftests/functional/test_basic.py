@@ -59,17 +59,6 @@ class MyTest(Test):
 '''
 
 
-REPORTS_STATUS_AND_HANG = '''
-from avocado import Test
-import time
-
-class MyTest(Test):
-    def test(self):
-         self.runner_queue.put({"running": False})
-         time.sleep(70)
-'''
-
-
 DIE_WITHOUT_REPORTING_STATUS = '''
 from avocado import Test
 import os
@@ -257,36 +246,6 @@ class RunnerOperationTest(TestCaseTmpDir):
             self.assertEqual(results["tests"][0]["status"], "ERROR",
                              (f"{results['tests'][0]['status']} != "
                               f"{'ERROR'}\n{res}"))
-
-    @skipOnLevelsInferiorThan(1)
-    def test_hanged_test_with_status(self):
-        """Check that avocado handles hanged tests properly.
-
-        :avocado: tags=parallel:1
-        """
-        with script.TemporaryScript("report_status_and_hang.py",
-                                    REPORTS_STATUS_AND_HANG,
-                                    "hanged_test_with_status") as tst:
-            res = process.run((f"{AVOCADO} run --disable-sysinfo "
-                               f"--job-results-dir {self.tmpdir.name} {tst} "
-                               f"--test-runner=runner --json - "
-                               f"--job-timeout 1"),
-                              ignore_status=True)
-            self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-            results = json.loads(res.stdout_text)
-            self.assertEqual(results["tests"][0]["status"], "ERROR",
-                             (f"{results['tests'][0]['status']} != "
-                              f"{'ERROR'}\n{res}"))
-            self.assertIn("Test reported status but did not finish",
-                          results["tests"][0]["fail_reason"])
-            # Currently it should finish up to 1s after the job-timeout
-            # but the prep and postprocess could take a bit longer on
-            # some environments, so let's just check it does not take
-            # > 60s, which is the deadline for force-finishing the test.
-            self.assertLess(res.duration, 55,
-                            (f"Test execution took too long, "
-                             f"which is likely because the hanged test was "
-                             f"not interrupted. Results:\n{res}"))
 
     def test_no_status_reported(self):
         with script.TemporaryScript("die_without_reporting_status.py",
