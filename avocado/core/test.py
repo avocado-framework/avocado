@@ -23,7 +23,6 @@ import functools
 import inspect
 import logging
 import os
-import pipes
 import shutil
 import sys
 import tempfile
@@ -39,7 +38,7 @@ from avocado.core.test_id import TestID
 from avocado.core.version import VERSION
 from avocado.utils import asset, astring, data_structures, genio
 from avocado.utils import path as utils_path
-from avocado.utils import process, stacktrace
+from avocado.utils import stacktrace
 
 #: Environment variable used to store the location of a temporary
 #: directory which is preserved across all tests execution (usually in
@@ -933,90 +932,3 @@ class Test(unittest.TestCase, TestData):
 
     def __del__(self):
         self._cleanup()
-
-
-class SimpleTest(Test):
-
-    """
-    Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
-    """
-
-    DATA_SOURCES = ["variant", "file"]
-
-    def __init__(self, name, params=None, base_logdir=None, config=None,
-                 executable=None):
-        if executable is None:
-            executable = name.name
-        self._filename = executable
-        super().__init__(name=name, params=params,
-                         base_logdir=base_logdir, config=config)
-        # Access workdir to initialize it, given that it's lazy
-        _ = self.workdir
-
-        # Maximal allowed file name length is 255
-        file_datadir = None
-        if (self.filename is not None and
-                len(os.path.basename(self.filename)) < 251):
-            file_datadir = self.filename + '.data'
-        self._data_sources_mapping = {"variant": [lambda: file_datadir,
-                                                  lambda: self.name.variant],
-                                      "file": [lambda: file_datadir]}
-        self._command = None
-        if self.filename is not None:
-            self._command = pipes.quote(self.filename)
-
-    @property
-    def filename(self):
-        """
-        Returns the name of the file (path) that holds the current test
-        """
-        return os.path.abspath(self._filename)
-
-    def _log_detailed_cmd_info(self, result):
-        """
-        Log detailed command information.
-
-        :param result: :class:`avocado.utils.process.CmdResult` instance.
-        """
-        self.log.info("Detailed information about the executed command:")
-        self.log.info("  Exit status: %s", result.exit_status)
-        self.log.info("  Duration: %s", result.duration)
-        self.log.info("  STDOUT: %s", result.stdout_text.strip())
-        self.log.info("  STDERR: %s", result.stderr_text.strip())
-
-    def _cmd_error_to_test_failure(self, cmd_error):
-        failure_fields = self._config.get('simpletests.status.failure_fields')
-        msgs = []
-        if 'status' in failure_fields:
-            msgs.append(f"Exited with status: '{int(cmd_error.result.exit_status)}'")
-        if 'stdout' in failure_fields:
-            msgs.append(f"stdout: {cmd_error.result.stdout_text!r}")
-        if 'stderr' in failure_fields:
-            msgs.append(f"stderr: {cmd_error.result.stdout_text!r}")
-        return ", ".join(msgs)
-
-    def _execute_cmd(self):
-        """
-        Run the executable, and log its detailed execution.
-        """
-        try:
-            test_params = dict([(str(key), str(val)) for _, key, val in
-                                self.params.iteritems()])
-
-            input_encoding = self._config.get('core.input_encoding')
-            result = process.run(self._command,
-                                 verbose=True,
-                                 env=test_params,
-                                 encoding=input_encoding)
-
-            self._log_detailed_cmd_info(result)
-        except process.CmdError as details:
-            self._log_detailed_cmd_info(details.result)
-            test_failure = self._cmd_error_to_test_failure(details)
-            raise exceptions.TestFail(test_failure)
-
-    def test(self):
-        """
-        Run the test and postprocess the results
-        """
-        self._execute_cmd()

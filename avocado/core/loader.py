@@ -366,8 +366,7 @@ class FileLoader(TestLoader):
     """
 
     name = 'file'
-    NOT_TEST_STR = ("Not an INSTRUMENTED (avocado.Test based) or SIMPLE "
-                    "(executable) test")
+    NOT_TEST_STR = "Not an INSTRUMENTED (avocado.Test based) test"
 
     def __init__(self, config, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
@@ -379,7 +378,6 @@ class FileLoader(TestLoader):
         return {NotATest: 'NOT_A_TEST',
                 BrokenSymlink: 'BROKEN_SYMLINK',
                 AccessDeniedPath: 'ACCESS_DENIED',
-                test.SimpleTest: 'SIMPLE',
                 test.Test: 'INSTRUMENTED'}
 
     @staticmethod
@@ -387,7 +385,6 @@ class FileLoader(TestLoader):
         return {NotATest: output.TERM_SUPPORT.warn_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
                 AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
-                test.SimpleTest: output.TERM_SUPPORT.healthy_str,
                 test.Test: output.TERM_SUPPORT.healthy_str}
 
     @staticmethod
@@ -480,27 +477,14 @@ class FileLoader(TestLoader):
                                               subtests_filter))
         return tests
 
-    def _make_simple_test(self, test_path, subtests_filter):
-        return self._make_test(test.SimpleTest, test_path,
-                               subtests_filter=subtests_filter,
-                               executable=test_path)
-
-    def _make_simple_or_broken_test(self, test_path, subtests_filter, make_broken):
-        if os.access(test_path, os.X_OK):
-            return self._make_simple_test(test_path, subtests_filter)
-        else:
-            return make_broken(NotATest, test_path,
-                               self.NOT_TEST_STR)
-
     def _make_existing_file_tests(self, test_path, make_broken,
                                   subtests_filter):
         if test_path.endswith('.py'):
             return self._make_python_file_tests(test_path, make_broken,
                                                 subtests_filter)
         else:
-            return self._make_simple_or_broken_test(test_path,
-                                                    subtests_filter,
-                                                    make_broken)
+            return make_broken(NotATest, test_path,
+                               self.NOT_TEST_STR)
 
     def _make_nonexisting_file_tests(self, test_path, make_broken,
                                      subtests_filter, test_name):
@@ -603,11 +587,8 @@ class FileLoader(TestLoader):
                             test_factories.append(tst)
                 return test_factories
             else:
-                # Module does not have an avocado test or pyunittest class inside,
-                # but maybe it's a Python executable.
-                return self._make_simple_or_broken_test(test_path,
-                                                        subtests_filter,
-                                                        make_broken)
+                return make_broken(NotATest, test_path,
+                                   self.NOT_TEST_STR)
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
@@ -616,9 +597,8 @@ class FileLoader(TestLoader):
             if isinstance(details, KeyboardInterrupt):
                 raise  # Don't ignore ctrl+c
             else:
-                return self._make_simple_or_broken_test(test_path,
-                                                        subtests_filter,
-                                                        make_broken)
+                return make_broken(NotATest, test_path,
+                                   self.NOT_TEST_STR)
 
 
 loader = TestLoaderProxy()
