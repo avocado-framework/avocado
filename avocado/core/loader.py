@@ -44,6 +44,20 @@ class MissingTest:
     """
 
 
+class BrokenSymlink:
+    """ Dummy object to represent reference pointing to a BrokenSymlink path """
+
+
+class AccessDeniedPath:
+    """ Dummy object to represent reference pointing to a inaccessible path """
+
+
+class NotATest:
+    """
+    Class representing something that is not a test
+    """
+
+
 class LoaderError(Exception):
     """ Loader exception """
 
@@ -328,14 +342,6 @@ class TestLoader:
         raise NotImplementedError
 
 
-class BrokenSymlink:
-    """ Dummy object to represent reference pointing to a BrokenSymlink path """
-
-
-class AccessDeniedPath:
-    """ Dummy object to represent reference pointing to a inaccessible path """
-
-
 def add_loader_options(parser, section='run'):
     arggrp = parser.add_argument_group('loader options')
     help_msg = ("Overrides the priority of the test loaders. You can specify "
@@ -351,12 +357,6 @@ def add_loader_options(parser, section='run'):
                              parser=arggrp,
                              long_arg='--loaders',
                              metavar='LOADER_NAME_OR_TEST_TYPE')
-
-
-class NotATest:
-    """
-    Class representing something that is not a test
-    """
 
 
 class SimpleFileLoader(TestLoader):
