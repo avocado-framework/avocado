@@ -15,7 +15,8 @@
 #
 # Copyright: 2018 IBM
 # Authors : Praveen K Pandey <praveen@linux.vnet.ibm.com>
-#           Narasimhan V <sim@linux.vnet.ibm.com>
+#         : Narasimhan V <sim@linux.vnet.ibm.com>
+#         : Naresh Bannoth <nbannoth@linux.vnet.ibm.com>
 
 
 """
@@ -145,6 +146,7 @@ def get_filesystem_type(mount_point='/'):
 
     :param str mount_point: mount point to asses the filesystem type.
                             Default "/"
+
     :returns: filesystem type
     :rtype: str
     """
@@ -160,6 +162,7 @@ def is_root_device(device):
     check for root disk
 
     :param device: device to check
+
     :returns: True or False, True if given device is root disk
               otherwise will return False.
     """
@@ -170,3 +173,94 @@ def is_root_device(device):
         if item['mountpoint'] == "/" and device == str(item['pkname']):
             return True
     return False
+
+
+def is_disk_mounted(device):
+    """
+    check if given disk is mounted or not
+
+    :param device: disk/device name
+    :type device: str
+
+    :returns: True if the device/disk is mounted else False
+    :rtype: bool
+    """
+    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+        for mount_line in mounts.readlines():
+            dev, _, _, _, _, _ = mount_line.split()
+            if dev == device:
+                return True
+        return False
+
+
+def is_dir_mounted(dir_path):
+    """
+    check if given directory is mounted or not
+
+    :param dir_path: directory path
+    :type dir_path: str
+
+    :returns: True if the given director is mounted else False
+    :rtype: bool
+    """
+    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+        for mount_line in mounts.readlines():
+            _, fs_dir, _, _, _, _ = mount_line.split()
+            if fs_dir == dir_path:
+                return True
+        return False
+
+
+def fs_exists(device):
+    """
+    check if filesystem exists on give disk/device
+
+    :param device: disk/device name
+    :type device: str
+
+    :returns: returns True if filesystem exists on the give disk else False
+    :rtype: bool
+    """
+    cmd = f'blkid -o value -s TYPE {device}'
+    out = process.system_output(cmd, shell=True,
+                                ignore_status=True).decode("utf-8")
+    fs_list = ['ext2', 'ext3', 'ext4', 'xfs', 'btrfs']
+    if out in fs_list:
+        return True
+    return False
+
+
+def get_dir_mountpoint(dir_path):
+    """
+    get mounted disk name that is mounted on given dir_path
+
+    :param dir_path: absolute directory path
+    :type dir_path: str
+
+    :returns: returns disk name which mounted on given dir_path
+    :rtype: str
+    """
+    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+        for mount_line in mounts.readlines():
+            dev, fs_dir, _, _, _, _ = mount_line.split()
+            if fs_dir == dir_path:
+                return dev
+        return None
+
+
+def get_disk_mountpoint(device):
+    """
+    get mountpoint on which given disk is mounted
+
+    :param device: disk/device name
+    :type device: str
+
+    :return: return directory name on which disk is mounted
+    :rtype: str
+    """
+    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+        for mount_line in mounts.readlines():
+            dev, fs_dir, _, _, _, _ = mount_line.split()
+            if dev == device:
+                return fs_dir
+        return None
