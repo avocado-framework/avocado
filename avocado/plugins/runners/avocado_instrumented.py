@@ -9,7 +9,7 @@ from avocado.core.nrunner.runner import (RUNNER_RUN_CHECK_INTERVAL,
                                          RUNNER_RUN_STATUS_INTERVAL,
                                          BaseRunner)
 from avocado.core.test import TestID
-from avocado.core.tree import TreeNodeEnvOnly
+from avocado.core.tree import TreeNode, TreeNodeEnvOnly
 from avocado.core.utils import loader, messages
 from avocado.core.varianter import is_empty_variant
 
@@ -42,17 +42,22 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
     @staticmethod
     def _create_params(runnable):
         """Create params for the test"""
-        if runnable.variant is None:
-            return None
+        # Inject run.test_parameters in test params
+        paths = ['/']
+        tree_nodes = TreeNode().get_node(paths[0], True)
+        tree_nodes.value = dict(runnable.config.get('run.test_parameters',
+                                                    []))
 
-        # rebuild the variant tree
-        variant_tree_nodes = [TreeNodeEnvOnly(path, env) for path, env
-                              in runnable.variant['variant']]
+        if runnable.variant is not None:
+            # rebuild the variant tree
+            variant_tree_nodes = [TreeNodeEnvOnly(path, env) for path, env
+                                  in runnable.variant['variant']]
 
-        if not is_empty_variant(variant_tree_nodes):
-            tree_nodes = variant_tree_nodes
-            paths = runnable.variant['paths']
-            return tree_nodes, paths
+            if not is_empty_variant(variant_tree_nodes):
+                tree_nodes = variant_tree_nodes
+                paths = runnable.variant['paths']
+
+        return tree_nodes, paths
 
     @staticmethod
     def _run_avocado(runnable, queue):
