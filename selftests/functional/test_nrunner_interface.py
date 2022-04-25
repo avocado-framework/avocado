@@ -2,6 +2,8 @@ import json
 import re
 import sys
 
+import jsonschema
+
 from avocado import Test, fail_on
 from avocado.utils import process
 
@@ -35,13 +37,16 @@ class Interface(Test):
                       "Mention to capabilities command not found")
 
     @fail_on(process.CmdError)
-    def test_capabilities(self):
+    @fail_on(jsonschema.exceptions.ValidationError)
+    def test_schema_capabilities(self):
         cmd = f"{self.get_runner()} capabilities"
         result = process.run(cmd)
         capabilities = json.loads(result.stdout_text)
-        self.assertIn("runnables", capabilities)
-        self.assertIn("commands", capabilities)
-        self.assertIn("configuration_used", capabilities)
+        schema_path = self.get_data("capabilities.schema.json")
+        if not schema_path:
+            self.error('Schema file not found for "capabilities"')
+        with open(schema_path, 'r', encoding='utf-8') as schema:
+            jsonschema.validate(capabilities, json.load(schema))
 
     def test_runnable_run_no_args(self):
         cmd = f"{self.get_runner()} runnable-run"
