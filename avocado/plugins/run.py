@@ -19,7 +19,7 @@ Base Test Runner Plugins.
 import argparse
 import sys
 
-from avocado.core import exit_codes, job, loader, parser_common_args
+from avocado.core import exit_codes, job, parser_common_args
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd, Init
 from avocado.core.settings import settings
@@ -217,7 +217,6 @@ class Run(CLICmd):
                                  parser=parser,
                                  long_arg='--log-test-data-directories')
 
-        loader.add_loader_options(parser, 'run')
         parser_common_args.add_tag_filter_args(parser)
 
     def run(self, config):

@@ -549,15 +549,6 @@ class Job:
         if self.time_start == -1:
             self.time_start = time.monotonic()
         try:
-            for suite in self.test_suites:
-                if suite.config.get('run.test_runner') == 'runner':
-                    msg = ("The legacy runner was deprecated, and it is "
-                           "possible that it won't be working properly. The "
-                           "'--test-runner=runner' option will be removed "
-                           "soon.")
-                    LOG_UI.warning(msg)
-                    break
-
             self.result.tests_total = self.size
             pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
             output.log_plugin_failures(pre_post_dispatcher.load_failures)
