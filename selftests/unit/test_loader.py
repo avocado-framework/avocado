@@ -113,20 +113,6 @@ class Second(avocado.Test):
         pass
 """
 
-PYTHON_UNITTEST = """#!/usr/bin/env python
-from unittest import TestCase
-
-from . import something
-
-class SampleTest(TestCase):
-    '''
-    :avocado: tags=flattag
-    :avocado: tags=foo:bar
-    '''
-    def test(self):
-        pass
-"""
-
 
 class LoaderTest(unittest.TestCase):
 
