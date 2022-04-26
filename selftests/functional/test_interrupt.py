@@ -97,6 +97,9 @@ class InterruptTest(TestCaseTmpDir):
         super().setUp()
         self.test_module = None
 
+    @unittest.skip('Skip until '
+                   'https://github.com/avocado-framework/avocado/issues/4994 '
+                   'is implemented')
     @skipOnLevelsInferiorThan(2)
     def test_badly_behaved_sigint(self):
         """
@@ -113,7 +116,7 @@ class InterruptTest(TestCaseTmpDir):
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
         cmd = (f'{AVOCADO} run {self.test_module} --disable-sysinfo '
-               f'--job-results-dir {self.tmpdir.name} --test-runner=runner')
+               f'--job-results-dir {self.tmpdir.name}')
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
@@ -185,6 +188,9 @@ class InterruptTest(TestCaseTmpDir):
         # Make sure the Interrupted test sentence is there
         self.assertIn(b'Terminated\n', proc.stdout.read())
 
+    @unittest.skip('Skip until '
+                   'https://github.com/avocado-framework/avocado/issues/4994 '
+                   'is implemented')
     @skipOnLevelsInferiorThan(2)
     def test_well_behaved_sigint(self):
         """
@@ -200,7 +206,7 @@ class InterruptTest(TestCaseTmpDir):
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = (f'{AVOCADO} run --test-runner=runner {self.test_module} '
+        cmd = (f'{AVOCADO} run {self.test_module} '
                f'--disable-sysinfo --job-results-dir {self.tmpdir.name} ')
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
