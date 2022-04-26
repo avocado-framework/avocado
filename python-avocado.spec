@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 96.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -161,7 +161,6 @@ install -d -m 0755 %{buildroot}%{_docdir}/avocado
 cp -r examples/gdb-prerun-scripts %{buildroot}%{_docdir}/avocado
 cp -r examples/plugins %{buildroot}%{_docdir}/avocado
 cp -r examples/tests %{buildroot}%{_docdir}/avocado
-cp -r examples/wrappers %{buildroot}%{_docdir}/avocado
 cp -r examples/yaml_to_mux %{buildroot}%{_docdir}/avocado
 cp -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
 cp -r examples/varianter_cit %{buildroot}%{_docdir}/avocado
@@ -358,7 +357,6 @@ examples of how to write tests on your own.
 %{_docdir}/avocado/gdb-prerun-scripts
 %{_docdir}/avocado/plugins
 %{_docdir}/avocado/tests
-%{_docdir}/avocado/wrappers
 %{_docdir}/avocado/yaml_to_mux
 %{_docdir}/avocado/varianter_pict
 %{_docdir}/avocado/varianter_cit
@@ -377,6 +375,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Apr 27 2022 Cleber Rosa <crosa@redhat.com> - 96.0-2
+- Removed wrapper examples
+
 * Tue Apr 05 2022 Cleber Rosa <crosa@redhat.com> - 96.0-1
 - New release
 
