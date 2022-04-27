@@ -81,7 +81,7 @@ def hello():
     print('Hello World!')
 """
 
-SIMPLE_TEST = """#!/bin/sh
+EXEC_TEST = """#!/bin/sh
 true
 """
 
@@ -157,7 +157,7 @@ class ListTestFunctional(TestCaseTmpDir):
         self.assertEqual(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
 
     def test_simple(self):
-        self._test('simpletest.sh', SIMPLE_TEST, 'exec-test', self.MODE_0775)
+        self._test('simpletest.sh', EXEC_TEST, 'exec-test', self.MODE_0775)
 
     def test_pass(self):
         self._test('passtest.py', AVOCADO_TEST_OK, 'avocado-instrumented')
