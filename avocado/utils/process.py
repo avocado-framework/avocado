@@ -18,7 +18,6 @@ Functions dedicated to find and run external commands.
 
 import contextlib
 import errno
-import fnmatch
 import glob
 import logging
 import os
@@ -35,18 +34,6 @@ from avocado.utils import astring, path
 from avocado.utils.wait import wait_for
 
 LOG = logging.getLogger(__name__)
-
-#: The active wrapper utility script.
-CURRENT_WRAPPER = None
-
-#: The global wrapper.
-#: If set, run every process under this wrapper.
-WRAP_PROCESS = None
-
-#: Set wrapper per program names.
-#: A list of wrappers and program names.
-#: Format: [ ('/path/to/wrapper.sh', 'progname'), ... ]
-WRAP_PROCESS_NAMES_EXPR = []
 
 #: Exception to be raised when users of this API need to know that the
 #: execution of a given process resulted in undefined behavior. One
@@ -902,64 +889,6 @@ class SubProcess:
         return self.result
 
 
-class WrapSubProcess(SubProcess):
-
-    """
-    Wrap subprocess inside an utility program.
-    """
-
-    def __init__(self, cmd, verbose=True,
-                 shell=False, env=None, wrapper=None, sudo=False,
-                 ignore_bg_processes=False, encoding=None, logger=None):
-        if wrapper is None and CURRENT_WRAPPER is not None:
-            wrapper = CURRENT_WRAPPER
-        self.wrapper = wrapper
-        if self.wrapper:
-            if not os.path.exists(self.wrapper):
-                raise IOError(f"No such wrapper: '{self.wrapper}'")
-            cmd = wrapper + ' ' + cmd
-        super().__init__(cmd, verbose, shell, env, sudo,
-                         ignore_bg_processes, encoding, logger)
-
-
-def should_run_inside_wrapper(cmd):
-    """
-    Whether the given command should be run inside the wrapper utility.
-
-    :param cmd: the command arguments, from where we extract the binary name
-    """
-    global CURRENT_WRAPPER  # pylint: disable=W0603
-    CURRENT_WRAPPER = None
-    args = shlex.split(cmd)
-    cmd_binary_name = args[0]
-
-    for script, cmd_expr in WRAP_PROCESS_NAMES_EXPR:
-        if fnmatch.fnmatch(cmd_binary_name, cmd_expr):
-            CURRENT_WRAPPER = script
-
-    if WRAP_PROCESS is not None and CURRENT_WRAPPER is None:
-        CURRENT_WRAPPER = WRAP_PROCESS
-
-    if CURRENT_WRAPPER is None:
-        return False
-    else:
-        return True
-
-
-def get_sub_process_klass(cmd):
-    """
-    Which sub process implementation should be used
-
-    Either the regular one, or the GNU Debugger version
-
-    :param cmd: the command arguments, from where we extract the binary name
-    """
-    if should_run_inside_wrapper(cmd):
-        return WrapSubProcess
-    else:
-        return SubProcess
-
-
 def run(cmd, timeout=None, verbose=True, ignore_status=False,
         shell=False, env=None, sudo=False, ignore_bg_processes=False,
         encoding=None, logger=None):
@@ -1004,11 +933,10 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
         raise CmdInputError("Invalid empty command")
     if encoding is None:
         encoding = astring.ENCODING
-    klass = get_sub_process_klass(cmd)
-    sp = klass(cmd=cmd, verbose=verbose,
-               shell=shell, env=env,
-               sudo=sudo, ignore_bg_processes=ignore_bg_processes,
-               encoding=encoding, logger=logger)
+    sp = SubProcess(cmd=cmd, verbose=verbose,
+                    shell=shell, env=env,
+                    sudo=sudo, ignore_bg_processes=ignore_bg_processes,
+                    encoding=encoding, logger=logger)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:

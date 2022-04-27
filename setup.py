@@ -339,7 +339,6 @@ if __name__ == '__main__':
                   "human = avocado.plugins.human:HumanInit",
               ],
               'avocado.plugins.cli': [
-                  'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnitCLI',
                   'json = avocado.plugins.jsonresult:JSONCLI',
                   'journal = avocado.plugins.journal:Journal',
