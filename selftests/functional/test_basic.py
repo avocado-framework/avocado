@@ -343,12 +343,9 @@ class RunnerOperationTest(TestCaseTmpDir):
                                RAISE_CUSTOM_PATH_EXCEPTION_CONTENT)
         mytest.save()
         result = process.run(f'{AVOCADO} --show test run --disable-sysinfo '
-                             f'--test-runner=runner '
                              f'--job-results-dir {self.tmpdir.name} {mytest}')
-        self.assertIn(b"mytest.py:SharedLibTest.test -> CancelExc: This "
-                      b"should not crash on unpickling in runner",
-                      result.stdout)
-        self.assertNotIn(b"Failed to read queue", result.stdout)
+        self.assertIn(b"'fail_reason': 'This should not crash on "
+                      b"unpickling in runner'", result.stdout)
 
     def test_runner_timeout(self):
         cmd_line = (f'{AVOCADO} run --disable-sysinfo --job-results-dir '
