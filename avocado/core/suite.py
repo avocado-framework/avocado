@@ -19,12 +19,10 @@ from uuid import uuid4
 from avocado.core.dispatcher import RunnerDispatcher
 from avocado.core.exceptions import (JobTestSuiteReferenceResolutionError,
                                      OptionValidationError)
-from avocado.core.loader import (DiscoverMode, LoaderError,
-                                 LoaderUnhandledReferenceError, loader)
 from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolutionResult, resolve
 from avocado.core.settings import settings
-from avocado.core.tags import filter_test_tags, filter_test_tags_runnable
+from avocado.core.tags import filter_test_tags_runnable
 from avocado.core.tree import TreeNode
 from avocado.core.varianter import Varianter, is_empty_variant
 
@@ -139,41 +137,6 @@ class TestSuite:
         if self.config.get('run.test_runner') == 'nrunner':
             for runnable in self.tests:
                 runnable.kind = 'dry-run'
-
-    @classmethod
-    def _from_config_with_loader(cls, config, name=None):
-        references = config.get('resolver.references')
-        ignore_missing = config.get('run.ignore_missing_references')
-        verbose = config.get('core.verbose')
-        subcommand = config.get('subcommand')
-
-        # To-be-removed: For some reason, avocado list will display more tests
-        # if in verbose mode. IMO, this is a little inconsistent with the 'run'
-        # command.  This hack was needed to make one specific test happy.
-        tests_mode = DiscoverMode.DEFAULT
-        if subcommand == 'list':
-            if verbose:
-                tests_mode = DiscoverMode.ALL
-            else:
-                tests_mode = DiscoverMode.AVAILABLE
-
-        try:
-            loader.load_plugins(config)
-            tests = loader.discover(references,
-                                    force=ignore_missing,
-                                    which_tests=tests_mode)
-            if config.get("filter.by_tags.tags"):
-                tests = filter_test_tags(
-                    tests,
-                    config.get("filter.by_tags.tags"),
-                    config.get("filter.by_tags.include_empty"),
-                    config.get('filter.by_tags.include_empty_key'))
-        except (LoaderUnhandledReferenceError, LoaderError) as details:
-            raise TestSuiteError(details)
-
-        if name is None:
-            name = str(uuid4())
-        return cls(name=name, config=config, tests=tests)
 
     @classmethod
     def _from_config_with_resolver(cls, config, name=None):
@@ -363,7 +326,8 @@ class TestSuite:
         if runner == 'nrunner':
             suite = cls._from_config_with_resolver(config, name)
         else:
-            suite = cls._from_config_with_loader(config, name)
+            raise TestSuiteError(f'Suite creation for runner "{runner}" '
+                                 f'is not supported')
 
         if not config.get('run.ignore_missing_references'):
             if not suite.tests:

@@ -51,10 +51,8 @@ class Human(ResultEvents):
     description = "Human Interface UI"
 
     def __init__(self, config):
-        self.__throbber = output.Throbber()
         stdout_claimed_by = config.get('stdout_claimed_by', None)
         self.owns_stdout = not stdout_claimed_by
-        self.runner = config.get('run.test_runner')
         self.omit_statuses = config.get('human_ui.omit.statuses')
 
     def pre_tests(self, job):
@@ -88,15 +86,7 @@ class Human(ResultEvents):
         LOG_UI.debug(' (%s/%s) %s: STARTED', uid, result.tests_total, name)
 
     def test_progress(self, progress=False):
-        if not self.owns_stdout:
-            return
-        if progress:
-            color = output.TERM_SUPPORT.PASS
-        else:
-            color = output.TERM_SUPPORT.PARTIAL
-        if self.runner == 'runner':
-            LOG_UI.debug('%s%s%s', color, self.__throbber.render(),
-                         output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
+        pass
 
     @staticmethod
     def get_colored_status(status, extra=None):
