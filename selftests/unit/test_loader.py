@@ -281,8 +281,11 @@ class LoaderTest(unittest.TestCase):
         with script.TemporaryScript('test.py', AVOCADO_TEST_OK) as avocado_test:
             with unittest.mock.patch('avocado.core.loader.safeloader.find_avocado_tests') as _mock:
                 _mock.side_effect = BaseException()
-                tests = self.loader.discover(avocado_test.path)
-                self.assertEqual(tests[0][1]["name"], avocado_test.path)
+                tests = self.loader.discover(avocado_test.path,
+                                             loader.DiscoverMode.ALL)
+                self.assertEqual(tests[0][1]["name"],
+                                 f"{avocado_test.path}: Not an INSTRUMENTED "
+                                 f"(avocado.Test based) test")
 
     def tearDown(self):
         self.tmpdir.cleanup()

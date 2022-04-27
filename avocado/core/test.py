@@ -21,17 +21,13 @@ framework tests.
 import asyncio
 import functools
 import inspect
-import logging
 import os
-import pipes
-import re
 import shutil
 import sys
 import tempfile
 import time
 import unittest
 import warnings
-from difflib import unified_diff
 
 from avocado.core import exceptions, parameters
 from avocado.core.output import LOG_JOB
@@ -40,7 +36,7 @@ from avocado.core.test_id import TestID
 from avocado.core.version import VERSION
 from avocado.utils import asset, astring, data_structures, genio
 from avocado.utils import path as utils_path
-from avocado.utils import process, stacktrace
+from avocado.utils import stacktrace
 
 #: Environment variable used to store the location of a temporary
 #: directory which is preserved across all tests execution (usually in
@@ -55,31 +51,6 @@ TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
                          'actual_time_start', 'actual_time_end',
                          'fail_reason', 'fail_class', 'traceback',
                          'tags', 'timeout', 'whiteboard', 'phase')
-
-
-class RawFileHandler(logging.FileHandler):
-
-    """
-    File Handler that doesn't include arbitrary characters to the
-    logged stream but still respects the formatter.
-    """
-
-    def emit(self, record):
-        """
-        Modifying the original emit() to avoid including a new line
-        in streams that should be logged in its purest form, like in
-        stdout/stderr recordings.
-        """
-        if self.stream is None:
-            self.stream = self._open()
-        try:
-            msg = self.format(record)
-            stream = self.stream
-            stream.write(astring.to_text(msg, self.encoding,
-                                         'xmlcharrefreplace'))
-            self.flush()
-        except Exception:  # pylint: disable=W0703
-            self.handleError(record)
 
 
 class TestData:
@@ -557,74 +528,6 @@ class Test(unittest.TestCase, TestData):
                            in self.__params.iteritems()]
         return state
 
-    def _register_log_file_handler(self, logger, formatter, filename,
-                                   log_level=logging.DEBUG, raw=False):
-        if raw:
-            file_handler = RawFileHandler(filename=filename,
-                                          encoding=astring.ENCODING)
-        else:
-            file_handler = logging.FileHandler(filename=filename)
-        file_handler.setLevel(log_level)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-        self._logging_handlers[logger.name] = file_handler
-
-    def _check_reference(self, produced_file_path, reference_file_name,
-                         diff_file_name, child_log_name, name='Content'):
-        '''
-        Compares the file produced by the test with the reference file
-
-        :param produced_file_path: the location of the file that was produced
-                                   by this test execution
-        :type produced_file_path: str
-        :param reference_file_name: the name of the file that will compared
-                                    with the content produced by this test
-        :type reference_file_name: str
-        :param diff_file_name: in case of differences between the produced
-                               and reference file, a file with this name will
-                               be saved to the test results directory, with
-                               the differences in unified diff format
-        :type diff_file_name: str
-        :param child_log_name: the name of a logger, child of :data:`LOG_JOB`,
-                               to be used when logging the content differences
-        :type child_log_name: str
-        :param name: optional parameter for a descriptive name of the type of
-                     content being checked here
-        :type name: str
-        :returns: True if the check was performed (there was a reference file) and
-                  was successful, and False otherwise (there was no such reference
-                  file and thus no check was performed).
-        :raises: :class:`exceptions.TestFail` when the check is performed and fails
-        '''
-        reference_path = self.get_data(reference_file_name)
-        if reference_path is not None:
-            expected = genio.read_file(reference_path)
-            actual = genio.read_file(produced_file_path)
-            diff_path = os.path.join(self.logdir, diff_file_name)
-
-            fmt = '%(message)s'
-            formatter = logging.Formatter(fmt=fmt)
-            log_diff = LOG_JOB.getChild(child_log_name)
-            self._register_log_file_handler(log_diff,
-                                            formatter,
-                                            diff_path)
-
-            diff = unified_diff(expected.splitlines(), actual.splitlines(),
-                                fromfile=reference_path,
-                                tofile=produced_file_path)
-            diff_content = []
-            for diff_line in diff:
-                diff_content.append(diff_line.rstrip('\n'))
-
-            if diff_content:
-                self.log.debug('%s Diff:', name)
-                for line in diff_content:
-                    log_diff.debug(line)
-                self.fail(f'Actual test {name} differs from expected one')
-            else:
-                return True
-        return False
-
     def _run_test(self):
         """
         Auxiliary method to run setup and test method.
@@ -934,122 +837,3 @@ class Test(unittest.TestCase, TestData):
 
     def __del__(self):
         self._cleanup()
-
-
-class SimpleTest(Test):
-
-    """
-    Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
-    """
-
-    DATA_SOURCES = ["variant", "file"]
-
-    def __init__(self, name, params=None, base_logdir=None, config=None,
-                 executable=None):
-        if executable is None:
-            executable = name.name
-        self._filename = executable
-        super().__init__(name=name, params=params,
-                         base_logdir=base_logdir, config=config)
-        # Access workdir to initialize it, given that it's lazy
-        _ = self.workdir
-
-        # Maximal allowed file name length is 255
-        file_datadir = None
-        if (self.filename is not None and
-                len(os.path.basename(self.filename)) < 251):
-            file_datadir = self.filename + '.data'
-        self._data_sources_mapping = {"variant": [lambda: file_datadir,
-                                                  lambda: self.name.variant],
-                                      "file": [lambda: file_datadir]}
-        self._command = None
-        if self.filename is not None:
-            self._command = pipes.quote(self.filename)
-
-    @property
-    def filename(self):
-        """
-        Returns the name of the file (path) that holds the current test
-        """
-        return os.path.abspath(self._filename)
-
-    def _log_detailed_cmd_info(self, result):
-        """
-        Log detailed command information.
-
-        :param result: :class:`avocado.utils.process.CmdResult` instance.
-        """
-        self.log.info("Detailed information about the executed command:")
-        self.log.info("  Exit status: %s", result.exit_status)
-        self.log.info("  Duration: %s", result.duration)
-        self.log.info("  STDOUT: %s", result.stdout_text.strip())
-        self.log.info("  STDERR: %s", result.stderr_text.strip())
-
-    def _cmd_error_to_test_failure(self, cmd_error):
-        failure_fields = self._config.get('simpletests.status.failure_fields')
-        msgs = []
-        if 'status' in failure_fields:
-            msgs.append(f"Exited with status: '{int(cmd_error.result.exit_status)}'")
-        if 'stdout' in failure_fields:
-            msgs.append(f"stdout: {cmd_error.result.stdout_text!r}")
-        if 'stderr' in failure_fields:
-            msgs.append(f"stderr: {cmd_error.result.stdout_text!r}")
-        return ", ".join(msgs)
-
-    def _execute_cmd(self):
-        """
-        Run the executable, and log its detailed execution.
-        """
-        try:
-            test_params = dict([(str(key), str(val)) for _, key, val in
-                                self.params.iteritems()])
-
-            input_encoding = self._config.get('core.input_encoding')
-            result = process.run(self._command,
-                                 verbose=True,
-                                 env=test_params,
-                                 encoding=input_encoding)
-
-            self._log_detailed_cmd_info(result)
-        except process.CmdError as details:
-            self._log_detailed_cmd_info(details.result)
-            test_failure = self._cmd_error_to_test_failure(details)
-            raise exceptions.TestFail(test_failure)
-
-        warn_regex = self._config.get('simpletests.status.warn_regex')
-        warn_location = self._config.get('simpletests.status.warn_location')
-        skip_regex = self._config.get('simpletests.status.skip_regex')
-        skip_location = self._config.get('simpletests.status.skip_location')
-
-        # Keeping compatibility with 'avocado_warn' libexec
-        for regex in [warn_regex, r'^\d\d:\d\d:\d\d WARN \|']:
-            warn_msg = ("Test passed but there were warnings on {st} during "
-                        "execution. Check the log for details.")
-            if regex is not None:
-                re_warn = re.compile(regex, re.MULTILINE)
-                if warn_location in ['all', 'stdout']:
-                    if re_warn.search(result.stdout_text):
-                        raise exceptions.TestWarn(warn_msg.format(st='stdout'))
-
-                if warn_location in ['all', 'stderr']:
-                    if re_warn.search(result.stderr_text):
-                        raise exceptions.TestWarn(warn_msg.format(st='stderr'))
-
-        if skip_regex is not None:
-            re_skip = re.compile(skip_regex, re.MULTILINE)
-            skip_msg = ("Test passed but {st} indicates test was skipped. "
-                        "Check the log for details.")
-
-            if skip_location in ['all', 'stdout']:
-                if re_skip.search(result.stdout_text):
-                    raise exceptions.TestSkipError(skip_msg.format(st='stdout'))
-
-            if skip_location in ['all', 'stderr']:
-                if re_skip.search(result.stderr_text):
-                    raise exceptions.TestSkipError(skip_msg.format(st='stderr'))
-
-    def test(self):
-        """
-        Run the test and postprocess the results
-        """
-        self._execute_cmd()

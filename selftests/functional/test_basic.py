@@ -59,17 +59,6 @@ class MyTest(Test):
 '''
 
 
-REPORTS_STATUS_AND_HANG = '''
-from avocado import Test
-import time
-
-class MyTest(Test):
-    def test(self):
-         self.runner_queue.put({"running": False})
-         time.sleep(70)
-'''
-
-
 DIE_WITHOUT_REPORTING_STATUS = '''
 from avocado import Test
 import os
@@ -250,7 +239,7 @@ class RunnerOperationTest(TestCaseTmpDir):
                                     "avocado_unsupported_status") as tst:
             res = process.run((f"{AVOCADO} run --disable-sysinfo "
                                f"--job-results-dir {self.tmpdir.name} {tst} "
-                               f"--test-runner=runner --json -"),
+                               f"--json -"),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
             results = json.loads(res.stdout_text)
@@ -259,36 +248,6 @@ class RunnerOperationTest(TestCaseTmpDir):
                               f"{'ERROR'}\n{res}"))
             self.assertIn("Runner error occurred: Test reports unsupported",
                           results["tests"][0]["fail_reason"])
-
-    @skipOnLevelsInferiorThan(1)
-    def test_hanged_test_with_status(self):
-        """Check that avocado handles hanged tests properly.
-
-        :avocado: tags=parallel:1
-        """
-        with script.TemporaryScript("report_status_and_hang.py",
-                                    REPORTS_STATUS_AND_HANG,
-                                    "hanged_test_with_status") as tst:
-            res = process.run((f"{AVOCADO} run --disable-sysinfo "
-                               f"--job-results-dir {self.tmpdir.name} {tst} "
-                               f"--test-runner=runner --json - "
-                               f"--job-timeout 1"),
-                              ignore_status=True)
-            self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-            results = json.loads(res.stdout_text)
-            self.assertEqual(results["tests"][0]["status"], "ERROR",
-                             (f"{results['tests'][0]['status']} != "
-                              f"{'ERROR'}\n{res}"))
-            self.assertIn("Test reported status but did not finish",
-                          results["tests"][0]["fail_reason"])
-            # Currently it should finish up to 1s after the job-timeout
-            # but the prep and postprocess could take a bit longer on
-            # some environments, so let's just check it does not take
-            # > 60s, which is the deadline for force-finishing the test.
-            self.assertLess(res.duration, 55,
-                            (f"Test execution took too long, "
-                             f"which is likely because the hanged test was "
-                             f"not interrupted. Results:\n{res}"))
 
     def test_no_status_reported(self):
         with script.TemporaryScript("die_without_reporting_status.py",
@@ -469,19 +428,22 @@ class RunnerOperationTest(TestCaseTmpDir):
 
     def test_empty_test_list(self):
         cmd_line = (f'{AVOCADO} run --disable-sysinfo --job-results-dir '
-                    f'{self.tmpdir.name}--test-runner=runner')
+                    f'{self.tmpdir.name}')
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
-        self.assertIn(b'No test references provided nor any other arguments '
-                      b'resolved into tests', result.stderr)
+        self.assertEqual(result.stderr,
+                         (b'Test Suite could not be created. No test references'
+                          b' provided nor any other arguments resolved into '
+                          b'tests\n'))
 
     def test_not_found(self):
         cmd_line = (f'{AVOCADO} run --disable-sysinfo --job-results-dir '
-                    f'{self.tmpdir.name} --test-runner=runner sbrubles')
+                    f'{self.tmpdir.name} sbrubles')
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
-        self.assertIn(b'Unable to resolve reference', result.stderr)
-        self.assertNotIn(b'Unable to resolve reference', result.stdout)
+        self.assertEqual(result.stdout, b'')
+        self.assertEqual(result.stderr,
+                         b'Could not resolve references: sbrubles\n')
 
     def test_invalid_unique_id(self):
         cmd_line = (f'{AVOCADO} run --disable-sysinfo '
@@ -538,14 +500,13 @@ class RunnerOperationTest(TestCaseTmpDir):
     def test_invalid_python(self):
         test = script.make_script(os.path.join(self.tmpdir.name, 'test.py'),
                                   INVALID_PYTHON_TEST)
-        cmd_line = (f'{AVOCADO} --show test run --disable-sysinfo '
-                    f'--job-results-dir {self.tmpdir.name} '
-                    f'--test-runner=runner {test}')
+        cmd_line = (f'{AVOCADO} run --disable-sysinfo '
+                    f'--job-results-dir {self.tmpdir.name} {test}')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          f"Avocado did not return rc {expected_rc}:\n{result}")
-        self.assertIn(f'1-{test}:MyTest.test_my_name -> TestError',
+        self.assertIn(f'{test}:MyTest.test_my_name:  ERROR',
                       result.stdout_text)
 
     @unittest.skipIf(not READ_BINARY, "read binary not available.")
@@ -756,41 +717,12 @@ class RunnerExecTest(TestCaseTmpDir):
         self.assertEqual(result.exit_status, expected_rc,
                          f"Avocado did not return rc {expected_rc}:\n{result}")
 
-    def test_simplewarning(self):
-        """
-        simplewarning.sh uses the avocado-bash-utils
-        """
-        # simplewarning.sh calls "avocado" without specifying a path
-        # let's add the path that was defined at the global module
-        # scope here
-        os.environ['PATH'] += ":" + os.path.dirname(AVOCADO)
-        # simplewarning.sh calls "avocado exec-path" which hasn't
-        # access to an installed location for the libexec scripts
-        os.environ['PATH'] += ":" + os.path.join(BASEDIR, 'libexec')
-        cmd_line = (f'{AVOCADO} --show=test run '
-                    f'--job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo --test-runner=runner '
-                    f'examples/tests/simplewarning.sh')
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
-        self.assertIn(b'DEBUG| Debug message', result.stdout, result)
-        self.assertIn(b'INFO | Info message', result.stdout, result)
-        self.assertIn(b'WARN | Warning message (should cause this test to '
-                      b'finish with warning)', result.stdout, result)
-        self.assertIn(b'ERROR| Error message (ordinary message not changing '
-                      b'the results)', result.stdout, result)
-        self.assertIn(b'Test passed but there were warnings', result.stdout,
-                      result)
-
     def test_non_absolute_path(self):
         test_base_dir = os.path.dirname(self.pass_script.path)
         os.chdir(test_base_dir)
         test_file_name = os.path.basename(self.pass_script.path)
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--disable-sysinfo '
-                    f'--test-runner=runner "{test_file_name}"')
+                    f'--disable-sysinfo  "{test_file_name}"')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -800,64 +732,6 @@ class RunnerExecTest(TestCaseTmpDir):
         self.pass_script.remove()
         self.fail_script.remove()
         super().tearDown()
-
-
-class RunnerExecTestStatus(TestCaseTmpDir):
-
-    def setUp(self):
-        super().setUp()
-        self.config_file = script.TemporaryScript('avocado.conf',
-                                                  "[simpletests.status]\n"
-                                                  "warn_regex = ^WARN$\n"
-                                                  "skip_regex = ^SKIP$\n"
-                                                  "skip_location = stdout\n")
-        self.config_file.save()
-
-    def test_exec_test_status(self):
-        # Multi-line warning in STDERR should by default be handled
-        warn_script = script.TemporaryScript('avocado_warn.sh',
-                                             '#!/bin/sh\n'
-                                             '>&2 echo -e "\\n\\nWARN\\n"',
-                                             'avocado_exec_test_'
-                                             'functional')
-        warn_script.save()
-        cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
-                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo '
-                    f'--test-runner=runner {warn_script.path} --json -')
-        result = process.run(cmd_line, ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-        self.assertEqual(json_results['tests'][0]['status'], 'WARN')
-        warn_script.remove()
-        # Skip in STDOUT should be handled because of config
-        skip_script = script.TemporaryScript('avocado_skip.sh',
-                                             "#!/bin/sh\necho SKIP",
-                                             'avocado_exec_test_'
-                                             'functional')
-        skip_script.save()
-        cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
-                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo '
-                    f' --test-runner=runner {skip_script.path} --json -')
-        result = process.run(cmd_line, ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-        self.assertEqual(json_results['tests'][0]['status'], 'SKIP')
-        skip_script.remove()
-        # STDERR skip should not be handled
-        skip2_script = script.TemporaryScript('avocado_skip.sh',
-                                              "#!/bin/sh\n>&2 echo SKIP",
-                                              'avocado_exec_test_'
-                                              'functional')
-        skip2_script.save()
-        cmd_line = (f'{AVOCADO} --config {self.config_file.path} run '
-                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo '
-                    f' --test-runner=runner {skip2_script.path} --json -')
-        result = process.run(cmd_line, ignore_status=True)
-        json_results = json.loads(result.stdout_text)
-        self.assertEqual(json_results['tests'][0]['status'], 'PASS')
-        skip2_script.remove()
-
-    def tearDown(self):
-        super().tearDown()
-        self.config_file.remove()
 
 
 class RunnerReferenceFromConfig(TestCaseTmpDir):

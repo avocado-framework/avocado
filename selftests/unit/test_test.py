@@ -4,7 +4,6 @@ import unittest.mock
 
 from avocado.core import test
 from avocado.core.test_id import TestID
-from avocado.utils import script
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
@@ -116,42 +115,6 @@ class TestClassTestUnit(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, dummy_test, "name", "whatever")
         self.assertRaises(AttributeError, setattr, dummy_test, "status", "whatever")
 
-    def test_check_reference_success(self):
-        '''
-        Tests that a check is made, and is successful
-        '''
-        class GetDataTest(test.Test):
-            def test(self):
-                pass
-
-            def get_data(self, filename, source=None, must_exist=True):
-                # return the filename (path, really) unchanged
-                return filename
-
-        tst = GetDataTest("test", TestID(1, "test"),
-                          base_logdir=self.tmpdir.name)
-        content = 'expected content\n'
-        content_path = os.path.join(tst.logdir, 'content')
-        with open(content_path, 'w', encoding='utf-8') as produced:
-            produced.write(content)
-        self.assertTrue(tst._check_reference(content_path,
-                                             content_path,
-                                             'content.diff',
-                                             'content_diff',
-                                             'Content'))
-
-    def test_check_reference_does_not_exist(self):
-        '''
-        Tests that a check is not made for a file that does not exist
-        '''
-        tst = self.DummyTest("test", TestID(1, "test"),
-                             base_logdir=self.tmpdir.name)
-        self.assertFalse(tst._check_reference('does_not_exist',
-                                              'stdout.expected',
-                                              'stdout.diff',
-                                              'stdout_diff',
-                                              'Stdout'))
-
 
 class TestClassTest(unittest.TestCase):
 
@@ -187,43 +150,6 @@ class TestClassTest(unittest.TestCase):
 
     def tearDown(self):
         self.base_logdir.cleanup()
-
-
-class SimpleTestClassTest(unittest.TestCase):
-
-    def setUp(self):
-        prefix = temp_dir_prefix(self)
-        self.tmpdir = tempfile.TemporaryDirectory(prefix=prefix)
-        self.script = None
-
-    def test_simple_test_pass_status(self):
-        self.script = script.TemporaryScript(
-            'avocado_pass.sh',
-            PASS_SCRIPT_CONTENTS,
-            'avocado_simpletest_unittest')
-        self.script.save()
-        tst_instance = test.SimpleTest(
-            name=TestID(1, self.script.path),
-            base_logdir=self.tmpdir.name)
-        tst_instance.run_avocado()
-        self.assertEqual(tst_instance.status, 'PASS')
-
-    def test_simple_test_fail_status(self):
-        self.script = script.TemporaryScript(
-            'avocado_fail.sh',
-            FAIL_SCRIPT_CONTENTS,
-            'avocado_simpletest_unittest')
-        self.script.save()
-        tst_instance = test.SimpleTest(
-            name=TestID(1, self.script.path),
-            base_logdir=self.tmpdir.name)
-        tst_instance.run_avocado()
-        self.assertEqual(tst_instance.status, 'FAIL')
-
-    def tearDown(self):
-        if self.script is not None:
-            self.script.remove()
-        self.tmpdir.cleanup()
 
 
 if __name__ == '__main__':

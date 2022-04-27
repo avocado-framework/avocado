@@ -102,6 +102,14 @@ class ExecTestRunner(BaseRunner):
                 self.runnable.output_dir
         return avocado_test_env_variables
 
+    @staticmethod
+    def _is_uri_a_file_on_cwd(uri):
+        if (uri is not None and
+            os.path.basename(uri) == uri and
+                os.access(uri, os.R_OK | os.X_OK)):
+            return True
+        return False
+
     def run(self, runnable):
         # pylint: disable=W0201
         self.runnable = runnable
@@ -126,6 +134,11 @@ class ExecTestRunner(BaseRunner):
 
         if env and 'PATH' not in env:
             env['PATH'] = os.environ.get('PATH')
+
+        # Support for running executable tests in the current working directory
+        if self._is_uri_a_file_on_cwd(self.runnable.uri):
+            env['PATH'] += f':{os.getcwd()}'
+
         try:
             process = subprocess.Popen(
                 [self.runnable.uri] + list(self.runnable.args),
