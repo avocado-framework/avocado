@@ -73,7 +73,7 @@ class AvocadoInstrumentedTestRunner(BaseRunner):
             result_dir = (runnable.output_dir or
                           tempfile.mkdtemp(prefix=".avocado-task"))
             test_factory = [klass,
-                            {'name': TestID(1, runnable.uri),
+                            {'name': TestID(1, runnable.uri, runnable.variant),
                              'methodName': method,
                              'config': runnable.config,
                              'modulePath': module_path,
