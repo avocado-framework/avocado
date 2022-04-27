@@ -62,7 +62,7 @@ class FetchAsset(unittest.TestCase):
 
         expected_rc = exit_codes.AVOCADO_ALL_OK
         cmd_line = (f'{AVOCADO} --config {self.config_file.name} run '
-                    f'--test-runner=runner {test_file.name}')
+                    f'{test_file.name}')
         result = process.run(cmd_line)
         os.remove(localpath)
         self.assertEqual(expected_rc, result.exit_status)
@@ -92,7 +92,7 @@ class FetchAsset(unittest.TestCase):
         expected_stdout = "not found in the cache"
 
         cmd_line = (f'{AVOCADO} --config {self.config_file.name} run '
-                    f'--test-runner=runner {test_file.name}')
+                    f'{test_file.name}')
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)
@@ -122,7 +122,7 @@ class FetchAsset(unittest.TestCase):
         expected_stdout = "Missing asset"
 
         cmd_line = (f'{AVOCADO} --config {self.config_file.name} run '
-                    f'--test-runner=runner {test_file.name}')
+                    f'{test_file.name}')
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)
@@ -151,7 +151,7 @@ class FetchAsset(unittest.TestCase):
         expected_stdout = "Missing asset"
 
         cmd_line = (f'{AVOCADO} --config {self.config_file.name} run '
-                    f'--test-runner=runner {test_file.name} ')
+                    f'{test_file.name} ')
 
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(expected_rc, result.exit_status)
