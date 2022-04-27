@@ -39,15 +39,18 @@ class VariantsDumpLoadTests(TestCaseTmpDir):
             file_obj.write(content)
         cmd_line = (f'{AVOCADO} run examples/tests/passtest.py '
                     f'--json-variants-load {self.variants_file} '
-                    f'--test-runner=runner '
                     f'--job-results-dir {self.tmpdir.name} --json -')
         result = process.run(cmd_line)
         json_result = json.loads(result.stdout_text)
         self.assertEqual(json_result["pass"], 2)
-        self.assertEqual(json_result["tests"][0]["id"],
-                         "1-examples/tests/passtest.py:PassTest.test;foo-0ead")
-        self.assertEqual(json_result["tests"][1]["id"],
-                         "2-examples/tests/passtest.py:PassTest.test;bar-d06d")
+        id_1 = "1-examples/tests/passtest.py:PassTest.test;foo-0ead"
+        id_2 = "2-examples/tests/passtest.py:PassTest.test;bar-d06d"
+        if json_result["tests"][0]["id"] == id_1:
+            self.assertEqual(json_result["tests"][1]["id"], id_2)
+        elif json_result["tests"][0]["id"] == id_2:
+            self.assertEqual(json_result["tests"][1]["id"], id_1)
+        else:
+            self.fail('Wrong content on test identifiers ("id") fields')
 
 
 if __name__ == '__main__':
