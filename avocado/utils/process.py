@@ -35,14 +35,6 @@ from avocado.utils.wait import wait_for
 
 LOG = logging.getLogger(__name__)
 
-#: Exception to be raised when users of this API need to know that the
-#: execution of a given process resulted in undefined behavior. One
-#: concrete example when a user, in an interactive session, let the
-#: inferior process exit before before avocado resumed the debugger
-#: session. Since the information is unknown, and the behavior is
-#: undefined, this situation will be flagged by an exception.
-UNDEFINED_BEHAVIOR_EXCEPTION = None
-
 # variable=value bash assignment
 _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
 
