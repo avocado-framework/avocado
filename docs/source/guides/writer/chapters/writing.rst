@@ -1364,50 +1364,6 @@ by ``avocado exec-path`` (if any).  Also, the example test
 .. tip:: These extensions may be available as a separate package.  For
          RPM packages, look for the ``bash`` sub-package.
 
-Job Cleanup
------------
-
-.. warning:: The Job Cleanup feature is legacy feature and it's works
-             only with the legacy runner. For using legacy runner you have to
-             use `--test-runner=runner`
-
-It's possible to register a callback function that will be called when
-all the tests have finished running. This effectively allows for a
-test job to clean some state it may have left behind.
-
-At the moment, this feature is not intended to be used by test writers,
-but it's seen as a feature for Avocado extensions to make use.
-
-To register a callback function, your code should put a message in a
-very specific format in the "runner queue". The Avocado test runner
-code will understand that this message contains a (serialized) function
-that will be called once all tests finish running.
-
-Example::
-
-  from avocado import Test
-
-  def my_cleanup(path_to_file):
-     if os.path.exists(path_to_file):
-        os.unlink(path_to_file)
-
-  class MyCustomTest(Test):
-  ...
-     cleanup_file = '/tmp/my-custom-state'
-     self.runner_queue.put({"func_at_exit": self.my_cleanup,
-                            "args": (cleanup_file),
-                            "once": True})
-  ...
-
-This results in the ``my_cleanup`` function being called with
-positional argument ``cleanup_file``.
-
-Because ``once`` was set to ``True``, only one unique combination of
-function, positional arguments and keyword arguments will be
-registered, not matter how many times they're attempted to be
-registered. For more information check
-:meth:`avocado.utils.data_structures.CallbackRegister.register`.
-
 .. _docstring-directive-rules:
 
 Docstring Directives Rules

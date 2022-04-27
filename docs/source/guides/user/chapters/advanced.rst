@@ -76,11 +76,10 @@ Runner choices can be seen by running ``avocado plugins``::
   ...
   Plugins that run test suites on a job (runners):
   nrunner nrunner based implementation of job compliant runner
-  runner  The conventional test runner
 
-And to select a different test runner, say, the legacy ``runner``::
+And to select a different test runner (if another one exists)::
 
-  avocado run --test-runner=runner ...
+  avocado run --test-runner=other_runner_plugin ...
 
 Running tests with an external runner
 -------------------------------------

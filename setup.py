@@ -395,7 +395,6 @@ if __name__ == '__main__':
                   'tap = avocado.plugins.resolvers:TapResolver',
                   ],
               'avocado.plugins.runner': [
-                  'runner = avocado.plugins.runner:TestRunner',
                   'nrunner = avocado.plugins.runner_nrunner:Runner',
                   ],
               'avocado.plugins.runnable.runner': [

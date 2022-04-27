@@ -43,8 +43,6 @@ jobs:
          python3 setup.py plugin --install=varianter_yaml_to_mux --user
       - name: Avocado version
         run: avocado --version
-      - name: Avocado smoketest legacy runner
-        run: avocado run --test-runner=runner examples/tests/passtest.py
       - name: Avocado smoketest
         run: avocado run examples/tests/passtest.py
       - name: Avocado two tests
@@ -85,8 +83,6 @@ jobs:
          python3 setup.py plugin --install=varianter_yaml_to_mux
       - name: Avocado version
         run: avocado --version
-      - name: Avocado smoketest legacy runner
-        run: avocado run --test-runner=runner examples/tests/passtest.py
       - name: Avocado smoketest
         run: avocado run examples/tests/passtest.py
       - name: Avocado two tests
@@ -119,8 +115,6 @@ jobs:
         run: python3 setup.py develop --user
       - name: Avocado version
         run: avocado --version
-      - name: Avocado smoketest legacy runner
-        run: avocado run --test-runner=runner examples/tests/passtest.py
       - name: Avocado smoketest
         run: avocado run examples/tests/passtest.py
       - name: Avocado build manpage
@@ -157,8 +151,6 @@ jobs:
         run: python3 setup.py develop
       - name: Avocado version
         run: avocado --version
-      - name: Avocado smoketest legacy runner
-        run: avocado run --test-runner=runner examples/tests/passtest.py
       - name: Avocado smoketest
         run: avocado run examples/tests/passtest.py
       - name: Avocado build manpage
@@ -198,7 +190,6 @@ jobs:
          python3 setup.py plugin --install=varianter_pict
          python3 setup.py plugin --install=varianter_yaml_to_mux
          avocado --version
-         avocado run --test-runner=runner examples/tests/passtest.py
          avocado run examples/tests/passtest.py
          deactivate
       - run: echo "🥑 This job's status is ${{ job.status }}."
@@ -224,7 +215,6 @@ jobs:
          pip install -r requirements-dev.txt
          python3 setup.py develop
          avocado --version
-         avocado run --test-runner=runner examples/tests/passtest.py
          avocado run examples/tests/passtest.py
          python3 setup.py test --skip static-checks
          deactivate
