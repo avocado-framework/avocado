@@ -249,22 +249,6 @@ class RunnerOperationTest(TestCaseTmpDir):
             self.assertIn("Runner error occurred: Test reports unsupported",
                           results["tests"][0]["fail_reason"])
 
-    def test_no_status_reported(self):
-        with script.TemporaryScript("die_without_reporting_status.py",
-                                    DIE_WITHOUT_REPORTING_STATUS,
-                                    "no_status_reported") as tst:
-            res = process.run((f"{AVOCADO} run --disable-sysinfo "
-                               f"--job-results-dir {self.tmpdir.name} {tst} "
-                               f"--test-runner=runner --json -"),
-                              ignore_status=True)
-            self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-            results = json.loads(res.stdout_text)
-            self.assertEqual(results["tests"][0]["status"], "ERROR",
-                             (f"{results['tests'][0]['status']} != "
-                              f"{'ERROR'}\n{res}"))
-            self.assertIn("Test died without reporting the status",
-                          results["tests"][0]["fail_reason"])
-
     def test_runner_tests_fail(self):
         cmd_line = (f'{AVOCADO} run --disable-sysinfo --job-results-dir '
                     f'{self.tmpdir.name} examples/tests/passtest.py '
@@ -359,12 +343,9 @@ class RunnerOperationTest(TestCaseTmpDir):
                                RAISE_CUSTOM_PATH_EXCEPTION_CONTENT)
         mytest.save()
         result = process.run(f'{AVOCADO} --show test run --disable-sysinfo '
-                             f'--test-runner=runner '
                              f'--job-results-dir {self.tmpdir.name} {mytest}')
-        self.assertIn(b"mytest.py:SharedLibTest.test -> CancelExc: This "
-                      b"should not crash on unpickling in runner",
-                      result.stdout)
-        self.assertNotIn(b"Failed to read queue", result.stdout)
+        self.assertIn(b"'fail_reason': 'This should not crash on "
+                      b"unpickling in runner'", result.stdout)
 
     def test_runner_timeout(self):
         cmd_line = (f'{AVOCADO} run --disable-sysinfo --job-results-dir '
@@ -383,24 +364,6 @@ class RunnerOperationTest(TestCaseTmpDir):
         self.assertIn("timeout", result_json["tests"][0]["fail_reason"])
         # Ensure no test aborted error messages show up
         self.assertNotIn(b"TestAbortError: Test aborted unexpectedly", output)
-
-    @skipOnLevelsInferiorThan(2)
-    def test_runner_abort(self):
-        """
-        :avocado: tags=parallel:1
-        """
-        cmd_line = (f'{AVOCADO} run --disable-sysinfo --job-results-dir '
-                    f'{self.tmpdir.name} --test-runner=runner '
-                    f'--xunit - examples/tests/abort.py')
-        result = process.run(cmd_line, ignore_status=True)
-        excerpt = b'Test died without reporting the status.'
-        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
-        unexpected_rc = exit_codes.AVOCADO_FAIL
-        self.assertNotEqual(result.exit_status, unexpected_rc,
-                            f"Avocado crashed (rc {unexpected_rc}):\n{result}")
-        self.assertEqual(result.exit_status, expected_rc,
-                         f"Avocado did not return rc {expected_rc}:\n{result}")
-        self.assertIn(excerpt, result.stdout)
 
     def test_silent_output(self):
         cmd_line = (f'{AVOCADO} --show=none run --disable-sysinfo '

@@ -59,16 +59,16 @@ class StreamsTest(TestCaseTmpDir):
         """
         cmd = (f'{AVOCADO} --show=test run --disable-sysinfo '
                f'--job-results-dir {self.tmpdir.name} '
-               f'--test-runner=runner examples/tests/passtest.py')
+               f'examples/tests/passtest.py')
         result = process.run(cmd)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         # Avocado will see the main module on the command line
         cmd_in_log = os.path.join(BASEDIR, 'avocado', '__main__.py')
         self.assertIn(f"Command line: {cmd_in_log}",
                       result.stdout_text)
-        self.assertIn(b"\nSTART 1-examples/tests/passtest.py:PassTest.test",
+        self.assertIn(b"\nexamples/tests/passtest.py:PassTest.test: STARTED\n",
                       result.stdout)
-        self.assertIn(b"PASS 1-examples/tests/passtest.py:PassTest.test",
+        self.assertIn(b"\nexamples/tests/passtest.py:PassTest.test: PASS\n",
                       result.stdout)
 
     def test_none_success(self):

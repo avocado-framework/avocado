@@ -411,7 +411,7 @@ class OutputPluginTest(TestCaseTmpDir):
     def test_gendata(self):
         tmpfile = tempfile.mktemp(dir=self.tmpdir.name)
         cmd_line = (f'{AVOCADO} run --job-results-dir {self.tmpdir.name} '
-                    f'--test-runner=runner --disable-sysinfo '
+                    f'--disable-sysinfo '
                     f'examples/tests/gendata.py --json {tmpfile}')
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK

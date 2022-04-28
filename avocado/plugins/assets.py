@@ -261,14 +261,19 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
         candidates = []
         for suite in job.test_suites:
             for test in suite.tests:
-                # ignore nrunner/resolver based test suites that contain
-                # runnable, because the requirements resolution planned is
-                # completely different from the traditional job runner
+                # nrunner/resolver based test should describe their requirements
+                # explicitly using docstring statements.  But, they can still
+                # benefit from the parsing of "fetch_asset()" calls just like
+                # the legacy runner.
                 if isinstance(test, Runnable):
-                    continue
+                    if test.kind == 'avocado-instrumented':
+                        module_path, klass_method = test.uri.split(':', 1)
+                        klass, method = klass_method.split('.', 1)
+                        candidate = (module_path, klass, method)
+                        candidates.append(candidate)
 
                 # fetch assets only on instrumented tests
-                if isinstance(test[0], str):
+                elif isinstance(test[0], str):
                     candidate = (test[1]['modulePath'],
                                  test[0],
                                  test[1]['methodName'])
