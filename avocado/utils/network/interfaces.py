@@ -571,3 +571,27 @@ class NetworkInterface:
                     os.remove(slave_config)
             except Exception as ex:
                 raise NWException(f"Could not restore the config file {ex}")
+
+    def are_packets_lost(self, peer_ip, options=None, sudo=False):
+        """Check packet loss that occurs during ping.
+
+        Function returns True for 0% packet loss and False
+        if packet loss occurs.
+
+        :param peer_ip: Peer IP address (IPv4 or IPv6)
+        :param options: Type is List. Options such as -c, -f. Default is None
+        :param sudo: If sudo permissions are needed. Default is False
+        """
+        cmd = f'ping -I {self.name} {peer_ip}'
+        cmd = f'{cmd} '
+        if options is not None:
+            for elem in options:
+                cmd += f'{elem} '
+        try:
+            output = run_command(cmd, self.host, sudo=sudo)
+            if "0% packet loss" not in output:
+                return False
+            return True
+        except Exception as ex:
+            msg = f'Failed to ping. {ex}'
+            raise NWException(msg)
