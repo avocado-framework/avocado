@@ -73,7 +73,7 @@ class RunnableTest(unittest.TestCase):
 
     def test_identifier_args(self):
         config = {'runner.identifier_format': '{uri}-{args[0]}'}
-        runnable = Runnable('exec-text', 'uri', 'arg1', 'arg2',
+        runnable = Runnable('exec-test', 'uri', 'arg1', 'arg2',
                             config=config)
         self.assertEqual(runnable.identifier, 'uri-arg1')
 
