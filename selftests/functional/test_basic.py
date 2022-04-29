@@ -182,7 +182,7 @@ class RunnerOperationTest(TestCaseTmpDir):
         expected = '[{"paths": ["/run/*"], "variant_id": null, "variant": [["/", []]]}]'
         self.assertEqual(variants, expected)
 
-    def test_runner_failfast(self):
+    def test_runner_failfast_fail(self):
         cmd_line = (f'{AVOCADO} run --disable-sysinfo '
                     f'--job-results-dir {self.tmpdir.name} '
                     f'examples/tests/passtest.py examples/tests/failtest.py '
@@ -191,6 +191,19 @@ class RunnerOperationTest(TestCaseTmpDir):
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn(b'Interrupting job (failfast).', result.stdout)
         self.assertIn(b'PASS 1 | ERROR 0 | FAIL 1 | SKIP 1', result.stdout)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
+        self.assertEqual(result.exit_status, expected_rc,
+                         f"Avocado did not return rc {expected_rc}:\n{result}")
+
+    def test_runner_failfast_error(self):
+        cmd_line = (f'{AVOCADO} run --disable-sysinfo '
+                    f'--job-results-dir {self.tmpdir.name} '
+                    f'examples/tests/passtest.py examples/tests/errortest.py '
+                    f'examples/tests/passtest.py --failfast '
+                    f'--nrunner-max-parallel-tasks=1')
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertIn(b'Interrupting job (failfast).', result.stdout)
+        self.assertIn(b'PASS 1 | ERROR 1 | FAIL 0 | SKIP 1', result.stdout)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
         self.assertEqual(result.exit_status, expected_rc,
                          f"Avocado did not return rc {expected_rc}:\n{result}")

@@ -5,6 +5,7 @@ import multiprocessing
 import time
 
 from avocado.core.exceptions import TestFailFast
+from avocado.core.teststatus import STATUSES_NOT_OK
 
 LOG = logging.getLogger(__name__)
 
@@ -279,8 +280,9 @@ class Worker:
                 runtime_task.status = 'FINISHED'
             except asyncio.TimeoutError:
                 runtime_task.status = 'FINISHED W/ TIMEOUT'
-        result_stats = self._state_machine._status_repo.result_stats
-        if self._failfast and 'fail' in result_stats:
+        result_stats = set(key.upper()for key in
+                           self._state_machine._status_repo.result_stats.keys())
+        if self._failfast and not result_stats.isdisjoint(STATUSES_NOT_OK):
             await self._state_machine.abort("FAILFAST is enabled")
             raise TestFailFast("Interrupting job (failfast).")
 
