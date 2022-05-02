@@ -41,12 +41,12 @@ class StatusRepo:
 
         result = message.get('result')
         if result is not None and result.upper() not in STATUSES:
-            overriden = 'error'
-            message['result'] = overriden
+            overridden = 'error'
+            message['result'] = overridden
             message['fail_reason'] = (f'Runner error occurred: Test reports '
                                       f'unsupported status "{result}"')
             LOG.error('Task "%s" finished message with unsupported status '
-                      '"%s", changing to "%s"', task_id, result, overriden)
+                      '"%s", changing to "%s"', task_id, result, overridden)
 
         self._set_by_result(message)
         self._set_task_data(message)

@@ -132,7 +132,7 @@ And to be even more specific, you can use::
   avocado-instrumented byteorder.py:ByteOrder.test_be
 
 A "negated" form is also available to filter out tests that do *not*
-have a given value.  To filter out tests that have an endianess set,
+have a given value.  To filter out tests that have an endianness set,
 but are *not* big endian you can use::
 
   $ avocado list byteorder.py --filter-by-tags endianness:-big
