@@ -316,7 +316,7 @@ def read_from_vmstat(key):
     """
     with open("/proc/vmstat") as vmstat:  # pylint: disable=W1514
         vmstat_info = vmstat.read()
-        return int(re.findall(r"%s\s+(\d+)" % key, vmstat_info)[0])  # pylint: disable=C0209
+        return int(re.findall(fr"{key}\s+(\d+)", vmstat_info)[0])
 
 
 def read_from_smaps(pid, key):
@@ -334,7 +334,7 @@ def read_from_smaps(pid, key):
         smaps_info = smaps.read()
 
         memory_size = 0
-        for each_number in re.findall(r"%s:\s+(\d+)" % key, smaps_info):  # pylint: disable=C0209
+        for each_number in re.findall(fr"{key}:\s+(\d+)", smaps_info):
             memory_size += int(each_number)
 
         return memory_size
@@ -356,7 +356,7 @@ def read_from_numa_maps(pid, key):
         numa_map_info = numa_maps.read()
 
         numa_maps_dict = {}
-        numa_pattern = r"(^[\dabcdfe]+)\s+.*%s[=:](\d+)" % key  # pylint: disable=C0209
+        numa_pattern = fr"(^[\dabcdfe]+)\s+.*{key}[=:](\d+)"
         for address, number in re.findall(numa_pattern, numa_map_info, re.M):
             numa_maps_dict[address] = number
 

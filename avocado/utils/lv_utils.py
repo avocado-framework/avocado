@@ -199,7 +199,7 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
                   DeprecationWarning)
     errs = []
     if vg_name is not None:
-        loop_device = re.search(r"([/\w-]+) +%s +lvm2" % vg_name,  # pylint: disable=C0209
+        loop_device = re.search(fr"([/\w-]+) +{vg_name} +lvm2",
                                 process.run("pvs", sudo=True).stdout_text)
         if loop_device is not None:
             loop_device = loop_device.group(1)
@@ -361,7 +361,7 @@ def lv_check(vg_name, lv_name):
     cmd = f"lvdisplay {vg_name}"
     result = process.run(cmd, ignore_status=True, sudo=True)
 
-    lvpattern = r"LV Name\s+%s\s+" % lv_name  # pylint: disable=C0209
+    lvpattern = fr"LV Name\s+{lv_name}\s+"
     match = re.search(lvpattern, result.stdout_text.rstrip())
     if match:
         LOGGER.debug("Provided Logical volume %s exists in %s",

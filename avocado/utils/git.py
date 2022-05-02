@@ -102,7 +102,7 @@ class GitRepoHelper:
                 not suppress them (False).
         """
         os.chdir(self.destination_dir)
-        return process.run(r"%s %s" % (self.cmd, astring.shell_escape(cmd)),  # pylint: disable=C0209
+        return process.run(fr"{self.cmd} {astring.shell_escape(cmd)}",
                            ignore_status=ignore_status)
 
     def fetch(self, uri):
