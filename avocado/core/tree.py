@@ -102,10 +102,10 @@ class TreeEnvironment(dict):
         # Use __str__ instead of __repr__ to improve readability
         if self:
             _values = ["%s: %s" % _ for _ in sort_fn(list(self.items()))]  # pylint: disable=C0209
-            values = "{%s}" % ", ".join(_values)  # pylint: disable=C0209
+            values = f"{{{', '.join(_values)}}}"
             _origin = [f"{key}: {node.path}"
                        for key, node in sort_fn(list(self.origin.items()))]
-            origin = "{%s}" % ", ".join(_origin)  # pylint: disable=C0209
+            origin = f"{{{', '.join(_origin)}}}"
         else:
             values = "{}"
             origin = "{}"
