@@ -201,7 +201,6 @@ class Runner(unittest.TestCase):
         results = [status for status in runner.run(runnable)]
         last_result = results[-1]
         self.assertEqual(last_result['status'], 'finished')
-        self.assertIn('time', last_result)
 
     def test_runner_exec(self):
         runnable = Runnable('exec-test', sys.executable,
@@ -218,7 +217,6 @@ class Runner(unittest.TestCase):
         self.assertEqual(stderr_result['log'], b'')
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['returncode'], 0)
-        self.assertIn('time', last_result)
 
     def test_runner_exec_test_ok(self):
         runnable = Runnable('exec-test', sys.executable,
@@ -236,7 +234,6 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'pass')
         self.assertEqual(last_result['returncode'], 0)
-        self.assertIn('time', last_result)
 
     @skipUnlessPathExists('/bin/false')
     def test_runner_exec_test_fail(self):
@@ -254,7 +251,6 @@ class Runner(unittest.TestCase):
         self.assertEqual(last_result['status'], 'finished')
         self.assertEqual(last_result['result'], 'fail')
         self.assertEqual(last_result['returncode'], 1)
-        self.assertIn('time', last_result)
 
     def test_runner_python_unittest_error(self):
         runnable = Runnable('python-unittest', 'error')

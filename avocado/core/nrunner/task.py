@@ -2,6 +2,7 @@ import base64
 import json
 import socket
 import tempfile
+import time
 from uuid import uuid1
 
 from avocado.core.nrunner.runnable import (
@@ -177,6 +178,7 @@ class Task:
         runner_klass = self.runnable.pick_runner_class()
         runner = runner_klass()
         for status in runner.run(self.runnable):
+            status['time'] = time.monotonic()
             if status['status'] == 'started':
                 status.update({'output_dir': self.runnable.output_dir})
             status.update({"id": self.identifier})

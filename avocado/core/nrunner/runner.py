@@ -1,5 +1,3 @@
-import time
-
 from avocado.core.nrunner.runnable import \
     RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
 from avocado.core.plugin_interfaces import RunnableRunner
@@ -64,6 +62,5 @@ class BaseRunner(RunnableRunner):
         status = {}
         if isinstance(additional_info, dict):
             status = additional_info
-        status.update({'status': status_type,
-                       'time': time.monotonic()})
+        status.update({'status': status_type})
         return status

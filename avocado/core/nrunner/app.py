@@ -4,6 +4,7 @@ import json
 import os
 import re
 import sys
+import time
 
 import pkg_resources
 
@@ -105,7 +106,7 @@ class BaseRunnerApp:
     )
 
     def __init__(self, echo=print, prog=None, description=None):
-        self.echo = echo
+        self._echo = echo
         self.parser = None
         if prog is None:
             prog = self.PROG_NAME
@@ -113,6 +114,10 @@ class BaseRunnerApp:
             description = self.PROG_DESCRIPTION
         self._class_commands_method = self._get_commands_method()
         self._setup_parser(prog, description)
+
+    def echo(self, message):
+        message['time'] = time.monotonic()
+        self._echo(message)
 
     def _setup_parser(self, prog, description):
         self.parser = argparse.ArgumentParser(prog=prog,
@@ -220,7 +225,7 @@ class BaseRunnerApp:
         of a given kind, or identifying if a runner script has a given feature
         (as implemented by a command).
         """
-        self.echo(json.dumps(self.get_capabilities()))
+        self._echo(json.dumps(self.get_capabilities()))
 
     def command_runnable_run(self, args):
         """
