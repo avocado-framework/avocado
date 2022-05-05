@@ -3,16 +3,13 @@
 
 __author__ = 'Lucas Meneghel Rodrigues <lmr@redhat.com>'
 
-import os
 import sys
 import unittest
 
 from selftests.utils import test_suite
 
 if __name__ == '__main__':
-    failfast = not os.environ.get("SELF_CHECK_CONTINUOUS")
-    runner = unittest.TextTestRunner(failfast=failfast,
-                                     verbosity=1,
+    runner = unittest.TextTestRunner(verbosity=1,
                                      resultclass=unittest.TextTestResult)
     result = runner.run(test_suite())
     if result.failures or result.errors:
