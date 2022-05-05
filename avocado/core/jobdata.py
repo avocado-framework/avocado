@@ -24,6 +24,7 @@ from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
 from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.settings import settings
 from avocado.core.varianter import VARIANTS_FILENAME
+from avocado.utils.astring import string_to_safe_path
 from avocado.utils.path import init_dir
 
 JOB_DATA_DIR = 'jobdata'
@@ -77,6 +78,7 @@ def record(job, cmdline=None):
             suite_var_name = f"variants-{idx}-{suite.name}.json"
         else:
             suite_var_name = f"variants-{idx}.json"
+        suite_var_name = string_to_safe_path(suite_var_name)
         path_suite_variant = os.path.join(base_dir, suite_var_name)
         record_suite_variant(path_suite_variant, suite)
 
