@@ -1,0 +1,36 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avocado-project.org/runner-capabilities.schema.json",
+    "title": "capabilities",
+    "description": "Runner advertisement of capabilities",
+    "type": "object",
+    "properties": {
+        "runnables": {
+            "description": "The kinds of runnable supported by this runner",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "commands": {
+            "description": "The commands supported by this runner",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "configuration_used": {
+            "description": "The Avocado configuration items used by this runner",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "uniqueItems": true
+        }
+    },
+    "required": [ "runnables", "commands", "configuration_used" ]
+}

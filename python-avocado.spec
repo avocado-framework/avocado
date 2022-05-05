@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 96.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -55,6 +55,7 @@ BuildRequires: python3-pycdlib
 %endif
 
 %if %{with tests}
+BuildRequires: python3-jsonschema
 %if ! 0%{?rhel} >= 9
 BuildRequires: genisoimage
 %endif
@@ -375,6 +376,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Fri Apr 29 2022 Cleber Rosa <crosa@redhat.com> - 96.0-3
+- Require python3-jsonschema when running tests
+
 * Wed Apr 27 2022 Cleber Rosa <crosa@redhat.com> - 96.0-2
 - Removed wrapper examples
 
