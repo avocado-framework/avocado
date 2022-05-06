@@ -85,11 +85,13 @@ def get_temporary_config(klass):
 
 
 #: The plugin module names and directories under optional_plugins
-PLUGINS = {'varianter_yaml_to_mux': 'avocado-framework-plugin-varianter-yaml-to-mux',
-           'runner_remote': 'avocado-framework-plugin-runner-remote',
-           'runner_vm': 'avocado-framework-plugin-runner-vm',
-           'varianter_cit': 'avocado-framework-plugin-varianter-cit',
-           'html': 'avocado-framework-plugin-result-html'}
+PLUGINS = {
+    'golang': 'avocado-framework-plugin-golang',
+    'html': 'avocado-framework-plugin-result-html',
+    'robot': 'avocado-framework-plugin-robot',
+    'varianter_cit': 'avocado-framework-plugin-varianter-cit',
+    'varianter_yaml_to_mux': 'avocado-framework-plugin-varianter-yaml-to-mux',
+}
 
 
 def test_suite(base_selftests=True, plugin_selftests=None):

@@ -81,7 +81,6 @@ jobs:
       matrix:
         python-version: [3.10.0]
     env:
-      SELF_CHECK_CONTINUOUS: "yes"
       CC_TEST_REPORTER_ID: "387887b88a76f31c2c376219fc749689ea5975c8fe7fcd9609f1dcc139e053a6"
 
     steps:
