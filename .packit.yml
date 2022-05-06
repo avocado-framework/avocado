@@ -6,3 +6,4 @@ jobs:
     metadata:
       targets:
       - fedora-all
+      enable_net: False
