@@ -131,9 +131,13 @@ class StatusRepo(TestCase):
                "job_id": "0000000000000000000000000000000000000000"}
         self.status_repo.process_message(msg)
         self.assertEqual(self.status_repo.get_task_status("1-foo"), "finished")
-        self.assertEqual(self.status_repo.status_journal_summary.pop(),
-                         ("1-foo", "finished", 1000000004.0, 3))
-        self.assertEqual(self.status_repo.status_journal_summary.pop(),
-                         ("1-foo", "running", 1000000003.0, 0))
+        self.assertEqual(self.status_repo.status_journal_summary_pop(),
+                         (1000000001.0, "1-foo", "started", 2))
+        self.assertEqual(self.status_repo.status_journal_summary_pop(),
+                         (1000000002.0, "1-foo", "running", 1))
+        self.assertEqual(self.status_repo.status_journal_summary_pop(),
+                         (1000000003.0, "1-foo", "running", 0))
+        self.assertEqual(self.status_repo.status_journal_summary_pop(),
+                         (1000000004.0, "1-foo", "finished", 3))
         with self.assertRaises(IndexError):
-            self.status_repo.status_journal_summary.pop()
+            self.status_repo.status_journal_summary_pop()

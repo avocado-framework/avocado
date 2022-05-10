@@ -1,3 +1,4 @@
+import heapq
 import logging
 
 from avocado.core.status.utils import json_loads
@@ -26,8 +27,7 @@ class StatusRepo:
         #: Contains the most up to date status of a task, and the time
         #: it was set in a tuple (status, time).  This is keyed
         #: by the task ID, and the most up to date status is determined by
-        #: the "timestamp" in the "time" field of the message, that is,
-        #: it's *not* based by the order it was received.
+        #: the status type of message.
         self._status = {}
         #: Contains a global journal of status updates to be picked, each
         #: entry containing a tuple with (task_id, status, time).  It discards
@@ -94,8 +94,11 @@ class StatusRepo:
             return None
         return task_data[-1]
 
+    def status_journal_summary_pop(self):
+        return heapq.heappop(self._status_journal_summary)
+
     def _update_status(self, message):
-        """Update the latest status of a task (by time, not by message)."""
+        """Update the latest status of a task (by message)."""
         task_id = message.get('id')
         status = message.get('status')
         time = message.get('time')
@@ -103,15 +106,25 @@ class StatusRepo:
             return
         if task_id not in self._status:
             self._status[task_id] = (status, time)
-            self._status_journal_summary.append((task_id, status, time, 0))
+            heapq.heappush(self._status_journal_summary, (time,
+                                                          task_id,
+                                                          status,
+                                                          0))
         else:
-            _, current_time = self._status[task_id]
-            if time >= current_time:
-                index = len(self.get_all_task_data(task_id))
-                self._status_journal_summary.append((task_id, status, time,
-                                                     index))
-            if time > current_time:
+            current_status, _ = self._status[task_id]
+            if current_status == "finished":
+                LOG.warning('Received a %s message after finished message: %s',
+                            status, message)
+            elif status == "started":
+                LOG.warning('Received a started message when the status '
+                            'is already %s: %s', current_status, message)
+            else:
                 self._status[task_id] = (status, time)
+            index = len(self.get_all_task_data(task_id))
+            heapq.heappush(self._status_journal_summary, (time,
+                                                          task_id,
+                                                          status,
+                                                          index))
 
     def process_message(self, message):
         for required_field in ('id', 'job_id'):
@@ -143,10 +156,6 @@ class StatusRepo:
 
     def get_task_status(self, task_id):
         return self._status.get(task_id, (None, None))[0]
-
-    @property
-    def status_journal_summary(self):
-        return self._status_journal_summary
 
     @staticmethod
     def _is_in_task(tasks, task_ids):
