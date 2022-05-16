@@ -76,6 +76,7 @@ jobs:
         run: |
           VERSION=$(python3 setup.py --version 2>/dev/null)
           RPM_RELEASE_NUMBER=$(grep -E '^Release:\s([0-9]+)' python-avocado.spec | sed -E 's/Release:\s([0-9]+).*/\1/')
+          git config --global --add safe.directory `pwd`
           COMMIT_DATE=$(git log -n 1 --pretty='format:%cd' --date='format:%Y%m%d')
           SHORT_COMMIT=$(git rev-parse --short=9 master)
           dnf -y install python3-avocado-${VERSION}-${RPM_RELEASE_NUMBER}.${COMMIT_DATE}git${SHORT_COMMIT}.fc${{env.FEDORA_VERSION}}
