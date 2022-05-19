@@ -124,7 +124,7 @@ class Task:
         """
         if runners_registry is None:
             runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
-        return self.runnable.pick_runner_command(runners_registry)
+        return self.runnable.runner_command(runners_registry)
 
     def setup_output_dir(self, output_dir=None):
         if not self.runnable.output_dir:

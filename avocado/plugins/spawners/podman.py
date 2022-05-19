@@ -282,6 +282,6 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     async def check_task_requirements(runtime_task):
         """Check the runtime task requirements needed to be able to run"""
         # right now, limit the check to the runner availability.
-        if runtime_task.task.runnable.pick_runner_command() is None:
+        if runtime_task.task.runnable.runner_command() is None:
             return False
         return True

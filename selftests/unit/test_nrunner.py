@@ -395,39 +395,40 @@ echo 'ok 2 - description 2'"""
 class RunnerCommandSelection(unittest.TestCase):
 
     def setUp(self):
-        self.runnable = Runnable('mykind',
-                                 'test_runner_command_selection')
+        self.kind = 'mykind'
 
     def test_is_task_kind_supported(self):
         cmd = ['sh', '-c',
                'test $0 = capabilities && '
                'echo -n {\\"runnables\\": [\\"mykind\\"]}']
-        self.assertTrue(self.runnable.is_kind_supported_by_runner_command(cmd))
+        self.assertTrue(Runnable.is_kind_supported_by_runner_command(self.kind,
+                                                                     cmd))
 
     def test_is_task_kind_supported_other_kind(self):
         cmd = ['sh', '-c',
                'test $0 = capabilities && '
                'echo -n {\\"runnables\\": [\\"otherkind\\"]}']
-        self.assertFalse(self.runnable.is_kind_supported_by_runner_command(cmd))
+        self.assertFalse(Runnable.is_kind_supported_by_runner_command(self.kind,
+                                                                      cmd))
 
     def test_is_task_kind_supported_no_output(self):
         cmd = ['sh', '-c', 'echo -n ""']
-        self.assertFalse(self.runnable.is_kind_supported_by_runner_command(cmd))
+        self.assertFalse(Runnable.is_kind_supported_by_runner_command(self.kind,
+                                                                      cmd))
 
 
 class PickRunner(unittest.TestCase):
 
     def setUp(self):
-        self.runnable = Runnable('lets-image-a-kind',
-                                 'test_pick_runner_command')
+        self.kind = 'lets-image-a-kind'
 
     def test_pick_runner_command(self):
         runner = ['avocado-runner-lets-image-a-kind']
         known = {'lets-image-a-kind': runner}
-        self.assertEqual(self.runnable.pick_runner_command(known), runner)
+        self.assertEqual(Runnable.pick_runner_command(self.kind, known), runner)
 
     def test_pick_runner_command_empty(self):
-        self.assertFalse(self.runnable.pick_runner_command({}))
+        self.assertFalse(Runnable.pick_runner_command(self.kind, {}))
 
 
 class TaskTest(unittest.TestCase):
