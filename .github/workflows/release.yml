@@ -52,6 +52,7 @@ jobs:
           make -f Makefile.gh release-update-spec
       - name: Commit files and tag
         run: |
+          git config --global --add safe.directory `pwd`
           git config --local user.email "${{ github.event.inputs.devel_mail }}"
           git config --local user.name "${{ github.event.inputs.devel_name }}"
           make -f Makefile.gh release-commit-tag
