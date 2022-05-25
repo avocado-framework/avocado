@@ -151,37 +151,6 @@ class Worker:
 
     async def triage(self):
         """Reads from triaging, moves into either: ready or finished."""
-        async def check_finished_dependencies(runtime_task):
-            for dependency in runtime_task.dependencies:
-                task = dependency.task
-                # check if this dependency `task` failed on triage
-                # this is needed because this kind of task fail does not
-                # have information in the status repo
-                for finished_rt_task in self._state_machine.finished:
-                    if (finished_rt_task.task is task and
-                            finished_rt_task.status == 'FAILED ON TRIAGE'):
-
-                        await self._state_machine.finish_task(runtime_task,
-                                                              "FAILED ON TRIAGE")
-                        return
-                # from here, this dependency `task` ran, so, let's check
-                # the its latest data in the status repo
-                latest_task_data = \
-                    self._state_machine._status_repo.get_latest_task_data(
-                        str(task.identifier))
-                # maybe, the latest data is not available yet
-                if latest_task_data is None:
-                    async with self._state_machine.lock:
-                        self._state_machine.triaging.append(runtime_task)
-                    await asyncio.sleep(0.1)
-                    return
-                # if this dependency task failed, skip the parent task
-                if latest_task_data['result'] not in ['pass']:
-                    await self._state_machine.finish_task(runtime_task,
-                                                          "FAILED ON TRIAGE")
-                    return
-            # everything is fine!
-            return True
 
         try:
             async with self._state_machine.lock:
@@ -214,7 +183,7 @@ class Worker:
 
             # dependencies finished, let's check if they finished
             # successfully, so we can move on with the parent task
-            dependencies_ok = await check_finished_dependencies(runtime_task)
+            dependencies_ok = runtime_task.can_run()
             if not dependencies_ok:
                 LOG.debug('Task "%s" has failed dependencies',
                           runtime_task.task.identifier)
@@ -277,7 +246,6 @@ class Worker:
                     remaining = runtime_task.execution_timeout - time.monotonic()
                 await asyncio.wait_for(self._spawner.wait_task(runtime_task),
                                        remaining)
-                runtime_task.status = 'FINISHED'
             except asyncio.TimeoutError:
                 runtime_task.status = 'FINISHED W/ TIMEOUT'
                 await self._spawner.terminate_task(runtime_task)
@@ -288,13 +256,25 @@ class Worker:
                            'id': str(runtime_task.task.identifier),
                            'job_id': runtime_task.task.job_id}
                 self._state_machine._status_repo.process_message(message)
+        # from here, this `task` ran, so, let's check
+        # the its latest data in the status repo
+        latest_task_data = \
+            self._state_machine._status_repo.get_latest_task_data(
+                str(runtime_task.task.identifier)) or {}
+        # maybe, the results are not available yet
+        while latest_task_data.get("result") is None:
+            await asyncio.sleep(0.1)
+            latest_task_data = \
+                self._state_machine._status_repo.get_latest_task_data(
+                    str(runtime_task.task.identifier)) or {}
+        runtime_task.result = latest_task_data['result']
         result_stats = set(key.upper()for key in
                            self._state_machine._status_repo.result_stats.keys())
         if self._failfast and not result_stats.isdisjoint(STATUSES_NOT_OK):
             await self._state_machine.abort("FAILFAST is enabled")
             raise TestFailFast("Interrupting job (failfast).")
 
-        await self._state_machine.finish_task(runtime_task)
+        await self._state_machine.finish_task(runtime_task, "FINISHED")
 
     async def run(self):
         """Pushes Tasks forward and makes them do something with their lives."""
