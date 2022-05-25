@@ -57,8 +57,7 @@ class RuntimeTask:
 
     def are_dependencies_finished(self):
         for dependency in self.dependencies:
-            if not dependency.status or not ("FINISHED" in dependency.status
-                                             or "FAILED" in dependency.status):
+            if not dependency.status or "FINISHED" not in dependency.status:
                 return False
         return True
 
@@ -69,6 +68,15 @@ class RuntimeTask:
             if dependency.status and "FINISHED" in dependency.status:
                 finished.append(dependency)
         return finished
+
+    def is_possible_to_run(self):
+        dependency_finished = self.are_dependencies_finished()
+        if dependency_finished:
+            for dependency in self.dependencies:
+                if dependency.result != 'pass':
+                    return False
+            return True
+        return False
 
     @classmethod
     def from_runnable(cls, runnable, no_digits, index, variant,
