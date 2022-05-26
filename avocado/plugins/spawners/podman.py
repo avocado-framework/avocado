@@ -278,6 +278,15 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                 return
             await asyncio.sleep(0.1)
 
+    async def terminate_task(self, runtime_task):
+        try:
+            await self.podman.stop(runtime_task.spawner_handle)
+        except PodmanException as ex:
+            msg = f"Could not stop container: {ex}"
+            runtime_task.status = msg
+            LOG.error(msg)
+            return False
+
     @staticmethod
     async def check_task_requirements(runtime_task):
         """Check the runtime task requirements needed to be able to run"""

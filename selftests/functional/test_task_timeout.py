@@ -27,8 +27,11 @@ class TaskTimeOutTest(TestCaseTmpDir):
         with Job.from_config(job_config=config) as job:
             job.run()
 
-        self.assertEqual(1, job.result.skipped)
+        self.assertEqual(1, job.result.interrupted)
         self.assertEqual(0, job.result.passed)
+        self.assertEqual(0, job.result.skipped)
+        self.assertEqual('Test interrupted: Timeout reached',
+                         job.result.tests[0]['fail_reason'])
 
     def tearDown(self):
         super().tearDown()

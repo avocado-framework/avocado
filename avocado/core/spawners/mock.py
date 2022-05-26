@@ -40,6 +40,9 @@ class MockSpawner(Spawner):
                 return
             await asyncio.sleep(0.1)
 
+    async def terminate_task(self, runtime_task):
+        self._known_tasks[runtime_task] = False
+
     @staticmethod
     async def check_task_requirements(runtime_task):
         return True

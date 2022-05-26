@@ -280,6 +280,14 @@ class Worker:
                 runtime_task.status = 'FINISHED'
             except asyncio.TimeoutError:
                 runtime_task.status = 'FINISHED W/ TIMEOUT'
+                await self._spawner.terminate_task(runtime_task)
+                message = {'status': 'finished',
+                           'result': 'interrupted',
+                           'fail_reason': 'Test interrupted: Timeout reached',
+                           'time': time.monotonic(),
+                           'id': str(runtime_task.task.identifier),
+                           'job_id': runtime_task.task.job_id}
+                self._state_machine._status_repo.process_message(message)
         result_stats = set(key.upper()for key in
                            self._state_machine._status_repo.result_stats.keys())
         if self._failfast and not result_stats.isdisjoint(STATUSES_NOT_OK):
