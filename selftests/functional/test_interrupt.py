@@ -5,11 +5,15 @@ import subprocess
 import time
 import unittest
 
-import psutil
-
 from avocado.utils import data_factory, process, script, wait
 from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
                              skipOnLevelsInferiorThan)
+
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
@@ -49,6 +53,7 @@ if __name__ == "__main__":
 """
 
 
+@unittest.skipUnless(PSUTIL_AVAILABLE, "psutil module not available")
 class InterruptTest(TestCaseTmpDir):
 
     @staticmethod
