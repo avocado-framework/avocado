@@ -11,3 +11,4 @@ jobs:
       - centos-stream-9
       - epel-8
       - epel-9
+      enable_net: False
