@@ -42,7 +42,6 @@ class JSONResult(Result):
             fail_reason = test.get('fail_reason', UNKNOWN)
             if fail_reason is not None:
                 fail_reason = astring.to_text(fail_reason)
-            tags = test.get('tags') or {}
             # Actually we are saving the TestID() there.
             test_id = test.get('name', UNKNOWN)
             if isinstance(test_id, TestID):
@@ -53,7 +52,7 @@ class JSONResult(Result):
                           'end': test.get('time_end', -1),
                           'time': test.get('time_elapsed', -1),
                           'status': test.get('status', {}),
-                          'tags': {k: list(v or {}) for k, v in tags.items()},
+                          'tags': test.get('tags') or {},
                           'whiteboard': test.get('whiteboard', UNKNOWN),
                           'logdir': test.get('logdir', UNKNOWN),
                           'logfile': test.get('logfile', UNKNOWN),
