@@ -5,7 +5,7 @@ import os
 import tempfile
 import unittest.mock
 
-from avocado.utils import iso9660, process
+from avocado.utils import iso9660, path, process
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
@@ -105,8 +105,8 @@ class IsoInfo(BaseIso9660, unittest.TestCase):
     IsoInfo-based check
     """
 
-    @unittest.skipIf(process.system("which isoinfo", ignore_status=True),
-                     "isoinfo not installed.")
+    @unittest.skipUnless(path.find_command("isoinfo", default=False),
+                         "isoinfo not installed.")
     def setUp(self):
         super().setUp()
         self.iso = iso9660.Iso9660IsoInfo(self.iso_path)
@@ -118,8 +118,8 @@ class IsoRead(BaseIso9660, unittest.TestCase):
     IsoRead-based check
     """
 
-    @unittest.skipIf(process.system("which iso-read", ignore_status=True),
-                     "iso-read not installed.")
+    @unittest.skipUnless(path.find_command("iso-read", default=False),
+                         "iso-read not installed.")
     def setUp(self):
         super().setUp()
         self.iso = iso9660.Iso9660IsoRead(self.iso_path)
@@ -159,11 +159,11 @@ class PyCDLib(BaseIso9660, unittest.TestCase):
         new_iso = iso9660.ISO9660PyCDLib(new_iso_path)
         new_iso.create()
         content = b"AVOCADO"
-        for path in ("README", "/readme", "readme.txt", "quite-long-readme.txt"):
-            new_iso.write(path, content)
+        for file_path in ("README", "/readme", "readme.txt", "quite-long-readme.txt"):
+            new_iso.write(file_path, content)
             new_iso.close()
             read_iso = iso9660.ISO9660PyCDLib(new_iso_path)
-            self.assertEqual(read_iso.read(path), content)
+            self.assertEqual(read_iso.read(file_path), content)
             self.assertTrue(os.path.isfile(new_iso_path))
 
 

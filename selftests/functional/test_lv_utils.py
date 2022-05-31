@@ -10,7 +10,7 @@ import sys
 import time
 import unittest
 
-from avocado.utils import linux_modules, lv_utils, process
+from avocado.utils import linux_modules, lv_utils, path, process
 from selftests.utils import TestCaseTmpDir
 
 
@@ -22,7 +22,7 @@ class LVUtilsTest(TestCaseTmpDir):
 
     @unittest.skipIf(sys.platform.startswith('darwin'),
                      'macOS does not support LVM')
-    @unittest.skipIf(process.system("which vgs", ignore_status=True),
+    @unittest.skipIf(path.find_command("vgs", default=False),
                      "LVM utils not installed (command vgs is missing)")
     @unittest.skipIf(not process.can_sudo(), "This test requires root or "
                      "passwordless sudo configured.")
@@ -114,7 +114,7 @@ class DiskSpace(unittest.TestCase):
                      'macOS does not support scsi_debug module')
     @unittest.skipIf(not process.can_sudo(), "This test requires root or "
                      "passwordless sudo configured.")
-    @unittest.skipIf(process.system("which modprobe", ignore_status=True),
+    @unittest.skipIf(path.find_command("modprobe", default=False),
                      "kmod not installed (command modprobe is missing)")
     def test_get_diskspace(self):
         """

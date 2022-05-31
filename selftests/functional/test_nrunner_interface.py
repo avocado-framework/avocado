@@ -2,10 +2,14 @@ import json
 import re
 import sys
 
-import jsonschema
-
-from avocado import Test, fail_on
+from avocado import Test, fail_on, skipUnless
 from avocado.utils import process
+
+try:
+    import jsonschema
+    JSONSCHEMA_AVAILABLE = True
+except ImportError:
+    JSONSCHEMA_AVAILABLE = False
 
 
 class Interface(Test):
@@ -36,8 +40,8 @@ class Interface(Test):
         self.assertIn(b"capabilities", result.stdout,
                       "Mention to capabilities command not found")
 
+    @skipUnless(JSONSCHEMA_AVAILABLE, "jsonschema module not available")
     @fail_on(process.CmdError)
-    @fail_on(jsonschema.exceptions.ValidationError)
     def test_schema_capabilities(self):
         cmd = f"{self.get_runner()} capabilities"
         result = process.run(cmd)
@@ -46,7 +50,10 @@ class Interface(Test):
         if not schema_path:
             self.error('Schema file not found for "capabilities"')
         with open(schema_path, 'r', encoding='utf-8') as schema:
-            jsonschema.validate(capabilities, json.load(schema))
+            try:
+                jsonschema.validate(capabilities, json.load(schema))
+            except jsonschema.exceptions.ValidationError as details:
+                self.fail(details)
 
     def test_runnable_run_no_args(self):
         cmd = f"{self.get_runner()} runnable-run"
