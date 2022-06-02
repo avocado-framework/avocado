@@ -4,6 +4,7 @@ import unittest.mock
 
 from avocado.core import test
 from avocado.core.test_id import TestID
+from avocado.utils import path
 from selftests.utils import setup_avocado_loggers, temp_dir_prefix
 
 setup_avocado_loggers()
@@ -74,35 +75,53 @@ class TestClassTestUnit(unittest.TestCase):
             self.assertEqual(os.path.basename(tst.workdir), exp_logdir)
             return tst
 
-        # Everything fits
-        check(1, "a" * 253, None, "1-" + ("a" * 253))
-        check(2, "a" * 251, {"variant_id": 1}, "2-" + ("a" * 251) + "_1")
-        check(99, "a" * 249, {"variant_id": 88}, "99-" + ("a" * 249) + "_88")
-        # Shrink name
-        check(3, "a" * 252, {"variant_id": 1}, "3-" + ('a' * 251) + "_1")
+        max_length = path.get_max_file_name_length(self.tmpdir.name)
+        # uid takes 2 chars, but still fits
+        length = max_length - 2
+        check(1, "a" * length, None, "1-" + ("a" * length))
+        # uid and variant each takes 2 chars, but still fits
+        length = max_length - 4
+        check(2, "a" * length, {"variant_id": 1}, "2-" + ("a" * length) + "_1")
+        # uid and variant each takes 3 chars, but still fits
+        length = max_length - 6
+        check(99, "a" * length, {"variant_id": 88}, "99-" + ("a" * length) + "_88")
+        # name is one char over limit, so name must shrink
+        length = max_length - 3
+        check(3, "a" * length, {"variant_id": 1}, "3-" + ('a' * (length - 1)) + "_1")
         # Shrink variant
-        check("a" * 253, "whatever", {"variant_id": 99}, "a" * 253 + "_9")
-        check("a" * 254, "whatever", {"variant_id": 99}, "a" * 254 + "_")
+        length = max_length - 2
+        check("a" * length, "whatever", {"variant_id": 99}, "a" * length + "_9")
+        length = max_length - 1
+        check("a" * length, "whatever", {"variant_id": 99}, "a" * length + "_")
         # Impossible to store (uid does not fit
-        self.assertRaises(RuntimeError, check, "a" * 256, "whatever",
+        self.assertRaises(RuntimeError, check, "a" * (max_length + 1), "whatever",
                           {"variant_id": "else"}, None)
 
     def test_data_dir(self):
         """
         Checks `get_data()` won't report fs-unfriendly data dir name
         """
-        max_length_name = os.path.join(self.tmpdir.name, "a" * 250)
-        tst = self._get_fake_filename_test(max_length_name)
-        self.assertEqual(os.path.join(self.tmpdir.name, max_length_name + ".data"),
-                         tst.get_data('', 'file', False))
+        # A conservative max length, based on commonly used filesystems
+        max_length = 200
+        with unittest.mock.patch('avocado.core.test.TestData._max_name_length',
+                                 return_value=max_length):
+            max_length_name = os.path.join(self.tmpdir.name, "a" * max_length)
+            tst = self._get_fake_filename_test(max_length_name)
+            self.assertEqual(os.path.join(self.tmpdir.name, max_length_name + ".data"),
+                             tst.get_data('', 'file', False))
 
     def test_no_data_dir(self):
         """
         Tests that with a filename too long, no datadir is possible
         """
-        above_limit_name = os.path.join(self.tmpdir.name, "a" * 251)
-        tst = self._get_fake_filename_test(above_limit_name)
-        self.assertFalse(tst.get_data('', 'file', False))
+        # A conservative max length, based on commonly used filesystems
+        max_length = 200
+        with unittest.mock.patch('avocado.core.test.TestData._max_name_length',
+                                 return_value=max_length):
+            above_limit_name = os.path.join(self.tmpdir.name,
+                                            "a" * (max_length + 1))
+            tst = self._get_fake_filename_test(above_limit_name)
+            self.assertFalse(tst.get_data('', 'file', False))
 
     def test_try_override_test_variable(self):
         dummy_test = self.DummyTest(base_logdir=self.tmpdir.name)

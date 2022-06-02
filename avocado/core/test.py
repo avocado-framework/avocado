@@ -68,12 +68,15 @@ class TestData:
     #: source.
     DATA_SOURCES = ["variant", "test", "file"]
 
+    #: The name of data directory associated with a file name is expected
+    #: to match the file name, plus this suffix.
+    SUFFIX = ".data"
+
     def __init__(self):
-        # Maximal allowed file name length is 255
         file_datadir = None
         if (self.filename is not None and
-                len(os.path.basename(self.filename)) < 251):
-            file_datadir = self.filename + '.data'
+                len(os.path.basename(self.filename)) <= self._max_name_length()):
+            file_datadir = self.filename + self.SUFFIX
         self._data_sources_mapping = {
             "variant": [lambda: file_datadir,
                         lambda: (f"{self.__class__.__name__}."
@@ -84,6 +87,16 @@ class TestData:
                               f"{self._testMethodName}")],
             "file": [lambda: file_datadir]
         }
+
+    def _max_name_length(self):
+        """Returns the maximum length for test file names
+
+        The maximum file name is filesystem dependent, and besides
+        that, standard data directory based on test file names has a
+        suffix (:data:`SUFFIX`) that has to be accounted for.
+        """
+        max_length = utils_path.get_max_file_name_length(self.filename)
+        return max_length - len(self.SUFFIX)
 
     def _check_valid_data_source(self, source):
         """

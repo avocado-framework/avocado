@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-from avocado.utils import astring
+from avocado.utils import astring, path
 
 
 class AstringUtilsTest(unittest.TestCase):
@@ -97,7 +97,10 @@ class AstringUtilsTest(unittest.TestCase):
         self.assertEqual(astring.string_to_safe_path('a<>:"/\\|\\?*b'),
                          "a__________b")
         self.assertEqual(astring.string_to_safe_path('..'), "_.")
-        self.assertEqual(len(astring.string_to_safe_path(" " * 300)), 255)
+        name = " " * 300
+        max_length = path.get_max_file_name_length(name)
+        self.assertEqual(len(astring.string_to_safe_path(" " * 300)),
+                         max_length)
         avocado = '\u0430\u0432\u043e\u043a\u0430\u0434\xff<>'
         self.assertEqual(astring.string_to_safe_path(avocado),
                          f"{avocado[:-2]}__")
