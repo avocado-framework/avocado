@@ -30,13 +30,10 @@ class TestClassTestUnit(unittest.TestCase):
 
     def _get_fake_filename_test(self, name):
 
-        class FakeFilename(test.Test):
+        class FakeFilename(TestClassTestUnit.DummyTest):
             @property
             def filename(self):
                 return name
-
-            def test(self):
-                pass
 
         tst_id = TestID("test", name=name)
         return FakeFilename("test", tst_id, base_logdir=self.tmpdir.name)
