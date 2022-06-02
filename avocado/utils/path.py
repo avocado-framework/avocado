@@ -217,3 +217,40 @@ def check_readable(path):
         raise OSError(f'File "{path}" does not exist')
     if not os.access(path, os.R_OK):
         raise OSError(f'File "{path}" can not be read')
+
+
+def get_path_mount_point(path):
+    """Returns the mount point for a given file path
+
+    :param path: the complete filename path. if a non-absolute path is
+                 given, it's transformed into an absolute path first.
+    :type path: str
+    :returns: the mount point for a given file path
+    :rtype: str
+    """
+    path = os.path.abspath(path)
+    while not os.path.ismount(path):
+        path = os.path.dirname(path)
+    return path
+
+
+def get_max_file_name_length(path):
+    """Returns the maximum length of a file name in the underlying file system
+
+    :param path: the complete filename path. if a non-absolute path is
+                 given, it's transformed into an absolute path first.
+    :type path: str
+    :returns: the maximum length of a file name
+    :rtype: int
+    """
+    if hasattr(os, 'pathconf'):
+        mount_point = get_path_mount_point(path)
+        return os.pathconf(mount_point, 'PC_NAME_MAX')
+    else:
+        # Given the unavailability of os.pathconf(), always available
+        # under Unix, it should be safe to assume this is Windows.
+        # About Windows, versions and configurations can yield different
+        # file name length limits.  The value hardcoded here (248) is
+        # calculated from the 260 MAX_PATH limit, plus the provision
+        # for directories names allowing a 8.3 filename inside it.
+        return 248
