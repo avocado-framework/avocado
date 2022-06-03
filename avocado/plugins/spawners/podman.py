@@ -15,9 +15,6 @@ from avocado.utils.podman import Podman, PodmanException
 LOG = logging.getLogger(__name__)
 
 
-ENTRY_POINT_CMD = "/tmp/avocado-runner"
-
-
 class PodmanSpawnerInit(Init):
 
     description = 'Podman (container) based spawner initialization'
