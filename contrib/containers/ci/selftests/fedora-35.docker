@@ -2,9 +2,5 @@ FROM fedora:35
 LABEL description "Fedora image used on integration checks"
 RUN dnf -y module enable avocado:latest
 RUN dnf -y install dnf-plugins-core git findutils make which
-# python3-jsonschema is a new build requirement introduced in the 97.0
-# development cycle. REMOVE after Avocado 97.0 is available on
-# Fedora's "avocado:latest" stream
-RUN dnf -y install python3-jsonschema
 RUN dnf -y builddep python-avocado
 RUN dnf -y clean all
