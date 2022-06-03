@@ -1,5 +1,5 @@
 FROM fedora:35
-LABEL description "Fedora image used on integration checks, such as cirrus-ci"
+LABEL description "Fedora image used on integration checks"
 RUN dnf -y module enable avocado:latest
 RUN dnf -y install dnf-plugins-core git findutils make which
 # python3-jsonschema is a new build requirement introduced in the 97.0
