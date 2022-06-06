@@ -178,6 +178,19 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                             'avocado.core.nrunner',
                             'task-run']
 
+        test_opts = ()
+        if runtime_task.task.category == 'test':
+            runnable_uri = runtime_task.task.runnable.uri
+            try:
+                test_path, _ = runnable_uri.split(':', 1)
+            except ValueError:
+                test_path = runnable_uri
+            if os.path.exists(test_path):
+                to = os.path.join('/tmp', test_path)
+                runtime_task.task.runnable.uri = os.path.join('/tmp',
+                                                              runnable_uri)
+                test_opts = ("-v", f"{os.path.abspath(test_path)}:{to}:ro")
+
         task = runtime_task.task
         entry_point_args.extend(task.get_command_args())
         entry_point = json.dumps(entry_point_args)
@@ -206,6 +219,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             _, stdout, _ = await self.podman.execute("create",
                                                      *status_server_opts,
                                                      *output_opts,
+                                                     *test_opts,
                                                      entry_point_arg,
                                                      *envs,
                                                      image)
