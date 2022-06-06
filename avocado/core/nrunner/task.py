@@ -106,7 +106,6 @@ class Task:
                 status_uris = [status_uris]
             for status_uri in status_uris:
                 self.status_services.append(TaskStatusService(status_uri))
-        self.spawn_handle = None
         self.metadata = {}
 
     def __repr__(self):
