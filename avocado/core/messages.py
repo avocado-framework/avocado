@@ -163,6 +163,7 @@ class FinishMessageHandler(BaseMessageHandler):
         message['time_elapsed'] = time_elapsed
 
         message['logdir'] = task.metadata['task_path']
+        message['tags'] = task.runnable.get_serializable_tags()
 
         if task.category == 'test':
             job.result.check_test(message)

@@ -29,3 +29,14 @@ class JsonResultTest(TestCaseTmpDir):
             test_data = data['tests'].pop()
             self.assertEqual('This test is supposed to fail',
                              test_data['fail_reason'])
+
+    def test_tags_in_result(self):
+        cmd_line = (f'{AVOCADO} run examples/tests/failtest.py '
+                    f'--job-results-dir {self.tmpdir.name} --disable-sysinfo')
+        process.run(cmd_line, ignore_status=True)
+        json_path = path.join(self.tmpdir.name, 'latest', 'results.json')
+        with open(json_path, 'r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+            test_data = data['tests'][0]
+            self.assertEqual({'failure_expected': None},
+                             test_data['tags'])

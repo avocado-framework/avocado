@@ -245,6 +245,8 @@ class Runnable:
         return json.dumps(self.get_dict(), cls=ConfigEncoder)
 
     def get_serializable_tags(self):
+        if self.tags is None:
+            return {}
         tags = {}
         # sets are not serializable in json
         for key, val in self.tags.items():
