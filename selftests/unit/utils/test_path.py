@@ -24,6 +24,13 @@ class Path(unittest.TestCase):
                              cm.exception.args[0])
             mocked_access.assert_called_with(os.devnull, os.R_OK)
 
+    def test_get_path_mount_point(self):
+        fictitious_path = '/.not.a.file.one.would.expect.to.find'
+        self.assertEqual(path.get_path_mount_point(fictitious_path), '/')
+
+    def test_get_path_mount_point_same(self):
+        self.assertEqual(path.get_path_mount_point('/'), '/')
+
 
 if __name__ == '__main__':
     unittest.main()

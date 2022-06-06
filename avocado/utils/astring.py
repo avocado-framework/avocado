@@ -29,6 +29,8 @@ import itertools
 import locale
 import re
 
+from avocado.utils import path
+
 #: On import evaluated value representing the system encoding
 #: based on system locales using :func:`locale.getpreferredencoding`.
 #: Use this value wisely as some files are dumped in different
@@ -262,10 +264,12 @@ def string_to_safe_path(input_str):
     :param input_str: String to be converted
     :return: String which is safe to pass as a file/dir name (on recent fs)
     """
+    max_length = path.get_max_file_name_length(input_str)
+
     if input_str.startswith("."):
-        input_str = "_" + input_str[1:255]
-    elif len(input_str) > 255:
-        input_str = input_str[:255]
+        input_str = "_" + input_str[1:max_length]
+    elif len(input_str) > max_length:
+        input_str = input_str[:max_length]
 
     try:
         return input_str.translate(_FS_TRANSLATE)
