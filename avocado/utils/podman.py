@@ -115,6 +115,24 @@ class Podman:
             output = stdout.decode().strip().split()
             return int(output[0]), int(output[1]), output[2]
 
+    async def get_container_info(self, container_id):
+        """Return all information about specific container.
+
+        :param container_id: identifier of container
+        :type container_id: str
+        :rtype: dict
+        """
+        try:
+            _, stdout, _ = await self.execute("ps", "--all", "--format=json")
+        except PodmanException as ex:
+            raise PodmanException(f"Failed getting information about container:"
+                                  f" {container_id}.") from ex
+        containers = json.loads(stdout.decode())
+        for container in containers:
+            if container["Id"] == container_id:
+                return container
+        return {}
+
     async def start(self, container_id):
         """Starts a container and return the returncode, stdout and stderr.
 
