@@ -48,10 +48,7 @@ class RuntimeTask:
                     f'Status: "{self.status}">')
 
     def __hash__(self):
-        if self.task.category == "test":
-            return hash(self.task.identifier)
-        return hash((str(self.task.runnable), self.task.job_id,
-                     self.task.category))
+        return hash(self.task.identifier)
 
     def __eq__(self, other):
         if isinstance(other, RuntimeTask):
@@ -201,29 +198,23 @@ class RuntimeTaskGraph:
                                                      test_suite_name,
                                                      status_server_uri,
                                                      job_id)
-            self.graph[runtime_test] = runtime_test
 
+            self.graph[runtime_test] = runtime_test
             # with --dry-run we don't want to run dependencies
             if runnable.kind != 'dry-run':
                 pre_tasks = PreRuntimeTask.get_pre_tasks_from_runnable(
                     runnable,
                     status_server_uri,
                     job_id)
-                self._connect_tasks(pre_tasks, [runtime_test])
+                if pre_tasks:
+                    pre_tasks.append(runtime_test)
+                    self._connect_tasks(pre_tasks)
 
-    def _connect_tasks(self, dependencies, tasks):
-        def _get_task_from_graph(task):
-            if task in self.graph:
-                task = self.graph.get(task)
-            else:
-                self.graph[task] = task
-            return task
-
-        for dependency_task in dependencies:
-            dependency_task = _get_task_from_graph(dependency_task)
-            for task in tasks:
-                task = _get_task_from_graph(task)
-                task.dependencies.append(dependency_task)
+    def _connect_tasks(self, tasks):
+        for dependency, task in zip(tasks, tasks[1:]):
+            self.graph[task] = task
+            self.graph[dependency] = dependency
+            task.dependencies.append(dependency)
 
     def get_tasks_in_topological_order(self):
         """Computes the topological order of runtime tasks in graph
