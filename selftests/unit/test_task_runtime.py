@@ -76,7 +76,9 @@ class DependencyGraph(TestCaseTmpDir):
             self.assertTrue(
                 runtime_tests[2].task.identifier.name.endswith("test_b"))
             self.assertTrue(
-                runtime_tests[3].task.identifier.name.endswith("test_c"))
+                runtime_tests[3].task.identifier.name.endswith("hello"))
+            self.assertTrue(
+                runtime_tests[4].task.identifier.name.endswith("test_c"))
 
     def test_multiple_dependencies(self):
         with script.Script(os.path.join(self.tmpdir.name,
@@ -94,6 +96,8 @@ class DependencyGraph(TestCaseTmpDir):
             self.assertTrue(
                 runtime_tests[2].task.identifier.name.endswith("test_b"))
             self.assertTrue(
-                runtime_tests[3].task.identifier.name.endswith("-foo-bar-"))
+                runtime_tests[3].task.identifier.name.endswith("hello"))
             self.assertTrue(
-                runtime_tests[4].task.identifier.name.endswith("test_c"))
+                runtime_tests[4].task.identifier.name.endswith("-foo-bar-"))
+            self.assertTrue(
+                runtime_tests[5].task.identifier.name.endswith("test_c"))
