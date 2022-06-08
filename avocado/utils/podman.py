@@ -125,3 +125,14 @@ class Podman:
             return await self.execute("start", container_id)
         except PodmanException as ex:
             raise PodmanException("Failed to start the container.") from ex
+
+    async def stop(self, container_id):
+        """Stops a container and return the returncode, stdout and stderr.
+
+        :param str container_id: Container identification string to stop.
+        :rtype: tuple with returncode, stdout and stderr.
+        """
+        try:
+            return await self.execute("stop", "-t=0", container_id)
+        except PodmanException as ex:
+            raise PodmanException("Failed to stop the container.") from ex

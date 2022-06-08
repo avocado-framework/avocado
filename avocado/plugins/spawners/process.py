@@ -54,6 +54,10 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         await runtime_task.spawner_handle.wait()
 
     @staticmethod
+    async def terminate_task(runtime_task):
+        runtime_task.spawner_handle.terminate()
+
+    @staticmethod
     async def check_task_requirements(runtime_task):
         """Check the runtime task requirements needed to be able to run"""
         # right now, limit the check to the runner availability.

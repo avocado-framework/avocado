@@ -328,6 +328,15 @@ class Spawner(Plugin):
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
         """
 
+    @abc.abstractmethod
+    async def terminate_task(self, runtime_task):
+        """Terminates a task before finish.
+
+        :param runtime_task: wrapper for a Task with additional runtime
+                             information.
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        """
+
     @staticmethod
     @abc.abstractmethod
     async def check_task_requirements(runtime_task):
