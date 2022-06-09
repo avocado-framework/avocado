@@ -25,7 +25,10 @@ class DependencyResolver:
             # original `dependencies` dictionary from the test
             dependency_copy = dependency.copy()
             kind = dependency_copy.pop('type')
-            dependency_runnable = Runnable(kind, None, config=runnable.config,
+            uri = dependency_copy.pop('uri', None)
+            args = dependency_copy.pop('args', ())
+            dependency_runnable = Runnable(kind, uri, *args,
+                                           config=runnable.config,
                                            **dependency_copy)
             dependency_runnables.append(dependency_runnable)
         return dependency_runnables
