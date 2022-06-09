@@ -351,6 +351,7 @@ if __name__ == "__main__":
                 "avocado-runner-tap = avocado.plugins.runners.tap:main",
                 "avocado-runner-asset = avocado.plugins.runners.asset:main",
                 "avocado-runner-package = avocado.plugins.runners.package:main",
+                "avocado-runner-podman-image = avocado.plugins.runners.podman_image:main",
                 "avocado-runner-sysinfo = avocado.plugins.runners.sysinfo:main",
                 "avocado-software-manager = avocado.utils.software_manager.main:main",
                 "avocado-external-runner = scripts.external_runner:main",
@@ -443,6 +444,7 @@ if __name__ == "__main__":
                 "python-unittest = avocado.plugins.runners.python_unittest:PythonUnittestRunner",
                 "asset = avocado.plugins.runners.asset:AssetRunner",
                 "package = avocado.plugins.runners.package:PackageRunner",
+                "podman-image = avocado.plugins.runners.podman_image:PodmanImageRunner",
                 "sysinfo = avocado.plugins.runners.sysinfo:SysinfoRunner",
             ],
             "avocado.plugins.spawner": [

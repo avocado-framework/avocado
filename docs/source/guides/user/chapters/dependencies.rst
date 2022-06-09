@@ -111,3 +111,15 @@ parameters available to use the asset `type` of dependencies are:
  * `locations`: location(s) where the file can be fetched from (optional)
  * `expire`: time in seconds for the asset to expire (optional)
 
+Podman Image
+++++++++++++
+
+Support pulling podman images ahead of test execution time.  This
+should only be used explicitly if a test interacts with ``podman``
+directly, say by executing containers on its own.  If you are using
+the ``podman`` spawner (``--nrunner-spawner=podman``) this will have no
+effect on the spawner.
+
+ * `type`: `podman-image`
+ * `uri`: the image reference, in any format supported by ``podman
+   pull`` itself.

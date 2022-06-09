@@ -617,6 +617,12 @@ def create_suites(args):  # pylint: disable=W0621
                 "runnable-run-uri-only-exit-code": 0,
                 "task-run-id-only-exit-code": 0,
             },
+            {
+                "runner": "avocado-runner-podman-image",
+                "runnable-run-no-args-exit-code": 0,
+                "runnable-run-uri-only-exit-code": 0,
+                "task-run-id-only-exit-code": 0,
+            },
         ],
     }
 

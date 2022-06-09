@@ -6,6 +6,7 @@ class PodmanTest(Test):
     async def test_python_version(self):
         """
         :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
+        :avocado: dependency={"type": "podman-image", "uri": "fedora:34"}
         :avocado: tags=slow
         """
         podman = Podman()
@@ -15,6 +16,7 @@ class PodmanTest(Test):
     async def test_container_info(self):
         """
         :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
+        :avocado: dependency={"type": "podman-image", "uri": "fedora:34"}
         :avocado: tags=slow
         """
         podman = Podman()
