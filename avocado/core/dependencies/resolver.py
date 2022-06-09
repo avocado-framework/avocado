@@ -17,9 +17,6 @@ from avocado.core.nrunner.runnable import Runnable
 
 class DependencyResolver:
 
-    name = 'dependency'
-    description = 'Dependency resolver for tests with dependencies'
-
     @staticmethod
     def resolve(runnable):
         dependency_runnables = []
