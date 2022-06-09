@@ -28,7 +28,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
 Version: 97.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -197,6 +197,7 @@ PATH=%{buildroot}%{_bindir}:%{buildroot}%{_libexecdir}/avocado:$PATH \
 %{_bindir}/avocado-runner-tap
 %{_bindir}/avocado-runner-asset
 %{_bindir}/avocado-runner-package
+%{_bindir}/avocado-runner-podman-image
 %{_bindir}/avocado-runner-sysinfo
 %{_bindir}/avocado-software-manager
 %{_bindir}/avocado-external-runner
@@ -376,6 +377,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Jun  9 2022 Cleber Rosa <crosa@redhat.com> - 97.0-2
+- Added new avocado-runner-podman-image script
+
 * Tue May 24 2022 Cleber Rosa <crosa@redhat.com> - 97.0-1
 - New release
 
