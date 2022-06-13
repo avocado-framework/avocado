@@ -13,22 +13,32 @@
 # Authors: Willian Rampazzo <willianr@redhat.com>
 
 from avocado.core.nrunner.runnable import Runnable
+from avocado.core.plugin_interfaces import PreTest
 
 
-class DependencyResolver:
+class DependencyResolver(PreTest):
+    """Implements the dependency pre tests plugin.
 
+    It will create pre-test tasks for managing dependencies based on the
+    `:avocado: dependency=` definition inside the test’s docstring.
+
+    """
     name = 'dependency'
     description = 'Dependency resolver for tests with dependencies'
 
     @staticmethod
-    def resolve(runnable):
+    def pre_test_runnables(test_runnable):
+        if not test_runnable.dependencies:
+            return []
         dependency_runnables = []
-        for dependency in runnable.dependencies:
+        for dependency in test_runnable.dependencies:
             # make a copy to change the dictionary and do not affect the
             # original `dependencies` dictionary from the test
             dependency_copy = dependency.copy()
             kind = dependency_copy.pop('type')
-            dependency_runnable = Runnable(kind, None, config=runnable.config,
+            dependency_runnable = Runnable(kind,
+                                           None,
+                                           config=test_runnable.config,
                                            **dependency_copy)
             dependency_runnables.append(dependency_runnable)
         return dependency_runnables

@@ -1,17 +1,17 @@
 import unittest
 
-from avocado.core.dependencies.resolver import DependencyResolver
 from avocado.core.nrunner.runnable import Runnable
+from avocado.plugins.dependency import DependencyResolver
 
 
 class BasicTests(unittest.TestCase):
-    """Basic unit tests for the RequirementResolver class"""
+    """Basic unit tests for the DependencyResolver class"""
 
     def test_dependencies_runnables(self):
         runnable = Runnable(kind='package', uri=None,
                             dependencies=[{'type': 'package', 'name': 'foo'},
                                           {'type': 'package', 'name': 'bar'}])
-        dependency_runnables = DependencyResolver.resolve(runnable)
+        dependency_runnables = DependencyResolver.pre_test_runnables(runnable)
         kind = 'package'
         self.assertEqual(kind, dependency_runnables[0].kind)
         self.assertEqual(kind, dependency_runnables[1].kind)
