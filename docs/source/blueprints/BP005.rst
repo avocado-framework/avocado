@@ -1,0 +1,295 @@
+BP005
+#####
+
+:Number: BP005
+:Title: autils project plan: An unified standalone repository for utility libraries
+:Author: Beraldo Leal <bleal@redhat.com>, Cleber Rosa <crosa@redhat.com>
+:Discussions-To: avocado-devel@redhat.com or PR thread
+:Reviewers: Plamen Dimitrov <pdimitrov@pevogam.com>,  Xu Han
+            <xuhan@redhat.com>,  Chunfu Wen <chwen@redhat.com>, Dan Zheng
+            <dzheng@redhat.com>
+:Created: 14-June-2022
+:Type: Process Blueprint
+:Status: Approved
+
+.. contents:: Table of Contents
+
+TL;DR
+*****
+
+This blueprint describes the plan for migrating the utilities libraries present
+in Avocado and related projects to a standalone and central repository. Such a
+repository, called autils, is about having well tested utilities that will keep
+test writers efforts in the features to be tested, and away from debugging and
+troubleshooting those libraries. While this repository initially targets
+Avocado users writing tests, it should be generic enough for consumption by
+third-party developers outside of the Avocado community.  It presents a glimpse
+of the infrastructure that will guarantee quality criterias and will ease the
+onboarding and maintenance of such libraries.
+
+Besides the plan, with the migration steps for the current libraries, this
+blueprint also presents the tasks already known to be necessary in order to
+achieve this goal.
+
+
+.. note:: When reading here, in this document, "avocado.utils", please take
+          into consideration Avocado and Avocado-VT utility libraries.
+
+
+Motivation
+**********
+
+1. More than just test utility libraries
+
+   Our current libraries are not only useful for writing tests, they are
+   basically system level utilities that could help not only test writers but
+   also day to day tasks. Splitting the repository can increase the adoption by
+   other projects that will choose to use this standalone repo because of its
+   inherent value.
+
+2. Better reuse of libraries and code between Avocado, Avocado-VT and third
+   party projects
+
+   Currently we are duplicating efforts by maintaining common libraries in Avocado
+   and Avocado-VT. By concentrating those libraries in a standalone repository, we
+   will make sure they will be well suited for different use cases.  By having
+   more users, the quality and collaboration of those libraries will be improved.
+   Also, third-party software will be able to import those libraries without the
+   need of having the entire Avocado framework as a dependency. This will reduce
+   the learning curve of future potential users that don't need the entire
+   framework.
+
+3. Making it clear to our users that Avocado framework is not Python-centric:
+
+   Currently, those utility libraries can only be used by Python tests and the
+   Avocado framework was designed to support tests written in multiple
+   languages.  By having those libraries outside the core harness codebase we
+   reinforce the language agnostic characteristic of Avocado.
+
+4. Reduce traffic in the main framework repository and allow for a scalable
+   community on its own standalone project
+
+   As evidenced by “avocado-misc-tests”, a more focused standalone project will
+   attract a larger number of similar minded developers and users. By being a
+   simpler standalone repository, with its own specific contributions
+   guidelines, the entry barriers are also lowered.
+
+
+Specification
+*************
+
+To avoid the need to change our current imports, our first attempt was to keep
+the "avocado.utils" namespace regardless of the location of its codebase by
+using the Implicit Package Namespace (PEP-420) approach. Namespace packages are
+a mechanism for splitting a single Python package across multiple directories
+on disk. Unfortunately, to be able to convert the avocado.utils.* modules and
+packages into a namespace package, we would need to remove the `__init__.py`
+files from multiple places. That would break, among other things, the current
+Avocado egg based deployment model used on spawners such as podman.
+
+Because of that, we decided to have a new namespace for the utility libraries.
+We ran a poll to choose the name and `autils` (Avocado Utils) was the winner.
+So our goal is to host common libraries under `avocado-project/autils`
+repository on GitHub and make them also available on PyPI under `python-autils`
+package name, since the `autils` name is unavailable.
+
+Utility onboarding
+==================
+
+The primary goal of autils is to be a central place for modules that ease the
+interaction with system level features and interfaces.  As such, if a user
+needs to interact with such a system level feature or interface, he/she may
+propose a new module.
+
+For instance, if a user finds himself/herself constantly interacting with disk
+partitions, he/she may want to propose a “partitions” module that provides
+basic APIs for that. In this case it makes sense to have it as part of this
+central repository.
+
+However, if the utility intends to ease the interaction with an esoteric
+feature, system or device, this may not be a good place for it.
+
+As a general rule, if a system level feature or interface is generically
+available to a multitude of users, such as the partition example above, it is a
+good candidate for this repository. Common sense is much appreciated here and
+we can always review the proposals during the PR submission or within a Github
+discussion thread (even before the proposal is ready for submission).
+
+Besides that, the proposed utility must have at least one MAINTAINER that will
+be responsible for keeping track of Pull Requests, tests and quality
+requirements as described below:
+
+Quality requirements
+--------------------
+
+It’s expected that both new modules and changes to existing modules will need
+to observe a full set of quality requirements and general standards that will
+either be described (documentation) and enforced as automated checks as much as
+possible.
+
+Among the topics related to the quality requirements and standards, the
+contribution documentation and automated checks will cover, at least:
+
+* Logical, stylistic, analytical and formatter checks
+
+  * Docstring checks
+  * Pylint
+  * PEP-8, PEP-257, etc…
+
+* Unit and Functional Tests Coverage
+
+  Due to the current code quality and given this is a new repository we would
+  like to reach at least 90% of coverage. This way, users writing tests relying
+  on these libraries will have a guarantee of a good level of correctness and
+  quality, redirecting the debugging and troubleshooting efforts away from the
+  well tested libraries.
+
+The new standalone repository will have predefined pipelines to run those
+checks. Newly added libraries will automatically be subject to those checks.
+
+Metadata description
+--------------------
+
+Every module will need to provide a description including:
+
+* Utility description
+* The utility category (ie: network, cpu, security, etc..)
+* Maintainers information
+  * Main contact (We need a contact point, a single maintainer or a group)
+  * Maintainer Group members (this will be used to block merges)
+* Supported Platforms
+* Supported execution method (Local vs Remote)
+  We intend to flag modules that have the capability of acting on remote
+  systems. This will probably be a broad classification, just for informational
+  purposes because unfortunately we have way too many ways of executing code
+  remotely.
+
+  We don't hope to address a complete standardization of the remote execution
+  APIs just yet, but we want to at least bring some visibility to it.
+
+For instance, the textual category and description will allow users to search
+for modules based on their interest.  Also, our pipelines will parse that data
+field containing the list of supported platforms, and will trigger tests on
+those platforms. Users will then be able to see the results of those tests on
+each of the platforms defined, giving them quality assurance and coverage
+there.
+
+The exact format of the metadata file is still to be defined, but a possibility
+is to define a JSON schema that will be provided on this new repository.
+
+Maintainability
+===============
+
+As described above, each library must follow the new standard and keep that
+same level for future versions. Because of that, new PRs must be approved by at
+least one MAINTAINER and pass the basic checks pipelines that will be provided
+as part of the autils repository.
+
+Besides the automatic checks, each MAINTAINER is responsible for keeping the
+consistency of that library with the overall project.
+
+Release
+=======
+
+As a new and standalone repository, there will not be any type of release
+version sync between Avocado and autils.  Avocado may release, say, version
+100.0, while autils won’t have a release. Because of that, autils will be
+versioned at a different pace than Avocado.
+
+Every week an automatic job will be executed to determine if there is a
+potential need for a new release:
+
+* If the number of commits since last release has reached a threshold; AND
+* There is no open discussion with the tag “release-decision”:
+  * Creates a new discussion (with the "release-decision" tag) to run a poll
+    between all the MAINTAINERS, so they will have the opportunity to thumbs
+    up if there is a need for a new release;
+  * The link to the new discussion should be sent to all MAINTAINERS;
+  * If the decision is positive, a round-robin selected maintainer should be
+    responsible for coordinating the release it self;
+  * And the discussion should be closed
+* If there is any existing open discussion, the bot job should comment on the
+  same discussion with the updated list of commits and ping again the
+  MAINTAINERS, give them the opportunity to thumbs up based on the new
+  status;
+
+Manual release process could also be started if a MAINTAINER think it is a good
+timing (i.e: Security bug or critical bug it was fixed).
+
+Backwards Compatibility
+***********************
+
+The current libraries are not going to be removed right away. A transition
+period is expected for migrating each library into this new standard, and
+because of that libraries in transition should be available, receive bug fixes
+for at least one LTS cycle.
+
+Each library in our current code base, should receive a status flag, informing
+users what their current status is, according on the following table:
+
+1. maintainer-wanted
+
+  The library is using the legacy mode, and it is not yet converted to the
+  autils repository. This should be the status for all avocado.utils.*
+  (including Avocado-VT utils) libraries upon the creation of the autils
+  repository.
+
+2. adopted
+
+  A maintainer has picked up this library to be ported to the autils
+  repository.  It’s not expected yet that a working version is available on
+  autils, but someone is working on the migration.  During this period, the
+  avocado.utils (or Avocado-VT) library should continue to receive both bug
+  fixes and improvements.  It’s the maintainer’s responsibility to make sure
+  that the work in progress version of the new autils library includes the same
+  bug fixes and improvements merged during this phase.
+
+3. migrated
+
+ This means the current avocado.utils library is deprecated in favor of the
+ migrated version at the autils repository. During at least one Avocado LTS
+ cycle period, the avocado.utils version of the libraries should:
+
+  * Include warnings in each deprecated method or function, pointing users to
+    the equivalent method or function in the new autils library
+  * Keep receiving critical bug fixes backported from the new autils version
+
+ At this point, this library has an official maintainer who will be the main
+ point of contact for.
+
+4. abandoned
+
+  * There are no plans to migrate the library to autils.
+
+Once at least one LTS cycle has passed after the “migrated” status, the legacy
+library can be permanently removed from its repository of origin.
+
+Security Implications
+*********************
+
+None so far
+
+How to Teach This
+*****************
+
+We could provide a few support material as reference:
+
+1. An "onboarding guide" on how to send a new library to this repository
+2. A template library directory structure that can be used as bootstrap for a
+     new library
+3. Existing libraries in this new repository can also be used as examples
+
+Related Issues
+**************
+
+Todo: before "approved": Create the following epic issues on GH:
+
+* Migrate one library as a "reference implementation". I.e: "network" or
+  "archive"
+* Create an improved version of our contributor guide focused on the autils
+  repository
+* Create pipeline jobs inside the new repository
+* Create release polling bot
+
+References
+**********
