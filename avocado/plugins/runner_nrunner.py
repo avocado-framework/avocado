@@ -26,8 +26,7 @@ import tempfile
 from avocado.core.dispatcher import SpawnerDispatcher
 from avocado.core.exceptions import JobError, TestFailFast
 from avocado.core.messages import MessageHandler
-from avocado.core.nrunner.runnable import (
-    RUNNERS_REGISTRY_STANDALONE_EXECUTABLE, STANDALONE_EXECUTABLE_CONFIG_USED)
+from avocado.core.nrunner.runnable import Runnable
 from avocado.core.nrunner.runner import check_runnables_runner_requirements
 from avocado.core.output import LOG_JOB
 from avocado.core.plugin_interfaces import CLI, Init
@@ -181,14 +180,8 @@ class Runner(RunnerInterface):
         :type config: dict
         """
         for runnable in runnables:
-            command = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE.get(runnable.kind)
-            if command is None:
-                continue
-            command = " ".join(command)
-            configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
-            for config_item in configuration_used:
-                if config_item in config:
-                    runnable.config[config_item] = config.get(config_item)
+            runnable.config = Runnable.filter_runnable_config(runnable.kind,
+                                                              config)
 
     def _determine_status_server_uri(self, test_suite):
         # pylint: disable=W0201

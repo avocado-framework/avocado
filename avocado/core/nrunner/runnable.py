@@ -1,6 +1,7 @@
 import base64
 import collections
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -8,6 +9,9 @@ import sys
 import pkg_resources
 
 from avocado.core.nrunner.config import ConfigDecoder, ConfigEncoder
+from avocado.core.settings import settings
+
+LOG = logging.getLogger(__name__)
 
 #: All known runner commands, capable of being used by a
 #: SpawnMethod.STANDALONE_EXECUTABLE compatible spawners
@@ -64,6 +68,8 @@ class Runnable:
     """
 
     def __init__(self, kind, uri, *args, config=None, **kwargs):
+        if config is None:
+            config = self.filter_runnable_config(kind, {})
         self.kind = kind
         #: The main reference to what needs to be run.  This is free
         #: form, but commonly set to the path to a file containing the
@@ -74,6 +80,7 @@ class Runnable:
         #: that is passed to runners, as long as a runner declares
         #: its interest in using them with
         #: attr:`avocado.core.nrunner.runner.BaseRunner.CONFIGURATION_USED`
+        self._config = {}
         self.config = config or {}
         self.args = args
         self.tags = kwargs.pop('tags', None)
@@ -81,6 +88,8 @@ class Runnable:
         self.variant = kwargs.pop('variant', None)
         self.output_dir = kwargs.pop('output_dir', None)
         self.kwargs = kwargs
+        self._identifier_format = config.get("runner.identifier_format",
+                                             "{uri}")
 
     def __repr__(self):
         fmt = ('<Runnable kind="{}" uri="{}" config="{}" args="{}" '
@@ -115,7 +124,7 @@ class Runnable:
         Since this is formatter, combined values can be used. Example:
         "{uri}-{args}".
         """
-        fmt = self.config.get("runner.identifier_format")
+        fmt = self._identifier_format
 
         # For the cases where there is no config (when calling the Runnable
         # directly
@@ -140,16 +149,45 @@ class Runnable:
 
         return fmt.format(**options)
 
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, config):
+        """Sets the config values based on the runnable kind.
+
+        This is not avocado config, it is a runnable config which is a subset
+        of avocado config based on `STANDALONE_EXECUTABLE_CONFIG_USED` which
+        describes essential configuration values for each runner kind.
+
+        :param config: A config dict with new values for Runnable.
+        :type config: dict
+        """
+        command = self.pick_runner_command(self.kind)
+        if command is not None:
+            command = " ".join(command)
+            configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
+            if not set(configuration_used).issubset(set(config.keys())):
+                LOG.warning("The runnable config should have only values "
+                            "essential for its runner. In the next version of "
+                            "avocado, this will raise a Value Error. Please "
+                            "use avocado.core.nrunner.runnable.Runnable.filter_runnable_config "
+                            "or avocado.core.nrunner.runnable.Runnable.from_avocado_config")
+        self._config = config
+
     @classmethod
     def from_args(cls, args):
         """Returns a runnable from arguments"""
         decoded_args = [_arg_decode_base64(arg) for arg in args.get('arg', ())]
-        return cls(args.get('kind'),
-                   args.get('uri'),
-                   *decoded_args,
-                   config=json.loads(args.get('config', '{}'),
-                                     cls=ConfigDecoder),
-                   **_key_val_args_to_kwargs(args.get('kwargs', [])))
+        return cls.from_avocado_config(args.get('kind'),
+                                       args.get('uri'),
+                                       *decoded_args,
+                                       config=json.loads(args.get('config',
+                                                                  '{}'),
+                                                         cls=ConfigDecoder),
+                                       **_key_val_args_to_kwargs(args.get(
+                                           'kwargs', [])))
 
     @classmethod
     def from_recipe(cls, recipe_path):
@@ -163,11 +201,50 @@ class Runnable:
         with open(recipe_path, encoding='utf-8') as recipe_file:
             recipe = json.load(recipe_file)
         config = ConfigDecoder.decode_set(recipe.get('config', {}))
-        return cls(recipe.get('kind'),
-                   recipe.get('uri'),
-                   *recipe.get('args', ()),
-                   config=config,
-                   **recipe.get('kwargs', {}))
+        return cls.from_avocado_config(recipe.get('kind'),
+                                       recipe.get('uri'),
+                                       *recipe.get('args', ()),
+                                       config=config,
+                                       **recipe.get('kwargs', {}))
+
+    @classmethod
+    def from_avocado_config(cls,  kind, uri, *args, config=None, **kwargs):
+        """Creates runnable with only essential config for runner of specific kind."""
+        if not config:
+            config = {}
+        config = cls.filter_runnable_config(kind, config)
+        return cls(kind, uri, *args, config=config, **kwargs)
+
+    @staticmethod
+    def filter_runnable_config(kind, config):
+        """
+        Returns only essential values for specific runner.
+
+        It will use configuration from argument completed by values from
+        config file and avocado default configuration.
+
+        :param kind: Kind of runner which should use the configuration.
+        :type kind: str
+        :param config: Configuration values for runner. If some values will be
+                       missing the default ones and from config file will be
+                       used.
+        :type config: dict
+        :returns: Config dict, which has only values essential for runner
+                  based on STANDALONE_EXECUTABLE_CONFIG_USED
+        :rtype: dict
+        """
+        command = Runnable.pick_runner_command(kind)
+        if command is not None:
+            whole_config = settings.as_dict()
+            whole_config.update(config)
+            command = " ".join(command)
+            configuration_used = STANDALONE_EXECUTABLE_CONFIG_USED.get(command)
+            filtered_config = {}
+            for config_item in configuration_used:
+                filtered_config[config_item] = whole_config.get(config_item)
+            return filtered_config
+        else:
+            raise ValueError(f"Unsupported kind of runnable: {kind}")
 
     def get_command_args(self):
         """
@@ -295,14 +372,14 @@ class Runnable:
                 'configuration_used', [])
         return capabilities
 
-    def is_kind_supported_by_runner_command(self, runner_cmd,
+    @staticmethod
+    def is_kind_supported_by_runner_command(kind, runner_cmd,
                                             capabilities=None, env=None):
         """Checks if a runner command that seems a good fit declares support."""
         if capabilities is None:
-            capabilities = self.get_capabilities_from_runner_command(
-                runner_cmd,
-                env)
-        return self.kind in capabilities.get('runnables', [])
+            capabilities = Runnable.get_capabilities_from_runner_command(
+                runner_cmd, env)
+        return kind in capabilities.get('runnables', [])
 
     @staticmethod
     def _module_exists(module_name):
@@ -311,7 +388,72 @@ class Runnable:
         mod_path = os.path.join('plugins', 'runners', module_filename)
         return pkg_resources.resource_exists('avocado', mod_path)
 
-    def pick_runner_command(self, runners_registry=None):
+    @staticmethod
+    def pick_runner_command(kind, runners_registry=None):
+        """Selects a runner command based on the runner kind.
+
+        And when finding a suitable runner, keeps found runners in registry.
+
+        This utility function will look at the given kind and try to find
+        a matching runner.  The matching runner probe results are kept in
+        a registry (that is modified by this function) so that further
+        executions take advantage of previous probes.
+
+        This is related to the :data:`SpawnMethod.STANDALONE_EXECUTABLE`
+
+        :param kind: runners' kind
+        :type kind: str
+        :param runners_registry: a registry with previously found (and not
+                                 found) runners keyed by runnable kind
+        :type runners_registry: dict
+        :returns: command line arguments to execute the runner
+        :rtype: list of str or None
+        """
+        if runners_registry is None:
+            runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
+        runner_cmd = runners_registry.get(kind)
+        if runner_cmd is False:
+            return None
+        if runner_cmd is not None:
+            return runner_cmd
+
+        # When running Avocado Python modules, the interpreter on the new
+        # process needs to know where Avocado can be found.
+        env = os.environ.copy()
+        env['PYTHONPATH'] = ':'.join(p for p in sys.path)
+
+        standalone_executable_cmd = [f'avocado-runner-{kind}']
+        if Runnable.is_kind_supported_by_runner_command(
+                kind, standalone_executable_cmd):
+            runners_registry[kind] = standalone_executable_cmd
+            return standalone_executable_cmd
+
+        # attempt to find Python module files that are named after the
+        # runner convention within the avocado.plugins.runners namespace dir.
+        # Looking for the file only avoids an attempt to load the module
+        # and should be a lot faster
+        module_name = kind.replace('-', '_')
+        if Runnable._module_exists(module_name):
+            full_module_name = f'avocado.plugins.runners.{module_name}'
+            candidate_cmd = [sys.executable, '-m', full_module_name]
+            if Runnable.is_kind_supported_by_runner_command(kind,
+                                                            candidate_cmd,
+                                                            env=env):
+                runners_registry[kind] = candidate_cmd
+                return candidate_cmd
+
+        # look for the runner commands implemented in the base nrunner module
+        candidate_cmd = [sys.executable, '-m', 'avocado.core.nrunner']
+        if Runnable.is_kind_supported_by_runner_command(kind, candidate_cmd,
+                                                        env=env):
+            runners_registry[kind] = candidate_cmd
+            return candidate_cmd
+
+        # exhausted probes, let's save the negative on the cache and avoid
+        # future similar problems
+        runners_registry[kind] = False
+
+    def runner_command(self, runners_registry=None):
         """Selects a runner command based on the runner.
 
         And when finding a suitable runner, keeps found runners in registry.
@@ -325,51 +467,11 @@ class Runnable:
 
         :param runners_registry: a registry with previously found (and not
                                  found) runners keyed by runnable kind
-        :param runners_registry: dict
+        :type runners_registry: dict
         :returns: command line arguments to execute the runner
         :rtype: list of str or None
         """
-        if runners_registry is None:
-            runners_registry = RUNNERS_REGISTRY_STANDALONE_EXECUTABLE
-        runner_cmd = runners_registry.get(self.kind)
-        if runner_cmd is False:
-            return None
-        if runner_cmd is not None:
-            return runner_cmd
-
-        # When running Avocado Python modules, the interpreter on the new
-        # process needs to know where Avocado can be found.
-        env = os.environ.copy()
-        env['PYTHONPATH'] = ':'.join(p for p in sys.path)
-
-        standalone_executable_cmd = [f'avocado-runner-{self.kind}']
-        if self.is_kind_supported_by_runner_command(standalone_executable_cmd):
-            runners_registry[self.kind] = standalone_executable_cmd
-            return standalone_executable_cmd
-
-        # attempt to find Python module files that are named after the
-        # runner convention within the avocado.plugins.runners namespace dir.
-        # Looking for the file only avoids an attempt to load the module
-        # and should be a lot faster
-        module_name = self.kind.replace('-', '_')
-        if self._module_exists(module_name):
-            full_module_name = f'avocado.plugins.runners.{module_name}'
-            candidate_cmd = [sys.executable, '-m', full_module_name]
-            if self.is_kind_supported_by_runner_command(candidate_cmd,
-                                                        env=env):
-                runners_registry[self.kind] = candidate_cmd
-                return candidate_cmd
-
-        # look for the runner commands implemented in the base nrunner module
-        candidate_cmd = [sys.executable, '-m', 'avocado.core.nrunner']
-        if self.is_kind_supported_by_runner_command(candidate_cmd,
-                                                    env=env):
-            runners_registry[self.kind] = candidate_cmd
-            return candidate_cmd
-
-        # exhausted probes, let's save the negative on the cache and avoid
-        # future similar problems
-        runners_registry[self.kind] = False
+        return Runnable.pick_runner_command(self.kind, runners_registry)
 
     def pick_runner_class_from_entry_point(self):
         """Selects a runner class from entry points based on kind.

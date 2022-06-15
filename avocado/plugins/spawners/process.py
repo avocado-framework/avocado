@@ -23,7 +23,7 @@ class ProcessSpawner(Spawner, SpawnerMixin):
     async def spawn_task(self, runtime_task):
         self.create_task_output_dir(runtime_task)
         task = runtime_task.task
-        runner = task.runnable.pick_runner_command()
+        runner = task.runnable.runner_command()
         args = runner[1:] + ['task-run'] + task.get_command_args()
         runner = runner[0]
         # When running Avocado Python modules, the interpreter on the new
@@ -61,6 +61,6 @@ class ProcessSpawner(Spawner, SpawnerMixin):
     async def check_task_requirements(runtime_task):
         """Check the runtime task requirements needed to be able to run"""
         # right now, limit the check to the runner availability.
-        if runtime_task.task.runnable.pick_runner_command() is None:
+        if runtime_task.task.runnable.runner_command() is None:
             return False
         return True

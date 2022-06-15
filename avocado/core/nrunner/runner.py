@@ -33,7 +33,7 @@ def check_runnables_runner_requirements(runnables, runners_registry=None):
     missing = []
 
     for runnable in runnables:
-        runner = runnable.pick_runner_command(runners_registry)
+        runner = runnable.pick_runner_command(runnable.kind, runners_registry)
         if runner:
             ok.append(runnable)
         else:

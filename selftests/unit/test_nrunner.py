@@ -61,19 +61,19 @@ class RunnableTest(unittest.TestCase):
 
     def test_recipe_exec(self):
         open_mocked = unittest.mock.mock_open(
-            read_data=('{"kind": "exec", "uri": "/bin/sh", '
+            read_data=('{"kind": "exec-test", "uri": "/bin/sh", '
                        '"args": ["/etc/profile"], '
                        '"kwargs": {"TERM": "vt3270"}}'))
         with unittest.mock.patch("builtins.open", open_mocked):
             runnable = Runnable.from_recipe("fake_path")
-        self.assertEqual(runnable.kind, "exec")
+        self.assertEqual(runnable.kind, "exec-test")
         self.assertEqual(runnable.uri, "/bin/sh")
         self.assertEqual(runnable.args, ("/etc/profile",))
         self.assertEqual(runnable.kwargs, {"TERM": "vt3270"})
 
     def test_identifier_args(self):
         config = {'runner.identifier_format': '{uri}-{args[0]}'}
-        runnable = Runnable('exec-text', 'uri', 'arg1', 'arg2',
+        runnable = Runnable('exec-test', 'uri', 'arg1', 'arg2',
                             config=config)
         self.assertEqual(runnable.identifier, 'uri-arg1')
 
@@ -99,8 +99,8 @@ class RunnableTest(unittest.TestCase):
         self.assertEqual(runnable.get_json(), expected)
 
     def test_runner_from_runnable_error(self):
-        runnable = Runnable('unsupported_kind', '')
         try:
+            runnable = Runnable('unsupported_kind', '')
             runnable.pick_runner_class()
         except ValueError as e:
             self.assertEqual(str(e), 'Unsupported kind of runnable: unsupported_kind')
@@ -115,20 +115,20 @@ class RunnableFromCommandLineArgs(unittest.TestCase):
         self.assertIsNone(runnable.uri)
 
     def test_exec_args(self):
-        parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
+        parsed_args = {'kind': 'exec-test', 'uri': '/path/to/executable',
                        'arg': ['-a', '-b', '-c']}
         runnable = Runnable.from_args(parsed_args)
-        self.assertEqual(runnable.kind, 'exec')
+        self.assertEqual(runnable.kind, 'exec-test')
         self.assertEqual(runnable.uri, '/path/to/executable')
         self.assertEqual(runnable.args, ('-a', '-b', '-c'))
         self.assertEqual(runnable.kwargs, {})
 
     def test_exec_args_kwargs(self):
-        parsed_args = {'kind': 'exec', 'uri': '/path/to/executable',
+        parsed_args = {'kind': 'exec-test', 'uri': '/path/to/executable',
                        'arg': ['-a', '-b', '-c'],
                        'kwargs': [('DEBUG', '1'), ('LC_ALL', 'C')]}
         runnable = Runnable.from_args(parsed_args)
-        self.assertEqual(runnable.kind, 'exec')
+        self.assertEqual(runnable.kind, 'exec-test')
         self.assertEqual(runnable.uri, '/path/to/executable')
         self.assertEqual(runnable.args, ('-a', '-b', '-c'))
         self.assertEqual(runnable.kwargs.get('DEBUG'), '1')
@@ -170,21 +170,21 @@ class RunnableToRecipe(unittest.TestCase):
         self.assertEqual(loaded_runnable.kind, 'noop')
 
     def test_runnable_to_recipe_uri(self):
-        runnable = Runnable('exec', '/bin/true')
+        runnable = Runnable('exec-test', '/bin/true')
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
         loaded_runnable = Runnable.from_recipe(recipe_path)
-        self.assertEqual(loaded_runnable.kind, 'exec')
+        self.assertEqual(loaded_runnable.kind, 'exec-test')
         self.assertEqual(loaded_runnable.uri, '/bin/true')
 
     def test_runnable_to_recipe_args(self):
-        runnable = Runnable('exec', '/bin/sleep', '0.01')
+        runnable = Runnable('exec-test', '/bin/sleep', '0.01')
         recipe_path = os.path.join(self.tmpdir.name, 'recipe.json')
         runnable.write_json(recipe_path)
         self.assertTrue(os.path.exists(recipe_path))
         loaded_runnable = Runnable.from_recipe(recipe_path)
-        self.assertEqual(loaded_runnable.kind, 'exec')
+        self.assertEqual(loaded_runnable.kind, 'exec-test')
         self.assertEqual(loaded_runnable.uri, '/bin/sleep')
         self.assertEqual(loaded_runnable.args, ('0.01', ))
 
@@ -395,39 +395,40 @@ echo 'ok 2 - description 2'"""
 class RunnerCommandSelection(unittest.TestCase):
 
     def setUp(self):
-        self.runnable = Runnable('mykind',
-                                 'test_runner_command_selection')
+        self.kind = 'mykind'
 
     def test_is_task_kind_supported(self):
         cmd = ['sh', '-c',
                'test $0 = capabilities && '
                'echo -n {\\"runnables\\": [\\"mykind\\"]}']
-        self.assertTrue(self.runnable.is_kind_supported_by_runner_command(cmd))
+        self.assertTrue(Runnable.is_kind_supported_by_runner_command(self.kind,
+                                                                     cmd))
 
     def test_is_task_kind_supported_other_kind(self):
         cmd = ['sh', '-c',
                'test $0 = capabilities && '
                'echo -n {\\"runnables\\": [\\"otherkind\\"]}']
-        self.assertFalse(self.runnable.is_kind_supported_by_runner_command(cmd))
+        self.assertFalse(Runnable.is_kind_supported_by_runner_command(self.kind,
+                                                                      cmd))
 
     def test_is_task_kind_supported_no_output(self):
         cmd = ['sh', '-c', 'echo -n ""']
-        self.assertFalse(self.runnable.is_kind_supported_by_runner_command(cmd))
+        self.assertFalse(Runnable.is_kind_supported_by_runner_command(self.kind,
+                                                                      cmd))
 
 
 class PickRunner(unittest.TestCase):
 
     def setUp(self):
-        self.runnable = Runnable('lets-image-a-kind',
-                                 'test_pick_runner_command')
+        self.kind = 'lets-image-a-kind'
 
     def test_pick_runner_command(self):
         runner = ['avocado-runner-lets-image-a-kind']
         known = {'lets-image-a-kind': runner}
-        self.assertEqual(self.runnable.pick_runner_command(known), runner)
+        self.assertEqual(Runnable.pick_runner_command(self.kind, known), runner)
 
     def test_pick_runner_command_empty(self):
-        self.assertFalse(self.runnable.pick_runner_command({}))
+        self.assertFalse(Runnable.pick_runner_command(self.kind, {}))
 
 
 class TaskTest(unittest.TestCase):

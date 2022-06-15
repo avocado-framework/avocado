@@ -46,6 +46,18 @@ class RunnableRun(unittest.TestCase):
         self.assertIn(b"'time': ", res.stdout)
         self.assertEqual(res.exit_status, 0)
 
+    def test_instrumented(self):
+        test_uri = os.path.join(BASEDIR, "examples", "tests",
+                                "passtest.py:PassTest.test")
+        res = process.run(f"{RUNNER} runnable-run -k avocado-instrumented -u "
+                          f"{test_uri}",
+                          ignore_status=True)
+        self.assertIn(b"'status': 'started'", res.stdout)
+        self.assertIn(b"'status': 'finished'", res.stdout)
+        self.assertIn(b"'result': 'pass'", res.stdout)
+        self.assertIn(b"'time': ", res.stdout)
+        self.assertEqual(res.exit_status, 0)
+
     def test_exec_test(self):
         # 'base64:LWM=' becomes '-c' and makes Python execute the
         # commands on the subsequent argument
