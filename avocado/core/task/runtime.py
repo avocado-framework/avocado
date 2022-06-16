@@ -62,6 +62,11 @@ class RuntimeTask:
                 return False
         return True
 
+    def get_finished_dependencies(self):
+        """Returns all dependencies which already finished."""
+        return [dep for dep in self.dependencies if
+                dep.status and "FINISHED" in dep.status]
+
     @classmethod
     def from_runnable(cls, runnable, no_digits, index, variant,
                       test_suite_name=None, status_server_uri=None,
