@@ -3,10 +3,13 @@ import json
 import logging
 import os
 import subprocess
+import uuid
 
+from avocado.core.dependencies.requirements import cache
 from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
+from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.version import VERSION
 from avocado.utils import distro
 from avocado.utils.asset import Asset
@@ -95,6 +98,10 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
     _PYTHON_VERSIONS_CACHE = {}
+
+    def __init__(self, config=None, job=None):
+        SpawnerMixin.__init__(self, config, job)
+        self.environment = f"podman:{self.config.get('spawner.podman.image')}"
 
     def is_task_alive(self, runtime_task):
         if runtime_task.spawner_handle is None:
@@ -211,7 +218,9 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                            (f"{test_output}:"
                             f"{os.path.expanduser(podman_output)}"))
 
-        image = self.config.get('spawner.podman.image')
+        image, _ = self._get_image_from_cache(runtime_task)
+        if not image:
+            image = self.config.get('spawner.podman.image')
 
         envs = [f"-e={k}={v}" for k, v in env_args.items()]
         try:
@@ -294,3 +303,76 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         if runtime_task.task.runnable.runner_command() is None:
             return False
         return True
+
+    async def update_requirement_cache(self, runtime_task, result):
+        environment_id, _ = self._get_image_from_cache(runtime_task, True)
+        if result in STATUSES_NOT_OK:
+            cache.delete_environment(self.environment, environment_id)
+            return
+        _, stdout, _ = await self.podman.execute("commit", "-q",
+                                                 runtime_task.spawner_handle)
+        container_id = stdout.decode().strip()
+        cache.update_enviroment(self.environment, environment_id, container_id)
+        cache.update_requirement_status(self.environment,
+                                        container_id,
+                                        runtime_task.task.runnable.kind,
+                                        runtime_task.task.runnable.kwargs.get(
+                                            'name'),
+                                        True)
+
+    async def save_requirement_in_cache(self, runtime_task):
+        container_id = str(uuid.uuid4())
+        _, requirements = self._get_image_from_cache(runtime_task)
+        if requirements:
+            for requirement_type, requirement in requirements:
+                cache.set_requirement(self.environment, container_id,
+                                      requirement_type, requirement)
+        cache.set_requirement(self.environment,
+                              container_id,
+                              runtime_task.task.runnable.kind,
+                              runtime_task.task.runnable.kwargs.get('name'),
+                              False)
+
+    async def is_requirement_in_cache(self, runtime_task):
+        environment, _ = self._get_image_from_cache(runtime_task,
+                                                    use_task=True)
+        if not environment:
+            return False
+        if cache.is_environment_prepared(environment):
+            return True
+        return None
+
+    def _get_image_from_cache(self, runtime_task, use_task=False):
+
+        def _get_all_finished_requirements(requirement_tasks):
+            all_finished_requirements = []
+            for requirement in requirement_tasks:
+                all_finished_requirements.extend(_get_all_finished_requirements(
+                    requirement.dependencies))
+                runnable = requirement.task.runnable
+                all_finished_requirements.append((runnable.kind,
+                                                  runnable.kwargs.get('name')))
+            return all_finished_requirements
+
+        finished_requirements = []
+        if use_task:
+            finished_requirements.append(
+                (runtime_task.task.runnable.kind,
+                 runtime_task.task.runnable.kwargs.get('name')))
+        finished_requirements.extend(
+            _get_all_finished_requirements(runtime_task.dependencies))
+        if not finished_requirements:
+            return None, None
+
+        runtime_task_kind, runtime_task_name = finished_requirements[0]
+        cache_entries = cache.get_all_environments_with_requirement(
+            self.environment,
+            runtime_task_kind,
+            runtime_task_name)
+        if not cache_entries:
+            return None, None
+        for image, requirements in cache_entries.items():
+            if len(finished_requirements) == len(requirements):
+                if set(requirements) == set(finished_requirements):
+                    return image, requirements
+        return None, None
