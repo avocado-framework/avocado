@@ -47,6 +47,18 @@ class MockSpawner(Spawner):
     async def check_task_requirements(runtime_task):
         return True
 
+    @staticmethod
+    async def is_requirement_in_cache(runtime_task):
+        return False
+
+    @staticmethod
+    async def save_requirement_in_cache(runtime_task):
+        pass
+
+    @staticmethod
+    async def update_requirement_cache(runtime_task, result):
+        pass
+
 
 class MockRandomAliveSpawner(MockSpawner):
     """A mocking spawner that simulates randomness about tasks being alive."""

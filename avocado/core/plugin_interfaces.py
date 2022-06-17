@@ -364,6 +364,46 @@ class Spawner(Plugin):
         :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
         """
 
+    @staticmethod
+    @abc.abstractmethod
+    async def is_requirement_in_cache(runtime_task):
+        """Checks if it's necessary to run the requirement.
+
+        There are occasions when the similar requirement has been run and its
+        results are already saved in cache. In such occasion, it is not
+        necessary to run the task again. For example, this might be useful for
+        tasks which would install the same package to the same environment.
+
+        :param runtime_task: runtime task with requirement
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        :return: If the results are already in cache.
+        :rtype: True if task is in cache
+                False if task is not in cache
+                None if task is running in different process and should be in
+                cache soon.
+        """
+
+    @staticmethod
+    @abc.abstractmethod
+    async def save_requirement_in_cache(runtime_task):
+        """Saves the information about requirement in cache before
+        the runtime_task is run.
+
+        :param runtime_task: runtime task with requirement
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        """
+
+    @staticmethod
+    @abc.abstractmethod
+    async def update_requirement_cache(runtime_task, result):
+        """Updates the information about requirement in cache based on result.
+
+        :param runtime_task: runtime task with requirement
+        :type runtime_task: :class:`avocado.core.task.runtime.RuntimeTask`
+        :param result: result of runtime_task
+        :type result: `avocado.core.teststatus.STATUSES`
+        """
+
 
 class DeploymentSpawner(Spawner):
     """Spawners that needs basic deployment are based on this class.

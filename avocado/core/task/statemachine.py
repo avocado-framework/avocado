@@ -21,6 +21,7 @@ class TaskStateMachine:
         self._started = []
         self._finished = []
         self._lock = asyncio.Lock()
+        self._cache_lock = asyncio.Lock()
 
     @property
     def requested(self):
@@ -45,6 +46,10 @@ class TaskStateMachine:
     @property
     def lock(self):
         return self._lock
+
+    @property
+    def cache_lock(self):
+        return self._cache_lock
 
     @property
     async def complete(self):
@@ -188,6 +193,24 @@ class Worker:
                 LOG.debug('Task "%s" has failed dependencies',
                           runtime_task.task.identifier)
                 return
+        if runtime_task.task.category != "test":
+            async with self._state_machine.cache_lock:
+                is_task_in_cache = await self._spawner.is_requirement_in_cache(
+                    runtime_task)
+                if is_task_in_cache is None:
+                    async with self._state_machine.lock:
+                        self._state_machine.triaging.append(runtime_task)
+                        runtime_task.status = 'WAITING'
+                        await asyncio.sleep(0.1)
+                    return
+
+                if is_task_in_cache:
+                    await self._state_machine.finish_task(
+                        runtime_task, "FINISHED: Task in cache")
+                    runtime_task.result = 'pass'
+                    return
+
+                await self._spawner.save_requirement_in_cache(runtime_task)
 
         # the task is ready to run
         async with self._state_machine.lock:
@@ -267,6 +290,10 @@ class Worker:
             latest_task_data = \
                 self._state_machine._status_repo.get_latest_task_data(
                     str(runtime_task.task.identifier)) or {}
+        if runtime_task.task.category != "test":
+            async with self._state_machine.cache_lock:
+                await self._spawner.update_requirement_cache(
+                    runtime_task, latest_task_data['result'].upper())
         runtime_task.result = latest_task_data['result']
         result_stats = set(key.upper()for key in
                            self._state_machine._status_repo.result_stats.keys())
