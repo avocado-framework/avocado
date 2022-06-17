@@ -56,6 +56,7 @@ class TestsTmpDirTests(TestCaseTmpDir):
         all tests.
         """
         cmd_line = (f"{AVOCADO} run --disable-sysinfo "
+                    f"--nrunner-max-parallel-tasks=1 "
                     f"--job-results-dir {self.tmpdir.name} "
                     f"{self.simple_test} {self.instrumented_test}")
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK)
