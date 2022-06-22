@@ -369,6 +369,9 @@ if __name__ == '__main__':
                   'human = avocado.plugins.human:HumanJob',
                   'testlogsui = avocado.plugins.testlogs:TestLogsUI',
                   ],
+              'avocado.plugins.test.pre': [
+                  'dependency = avocado.plugins.dependency:DependencyResolver',
+                  ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
                   'json = avocado.plugins.jsonresult:JSONResult',
