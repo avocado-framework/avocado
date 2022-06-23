@@ -3,7 +3,7 @@ from avocado.utils import script
 from selftests.utils import TestCaseTmpDir, skipUnlessPathExists
 
 SCRIPT_CONTENT = """#!/bin/bash
-/bin/sleep 30
+/bin/sleep 60
 """
 
 
@@ -21,7 +21,7 @@ class TaskTimeOutTest(TestCaseTmpDir):
     def test_sleep_longer_timeout(self):
         config = {'resolver.references': [self.script.path],
                   'run.results_dir': self.tmpdir.name,
-                  'task.timeout.running': 2}
+                  'task.timeout.running': 1}
 
         with Job.from_config(job_config=config) as job:
             job.run()
