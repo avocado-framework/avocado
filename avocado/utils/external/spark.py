@@ -28,7 +28,7 @@ def _namelist(instance):
     namelist, namedict, classlist = [], {}, [instance.__class__]
     for c in classlist:
         for b in c.__bases__:
-            classlist.append(b)
+            classlist.append(b)  # pylint: disable=W4701
         for name in c.__dict__.keys():
             if name not in namedict:
                 namelist.append(name)
@@ -286,7 +286,7 @@ class GenericParser:
                 newrhs = list(rhs)
                 newrhs[i] = self._NULLABLE + sym
                 newrule = (lhs, tuple(newrhs))
-                worklist.append((newrule, i + 1,
+                worklist.append((newrule, i + 1,  # pylint: disable=W4701
                                  candidate, oldrule))
                 candidate = 0
                 i += 1
