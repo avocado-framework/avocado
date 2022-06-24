@@ -18,7 +18,7 @@ import os
 import shutil
 import sys
 from abc import abstractmethod
-from distutils.command.clean import clean
+from distutils.command.clean import clean  # pylint: disable=W0402
 from pathlib import Path
 from subprocess import CalledProcessError, run
 
