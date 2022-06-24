@@ -21,7 +21,7 @@ jobs:
       - name: Installing Avocado in develop mode
         run: python3 setup.py develop --user
       - name: Run static checks
-        run: python3 setup.py test --select=static-checks
+        run: ./selftests/lint.sh
       - name: Archive failed tests logs
         if: failure()
         uses: actions/upload-artifact@v2
