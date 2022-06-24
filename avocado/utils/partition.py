@@ -273,16 +273,18 @@ class Partition:
             try:
                 process.system(f"kill -9 {int(pid)}",
                                ignore_status=True, sudo=True)
-            except process.CmdError as details:
-                raise PartitionError(self, "Failed to kill processes", details)
+            except process.CmdError as kill_details:
+                raise PartitionError(self, "Failed to kill processes",
+                                     kill_details)
         # Unmount
         try:
             process.run(f"umount -f {mountpoint}", sudo=True)
-        except process.CmdError as details:
+        except process.CmdError:
             try:
                 process.run(f"umount -l {mountpoint}", sudo=True)
-            except process.CmdError as details:
-                raise PartitionError(self, "Force unmount failed", details)
+            except process.CmdError as umount_details:
+                raise PartitionError(self, "Force unmount failed",
+                                     umount_details)
 
     def unmount(self, force=True):
         """

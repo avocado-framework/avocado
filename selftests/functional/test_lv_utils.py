@@ -86,21 +86,21 @@ class LVUtilsTest(TestCaseTmpDir):
                                         vg_name, loop_device)
             self.assertTrue(os.path.exists(ramdisk_basedir))
             self.assertFalse(glob.glob(os.path.join(ramdisk_basedir, "*")))
-        except BaseException as details:
+        except BaseException:
             try:
                 process.run(f"mountpoint {mount_loc} && umount {mount_loc}",
                             shell=True, sudo=True)
-            except BaseException as details:
-                print(f"Fail to unmount LV: {details}")
+            except BaseException as mountpoint_details:
+                print(f"Fail to unmount LV: {mountpoint_details}")
             try:
                 lv_utils.lv_remove(vg_name, lv_name)
-            except BaseException as details:
-                print(f"Fail to cleanup LV: {details}")
+            except BaseException as lv_remove_details:
+                print(f"Fail to cleanup LV: {lv_remove_details}")
             try:
                 lv_utils.vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
                                             vg_name, loop_device)
-            except BaseException as details:
-                print(f"Fail to cleanup vg_ramdisk: {details}")
+            except BaseException as vg_cleanup_details:
+                print(f"Fail to cleanup vg_ramdisk: {vg_cleanup_details}")
 
 
 class DiskSpace(unittest.TestCase):
