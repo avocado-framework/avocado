@@ -266,7 +266,7 @@ class ListTestFunctional(TestCaseTmpDir):
                  "This is suppose to be skipped"),
                 ("unittests.py:First.test_pass", "PASS", None)]
         for test in jres["tests"]:
-            for exp in exps:
+            for exp in exps[:]:
                 if exp[0] in test["id"]:
                     self.assertEqual(test["status"], exp[1],
                                      (f"Status of {exp} not as expected: "
