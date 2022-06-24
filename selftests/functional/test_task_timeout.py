@@ -21,8 +21,7 @@ class TaskTimeOutTest(TestCaseTmpDir):
     def test_sleep_longer_timeout(self):
         config = {'resolver.references': [self.script.path],
                   'run.results_dir': self.tmpdir.name,
-                  'task.timeout.running': 2,
-                  'run.test_runner': 'nrunner'}
+                  'task.timeout.running': 2}
 
         with Job.from_config(job_config=config) as job:
             job.run()
