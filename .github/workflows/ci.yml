@@ -9,7 +9,10 @@ jobs:
 
     name: Static checks
     runs-on: ubuntu-20.04
-    container: fedora:36
+
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9, 3.10.0]
 
     steps:
       - run: echo "Job triggered by a ${{ github.event_name }} event on branch is ${{ github.ref }} in repository is ${{ github.repository }}, runner on ${{ runner.os }}"
