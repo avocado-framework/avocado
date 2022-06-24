@@ -66,7 +66,7 @@ class GolangResolver(Resolver):
     description = 'Test resolver for Go language tests'
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference):  # pylint: disable=W0221
 
         if GO_BIN is None:
             return ReferenceResolution(reference,

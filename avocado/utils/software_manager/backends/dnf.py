@@ -20,7 +20,7 @@ class DnfBackend(YumBackend):
         """
         super().__init__(cmd='dnf')
 
-    def build_dep(self, name):
+    def build_dep(self, name):  # pylint: disable=W0221
         """
         Install build-dependencies for package [name]
 

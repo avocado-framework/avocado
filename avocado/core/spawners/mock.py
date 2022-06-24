@@ -17,7 +17,7 @@ class MockSpawner(Spawner):
     def __init__(self):
         self._known_tasks = {}
 
-    def is_task_alive(self, runtime_task):
+    def is_task_alive(self, runtime_task):  # pylint: disable=W0221
         alive = self._known_tasks.get(runtime_task, None)
         # task was never spawned
         if alive is None:

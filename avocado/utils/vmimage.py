@@ -290,7 +290,7 @@ class UbuntuImageProvider(ImageProviderBase):
         self.url_images = self.url_versions + 'releases/{version}/release/'
         self.image_pattern = 'ubuntu-(?P<version>{version})-server-cloudimg-(?P<arch>{arch}).img'
 
-    def get_best_version(self, versions):
+    def get_best_version(self, versions):  # pylint: disable=W0221
         """ Return best (more recent) version """
         max_float = max([float(item) for item in versions])
         return str(f'{max_float:2.2f}')
@@ -410,7 +410,7 @@ class OpenSUSEImageProvider(ImageProviderBase):
         versions = super().get_versions()
         return self._convert_version_numbers(versions)
 
-    def get_best_version(self, versions):
+    def get_best_version(self, versions):  # pylint: disable=W0221
         version_numbers = self._convert_version_numbers(versions)
         if str(self._version).startswith('4'):
             version_numbers = [v for v in version_numbers if v >= 40.0]
