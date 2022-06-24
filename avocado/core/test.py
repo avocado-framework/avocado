@@ -730,7 +730,7 @@ class Test(unittest.TestCase, TestData):
 
     @staticmethod
     @_deprecate_params_message
-    def fail(msg=None):
+    def fail(msg=None):  # pylint: disable=W0221
         """
         Fails the currently running test.
 

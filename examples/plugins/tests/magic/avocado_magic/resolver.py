@@ -30,7 +30,7 @@ class MagicResolver(Resolver):
     description = 'Test resolver for magic words'
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference):  # pylint: disable=W0221
         if reference not in VALID_MAGIC_WORDS:
             return ReferenceResolution(
                 reference,
@@ -48,7 +48,7 @@ class MagicDiscoverer(Discoverer):
     description = 'Test discoverer for magic words'
 
     @staticmethod
-    def discover():
+    def discover():  # pylint: disable=W0221
         resolutions = []
         for reference in VALID_MAGIC_WORDS:
             resolutions.append(MagicResolver.resolve(reference))

@@ -96,7 +96,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     _PYTHON_VERSIONS_CACHE = {}
 
-    def is_task_alive(self, runtime_task):
+    def is_task_alive(self, runtime_task):  # pylint: disable=W0221
         if runtime_task.spawner_handle is None:
             return False
         podman_bin = self.config.get('spawner.podman.bin')
