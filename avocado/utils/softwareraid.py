@@ -165,3 +165,18 @@ class SoftwareRaid:
         """
         cmd = f"mdadm --manage {self.name} --stop"
         return self._run_command(cmd, log_details=False)
+
+    def exists(self):
+        """
+        checks if softwareraid exists or not
+
+        :mdadm: must be super-user(root) to perform this action
+
+        :return: True if exists, False otherwise.
+        :rtype: bool
+        """
+        cmd = f'mdadm --detail --test {self.name}'
+        result = process.run(cmd, shell=True, sudo=True, ignore_status=True)
+        if result.exit_status == 4:
+            return False
+        return True
