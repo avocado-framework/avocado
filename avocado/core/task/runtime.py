@@ -1,10 +1,28 @@
 from copy import deepcopy
+from enum import Enum
 from itertools import chain
 
 from avocado.core.dispatcher import TestPreDispatcher
 from avocado.core.nrunner.task import Task
 from avocado.core.test_id import TestID
 from avocado.core.varianter import dump_variant
+
+
+class RuntimeTaskStatus(Enum):
+    WAIT_DEPENDENCIES = 'WAITING DEPENDENCIES'
+    WAIT = 'WAITING'
+    FINISHED = 'FINISHED'
+    TIMEOUT = 'FINISHED TIMEOUT'
+    IN_CACHE = 'FINISHED IN CACHE'
+    FAILFAST = 'FINISHED FAILFAST'
+    FAIL_TRIAGE = 'FAILED ON TRIAGE'
+    FAIL_START = 'FAILED ON START'
+    STARTED = 'STARTED'
+
+    @staticmethod
+    def finished_statuses():
+        return [status for _, status in RuntimeTaskStatus.__members__.items()
+                if "FINISHED" in status.value]
 
 
 class RuntimeTask:
@@ -57,14 +75,14 @@ class RuntimeTask:
 
     def are_dependencies_finished(self):
         for dependency in self.dependencies:
-            if not dependency.status or "FINISHED" not in dependency.status:
+            if dependency.status not in RuntimeTaskStatus.finished_statuses():
                 return False
         return True
 
     def get_finished_dependencies(self):
         """Returns all dependencies which already finished."""
         return [dep for dep in self.dependencies if
-                dep.status and "FINISHED" in dep.status]
+                dep.status in RuntimeTaskStatus.finished_statuses()]
 
     def can_run(self):
         if not self.are_dependencies_finished():

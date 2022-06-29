@@ -5,6 +5,7 @@ import multiprocessing
 import time
 
 from avocado.core.exceptions import TestFailFast
+from avocado.core.task.runtime import RuntimeTaskStatus
 from avocado.core.teststatus import STATUSES_NOT_OK
 
 LOG = logging.getLogger(__name__)
@@ -110,7 +111,7 @@ class TaskStateMachine:
             if runtime_task not in self.finished:
                 if status_reason:
                     runtime_task.status = status_reason
-                    LOG.debug('Task "%s" finished: %s',
+                    LOG.debug('Task "%s" finished with status: %s',
                               runtime_task.task.identifier, status_reason)
                 else:
                     LOG.debug('Task "%s" finished', runtime_task.task.identifier)
@@ -164,7 +165,7 @@ class Worker:
             return
 
         # a task waiting requirements already checked its requirements
-        if runtime_task.status != 'WAITING DEPENDENCIES':
+        if runtime_task.status != RuntimeTaskStatus.WAIT_DEPENDENCIES:
             # check for requirements a task may have
             requirements_ok = (
                     await self._spawner.check_task_requirements(runtime_task))
@@ -172,8 +173,8 @@ class Worker:
                 LOG.debug('Task "%s": requirements OK (will proceed to check '
                           'dependencies)', runtime_task.task.identifier)
             else:
-                await self._state_machine.finish_task(runtime_task,
-                                                      "FAILED ON TRIAGE")
+                await self._state_machine.finish_task(
+                    runtime_task, RuntimeTaskStatus.FAIL_TRIAGE)
                 return
 
         # handle task dependencies
@@ -182,7 +183,7 @@ class Worker:
             if not runtime_task.are_dependencies_finished():
                 async with self._state_machine.lock:
                     self._state_machine.triaging.append(runtime_task)
-                    runtime_task.status = 'WAITING DEPENDENCIES'
+                    runtime_task.status = RuntimeTaskStatus.WAIT_DEPENDENCIES
                 await asyncio.sleep(0.1)
                 return
 
@@ -200,13 +201,13 @@ class Worker:
                 if is_task_in_cache is None:
                     async with self._state_machine.lock:
                         self._state_machine.triaging.append(runtime_task)
-                        runtime_task.status = 'WAITING'
+                        runtime_task.status = RuntimeTaskStatus.WAIT
                         await asyncio.sleep(0.1)
                     return
 
                 if is_task_in_cache:
                     await self._state_machine.finish_task(
-                        runtime_task, "FINISHED: Task in cache")
+                        runtime_task, RuntimeTaskStatus.IN_CACHE)
                     runtime_task.result = 'pass'
                     return
 
@@ -232,7 +233,7 @@ class Worker:
         async with self._state_machine.lock:
             if len(self._state_machine.started) >= self._max_running:
                 self._state_machine.ready.insert(0, runtime_task)
-                runtime_task.status = 'WAITING'
+                runtime_task.status = RuntimeTaskStatus.WAIT
                 should_wait = True
         if should_wait:
             await asyncio.sleep(0.1)
@@ -244,14 +245,14 @@ class Worker:
         if start_ok:
             LOG.debug('Task "%s": spawned successfully',
                       runtime_task.task.identifier)
-            runtime_task.status = None
+            runtime_task.status = RuntimeTaskStatus.STARTED
             if self._task_timeout is not None:
                 runtime_task.execution_timeout = time.monotonic() + self._task_timeout
             async with self._state_machine.lock:
                 self._state_machine.started.append(runtime_task)
         else:
             await self._state_machine.finish_task(runtime_task,
-                                                  "FAILED ON START")
+                                                  RuntimeTaskStatus.FAIL_START)
 
     async def monitor(self):
         """Reads from started, moves into finished."""
@@ -270,7 +271,7 @@ class Worker:
                 await asyncio.wait_for(self._spawner.wait_task(runtime_task),
                                        remaining)
             except asyncio.TimeoutError:
-                runtime_task.status = 'FINISHED W/ TIMEOUT'
+                runtime_task.status = RuntimeTaskStatus.TIMEOUT
                 await self._spawner.terminate_task(runtime_task)
                 message = {'status': 'finished',
                            'result': 'interrupted',
@@ -298,10 +299,11 @@ class Worker:
         result_stats = set(key.upper()for key in
                            self._state_machine._status_repo.result_stats.keys())
         if self._failfast and not result_stats.isdisjoint(STATUSES_NOT_OK):
-            await self._state_machine.abort("FAILFAST is enabled")
+            await self._state_machine.abort(RuntimeTaskStatus.FAILFAST)
             raise TestFailFast("Interrupting job (failfast).")
 
-        await self._state_machine.finish_task(runtime_task, "FINISHED")
+        await self._state_machine.finish_task(runtime_task,
+                                              RuntimeTaskStatus.FINISHED)
 
     async def run(self):
         """Pushes Tasks forward and makes them do something with their lives."""
