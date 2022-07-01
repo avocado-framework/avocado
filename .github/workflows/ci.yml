@@ -235,8 +235,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        container: ["fedora:34",
-                    "fedora:35",
+        container: ["fedora:35",
+                    "fedora:36",
                     "registry.access.redhat.com/ubi8/ubi",
                     "registry.access.redhat.com/ubi9-beta/ubi",
                     "debian:10.10",
@@ -264,8 +264,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        container: ["fedora:34",
-                    "fedora:35",
+        container: ["fedora:35",
+                    "fedora:36",
                     "registry.access.redhat.com/ubi8/ubi",
                     "registry.access.redhat.com/ubi9-beta/ubi",
                     "debian:10.10",
@@ -295,7 +295,7 @@ jobs:
     name: Fedora develop install/uninstall task
     runs-on: ubuntu-latest
     container:
-      image: fedora:35
+      image: fedora:36
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2

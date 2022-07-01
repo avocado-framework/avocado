@@ -59,9 +59,9 @@ jobs:
     name: Check the right RPM packages are available in COPR
     runs-on: ubuntu-latest
     env:
-      FEDORA_VERSION: '34'
+      FEDORA_VERSION: '36'
     container:
-      image: fedora:34
+      image: fedora:36
     steps:
       - name: install repos and packages
         run: |
@@ -85,7 +85,7 @@ jobs:
     name: Avocado deployment
     runs-on: ubuntu-latest
     container:
-      image: fedora:34
+      image: fedora:36
     env:
       GIT_URL: 'https://github.com/avocado-framework/avocado'
       INVENTORY: 'selftests/deployment/inventory'
