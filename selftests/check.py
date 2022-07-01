@@ -203,13 +203,14 @@ def parse_args():
         epilog='''\
 The list of test availables for --skip and --select are:
 
-  static-checks      Run static checks (isort, lint, etc)
-  job-api            Run job API checks
-  nrunner-interface  Run selftests/functional/test_nrunner_interface.py
-  unit               Run selftests/unit/
-  jobs               Run selftests/jobs/
-  functional         Run selftests/functional/
-  optional-plugins   Run optional_plugins/*/tests/
+  static-checks         Run static checks (isort, lint, etc)
+  job-api               Run job API checks
+  nrunner-interface     Run selftests/functional/test_nrunner_interface.py
+  nrunner-requirement   Run selftests/functional/serial/test_requirements.py
+  unit                  Run selftests/unit/
+  jobs                  Run selftests/jobs/
+  functional            Run selftests/functional/
+  optional-plugins      Run optional_plugins/*/tests/
         ''')
     group = parser.add_mutually_exclusive_group()
     parser.add_argument('-f',
@@ -569,6 +570,22 @@ def create_suites(args):  # pylint: disable=W0621
         suites.append(TestSuite.from_config(config_nrunner_interface, "nrunner-interface"))
 
     # ========================================================================
+    # Run functional requirement tests
+    # ========================================================================
+    config_nrunner_requirement = {
+        'resolver.references': ['selftests/functional/serial/test_requirements.py'],
+        'nrunner.max_parallel_tasks': 1,
+        'run.dict_variants': [
+            {'spawner': 'process'},
+
+            {'spawner': 'podman'},
+        ]
+    }
+
+    if args.dict_tests['nrunner-requirement']:
+        suites.append(TestSuite.from_config(config_nrunner_requirement, "nrunner-requirement"))
+
+    # ========================================================================
     # Run all static checks, unit and functional tests
     # ========================================================================
 
@@ -629,6 +646,7 @@ def main(args):  # pylint: disable=W0621
         'static-checks': False,
         'job-api': False,
         'nrunner-interface': False,
+        'nrunner-requirement': False,
         'unit': False,
         'jobs': False,
         'functional': False,

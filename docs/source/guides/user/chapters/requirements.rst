@@ -19,6 +19,21 @@ it is started.
 
 When any of the requirements defined on a test fails, the test is skipped.
 
+When the requirement is fulfilled, it will be saved into the avocado cache, and
+it will be reused by other tests.
+
+Also, the requirement will stay in cache after the Avocado run, so the second
+run of the tests will use requirements from cache, which will make tests more
+efficient.
+
+.. warning::
+
+        If any environment is modified without Avocado knowing about it 
+        (packages being uninstalled, podman images removed, etc), the 
+        requirement resolution behavior is undefined and will probably crash. 
+        If such a change is made to the environment, it's recommended to clear 
+        the requirements cache file.
+
 Defining a test requirement
 ---------------------------
 
