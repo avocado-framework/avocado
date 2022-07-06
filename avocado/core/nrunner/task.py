@@ -1,11 +1,15 @@
 import base64
 import json
+import logging
 import socket
 import tempfile
+import time
 from uuid import uuid1
 
 from avocado.core.nrunner.runnable import (
     RUNNERS_REGISTRY_STANDALONE_EXECUTABLE, Runnable)
+
+LOG = logging.getLogger(__name__)
 
 #: The default category for tasks, and the value that will cause the
 #: task results to be included in the job results
@@ -41,7 +45,15 @@ class TaskStatusService:
             host, port = self.uri.split(':')
             port = int(port)
             if self.connection is None:
-                self.connection = socket.create_connection((host, port))
+                for _ in range(30):
+                    try:
+                        self.connection = socket.create_connection((host, port))
+                        break
+                    except ConnectionRefusedError as error:
+                        LOG.warning(error)
+                        time.sleep(1)
+                else:
+                    raise error
         else:
             if self.connection is None:
                 self.connection = socket.socket(socket.AF_UNIX,
