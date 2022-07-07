@@ -103,7 +103,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         SpawnerMixin.__init__(self, config, job)
         self.environment = f"podman:{self.config.get('spawner.podman.image')}"
 
-    def is_task_alive(self, runtime_task):
+    def is_task_alive(self, runtime_task):  # pylint: disable=W0221
         if runtime_task.spawner_handle is None:
             return False
         podman_bin = self.config.get('spawner.podman.bin')
@@ -304,7 +304,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             return False
         return True
 
-    async def update_requirement_cache(self, runtime_task, result):
+    async def update_requirement_cache(self, runtime_task, result):  # pylint: disable=W0221
         environment_id, _ = self._get_image_from_cache(runtime_task, True)
         if result in STATUSES_NOT_OK:
             cache.delete_environment(self.environment, environment_id)
@@ -322,7 +322,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                                             'name'),
                                         True)
 
-    async def save_requirement_in_cache(self, runtime_task):
+    async def save_requirement_in_cache(self, runtime_task):  # pylint: disable=W0221
         container_id = str(uuid.uuid4())
         _, requirements = self._get_image_from_cache(runtime_task)
         if requirements:
@@ -335,7 +335,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                               runtime_task.task.runnable.kwargs.get('name'),
                               False)
 
-    async def is_requirement_in_cache(self, runtime_task):
+    async def is_requirement_in_cache(self, runtime_task):  # pylint: disable=W0221
         environment, _ = self._get_image_from_cache(runtime_task,
                                                     use_task=True)
         if not environment:

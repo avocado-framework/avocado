@@ -125,7 +125,7 @@ class FDDrainer(BaseDrainer):
 
     name = 'avocado.utils.datadrainer.FDDrainer'
 
-    def data_available(self):
+    def data_available(self):  # pylint: disable=W0221
         try:
             return select.select([self._source], [], [], 1)[0]
         except OSError as exc:

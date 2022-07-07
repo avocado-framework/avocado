@@ -18,7 +18,8 @@ class Magic(datadrainer.BaseDrainer):
     name = 'test_utils_datadrainer.Magic'
     magic = 'MAGIC_magic_MAGIC'
 
-    def data_available(self):
+    @staticmethod
+    def data_available():
         return True
 
     def read(self):

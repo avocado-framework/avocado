@@ -56,11 +56,11 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         runtime_task.task.setup_output_dir(output_dir_path)
 
     @staticmethod
-    async def wait_task(runtime_task):
+    async def wait_task(runtime_task):  # pylint: disable=W0221
         await runtime_task.spawner_handle.wait()
 
     @staticmethod
-    async def terminate_task(runtime_task):
+    async def terminate_task(runtime_task):  # pylint: disable=W0221
         runtime_task.spawner_handle.terminate()
 
     @staticmethod

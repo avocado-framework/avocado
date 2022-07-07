@@ -124,7 +124,7 @@ class GdbMiScannerBase(spark.GenericScanner):
         inner = self.__unescape(s[1:len(s)-1])
         self.rv.append(Token('c_string', inner))
 
-    def t_default(self, s):
+    def t_default(self, s):  # pylint: disable=W0221
         r'( . | \n )+'
         raise Exception(f"Specification error: unmatched input for '{s}'")
 
@@ -184,7 +184,7 @@ class GdbMiParser(spark.GenericASTBuilder):
                 list ::= { value value_list }
         '''
 
-    def terminal(self, token):
+    def terminal(self, token):  # pylint: disable=W0221
         #  Homogeneous AST.
         rv = AST(token.type)
         rv.value = token.value  # pylint: disable=W0201

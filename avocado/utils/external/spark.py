@@ -693,7 +693,7 @@ class GenericASTBuilder(GenericParser):
         GenericParser.__init__(self, start)
         self.AST = AST
 
-    def preprocess(self, rule, func):
+    def preprocess(self, rule, func):  # pylint: disable=W0221
         rebind = (lambda lhs, self=self:
                   lambda args, lhs=lhs, self=self: self.buildASTNode(args, lhs))
         lhs, _ = rule
@@ -798,7 +798,7 @@ class GenericASTMatcher(GenericParser):
         GenericParser.__init__(self, start)
         self.ast = ast
 
-    def preprocess(self, rule, func):
+    def preprocess(self, rule, func):  # pylint: disable=W0221
         rebind = (lambda func, self=self:
                   lambda args, func=func, self=self:
                   self.foundMatch(args, func))
@@ -834,7 +834,7 @@ class GenericASTMatcher(GenericParser):
         self.match_r(ast)
         self.parse(self.input)
 
-    def resolve(self, input_list):
+    def resolve(self, input_list):  # pylint: disable=W0221
         #
         #  Resolve ambiguity in favor of the longest RHS.
         #

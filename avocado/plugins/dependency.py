@@ -27,7 +27,7 @@ class DependencyResolver(PreTest):
     description = 'Dependency resolver for tests with dependencies'
 
     @staticmethod
-    def pre_test_runnables(test_runnable):
+    def pre_test_runnables(test_runnable):  # pylint: disable=W0221
         if not test_runnable.dependencies:
             return []
         dependency_runnables = []
