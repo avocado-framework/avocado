@@ -52,7 +52,7 @@ def geometric_mean(values):
     try:
         values = [int(value) for value in values]
     except ValueError:
-        raise ValueError(f'Invalid inputs {values}. Provide valid inputs')
+        raise ValueError(f"Invalid inputs {values}. Provide valid inputs")
     no_values = len(values)
     if no_values == 0:
         return None
@@ -82,10 +82,10 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
         elements = iter(zip(line1, line2))
         try:
             element1, element2 = next(elements)
-        except StopIteration:             # no data in this row
+        except StopIteration:  # no data in this row
             new_matrix.append(new_line)
             continue
-        if element1 == element2:          # this column contains header
+        if element1 == element2:  # this column contains header
             new_line.append(element1)
             try:
                 element1, element2 = next(elements)
@@ -107,10 +107,10 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
                 except StopIteration:
                     break
                 continue
-            if ratio < (1 - threshold):     # handling regression
+            if ratio < (1 - threshold):  # handling regression
                 regressions += 1
                 new_line.append(100 * ratio - 100)
-            elif ratio > (1 + threshold):   # handling improvements
+            elif ratio > (1 + threshold):  # handling improvements
                 improvements += 1
                 new_line.append(f"+{100 * ratio - 100:.6g}")
             else:
@@ -134,9 +134,9 @@ def comma_separated_ranges_to_list(string):
     :return list: list of integer values in comma separated range
     """
     values = []
-    for value in string.split(','):
-        if '-' in value:
-            start, end = value.split('-')
+    for value in string.split(","):
+        if "-" in value:
+            start, end = value.split("-")
             for val in range(int(start), int(end) + 1):
                 values.append(int(val))
         else:
@@ -232,9 +232,10 @@ class CallbackRegister:
             try:
                 func, args, kwargs = item
                 func(*args, **kwargs)
-            except:     # Ignore all exceptions pylint: disable=W0702
-                self._log.error("%s failed to destroy %s:\n%s",
-                                self._name, item, sys.exc_info()[1])
+            except:  # Ignore all exceptions pylint: disable=W0702
+                self._log.error(
+                    "%s failed to destroy %s:\n%s", self._name, item, sys.exc_info()[1]
+                )
 
     def __del__(self):
         """
@@ -249,7 +250,7 @@ def time_to_seconds(time):
     Convert time in minutes, hours and days to seconds.
     :param time: Time, optionally including the unit (i.e. '10d')
     """
-    units = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
+    units = {"s": 1, "m": 60, "h": 3600, "d": 86400}
     if time is not None:
         try:
             unit = time[-1].lower()
@@ -259,9 +260,11 @@ def time_to_seconds(time):
             else:
                 seconds = int(time)
         except (ValueError, TypeError):
-            raise ValueError(f"Invalid value '{time}' for time. Use a string "
-                             f"with the number and optionally the time unit "
-                             f"(s, m, h or d).")
+            raise ValueError(
+                f"Invalid value '{time}' for time. Use a string "
+                f"with the number and optionally the time unit "
+                f"(s, m, h or d)."
+            )
     else:
         seconds = 0
     return seconds
@@ -276,13 +279,15 @@ class DataSize:
     :type data: str
     """
 
-    __slots__ = ['_value', '_unit']
+    __slots__ = ["_value", "_unit"]
 
-    MULTIPLIERS = {'b': 1,  # 2**0
-                   'k': 1024,  # 2**10
-                   'm': 1048576,  # 2**20
-                   'g': 1073741824,  # 2**30
-                   't': 1099511627776}  # 2**40
+    MULTIPLIERS = {
+        "b": 1,  # 2**0
+        "k": 1024,  # 2**10
+        "m": 1048576,  # 2**20
+        "g": 1073741824,  # 2**30
+        "t": 1099511627776,
+    }  # 2**40
 
     def __init__(self, data):
         try:
@@ -290,7 +295,7 @@ class DataSize:
             last = norm_size[-1]
             if last.isdigit():
                 self._value = int(norm_size)
-                self._unit = 'b'
+                self._unit = "b"
             elif last in self.MULTIPLIERS:
                 self._value = int(norm_size[:-1])
                 self._unit = last
@@ -301,8 +306,9 @@ class DataSize:
                 raise ValueError
 
         except ValueError:
-            raise InvalidDataSize('String not in size + unit format (i.e. '
-                                  '"10M", "100k", ...)')
+            raise InvalidDataSize(
+                "String not in size + unit format (i.e. " '"10M", "100k", ...)'
+            )
 
     @property
     def value(self):
@@ -318,20 +324,16 @@ class DataSize:
 
     @property
     def k(self):
-        return int(self._value * self.MULTIPLIERS[self._unit] /
-                   self.MULTIPLIERS['k'])
+        return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["k"])
 
     @property
     def m(self):
-        return int(self._value * self.MULTIPLIERS[self._unit] /
-                   self.MULTIPLIERS['m'])
+        return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["m"])
 
     @property
     def g(self):
-        return int(self._value * self.MULTIPLIERS[self._unit] /
-                   self.MULTIPLIERS['g'])
+        return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["g"])
 
     @property
     def t(self):
-        return int(self._value * self.MULTIPLIERS[self._unit] /
-                   self.MULTIPLIERS['t'])
+        return int(self._value * self.MULTIPLIERS[self._unit] / self.MULTIPLIERS["t"])

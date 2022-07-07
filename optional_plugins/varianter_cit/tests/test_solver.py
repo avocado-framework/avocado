@@ -21,10 +21,15 @@ class SolverTest(unittest.TestCase):
         solver.constraints = constraints
         solver.read_constraints()
         solver.compute_constraints()
-        self.assertEqual(solver.constraints, constraints, "compute_constraints change constraints without secret "
-                                                          "constraint")
+        self.assertEqual(
+            solver.constraints,
+            constraints,
+            "compute_constraints change constraints without secret " "constraint",
+        )
 
-    def test_compute_constraints_new_constraint_with_more_than_one_value_for_one_parameter(self):
+    def test_compute_constraints_new_constraint_with_more_than_one_value_for_one_parameter(
+        self,
+    ):
         """
         Test that, function shouldn't change constraints. It founds new constraint,
         but the constraint has one parameter with two values. This means that it isn't secreted constraint.
@@ -36,8 +41,11 @@ class SolverTest(unittest.TestCase):
         solver.constraints = constraints
         solver.read_constraints()
         solver.compute_constraints()
-        self.assertEqual(solver.constraints, constraints, "compute_constraints change constraints without secret "
-                                                          "constraint")
+        self.assertEqual(
+            solver.constraints,
+            constraints,
+            "compute_constraints change constraints without secret " "constraint",
+        )
 
     def test_compute_constraints_detect_invalid_constraints(self):
         """
@@ -62,9 +70,17 @@ class SolverTest(unittest.TestCase):
         solver.constraints = constraints
         solver.read_constraints()
         solver.compute_constraints()
-        expectation = {((0, 0), (2, 0)), ((0, 1), (1, 1), (2, 0)), ((0, 2), (3, 2)),
-                       ((1, 1), (2, 0), (3, 2))}
-        self.assertEqual(solver.constraints, expectation, "compute_constraints didn't find secret constraints")
+        expectation = {
+            ((0, 0), (2, 0)),
+            ((0, 1), (1, 1), (2, 0)),
+            ((0, 2), (3, 2)),
+            ((1, 1), (2, 0), (3, 2)),
+        }
+        self.assertEqual(
+            solver.constraints,
+            expectation,
+            "compute_constraints didn't find secret constraints",
+        )
 
     # Test for simplify_constraints function
 
@@ -79,22 +95,34 @@ class SolverTest(unittest.TestCase):
         solver.constraints = constraints
         solver.read_constraints()
         solver.simplify_constraints()
-        self.assertEqual(solver.constraints, constraints, "simplify_constraints deleted some important constraints")
+        self.assertEqual(
+            solver.constraints,
+            constraints,
+            "simplify_constraints deleted some important constraints",
+        )
 
     def test_simplify_constraints_constraints_with_simplification(self):
         """
         Test that, function do not delete important constraints
         """
         parameters = [3, 3, 3, 3]
-        constraints = {((0, 0), (2, 0)), ((0, 1), (2, 0), (1, 1)),
-                       ((0, 2), (2, 0)), ((2, 0),)}
+        constraints = {
+            ((0, 0), (2, 0)),
+            ((0, 1), (2, 0), (1, 1)),
+            ((0, 2), (2, 0)),
+            ((2, 0),),
+        }
         solver = Solver([], [])
         solver.data = parameters
         solver.constraints = constraints
         solver.read_constraints()
         solver.simplify_constraints()
         expectation = {((2, 0),)}
-        self.assertEqual(solver.constraints, expectation, "simplify_constraints deleted some important constraints")
+        self.assertEqual(
+            solver.constraints,
+            expectation,
+            "simplify_constraints deleted some important constraints",
+        )
 
     # Test of Minimum forbidden tuple algorithm
 
@@ -105,8 +133,11 @@ class SolverTest(unittest.TestCase):
         parameters = [3, 3, 3]
         constraints = {((0, 0), (2, 0)), ((0, 1), (1, 1)), ((1, 0), (2, 0))}
         solver = Solver(parameters, constraints)
-        self.assertEqual(solver.constraints, constraints, "solver change constraints without secret "
-                                                          "constraint")
+        self.assertEqual(
+            solver.constraints,
+            constraints,
+            "solver change constraints without secret " "constraint",
+        )
 
     def test_solver_constraints_without_simplification(self):
         """
@@ -115,19 +146,30 @@ class SolverTest(unittest.TestCase):
         parameters = [3, 3, 3, 3]
         constraints = {((0, 0), (2, 0)), ((0, 1), (1, 1), (2, 0)), ((0, 2), (3, 2))}
         solver = Solver(parameters, constraints)
-        self.assertEqual(solver.constraints, constraints, "solver deleted some important constraints")
+        self.assertEqual(
+            solver.constraints, constraints, "solver deleted some important constraints"
+        )
 
     def test_solver_constraints_with_simplification_and_secrete(self):
         """
         Test that, Minimum forbidden tuple algorithm can find and simplify constraints
         """
         parameters = [3, 3, 3, 3]
-        constraints = {((0, 0), (1, 0)), ((0, 0), (1, 2)), ((0, 1), (3, 0)),
-                       ((0, 2), (3, 0)), ((1, 1), (3, 0))}
+        constraints = {
+            ((0, 0), (1, 0)),
+            ((0, 0), (1, 2)),
+            ((0, 1), (3, 0)),
+            ((0, 2), (3, 0)),
+            ((1, 1), (3, 0)),
+        }
         solver = Solver(parameters, constraints)
         expectation = {((0, 0), (1, 0)), ((0, 0), (1, 2)), ((3, 0),)}
-        self.assertEqual(solver.constraints, expectation, "solver can not compute and simplify constraints")
+        self.assertEqual(
+            solver.constraints,
+            expectation,
+            "solver can not compute and simplify constraints",
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

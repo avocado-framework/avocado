@@ -45,26 +45,34 @@ def main():
  the example above.
  """
 
-    parser = argparse.ArgumentParser(description='Process some integers.',
-                                     formatter_class=argparse.RawTextHelpFormatter,
-                                     epilog=epilog)
-    parser.add_argument('runner',
-                        metavar='RUNNER',
-                        type=str,
-                        help='The external runner to process the arguments.')
-    parser.add_argument('args',
-                        metavar='ARGS',
-                        type=str,
-                        nargs='+',
-                        help=('Arguments to be executed. If you have multiple '
-                              'arguments, please quote them.'))
+    parser = argparse.ArgumentParser(
+        description="Process some integers.",
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=epilog,
+    )
+    parser.add_argument(
+        "runner",
+        metavar="RUNNER",
+        type=str,
+        help="The external runner to process the arguments.",
+    )
+    parser.add_argument(
+        "args",
+        metavar="ARGS",
+        type=str,
+        nargs="+",
+        help=(
+            "Arguments to be executed. If you have multiple "
+            "arguments, please quote them."
+        ),
+    )
 
     args = parser.parse_args()
     tests = []
     for arg in args.args:
-        runnable = Runnable.from_args({'kind': 'exec-test',
-                                       'uri': find_command(args.runner),
-                                       'arg': arg.split()})
+        runnable = Runnable.from_args(
+            {"kind": "exec-test", "uri": find_command(args.runner), "arg": arg.split()}
+        )
         tests.append(runnable)
 
     config = {"runner.identifier_format": "{uri}-{args[0]}"}
@@ -73,5 +81,5 @@ def main():
         sys.exit(j.run())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

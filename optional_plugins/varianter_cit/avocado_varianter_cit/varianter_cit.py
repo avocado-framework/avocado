@@ -35,7 +35,7 @@ class VarianterCitCLI(CLI):
     CIT Varianter options
     """
 
-    name = 'cit'
+    name = "cit"
     description = "CIT Varianter options for the 'run' subcommand"
 
     def configure(self, parser):
@@ -44,27 +44,31 @@ class VarianterCitCLI(CLI):
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
                 continue
-            subparser.add_argument_group('CIT varianter options')
-            settings.register_option(section=f"{name}.cit",
-                                     key='parameter_file',
-                                     metavar='PATH',
-                                     help_msg='Paths to a parameter file',
-                                     parser=subparser,
-                                     default=None,
-                                     long_arg='--cit-parameter-file')
+            subparser.add_argument_group("CIT varianter options")
+            settings.register_option(
+                section=f"{name}.cit",
+                key="parameter_file",
+                metavar="PATH",
+                help_msg="Paths to a parameter file",
+                parser=subparser,
+                default=None,
+                long_arg="--cit-parameter-file",
+            )
 
             help_msg = "Order of combinations. Maximum number is 6"
-            settings.register_option(section=f"{name}.cit",
-                                     key='combination_order',
-                                     key_type=int,
-                                     parser=subparser,
-                                     help_msg=help_msg,
-                                     metavar='ORDER',
-                                     default=DEFAULT_ORDER_OF_COMBINATIONS,
-                                     long_arg='--cit-order-of-combinations')
+            settings.register_option(
+                section=f"{name}.cit",
+                key="combination_order",
+                key_type=int,
+                parser=subparser,
+                help_msg=help_msg,
+                metavar="ORDER",
+                default=DEFAULT_ORDER_OF_COMBINATIONS,
+                long_arg="--cit-order-of-combinations",
+            )
 
     def run(self, config):
-        if config.get('variants.debug'):
+        if config.get("variants.debug"):
             LOG.setLevel(logging.DEBUG)
 
 
@@ -74,11 +78,11 @@ class VarianterCit(Varianter):
     Processes the parameters file into variants
     """
 
-    name = 'cit'
+    name = "cit"
     description = "CIT Varianter"
 
     def initialize(self, config):
-        subcommand = config.get('subcommand')
+        subcommand = config.get("subcommand")
         self.variants = None  # pylint: disable=W0201
         order = config.get(f"{subcommand}.cit.combination_order")
         if order and order > 6:
@@ -92,12 +96,16 @@ class VarianterCit(Varianter):
         else:
             cit_parameter_file = os.path.expanduser(cit_parameter_file)
             if not os.access(cit_parameter_file, os.R_OK):
-                LOG_UI.error("parameter file '%s' could not be found or "
-                             "is not readable", cit_parameter_file)
+                LOG_UI.error(
+                    "parameter file '%s' could not be found or " "is not readable",
+                    cit_parameter_file,
+                )
                 self.error_exit(config)
 
         try:
-            parameters, constraints = Parser.parse(open(cit_parameter_file, encoding='utf-8'))
+            parameters, constraints = Parser.parse(
+                open(cit_parameter_file, encoding="utf-8")
+            )
         except ValueError as details:
             LOG_UI.error("Cannot parse parameter file: %s", details)
             self.error_exit(config)
@@ -106,16 +114,20 @@ class VarianterCit(Varianter):
 
         cit = Cit(input_data, order, constraints)
         final_list = cit.compute()
-        self.headers = [parameter[0] for parameter in parameters]  # pylint: disable=W0201
-        results = [[parameters[j][1][final_list[i][j]] for j in range(len(final_list[i]))]
-                   for i in range(len(final_list))]
+        self.headers = [  # pylint: disable=W0201
+            parameter[0] for parameter in parameters
+        ]
+        results = [
+            [parameters[j][1][final_list[i][j]] for j in range(len(final_list[i]))]
+            for i in range(len(final_list))
+        ]
         self.variants = []  # pylint: disable=W0201
         for combination in results:
             self.variants.append(dict(zip(self.headers, combination)))
 
     @staticmethod
     def error_exit(config):
-        if config.get('subcommand') == 'run':
+        if config.get("subcommand") == "run":
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         else:
             sys.exit(exit_codes.AVOCADO_FAIL)
@@ -126,13 +138,14 @@ class VarianterCit(Varianter):
 
         variant_ids = []
         for variant in self.variants:
-            variant_ids.append("-".join([variant.get(key)
-                                         for key in self.headers]))
+            variant_ids.append("-".join([variant.get(key) for key in self.headers]))
 
         for vid, variant in zip(variant_ids, self.variants):
-            yield {"variant_id": vid,
-                   "variant": [TreeNode('', variant)],
-                   "paths": ['/']}
+            yield {
+                "variant_id": vid,
+                "variant": [TreeNode("", variant)],
+                "paths": ["/"],
+            }
 
     def __len__(self):
         return sum(1 for _ in self.variants) if self.variants else 0
@@ -157,6 +170,7 @@ class VarianterCit(Varianter):
             # variants == 0 means disable, but in plugin it's brief
             out.append(f"CIT Variants ({len(self)}):")
             for variant in self:
-                out.extend(varianter.variant_to_str(variant, variants - 1,
-                                                    kwargs, False))
+                out.extend(
+                    varianter.variant_to_str(variant, variants - 1, kwargs, False)
+                )
         return "\n".join(out)

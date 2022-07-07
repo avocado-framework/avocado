@@ -12,11 +12,18 @@ from avocado.utils.stacktrace import prepare_exc_info
 from selftests.utils import TestCaseTmpDir, skipOnLevelsInferiorThan
 
 # What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
-DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
-                stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
-                stat.S_IROTH | stat.S_IXOTH)
+DEFAULT_MODE = (
+    stat.S_IRUSR
+    | stat.S_IWUSR
+    | stat.S_IXUSR
+    | stat.S_IRGRP
+    | stat.S_IWGRP
+    | stat.S_IXGRP
+    | stat.S_IROTH
+    | stat.S_IXOTH
+)
 
-FAKE_VMSTAT_CONTENTS = (f"""#!{sys.executable}
+FAKE_VMSTAT_CONTENTS = f"""#!{sys.executable}
 import time
 import random
 import signal
@@ -112,26 +119,25 @@ class FakeVMStat:
 if __name__ == '__main__':
     vmstat = FakeVMStat(interval=float(sys.argv[1]), interrupt_delay=float(sys.argv[2]))
     vmstat.start()
-""")
+"""
 
-FAKE_UPTIME_CONTENTS = (f"""#!{sys.executable}
+FAKE_UPTIME_CONTENTS = f"""#!{sys.executable}
 if __name__ == '__main__':
     print("17:56:34 up  8:06,  7 users,  load average: 0.26, 0.20, 0.21")
 
-""")
+"""
 
 
 class ProcessTest(TestCaseTmpDir):
-
     def setUp(self):
         super().setUp()
-        self.fake_vmstat = os.path.join(self.tmpdir.name, 'vmstat')
-        with open(self.fake_vmstat, 'w', encoding='utf-8') as fake_vmstat_obj:
+        self.fake_vmstat = os.path.join(self.tmpdir.name, "vmstat")
+        with open(self.fake_vmstat, "w", encoding="utf-8") as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)
         os.chmod(self.fake_vmstat, DEFAULT_MODE)
 
-        self.fake_uptime = os.path.join(self.tmpdir.name, 'uptime')
-        with open(self.fake_uptime, 'w', encoding='utf-8') as fake_uptime_obj:
+        self.fake_uptime = os.path.join(self.tmpdir.name, "uptime")
+        with open(self.fake_uptime, "w", encoding="utf-8") as fake_uptime_obj:
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
         os.chmod(self.fake_uptime, DEFAULT_MODE)
 
@@ -140,33 +146,33 @@ class ProcessTest(TestCaseTmpDir):
         """
         :avocado: tags=parallel:1
         """
-        proc = process.SubProcess(f'{self.fake_vmstat} 1 0')
+        proc = process.SubProcess(f"{self.fake_vmstat} 1 0")
         proc.start()
         time.sleep(3)
         proc.terminate()
         proc.wait(timeout=1)
         stdout = proc.get_stdout().decode()
-        self.assertIn('memory', stdout, f'result: {stdout}')
-        self.assertRegex(stdout, '[0-9]+')
+        self.assertIn("memory", stdout, f"result: {stdout}")
+        self.assertRegex(stdout, "[0-9]+")
 
     @skipOnLevelsInferiorThan(2)
     def test_process_stop_interrupted(self):
         """
         :avocado: tags=parallel:1
         """
-        proc = process.SubProcess(f'{self.fake_vmstat} 1 3')
+        proc = process.SubProcess(f"{self.fake_vmstat} 1 3")
         proc.start()
         time.sleep(3)
         proc.stop(2)
         result = proc.result
-        self.assertIn('timeout after', result.interrupted, "Process wasn't interrupted")
+        self.assertIn("timeout after", result.interrupted, "Process wasn't interrupted")
 
     @skipOnLevelsInferiorThan(2)
     def test_process_stop_uninterrupted(self):
         """
         :avocado: tags=parallel:1
         """
-        proc = process.SubProcess(f'{self.fake_vmstat} 1 3')
+        proc = process.SubProcess(f"{self.fake_vmstat} 1 3")
         proc.start()
         time.sleep(3)
         proc.stop(4)
@@ -176,8 +182,8 @@ class ProcessTest(TestCaseTmpDir):
     def test_process_run(self):
         proc = process.SubProcess(self.fake_uptime)
         result = proc.run()
-        self.assertEqual(result.exit_status, 0, f'result: {result}')
-        self.assertIn(b'load average', result.stdout)
+        self.assertEqual(result.exit_status, 0, f"result: {result}")
+        self.assertIn(b"load average", result.stdout)
 
 
 def file_lock_action(args):
@@ -189,7 +195,6 @@ def file_lock_action(args):
 
 
 class FileLockTest(TestCaseTmpDir):
-
     @skipOnLevelsInferiorThan(3)
     def test_filelock(self):
         """
@@ -207,10 +212,10 @@ class FileLockTest(TestCaseTmpDir):
         try:
             pool.map(file_lock_action, args)
         except Exception:
-            msg = 'Failed to run FileLock with %s players:\n%s'
+            msg = "Failed to run FileLock with %s players:\n%s"
             msg %= (players, prepare_exc_info(sys.exc_info()))
             self.fail(msg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

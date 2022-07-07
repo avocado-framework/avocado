@@ -57,31 +57,50 @@ class TestUnpickableObject(unittest.TestCase):
     """
 
     def test_raises(self):
-        self.assertRaises(ValueError, stacktrace.str_unpickable_object,
-                          ([{"foo": set([])}]))
+        self.assertRaises(
+            ValueError, stacktrace.str_unpickable_object, ([{"foo": set([])}])
+        )
 
     def test_basic(self):
-        """ Basic usage """
+        """Basic usage"""
+
         def check(exps, obj):
-            """ Search exps in the output of str_unpickable_object(obj) """
+            """Search exps in the output of str_unpickable_object(obj)"""
             act = stacktrace.str_unpickable_object(obj)
             for exp in exps:
                 if not re.search(exp, act):
                     self.fail(f"{exp!r} no match in:\n{act}")
+
         check(["this => .*Unpickable"], Unpickable())
-        check([r"this\[0\]\[0\]\[foo\]\.troublemaker => .*Unpickable"],
-              [[{"foo": InClassUnpickable()}]])
-        check([r"this\[foo\] => \[1, 2, 3\]"],
-              {"foo": ListWithUnpickableAttribute([1, 2, 3])})
-        check([r"this\[foo\]\[3\] => .*Unpickable"],
-              {"foo": ListWithUnpickableAttribute([1, 2, 3, Unpickable()])})
-        check([r"this\[2\] => .*Unpickable",
-               r"this\[3\]\[foo\].troublemaker => .*Unpickable",
-               r"this\[4\]\[0\].troublemaker => .*Unpickable"],
-              [1, 2, Unpickable(), {"foo": InClassUnpickable(), "bar": None},
-               ListWithUnpickableAttribute(ListWithUnpickableAttribute(
-                   [InClassUnpickable()]))])
+        check(
+            [r"this\[0\]\[0\]\[foo\]\.troublemaker => .*Unpickable"],
+            [[{"foo": InClassUnpickable()}]],
+        )
+        check(
+            [r"this\[foo\] => \[1, 2, 3\]"],
+            {"foo": ListWithUnpickableAttribute([1, 2, 3])},
+        )
+        check(
+            [r"this\[foo\]\[3\] => .*Unpickable"],
+            {"foo": ListWithUnpickableAttribute([1, 2, 3, Unpickable()])},
+        )
+        check(
+            [
+                r"this\[2\] => .*Unpickable",
+                r"this\[3\]\[foo\].troublemaker => .*Unpickable",
+                r"this\[4\]\[0\].troublemaker => .*Unpickable",
+            ],
+            [
+                1,
+                2,
+                Unpickable(),
+                {"foo": InClassUnpickable(), "bar": None},
+                ListWithUnpickableAttribute(
+                    ListWithUnpickableAttribute([InClassUnpickable()])
+                ),
+            ],
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

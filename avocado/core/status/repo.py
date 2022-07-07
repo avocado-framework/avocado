@@ -37,25 +37,31 @@ class StatusRepo:
         self._by_result = {}
 
     def _handle_task_finished(self, message):
-        task_id = message['id']
+        task_id = message["id"]
 
-        result = message.get('result')
+        result = message.get("result")
         if result is not None and result.upper() not in STATUSES:
-            overridden = 'error'
-            message['result'] = overridden
-            message['fail_reason'] = (f'Runner error occurred: Test reports '
-                                      f'unsupported status "{result}"')
-            LOG.error('Task "%s" finished message with unsupported status '
-                      '"%s", changing to "%s"', task_id, result, overridden)
+            overridden = "error"
+            message["result"] = overridden
+            message["fail_reason"] = (
+                f"Runner error occurred: Test reports " f'unsupported status "{result}"'
+            )
+            LOG.error(
+                'Task "%s" finished message with unsupported status '
+                '"%s", changing to "%s"',
+                task_id,
+                result,
+                overridden,
+            )
 
         self._set_by_result(message)
         self._set_task_data(message)
         LOG.debug('Task "%s" finished message: "%s"', task_id, message)
 
     def _handle_task_started(self, message):
-        if 'output_dir' not in message:
-            raise StatusMsgMissingDataError('output_dir')
-        task_id = message['id']
+        if "output_dir" not in message:
+            raise StatusMsgMissingDataError("output_dir")
+        task_id = message["id"]
         LOG.debug('Task "%s" started message: "%s"', task_id, message)
         self._set_task_data(message)
 
@@ -65,15 +71,15 @@ class StatusRepo:
         For messages that include a "result" key, expected for example,
         from a "finished" status message, this will allow users to query
         for tasks with a given result."""
-        result = message.get('result')
+        result = message.get("result")
         if result not in self._by_result:
             self._by_result[result] = []
-        if message['id'] not in self._by_result[result]:
-            self._by_result[result].append(message['id'])
+        if message["id"] not in self._by_result[result]:
+            self._by_result[result].append(message["id"])
 
     def _set_task_data(self, message):
         """Appends all data on message to an entry keyed by the task's ID."""
-        task_id = message.pop('id')
+        task_id = message.pop("id")
         if task_id not in self._all_data:
             self._all_data[task_id] = []
         self._all_data[task_id].append(message)
@@ -99,50 +105,48 @@ class StatusRepo:
 
     def _update_status(self, message):
         """Update the latest status of a task (by message)."""
-        task_id = message.get('id')
-        status = message.get('status')
-        time = message.get('time')
+        task_id = message.get("id")
+        status = message.get("status")
+        time = message.get("time")
         if not all((task_id, status, time)):
             return
         if task_id not in self._status:
             self._status[task_id] = (status, time)
-            heapq.heappush(self._status_journal_summary, (time,
-                                                          task_id,
-                                                          status,
-                                                          0))
+            heapq.heappush(self._status_journal_summary, (time, task_id, status, 0))
         else:
             current_status, _ = self._status[task_id]
             if current_status == "finished":
-                LOG.warning('Received a %s message after finished message: %s',
-                            status, message)
+                LOG.warning(
+                    "Received a %s message after finished message: %s", status, message
+                )
             elif status == "started":
-                LOG.warning('Received a started message when the status '
-                            'is already %s: %s', current_status, message)
+                LOG.warning(
+                    "Received a started message when the status " "is already %s: %s",
+                    current_status,
+                    message,
+                )
             else:
                 self._status[task_id] = (status, time)
             index = len(self.get_all_task_data(task_id))
-            heapq.heappush(self._status_journal_summary, (time,
-                                                          task_id,
-                                                          status,
-                                                          index))
+            heapq.heappush(self._status_journal_summary, (time, task_id, status, index))
 
     def process_message(self, message):
-        for required_field in ('id', 'job_id'):
+        for required_field in ("id", "job_id"):
             if required_field not in message:
                 raise StatusMsgMissingDataError(required_field)
 
-        job_id = message.get('job_id')
+        job_id = message.get("job_id")
         if job_id != self.job_id:
-            LOG.warning('Received a message destined for a different job: %s',
-                        message)
+            LOG.warning("Received a message destined for a different job: %s", message)
             return
-        message.pop('job_id')
+        message.pop("job_id")
 
         self._update_status(message)
-        handlers = {'started': self._handle_task_started,
-                    'finished': self._handle_task_finished}
-        meth = handlers.get(message.get('status'),
-                            self._set_task_data)
+        handlers = {
+            "started": self._handle_task_started,
+            "finished": self._handle_task_finished,
+        }
+        meth = handlers.get(message.get("status"), self._set_task_data)
         meth(message)
 
     def process_raw_message(self, raw_message):
@@ -164,6 +168,9 @@ class StatusRepo:
 
     def get_result_set_for_tasks(self, task_ids):
         """Returns a set of results for the given tasks."""
-        results = [key for key, value in self._by_result.items()
-                   if self._is_in_task(value, task_ids)]
+        results = [
+            key
+            for key, value in self._by_result.items()
+            if self._is_in_task(value, task_ids)
+        ]
         return set(results)

@@ -19,29 +19,31 @@ from setuptools import setup
 try:
     from setuptools import find_namespace_packages
 except ImportError:
-    packages = ['avocado_resultsdb']
+    packages = ["avocado_resultsdb"]
 else:
-    packages = find_namespace_packages(include=['avocado_resultsdb'])
+    packages = find_namespace_packages(include=["avocado_resultsdb"])
 
-VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
+VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 
-setup(name='avocado-framework-plugin-resultsdb',
-      description='Avocado Plugin to propagate Job results to Resultsdb',
-      version=VERSION,
-      author='Avocado Developers',
-      author_email='avocado-devel@redhat.com',
-      url='http://avocado-framework.github.io/',
-      packages=packages,
-      include_package_data=True,
-      install_requires=[f'avocado-framework=={VERSION}',
-                        'resultsdb-api==2.1.5'],
-      entry_points={
-          'avocado.plugins.cli': [
-              'resultsdb = avocado_resultsdb.resultsdb:ResultsdbCLI',
-              ],
-          'avocado.plugins.result_events': [
-              'resultsdb = avocado_resultsdb.resultsdb:ResultsdbResultEvent',
-              ],
-          'avocado.plugins.result': [
-              'resultsdb = avocado_resultsdb.resultsdb:ResultsdbResult',
-              ]})
+setup(
+    name="avocado-framework-plugin-resultsdb",
+    description="Avocado Plugin to propagate Job results to Resultsdb",
+    version=VERSION,
+    author="Avocado Developers",
+    author_email="avocado-devel@redhat.com",
+    url="http://avocado-framework.github.io/",
+    packages=packages,
+    include_package_data=True,
+    install_requires=[f"avocado-framework=={VERSION}", "resultsdb-api==2.1.5"],
+    entry_points={
+        "avocado.plugins.cli": [
+            "resultsdb = avocado_resultsdb.resultsdb:ResultsdbCLI",
+        ],
+        "avocado.plugins.result_events": [
+            "resultsdb = avocado_resultsdb.resultsdb:ResultsdbResultEvent",
+        ],
+        "avocado.plugins.result": [
+            "resultsdb = avocado_resultsdb.resultsdb:ResultsdbResult",
+        ],
+    },
+)

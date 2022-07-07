@@ -23,13 +23,17 @@ from avocado.core.settings import settings
 
 JOURNAL_FILENAME = ".journal.sqlite"
 
-SCHEMA = {'job_info': 'CREATE TABLE job_info (unique_id TEXT UNIQUE)',
-          'test_journal': ("CREATE TABLE test_journal ("
-                           "tag TEXT, "
-                           "time TEXT, "
-                           "action TEXT, "
-                           "status TEXT, "
-                           "flushed BOOLEAN DEFAULT 0)")}
+SCHEMA = {
+    "job_info": "CREATE TABLE job_info (unique_id TEXT UNIQUE)",
+    "test_journal": (
+        "CREATE TABLE test_journal ("
+        "tag TEXT, "
+        "time TEXT, "
+        "action TEXT, "
+        "status TEXT, "
+        "flushed BOOLEAN DEFAULT 0)"
+    ),
+}
 
 
 class JournalResult(ResultEvents):
@@ -42,7 +46,7 @@ class JournalResult(ResultEvents):
     feedback to users from a central place.
     """
 
-    name = 'journal'
+    name = "journal"
     description = "Journal event based results implementation"
 
     def __init__(self, config):  # pylint: disable=W0613
@@ -52,11 +56,11 @@ class JournalResult(ResultEvents):
         :param job: an instance of :class:`avocado.core.job.Job`.
         """
         self.journal_initialized = False
-        self.journal_path = ''
+        self.journal_path = ""
         self.journal = None
         self.journal_cursor = None
         self.config = config
-        self.enabled = config.get('run.journal.enabled')
+        self.enabled = config.get("run.journal.enabled")
 
     def _init_journal(self, logdir):
         self.journal_path = os.path.join(logdir, JOURNAL_FILENAME)
@@ -71,7 +75,7 @@ class JournalResult(ResultEvents):
     def lazy_init_journal(self, state):
         # lazy init because we need the toplevel logdir for the job
         if not self.journal_initialized:
-            self._init_journal(state['job_logdir'])
+            self._init_journal(state["job_logdir"])
             self._record_job_info(state)
             self.journal_initialized = True
 
@@ -83,7 +87,7 @@ class JournalResult(ResultEvents):
         res = self.journal_cursor.execute("SELECT unique_id FROM job_info")
         if res.fetchone() is None:
             sql = "INSERT INTO job_info (unique_id) VALUES (?)"
-            self.journal_cursor.execute(sql, (state['job_unique_id'], ))
+            self.journal_cursor.execute(sql, (state["job_unique_id"],))
             self.journal.commit()
 
     def _record_status(self, state, action):
@@ -91,15 +95,19 @@ class JournalResult(ResultEvents):
 
         # This shouldn't be required
         if action == "ENDED":
-            status = state['status']
+            status = state["status"]
         else:
             status = None
 
-        self.journal_cursor.execute(sql,
-                                    (str(state['name']),
-                                     datetime.datetime(1, 1, 1).now().isoformat(),
-                                     action,
-                                     status))
+        self.journal_cursor.execute(
+            sql,
+            (
+                str(state["name"]),
+                datetime.datetime(1, 1, 1).now().isoformat(),
+                action,
+                status,
+            ),
+        )
         self.journal.commit()
 
     def pre_tests(self, job):
@@ -132,23 +140,27 @@ class Journal(CLI):
     Test journal
     """
 
-    name = 'journal'
+    name = "journal"
     description = "Journal options for the 'run' subcommand"
 
     def configure(self, parser):
-        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        run_subcommand_parser = parser.subcommands.choices.get("run", None)
         if run_subcommand_parser is None:
             return
 
-        help_msg = ('Records test status changes (for use with '
-                    'avocado-journal-replay and avocado-server)')
-        settings.register_option(section='run.journal',
-                                 key='enabled',
-                                 default=False,
-                                 key_type=bool,
-                                 help_msg=help_msg,
-                                 parser=run_subcommand_parser,
-                                 long_arg='--journal')
+        help_msg = (
+            "Records test status changes (for use with "
+            "avocado-journal-replay and avocado-server)"
+        )
+        settings.register_option(
+            section="run.journal",
+            key="enabled",
+            default=False,
+            key_type=bool,
+            help_msg=help_msg,
+            parser=run_subcommand_parser,
+            long_arg="--journal",
+        )
 
     def run(self, config):
         pass

@@ -40,17 +40,20 @@ _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
 
 
 class CmdError(Exception):
-
-    def __init__(self, command=None, result=None, additional_text=None):  # pylint: disable=W0231
+    def __init__(
+        self, command=None, result=None, additional_text=None
+    ):  # pylint: disable=W0231
         self.command = command
         self.result = result
         self.additional_text = additional_text
 
     def __str__(self):
-        return (f"Command '{self.command}' failed.\nstdout: "
-                f"{self.result.stdout!r}\nstderr: "
-                f"{self.result.stderr!r}\nadditional_info: "
-                f"{self.additional_text}")
+        return (
+            f"Command '{self.command}' failed.\nstdout: "
+            f"{self.result.stdout!r}\nstderr: "
+            f"{self.result.stderr!r}\nadditional_info: "
+            f"{self.additional_text}"
+        )
 
 
 class CmdInputError(Exception):
@@ -63,22 +66,22 @@ def can_sudo(cmd=None):
 
     :param cmd: unicode string with the commands
     """
-    if os.getuid() == 0:    # Root
+    if os.getuid() == 0:  # Root
         return True
 
-    try:    # Does sudo binary exists?
-        path.find_command('sudo')
+    try:  # Does sudo binary exists?
+        path.find_command("sudo")
     except path.CmdNotFoundError:
         return False
 
     try:
-        if cmd:     # Am I able to run the cmd or plain sudo id?
+        if cmd:  # Am I able to run the cmd or plain sudo id?
             return not system(cmd, ignore_status=True, sudo=True)
         elif system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
             return True
         else:
             return False
-    except OSError:     # Broken sudo binary
+    except OSError:  # Broken sudo binary
         return False
 
 
@@ -99,16 +102,16 @@ def get_capabilities(pid=None):
     """
     if pid is None:
         pid = os.getpid()
-    result = run(f'getpcaps {int(pid)}', ignore_status=True)
+    result = run(f"getpcaps {int(pid)}", ignore_status=True)
     if result.exit_status != 0:
         return []
-    if result.stderr_text.startswith('Capabilities '):
+    if result.stderr_text.startswith("Capabilities "):
         info = result.stderr_text
-        separator = '='
+        separator = "="
     else:
         info = result.stdout_text
-        separator = ':'
-    return info.split(separator, 1)[1].strip().split(',')
+        separator = ":"
+    return info.split(separator, 1)[1].strip().split(",")
 
 
 def has_capability(capability, pid=None):
@@ -148,7 +151,7 @@ def safe_kill(pid, signal):  # pylint: disable=W0621
     :param signal: Signal number.
     """
     if get_owner_id(int(pid)) == 0:
-        kill_cmd = f'kill -{int(int(signal))} {int(int(pid))}'
+        kill_cmd = f"kill -{int(int(signal))} {int(int(pid))}"
         try:
             run(kill_cmd, sudo=True)
             return True
@@ -172,13 +175,13 @@ def get_parent_pid(pid):
     :returns: The parent PID
     :rtype: int
     """
-    with open(f'/proc/{int(pid)}/stat', 'rb') as proc_stat:
-        parent_pid = proc_stat.read().split(b' ')[-49]
+    with open(f"/proc/{int(pid)}/stat", "rb") as proc_stat:
+        parent_pid = proc_stat.read().split(b" ")[-49]
         return int(parent_pid)
 
 
 def _get_pid_from_proc_pid_stat(proc_path):
-    match = re.match(r'\/proc\/([0-9]+)\/.*', proc_path)
+    match = re.match(r"\/proc\/([0-9]+)\/.*", proc_path)
     if match is not None:
         return int(match.group(1))
 
@@ -193,12 +196,12 @@ def get_children_pids(parent_pid, recursive=False):
     :returns: The PIDs for the children processes
     :rtype: list of int
     """
-    proc_stats = glob.glob('/proc/[123456789]*/stat')
+    proc_stats = glob.glob("/proc/[123456789]*/stat")
     children = []
     for proc_stat in proc_stats:
         try:
-            with open(proc_stat, 'rb') as proc_stat_fp:
-                this_parent_pid = int(proc_stat_fp.read().split(b' ')[-49])
+            with open(proc_stat, "rb") as proc_stat_fp:
+                this_parent_pid = int(proc_stat_fp.read().split(b" ")[-49])
         except IOError:
             continue
 
@@ -227,6 +230,7 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
     :return: list of all PIDs we sent signal to
     :rtype: list
     """
+
     def _all_pids_dead(killed_pids):
         for pid in killed_pids:
             if pid_exists(pid):
@@ -251,10 +255,16 @@ def kill_process_tree(pid, sig=None, send_sigcont=True, timeout=0):
     if timeout == 0:
         return killed_pids
     elif timeout > 0:
-        if not wait_for(_all_pids_dead, timeout + start - time.monotonic(),
-                        step=0.01, args=(killed_pids[::-1],)):
-            raise RuntimeError(f"Timeout reached when waiting for pid {pid} "
-                               f"and children to die ({timeout})")
+        if not wait_for(
+            _all_pids_dead,
+            timeout + start - time.monotonic(),
+            step=0.01,
+            args=(killed_pids[::-1],),
+        ):
+            raise RuntimeError(
+                f"Timeout reached when waiting for pid {pid} "
+                f"and children to die ({timeout})"
+            )
     else:
         while not _all_pids_dead(killed_pids[::-1]):
             time.sleep(0.01)
@@ -293,7 +303,7 @@ def process_in_ptree_is_defunct(ppid):
     for pid in pids:
         cmd = f"ps --no-headers -o cmd {int(int(pid))}"
         proc_name = system_output(cmd, ignore_status=True, verbose=False)
-        if '<defunct>' in proc_name:
+        if "<defunct>" in proc_name:
             defunct = True
             break
     return defunct
@@ -345,9 +355,16 @@ class CmdResult:
     :type encoding: str
     """
 
-    def __init__(self, command="", stdout=b"", stderr=b"",
-                 exit_status=None, duration=0, pid=None,
-                 encoding=None):
+    def __init__(
+        self,
+        command="",
+        stdout=b"",
+        stderr=b"",
+        exit_status=None,
+        duration=0,
+        pid=None,
+        encoding=None,
+    ):
         self.command = command
         self.exit_status = exit_status
         #: The raw stdout (bytes)
@@ -362,14 +379,23 @@ class CmdResult:
         self.encoding = encoding
 
     def __str__(self):
-        return '\n'.join(f"{key}: {getattr(self, key, 'MISSING')!r}"
-                         for key in ('command', 'exit_status', 'duration',
-                                     'interrupted', 'pid', 'encoding',
-                                     'stdout', 'stderr'))
+        return "\n".join(
+            f"{key}: {getattr(self, key, 'MISSING')!r}"
+            for key in (
+                "command",
+                "exit_status",
+                "duration",
+                "interrupted",
+                "pid",
+                "encoding",
+                "stdout",
+                "stderr",
+            )
+        )
 
     @property
     def stdout_text(self):
-        if hasattr(self.stdout, 'decode'):
+        if hasattr(self.stdout, "decode"):
             return self.stdout.decode(self.encoding)
         if isinstance(self.stdout, str):
             return self.stdout
@@ -377,7 +403,7 @@ class CmdResult:
 
     @property
     def stderr_text(self):
-        if hasattr(self.stderr, 'decode'):
+        if hasattr(self.stderr, "decode"):
             return self.stderr.decode(self.encoding)
         if isinstance(self.stderr, str):
             return self.stderr
@@ -385,9 +411,17 @@ class CmdResult:
 
 
 class FDDrainer:
-
-    def __init__(self, fd, result, name=None, logger=None, logger_prefix='%s',
-                 stream_logger=None, ignore_bg_processes=False, verbose=False):
+    def __init__(
+        self,
+        fd,
+        result,
+        name=None,
+        logger=None,
+        logger_prefix="%s",
+        stream_logger=None,
+        ignore_bg_processes=False,
+        verbose=False,
+    ):
         """
         Reads data from a file descriptor in a thread, storing locally in
         a file-like :attr:`data` object.
@@ -430,9 +464,8 @@ class FDDrainer:
         self._ignore_bg_processes = ignore_bg_processes
         self._verbose = verbose
 
-    def _log_line(self, line, newline_for_stream='\n'):
-        line = astring.to_text(line, self._result.encoding,
-                               'replace')
+    def _log_line(self, line, newline_for_stream="\n"):
+        line = astring.to_text(line, self._result.encoding, "replace")
         if self._logger is not None:
             self._logger.debug(self._logger_prefix, line)
         if self._stream_logger is not None:
@@ -442,11 +475,11 @@ class FDDrainer:
         """
         Read from fd, storing and optionally logging the output
         """
-        bfr = b''
+        bfr = b""
         while True:
             if self._ignore_bg_processes:
                 has_io = select.select([self.fd], [], [], 1)[0]
-                if (not has_io and self._result.exit_status is not None):
+                if not has_io and self._result.exit_status is not None:
                     # Exit if no new data and main process has finished
                     break
                 if not has_io:
@@ -461,11 +494,11 @@ class FDDrainer:
                 lines = bfr.splitlines()
                 for line in lines[:-1]:
                     self._log_line(line)
-                if bfr.endswith(b'\n'):
+                if bfr.endswith(b"\n"):
                     self._log_line(lines[-1])
                 else:
-                    self._log_line(lines[-1], '')
-                bfr = b''
+                    self._log_line(lines[-1], "")
+                bfr = b""
 
     def start(self):
         self._thread = threading.Thread(target=self._drainer, name=self.name)
@@ -480,15 +513,15 @@ class FDDrainer:
                 # flush the file on disk.  SocketHandler, MemoryHandler
                 # and other logging handlers (custom ones?) also have
                 # the same interface, so let's try to use it if available
-                stream = getattr(handler, 'stream', None)
+                stream = getattr(handler, "stream", None)
                 if (stream is not None) and (not stream.closed):
-                    if hasattr(stream, 'fileno'):
+                    if hasattr(stream, "fileno"):
                         try:
                             fileno = stream.fileno()
                             os.fsync(fileno)
                         except UnsupportedOperation:
                             pass
-                if hasattr(handler, 'close'):
+                if hasattr(handler, "close"):
                     handler.close()
 
 
@@ -498,8 +531,17 @@ class SubProcess:
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
-    def __init__(self, cmd, verbose=True, shell=False, env=None, sudo=False,
-                 ignore_bg_processes=False, encoding=None, logger=None):
+    def __init__(
+        self,
+        cmd,
+        verbose=True,
+        shell=False,
+        env=None,
+        sudo=False,
+        ignore_bg_processes=False,
+        encoding=None,
+        logger=None,
+    ):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -552,9 +594,9 @@ class SubProcess:
         self._popen = None
 
         self.logger = logger or LOG
-        self.stdout_logger = self.logger.getChild('stdout')
-        self.stderr_logger = self.logger.getChild('stderr')
-        self.output_logger = self.logger.getChild('output')
+        self.stdout_logger = self.logger.getChild("stdout")
+        self.stderr_logger = self.logger.getChild("stderr")
+        self.output_logger = self.logger.getChild("output")
         # Drainers used when reading from the PIPEs and writing to
         # files and logs
         self._stdout_drainer = None
@@ -564,21 +606,21 @@ class SubProcess:
 
     def __repr__(self):
         if self._popen is None:
-            rc = '(not started)'
+            rc = "(not started)"
         elif self.result.exit_status is None:
-            rc = '(running)'
+            rc = "(running)"
         else:
             rc = self.result.exit_status
-        return f'{self.__class__.__name__}(cmd={self.cmd!r}, rc={rc!r})'
+        return f"{self.__class__.__name__}(cmd={self.cmd!r}, rc={rc!r})"
 
     def __str__(self):
         if self._popen is None:
-            rc = '(not started)'
+            rc = "(not started)"
         elif self.result.exit_status is None:
-            rc = '(running)'
+            rc = "(running)"
         else:
-            rc = f'(finished with exit status={int(self.result.exit_status)})'
-        return f'{self.cmd} {rc}'
+            rc = f"(finished with exit status={int(self.result.exit_status)})"
+        return f"{self.cmd} {rc}"
 
     @staticmethod
     def _prepend_sudo(cmd, shell):
@@ -587,14 +629,16 @@ class SubProcess:
                 sudo_cmd = f"{path.find_command('sudo', check_exec=False)} -n"
             except path.CmdNotFoundError as details:
                 LOG.error(details)
-                LOG.error('Parameter sudo=True provided, but sudo was '
-                          'not found. Please consider adding sudo to '
-                          'your OS image')
+                LOG.error(
+                    "Parameter sudo=True provided, but sudo was "
+                    "not found. Please consider adding sudo to "
+                    "your OS image"
+                )
                 return cmd
             if shell:
-                if ' -s' not in sudo_cmd:
-                    sudo_cmd = f'{sudo_cmd} -s'
-            cmd = f'{sudo_cmd} {cmd}'
+                if " -s" not in sudo_cmd:
+                    sudo_cmd = f"{sudo_cmd} -s"
+            cmd = f"{sudo_cmd} {cmd}"
         return cmd
 
     def _init_subprocess(self):
@@ -613,11 +657,13 @@ class SubProcess:
         else:
             cmd = self.cmd
         try:
-            self._popen = subprocess.Popen(cmd,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.PIPE,
-                                           shell=self.shell,
-                                           env=self.env)
+            self._popen = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=self.shell,
+                env=self.env,
+            )
         except OSError as details:
             details.strerror += f" ({self.cmd})"
             raise details
@@ -633,7 +679,8 @@ class SubProcess:
             logger_prefix="[stdout] %s",
             stream_logger=None,
             ignore_bg_processes=self._ignore_bg_processes,
-            verbose=self.verbose)
+            verbose=self.verbose,
+        )
         self._stderr_drainer = FDDrainer(
             self._popen.stderr.fileno(),
             self.result,
@@ -642,7 +689,8 @@ class SubProcess:
             logger_prefix="[stderr] %s",
             stream_logger=None,
             ignore_bg_processes=self._ignore_bg_processes,
-            verbose=self.verbose)
+            verbose=self.verbose,
+        )
 
         # start stdout/stderr threads
         self._stdout_drainer.start()
@@ -660,8 +708,12 @@ class SubProcess:
         if self.result.duration == 0:
             self.result.duration = time.monotonic() - self.start_time
         if self.verbose:
-            LOG.info("Command '%s' finished with %s after %.9fs", self.cmd, rc,
-                     self.result.duration)
+            LOG.info(
+                "Command '%s' finished with %s after %.9fs",
+                self.cmd,
+                rc,
+                self.result.duration,
+            )
         self.result.pid = self._popen.pid
         self._fill_streams()
 
@@ -740,7 +792,7 @@ class SubProcess:
             pids = get_children_pids(self.get_pid())
             pids.append(self.get_pid())
             for pid in pids:
-                kill_cmd = f'kill -{int(int(sig))} {int(pid)}'
+                kill_cmd = f"kill -{int(int(sig))} {int(pid)}"
                 with contextlib.suppress(Exception):
                     run(kill_cmd, sudo=True)
         else:
@@ -769,6 +821,7 @@ class SubProcess:
         :param sig: Signal to send to the process in case it did not end after
                     the specified timeout.
         """
+
         def nuke_myself():
             timeout = time.monotonic() - self.start_time
             self.result.interrupted = f"timeout after {timeout:.9f}s"
@@ -776,16 +829,22 @@ class SubProcess:
                 kill_process_tree(self.get_pid(), sig, timeout=1)
             except RuntimeError:
                 try:
-                    kill_process_tree(self.get_pid(), signal.SIGKILL,
-                                      timeout=1)
-                    LOG.warning("Process '%s' refused to die in 1s after "
-                                "sending %s to, destroyed it successfully "
-                                "using SIGKILL.", self.cmd, sig)
+                    kill_process_tree(self.get_pid(), signal.SIGKILL, timeout=1)
+                    LOG.warning(
+                        "Process '%s' refused to die in 1s after "
+                        "sending %s to, destroyed it successfully "
+                        "using SIGKILL.",
+                        self.cmd,
+                        sig,
+                    )
                 except RuntimeError:
-                    LOG.error("Process '%s' refused to die in 1s after "
-                              "sending %s, followed by SIGKILL, probably "
-                              "dealing with a zombie process.", self.cmd,
-                              sig)
+                    LOG.error(
+                        "Process '%s' refused to die in 1s after "
+                        "sending %s, followed by SIGKILL, probably "
+                        "dealing with a zombie process.",
+                        self.cmd,
+                        sig,
+                    )
 
         self._init_subprocess()
         rc = None
@@ -812,7 +871,7 @@ class SubProcess:
 
         if rc is None:
             # If all this work fails, we're dealing with a zombie process.
-            raise AssertionError(f'Zombie Process {self._popen.pid}')
+            raise AssertionError(f"Zombie Process {self._popen.pid}")
         self._fill_results(rc)
         return rc
 
@@ -881,9 +940,18 @@ class SubProcess:
         return self.result
 
 
-def run(cmd, timeout=None, verbose=True, ignore_status=False,
-        shell=False, env=None, sudo=False, ignore_bg_processes=False,
-        encoding=None, logger=None):
+def run(
+    cmd,
+    timeout=None,
+    verbose=True,
+    ignore_status=False,
+    shell=False,
+    env=None,
+    sudo=False,
+    ignore_bg_processes=False,
+    encoding=None,
+    logger=None,
+):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -925,10 +993,16 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
         raise CmdInputError("Invalid empty command")
     if encoding is None:
         encoding = astring.ENCODING
-    sp = SubProcess(cmd=cmd, verbose=verbose,
-                    shell=shell, env=env,
-                    sudo=sudo, ignore_bg_processes=ignore_bg_processes,
-                    encoding=encoding, logger=logger)
+    sp = SubProcess(
+        cmd=cmd,
+        verbose=verbose,
+        shell=shell,
+        env=env,
+        sudo=sudo,
+        ignore_bg_processes=ignore_bg_processes,
+        encoding=encoding,
+        logger=logger,
+    )
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -936,9 +1010,18 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     return cmd_result
 
 
-def system(cmd, timeout=None, verbose=True, ignore_status=False,
-           shell=False, env=None, sudo=False, ignore_bg_processes=False,
-           encoding=None, logger=None):
+def system(
+    cmd,
+    timeout=None,
+    verbose=True,
+    ignore_status=False,
+    shell=False,
+    env=None,
+    sudo=False,
+    ignore_bg_processes=False,
+    encoding=None,
+    logger=None,
+):
     """
     Run a subprocess, returning its exit code.
 
@@ -977,15 +1060,34 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
     :rtype: int
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
-    cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     shell=shell, env=env, sudo=sudo, ignore_bg_processes=ignore_bg_processes,
-                     encoding=encoding, logger=logger)
+    cmd_result = run(
+        cmd=cmd,
+        timeout=timeout,
+        verbose=verbose,
+        ignore_status=ignore_status,
+        shell=shell,
+        env=env,
+        sudo=sudo,
+        ignore_bg_processes=ignore_bg_processes,
+        encoding=encoding,
+        logger=logger,
+    )
     return cmd_result.exit_status
 
 
-def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
-                  shell=False, env=None, sudo=False, ignore_bg_processes=False,
-                  strip_trail_nl=True, encoding=None, logger=None):
+def system_output(
+    cmd,
+    timeout=None,
+    verbose=True,
+    ignore_status=False,
+    shell=False,
+    env=None,
+    sudo=False,
+    ignore_bg_processes=False,
+    strip_trail_nl=True,
+    encoding=None,
+    logger=None,
+):
     """
     Run a subprocess, returning its output.
 
@@ -1028,17 +1130,34 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :rtype: bytes
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
-    cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     shell=shell, env=env, sudo=sudo, ignore_bg_processes=ignore_bg_processes,
-                     encoding=encoding, logger=logger)
+    cmd_result = run(
+        cmd=cmd,
+        timeout=timeout,
+        verbose=verbose,
+        ignore_status=ignore_status,
+        shell=shell,
+        env=env,
+        sudo=sudo,
+        ignore_bg_processes=ignore_bg_processes,
+        encoding=encoding,
+        logger=logger,
+    )
     if strip_trail_nl:
-        return cmd_result.stdout.rstrip(b'\n\r')
+        return cmd_result.stdout.rstrip(b"\n\r")
     return cmd_result.stdout
 
 
-def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
-              shell=True, env=None, sudo=False, ignore_bg_processes=False,
-              logger=None):
+def getoutput(
+    cmd,
+    timeout=None,
+    verbose=False,
+    ignore_status=True,
+    shell=True,
+    env=None,
+    sudo=False,
+    ignore_bg_processes=False,
+    logger=None,
+):
     """
     Because commands module is removed in Python3 and it redirect stderr
     to stdout, we port commands.getoutput to make code compatible
@@ -1076,17 +1195,30 @@ def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     :return: Command output(stdout or stderr).
     :rtype: str
     """
-    return getstatusoutput(cmd=cmd, timeout=timeout, verbose=verbose,
-                           ignore_status=ignore_status,
-                           shell=shell,
-                           env=env, sudo=sudo,
-                           ignore_bg_processes=ignore_bg_processes,
-                           logger=logger)[1]
+    return getstatusoutput(
+        cmd=cmd,
+        timeout=timeout,
+        verbose=verbose,
+        ignore_status=ignore_status,
+        shell=shell,
+        env=env,
+        sudo=sudo,
+        ignore_bg_processes=ignore_bg_processes,
+        logger=logger,
+    )[1]
 
 
-def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
-                    shell=True, env=None, sudo=False,
-                    ignore_bg_processes=False, logger=None):
+def getstatusoutput(
+    cmd,
+    timeout=None,
+    verbose=False,
+    ignore_status=True,
+    shell=True,
+    env=None,
+    sudo=False,
+    ignore_bg_processes=False,
+    logger=None,
+):
     """
     Because commands module is removed in Python3 and it redirect stderr
     to stdout, we port commands.getstatusoutput to make code compatible
@@ -1124,13 +1256,20 @@ def getstatusoutput(cmd, timeout=None, verbose=False, ignore_status=True,
     :return: Exit status and command output(stdout and stderr).
     :rtype: tuple
     """
-    cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose,
-                     ignore_status=ignore_status,
-                     shell=shell, env=env, sudo=sudo,
-                     ignore_bg_processes=ignore_bg_processes, logger=logger)
+    cmd_result = run(
+        cmd=cmd,
+        timeout=timeout,
+        verbose=verbose,
+        ignore_status=ignore_status,
+        shell=shell,
+        env=env,
+        sudo=sudo,
+        ignore_bg_processes=ignore_bg_processes,
+        logger=logger,
+    )
     text = cmd_result.stdout_text
     sts = cmd_result.exit_status
-    if text[-1:] == '\n':
+    if text[-1:] == "\n":
         text = text[:-1]
     return (sts, text)
 
@@ -1143,7 +1282,7 @@ def get_owner_id(pid):
     :return: user id of the process owner
     """
     try:
-        return os.stat(f'/proc/{int(pid)}/').st_uid
+        return os.stat(f"/proc/{int(pid)}/").st_uid
     except OSError:
         return None
 
@@ -1160,5 +1299,4 @@ def get_command_output_matching(command, pattern):
     :return: list of lines matching the pattern
     :rtype: list of str
     """
-    return [line for line in run(command).stdout_text.splitlines()
-            if pattern in line]
+    return [line for line in run(command).stdout_text.splitlines() if pattern in line]

@@ -19,28 +19,32 @@ from setuptools import setup
 try:
     from setuptools import find_namespace_packages
 except ImportError:
-    packages = ['avocado_varianter_yaml_to_mux']
+    packages = ["avocado_varianter_yaml_to_mux"]
 else:
-    packages = find_namespace_packages(include=['avocado_varianter_yaml_to_mux'])
+    packages = find_namespace_packages(include=["avocado_varianter_yaml_to_mux"])
 
-VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
+VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 
-setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
-      description='Avocado Varianter plugin to parse YAML file into variants',
-      version=VERSION,
-      author='Avocado Developers',
-      author_email='avocado-devel@redhat.com',
-      url='http://avocado-framework.github.io/',
-      packages=packages,
-      include_package_data=True,
-      install_requires=[f'avocado-framework=={VERSION}', 'PyYAML>=4.2b2'],
-      test_suite='tests',
-      entry_points={
-          "avocado.plugins.init": [
-              "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxInit",
-          ],
-          "avocado.plugins.cli": [
-              "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxCLI",
-          ],
-          "avocado.plugins.varianter": [
-              "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMux"]})
+setup(
+    name="avocado-framework-plugin-varianter-yaml-to-mux",
+    description="Avocado Varianter plugin to parse YAML file into variants",
+    version=VERSION,
+    author="Avocado Developers",
+    author_email="avocado-devel@redhat.com",
+    url="http://avocado-framework.github.io/",
+    packages=packages,
+    include_package_data=True,
+    install_requires=[f"avocado-framework=={VERSION}", "PyYAML>=4.2b2"],
+    test_suite="tests",
+    entry_points={
+        "avocado.plugins.init": [
+            "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxInit",
+        ],
+        "avocado.plugins.cli": [
+            "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMuxCLI",
+        ],
+        "avocado.plugins.varianter": [
+            "yaml_to_mux = avocado_varianter_yaml_to_mux.varianter_yaml_to_mux:YamlToMux"
+        ],
+    },
+)

@@ -24,8 +24,7 @@ class GenericMessage:
         status = {}
         if additional_info is not None:
             status = additional_info
-        status.update({'status': cls.message_status,
-                       'time': time.monotonic()})
+        status.update({"status": cls.message_status, "time": time.monotonic()})
         return status
 
     @classmethod
@@ -35,22 +34,22 @@ class GenericMessage:
         :return: message dict which can be send to avocado server
         :rtype: dict
         """
-        kwargs = {key: value for (key, value) in kwargs.items()
-                  if value is not None}
+        kwargs = {key: value for (key, value) in kwargs.items() if value is not None}
         return cls._prepare_message(additional_info=kwargs)
 
 
 class StartedMessage(GenericMessage):
-    message_status = 'started'
+    message_status = "started"
 
 
 class RunningMessage(GenericMessage):
     """Creates running message without any additional info."""
-    message_status = 'running'
+
+    message_status = "running"
 
 
 class FinishedMessage(GenericMessage):
-    message_status = 'finished'
+    message_status = "finished"
 
     @classmethod
     def get(cls, result, fail_reason=None, returncode=None):  # pylint: disable=W0221
@@ -66,13 +65,13 @@ class FinishedMessage(GenericMessage):
         :return: finished message
         :rtype: dict
         """
-        return super().get(result=result,
-                           fail_reason=fail_reason,
-                           returncode=returncode)
+        return super().get(
+            result=result, fail_reason=fail_reason, returncode=returncode
+        )
 
 
 class GenericRunningMessage(GenericMessage):
-    message_status = 'running'
+    message_status = "running"
     message_type = None
 
     @classmethod
@@ -85,10 +84,10 @@ class GenericRunningMessage(GenericMessage):
         :return: message dict which can be send to avocado server
         :rtype: dict
         """
-        message = {'type': cls.message_type, 'log': msg}
+        message = {"type": cls.message_type, "log": msg}
         if type(msg) is not bytes:
-            msg = msg.encode('utf-8')
-            message.update({'log': msg, 'encoding': 'utf-8'})
+            msg = msg.encode("utf-8")
+            message.update({"log": msg, "encoding": "utf-8"})
         return message
 
     @classmethod
@@ -105,48 +104,54 @@ class GenericRunningMessage(GenericMessage):
 
 
 class LogMessage(GenericRunningMessage):
-    message_type = 'log'
+    message_type = "log"
 
 
 class StdoutMessage(GenericRunningMessage):
     """Creates stdout message with all necessary information."""
-    message_type = 'stdout'
+
+    message_type = "stdout"
 
 
 class StderrMessage(GenericRunningMessage):
     """Creates stderr message with all necessary information."""
-    message_type = 'stderr'
+
+    message_type = "stderr"
 
 
 class WhiteboardMessage(GenericRunningMessage):
     """Creates whiteboard message with all necessary information."""
-    message_type = 'whiteboard'
+
+    message_type = "whiteboard"
 
 
 class OutputMessage(GenericRunningMessage):
     """Creates output message with all necessary information."""
-    message_type = 'output'
+
+    message_type = "output"
 
 
 class FileMessage(GenericRunningMessage):
     """Creates file message with all necessary information."""
-    message_type = 'file'
+
+    message_type = "file"
 
     @classmethod
     def get(cls, msg, path):  # pylint: disable=W0221
         return super().get(msg=msg, path=path)
 
 
-_supported_types = {LogMessage.message_type: LogMessage,
-                    StdoutMessage.message_type: StdoutMessage,
-                    StderrMessage.message_type: StderrMessage,
-                    WhiteboardMessage.message_type: WhiteboardMessage,
-                    OutputMessage.message_type: OutputMessage,
-                    FileMessage.message_type: FileMessage}
+_supported_types = {
+    LogMessage.message_type: LogMessage,
+    StdoutMessage.message_type: StdoutMessage,
+    StderrMessage.message_type: StderrMessage,
+    WhiteboardMessage.message_type: WhiteboardMessage,
+    OutputMessage.message_type: OutputMessage,
+    FileMessage.message_type: FileMessage,
+}
 
 
 class RunnerLogHandler(logging.Handler):
-
     def __init__(self, queue, message_type, kwargs=None):
         """
         Runner logger which will put every log to the runner queue
@@ -167,8 +172,7 @@ class RunnerLogHandler(logging.Handler):
 
 
 class StreamToQueue:
-
-    def __init__(self,  queue, message_type):
+    def __init__(self, queue, message_type):
         """
         Runner Stream which will transfer data to the runner queue
 
@@ -199,19 +203,20 @@ def start_logging(config, queue):
     :param queue: queue for the runner messages
     :type queue: multiprocessing.SimpleQueue
     """
+
     def split_loggers_and_levels(enabled_loggers, default_level):
-        for logger_level_split in map(lambda x: x.split(':'), enabled_loggers):
+        for logger_level_split in map(lambda x: x.split(":"), enabled_loggers):
             logger_name, *level = logger_level_split
             yield logger_name, level[0] if len(level) > 0 else default_level
 
-    log_level = config.get('job.output.loglevel', logging.DEBUG)
-    log_handler = RunnerLogHandler(queue, 'log')
-    fmt = ('%(asctime)s %(name)s %(levelname)-5.5s| %(message)s')
+    log_level = config.get("job.output.loglevel", logging.DEBUG)
+    log_handler = RunnerLogHandler(queue, "log")
+    fmt = "%(asctime)s %(name)s %(levelname)-5.5s| %(message)s"
     formatter = logging.Formatter(fmt=fmt)
     log_handler.setFormatter(formatter)
 
     # main log = 'avocado'
-    logger = logging.getLogger('avocado')
+    logger = logging.getLogger("avocado")
     logger.addHandler(log_handler)
     logger.setLevel(log_level)
     logger.propagate = False
@@ -223,34 +228,34 @@ def start_logging(config, queue):
     log.propagate = False
 
     # LOG_UI = 'avocado.app'
-    output.LOG_UI.addHandler(RunnerLogHandler(queue, 'stdout'))
+    output.LOG_UI.addHandler(RunnerLogHandler(queue, "stdout"))
 
     sys.stdout = StreamToQueue(queue, "stdout")
     sys.stderr = StreamToQueue(queue, "stderr")
 
     # output custom test loggers
-    enabled_loggers = config.get('core.show')
-    output_handler = RunnerLogHandler(queue, 'output')
-    output_handler.setFormatter(logging.Formatter(fmt='%(name)s: %(message)s'))
-    user_streams = [user_streams for user_streams in enabled_loggers
-                    if user_streams not in BUILTIN_STREAMS]
-    for user_stream, level in split_loggers_and_levels(user_streams,
-                                                       log_level):
+    enabled_loggers = config.get("core.show")
+    output_handler = RunnerLogHandler(queue, "output")
+    output_handler.setFormatter(logging.Formatter(fmt="%(name)s: %(message)s"))
+    user_streams = [
+        user_streams
+        for user_streams in enabled_loggers
+        if user_streams not in BUILTIN_STREAMS
+    ]
+    for user_stream, level in split_loggers_and_levels(user_streams, log_level):
         custom_logger = logging.getLogger(user_stream)
         custom_logger.addHandler(output_handler)
         custom_logger.setLevel(level)
 
     # store custom test loggers
-    enabled_loggers = config.get('job.run.store_logging_stream')
-    for enabled_logger, level in split_loggers_and_levels(enabled_loggers,
-                                                          log_level):
-        store_stream_handler = RunnerLogHandler(queue, 'file',
-                                                {'path': enabled_logger})
+    enabled_loggers = config.get("job.run.store_logging_stream")
+    for enabled_logger, level in split_loggers_and_levels(enabled_loggers, log_level):
+        store_stream_handler = RunnerLogHandler(queue, "file", {"path": enabled_logger})
         store_stream_handler.setFormatter(formatter)
         output_logger = logging.getLogger(enabled_logger)
         output_logger.addHandler(store_stream_handler)
         output_logger.setLevel(level)
 
-        if not enabled_logger.startswith('avocado.'):
+        if not enabled_logger.startswith("avocado."):
             output_logger.addHandler(log_handler)
             output_logger.propagate = False

@@ -69,6 +69,7 @@ class CLICmd(Plugin):
     Plugins that want to add extensions to the run command should use the
     'avocado.plugins.cli.cmd' namespace.
     """
+
     name = None
     description = None
 
@@ -80,10 +81,9 @@ class CLICmd(Plugin):
         """
         help_msg = self.description
         if help_msg is None:
-            help_msg = f'Runs the {self.name} command'
+            help_msg = f"Runs the {self.name} command"
 
-        parser = parser.subcommands.add_parser(self.name,
-                                               help=help_msg)
+        parser = parser.subcommands.add_parser(self.name, help=help_msg)
         return parser
 
     @abc.abstractmethod
@@ -118,7 +118,6 @@ class JobPost(Plugin):
 
 
 class Result(Plugin):
-
     @abc.abstractmethod
     def render(self, result, job):
         """Entry point with method that renders the result.
@@ -238,6 +237,7 @@ class ResolverMixin:
 
     def __init__(self, config=None):
         from avocado.core.settings import settings
+
         self.config = config or settings.as_dict()
 
 

@@ -7,7 +7,7 @@ from avocado.utils import path as utils_path
 from avocado.utils import process
 from avocado.utils.software_manager.backends.dpkg import DpkgBackend
 
-log = logging.getLogger('avocado.utils.software_manager')
+log = logging.getLogger("avocado.utils.software_manager")
 
 
 class AptBackend(DpkgBackend):
@@ -24,31 +24,34 @@ class AptBackend(DpkgBackend):
         Initializes the base command and the debian package repository.
         """
         super().__init__()
-        executable = utils_path.find_command('apt-get')
-        self.base_command = executable + ' --yes --allow-unauthenticated'
-        self.repo_file_path = '/etc/apt/sources.list.d/avocado.list'
-        self.dpkg_force_confdef = ('-o Dpkg::Options::="--force-confdef" '
-                                   '-o Dpkg::Options::="--force-confold"')
-        cmd_result = process.run('apt-get -v | head -1',
-                                 ignore_status=True,
-                                 verbose=False,
-                                 shell=True)
+        executable = utils_path.find_command("apt-get")
+        self.base_command = executable + " --yes --allow-unauthenticated"
+        self.repo_file_path = "/etc/apt/sources.list.d/avocado.list"
+        self.dpkg_force_confdef = (
+            '-o Dpkg::Options::="--force-confdef" '
+            '-o Dpkg::Options::="--force-confold"'
+        )
+        cmd_result = process.run(
+            "apt-get -v | head -1", ignore_status=True, verbose=False, shell=True
+        )
         out = cmd_result.stdout_text.strip()
         try:
-            ver = re.findall(r'\d\S*', out)[0]
+            ver = re.findall(r"\d\S*", out)[0]
         except IndexError:
             ver = out
         self.pm_version = ver
 
-        log.debug('apt-get version: %s', self.pm_version)
+        log.debug("apt-get version: %s", self.pm_version)
         # gdebi-core is necessary for local installation with dependency
         # handling
-        if not self.check_installed('gdebi-core'):
-            if not self.install('gdebi-core'):
-                log.info("SoftwareManager (AptBackend) can't install packages "
-                         "from local .deb files with dependency resolution: "
-                         "Package 'gdebi-core' could not be installed")
-        os.environ['DEBIAN_FRONTEND'] = 'noninteractive'
+        if not self.check_installed("gdebi-core"):
+            if not self.install("gdebi-core"):
+                log.info(
+                    "SoftwareManager (AptBackend) can't install packages "
+                    "from local .deb files with dependency resolution: "
+                    "Package 'gdebi-core' could not be installed"
+                )
+        os.environ["DEBIAN_FRONTEND"] = "noninteractive"
 
     def install(self, name):
         """
@@ -57,11 +60,12 @@ class AptBackend(DpkgBackend):
         :param name: Package name.
         """
         if os.path.isfile(name):
-            i_cmd = utils_path.find_command('gdebi') + ' -n -q ' + name
+            i_cmd = utils_path.find_command("gdebi") + " -n -q " + name
         else:
-            command = 'install'
-            i_cmd = " ".join([self.base_command, self.dpkg_force_confdef,
-                              command, name])
+            command = "install"
+            i_cmd = " ".join(
+                [self.base_command, self.dpkg_force_confdef, command, name]
+            )
 
         try:
             process.system(i_cmd, shell=True, sudo=True)
@@ -75,9 +79,9 @@ class AptBackend(DpkgBackend):
 
         :param name: Package name.
         """
-        command = 'remove'
-        flag = '--purge'
-        r_cmd = self.base_command + ' ' + command + ' ' + flag + ' ' + name
+        command = "remove"
+        flag = "--purge"
+        r_cmd = self.base_command + " " + command + " " + flag + " " + name
 
         try:
             process.system(r_cmd, sudo=True)
@@ -92,12 +96,13 @@ class AptBackend(DpkgBackend):
         :param repo: Repository string. Example:
                 'deb http://archive.ubuntu.com/ubuntu/ maverick universe'
         """
+
         def _add_repo_file():
             add_cmd = f"bash -c \"echo '{repo}' > {self.repo_file_path}\""
             process.system(add_cmd, shell=True, sudo=True)
 
         def _get_repo_file_contents():
-            with open(self.repo_file_path, 'r', encoding='utf-8') as repo_file:
+            with open(self.repo_file_path, "r", encoding="utf-8") as repo_file:
                 return repo_file.read()
 
         if not os.path.isfile(self.repo_file_path):
@@ -121,7 +126,7 @@ class AptBackend(DpkgBackend):
         """
         try:
             new_file_contents = []
-            with open(self.repo_file_path, 'r', encoding='utf-8') as repo_file:
+            with open(self.repo_file_path, "r", encoding="utf-8") as repo_file:
                 for line in repo_file.readlines():
                     if line != repo:
                         new_file_contents.append(line)
@@ -129,9 +134,8 @@ class AptBackend(DpkgBackend):
             prefix = "avocado_software_manager"
             with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
                 tmp_file.write(new_file_contents)
-                tmp_file.flush()    # Sync the content
-                process.system(f'cp {tmp_file.name} {self.repo_file_path}',
-                               sudo=True)
+                tmp_file.flush()  # Sync the content
+                process.system(f"cp {tmp_file.name} {self.repo_file_path}", sudo=True)
         except (OSError, process.CmdError) as details:
             log.error(details)
             return False
@@ -145,21 +149,21 @@ class AptBackend(DpkgBackend):
         :param name: optional parameter wildcard spec to upgrade
         :type name: str
         """
-        ud_command = 'update'
-        ud_cmd = self.base_command + ' ' + ud_command
+        ud_command = "update"
+        ud_cmd = self.base_command + " " + ud_command
         try:
             process.system(ud_cmd, sudo=True)
         except process.CmdError:
             log.error("Apt package update failed")
 
         if name:
-            up_command = 'install --only-upgrade'
-            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef,
-                               up_command, name])
+            up_command = "install --only-upgrade"
+            up_cmd = " ".join(
+                [self.base_command, self.dpkg_force_confdef, up_command, name]
+            )
         else:
-            up_command = 'upgrade'
-            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef,
-                               up_command])
+            up_command = "upgrade"
+            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef, up_command])
 
         try:
             process.system(up_cmd, shell=True, sudo=True)
@@ -174,32 +178,36 @@ class AptBackend(DpkgBackend):
         :param name: File name.
         """
         try:
-            command = utils_path.find_command('apt-file')
+            command = utils_path.find_command("apt-file")
         except utils_path.CmdNotFoundError:
-            self.install('apt-file')
-            command = utils_path.find_command('apt-file')
+            self.install("apt-file")
+            command = utils_path.find_command("apt-file")
         try:
-            process.run(command + ' update')
+            process.run(command + " update")
         except process.CmdError:
             log.error("Apt file cache update failed")
-        fu_cmd = command + ' search ' + name
+        fu_cmd = command + " search " + name
         try:
-            paths = list(filter(None, os.environ['PATH'].split(':')))
-            provides = list(filter(None, process.run(fu_cmd).stdout_text.split('\n')))
+            paths = list(filter(None, os.environ["PATH"].split(":")))
+            provides = list(filter(None, process.run(fu_cmd).stdout_text.split("\n")))
             list_provides = []
             for each_path in paths:
                 for line in provides:
                     try:
-                        line = line.split(':')
+                        line = line.split(":")
                         package = line[0].strip()
                         lpath = line[1].strip()
-                        if lpath == os.path.join(each_path, name) and package not in list_provides:
+                        if (
+                            lpath == os.path.join(each_path, name)
+                            and package not in list_provides
+                        ):
                             list_provides.append(package)
                     except IndexError:
                         pass
             if len(list_provides) > 1:
-                log.warning('More than one package found, '
-                            'opting by the first result')
+                log.warning(
+                    "More than one package found, " "opting by the first result"
+                )
             if list_provides:
                 log.info("Package %s provides %s", list_provides[0], name)
                 return list_provides[0]
@@ -215,12 +223,14 @@ class AptBackend(DpkgBackend):
 
         :return path: path of ready-to-build source
         """
-        if not self.check_installed('dpkg-dev'):
-            if not self.install('dpkg-dev'):
-                log.info("SoftwareManager (AptBackend) can't install packages "
-                         "from local .deb files with dependency resolution: "
-                         "Package 'dpkg-dev' could not be installed")
-        src_cmd = f'{self.base_command} source {name}'
+        if not self.check_installed("dpkg-dev"):
+            if not self.install("dpkg-dev"):
+                log.info(
+                    "SoftwareManager (AptBackend) can't install packages "
+                    "from local .deb files with dependency resolution: "
+                    "Package 'dpkg-dev' could not be installed"
+                )
+        src_cmd = f"{self.base_command} source {name}"
         try:
             if self.build_dep(name):
                 if not os.path.exists(path):
@@ -242,13 +252,15 @@ class AptBackend(DpkgBackend):
 
         :return True: If packages are installed properly
         """
-        if not self.check_installed('dpkg-dev'):
-            if not self.install('dpkg-dev'):
-                log.info("SoftwareManager (AptBackend) can't install packages "
-                         "from local .deb files with dependency resolution: "
-                         "Package 'dpkg-dev' could not be installed")
+        if not self.check_installed("dpkg-dev"):
+            if not self.install("dpkg-dev"):
+                log.info(
+                    "SoftwareManager (AptBackend) can't install packages "
+                    "from local .deb files with dependency resolution: "
+                    "Package 'dpkg-dev' could not be installed"
+                )
 
-        src_cmd = f'{self.base_command} build-dep {name}'
+        src_cmd = f"{self.base_command} build-dep {name}"
         try:
             process.system_output(src_cmd)
             return True

@@ -107,6 +107,7 @@ def sys_v_init_result_parser(command):
     :return: different from the command.
     """
     if command == "status":
+
         def method(cmd_result):
             """
             Parse method for `service $name status`.
@@ -128,8 +129,10 @@ def sys_v_init_result_parser(command):
                     return False
             # If output does not contain a dead flag, check it with "running".
             return bool(re.search(b"running", output))
+
         return method
     elif command == "list":
+
         def method(cmd_result):
             """
             Parse method for `service $name list`.
@@ -163,8 +166,7 @@ def sys_v_init_result_parser(command):
                     for target in range(7):
                         status = sublines[target + 1].split(":")[-1]
                         status_per_target_dict[target] = status
-                    services_statuses_dict[service_name] = (
-                        status_per_target_dict.copy())
+                    services_statuses_dict[service_name] = status_per_target_dict.copy()
 
                 elif len(sublines) == 2:
                     # Service based on xinetd.
@@ -178,6 +180,7 @@ def sys_v_init_result_parser(command):
             # Add xinetd based service in the main dict.
             services_statuses_dict["xinetd"] = xinet_services_dict
             return services_statuses_dict
+
         return method
     return _ServiceResultParser.default_method
 
@@ -196,6 +199,7 @@ def systemd_result_parser(command):
     :return: different from the command.
     """
     if command == "status":
+
         def method(cmd_result):
             """
             Parse method for `systemctl status $name.service`.
@@ -212,8 +216,10 @@ def systemd_result_parser(command):
                 return None
             # Check it with Active status.
             return output.count(b"Active: active") > 0
+
         return method
     elif command == "list":
+
         def method(cmd_result):
             """
             Parse method for `systemctl list $name.service`.
@@ -234,14 +240,14 @@ def systemd_result_parser(command):
             lines = cmd_result.stdout_text.strip().splitlines()
             for line in lines:
                 sublines = line.strip().split()
-                if ((not len(sublines) == 2) or
-                        (not sublines[0].endswith("service"))):
+                if (not len(sublines) == 2) or (not sublines[0].endswith("service")):
                     # Some lines useless.
                     continue
                 service_name = sublines[0].rstrip(".service")
                 status = sublines[-1]
                 _service2status_dict[service_name] = status
             return _service2status_dict
+
         return method
     return _ServiceResultParser.default_method
 
@@ -259,30 +265,36 @@ def sys_v_init_command_generator(command):
     if command == "is_enabled":
         command_name = "chkconfig"
         command = ""
-    elif command == 'enable':
+    elif command == "enable":
         command_name = "chkconfig"
         command = "on"
-    elif command == 'disable':
+    elif command == "disable":
         command_name = "chkconfig"
         command = "off"
-    elif command == 'list':
+    elif command == "list":
         # noinspection PyUnusedLocal
         def _list_command(_):
             return ["chkconfig", "--list"]
+
         return _list_command
     elif command == "set_target":
+
         def _set_target_command(target):
             target = convert_systemd_target_to_runlevel(target)
             return ["telinit", target]
+
         return _set_target_command
     # Do not need reset failed, mask and unmask in sys_v style system.
     elif command in ["reset_failed", "mask", "unmask"]:
+
         def _true_command(_):
             return ["true"]
+
         return _true_command
 
     def _method(service_name):
         return [command_name, service_name, command]
+
     return _method
 
 
@@ -312,18 +324,27 @@ def systemd_command_generator(command):
         def _list_command(_):
             # systemctl pipes to `less` or $PAGER by default. Workaround this
             # add '--full' to avoid systemctl truncates service names.
-            return [command_name, "list-unit-files",
-                    "--type=service", "--no-pager", "--full"]
+            return [
+                command_name,
+                "list-unit-files",
+                "--type=service",
+                "--no-pager",
+                "--full",
+            ]
+
         return _list_command
     elif command == "set_target":
+
         def _set_target_command(target):
             return [command_name, "isolate", target]
+
         return _set_target_command
     elif command == "reset_failed":
         command = "reset-failed"
 
     def _method(service_name):
         return [command_name, command, f"{service_name}.service"]
+
     return _method
 
 
@@ -342,7 +363,7 @@ COMMANDS = (
     ("set_target", True),
     ("reset_failed", True),
     ("mask", True),
-    ("unmask", True)
+    ("unmask", True),
 )
 
 
@@ -388,14 +409,14 @@ class _ServiceCommandGenerator:  # pylint: disable=too-few-public-methods
 
     def __init__(self, command_generator, command_list=COMMANDS):
         """
-            Create staticmethods for each command in command_list.
+        Create staticmethods for each command in command_list.
 
-            :param command_generator: function that generates functions that
-                    generate lists of command strings
-            :type command_generator: function
-            :param command_list: list of all the commands, e.g. start, stop,
-                    restart, etc.
-            :type command_list: list
+        :param command_generator: function that generates functions that
+                generate lists of command strings
+        :type command_generator: function
+        :param command_list: list of all the commands, e.g. start, stop,
+                restart, etc.
+        :type command_list: list
         """
         self.commands = command_list
         for command, _ in self.commands:
@@ -416,9 +437,9 @@ def get_name_of_init(run=process.run):
         # On a local run, there are better ways to check
         # our PID 1 executable name.
         try:
-            return os.path.basename(os.readlink('/proc/1/exe'))
+            return os.path.basename(os.readlink("/proc/1/exe"))
         except OSError:
-            with open('/proc/1/cmdline', 'r') as cmdline:  # pylint: disable=W1514
+            with open("/proc/1/cmdline", "r") as cmdline:  # pylint: disable=W1514
                 init = cmdline.read().split(chr(0))[0]
                 try:
                     init = os.readlink(init)
@@ -431,9 +452,13 @@ def get_name_of_init(run=process.run):
 
 
 class _SpecificServiceManager:  # pylint: disable=too-few-public-methods
-
-    def __init__(self, service_name, service_command_generator,
-                 service_result_parser, run=process.run):
+    def __init__(
+        self,
+        service_name,
+        service_command_generator,
+        service_result_parser,
+        run=process.run,
+    ):
         """
         Create staticmethods that call process.run with the given service_name
 
@@ -455,16 +480,22 @@ class _SpecificServiceManager:  # pylint: disable=too-few-public-methods
             run_func = run
             parse_func = getattr(service_result_parser, cmd)
             command = getattr(service_command_generator, cmd)
-            setattr(self, cmd,
-                    self.generate_run_function(run_func=run_func,
-                                               parse_func=parse_func,
-                                               command=command,
-                                               service_name=service_name,
-                                               requires_root=requires_root))
+            setattr(
+                self,
+                cmd,
+                self.generate_run_function(
+                    run_func=run_func,
+                    parse_func=parse_func,
+                    command=command,
+                    service_name=service_name,
+                    requires_root=requires_root,
+                ),
+            )
 
     @staticmethod
-    def generate_run_function(run_func, parse_func, command, service_name,
-                              requires_root):
+    def generate_run_function(
+        run_func, parse_func, command, service_name, requires_root
+    ):
         """
         Generate the wrapped call to process.run for the given service_name.
 
@@ -482,6 +513,7 @@ class _SpecificServiceManager:  # pylint: disable=too-few-public-methods
         :return: wrapped process.run function.
         :rtype: function
         """
+
         def run(**kwargs):
             """
             Wrapped process.run invocation that will start/stop/etc a service.
@@ -504,6 +536,7 @@ class _SpecificServiceManager:  # pylint: disable=too-few-public-methods
             cmd = " ".join(command(service_name))
             result = run_func(cmd, **kwargs)
             return parse_func(result)
+
         return run
 
 
@@ -513,8 +546,9 @@ class _GenericServiceManager:  # pylint: disable=too-few-public-methods
     Base class for SysVInitServiceManager and SystemdServiceManager.
     """
 
-    def __init__(self, service_command_generator, service_result_parser,
-                 run=process.run):
+    def __init__(
+        self, service_command_generator, service_result_parser, run=process.run
+    ):
         """
         Create staticmethods for each service command, e.g. start, stop
 
@@ -535,11 +569,16 @@ class _GenericServiceManager:  # pylint: disable=too-few-public-methods
         for cmd, requires_root in service_command_generator.commands:
             parse_func = getattr(service_result_parser, cmd)
             command = getattr(service_command_generator, cmd)
-            setattr(self, cmd,
-                    self.generate_run_function(run_func=run,
-                                               parse_func=parse_func,
-                                               command=command,
-                                               requires_root=requires_root))
+            setattr(
+                self,
+                cmd,
+                self.generate_run_function(
+                    run_func=run,
+                    parse_func=parse_func,
+                    command=command,
+                    requires_root=requires_root,
+                ),
+            )
 
     @staticmethod
     def generate_run_function(run_func, parse_func, command, requires_root):
@@ -555,6 +594,7 @@ class _GenericServiceManager:  # pylint: disable=too-few-public-methods
         :return: wrapped process.run function.
         :rtype: function
         """
+
         def run(service="", **kwargs):
             """
             Wrapped process.run invocation that will start/stop/etc. a service.
@@ -577,10 +617,13 @@ class _GenericServiceManager:  # pylint: disable=too-few-public-methods
             cmd = " ".join(command(service))
             result = run_func(cmd, **kwargs)
             return parse_func(result)
+
         return run
 
 
-class _SysVInitServiceManager(_GenericServiceManager):  # pylint: disable=too-few-public-methods
+class _SysVInitServiceManager(
+    _GenericServiceManager
+):  # pylint: disable=too-few-public-methods
 
     """
     Concrete class that implements the SysVInitServiceManager
@@ -598,15 +641,15 @@ def convert_sysv_runlevel(level):
     :raise ValueError: when runlevel is unknown
     """
     runlevel = str(level)
-    if runlevel == '0':
+    if runlevel == "0":
         target = "poweroff.target"
-    elif runlevel in ['1', "s", "single"]:
+    elif runlevel in ["1", "s", "single"]:
         target = "rescue.target"
-    elif runlevel in ['2', '3', '4']:
+    elif runlevel in ["2", "3", "4"]:
         target = "multi-user.target"
-    elif runlevel == '5':
+    elif runlevel == "5":
         target = "graphical.target"
-    elif runlevel == '6':
+    elif runlevel == "6":
         target = "reboot.target"
     else:
         raise ValueError(f"unknown runlevel {level}")
@@ -624,15 +667,15 @@ def convert_systemd_target_to_runlevel(target):
     :raise ValueError: when systemd target is unknown
     """
     if target == "poweroff.target":
-        runlevel = '0'
+        runlevel = "0"
     elif target == "rescue.target":
-        runlevel = 's'
+        runlevel = "s"
     elif target == "multi-user.target":
-        runlevel = '3'
+        runlevel = "3"
     elif target == "graphical.target":
-        runlevel = '5'
+        runlevel = "5"
     elif target == "reboot.target":
-        runlevel = '6'
+        runlevel = "6"
     else:
         raise ValueError(f"unknown target {target}")
     return runlevel
@@ -645,7 +688,7 @@ class _SystemdServiceManager(_GenericServiceManager):
     """
 
     @staticmethod
-    def change_default_runlevel(runlevel='multi-user.target'):
+    def change_default_runlevel(runlevel="multi-user.target"):
         # atomic symlinking, symlink and then rename
         """
         Set the default systemd target.
@@ -660,14 +703,14 @@ class _SystemdServiceManager(_GenericServiceManager):
         os.rename(tmp_symlink, "/etc/systemd/system/default.target")
 
 
-_COMMAND_GENERATORS = {"init": sys_v_init_command_generator,
-                       "systemd": systemd_command_generator}
+_COMMAND_GENERATORS = {
+    "init": sys_v_init_command_generator,
+    "systemd": systemd_command_generator,
+}
 
-_RESULT_PARSERS = {"init": sys_v_init_result_parser,
-                   "systemd": systemd_result_parser}
+_RESULT_PARSERS = {"init": sys_v_init_result_parser, "systemd": systemd_result_parser}
 
-_SERVICE_MANAGERS = {"init": _SysVInitServiceManager,
-                     "systemd": _SystemdServiceManager}
+_SERVICE_MANAGERS = {"init": _SysVInitServiceManager, "systemd": _SystemdServiceManager}
 
 
 def service_manager(run=process.run):
@@ -705,8 +748,9 @@ def service_manager(run=process.run):
 
     internal_generator = _ServiceCommandGenerator(internal_command_generator)
     internal_parser = _ServiceResultParser(internal_result_parser)
-    _service_manager = internal_service_manager(internal_generator,
-                                                internal_parser, run=run)
+    _service_manager = internal_service_manager(
+        internal_generator, internal_parser, run=run
+    )
     return _service_manager
 
 
@@ -723,8 +767,7 @@ def _auto_create_specific_service_result_parser(run=process.run):
     """
     result_parser = _RESULT_PARSERS[get_name_of_init(run)]
     # remove list method
-    command_list = [(c, r) for (c, r) in COMMANDS if
-                    c not in ["list", "set_target"]]
+    command_list = [(c, r) for (c, r) in COMMANDS if c not in ["list", "set_target"]]
     return _ServiceResultParser(result_parser, command_list)
 
 
@@ -743,8 +786,7 @@ def _auto_create_specific_service_command_generator(run=process.run):
     """
     command_generator = _COMMAND_GENERATORS[get_name_of_init(run)]
     # remove list method
-    command_list = [(c, r) for (c, r) in COMMANDS if
-                    c not in ["list", "set_target"]]
+    command_list = [(c, r) for (c, r) in COMMANDS if c not in ["list", "set_target"]]
     return _ServiceCommandGenerator(command_generator, command_list)
 
 
@@ -775,9 +817,9 @@ def specific_service_manager(service_name, run=process.run):
     init = get_name_of_init(run)
     result_parser = _RESULT_PARSERS[init]
     specific_generator = _auto_create_specific_service_command_generator
-    return _SpecificServiceManager(service_name,
-                                   specific_generator(run),
-                                   _ServiceResultParser(result_parser), run)
+    return _SpecificServiceManager(
+        service_name, specific_generator(run), _ServiceResultParser(result_parser), run
+    )
 
 
 SpecificServiceManager = specific_service_manager

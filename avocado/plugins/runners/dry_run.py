@@ -15,21 +15,21 @@ class DryRunRunner(BaseRunner):
      * args: not used
     """
 
-    name = 'dry-run'
-    description = 'Runner for --dry-run'
+    name = "dry-run"
+    description = "Runner for --dry-run"
 
     def run(self, runnable):
-        yield self.prepare_status('started')
-        yield self.prepare_status('finished',
-                                  {'result': 'cancel',
-                                   'fail_reason': 'Test cancelled due to '
-                                                  '--dry-run'})
+        yield self.prepare_status("started")
+        yield self.prepare_status(
+            "finished",
+            {"result": "cancel", "fail_reason": "Test cancelled due to " "--dry-run"},
+        )
 
 
 class RunnerApp(BaseRunnerApp):
-    PROG_NAME = 'avocado-runner-dry-run'
-    PROG_DESCRIPTION = 'nrunner application for dry-run tests'
-    RUNNABLE_KINDS_CAPABLE = ['dry-run']
+    PROG_NAME = "avocado-runner-dry-run"
+    PROG_DESCRIPTION = "nrunner application for dry-run tests"
+    RUNNABLE_KINDS_CAPABLE = ["dry-run"]
 
 
 def main():
@@ -37,5 +37,5 @@ def main():
     app.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -37,7 +37,7 @@ class AvocadoApp:
     def __init__(self):
 
         # Catch all libc runtime errors to STDERR
-        os.environ['LIBC_FATAL_STDERR_'] = '1'
+        os.environ["LIBC_FATAL_STDERR_"] = "1"
 
         self._cli_dispatcher = None
         self._cli_cmd_dispatcher = None
@@ -47,9 +47,8 @@ class AvocadoApp:
         self.parser.start()
         output.early_start()
 
-        show = getattr(self.parser.args, 'core.show')
-        reconfigure_settings = {'core.paginator': False,
-                                'core.show': show}
+        show = getattr(self.parser.args, "core.show")
+        reconfigure_settings = {"core.paginator": False, "core.show": show}
         try:
             self._load_cli_plugins()
             self._configure_cli_plugins()
@@ -76,35 +75,36 @@ class AvocadoApp:
     def _load_cli_plugins(self):
         self._cli_dispatcher = CLIDispatcher()
         self._cli_cmd_dispatcher = CLICmdDispatcher()
-        output.log_plugin_failures(self._cli_dispatcher.load_failures +
-                                   self._cli_cmd_dispatcher.load_failures)
+        output.log_plugin_failures(
+            self._cli_dispatcher.load_failures + self._cli_cmd_dispatcher.load_failures
+        )
 
     def _configure_cli_plugins(self):
         if self._cli_cmd_dispatcher.extensions:
-            self._cli_cmd_dispatcher.map_method('configure', self.parser)
+            self._cli_cmd_dispatcher.map_method("configure", self.parser)
         if self._cli_dispatcher.extensions:
-            self._cli_dispatcher.map_method('configure', self.parser)
+            self._cli_dispatcher.map_method("configure", self.parser)
 
     def _run_cli_plugins(self):
         if self._cli_dispatcher.extensions:
-            self._cli_dispatcher.map_method('run', self.parser.config)
+            self._cli_dispatcher.map_method("run", self.parser.config)
 
     @staticmethod
     def _setup_signals():
-        def sigterm_handler(signum, frame):     # pylint: disable=W0613
+        def sigterm_handler(signum, frame):  # pylint: disable=W0613
             children = process.get_children_pids(os.getpid())
             for child in children:
                 process.kill_process_tree(int(child))
-            raise SystemExit('Terminated')
+            raise SystemExit("Terminated")
 
         signal.signal(signal.SIGTERM, sigterm_handler)
-        if hasattr(signal, 'SIGTSTP'):
-            signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
+        if hasattr(signal, "SIGTSTP"):
+            signal.signal(signal.SIGTSTP, signal.SIG_IGN)  # ignore ctrl+z
 
     def run(self):
         try:
             try:
-                subcmd = self.parser.config.get('subcommand')
+                subcmd = self.parser.config.get("subcommand")
                 extension = self._cli_cmd_dispatcher[subcmd]
             except KeyError:
                 return

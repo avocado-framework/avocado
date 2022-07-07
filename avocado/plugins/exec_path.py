@@ -28,8 +28,8 @@ class ExecPath(CLICmd):
     Implements the avocado 'exec-path' subcommand
     """
 
-    name = 'exec-path'
-    description = 'Returns path to avocado bash libraries and exits.'
+    name = "exec-path"
+    description = "Returns path to avocado bash libraries and exits."
 
     def run(self, config):
         """
@@ -37,7 +37,7 @@ class ExecPath(CLICmd):
 
         :param config: job configuration
         """
-        system_wide = '/usr/libexec/avocado'
+        system_wide = "/usr/libexec/avocado"
         if os.path.isdir(system_wide):
             LOG_UI.debug(system_wide)
         else:

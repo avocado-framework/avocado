@@ -35,7 +35,7 @@ class BaseDrainer(abc.ABC):
     Base drainer, doesn't provide complete functionality to be useful.
     """
 
-    name = 'avocado.utils.datadrainer.BaseDrainer'
+    name = "avocado.utils.datadrainer.BaseDrainer"
 
     def __init__(self, source, stop_check=None, name=None):
         """
@@ -51,8 +51,10 @@ class BaseDrainer(abc.ABC):
         """
         self._source = source
         if stop_check is None:
-            def stop_check():   # pylint: disable=E0102
+
+            def stop_check():  # pylint: disable=E0102
                 return False
+
         self._stop_check = stop_check
         if name is not None:
             self.name = name
@@ -98,8 +100,9 @@ class BaseDrainer(abc.ABC):
         """
         Starts a thread to do the data draining
         """
-        self._thread = threading.Thread(target=self._loop,  # pylint: disable=W0201
-                                        name=self.name)
+        self._thread = threading.Thread(  # pylint: disable=W0201
+            target=self._loop, name=self.name
+        )
 
         self._thread.daemon = True
         self._thread.start()
@@ -123,7 +126,7 @@ class FDDrainer(BaseDrainer):
     consequently not a complete implementation users can pick and use.
     """
 
-    name = 'avocado.utils.datadrainer.FDDrainer'
+    name = "avocado.utils.datadrainer.FDDrainer"
 
     def data_available(self):  # pylint: disable=W0221
         try:
@@ -133,7 +136,7 @@ class FDDrainer(BaseDrainer):
                 return False
 
     def read(self):
-        data = b''
+        data = b""
         try:
             data = os.read(self._source, io.DEFAULT_BUFFER_SIZE)
         except OSError as exc:
@@ -151,7 +154,7 @@ class BufferFDDrainer(FDDrainer):
     Drains data from a file descriptor and stores it in an internal buffer
     """
 
-    name = 'avocado.utils.datadrainer.BufferFDDrainer'
+    name = "avocado.utils.datadrainer.BufferFDDrainer"
 
     def __init__(self, source, stop_check=None, name=None):
         super().__init__(source, stop_check, name)
@@ -170,7 +173,7 @@ class BufferFDDrainer(FDDrainer):
 
 class LineLogger(FDDrainer):
 
-    name = 'avocado.utils.datadrainer.LineLogger'
+    name = "avocado.utils.datadrainer.LineLogger"
 
     def __init__(self, source, stop_check=None, name=None, logger=None):
         super().__init__(source, stop_check, name)
@@ -178,16 +181,16 @@ class LineLogger(FDDrainer):
         self._buffer = io.BytesIO()
 
     def write(self, data):
-        if b'\n' not in data:
+        if b"\n" not in data:
             self._buffer.write(data)
             return
         data = self._buffer.getvalue() + data
-        lines = data.split(b'\n')
-        if not lines[-1].endswith(b'\n'):
+        lines = data.split(b"\n")
+        if not lines[-1].endswith(b"\n"):
             self._buffer.close()
             self._buffer = io.BytesIO()
             self._buffer.write(lines[-1])
         for line in lines:
-            line = line.decode(errors='replace').rstrip('\n')
+            line = line.decode(errors="replace").rstrip("\n")
             if line:
                 self._logger.debug(line)

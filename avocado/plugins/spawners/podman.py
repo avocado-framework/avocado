@@ -20,73 +20,75 @@ LOG = logging.getLogger(__name__)
 
 class PodmanSpawnerInit(Init):
 
-    description = 'Podman (container) based spawner initialization'
+    description = "Podman (container) based spawner initialization"
 
     def initialize(self):
-        section = 'spawner.podman'
+        section = "spawner.podman"
 
-        help_msg = 'Path to the podman binary'
+        help_msg = "Path to the podman binary"
         settings.register_option(
-            section=section,
-            key='bin',
-            help_msg=help_msg,
-            default='/usr/bin/podman')
+            section=section, key="bin", help_msg=help_msg, default="/usr/bin/podman"
+        )
 
         this_distro = distro.detect()
         if this_distro != distro.UNKNOWN_DISTRO:
-            default_distro = f'{this_distro.name}:{this_distro.version}'
+            default_distro = f"{this_distro.name}:{this_distro.version}"
         else:
-            default_distro = 'fedora:latest'
-        help_msg = (f'Image name to use when creating the container. '
-                    f'The first default choice is a container image '
-                    f'matching the current OS. If unable to detect, '
-                    f'default becomes the latest Fedora release. Default '
-                    f'on this system: {default_distro}')
+            default_distro = "fedora:latest"
+        help_msg = (
+            f"Image name to use when creating the container. "
+            f"The first default choice is a container image "
+            f"matching the current OS. If unable to detect, "
+            f"default becomes the latest Fedora release. Default "
+            f"on this system: {default_distro}"
+        )
         settings.register_option(
-            section=section,
-            key='image',
-            help_msg=help_msg,
-            default=default_distro)
+            section=section, key="image", help_msg=help_msg, default=default_distro
+        )
 
-        help_msg = ('Avocado egg path to be used during initial bootstrap '
-                    'of avocado inside the isolated environment. By default, '
-                    'Avocado will try to download (or get from cache) an '
-                    'egg from its repository.')
+        help_msg = (
+            "Avocado egg path to be used during initial bootstrap "
+            "of avocado inside the isolated environment. By default, "
+            "Avocado will try to download (or get from cache) an "
+            "egg from its repository."
+        )
 
-        settings.register_option(section=section,
-                                 key='avocado_spawner_egg',
-                                 help_msg=help_msg,
-                                 default=None)
+        settings.register_option(
+            section=section, key="avocado_spawner_egg", help_msg=help_msg, default=None
+        )
 
 
 class PodmanCLI(CLI):
 
-    name = 'podman'
+    name = "podman"
     description = 'podman spawner command line options for "run"'
 
     def configure(self, parser):
         super().configure(parser)
-        parser = parser.subcommands.choices.get('run', None)
+        parser = parser.subcommands.choices.get("run", None)
         if parser is None:
             return
 
-        parser = parser.add_argument_group('podman spawner specific options')
-        settings.add_argparser_to_option(namespace='spawner.podman.bin',
-                                         parser=parser,
-                                         long_arg='--spawner-podman-bin',
-                                         metavar='PODMAN_BIN')
+        parser = parser.add_argument_group("podman spawner specific options")
+        settings.add_argparser_to_option(
+            namespace="spawner.podman.bin",
+            parser=parser,
+            long_arg="--spawner-podman-bin",
+            metavar="PODMAN_BIN",
+        )
 
-        settings.add_argparser_to_option(namespace='spawner.podman.image',
-                                         parser=parser,
-                                         long_arg='--spawner-podman-image',
-                                         metavar='CONTAINER_IMAGE')
+        settings.add_argparser_to_option(
+            namespace="spawner.podman.image",
+            parser=parser,
+            long_arg="--spawner-podman-image",
+            metavar="CONTAINER_IMAGE",
+        )
 
-        namespace = 'spawner.podman.avocado_spawner_egg'
-        long_arg = '--spawner-podman-avocado-egg'
-        settings.add_argparser_to_option(namespace=namespace,
-                                         parser=parser,
-                                         long_arg=long_arg,
-                                         metavar='AVOCADO_EGG')
+        namespace = "spawner.podman.avocado_spawner_egg"
+        long_arg = "--spawner-podman-avocado-egg"
+        settings.add_argparser_to_option(
+            namespace=namespace, parser=parser, long_arg=long_arg, metavar="AVOCADO_EGG"
+        )
 
     def run(self, config):
         pass
@@ -94,7 +96,7 @@ class PodmanCLI(CLI):
 
 class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
-    description = 'Podman (container) based spawner'
+    description = "Podman (container) based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
     _PYTHON_VERSIONS_CACHE = {}
@@ -106,19 +108,26 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
     def is_task_alive(self, runtime_task):  # pylint: disable=W0221
         if runtime_task.spawner_handle is None:
             return False
-        podman_bin = self.config.get('spawner.podman.bin')
-        cmd = [podman_bin, "ps", "--all", "--format={{.State}}",
-               f"--filter=id={runtime_task.spawner_handle}"]
-        process = subprocess.Popen(cmd,
-                                   stdin=subprocess.DEVNULL,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.DEVNULL)
+        podman_bin = self.config.get("spawner.podman.bin")
+        cmd = [
+            podman_bin,
+            "ps",
+            "--all",
+            "--format={{.State}}",
+            f"--filter=id={runtime_task.spawner_handle}",
+        ]
+        process = subprocess.Popen(
+            cmd,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        )
         out, _ = process.communicate()
         # FIXME: check how podman 2.x is reporting valid "OK" states
-        return out.startswith(b'Up ')
+        return out.startswith(b"Up ")
 
     def _fetch_asset(self, url):
-        cachedirs = self.config.get('datadir.paths.cache_dirs')
+        cachedirs = self.config.get("datadir.paths.cache_dirs")
         asset = Asset(url, cache_dirs=cachedirs)
         return asset.fetch()
 
@@ -132,8 +141,10 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         # Setuptools
         # For now let's pin to setuptools 59.2.
         # TODO: Automatically get latest setuptools version.
-        eggs = [f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{py_major}.{py_minor}.egg"]
-        local_egg = self.config.get('spawner.podman.avocado_spawner_egg')
+        eggs = [
+            f"https://github.com/avocado-framework/setuptools/releases/download/v59.2.0/setuptools-59.2.0-py{py_major}.{py_minor}.egg"
+        ]
+        local_egg = self.config.get("spawner.podman.avocado_spawner_egg")
         if local_egg:
             eggs.append(local_egg)
         else:
@@ -142,13 +153,13 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
         for url in eggs:
             path = self._fetch_asset(url)
-            to = os.path.join('/tmp/', os.path.basename(path))
+            to = os.path.join("/tmp/", os.path.basename(path))
             result.append((path, to))
         return result
 
     @property
     async def python_version(self):
-        image = self.config.get('spawner.podman.image')
+        image = self.config.get("spawner.podman.image")
         if image not in self._PYTHON_VERSIONS_CACHE:
             if not self.podman:
                 msg = "Cannot get Python version: self.podman not defined."
@@ -169,33 +180,30 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         for egg, to in eggs:
             await self.podman.copy_to_container(where, egg, to)
 
-    async def _create_container_for_task(self, runtime_task, env_args,
-                                         test_output=None):
+    async def _create_container_for_task(
+        self, runtime_task, env_args, test_output=None
+    ):
         mount_status_server_socket = False
-        mounted_status_server_socket = '/tmp/.status_server.sock'
+        mounted_status_server_socket = "/tmp/.status_server.sock"
         status_server_uri = runtime_task.task.status_services[0].uri
-        if ':' not in status_server_uri:
+        if ":" not in status_server_uri:
             # a unix domain socket is being used
             mount_status_server_socket = True
             runtime_task.task.status_services[0].uri = mounted_status_server_socket
 
         _, _, python_binary = await self.python_version
-        entry_point_args = [python_binary,
-                            '-m',
-                            'avocado.core.nrunner',
-                            'task-run']
+        entry_point_args = [python_binary, "-m", "avocado.core.nrunner", "task-run"]
 
         test_opts = ()
-        if runtime_task.task.category == 'test':
+        if runtime_task.task.category == "test":
             runnable_uri = runtime_task.task.runnable.uri
             try:
-                test_path, _ = runnable_uri.split(':', 1)
+                test_path, _ = runnable_uri.split(":", 1)
             except ValueError:
                 test_path = runnable_uri
             if os.path.exists(test_path):
-                to = os.path.join('/tmp', test_path)
-                runtime_task.task.runnable.uri = os.path.join('/tmp',
-                                                              runnable_uri)
+                to = os.path.join("/tmp", test_path)
+                runtime_task.task.runnable.uri = os.path.join("/tmp", runnable_uri)
                 test_opts = ("-v", f"{os.path.abspath(test_path)}:{to}:ro")
 
         task = runtime_task.task
@@ -206,32 +214,36 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         if mount_status_server_socket:
             status_server_opts = (
                 "--privileged",
-                "-v", f"{status_server_uri}:{mounted_status_server_socket}"
+                "-v",
+                f"{status_server_uri}:{mounted_status_server_socket}",
             )
         else:
-            status_server_opts = ("--net=host", )
+            status_server_opts = ("--net=host",)
 
         output_opts = ()
         if test_output:
             podman_output = runtime_task.task.runnable.output_dir
-            output_opts = ("-v",
-                           (f"{test_output}:"
-                            f"{os.path.expanduser(podman_output)}"))
+            output_opts = (
+                "-v",
+                (f"{test_output}:" f"{os.path.expanduser(podman_output)}"),
+            )
 
         image, _ = self._get_image_from_cache(runtime_task)
         if not image:
-            image = self.config.get('spawner.podman.image')
+            image = self.config.get("spawner.podman.image")
 
         envs = [f"-e={k}={v}" for k, v in env_args.items()]
         try:
             # pylint: disable=W0201
-            _, stdout, _ = await self.podman.execute("create",
-                                                     *status_server_opts,
-                                                     *output_opts,
-                                                     *test_opts,
-                                                     entry_point_arg,
-                                                     *envs,
-                                                     image)
+            _, stdout, _ = await self.podman.execute(
+                "create",
+                *status_server_opts,
+                *output_opts,
+                *test_opts,
+                entry_point_arg,
+                *envs,
+                image,
+            )
         except PodmanException as ex:
             msg = f"Could not create podman container: {ex}"
             runtime_task.status = msg
@@ -241,7 +253,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     async def spawn_task(self, runtime_task):
         self.create_task_output_dir(runtime_task)
-        podman_bin = self.config.get('spawner.podman.bin')
+        podman_bin = self.config.get("spawner.podman.bin")
         try:
             # pylint: disable=W0201
             self.podman = Podman(podman_bin)
@@ -253,11 +265,11 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         # Return only the "to" location
         eggs = self.get_eggs_paths(major, minor)
         destination_eggs = ":".join(map(lambda egg: str(egg[1]), eggs))
-        env_args = {'PYTHONPATH': destination_eggs}
+        env_args = {"PYTHONPATH": destination_eggs}
         output_dir_path = self.task_output_dir(runtime_task)
-        container_id = await self._create_container_for_task(runtime_task,
-                                                             env_args,
-                                                             output_dir_path)
+        container_id = await self._create_container_for_task(
+            runtime_task, env_args, output_dir_path
+        )
 
         runtime_task.spawner_handle = container_id
 
@@ -276,7 +288,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
 
     def create_task_output_dir(self, runtime_task):
         output_dir_path = self.task_output_dir(runtime_task)
-        output_podman_path = '~/avocado/job-results/spawner/task'
+        output_podman_path = "~/avocado/job-results/spawner/task"
 
         os.makedirs(output_dir_path, exist_ok=True)
         runtime_task.task.setup_output_dir(output_podman_path)
@@ -304,40 +316,44 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             return False
         return True
 
-    async def update_requirement_cache(self, runtime_task, result):  # pylint: disable=W0221
+    async def update_requirement_cache(
+        self, runtime_task, result
+    ):  # pylint: disable=W0221
         environment_id, _ = self._get_image_from_cache(runtime_task, True)
         if result in STATUSES_NOT_OK:
             cache.delete_environment(self.environment, environment_id)
             return
-        _, stdout, _ = await self.podman.execute("commit", "-q",
-                                                 runtime_task.spawner_handle)
+        _, stdout, _ = await self.podman.execute(
+            "commit", "-q", runtime_task.spawner_handle
+        )
         container_id = stdout.decode().strip()
-        cache.update_environment(self.environment,
-                                 environment_id,
-                                 container_id)
-        cache.update_requirement_status(self.environment,
-                                        container_id,
-                                        runtime_task.task.runnable.kind,
-                                        runtime_task.task.runnable.kwargs.get(
-                                            'name'),
-                                        True)
+        cache.update_environment(self.environment, environment_id, container_id)
+        cache.update_requirement_status(
+            self.environment,
+            container_id,
+            runtime_task.task.runnable.kind,
+            runtime_task.task.runnable.kwargs.get("name"),
+            True,
+        )
 
     async def save_requirement_in_cache(self, runtime_task):  # pylint: disable=W0221
         container_id = str(uuid.uuid4())
         _, requirements = self._get_image_from_cache(runtime_task)
         if requirements:
             for requirement_type, requirement in requirements:
-                cache.set_requirement(self.environment, container_id,
-                                      requirement_type, requirement)
-        cache.set_requirement(self.environment,
-                              container_id,
-                              runtime_task.task.runnable.kind,
-                              runtime_task.task.runnable.kwargs.get('name'),
-                              False)
+                cache.set_requirement(
+                    self.environment, container_id, requirement_type, requirement
+                )
+        cache.set_requirement(
+            self.environment,
+            container_id,
+            runtime_task.task.runnable.kind,
+            runtime_task.task.runnable.kwargs.get("name"),
+            False,
+        )
 
     async def is_requirement_in_cache(self, runtime_task):  # pylint: disable=W0221
-        environment, _ = self._get_image_from_cache(runtime_task,
-                                                    use_task=True)
+        environment, _ = self._get_image_from_cache(runtime_task, use_task=True)
         if not environment:
             return False
         if cache.is_environment_prepared(environment):
@@ -345,32 +361,36 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         return None
 
     def _get_image_from_cache(self, runtime_task, use_task=False):
-
         def _get_all_finished_requirements(requirement_tasks):
             all_finished_requirements = []
             for requirement in requirement_tasks:
-                all_finished_requirements.extend(_get_all_finished_requirements(
-                    requirement.dependencies))
+                all_finished_requirements.extend(
+                    _get_all_finished_requirements(requirement.dependencies)
+                )
                 runnable = requirement.task.runnable
-                all_finished_requirements.append((runnable.kind,
-                                                  runnable.kwargs.get('name')))
+                all_finished_requirements.append(
+                    (runnable.kind, runnable.kwargs.get("name"))
+                )
             return all_finished_requirements
 
         finished_requirements = []
         if use_task:
             finished_requirements.append(
-                (runtime_task.task.runnable.kind,
-                 runtime_task.task.runnable.kwargs.get('name')))
+                (
+                    runtime_task.task.runnable.kind,
+                    runtime_task.task.runnable.kwargs.get("name"),
+                )
+            )
         finished_requirements.extend(
-            _get_all_finished_requirements(runtime_task.dependencies))
+            _get_all_finished_requirements(runtime_task.dependencies)
+        )
         if not finished_requirements:
             return None, None
 
         runtime_task_kind, runtime_task_name = finished_requirements[0]
         cache_entries = cache.get_all_environments_with_requirement(
-            self.environment,
-            runtime_task_kind,
-            runtime_task_name)
+            self.environment, runtime_task_kind, runtime_task_name
+        )
         if not cache_entries:
             return None, None
         for image, requirements in cache_entries.items():

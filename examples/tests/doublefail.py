@@ -14,10 +14,10 @@ class DoubleFail(Test):
         """
         Should fail.
         """
-        raise self.fail('This test is supposed to fail')
+        raise self.fail("This test is supposed to fail")
 
     def tearDown(self):
         """
         Should also fail.
         """
-        raise self.error('Failing during tearDown. Yay!')
+        raise self.error("Failing during tearDown. Yay!")

@@ -2,7 +2,6 @@ from avocado import Test
 
 
 class Property(Test):
-
     @property
     def testing_the_existence_of_properties(self):
         """
@@ -15,5 +14,4 @@ class Property(Test):
         return True
 
     def test(self):
-        self.log.info("Property exists: %s",
-                      self.testing_the_existence_of_properties)
+        self.log.info("Property exists: %s", self.testing_the_existence_of_properties)

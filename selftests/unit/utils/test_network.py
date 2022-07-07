@@ -4,13 +4,13 @@ from avocado.utils.network import ports
 
 try:
     import netifaces
+
     HAS_NETIFACES = True
 except ImportError:
     HAS_NETIFACES = False
 
 
 class PortTrackerTest(unittest.TestCase):
-
     def test_register_port(self):
         tracker = ports.PortTracker()
         ports.is_port_free = unittest.mock.MagicMock(return_value=True)
@@ -42,10 +42,8 @@ def get_all_local_addrs():
     ipv6_addrs = []
     for interface in netifaces.interfaces():
         ifaddresses = netifaces.ifaddresses(interface)
-        ipv4_addrs += [_['addr']
-                       for _ in ifaddresses.get(netifaces.AF_INET, [])]
-        ipv6_addrs += [_['addr']
-                       for _ in ifaddresses.get(netifaces.AF_INET6, [])]
+        ipv4_addrs += [_["addr"] for _ in ifaddresses.get(netifaces.AF_INET, [])]
+        ipv6_addrs += [_["addr"] for _ in ifaddresses.get(netifaces.AF_INET6, [])]
     if ipv4_addrs:
         ipv4_addrs += ["localhost", ""]
     if ipv6_addrs:
@@ -54,10 +52,9 @@ def get_all_local_addrs():
 
 
 class FreePort(unittest.TestCase):
-
     def test_is_port_available(self):
         port = ports.find_free_port(sequent=False)
-        result = ports.is_port_available(port, 'localhost')
+        result = ports.is_port_available(port, "localhost")
         self.assertTrue(result)
 
     def test_find_free_port(self):

@@ -55,7 +55,7 @@ class MuxTree:
 
     @staticmethod
     def _iter_mux_leaves(node):
-        """ yield leaves or muxes of the tree """
+        """yield leaves or muxes of the tree"""
         queue = collections.deque()
         while node is not None:
             if node.is_leaf or getattr(node, "multiplex", None):
@@ -87,8 +87,7 @@ class MuxTree:
         for pool in self.pools:
             if isinstance(pool, list):
                 # Don't process 2nd level filters in non-root pools
-                pools.append(itertools.chain(*(_.iter_variants()
-                                               for _ in pool)))
+                pools.append(itertools.chain(*(_.iter_variants() for _ in pool)))
             else:
                 pools.append([pool])
         variants = itertools.product(*pools)
@@ -114,22 +113,20 @@ class MuxTree:
             return True
         filter_only = tuple(_filter_only)
         filter_out = tuple(_filter_out)
-        filter_only_parents = [str(_).rsplit('/', 2)[0] + '/'
-                               for _ in filter_only
-                               if _]
+        filter_only_parents = [str(_).rsplit("/", 2)[0] + "/" for _ in filter_only if _]
 
         for out in filter_out:
             for node in variant:
-                path = node.path + '/'
+                path = node.path + "/"
                 if path.startswith(out):
                     return False
         for node in variant:
             keep = 0
             remove = 0
-            path = node.path + '/'
-            ppath = path.rsplit('/', 2)[0] + '/'
+            path = node.path + "/"
+            ppath = path.rsplit("/", 2)[0] + "/"
             for i in range(len(filter_only)):
-                level = filter_only[i].count('/')
+                level = filter_only[i].count("/")
                 if level < max(keep, remove):
                     continue
                 if ppath.startswith(filter_only_parents[i]):
@@ -148,6 +145,7 @@ class MuxPlugin:
     a base class in conjunction with
     :class:`avocado.core.plugin_interfaces.Varianter`.
     """
+
     root = None
     variants = None
     paths = None
@@ -163,8 +161,9 @@ class MuxPlugin:
         self.root = root
         self.paths = paths
         if self.root is not None:
-            self.variant_ids = [varianter.generate_variant_id(variant)
-                                for variant in MuxTree(self.root)]
+            self.variant_ids = [
+                varianter.generate_variant_id(variant) for variant in MuxTree(self.root)
+            ]
             self.variants = MuxTree(self.root)
 
     def __iter__(self):
@@ -175,9 +174,7 @@ class MuxPlugin:
             return
 
         for vid, variant in zip(self.variant_ids, self.variants):
-            yield {"variant_id": vid,
-                   "variant": variant,
-                   "paths": self.paths}
+            yield {"variant_id": vid, "variant": variant, "paths": self.paths}
 
     def to_str(self, summary, variants, **kwargs):
         """
@@ -190,18 +187,18 @@ class MuxPlugin:
             # Log tree representation
             out.append("Multiplex tree representation:")
             # summary == 0 means disable, but in plugin it's brief
-            tree_repr = tree.tree_view(self.root, verbose=summary - 1,
-                                       use_utf8=kwargs.get("use_utf8", None))
+            tree_repr = tree.tree_view(
+                self.root, verbose=summary - 1, use_utf8=kwargs.get("use_utf8", None)
+            )
             # ascii is a subset of UTF-8, let's use always UTF-8 to decode here
-            out.append(tree_repr.decode('utf-8'))
+            out.append(tree_repr.decode("utf-8"))
             out.append("")
 
         if variants:
             # variants == 0 means disable, but in plugin it's brief
             out.append(f"Multiplex variants ({len(self)}):")
             for variant in self:
-                out.extend(varianter.variant_to_str(variant, variants - 1,
-                                                    kwargs))
+                out.extend(varianter.variant_to_str(variant, variants - 1, kwargs))
         return "\n".join(out)
 
     def __len__(self):
@@ -215,7 +212,7 @@ class MuxPlugin:
 
 class OutputValue:  # only container pylint: disable=R0903
 
-    """ Ordinary value with some debug info """
+    """Ordinary value with some debug info"""
 
     def __init__(self, value, node, srcyaml):
         self.value = value
@@ -223,13 +220,15 @@ class OutputValue:  # only container pylint: disable=R0903
         self.yaml = srcyaml
 
     def __str__(self):
-        return (f"{self.value}{output.TERM_SUPPORT.LOWLIGHT}@{self.yaml}:"
-                f"{self.node.path}{output.TERM_SUPPORT.ENDC}")
+        return (
+            f"{self.value}{output.TERM_SUPPORT.LOWLIGHT}@{self.yaml}:"
+            f"{self.node.path}{output.TERM_SUPPORT.ENDC}"
+        )
 
 
 class OutputList(list):  # only container pylint: disable=R0903
 
-    """ List with some debug info """
+    """List with some debug info"""
 
     def __init__(self, values, nodes, yamls):
         super().__init__(values)
@@ -237,23 +236,22 @@ class OutputList(list):  # only container pylint: disable=R0903
         self.yamls = yamls
 
     def __add__(self, other):
-        """ Keep attrs separate in order to print the origins """
+        """Keep attrs separate in order to print the origins"""
         value = super().__add__(other)
-        return OutputList(value,
-                          self.nodes + other.nodes,
-                          self.yamls + other.yamls)
+        return OutputList(value, self.nodes + other.nodes, self.yamls + other.yamls)
 
     def __str__(self):
         color = output.TERM_SUPPORT.LOWLIGHT
         cend = output.TERM_SUPPORT.ENDC
-        return ' + '.join(f"{_[0]}{color}@{_[1]}:{_[2].path}{cend}"
-                          for _ in zip(self, self.yamls,
-                                       self.nodes))
+        return " + ".join(
+            f"{_[0]}{color}@{_[1]}:{_[2].path}{cend}"
+            for _ in zip(self, self.yamls, self.nodes)
+        )
 
 
 class ValueDict(dict):  # only container pylint: disable=R0903
 
-    """ Dict which stores the origin of the items """
+    """Dict which stores the origin of the items"""
 
     def __init__(self, srcyaml, node, values):
         super().__init__()
@@ -264,7 +262,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
             self[key] = value
 
     def __setitem__(self, key, value):
-        """ Store yaml_per_key and value """
+        """Store yaml_per_key and value"""
         # Merge is responsible to set `self.yaml` to current file
         self.yaml_per_key[key] = self.yaml
         return super().__setitem__(key, value)
@@ -285,14 +283,14 @@ class ValueDict(dict):  # only container pylint: disable=R0903
         return value
 
     def items(self):
-        """ Slower implementation with the use of __getitem__ """
+        """Slower implementation with the use of __getitem__"""
         for key in self:
             yield key, self[key]
 
 
 class Control:  # Few methods pylint: disable=R0903
 
-    """ Container used to identify node vs. control sequence """
+    """Container used to identify node vs. control sequence"""
 
     def __init__(self, code, value=None):
         self.code = code
@@ -306,13 +304,13 @@ class MuxTreeNode(tree.TreeNode):
     multiplexation
     """
 
-    def __init__(self, name='', value=None, parent=None, children=None):
+    def __init__(self, name="", value=None, parent=None, children=None):
         super().__init__(name, value, parent, children)
         self.ctrl = []
         self.multiplex = None
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(name={self.name!r})'
+        return f"{self.__class__.__name__}(name={self.name!r})"
 
     def fingerprint(self):
         return f"{super().fingerprint()}{self.ctrl}"
@@ -360,9 +358,9 @@ def path_parent(path):
     :param path: the node path as string.
     :return: the parent path as string.
     """
-    parent = path.rpartition('/')[0]
+    parent = path.rpartition("/")[0]
     if not parent:
-        return '/'
+        return "/"
     return parent
 
 
@@ -384,15 +382,15 @@ def apply_filters(root, filter_only=None, filter_out=None):
     if filter_only is None:
         filter_only = []
     else:
-        filter_only = [_.rstrip('/') for _ in filter_only if _]
+        filter_only = [_.rstrip("/") for _ in filter_only if _]
     if filter_out is None:
         filter_out = []
     else:
-        filter_out = [_.rstrip('/') for _ in filter_out if _]
+        filter_out = [_.rstrip("/") for _ in filter_out if _]
     for node in root.iter_children_preorder():
         keep_node = True
         for path in filter_only:
-            if path == '':
+            if path == "":
                 continue
             if node.path == path:
                 keep_node = True
@@ -401,7 +399,7 @@ def apply_filters(root, filter_only=None, filter_out=None):
                 keep_node = False
                 continue
         for path in filter_out:
-            if path == '':
+            if path == "":
                 continue
             if node.path == path:
                 keep_node = False

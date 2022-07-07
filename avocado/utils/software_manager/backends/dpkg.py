@@ -9,7 +9,7 @@ from avocado.utils import path as utils_path
 from avocado.utils import process
 from avocado.utils.software_manager.backends.base import BaseBackend
 
-log = logging.getLogger('avocado.utils.software_manager')
+log = logging.getLogger("avocado.utils.software_manager")
 
 
 class DpkgBackend(BaseBackend):
@@ -21,20 +21,20 @@ class DpkgBackend(BaseBackend):
     as apt and aptitude.
     """
 
-    PACKAGE_TYPE = 'deb'
-    INSTALLED_OUTPUT = 'install ok installed'
+    PACKAGE_TYPE = "deb"
+    INSTALLED_OUTPUT = "install ok installed"
 
     def __init__(self):
-        self.lowlevel_base_cmd = utils_path.find_command('dpkg')
+        self.lowlevel_base_cmd = utils_path.find_command("dpkg")
 
     def check_installed(self, name):
         if os.path.isfile(name):
-            n_cmd = self.lowlevel_base_cmd + ' -f ' + name + ' Package'
+            n_cmd = self.lowlevel_base_cmd + " -f " + name + " Package"
             name = process.system_output(n_cmd)
         i_cmd = self.lowlevel_base_cmd + " -s " + name
         # Checking if package is installed
         package_status = process.run(i_cmd, ignore_status=True).stdout_text
-        dpkg_installed = (self.INSTALLED_OUTPUT in package_status)
+        dpkg_installed = self.INSTALLED_OUTPUT in package_status
         if dpkg_installed:
             return True
         return False
@@ -46,7 +46,7 @@ class DpkgBackend(BaseBackend):
         """
         log.debug("Listing all system packages (may take a while)")
         installed_packages = []
-        cmd_result = process.run('dpkg -l', verbose=False)
+        cmd_result = process.run("dpkg -l", verbose=False)
         out = cmd_result.stdout_text.strip()
         raw_list = out.splitlines()[5:]
         for line in raw_list:
@@ -64,9 +64,7 @@ class DpkgBackend(BaseBackend):
         :rtype: bool
         """
         abs_path = os.path.abspath(os.path.expanduser((package_path)))
-        member_regexes = [r'debian-binary',
-                          r'control\.tar\..*',
-                          r'data\.tar\..*']
+        member_regexes = [r"debian-binary", r"control\.tar\..*", r"data\.tar\..*"]
         members = ar.Ar(abs_path).list()
         if len(members) != len(member_regexes):
             return False
@@ -104,7 +102,7 @@ class DpkgBackend(BaseBackend):
         :return: List of paths installed by package.
         """
         if os.path.isfile(package):
-            l_cmd = self.lowlevel_base_cmd + ' -c ' + package
+            l_cmd = self.lowlevel_base_cmd + " -c " + package
         else:
-            l_cmd = self.lowlevel_base_cmd + ' -l ' + package
-        return process.system_output(l_cmd).split('\n')
+            l_cmd = self.lowlevel_base_cmd + " -l " + package
+        return process.system_output(l_cmd).split("\n")

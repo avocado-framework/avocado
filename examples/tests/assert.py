@@ -10,7 +10,6 @@ def raises_exception():
 
 
 class Assert(Test):
-
     def test_assert_raises(self):
         with self.assertRaises(MyException):
             raises_exception()

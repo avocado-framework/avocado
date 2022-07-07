@@ -45,15 +45,13 @@ def get_diskspace(disk):
     :rtype: str
     :raises: :py:class:`LVException` on failure to find disk space
     """
-    warnings.warn("deprecated, use get_device_total_space instead",
-                  DeprecationWarning)
-    result = process.run(f'fdisk -l {disk}',
-                         env={"LANG": "C"}, sudo=True).stdout_text
+    warnings.warn("deprecated, use get_device_total_space instead", DeprecationWarning)
+    result = process.run(f"fdisk -l {disk}", env={"LANG": "C"}, sudo=True).stdout_text
     results = result.splitlines()
     for line in results:
-        if line.startswith('Disk ' + disk):
+        if line.startswith("Disk " + disk):
             return re.findall(r", (.*?) bytes", line)[0]
-    raise LVException('Error in finding disk space')
+    raise LVException("Error in finding disk space")
 
 
 def get_device_total_space(disk):
@@ -64,13 +62,12 @@ def get_device_total_space(disk):
     :rtype: int
     :raises: :py:class:`LVException` on failure to find disk space
     """
-    result = process.run(f'fdisk -l {disk}',
-                         env={"LANG": "C"}, sudo=True).stdout_text
+    result = process.run(f"fdisk -l {disk}", env={"LANG": "C"}, sudo=True).stdout_text
     results = result.splitlines()
     for line in results:
-        if line.startswith('Disk ' + disk):
+        if line.startswith("Disk " + disk):
             return int(re.findall(r", (.*?) bytes", line)[0])
-    raise LVException('Error in finding disk space')
+    raise LVException("Error in finding disk space")
 
 
 def get_devices_total_space(devices):
@@ -85,13 +82,18 @@ def get_devices_total_space(devices):
     for device in devices:
         size = size + get_device_total_space(device)
     if not size:
-        raise LVException('failed to get disks size')
+        raise LVException("failed to get disks size")
     return size
 
 
-def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
-               ramdisk_basedir, ramdisk_sparse_filename,
-               use_tmpfs=True):
+def vg_ramdisk(
+    disk,
+    vg_name,
+    ramdisk_vg_size,
+    ramdisk_basedir,
+    ramdisk_sparse_filename,
+    use_tmpfs=True,
+):
     """
     Create volume group on top of ram memory to speed up LV performance.
     When disk is specified the size of the physical volume is taken from
@@ -120,16 +122,15 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
     - lv_snapshot_size='1G'
     The ramdisk volume group size is in MB.
     """
-    warnings.warn("deprecated, use existing methods: vg_create, lv_create",
-                  DeprecationWarning)
+    warnings.warn(
+        "deprecated, use existing methods: vg_create, lv_create", DeprecationWarning
+    )
     vg_size = ramdisk_vg_size
     vg_ramdisk_dir = os.path.join(ramdisk_basedir, vg_name)
-    ramdisk_filename = os.path.join(vg_ramdisk_dir,
-                                    ramdisk_sparse_filename)
+    ramdisk_filename = os.path.join(vg_ramdisk_dir, ramdisk_sparse_filename)
     # Try to cleanup the ramdisk before defining it
     try:
-        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
-                           vg_name, use_tmpfs)
+        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name, use_tmpfs)
     except LVException:
         pass
     if not os.path.exists(vg_ramdisk_dir):
@@ -137,24 +138,21 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
     try:
         if use_tmpfs:
             LOGGER.debug("Mounting tmpfs")
-            process.run(f"mount -t tmpfs tmpfs {vg_ramdisk_dir}",
-                        sudo=True)
+            process.run(f"mount -t tmpfs tmpfs {vg_ramdisk_dir}", sudo=True)
 
         LOGGER.debug("Converting and copying /dev/zero")
         if disk:
             vg_size = get_diskspace(disk)
 
         # Initializing sparse file with extra few bytes
-        cmd = (f"dd if=/dev/zero of={ramdisk_filename} bs=1M count=1 "
-               f"seek={vg_size}")
+        cmd = f"dd if=/dev/zero of={ramdisk_filename} bs=1M count=1 " f"seek={vg_size}"
         process.run(cmd)
         if not disk:
             LOGGER.debug("Finding free loop device")
             result = process.run("losetup --find", sudo=True)
     except process.CmdError as ex:
         LOGGER.error(ex)
-        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
-                           vg_name, use_tmpfs)
+        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name, use_tmpfs)
         raise LVException(f"Fail to create vg_ramdisk: {ex}")
 
     if not disk:
@@ -164,22 +162,27 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
     try:
         if not disk:
             LOGGER.debug("Creating loop device")
-            process.run(f"losetup {loop_device} {ramdisk_filename}",
-                        sudo=True)
+            process.run(f"losetup {loop_device} {ramdisk_filename}", sudo=True)
         LOGGER.debug("Creating physical volume %s", loop_device)
         process.run(f"pvcreate -y {loop_device}", sudo=True)
         LOGGER.debug("Creating volume group %s", vg_name)
         process.run(f"vgcreate {vg_name} {loop_device}", sudo=True)
     except process.CmdError as ex:
         LOGGER.error(ex)
-        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
-                           vg_name, loop_device, use_tmpfs)
+        vg_ramdisk_cleanup(
+            ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device, use_tmpfs
+        )
         raise LVException(f"Fail to create vg_ramdisk: {ex}")
     return ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
 
 
-def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
-                       vg_name=None, loop_device=None, use_tmpfs=True):
+def vg_ramdisk_cleanup(
+    ramdisk_filename=None,
+    vg_ramdisk_dir=None,
+    vg_name=None,
+    loop_device=None,
+    use_tmpfs=True,
+):
     """
     Clean up any stage of the VG ramdisk setup in case of test error.
 
@@ -195,38 +198,45 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
     :rtype: (str, str, str, str)
     :raises: :py:class:`LVException` on intolerable failure at any stage
     """
-    warnings.warn("deprecated, use existing methods: vg_remove, lv_remove",
-                  DeprecationWarning)
+    warnings.warn(
+        "deprecated, use existing methods: vg_remove, lv_remove", DeprecationWarning
+    )
     errs = []
     if vg_name is not None:
-        loop_device = re.search(fr"([/\w-]+) +{vg_name} +lvm2",
-                                process.run("pvs", sudo=True).stdout_text)
+        loop_device = re.search(
+            rf"([/\w-]+) +{vg_name} +lvm2", process.run("pvs", sudo=True).stdout_text
+        )
         if loop_device is not None:
             loop_device = loop_device.group(1)
         process.run(f"vgremove -f {vg_name}", ignore_status=True, sudo=True)
 
     if loop_device is not None:
-        result = process.run(f"pvremove {loop_device}",
-                             ignore_status=True, sudo=True)
+        result = process.run(f"pvremove {loop_device}", ignore_status=True, sudo=True)
         if result.exit_status != 0:
             errs.append("wipe pv")
             LOGGER.error("Failed to wipe pv from %s: %s", loop_device, result)
 
         losetup_all = process.run("losetup --all", sudo=True).stdout_text
         if loop_device in losetup_all:
-            ramdisk_filename = re.search(r"%s: \[\d+\]:\d+ \(([/\w]+)\)" %  # pylint: disable=C0209
-                                         loop_device, losetup_all)
+            ramdisk_filename = re.search(
+                r"%s: \[\d+\]:\d+ \(([/\w]+)\)" % loop_device,  # pylint: disable=C0209
+                losetup_all,
+            )
             if ramdisk_filename is not None:
                 ramdisk_filename = ramdisk_filename.group(1)
 
             for _ in range(10):
-                result = process.run(f"losetup -d {loop_device}",
-                                     ignore_status=True, sudo=True)
+                result = process.run(
+                    f"losetup -d {loop_device}", ignore_status=True, sudo=True
+                )
                 if b"resource busy" not in result.stderr:
                     if result.exit_status != 0:
                         errs.append("remove loop device")
-                        LOGGER.error("Unexpected failure when removing loop"
-                                     "device %s, check the log", loop_device)
+                        LOGGER.error(
+                            "Unexpected failure when removing loop"
+                            "device %s, check the log",
+                            loop_device,
+                        )
                     break
                 time.sleep(0.1)
 
@@ -237,18 +247,21 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
             vg_ramdisk_dir = os.path.dirname(ramdisk_filename)
 
     if vg_ramdisk_dir is not None:
-        if use_tmpfs and not process.system(f"mountpoint {vg_ramdisk_dir}",
-                                            ignore_status=True):
+        if use_tmpfs and not process.system(
+            f"mountpoint {vg_ramdisk_dir}", ignore_status=True
+        ):
             for _ in range(10):
-                result = process.run(f"umount {vg_ramdisk_dir}",
-                                     ignore_status=True, sudo=True)
+                result = process.run(
+                    f"umount {vg_ramdisk_dir}", ignore_status=True, sudo=True
+                )
                 time.sleep(0.1)
                 if result.exit_status == 0:
                     break
             else:
                 errs.append("umount")
-                LOGGER.error("Unexpected failure unmounting %s, check the "
-                             "log", vg_ramdisk_dir)
+                LOGGER.error(
+                    "Unexpected failure unmounting %s, check the " "log", vg_ramdisk_dir
+                )
 
         if os.path.exists(vg_ramdisk_dir):
             try:
@@ -361,11 +374,10 @@ def lv_check(vg_name, lv_name):
     cmd = f"lvdisplay {vg_name}"
     result = process.run(cmd, ignore_status=True, sudo=True)
 
-    lvpattern = fr"LV Name\s+{lv_name}\s+"
+    lvpattern = rf"LV Name\s+{lv_name}\s+"
     match = re.search(lvpattern, result.stdout_text.rstrip())
     if match:
-        LOGGER.debug("Provided Logical volume %s exists in %s",
-                     lv_name, vg_name)
+        LOGGER.debug("Provided Logical volume %s exists in %s", lv_name, vg_name)
         return True
     else:
         return False
@@ -407,8 +419,9 @@ def lv_list(vg_name=None):
     return volumes
 
 
-def lv_create(vg_name, lv_name, lv_size, force_flag=True,
-              pool_name=None, pool_size="1G"):
+def lv_create(
+    vg_name, lv_name, lv_size, force_flag=True, pool_name=None, pool_size="1G"
+):
     """
     Create a (possibly thin) logical volume in a volume group.
     The volume group must already exist.
@@ -437,8 +450,9 @@ def lv_create(vg_name, lv_name, lv_size, force_flag=True,
     lv_cmd = f"lvcreate --name {lv_name}"
     if pool_name is not None:
         if not lv_check(vg_name, pool_name):
-            tp_cmd = (f"lvcreate --thinpool {pool_name} "
-                      f"--size {pool_size} {vg_name} -y")
+            tp_cmd = (
+                f"lvcreate --thinpool {pool_name} " f"--size {pool_size} {vg_name} -y"
+            )
             try:
                 process.run(tp_cmd, sudo=True)
             except process.CmdError as detail:
@@ -476,9 +490,9 @@ def lv_remove(vg_name, lv_name):
     process.run(cmd, sudo=True)
 
 
-def lv_take_snapshot(vg_name, lv_name,
-                     lv_snapshot_name, lv_snapshot_size=None,
-                     pool_name=None):
+def lv_take_snapshot(
+    vg_name, lv_name, lv_snapshot_name, lv_snapshot_size=None, pool_name=None
+):
     """
     Take a (possibly thin) snapshot of a regular (or thin) logical volume.
 
@@ -502,8 +516,10 @@ def lv_take_snapshot(vg_name, lv_name,
         raise LVException("Snapshot's origin could not be found")
 
     # thin snapshot extensions (from thin or external volume)
-    cmd = (f"lvcreate --snapshot --name {lv_snapshot_name} "
-           f"/dev/{vg_name}/{lv_name} --ignoreactivationskip")
+    cmd = (
+        f"lvcreate --snapshot --name {lv_snapshot_name} "
+        f"/dev/{vg_name}/{lv_name} --ignoreactivationskip"
+    )
     if lv_snapshot_size is not None:
         cmd += f" --size {lv_snapshot_size}"
     if pool_name is not None:
@@ -512,13 +528,20 @@ def lv_take_snapshot(vg_name, lv_name,
     try:
         process.run(cmd, sudo=True)
     except process.CmdError as ex:
-        lv = (f'Logical volume "{lv_snapshot_name}" already exists '
-              f'in volume group "{vg_name}"')
+        lv = (
+            f'Logical volume "{lv_snapshot_name}" already exists '
+            f'in volume group "{vg_name}"'
+        )
         if lv in ex.result.stderr_text:
-            active = lv_snapshot_name + " [active]" in process.run("lvdisplay", sudo=True).stdout_text
+            active = (
+                lv_snapshot_name + " [active]"
+                in process.run("lvdisplay", sudo=True).stdout_text
+            )
             if active:
                 # the above conditions detect if merge of snapshot was postponed
-                log_msg = "Logical volume %s is still active! Attempting to deactivate..."
+                log_msg = (
+                    "Logical volume %s is still active! Attempting to deactivate..."
+                )
                 LOGGER.debug(log_msg, lv_name)
                 lv_reactivate(vg_name, lv_name)
                 process.run(cmd, sudo=True)
@@ -541,18 +564,16 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
             raise LVException("Volume group could not be found")
         if not lv_check(vg_name, lv_snapshot_name):
             raise LVException("Snapshot could not be found")
-        if (not lv_check(vg_name, lv_snapshot_name) and not lv_check(vg_name,
-                                                                     lv_name)):
+        if not lv_check(vg_name, lv_snapshot_name) and not lv_check(vg_name, lv_name):
             raise LVException("Snapshot and its origin could not be found")
-        if (lv_check(vg_name, lv_snapshot_name) and not lv_check(vg_name,
-                                                                 lv_name)):
+        if lv_check(vg_name, lv_snapshot_name) and not lv_check(vg_name, lv_name):
             raise LVException("Snapshot origin could not be found")
 
-        cmd = (f"lvconvert --merge --interval 1 "
-               f"/dev/{vg_name}/{lv_snapshot_name}")
+        cmd = f"lvconvert --merge --interval 1 " f"/dev/{vg_name}/{lv_snapshot_name}"
         result = process.run(cmd, sudo=True)
-        if ((f"Merging of snapshot {lv_snapshot_name} will start "
-             f"next activation.") in result.stdout_text):
+        if (
+            f"Merging of snapshot {lv_snapshot_name} will start " f"next activation."
+        ) in result.stdout_text:
             raise LVException(f"The Logical volume {lv_name} is still active")
 
     except process.CmdError as ex:
@@ -560,22 +581,23 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
         # and attempt to reactivate the volume.
         active_lv_pattern = re.escape(f"{lv_snapshot_name} [active]")
         lvdisplay_output = process.run("lvdisplay", sudo=True).stdout_text
-        if ('Snapshot could not be found' in ex.result.stderr_text and
-                re.search(active_lv_pattern, lvdisplay_output) or
-                f"The Logical volume {lv_name} is still active" in ex.result.stderr_text):
+        if (
+            "Snapshot could not be found" in ex.result.stderr_text
+            and re.search(active_lv_pattern, lvdisplay_output)
+            or f"The Logical volume {lv_name} is still active" in ex.result.stderr_text
+        ):
             log_msg = "Logical volume %s is still active! Attempting to deactivate..."
             LOGGER.debug(log_msg, lv_name)
             lv_reactivate(vg_name, lv_name)
             LOGGER.error("Continuing after reactivation")
-        elif 'Snapshot could not be found' in ex.result.stderr_text:
+        elif "Snapshot could not be found" in ex.result.stderr_text:
             LOGGER.error("Could not revert to snapshot:")
             LOGGER.error(ex.result)
         else:
             raise ex
 
 
-def lv_revert_with_snapshot(vg_name, lv_name,
-                            lv_snapshot_name, lv_snapshot_size):
+def lv_revert_with_snapshot(vg_name, lv_name, lv_snapshot_name, lv_snapshot_size):
     """
     Perform logical volume merge with snapshot and take a new snapshot.
 
@@ -605,7 +627,9 @@ def lv_reactivate(vg_name, lv_name, timeout=10):
         process.run(f"lvchange -ay /dev/{vg_name}/{lv_name}", sudo=True)
         time.sleep(timeout)
     except process.CmdError:
-        log_msg = "Failed to reactivate %s - please, nuke the process that uses it first."
+        log_msg = (
+            "Failed to reactivate %s - please, nuke the process that uses it first."
+        )
         LOGGER.error(log_msg, lv_name)
         raise LVException(f"The Logical volume {lv_name} is still active")
 
@@ -624,8 +648,7 @@ def lv_mount(vg_name, lv_name, mount_loc, create_filesystem=""):
     """
     try:
         if create_filesystem:
-            process.run(f"mkfs.{create_filesystem} /dev/{vg_name}/{lv_name}",
-                        sudo=True)
+            process.run(f"mkfs.{create_filesystem} /dev/{vg_name}/{lv_name}", sudo=True)
         process.run(f"mount /dev/{vg_name}/{lv_name} {mount_loc}", sudo=True)
     except process.CmdError as ex:
         raise LVException(f"Fail to mount logical volume: {ex}")
@@ -654,7 +677,9 @@ def vg_reactivate(vg_name, timeout=10, export=False):
         process.run(f"vgchange -ay {vg_name}", sudo=True)
         time.sleep(timeout)
     except process.CmdError:
-        log_msg = "Failed to reactivate %s - please, nuke the process that uses it first."
+        log_msg = (
+            "Failed to reactivate %s - please, nuke the process that uses it first."
+        )
         LOGGER.error(log_msg, vg_name)
         raise LVException(f"The Volume group {vg_name} is still active")
 

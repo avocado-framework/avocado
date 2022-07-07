@@ -41,16 +41,30 @@ from avocado.utils import stacktrace
 #: Environment variable used to store the location of a temporary
 #: directory which is preserved across all tests execution (usually in
 #: one job)
-COMMON_TMPDIR_NAME = 'AVOCADO_TESTS_COMMON_TMPDIR'
+COMMON_TMPDIR_NAME = "AVOCADO_TESTS_COMMON_TMPDIR"
 
 #: The list of test attributes that are used as the test state, which
 #: is given to the test runner via the queue they share
-TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
-                         'status', 'running', 'paused',
-                         'time_start', 'time_elapsed', 'time_end',
-                         'actual_time_start', 'actual_time_end',
-                         'fail_reason', 'fail_class', 'traceback',
-                         'tags', 'timeout', 'whiteboard', 'phase')
+TEST_STATE_ATTRIBUTES = (
+    "name",
+    "logdir",
+    "logfile",
+    "status",
+    "running",
+    "paused",
+    "time_start",
+    "time_elapsed",
+    "time_end",
+    "actual_time_start",
+    "actual_time_end",
+    "fail_reason",
+    "fail_class",
+    "traceback",
+    "tags",
+    "timeout",
+    "whiteboard",
+    "phase",
+)
 
 
 class TestData:
@@ -74,18 +88,22 @@ class TestData:
 
     def __init__(self):
         file_datadir = None
-        if (self.filename is not None and
-                len(os.path.basename(self.filename)) <= self._max_name_length()):
+        if (
+            self.filename is not None
+            and len(os.path.basename(self.filename)) <= self._max_name_length()
+        ):
             file_datadir = self.filename + self.SUFFIX
         self._data_sources_mapping = {
-            "variant": [lambda: file_datadir,
-                        lambda: (f"{self.__class__.__name__}."
-                                 f"{self._testMethodName}"),
-                        lambda: self.name.variant],
-            "test": [lambda: file_datadir,
-                     lambda: (f"{self.__class__.__name__}."
-                              f"{self._testMethodName}")],
-            "file": [lambda: file_datadir]
+            "variant": [
+                lambda: file_datadir,
+                lambda: (f"{self.__class__.__name__}." f"{self._testMethodName}"),
+                lambda: self.name.variant,
+            ],
+            "test": [
+                lambda: file_datadir,
+                lambda: (f"{self.__class__.__name__}." f"{self._testMethodName}"),
+            ],
+            "file": [lambda: file_datadir],
         }
 
     def _max_name_length(self):
@@ -107,8 +125,8 @@ class TestData:
         :raises: ValueError
         """
         if source is not None and source not in self.DATA_SOURCES:
-            msg = 'Data file source requested (%s) is not one of: %s'
-            msg %= (source, ', '.join(self.DATA_SOURCES))
+            msg = "Data file source requested (%s) is not one of: %s"
+            msg %= (source, ", ".join(self.DATA_SOURCES))
             raise ValueError(msg)
 
     def _get_datadir(self, source):
@@ -161,7 +179,7 @@ class TestData:
         :type must_exist: bool
         :rtype: str or None
         """
-        log_fmt = 'DATA (filename=%s) => %s (%s)'
+        log_fmt = "DATA (filename=%s) => %s (%s)"
         if source is None:
             sources = self.DATA_SOURCES
         else:
@@ -178,18 +196,26 @@ class TestData:
                 else:
                     path = os.path.join(datadir, filename)
                 if not must_exist:
-                    self.log.debug(log_fmt, filename, path,
-                                   (f"assumed to be located at "
-                                    f"{attempt_source} source dir"))
+                    self.log.debug(
+                        log_fmt,
+                        filename,
+                        path,
+                        (f"assumed to be located at " f"{attempt_source} source dir"),
+                    )
                     return path
                 else:
                     if os.path.exists(path):
-                        self.log.debug(log_fmt, filename, path,
-                                       f"found at {attempt_source} source dir")
+                        self.log.debug(
+                            log_fmt,
+                            filename,
+                            path,
+                            f"found at {attempt_source} source dir",
+                        )
                         return path
 
-        self.log.debug(log_fmt, filename, "NOT FOUND",
-                       f"data sources: {', '.join(sources)}")
+        self.log.debug(
+            log_fmt, filename, "NOT FOUND", f"data sources: {', '.join(sources)}"
+        )
 
 
 class Test(unittest.TestCase, TestData):
@@ -200,9 +226,10 @@ class Test(unittest.TestCase, TestData):
     You'll inherit from this to write your own tests. Typically you'll want
     to implement setUp(), test*() and tearDown() methods on your own tests.
     """
+
     #: Arbitrary string which will be stored in `$logdir/whiteboard` location
     #: when the test finishes.
-    whiteboard = ''
+    whiteboard = ""
     #: (unix) time when the test started, monotonic (could be forced from test)
     time_start = -1
     #: (unix) time when the test finished, monotonic (could be forced from test)
@@ -217,8 +244,16 @@ class Test(unittest.TestCase, TestData):
     #: Test timeout (the timeout from params takes precedence)
     timeout = None
 
-    def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, config=None, runner_queue=None, tags=None):
+    def __init__(
+        self,
+        methodName="test",
+        name=None,
+        params=None,
+        base_logdir=None,
+        config=None,
+        runner_queue=None,
+        tags=None,
+    ):
         """
         Initializes the test.
 
@@ -236,10 +271,10 @@ class Test(unittest.TestCase, TestData):
                        line options and argument parsing
         :type config: dict
         """
-        self.__phase = 'INIT'
+        self.__phase = "INIT"
 
         def record_and_warn(*args, **kwargs):
-            """ Record call to this function and log warning """
+            """Record call to this function and log warning"""
             if not self.__log_warn_used:
                 self.__log_warn_used = True
             return original_log_warn(*args, **kwargs)
@@ -256,33 +291,32 @@ class Test(unittest.TestCase, TestData):
         self.__base_logdir = base_logdir
         self.__base_logdir_tmp = None
         if self.__base_logdir is None:
-            prefix = 'avocado_test_'
+            prefix = "avocado_test_"
             self.__base_logdir_tmp = tempfile.TemporaryDirectory(prefix=prefix)
             self.__base_logdir = self.__base_logdir_tmp.name
 
-        self.__logfile = os.path.join(self.logdir, 'debug.log')
+        self.__logfile = os.path.join(self.logdir, "debug.log")
 
-        self._stdout_file = os.path.join(self.logdir, 'stdout')
-        self._stderr_file = os.path.join(self.logdir, 'stderr')
-        self._output_file = os.path.join(self.logdir, 'output')
+        self._stdout_file = os.path.join(self.logdir, "stdout")
+        self._stderr_file = os.path.join(self.logdir, "stderr")
+        self._output_file = os.path.join(self.logdir, "output")
         self._logging_handlers = {}
 
-        self.__outputdir = utils_path.init_dir(self.logdir, 'data')
+        self.__outputdir = utils_path.init_dir(self.logdir, "data")
 
         self.__log = LOG_JOB
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
 
-        self.log.info('INIT %s', self.name)
+        self.log.info("INIT %s", self.name)
 
-        paths = ['/test/*']
+        paths = ["/test/*"]
         if params is None:
             params = []
         elif isinstance(params, tuple):
             params, paths = params[0], params[1]
-        self.__params = parameters.AvocadoParams(params, paths,
-                                                 self.__log.name)
+        self.__params = parameters.AvocadoParams(params, paths, self.__log.name)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 
@@ -299,7 +333,7 @@ class Test(unittest.TestCase, TestData):
 
         self.__running = False
         self.paused = False
-        self.paused_msg = ''
+        self.paused_msg = ""
 
         self.__runner_queue = runner_queue
 
@@ -319,8 +353,9 @@ class Test(unittest.TestCase, TestData):
     @property
     def _base_tmpdir(self):
         if self.__base_tmpdir is None:
-            self.__base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir",
-                                                  dir=self.__base_logdir)
+            self.__base_tmpdir = tempfile.mkdtemp(
+                prefix="tmp_dir", dir=self.__base_logdir
+            )
         return self.__base_tmpdir
 
     @property
@@ -391,7 +426,7 @@ class Test(unittest.TestCase, TestData):
         """
         try:
             possibly_compiled = inspect.getfile(self.__class__)
-            if possibly_compiled.endswith('.pyc') or possibly_compiled.endswith('.pyo'):
+            if possibly_compiled.endswith(".pyc") or possibly_compiled.endswith(".pyo"):
                 source = possibly_compiled[:-1]
             else:
                 source = possibly_compiled
@@ -412,7 +447,7 @@ class Test(unittest.TestCase, TestData):
         env_var = COMMON_TMPDIR_NAME
         path = os.environ.get(env_var)
         if path is None:
-            msg = f'Environment Variable {env_var} is not set.'
+            msg = f"Environment Variable {env_var} is not set."
             raise EnvironmentError(msg)
         return path
 
@@ -427,8 +462,7 @@ class Test(unittest.TestCase, TestData):
         building software, etc.
         """
         if self.__workdir is None:
-            self.__workdir = os.path.join(self._base_tmpdir,
-                                          self.name.str_filesystem)
+            self.__workdir = os.path.join(self._base_tmpdir, self.name.str_filesystem)
             utils_path.init_dir(self.__workdir)
             self.log.debug("Test workdir initialized at: %s", self.__workdir)
         return self.__workdir
@@ -439,7 +473,7 @@ class Test(unittest.TestCase, TestData):
         Returns a list of cache directories as set in config file.
         """
         if self.__cache_dirs is None:
-            self.__cache_dirs = self._config.get('datadir.paths.cache_dirs')
+            self.__cache_dirs = self._config.get("datadir.paths.cache_dirs")
         return self.__cache_dirs
 
     @property
@@ -454,9 +488,11 @@ class Test(unittest.TestCase, TestData):
         Override the runner_queue
         """
         if self.__runner_queue is not None:
-            raise RuntimeError(f"Overriding of runner_queue multiple times "
-                               f"is not allowed -> old={self.__runner_queue} "
-                               f"new={runner_queue}")
+            raise RuntimeError(
+                f"Overriding of runner_queue multiple times "
+                f"is not allowed -> old={self.__runner_queue} "
+                f"new={runner_queue}"
+            )
         self.__runner_queue = runner_queue
 
     @property
@@ -501,7 +537,7 @@ class Test(unittest.TestCase, TestData):
         return f"Test({self.name!r})"
 
     def _tag_start(self):
-        self.log.info('START %s', self.name)
+        self.log.info("START %s", self.name)
         self.__running = True
         self.time_start = time.monotonic()
         self.actual_time_start = time.time()
@@ -535,10 +571,10 @@ class Test(unittest.TestCase, TestData):
         if self.running and self.time_start:
             self._update_time_elapsed()
         state = {key: getattr(self, key, None) for (key) in TEST_STATE_ATTRIBUTES}
-        state['class_name'] = self.__class__.__name__
-        state['params'] = [(path, key, value)
-                           for path, key, value
-                           in self.__params.iteritems()]
+        state["class_name"] = self.__class__.__name__
+        state["params"] = [
+            (path, key, value) for path, key, value in self.__params.iteritems()
+        ]
         return state
 
     def _run_test(self):
@@ -547,8 +583,10 @@ class Test(unittest.TestCase, TestData):
         """
         self._tag_start()
         testMethod = getattr(self, self._testMethodName)
-        skip_test_condition = getattr(testMethod, '__skip_test_condition__', False)
-        skip_test_condition_negate = getattr(testMethod, '__skip_test_condition_negate__', False)
+        skip_test_condition = getattr(testMethod, "__skip_test_condition__", False)
+        skip_test_condition_negate = getattr(
+            testMethod, "__skip_test_condition_negate__", False
+        )
         if skip_test_condition:
             if callable(skip_test_condition):
                 if skip_test_condition_negate:
@@ -564,7 +602,7 @@ class Test(unittest.TestCase, TestData):
             self.__skip_test = bool(skip_test_condition)
         try:
             if self.__skip_test is False:
-                self.__phase = 'SETUP'
+                self.__phase = "SETUP"
                 self.setUp()
         except exceptions.TestSkipError as details:
             self.__skip_test = True
@@ -579,7 +617,7 @@ class Test(unittest.TestCase, TestData):
             raise exceptions.TestSetupFail(details)
         else:
             try:
-                self.__phase = 'TEST'
+                self.__phase = "TEST"
                 if inspect.iscoroutinefunction(testMethod):
                     loop = asyncio.get_event_loop()
                     loop.run_until_complete(testMethod())
@@ -596,10 +634,10 @@ class Test(unittest.TestCase, TestData):
                 self.log.debug("Local variables:")
                 local_vars = inspect.trace()[1][0].f_locals
                 for key, value in local_vars.items():
-                    self.log.debug(' -> %s %s: %s', key, type(value), value)
+                    self.log.debug(" -> %s %s: %s", key, type(value), value)
                 raise details
 
-        self.__status = 'PASS'
+        self.__status = "PASS"
 
     def _tearDown(self):
         """
@@ -607,14 +645,16 @@ class Test(unittest.TestCase, TestData):
         """
         try:
             if self.__skip_test is False:
-                self.__phase = 'TEARDOWN'
+                self.__phase = "TEARDOWN"
                 self.tearDown()
         except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-            skip_illegal_msg = (f'Using skip decorators in tearDown() '
-                                f'is not allowed in '
-                                f'avocado, you must fix your '
-                                f'test. Original skip exception: {details}')
+            skip_illegal_msg = (
+                f"Using skip decorators in tearDown() "
+                f"is not allowed in "
+                f"avocado, you must fix your "
+                f"test. Original skip exception: {details}"
+            )
             raise exceptions.TestError(skip_illegal_msg)
         except exceptions.TestCancel:
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
@@ -625,35 +665,37 @@ class Test(unittest.TestCase, TestData):
             raise exceptions.TestSetupFail(details)
 
     def _setup_environment_variables(self):
-        os.environ['AVOCADO_VERSION'] = VERSION
+        os.environ["AVOCADO_VERSION"] = VERSION
         if self.basedir is not None:
-            os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
+            os.environ["AVOCADO_TEST_BASEDIR"] = self.basedir
         if self.__workdir is not None:
-            os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
-        os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
-        os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
-        os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
+            os.environ["AVOCADO_TEST_WORKDIR"] = self.workdir
+        os.environ["AVOCADO_TEST_LOGDIR"] = self.logdir
+        os.environ["AVOCADO_TEST_LOGFILE"] = self.logfile
+        os.environ["AVOCADO_TEST_OUTPUTDIR"] = self.outputdir
 
     def _catch_test_status(self, method):
         """Wrapper around test methods for catching and logging failures."""
         try:
             method()
             if self.__log_warn_used:
-                raise exceptions.TestWarn("Test passed but there were warnings "
-                                          "during execution. Check the log for "
-                                          "details.")
+                raise exceptions.TestWarn(
+                    "Test passed but there were warnings "
+                    "during execution. Check the log for "
+                    "details."
+                )
         except exceptions.TestBaseException as detail:
             self.__status = detail.status
             self.__fail_class = detail.__class__.__name__
             self.__fail_reason = astring.to_text(detail)
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except AssertionError as detail:
-            self.__status = 'FAIL'
+            self.__status = "FAIL"
             self.__fail_class = detail.__class__.__name__
             self.__fail_reason = astring.to_text(detail)
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception as detail:  # pylint: disable=W0703
-            self.__status = 'ERROR'
+            self.__status = "ERROR"
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
             try:
@@ -661,8 +703,9 @@ class Test(unittest.TestCase, TestData):
                 self.__fail_reason = astring.to_text(detail)
             except TypeError:
                 self.__fail_class = "Exception"
-                self.__fail_reason = ("Unable to get exception, check the "
-                                      "traceback for details.")
+                self.__fail_reason = (
+                    "Unable to get exception, check the traceback for details."
+                )
             for e_line in tb_info:
                 self.log.error(e_line)
 
@@ -675,9 +718,9 @@ class Test(unittest.TestCase, TestData):
         self._setup_environment_variables()
         self._catch_test_status(self._run_test)
         self._catch_test_status(self._tearDown)
-        whiteboard_file = os.path.join(self.logdir, 'whiteboard')
+        whiteboard_file = os.path.join(self.logdir, "whiteboard")
         genio.write_file(whiteboard_file, self.whiteboard)
-        self.__phase = 'FINISHED'
+        self.__phase = "FINISHED"
         self._tag_end()
         self._report()
         self.log.info("")
@@ -687,19 +730,21 @@ class Test(unittest.TestCase, TestData):
         Report result to the logging system.
         """
         if self.fail_reason is not None:
-            self.log.error("%s %s -> %s: %s", self.status,
-                           self.name,
-                           self.fail_class,
-                           self.fail_reason)
+            self.log.error(
+                "%s %s -> %s: %s",
+                self.status,
+                self.name,
+                self.fail_class,
+                self.fail_reason,
+            )
 
         else:
             if self.status is None:
-                self.__status = 'INTERRUPTED'
-            self.log.info("%s %s", self.status,
-                          self.name)
+                self.__status = "INTERRUPTED"
+            self.log.info("%s %s", self.status, self.name)
 
     def _deprecate_params_message(func):  # pylint: disable=E0213
-        """ This decorator helps to deprecate parameter 'message' and
+        """This decorator helps to deprecate parameter 'message' and
         replace it with 'msg'.
         """
 
@@ -708,24 +753,30 @@ class Test(unittest.TestCase, TestData):
             msg = None
             message = None
 
-            if 'msg' in kwargs:
-                msg = kwargs.get('msg')
+            if "msg" in kwargs:
+                msg = kwargs.get("msg")
             elif args:
                 msg = args[0]
 
-            if 'message' in kwargs:
-                message = kwargs.get('message')
+            if "message" in kwargs:
+                message = kwargs.get("message")
                 if msg:
-                    warnings.warn("Please favor parameter 'msg' and do not use "
-                                  "it with the parameter 'message'",
-                                  DeprecationWarning)
+                    warnings.warn(
+                        "Please favor parameter 'msg' and do not use "
+                        "it with the parameter 'message'",
+                        DeprecationWarning,
+                    )
 
                 else:
-                    warnings.warn("The parameter 'message' has been deprecated."
-                                  " Please use 'msg' instead", DeprecationWarning)
+                    warnings.warn(
+                        "The parameter 'message' has been deprecated."
+                        " Please use 'msg' instead",
+                        DeprecationWarning,
+                    )
 
             actual_message = msg or message
             return func(actual_message)
+
         return wrapper
 
     @staticmethod
@@ -773,9 +824,16 @@ class Test(unittest.TestCase, TestData):
         """
         raise exceptions.TestCancel(msg)
 
-    def fetch_asset(self, name, asset_hash=None, algorithm=None,
-                    locations=None, expire=None, find_only=False,
-                    cancel_on_missing=False):
+    def fetch_asset(
+        self,
+        name,
+        asset_hash=None,
+        algorithm=None,
+        locations=None,
+        expire=None,
+        find_only=False,
+        cancel_on_missing=False,
+    ):
         """
         Method o call the utils.asset in order to fetch and asset file
         supporting hash check, caching and multiple locations.
@@ -809,17 +867,17 @@ class Test(unittest.TestCase, TestData):
         parsed_name = asset.Asset.parse_name(name)
         if not (parsed_name.scheme or locations):
             try:
-                return asset.Asset.get_asset_by_name(name,
-                                                     self.cache_dirs,
-                                                     expire,
-                                                     asset_hash)
+                return asset.Asset.get_asset_by_name(
+                    name, self.cache_dirs, expire, asset_hash
+                )
             except OSError as e:
                 if cancel_on_missing:
                     self.cancel(f"Missing asset {name}")
                 raise e
 
-        asset_obj = asset.Asset(name, asset_hash, algorithm, locations,
-                                self.cache_dirs, expire)
+        asset_obj = asset.Asset(
+            name, asset_hash, algorithm, locations, self.cache_dirs, expire
+        )
 
         try:
             # return the path to the asset when it was found or fetched
@@ -841,8 +899,9 @@ class Test(unittest.TestCase, TestData):
             self.__base_logdir_tmp.cleanup()
             self.__base_logdir_tmp = None
         if self.__base_tmpdir is not None:
-            if not self._config.get('run.keep_tmp') and os.path.exists(
-                    self.__base_tmpdir):
+            if not self._config.get("run.keep_tmp") and os.path.exists(
+                self.__base_tmpdir
+            ):
                 shutil.rmtree(self.__base_tmpdir)
 
     def tearDown(self):

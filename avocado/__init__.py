@@ -13,16 +13,18 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-__all__ = ['Test',
-           'VERSION',
-           'fail_on',
-           'cancel_on',
-           'skip',
-           'skipIf',
-           'skipUnless',
-           'TestError',
-           'TestFail',
-           'TestCancel']
+__all__ = [
+    "Test",
+    "VERSION",
+    "fail_on",
+    "cancel_on",
+    "skip",
+    "skipIf",
+    "skipUnless",
+    "TestError",
+    "TestFail",
+    "TestCancel",
+]
 
 
 from avocado.core import register_core_options, initialize_plugins
@@ -33,8 +35,7 @@ settings.merge_with_configs()
 initialize_plugins()
 settings.merge_with_configs()
 
-from avocado.core.decorators import (cancel_on, fail_on, skip, skipIf,
-                                     skipUnless)
+from avocado.core.decorators import cancel_on, fail_on, skip, skipIf, skipUnless
 from avocado.core.exceptions import TestCancel, TestError, TestFail
 from avocado.core.test import Test
 from avocado.core.version import VERSION

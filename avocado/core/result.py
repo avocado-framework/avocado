@@ -55,10 +55,15 @@ class Result:
         missing, but this is no excuse for giving wrong summaries of test
         results.
         """
-        valid_results_count = (self.passed + self.errors +
-                               self.failed + self.warned +
-                               self.skipped + self.interrupted +
-                               self.cancelled)
+        valid_results_count = (
+            self.passed
+            + self.errors
+            + self.failed
+            + self.warned
+            + self.skipped
+            + self.interrupted
+            + self.cancelled
+        )
         other_skipped_count = self.tests_total - valid_results_count
         if other_skipped_count > 0:
             self.skipped += other_skipped_count
@@ -87,7 +92,7 @@ class Result:
         :type state: dict
         """
         self.tests_run += 1
-        self.tests_total_time += state.get('time_elapsed', -1)
+        self.tests_total_time += state.get("time_elapsed", -1)
         self.tests.append(state)
 
     def check_test(self, state):
@@ -96,7 +101,7 @@ class Result:
 
         :param test: A dict with test internal state
         """
-        status = state.get('status')
+        status = state.get("status")
         if status == "PASS":
             self.passed += 1
         elif status == "SKIP":

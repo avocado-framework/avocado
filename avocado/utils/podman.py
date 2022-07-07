@@ -34,7 +34,7 @@ class PodmanException(Exception):
 
 class Podman:
     def __init__(self, podman_bin=None):
-        path = which(podman_bin or 'podman')
+        path = which(podman_bin or "podman")
         if not path:
             msg = f"Podman binary {podman_bin} is not available on the system."
             raise PodmanException(msg)
@@ -51,10 +51,9 @@ class Podman:
         try:
             LOG.debug("Executing %s", args)
 
-            proc = await create_subprocess_exec(self.podman_bin,
-                                                *args,
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.PIPE)
+            proc = await create_subprocess_exec(
+                self.podman_bin, *args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
             stdout, stderr = await proc.communicate()
             LOG.debug("Return code: %s", proc.returncode)
             LOG.debug("Stdout: %s", stdout.decode("utf-8", "replace"))
@@ -99,15 +98,22 @@ class Podman:
         :rtype: tuple with both: major, minor numbers and executable path.
         """
 
-        entrypoint = json.dumps(["/usr/bin/env", "python3", "-c",
-                                 ("import sys; print(sys.version_info.major, "
-                                  "sys.version_info.minor, sys.executable)")])
+        entrypoint = json.dumps(
+            [
+                "/usr/bin/env",
+                "python3",
+                "-c",
+                (
+                    "import sys; print(sys.version_info.major, "
+                    "sys.version_info.minor, sys.executable)"
+                ),
+            ]
+        )
 
         try:
-            _, stdout, _ = await self.execute("run",
-                                              "--rm",
-                                              f"--entrypoint={entrypoint}",
-                                              image)
+            _, stdout, _ = await self.execute(
+                "run", "--rm", f"--entrypoint={entrypoint}", image
+            )
         except PodmanException as ex:
             raise PodmanException("Failed getting Python version.") from ex
 
@@ -125,8 +131,9 @@ class Podman:
         try:
             _, stdout, _ = await self.execute("ps", "--all", "--format=json")
         except PodmanException as ex:
-            raise PodmanException(f"Failed getting information about container:"
-                                  f" {container_id}.") from ex
+            raise PodmanException(
+                f"Failed getting information about container:" f" {container_id}."
+            ) from ex
         containers = json.loads(stdout.decode())
         for container in containers:
             if container["Id"] == container_id:

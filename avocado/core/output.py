@@ -38,19 +38,27 @@ LOG_JOB = logging.getLogger("avocado.test")
 
 class TermSupport:
 
-    COLOR_BLUE = '\033[94m'
-    COLOR_GREEN = '\033[92m'
-    COLOR_YELLOW = '\033[93m'
-    COLOR_RED = '\033[91m'
-    COLOR_DARKGREY = '\033[90m'
+    COLOR_BLUE = "\033[94m"
+    COLOR_GREEN = "\033[92m"
+    COLOR_YELLOW = "\033[93m"
+    COLOR_RED = "\033[91m"
+    COLOR_DARKGREY = "\033[90m"
 
-    CONTROL_END = '\033[0m'
+    CONTROL_END = "\033[0m"
 
-    MOVE_BACK = '\033[1D'
-    MOVE_FORWARD = '\033[1C'
+    MOVE_BACK = "\033[1D"
+    MOVE_FORWARD = "\033[1C"
 
-    ESCAPE_CODES = [COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED,
-                    COLOR_DARKGREY, CONTROL_END, MOVE_BACK, MOVE_FORWARD]
+    ESCAPE_CODES = [
+        COLOR_BLUE,
+        COLOR_GREEN,
+        COLOR_YELLOW,
+        COLOR_RED,
+        COLOR_DARKGREY,
+        CONTROL_END,
+        MOVE_BACK,
+        MOVE_FORWARD,
+    ]
 
     """
     Class to help applications to colorize their outputs for terminals.
@@ -72,39 +80,48 @@ class TermSupport:
         self.ENDC = self.CONTROL_END
         self.LOWLIGHT = self.COLOR_DARKGREY
         self.enabled = True
-        allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
-                         'screen-256color', 'screen.xterm-256color']
+        allowed_terms = [
+            "linux",
+            "xterm",
+            "xterm-256color",
+            "vt100",
+            "screen",
+            "screen-256color",
+            "screen.xterm-256color",
+        ]
         term = os.environ.get("TERM")
         config = settings.as_dict()
-        colored = config.get('runner.output.colored')
-        force_color = config.get('runner.output.color')
+        colored = config.get("runner.output.colored")
+        force_color = config.get("runner.output.color")
         if force_color == "never":
             self.disable()
         elif force_color == "auto":
             if not colored or not os.isatty(1) or term not in allowed_terms:
                 self.disable()
         elif force_color != "always":
-            raise ValueError("The value for runner.output.color must be one of "
-                             "'always', 'never', 'auto' and not " + force_color)
+            raise ValueError(
+                "The value for runner.output.color must be one of "
+                "'always', 'never', 'auto' and not " + force_color
+            )
 
     def disable(self):
         """
         Disable colors from the strings output by this class.
         """
         self.enabled = False
-        self.HEADER = ''
-        self.PASS = ''
-        self.SKIP = ''
-        self.FAIL = ''
-        self.INTERRUPT = ''
-        self.ERROR = ''
-        self.WARN = ''
-        self.CANCEL = ''
-        self.PARTIAL = ''
-        self.ENDC = ''
-        self.LOWLIGHT = ''
-        self.MOVE_BACK = ''
-        self.MOVE_FORWARD = ''
+        self.HEADER = ""
+        self.PASS = ""
+        self.SKIP = ""
+        self.FAIL = ""
+        self.INTERRUPT = ""
+        self.ERROR = ""
+        self.WARN = ""
+        self.CANCEL = ""
+        self.PARTIAL = ""
+        self.ENDC = ""
+        self.LOWLIGHT = ""
+        self.MOVE_BACK = ""
+        self.MOVE_FORWARD = ""
 
     def header_str(self, msg):
         """
@@ -146,7 +163,7 @@ class TermSupport:
         """
         return self.PARTIAL + msg + self.ENDC
 
-    def pass_str(self, msg='PASS', move=MOVE_BACK):
+    def pass_str(self, msg="PASS", move=MOVE_BACK):
         """
         Print a pass string (green colored).
 
@@ -154,7 +171,7 @@ class TermSupport:
         """
         return move + self.PASS + msg + self.ENDC
 
-    def skip_str(self, msg='SKIP', move=MOVE_BACK):
+    def skip_str(self, msg="SKIP", move=MOVE_BACK):
         """
         Print a skip string (yellow colored).
 
@@ -162,7 +179,7 @@ class TermSupport:
         """
         return move + self.SKIP + msg + self.ENDC
 
-    def fail_str(self, msg='FAIL', move=MOVE_BACK):
+    def fail_str(self, msg="FAIL", move=MOVE_BACK):
         """
         Print a fail string (red colored).
 
@@ -170,7 +187,7 @@ class TermSupport:
         """
         return move + self.FAIL + msg + self.ENDC
 
-    def error_str(self, msg='ERROR', move=MOVE_BACK):
+    def error_str(self, msg="ERROR", move=MOVE_BACK):
         """
         Print a error string (red colored).
 
@@ -178,7 +195,7 @@ class TermSupport:
         """
         return move + self.ERROR + msg + self.ENDC
 
-    def interrupt_str(self, msg='INTERRUPT', move=MOVE_BACK):
+    def interrupt_str(self, msg="INTERRUPT", move=MOVE_BACK):
         """
         Print an interrupt string (red colored).
 
@@ -186,7 +203,7 @@ class TermSupport:
         """
         return move + self.INTERRUPT + msg + self.ENDC
 
-    def warn_str(self, msg='WARN', move=MOVE_BACK):
+    def warn_str(self, msg="WARN", move=MOVE_BACK):
         """
         Print an warning string (yellow colored).
 
@@ -201,24 +218,28 @@ TERM_SUPPORT = TermSupport()
 
 #: A collection of mapping from test statuses to colors to be used
 #: consistently across the various plugins
-TEST_STATUS_MAPPING = {'PASS': TERM_SUPPORT.PASS,
-                       'ERROR': TERM_SUPPORT.ERROR,
-                       'FAIL': TERM_SUPPORT.FAIL,
-                       'SKIP': TERM_SUPPORT.SKIP,
-                       'WARN': TERM_SUPPORT.WARN,
-                       'INTERRUPTED': TERM_SUPPORT.INTERRUPT,
-                       'CANCEL': TERM_SUPPORT.CANCEL}
+TEST_STATUS_MAPPING = {
+    "PASS": TERM_SUPPORT.PASS,
+    "ERROR": TERM_SUPPORT.ERROR,
+    "FAIL": TERM_SUPPORT.FAIL,
+    "SKIP": TERM_SUPPORT.SKIP,
+    "WARN": TERM_SUPPORT.WARN,
+    "INTERRUPTED": TERM_SUPPORT.INTERRUPT,
+    "CANCEL": TERM_SUPPORT.CANCEL,
+}
 
 
 #: A collection of mapping from test status to formatting functions
 #: to be used consistently across the various plugins
-TEST_STATUS_DECORATOR_MAPPING = {'PASS': TERM_SUPPORT.pass_str,
-                                 'ERROR': TERM_SUPPORT.error_str,
-                                 'FAIL': TERM_SUPPORT.fail_str,
-                                 'SKIP': TERM_SUPPORT.skip_str,
-                                 'WARN': TERM_SUPPORT.warn_str,
-                                 'INTERRUPTED': TERM_SUPPORT.interrupt_str,
-                                 'CANCEL': TERM_SUPPORT.skip_str}
+TEST_STATUS_DECORATOR_MAPPING = {
+    "PASS": TERM_SUPPORT.pass_str,
+    "ERROR": TERM_SUPPORT.error_str,
+    "FAIL": TERM_SUPPORT.fail_str,
+    "SKIP": TERM_SUPPORT.skip_str,
+    "WARN": TERM_SUPPORT.warn_str,
+    "INTERRUPTED": TERM_SUPPORT.interrupt_str,
+    "CANCEL": TERM_SUPPORT.skip_str,
+}
 
 
 class _StdOutputFile:
@@ -249,28 +270,27 @@ class _StdOutputFile:
             self.write(line)
 
     def close(self):
-        """ File-object methods """
+        """File-object methods"""
 
     def flush(self):
-        """ File-object methods """
+        """File-object methods"""
 
     @staticmethod
     def isatty():
-        """ File-object methods """
+        """File-object methods"""
         return False
 
     def seek(self):
-        """ File-object methods """
+        """File-object methods"""
 
     def tell(self):
-        """ File-object methods """
+        """File-object methods"""
 
     def getvalue(self):
         """
         Get all messages written to this "file"
         """
-        return "\n".join((_[1] for _ in self._records
-                          if _[0] == self._is_stdout))
+        return "\n".join((_[1] for _ in self._records if _[0] == self._is_stdout))
 
 
 class StdOutput:
@@ -278,6 +298,7 @@ class StdOutput:
     """
     Class to modify sys.stdout/sys.stderr
     """
+
     #: List of records of stored output when stdout/stderr is disabled
     records = []
 
@@ -345,8 +366,9 @@ class StdOutput:
             paginator = Paginator()
         except RuntimeError as details:
             # Paginator not available
-            logging.getLogger('avocado.app.debug').error("Failed to enable "
-                                                         "paginator: %s", details)
+            logging.getLogger("avocado.app.debug").error(
+                "Failed to enable " "paginator: %s", details
+            )
             return
         self.stdout = self.stderr = paginator
         self.__configured = True
@@ -355,7 +377,7 @@ class StdOutput:
         """
         Enable sys.stderr and disable sys.stdout
         """
-        sys.stdout = open(os.devnull, 'w', encoding='utf-8')
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
         sys.stderr = self.stderr
         self.__configured = True
 
@@ -379,13 +401,13 @@ def early_start():
     """
     Replace all outputs with in-memory handlers
     """
-    if os.environ.get('AVOCADO_LOG_DEBUG'):
-        add_log_handler(LOG_UI.getChild("debug"), logging.StreamHandler,
-                        sys.stdout, logging.DEBUG)
-    if os.environ.get('AVOCADO_LOG_EARLY'):
+    if os.environ.get("AVOCADO_LOG_DEBUG"):
+        add_log_handler(
+            LOG_UI.getChild("debug"), logging.StreamHandler, sys.stdout, logging.DEBUG
+        )
+    if os.environ.get("AVOCADO_LOG_EARLY"):
         add_log_handler("avocado", logging.StreamHandler, sys.stdout, logging.DEBUG)
-        add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout,
-                        logging.DEBUG)
+        add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout, logging.DEBUG)
     else:
         STD_OUTPUT.fake_outputs()
         add_log_handler("avocado", MemStreamHandler, None, logging.DEBUG)
@@ -412,6 +434,7 @@ def reconfigure(args):
     """
     Adjust logging handlers accordingly to app args and re-log messages.
     """
+
     def save_handler(logger_name, handler, configuration):
         if logger_name not in configuration:
             configuration[logger_name] = []
@@ -442,7 +465,7 @@ def reconfigure(args):
     # TODO: Avocado relies on stdout/stderr on some places, re-log them here
     # for now. This should be removed once we replace them with logging.
     if enabled:
-        if args.get('core.paginator') is True and TERM_SUPPORT.enabled:
+        if args.get("core.paginator") is True and TERM_SUPPORT.enabled:
             STD_OUTPUT.enable_paginator()
         STD_OUTPUT.enable_outputs()
     else:
@@ -470,44 +493,52 @@ def reconfigure(args):
         LOG_JOB.getChild("stdout").propagate = False
         LOG_JOB.getChild("stderr").propagate = False
         if "early" in enabled:
-            handler = add_log_handler("avocado", logging.StreamHandler,
-                                      STD_OUTPUT.stdout, logging.DEBUG)
+            handler = add_log_handler(
+                "avocado", logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
+            )
             save_handler("avocado", handler, configuration)
-            handler = add_log_handler(LOG_JOB, logging.StreamHandler,
-                                      STD_OUTPUT.stdout, logging.DEBUG)
+            handler = add_log_handler(
+                LOG_JOB, logging.StreamHandler, STD_OUTPUT.stdout, logging.DEBUG
+            )
             save_handler(LOG_JOB.name, handler, configuration)
         else:
             disable_log_handler("avocado")
     # Not enabled by env
-    if not os.environ.get('AVOCADO_LOG_DEBUG'):
+    if not os.environ.get("AVOCADO_LOG_DEBUG"):
         if "debug" in enabled:
-            handler = add_log_handler(LOG_UI.getChild("debug"),
-                                      stream=STD_OUTPUT.stdout)
+            handler = add_log_handler(
+                LOG_UI.getChild("debug"), stream=STD_OUTPUT.stdout
+            )
             save_handler(LOG_UI.getChild("debug").name, handler, configuration)
         else:
             disable_log_handler(LOG_UI.getChild("debug"))
 
     # Add custom loggers
     for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS]:
-        stream_level = re.split(r'(?<!\\):', name, maxsplit=1)
+        stream_level = re.split(r"(?<!\\):", name, maxsplit=1)
         name = stream_level[0]
         if len(stream_level) == 1:
             level = logging.DEBUG
         else:
-            level = (int(stream_level[1]) if stream_level[1].isdigit()
-                     else logging.getLevelName(stream_level[1].upper()))
+            level = (
+                int(stream_level[1])
+                if stream_level[1].isdigit()
+                else logging.getLevelName(stream_level[1].upper())
+            )
         try:
-            handler = add_log_handler(name, logging.StreamHandler,
-                                      STD_OUTPUT.stdout, level)
+            handler = add_log_handler(
+                name, logging.StreamHandler, STD_OUTPUT.stdout, level
+            )
             save_handler(name, handler, configuration)
         except ValueError as details:
-            LOG_UI.error("Failed to set logger for --show %s:%s: %s.",
-                         name, level, details)
+            LOG_UI.error(
+                "Failed to set logger for --show %s:%s: %s.", name, level, details
+            )
             sys.exit(exit_codes.AVOCADO_FAIL)
     # Remove the in-memory handlers
-    for handler in logging.getLogger('avocado').handlers:
+    for handler in logging.getLogger("avocado").handlers:
         if isinstance(handler, MemStreamHandler):
-            logging.getLogger('avocado').handlers.remove(handler)
+            logging.getLogger("avocado").handlers.remove(handler)
 
     # Log early_messages
     for record in MemStreamHandler.log:
@@ -517,13 +548,11 @@ def reconfigure(args):
 
 
 class FilterWarnAndMore(logging.Filter):
-
     def filter(self, record):
         return record.levelno >= logging.WARN
 
 
 class FilterInfoAndLess(logging.Filter):
-
     def filter(self, record):
         return record.levelno <= logging.INFO
 
@@ -537,7 +566,7 @@ class ProgressStreamHandler(logging.StreamHandler):
     def emit(self, record):
         try:
             msg = self.format(record)
-            if record.levelno < logging.INFO:   # Most messages are INFO
+            if record.levelno < logging.INFO:  # Most messages are INFO
                 pass
             elif record.levelno < logging.WARNING:
                 msg = TERM_SUPPORT.header_str(msg)
@@ -547,11 +576,11 @@ class ProgressStreamHandler(logging.StreamHandler):
                 msg = TERM_SUPPORT.fail_header_str(msg)
             stream = self.stream
             skip_newline = False
-            if hasattr(record, 'skip_newline'):
+            if hasattr(record, "skip_newline"):
                 skip_newline = record.skip_newline
             stream.write(msg)
             if not skip_newline:
-                stream.write('\n')
+                stream.write("\n")
             self.flush()
         except (KeyboardInterrupt, SystemExit):  # pylint: disable=W0706
             raise
@@ -586,14 +615,14 @@ class Paginator:
 
     def __init__(self):
         self.pipe = None
-        paginator = os.environ.get('PAGER')
+        paginator = os.environ.get("PAGER")
         if not paginator:
             try:
                 paginator = f"{utils_path.find_command('less')} -FRX"
             except utils_path.CmdNotFoundError as details:
                 raise RuntimeError(f"Unable to enable pagination: {details}")
 
-        self.pipe = os.popen(paginator, 'w')
+        self.pipe = os.popen(paginator, "w")
 
     def __del__(self):
         self.close()
@@ -617,8 +646,13 @@ class Paginator:
             self.pipe.flush()
 
 
-def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
-                    level=logging.INFO, fmt='%(name)s: %(message)s'):
+def add_log_handler(
+    logger,
+    klass=logging.StreamHandler,
+    stream=sys.stdout,
+    level=logging.INFO,
+    fmt="%(name)s: %(message)s",
+):
     """
     Add handler to a logger.
 
@@ -660,8 +694,7 @@ class LoggingFile:
     File-like object that will receive messages pass them to logging.
     """
 
-    def __init__(self, prefixes=None, level=logging.DEBUG,
-                 loggers=None):
+    def __init__(self, prefixes=None, level=logging.DEBUG, loggers=None):
         """
         Constructor. Sets prefixes and which loggers are going to be used.
 
@@ -678,7 +711,7 @@ class LoggingFile:
         self._prefixes = prefixes
 
     def write(self, data):
-        """"
+        """ "
         Splits the line to individual lines and forwards them into loggers
         with expected prefixes. It includes the tailing newline <lf> as well
         as the last partial message. Do configure your logging to not to add
@@ -686,8 +719,8 @@ class LoggingFile:
         :param data - Raw data (a string) that will be processed.
         """
         # splitlines() discards a trailing blank line, so use split() instead
-        data_lines = data.split('\n')
-        if len(data_lines) > 1:     # when not last line, contains \n
+        data_lines = data.split("\n")
+        if len(data_lines) > 1:  # when not last line, contains \n
             self._log_line(f"{data_lines[0]}\n")
         for line in data_lines[1:-1]:
             self._log_line(f"{line}\n")
@@ -715,7 +748,7 @@ class LoggingFile:
     def rm_logger(self, logger):
         idx = self._loggers.index(logger)
         self._loggers.remove(logger)
-        self._prefixes = self._prefixes[:idx] + self._prefixes[idx+1:]
+        self._prefixes = self._prefixes[:idx] + self._prefixes[idx + 1 :]
 
 
 class Throbber:
@@ -723,15 +756,18 @@ class Throbber:
     """
     Produces a spinner used to notify progress in the application UI.
     """
-    STEPS = ['-', '\\', '|', '/']
+
+    STEPS = ["-", "\\", "|", "/"]
     # Only print a throbber when we're on a terminal
     if TERM_SUPPORT.enabled:
-        MOVES = [TERM_SUPPORT.MOVE_BACK + STEPS[0],
-                 TERM_SUPPORT.MOVE_BACK + STEPS[1],
-                 TERM_SUPPORT.MOVE_BACK + STEPS[2],
-                 TERM_SUPPORT.MOVE_BACK + STEPS[3]]
+        MOVES = [
+            TERM_SUPPORT.MOVE_BACK + STEPS[0],
+            TERM_SUPPORT.MOVE_BACK + STEPS[1],
+            TERM_SUPPORT.MOVE_BACK + STEPS[2],
+            TERM_SUPPORT.MOVE_BACK + STEPS[3],
+        ]
     else:
-        MOVES = ['', '', '', '']
+        MOVES = ["", "", "", ""]
 
     def __init__(self):
         self.position = 0
@@ -758,13 +794,12 @@ def log_plugin_failures(failures):
     """
     msg_fmt = 'Failed to load plugin from module "%s": %s :\n%s'
     config = settings.as_dict()
-    silenced = config.get('plugins.skip_broken_plugin_notification')
+    silenced = config.get("plugins.skip_broken_plugin_notification")
     for failure in failures:
         if failure[0].module_name in silenced:
             continue
         if hasattr(failure[1], "__traceback__"):
-            str_tb = ''.join(traceback.format_tb(failure[1].__traceback__))
+            str_tb = "".join(traceback.format_tb(failure[1].__traceback__))
         else:
             str_tb = "Traceback not available"
-        LOG_UI.error(msg_fmt, failure[0].module_name,
-                     failure[1].__repr__(), str_tb)
+        LOG_UI.error(msg_fmt, failure[0].module_name, failure[1].__repr__(), str_tb)

@@ -61,8 +61,9 @@ class MtabLock:
         try:
             self.lock.__enter__()
         except (filelock.LockFailed, filelock.AlreadyLocked) as e:
-            reason = (f"Unable to obtain '{self.device}' "
-                      f"lock in {int(self.timeout)}s")
+            reason = (
+                f"Unable to obtain '{self.device}' " f"lock in {int(self.timeout)}s"
+            )
             raise PartitionError(self, reason, e)
         self.mtab = open(self.device)  # pylint: disable=W1514
         return self
@@ -79,7 +80,9 @@ class Partition:
     Class for handling partitions and filesystems
     """
 
-    def __init__(self, device, loop_size=0, mountpoint=None, mkfs_flags='', mount_options=None):
+    def __init__(
+        self, device, loop_size=0, mountpoint=None, mkfs_flags="", mount_options=None
+    ):
         """
         :param device: The device in question (e.g."/dev/hda2"). If device is a
                 file it will be mounted as loopback.
@@ -95,11 +98,10 @@ class Partition:
         self.mkfs_flags = mkfs_flags
         self.mount_options = mount_options
         if self.loop:
-            process.run(f'dd if=/dev/zero of={device} bs=1M '
-                        f'count={int(self.loop)}')
+            process.run(f"dd if=/dev/zero of={device} bs=1M " f"count={int(self.loop)}")
 
     def __repr__(self):
-        return f'<Partition: {self.device}>'
+        return f"<Partition: {self.device}>"
 
     @staticmethod
     def list_mount_devices():
@@ -107,12 +109,10 @@ class Partition:
         Lists mounted file systems and swap on devices.
         """
         # list mounted file systems
-        devices = [line.split()[0]
-                   for line in process.getoutput('mount').splitlines()]
+        devices = [line.split()[0] for line in process.getoutput("mount").splitlines()]
         # list mounted swap devices
-        swaps = process.getoutput('swapon -s').splitlines()
-        devices.extend([line.split()[0] for line in swaps
-                        if line.startswith('/')])
+        swaps = process.getoutput("swapon -s").splitlines()
+        devices.extend([line.split()[0] for line in swaps if line.startswith("/")])
         return devices
 
     @staticmethod
@@ -120,8 +120,7 @@ class Partition:
         """
         Lists the mount points.
         """
-        return [line.split()[2]
-                for line in process.getoutput('mount').splitlines()]
+        return [line.split()[2] for line in process.getoutput("mount").splitlines()]
 
     def get_mountpoint(self, filename=None):
         """
@@ -140,21 +139,21 @@ class Partition:
                 for line in open_file:
                     parts = line.split()
                     if parts[0] == self.device and parts[1] == self.mountpoint:
-                        return parts[1]    # The mountpoint where it's mounted
+                        return parts[1]  # The mountpoint where it's mounted
                 return None
 
         # no specific file given, look in /proc/mounts
-        res = self.get_mountpoint(filename='/proc/mounts')
+        res = self.get_mountpoint(filename="/proc/mounts")
         if not res:
             # sometimes the root partition is reported as /dev/root in
             # /proc/mounts in this case, try /etc/mtab
-            res = self.get_mountpoint(filename='/etc/mtab')
+            res = self.get_mountpoint(filename="/etc/mtab")
 
-            if res != '/':
+            if res != "/":
                 res = None
         return res
 
-    def mkfs(self, fstype=None, args=''):
+    def mkfs(self, fstype=None, args=""):
         """
         Format a partition to filesystem type
 
@@ -164,24 +163,24 @@ class Partition:
         """
 
         if self.device in self.list_mount_devices():
-            raise PartitionError(self, 'Unable to format mounted device')
+            raise PartitionError(self, "Unable to format mounted device")
 
         if not fstype:
             if self.fstype:
                 fstype = self.fstype
             else:
-                fstype = 'ext2'
+                fstype = "ext2"
 
         if self.mkfs_flags:
-            args += ' ' + self.mkfs_flags
-        if fstype in ['xfs', 'btrfs']:
-            args += ' -f'
+            args += " " + self.mkfs_flags
+        if fstype in ["xfs", "btrfs"]:
+            args += " -f"
 
         if self.loop:
-            if fstype.startswith('ext'):
-                args += ' -F'
-            elif fstype == 'reiserfs':
-                args += ' -f'
+            if fstype.startswith("ext"):
+                args += " -F"
+            elif fstype == "reiserfs":
+                args += " -f"
 
         # If there isn't already a '-t <type>' argument, add one.
         if "-t" not in args:
@@ -198,7 +197,7 @@ class Partition:
         else:
             self.fstype = fstype
 
-    def mount(self, mountpoint=None, fstype=None, args='', mnt_check=True):
+    def mount(self, mountpoint=None, fstype=None, args="", mnt_check=True):
         """
         Mount this partition to a mount point
 
@@ -212,17 +211,20 @@ class Partition:
         if not mountpoint:
             mountpoint = self.mountpoint
         if not mountpoint:
-            raise PartitionError(self, "No mountpoint specified and no "
-                                 "default provided to this partition object")
+            raise PartitionError(
+                self,
+                "No mountpoint specified and no "
+                "default provided to this partition object",
+            )
         if fstype is None:
             fstype = self.fstype
         else:
             self.fstype = fstype
 
         if self.mount_options:
-            args += ' -o ' + self.mount_options
+            args += " -o " + self.mount_options
         if fstype:
-            args += ' -t ' + fstype
+            args += " -t " + fstype
         args = args.lstrip()
 
         with MtabLock():
@@ -236,10 +238,10 @@ class Partition:
             try:
                 if self.loop:
                     losetup_cmd = f"losetup --find --show -f {self.device}"
-                    self.device = process.run(losetup_cmd,
-                                              sudo=True).stdout_text.strip()
-                process.system(f"mount {args} {self.device} {mountpoint}",
-                               sudo=True)
+                    self.device = process.run(
+                        losetup_cmd, sudo=True
+                    ).stdout_text.strip()
+                process.system(f"mount {args} {self.device} {mountpoint}", sudo=True)
             except process.CmdError as details:
                 raise PartitionError(self, "Mount failed", details)
         # Update the fstype as the mount command passed
@@ -271,11 +273,9 @@ class Partition:
         """
         for pid in self._get_pids_on_mountpoint(mountpoint):
             try:
-                process.system(f"kill -9 {int(pid)}",
-                               ignore_status=True, sudo=True)
+                process.system(f"kill -9 {int(pid)}", ignore_status=True, sudo=True)
             except process.CmdError as kill_details:
-                raise PartitionError(self, "Failed to kill processes",
-                                     kill_details)
+                raise PartitionError(self, "Failed to kill processes", kill_details)
         # Unmount
         try:
             process.run(f"umount -f {mountpoint}", sudo=True)
@@ -283,8 +283,7 @@ class Partition:
             try:
                 process.run(f"umount -l {mountpoint}", sudo=True)
             except process.CmdError as umount_details:
-                raise PartitionError(self, "Force unmount failed",
-                                     umount_details)
+                raise PartitionError(self, "Force unmount failed", umount_details)
 
     def unmount(self, force=True):
         """
@@ -304,25 +303,22 @@ class Partition:
             mountpoint = self.get_mountpoint()
             result = 1
             if not mountpoint:
-                LOG.debug('%s not mounted', self.device)
+                LOG.debug("%s not mounted", self.device)
                 return result
             try:
                 process.run("umount " + mountpoint, sudo=True)
                 result = 1
             except process.CmdError as details:
                 if force:
-                    LOG.debug("Standard umount failed on %s, forcing",
-                              mountpoint)
+                    LOG.debug("Standard umount failed on %s, forcing", mountpoint)
                     self._unmount_force(mountpoint)
                     result = 2
                 else:
-                    raise PartitionError(self, "Unable to unmount gracefully",
-                                         details)
+                    raise PartitionError(self, "Unable to unmount gracefully", details)
         if self.loop:
             try:
                 process.run(f"losetup -d {self.device}", sudo=True)
             except process.CmdError as details:
-                raise PartitionError(self, "Unable to cleanup loop device",
-                                     details)
+                raise PartitionError(self, "Unable to cleanup loop device", details)
 
         return result

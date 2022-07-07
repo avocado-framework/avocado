@@ -55,51 +55,53 @@ if __name__ == '__main__':
 
 
 class UnittestCompat(TestCaseTmpDir):
-
     def setUp(self):
         super().setUp()
-        self.original_pypath = os.environ.get('PYTHONPATH')
+        self.original_pypath = os.environ.get("PYTHONPATH")
         if self.original_pypath is not None:
-            os.environ['PYTHONPATH'] = f'{BASEDIR}:{self.original_pypath}'
+            os.environ["PYTHONPATH"] = f"{BASEDIR}:{self.original_pypath}"
         else:
-            os.environ['PYTHONPATH'] = f'{BASEDIR}'
+            os.environ["PYTHONPATH"] = f"{BASEDIR}"
         self.unittest_script_good = script.TemporaryScript(
-            'unittest_good.py',
+            "unittest_good.py",
             UNITTEST_GOOD % self.tmpdir.name,
-            'avocado_as_unittest_functional')
+            "avocado_as_unittest_functional",
+        )
         self.unittest_script_good.save()
         self.unittest_script_fail = script.TemporaryScript(
-            'unittest_fail.py',
+            "unittest_fail.py",
             UNITTEST_FAIL % self.tmpdir.name,
-            'avocado_as_unittest_functional')
+            "avocado_as_unittest_functional",
+        )
         self.unittest_script_fail.save()
         self.unittest_script_error = script.TemporaryScript(
-            'unittest_error.py',
+            "unittest_error.py",
             UNITTEST_ERROR % self.tmpdir.name,
-            'avocado_as_unittest_functional')
+            "avocado_as_unittest_functional",
+        )
         self.unittest_script_error.save()
 
     def test_run_pass(self):
-        cmd_line = f'{sys.executable} {self.unittest_script_good}'
+        cmd_line = f"{sys.executable} {self.unittest_script_good}"
         result = process.run(cmd_line)
         self.assertEqual(0, result.exit_status)
-        self.assertIn(b'Ran 1 test in', result.stderr)
+        self.assertIn(b"Ran 1 test in", result.stderr)
 
     def test_run_fail(self):
-        cmd_line = f'{sys.executable} {self.unittest_script_fail}'
+        cmd_line = f"{sys.executable} {self.unittest_script_fail}"
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(1, result.exit_status)
-        self.assertIn(b'Ran 1 test in', result.stderr)
-        self.assertIn(b'This test is supposed to fail', result.stderr)
-        self.assertIn(b'FAILED (failures=1)', result.stderr)
+        self.assertIn(b"Ran 1 test in", result.stderr)
+        self.assertIn(b"This test is supposed to fail", result.stderr)
+        self.assertIn(b"FAILED (failures=1)", result.stderr)
 
     def test_run_error(self):
-        cmd_line = f'{sys.executable} {self.unittest_script_error}'
+        cmd_line = f"{sys.executable} {self.unittest_script_error}"
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(1, result.exit_status)
-        self.assertIn(b'Ran 1 test in', result.stderr)
-        self.assertIn(b'This test is supposed to error', result.stderr)
-        self.assertIn(b'FAILED (errors=1)', result.stderr)
+        self.assertIn(b"Ran 1 test in", result.stderr)
+        self.assertIn(b"This test is supposed to error", result.stderr)
+        self.assertIn(b"FAILED (errors=1)", result.stderr)
 
     def tearDown(self):
         super().tearDown()
@@ -108,5 +110,5 @@ class UnittestCompat(TestCaseTmpDir):
         self.unittest_script_good.remove()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

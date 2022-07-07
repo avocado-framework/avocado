@@ -77,9 +77,9 @@ class TaskInfo(Task):
 
     def __repr__(self):
         if self._status is None:
-            return f'{self._identification}'
+            return f"{self._identification}"
         else:
-            return f'{self._identification} ({self.status})'
+            return f"{self._identification} ({self.status})"
 
 
 class TaskStateMachine:
@@ -120,16 +120,25 @@ class TaskStateMachine:
     @property
     async def complete(self):
         async with self._lock:
-            pending = any([self._requested, self._triaging,
-                           self._ready, self._started])
+            pending = any([self._requested, self._triaging, self._ready, self._started])
         return not pending
 
     def __str__(self):
-        headers = ("|_REQUESTED_|", "|_TRIAGING__|",
-                   "|___READY___|", "|__STARTED__|",
-                   "|______FINISHED_______|")
-        data = itertools.zip_longest(self._requested, self._triaging, self._ready,
-                                     self._started, self._finished, fillvalue="")
+        headers = (
+            "|_REQUESTED_|",
+            "|_TRIAGING__|",
+            "|___READY___|",
+            "|__STARTED__|",
+            "|______FINISHED_______|",
+        )
+        data = itertools.zip_longest(
+            self._requested,
+            self._triaging,
+            self._ready,
+            self._started,
+            self._finished,
+            fillvalue="",
+        )
         matrix = [_ for _ in data]
         return tabular_output(matrix, headers)
 
@@ -143,9 +152,9 @@ async def bootstrap(lc):
         async with lc.lock:
             task = lc.requested.pop()
             lc.triaging.append(task)
-            debug(f'Moved Task {task}: REQUESTED => TRIAGING')
+            debug(f"Moved Task {task}: REQUESTED => TRIAGING")
     except IndexError:
-        debug('BOOTSTRAP: nothing to do')
+        debug("BOOTSTRAP: nothing to do")
         return
 
 
@@ -156,18 +165,18 @@ async def triage(lc):
         async with lc.lock:
             task = lc.triaging.pop()
     except IndexError:
-        debug('TRIAGE done')
+        debug("TRIAGE done")
         return
 
     if mock_check_task_requirement():
         async with lc.lock:
             lc.ready.append(task)
-            debug(f'Moving Task {task}: TRIAGING => READY')
+            debug(f"Moving Task {task}: TRIAGING => READY")
     else:
         async with lc.lock:
             lc.finished.append(task)
-            task.status = 'FAILED ON TRIAGE'
-            debug(f'Moving Task {task}: TRIAGING => FINISHED')
+            task.status = "FAILED ON TRIAGE"
+            debug(f"Moving Task {task}: TRIAGING => FINISHED")
 
 
 async def start(lc):
@@ -177,7 +186,7 @@ async def start(lc):
         async with lc.lock:
             task = lc.ready.pop()
     except IndexError:
-        debug('START: nothing to do')
+        debug("START: nothing to do")
         return
 
     # enforce a rate limit on the number of started (currently running) tasks.
@@ -187,7 +196,7 @@ async def start(lc):
     async with lc.lock:
         if len(lc.started) >= MAX_RUNNING_TASKS:
             lc.ready.insert(0, task)
-            task.status = 'WAITING'
+            task.status = "WAITING"
             return
 
     # suppose we're starting the tasks
@@ -197,12 +206,12 @@ async def start(lc):
             # Let's give each task 15 seconds from start time
             task.timeout = time.monotonic() + 15
             lc.started.append(task)
-            debug(f'Moving Task {task}: READY => STARTED')
+            debug(f"Moving Task {task}: READY => STARTED")
     else:
         async with lc.lock:
             lc.finished.append(task)
-            task.status = 'FAILED ON START'
-            debug(f'Moving Task {task}: READY => FINISHED (ERRORED ON START)')
+            task.status = "FAILED ON START"
+            debug(f"Moving Task {task}: READY => FINISHED (ERRORED ON START)")
 
 
 async def monitor(lc):
@@ -212,22 +221,22 @@ async def monitor(lc):
         async with lc.lock:
             task = lc.started.pop()
     except IndexError:
-        debug('MONITOR: nothing to do')
+        debug("MONITOR: nothing to do")
         return
 
     if time.monotonic() > task.timeout:
         async with lc.lock:
-            task.status = 'FAILED W/ TIMEOUT'
+            task.status = "FAILED W/ TIMEOUT"
             lc.finished.append(task)
-            debug(f'Moving Task {task}: STARTED => FINISHED (FAILED ON TIMEOUT)')
+            debug(f"Moving Task {task}: STARTED => FINISHED (FAILED ON TIMEOUT)")
     elif mock_monitor_task_finished():
         async with lc.lock:
             lc.finished.append(task)
-            debug(f'Moving Task {task}: STARTED => FINISHED (COMPLETED AFTER STARTED)')
+            debug(f"Moving Task {task}: STARTED => FINISHED (COMPLETED AFTER STARTED)")
     else:
         async with lc.lock:
             lc.started.insert(0, task)
-        debug(f'Task {task}: has not finished yet')
+        debug(f"Task {task}: has not finished yet")
 
 
 def print_lc_status(lc):
@@ -239,7 +248,7 @@ async def worker(lc):
     """Pushes Tasks forward and makes them do something with their lives."""
     while True:
         complete = await lc.complete
-        debug(f'Complete? {complete}')
+        debug(f"Complete? {complete}")
         if complete:
             break
         await bootstrap(lc)
@@ -252,13 +261,19 @@ async def worker(lc):
         print_lc_status(lc)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     NUMBER_OF_TASKS = 40
     NUMBER_OF_LIFECYCLE_WORKERS = 4
-    tasks_info = [TaskInfo("%03i" % _) for _ in range(1, NUMBER_OF_TASKS - 1)]  # pylint: disable=C0209
+    tasks_info = [
+        # pylint: disable=C0209
+        TaskInfo("%03i" % _)
+        for _ in range(1, NUMBER_OF_TASKS - 1)
+    ]
     state_machine = TaskStateMachine(tasks_info)
     loop = asyncio.get_event_loop()
-    workers = [loop.create_task(worker(state_machine))
-               for _ in range(NUMBER_OF_LIFECYCLE_WORKERS)]
+    workers = [
+        loop.create_task(worker(state_machine))
+        for _ in range(NUMBER_OF_LIFECYCLE_WORKERS)
+    ]
     loop.run_until_complete(asyncio.gather(*workers))
     print("JOB COMPLETED")

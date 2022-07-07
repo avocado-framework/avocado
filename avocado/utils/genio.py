@@ -59,7 +59,7 @@ def read_file(filename):
     :return: File contents
     :rtype: str
     """
-    with open(filename, 'r', encoding='utf-8') as file_obj:
+    with open(filename, "r", encoding="utf-8") as file_obj:
         contents = file_obj.read()
     return contents
 
@@ -74,8 +74,8 @@ def read_one_line(filename):
     :return: First line contents
     :rtype: str
     """
-    with open(filename, 'r', encoding='utf-8') as file_obj:
-        line = file_obj.readline().rstrip('\n')
+    with open(filename, "r", encoding="utf-8") as file_obj:
+        line = file_obj.readline().rstrip("\n")
     return line
 
 
@@ -98,8 +98,8 @@ def read_all_lines(filename):
     """
     contents = []
     try:
-        with open(filename, 'r', encoding='utf-8') as file_obj:
-            contents = [line.rstrip('\n') for line in file_obj.readlines()]
+        with open(filename, "r", encoding="utf-8") as file_obj:
+            contents = [line.rstrip("\n") for line in file_obj.readlines()]
     except Exception:  # pylint: disable=W0703
         pass
     return contents
@@ -114,7 +114,7 @@ def write_file(filename, data):
     :param line: Line to be written.
     :type line: str
     """
-    with open(filename, 'w', encoding='utf-8') as file_obj:
+    with open(filename, "w", encoding="utf-8") as file_obj:
         file_obj.write(data)
 
 
@@ -127,7 +127,7 @@ def write_one_line(filename, line):
     :param line: Line to be written.
     :type line: str
     """
-    write_file(filename, line.rstrip('\n') + '\n')
+    write_file(filename, line.rstrip("\n") + "\n")
 
 
 def write_file_or_fail(filename, data):
@@ -141,7 +141,7 @@ def write_file_or_fail(filename, data):
     :raises GenIOError: On write Failure
     """
     try:
-        with open(filename, 'w', encoding='utf-8') as file_obj:
+        with open(filename, "w", encoding="utf-8") as file_obj:
             file_obj.write(data)
     except OSError as details:
         raise GenIOError(f"The write to {filename} failed: {details}")
@@ -156,7 +156,7 @@ def append_file(filename, data):
     :param line: Line to be written.
     :type line: str
     """
-    with open(filename, 'a+', encoding='utf-8') as file_obj:
+    with open(filename, "a+", encoding="utf-8") as file_obj:
         file_obj.write(data)
 
 
@@ -169,10 +169,10 @@ def append_one_line(filename, line):
     :param line: Line to be written.
     :type line: str
     """
-    append_file(filename, line.rstrip('\n') + '\n')
+    append_file(filename, line.rstrip("\n") + "\n")
 
 
-def is_pattern_in_file(filename,  pattern):
+def is_pattern_in_file(filename, pattern):
     """
     Check if a pattern matches in a specified file. If a non
     regular file be informed a GenIOError will be raised.
@@ -186,9 +186,8 @@ def is_pattern_in_file(filename,  pattern):
     :rtype: boolean
     """
     if not os.path.isfile(filename):
-        raise GenIOError(f'invalid file {filename} '
-                         f'to match pattern {pattern}')
-    with open(filename, 'r', encoding='utf-8') as content_file:
+        raise GenIOError(f"invalid file {filename} " f"to match pattern {pattern}")
+    with open(filename, "r", encoding="utf-8") as content_file:
         if re.search(pattern, content_file.read(), re.MULTILINE):
             return True
     return False

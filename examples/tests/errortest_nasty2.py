@@ -3,7 +3,7 @@ from avocado import Test
 
 class NastyException(Exception):
 
-    """ Please never use something like this!!! """
+    """Please never use something like this!!!"""
 
     def __init__(self, msg):  # pylint: disable=W0231
         self.msg = msg

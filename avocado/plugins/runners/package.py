@@ -28,85 +28,82 @@ class PackageRunner(BaseRunner):
           to 'install')
     """
 
-    name = 'package'
-    description = 'Runner for dependencies of type package'
+    name = "package"
+    description = "Runner for dependencies of type package"
 
     @staticmethod
     def _check(software_manager, package):
         if software_manager.check_installed(package):
-            result = 'pass'
-            stdout = MESSAGES['check-installed']['success'] % package
-            stderr = ''
+            result = "pass"
+            stdout = MESSAGES["check-installed"]["success"] % package
+            stderr = ""
         else:
-            result = 'error'
-            stdout = ''
-            stderr = MESSAGES['check-installed']['fail'] % package
+            result = "error"
+            stdout = ""
+            stderr = MESSAGES["check-installed"]["fail"] % package
         return result, stdout, stderr
 
     @staticmethod
     def _install(software_manager, cmd, package):
-        result = 'pass'
-        stderr = ''
+        result = "pass"
+        stderr = ""
         if not software_manager.check_installed(package):
             if software_manager.install(package):
-                stdout = MESSAGES[cmd]['success'] % package
+                stdout = MESSAGES[cmd]["success"] % package
             else:
                 # check if the error is a false negative because of package
                 # installation collision
                 if software_manager.check_installed(package):
-                    stdout = MESSAGES[cmd]['success'] % package
+                    stdout = MESSAGES[cmd]["success"] % package
                 else:
-                    result = 'error'
-                    stdout = ''
-                    stderr = MESSAGES[cmd]['fail'] % package
+                    result = "error"
+                    stdout = ""
+                    stderr = MESSAGES[cmd]["fail"] % package
         else:
-            stdout = MESSAGES['check-installed']['success'] % package
+            stdout = MESSAGES["check-installed"]["success"] % package
         return result, stdout, stderr
 
     @staticmethod
     def _remove(software_manager, cmd, package):
-        result = 'pass'
-        stderr = ''
+        result = "pass"
+        stderr = ""
         if software_manager.check_installed(package):
             if software_manager.remove(package):
-                stdout = MESSAGES[cmd]['success'] % package
+                stdout = MESSAGES[cmd]["success"] % package
             else:
                 # check if the error is a false negative because of package
                 # installation collision
                 if not software_manager.check_installed(package):
-                    stdout = MESSAGES[cmd]['success'] % package
+                    stdout = MESSAGES[cmd]["success"] % package
                 else:
-                    result = 'error'
-                    stdout = ''
-                    stderr = MESSAGES[cmd]['fail'] % package
+                    result = "error"
+                    stdout = ""
+                    stderr = MESSAGES[cmd]["fail"] % package
         else:
-            stdout = MESSAGES['check-installed']['fail'] % package
+            stdout = MESSAGES["check-installed"]["fail"] % package
         return result, stdout, stderr
 
     def _run_software_manager(self, cmd, package, queue):
         software_manager = SoftwareManager()
 
         if not software_manager.is_capable():
-            output = {'result': 'error',
-                      'stdout': '',
-                      'stderr': ('Package manager not supported or not'
-                                 ' available.')}
+            output = {
+                "result": "error",
+                "stdout": "",
+                "stderr": ("Package manager not supported or not" " available."),
+            }
             queue.put(output)
 
-        if cmd == 'install':
-            result, stdout, stderr = self._install(software_manager, cmd,
-                                                   package)
+        if cmd == "install":
+            result, stdout, stderr = self._install(software_manager, cmd, package)
 
-        elif cmd == 'remove':
-            result, stdout, stderr = self._remove(software_manager, cmd,
-                                                  package)
+        elif cmd == "remove":
+            result, stdout, stderr = self._remove(software_manager, cmd, package)
 
-        elif cmd == 'check':
+        elif cmd == "check":
             result, stdout, stderr = self._check(software_manager, package)
 
-        output = {'result': result,
-                  'stdout': stdout,
-                  'stderr': stderr}
+        output = {"result": result, "stdout": stdout, "stderr": stderr}
         queue.put(output)
 
     def run(self, runnable):
@@ -114,24 +111,26 @@ class PackageRunner(BaseRunner):
         self.runnable = runnable
         yield messages.StartedMessage.get()
         # check if there is a valid 'action' argument
-        cmd = self.runnable.kwargs.get('action', 'install')
+        cmd = self.runnable.kwargs.get("action", "install")
         # avoid invalid arguments
-        if cmd not in ['install', 'check', 'remove']:
-            stderr = (f"Invalid action {cmd}. Use one of 'install', 'check' "
-                      f"or 'remove'")
+        if cmd not in ["install", "check", "remove"]:
+            stderr = (
+                f"Invalid action {cmd}. Use one of 'install', 'check' " f"or 'remove'"
+            )
             yield messages.StderrMessage.get(stderr.encode())
-            yield messages.FinishedMessage.get('error')
+            yield messages.FinishedMessage.get("error")
             return
 
-        package = self.runnable.kwargs.get('name')
+        package = self.runnable.kwargs.get("name")
         # if package was passed correctly, run avocado-software-manager
         if package is not None:
             # let's spawn it to another process to be able to update the
             # status messages and avoid the software-manager to lock this
             # process
             queue = SimpleQueue()
-            process = Process(target=self._run_software_manager,
-                              args=(cmd, package, queue))
+            process = Process(
+                target=self._run_software_manager, args=(cmd, package, queue)
+            )
             process.start()
 
             while queue.empty():
@@ -139,15 +138,16 @@ class PackageRunner(BaseRunner):
                 yield messages.RunningMessage.get()
 
             output = queue.get()
-            result = output['result']
-            stdout = output['stdout']
-            stderr = output['stderr']
+            result = output["result"]
+            stdout = output["stdout"]
+            stderr = output["stderr"]
         else:
             # Otherwise, log the missing package name
-            result = 'error'
-            stdout = ''
-            stderr = ('Package name should be passed as kwargs using'
-                      ' name="package_name".')
+            result = "error"
+            stdout = ""
+            stderr = (
+                'Package name should be passed as kwargs using name="package_name".'
+            )
 
         yield messages.StdoutMessage.get(stdout.encode())
         yield messages.StderrMessage.get(stderr.encode())
@@ -155,9 +155,9 @@ class PackageRunner(BaseRunner):
 
 
 class RunnerApp(BaseRunnerApp):
-    PROG_NAME = 'avocado-runner-package'
-    PROG_DESCRIPTION = ('nrunner application for dependencies of type package')
-    RUNNABLE_KINDS_CAPABLE = ['package']
+    PROG_NAME = "avocado-runner-package"
+    PROG_DESCRIPTION = "nrunner application for dependencies of type package"
+    RUNNABLE_KINDS_CAPABLE = ["package"]
 
 
 def main():
@@ -165,5 +165,5 @@ def main():
     app.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -43,7 +43,7 @@ from avocado.utils import astring
 
 class FilterSet(set):
 
-    """ Set of filters in standardized form """
+    """Set of filters in standardized form"""
 
     @staticmethod
     def __normalize(item):
@@ -58,19 +58,19 @@ class FilterSet(set):
         return super().update([self.__normalize(item) for item in items])
 
     def __str__(self):
-        fs = ', '.join(sorted([f"'{i}'" for i in self]))
-        return (f'FilterSet([{fs}])')
+        fs = ", ".join(sorted([f"'{i}'" for i in self]))
+        return f"FilterSet([{fs}])"
 
 
 class TreeEnvironment(dict):
 
-    """ TreeNode environment with values, origins and filters """
+    """TreeNode environment with values, origins and filters"""
 
     def __init__(self):
-        super().__init__()     # values
-        self.origin = {}    # origins of the values
-        self.filter_only = FilterSet()   # list of filter_only
-        self.filter_out = FilterSet()    # list of filter_out
+        super().__init__()  # values
+        self.origin = {}  # origins of the values
+        self.filter_only = FilterSet()  # list of filter_only
+        self.filter_out = FilterSet()  # list of filter_out
 
     def copy(self):
         cpy = TreeEnvironment()
@@ -96,21 +96,34 @@ class TreeEnvironment(dict):
         if sort:
             sort_fn = sorted
         else:
+
             def sort_fn(x):
                 return x
 
         # Use __str__ instead of __repr__ to improve readability
         if self:
-            _values = ["%s: %s" % _ for _ in sort_fn(list(self.items()))]  # pylint: disable=C0209
+            _values = [
+                # pylint: disable=C0209
+                "%s: %s" % _
+                for _ in sort_fn(list(self.items()))
+            ]
             values = f"{{{', '.join(_values)}}}"
-            _origin = [f"{key}: {node.path}"
-                       for key, node in sort_fn(list(self.origin.items()))]
+            _origin = [
+                f"{key}: {node.path}"
+                for key, node in sort_fn(list(self.origin.items()))
+            ]
             origin = f"{{{', '.join(_origin)}}}"
         else:
             values = "{}"
             origin = "{}"
-        return ",".join((values, origin, astring.to_text(self.filter_only),
-                         astring.to_text(self.filter_out)))
+        return ",".join(
+            (
+                values,
+                origin,
+                astring.to_text(self.filter_only),
+                astring.to_text(self.filter_out),
+            )
+        )
 
 
 class TreeNodeEnvOnly:
@@ -163,7 +176,7 @@ class TreeNode:
     Class for bounding nodes into tree-structure.
     """
 
-    def __init__(self, name='', value=None, parent=None, children=None):
+    def __init__(self, name="", value=None, parent=None, children=None):
         """
         :param name: a name for this node that will be used to define its
                      path according to the name of its parents
@@ -192,33 +205,33 @@ class TreeNode:
             self.add_child(child)
 
     def __repr__(self):
-        return f'TreeNode(name={self.name!r})'
+        return f"TreeNode(name={self.name!r})"
 
     def __str__(self):
-        variables = [f'{k}={v}' for k, v in self.environment.items()]
+        variables = [f"{k}={v}" for k, v in self.environment.items()]
         return f"{self.path}: {', '.join(variables)}"
 
     def __len__(self):
-        """ Return number of descended leaf nodes """
+        """Return number of descended leaf nodes"""
         return len(tuple(self.iter_leaves()))
 
     def __iter__(self):
-        """ Iterate through descended leaf nodes """
+        """Iterate through descended leaf nodes"""
         return self.iter_leaves()
 
     def __eq__(self, other):
-        """ Compares node to other node or string to name of this node """
+        """Compares node to other node or string to name of this node"""
         if isinstance(other, str):  # Compare names
             if self.name == other:
                 return True
         else:
-            for attr in ('name', 'value', 'children'):
+            for attr in ("name", "value", "children"):
                 if getattr(self, attr) != getattr(other, attr):
                     return False
             return True
 
     def __ne__(self, other):
-        """ Inverted eq """
+        """Inverted eq"""
         return not self == other
 
     def __hash__(self):
@@ -234,7 +247,7 @@ class TreeNode:
                 children.append(hash(item))
             except TypeError:
                 children.append(hash(astring.to_text(item)))
-        return hash((self.name, ) + tuple(values) + tuple(children))
+        return hash((self.name,) + tuple(values) + tuple(children))
 
     def fingerprint(self):
         """
@@ -254,7 +267,7 @@ class TreeNode:
                 node.parent = self
                 self.children.append(node)
         else:
-            raise ValueError('Bad node type.')
+            raise ValueError("Bad node type.")
 
     def merge(self, other):
         """
@@ -272,23 +285,23 @@ class TreeNode:
 
     @property
     def is_leaf(self):
-        """ Is this a leaf node? """
+        """Is this a leaf node?"""
         return not self.children
 
     @property
     def root(self):
-        """ Root of this tree """
+        """Root of this tree"""
         return self.get_root()
 
     def get_root(self):
-        """ Get root of this tree """
+        """Get root of this tree"""
         root = self
         for root in self.iter_parents():
             pass
         return root
 
     def iter_parents(self):
-        """ Iterate through parent nodes to root """
+        """Iterate through parent nodes to root"""
         node = self.parent
         while True:
             if node is None:
@@ -298,20 +311,20 @@ class TreeNode:
 
     @property
     def parents(self):
-        """ List of parent nodes """
+        """List of parent nodes"""
         return self.get_parents()
 
     def get_parents(self):
-        """ Get list of parent nodes """
+        """Get list of parent nodes"""
         return list(self.iter_parents())
 
     @property
     def path(self):
-        """ Node path """
+        """Node path"""
         return self.get_path()
 
-    def get_path(self, sep='/'):
-        """ Get node path """
+    def get_path(self, sep="/"):
+        """Get node path"""
         if not self.parent:
             return sep + astring.to_text(self.name)
         path = [astring.to_text(self.name)]
@@ -321,18 +334,20 @@ class TreeNode:
 
     @property
     def environment(self):
-        """ Node environment (values + preceding envs) """
+        """Node environment (values + preceding envs)"""
         return self.get_environment()
 
     def get_environment(self):
-        """ Get node environment (values + preceding envs) """
+        """Get node environment (values + preceding envs)"""
         if self._environment is None:
-            self._environment = (self.parent.environment.copy()
-                                 if self.parent else TreeEnvironment())
+            self._environment = (
+                self.parent.environment.copy() if self.parent else TreeEnvironment()
+            )
             for key, value in self.value.items():
                 if isinstance(value, list):
-                    if (key in self._environment and
-                            isinstance(self._environment[key], list)):
+                    if key in self._environment and isinstance(
+                        self._environment[key], list
+                    ):
                         self._environment[key] = self._environment[key] + value
                     else:
                         self._environment[key] = value
@@ -361,7 +376,7 @@ class TreeNode:
         :raise ValueError: When path doesn't exist and create not set
         """
         node = self
-        for name in path.split('/'):
+        for name in path.split("/"):
             if not name:
                 continue
             try:
@@ -372,12 +387,14 @@ class TreeNode:
                     node.add_child(child)
                     node = child
                 else:
-                    raise ValueError(f"Path {path} does not exists in this "
-                                     f"tree\n{tree_view(self.root)}")
+                    raise ValueError(
+                        f"Path {path} does not exists in this "
+                        f"tree\n{tree_view(self.root)}"
+                    )
         return node
 
     def iter_children_preorder(self):
-        """ Iterate through children """
+        """Iterate through children"""
         queue = collections.deque()
         node = self
         while node is not None:
@@ -389,17 +406,17 @@ class TreeNode:
                 node = None
 
     def iter_leaves(self):
-        """ Iterate through leaf nodes """
+        """Iterate through leaf nodes"""
         for node in self.iter_children_preorder():
             if node.is_leaf:
                 yield node
 
     def get_leaves(self):
-        """ Get list of leaf nodes """
+        """Get list of leaf nodes"""
         return list(self.iter_leaves())
 
     def detach(self):
-        """ Detach this node from parent """
+        """Detach this node from parent"""
         if self.parent:
             self.parent.children.remove(self)
             self.parent = None
@@ -421,12 +438,13 @@ def tree_view(root, verbose=None, use_utf8=None):
         :return: list of lines
         """
         value = astring.to_text(value)
-        if '\n' not in value:
+        if "\n" not in value:
             return [prefix1 + prefix2 + value]
         value = value.splitlines()
-        empty_prefix2 = ' ' * len(prefix2)
-        return [prefix1 + prefix2 + value[0]] + [prefix1 + empty_prefix2 +
-                                                 _ for _ in value[1:]]
+        empty_prefix2 = " " * len(prefix2)
+        return [prefix1 + prefix2 + value[0]] + [
+            prefix1 + empty_prefix2 + _ for _ in value[1:]
+        ]
 
     def process_node(node):
         """
@@ -434,37 +452,36 @@ def tree_view(root, verbose=None, use_utf8=None):
         :return: list of lines
         """
         if getattr(node, "multiplex", None):
-            down = charset['DoubleDown']
-            down_right = charset['DoubleDownRight']
-            right = charset['DoubleRight']
+            down = charset["DoubleDown"]
+            down_right = charset["DoubleDownRight"]
+            right = charset["DoubleRight"]
         else:
-            down = charset['Down']
-            down_right = charset['DownRight']
-            right = charset['Right']
+            down = charset["Down"]
+            down_right = charset["DownRight"]
+            right = charset["Right"]
         out = [node.name]
         if verbose is not None and verbose >= 2 and node.is_leaf:
-            values = itertools.chain(iter(node.environment.items()),
-                                     [("filter-only", _)
-                                      for _ in node.environment.filter_only],
-                                     [("filter-out", _)
-                                      for _ in node.environment.filter_out])
+            values = itertools.chain(
+                iter(node.environment.items()),
+                [("filter-only", _) for _ in node.environment.filter_only],
+                [("filter-out", _) for _ in node.environment.filter_out],
+            )
         elif verbose in (1, 3):
-            values = itertools.chain(iter(node.value.items()),
-                                     [("filter-only", _)
-                                      for _ in node.filters[0]],
-                                     [("filter-out", _)
-                                      for _ in node.filters[1]])
+            values = itertools.chain(
+                iter(node.value.items()),
+                [("filter-only", _) for _ in node.filters[0]],
+                [("filter-out", _) for _ in node.filters[1]],
+            )
         else:
             values = None
         if values:
-            val = charset['Value']
+            val = charset["Value"]
             if node.children:
                 val_prefix = down
             else:
-                val_prefix = '  '
+                val_prefix = "  "
             for key, value in values:
-                out.extend(prefixed_write(val_prefix, f"{val}{key}: ",
-                                          value))
+                out.extend(prefixed_write(val_prefix, f"{val}{key}: ", value))
         if node.children:
             for child in node.children[:-1]:
                 lines = process_node(child)
@@ -472,36 +489,40 @@ def tree_view(root, verbose=None, use_utf8=None):
                 out.extend(down + line for line in lines[1:])
             lines = process_node(node.children[-1])
             out.append(right + lines[0])
-            empty_down_right = ' ' * len(down_right)
+            empty_down_right = " " * len(down_right)
             out.extend(empty_down_right + line for line in lines[1:])
         return out
 
     if use_utf8 is None:
-        use_utf8 = locale.getdefaultlocale()[1] == 'UTF-8'
+        use_utf8 = locale.getdefaultlocale()[1] == "UTF-8"
     if use_utf8:
-        charset = {'DoubleDown': ' \u2551   ',
-                   'DoubleDownRight': ' \u2560\u2550\u2550 ',
-                   'DoubleRight': ' \u255a\u2550\u2550 ',
-                   'Down': ' \u2503   ',
-                   'DownRight': ' \u2523\u2501\u2501 ',
-                   'Right': ' \u2517\u2501\u2501 ',
-                   'Value': '\u2192 '}
-    else:   # ASCII fallback
-        charset = {'Down': ' |   ',
-                   'DownRight': ' |-- ',
-                   'Right': ' \\-- ',
-                   'DoubleDown': ' #   ',
-                   'DoubleDownRight': ' #== ',
-                   'DoubleRight': ' #== ',
-                   'Value': ' -> '}
+        charset = {
+            "DoubleDown": " \u2551   ",
+            "DoubleDownRight": " \u2560\u2550\u2550 ",
+            "DoubleRight": " \u255a\u2550\u2550 ",
+            "Down": " \u2503   ",
+            "DownRight": " \u2523\u2501\u2501 ",
+            "Right": " \u2517\u2501\u2501 ",
+            "Value": "\u2192 ",
+        }
+    else:  # ASCII fallback
+        charset = {
+            "Down": " |   ",
+            "DownRight": " |-- ",
+            "Right": " \\-- ",
+            "DoubleDown": " #   ",
+            "DoubleDownRight": " #== ",
+            "DoubleRight": " #== ",
+            "Value": " -> ",
+        }
     if getattr(root, "multiplex", None):
-        down = charset['DoubleDown']
-        down_right = charset['DoubleDownRight']
-        right = charset['DoubleRight']
+        down = charset["DoubleDown"]
+        down_right = charset["DoubleDownRight"]
+        right = charset["DoubleRight"]
     else:
-        down = charset['Down']
-        down_right = charset['DownRight']
-        right = charset['Right']
+        down = charset["Down"]
+        down_right = charset["DownRight"]
+        right = charset["Right"]
     out = []
     if verbose is not None and verbose >= 2 and root.is_leaf:
         values = root.environment.items()
@@ -510,9 +531,9 @@ def tree_view(root, verbose=None, use_utf8=None):
     else:
         values = None
     if values:
-        prefix = charset['Value'].lstrip()
+        prefix = charset["Value"].lstrip()
         for key, value in values:
-            out.extend(prefixed_write(prefix, key + ': ', value))
+            out.extend(prefixed_write(prefix, key + ": ", value))
     if root.children:
         for child in root.children[:-1]:
             lines = process_node(child)
@@ -520,7 +541,8 @@ def tree_view(root, verbose=None, use_utf8=None):
             out.extend(down + line for line in lines[1:])
         lines = process_node(root.children[-1])
         out.append(right + lines[0])
-        out.extend(' ' * len(down_right) + line for line in lines[1:])
+        out.extend(" " * len(down_right) + line for line in lines[1:])
     # When not on TTY we need to force the encoding
-    return '\n'.join(out).encode('utf-8' if use_utf8 else 'ascii',
-                                 errors='xmlcharrefreplace')
+    return "\n".join(out).encode(
+        "utf-8" if use_utf8 else "ascii", errors="xmlcharrefreplace"
+    )

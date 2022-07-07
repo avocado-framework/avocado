@@ -5,13 +5,12 @@ from avocado.utils import script
 
 
 class TestTemporary(unittest.TestCase):
-
     def test_unicode_name(self):
-        path = '\u00e1 \u00e9 \u00ed \u00f3 \u00fa'
+        path = "\u00e1 \u00e9 \u00ed \u00f3 \u00fa"
         content = "a e i o u"
         with script.TemporaryScript(path, content) as temp_script:
             self.assertTrue(os.path.exists(temp_script.path))
-            with open(temp_script.path, encoding='utf-8') as temp_script_file:
+            with open(temp_script.path, encoding="utf-8") as temp_script_file:
                 self.assertEqual(content, temp_script_file.read())
 
 

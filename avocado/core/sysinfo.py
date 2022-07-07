@@ -29,21 +29,19 @@ log = logging.getLogger("avocado.sysinfo")
 def gather_collectibles_config(config):
     sysinfo_files = {}
 
-    for collectible in ['commands', 'files', 'fail_commands', 'fail_files']:
-        tmp_file = config.get(f'sysinfo.collectibles.{collectible}')
+    for collectible in ["commands", "files", "fail_commands", "fail_files"]:
+        tmp_file = config.get(f"sysinfo.collectibles.{collectible}")
         if os.path.isfile(tmp_file):
-            log.info('%s configured by file: %s', collectible.title(),
-                     tmp_file)
+            log.info("%s configured by file: %s", collectible.title(), tmp_file)
             sysinfo_files[collectible] = genio.read_all_lines(tmp_file)
         else:
-            log.debug('File %s does not exist.', tmp_file)
+            log.debug("File %s does not exist.", tmp_file)
             sysinfo_files[collectible] = []
 
-        if 'fail_' in collectible:
+        if "fail_" in collectible:
             list1 = sysinfo_files[collectible]
-            list2 = sysinfo_files[collectible.split('_')[1]]
-            sysinfo_files[collectible] = [
-                tmp for tmp in list1 if tmp not in list2]
+            list2 = sysinfo_files[collectible.split("_")[1]]
+            sysinfo_files[collectible] = [tmp for tmp in list1 if tmp not in list2]
     return sysinfo_files
 
 
@@ -72,12 +70,12 @@ class SysInfo:
         self.config = settings.as_dict()
 
         if basedir is None:
-            basedir = utils_path.init_dir('sysinfo')
+            basedir = utils_path.init_dir("sysinfo")
         self.basedir = basedir
 
         self._installed_pkgs = None
         if log_packages is None:
-            packages_namespace = 'sysinfo.collect.installed_packages'
+            packages_namespace = "sysinfo.collect.installed_packages"
             self.log_packages = self.config.get(packages_namespace)
         else:
             self.log_packages = log_packages
@@ -88,9 +86,9 @@ class SysInfo:
         self.end_collectibles = set()
         self.end_fail_collectibles = set()
 
-        self.pre_dir = utils_path.init_dir(self.basedir, 'pre')
-        self.post_dir = utils_path.init_dir(self.basedir, 'post')
-        self.profile_dir = utils_path.init_dir(self.basedir, 'profile')
+        self.pre_dir = utils_path.init_dir(self.basedir, "pre")
+        self.post_dir = utils_path.init_dir(self.basedir, "post")
+        self.profile_dir = utils_path.init_dir(self.basedir, "profile")
 
         self._set_collectibles()
 
@@ -99,33 +97,29 @@ class SysInfo:
 
         profiler = c_profiler
         if profiler is None:
-            self.profiler = self.config.get('sysinfo.collect.profiler')
+            self.profiler = self.config.get("sysinfo.collect.profiler")
         else:
             self.profiler = profiler
 
-        profiler_file = self.config.get('sysinfo.collectibles.profilers')
+        profiler_file = self.config.get("sysinfo.collectibles.profilers")
         if os.path.isfile(profiler_file):
-            self.sysinfo_files["profilers"] = genio.read_all_lines(
-                profiler_file)
-            log.info('Profilers configured by file: %s', profiler_file)
+            self.sysinfo_files["profilers"] = genio.read_all_lines(profiler_file)
+            log.info("Profilers configured by file: %s", profiler_file)
             if not self.sysinfo_files["profilers"]:
                 self.profiler = False
 
             if self.profiler is False:
                 if not self.sysinfo_files["profilers"]:
-                    log.info('Profiler disabled: no profiler'
-                             ' commands configured')
+                    log.info("Profiler disabled: no profiler" " commands configured")
                 else:
-                    log.info('Profiler disabled')
+                    log.info("Profiler disabled")
         else:
-            log.debug('File %s does not exist.', profiler_file)
+            log.debug("File %s does not exist.", profiler_file)
             self.sysinfo_files["profilers"] = []
 
     @staticmethod
     def _get_syslog_watcher():
-        logpaths = ["/var/log/messages",
-                    "/var/log/syslog",
-                    "/var/log/system.log"]
+        logpaths = ["/var/log/messages", "/var/log/syslog", "/var/log/system.log"]
         for logpath in logpaths:
             if os.path.exists(logpath):
                 try:
@@ -135,22 +129,24 @@ class SysInfo:
         raise ValueError(f"System log file not found (looked for {logpaths})")
 
     def _set_collectibles(self):
-        timeout = self.config.get('sysinfo.collect.commands_timeout')
-        locale = self.config.get('sysinfo.collect.locale')
+        timeout = self.config.get("sysinfo.collect.commands_timeout")
+        locale = self.config.get("sysinfo.collect.locale")
         if self.profiler:
             for cmd in self.sysinfo_files["profilers"]:
                 self.start_collectibles.add(sysinfo.Daemon(cmd, locale=locale))
 
         for cmd in self.sysinfo_files["commands"]:
-            self.start_collectibles.add(sysinfo.Command(cmd, timeout=timeout,
-                                                        locale=locale))
-            self.end_collectibles.add(sysinfo.Command(cmd, timeout=timeout,
-                                                      locale=locale))
+            self.start_collectibles.add(
+                sysinfo.Command(cmd, timeout=timeout, locale=locale)
+            )
+            self.end_collectibles.add(
+                sysinfo.Command(cmd, timeout=timeout, locale=locale)
+            )
 
         for fail_cmd in self.sysinfo_files["fail_commands"]:
-            self.end_fail_collectibles.add(sysinfo.Command(fail_cmd,
-                                                           timeout=timeout,
-                                                           locale=locale))
+            self.end_fail_collectibles.add(
+                sysinfo.Command(fail_cmd, timeout=timeout, locale=locale)
+            )
 
         for filename in self.sysinfo_files["files"]:
             self.start_collectibles.add(sysinfo.Logfile(filename))
@@ -209,7 +205,7 @@ class SysInfo:
 
     def start(self):
         """Log all collectibles at the start of the event."""
-        os.environ['AVOCADO_SYSINFODIR'] = self.pre_dir
+        os.environ["AVOCADO_SYSINFODIR"] = self.pre_dir
         for log_hook in self.start_collectibles:
             # log daemons in profile directory
             if isinstance(log_hook, sysinfo.Daemon):
@@ -227,8 +223,8 @@ class SysInfo:
         """
         Logging hook called whenever a job finishes.
         """
-        optimized = self.config.get('sysinfo.collect.optimize')
-        os.environ['AVOCADO_SYSINFODIR'] = self.post_dir
+        optimized = self.config.get("sysinfo.collect.optimize")
+        os.environ["AVOCADO_SYSINFODIR"] = self.post_dir
         for log_hook in self.end_collectibles:
             self._save_sysinfo(log_hook, self.post_dir, optimized)
 
@@ -251,8 +247,8 @@ def collect_sysinfo(basedir):
     output.add_log_handler(log.name)
     if not basedir:
         cwd = os.getcwd()
-        timestamp = time.strftime('%Y-%m-%d-%H.%M.%S')
-        basedir = os.path.join(cwd, f'sysinfo-{timestamp}')
+        timestamp = time.strftime("%Y-%m-%d-%H.%M.%S")
+        basedir = os.path.join(cwd, f"sysinfo-{timestamp}")
 
     sysinfo_logger = SysInfo(basedir=basedir)
     sysinfo_logger.start()

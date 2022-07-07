@@ -13,4 +13,4 @@ class FailTest(Test):
         """
         Should fail.
         """
-        self.fail('This test is supposed to fail')
+        self.fail("This test is supposed to fail")

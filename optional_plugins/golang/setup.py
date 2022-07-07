@@ -19,30 +19,32 @@ from setuptools import setup
 try:
     from setuptools import find_namespace_packages
 except ImportError:
-    packages = ['avocado_golang']
+    packages = ["avocado_golang"]
 else:
-    packages = find_namespace_packages(include=['avocado_golang'])
+    packages = find_namespace_packages(include=["avocado_golang"])
 
-VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
+VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 
-setup(name='avocado-framework-plugin-golang',
-      description='Avocado Plugin for Execution of Golang tests',
-      version=VERSION,
-      author='Avocado Developers',
-      author_email='avocado-devel@redhat.com',
-      url='http://avocado-framework.github.io/',
-      packages=packages,
-      include_package_data=True,
-      install_requires=[f'avocado-framework=={VERSION}'],
-      test_suite='tests',
-      entry_points={
-          'console_scripts': [
-              'avocado-runner-golang = avocado_golang.runner:main',
-          ],
-          'avocado.plugins.resolver': [
-              'golang = avocado_golang.golang:GolangResolver',
-          ],
-          'avocado.plugins.runnable.runner': [
-              'golang = avocado_golang.runner:GolangRunner'
-          ]}
-      )
+setup(
+    name="avocado-framework-plugin-golang",
+    description="Avocado Plugin for Execution of Golang tests",
+    version=VERSION,
+    author="Avocado Developers",
+    author_email="avocado-devel@redhat.com",
+    url="http://avocado-framework.github.io/",
+    packages=packages,
+    include_package_data=True,
+    install_requires=[f"avocado-framework=={VERSION}"],
+    test_suite="tests",
+    entry_points={
+        "console_scripts": [
+            "avocado-runner-golang = avocado_golang.runner:main",
+        ],
+        "avocado.plugins.resolver": [
+            "golang = avocado_golang.golang:GolangResolver",
+        ],
+        "avocado.plugins.runnable.runner": [
+            "golang = avocado_golang.runner:GolangRunner"
+        ],
+    },
+)

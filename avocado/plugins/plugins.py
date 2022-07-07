@@ -28,54 +28,76 @@ class Plugins(CLICmd):
     Plugins information
     """
 
-    name = 'plugins'
-    description = 'Displays plugin information'
+    name = "plugins"
+    description = "Displays plugin information"
 
     def configure(self, parser):
         parser = super().configure(parser)
-        help_msg = 'Will list the plugins in execution order'
-        settings.register_option(section='plugins',
-                                 key='ordered_list',
-                                 default=False,
-                                 key_type=bool,
-                                 action='store_true',
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--ordered',
-                                 short_arg='-o')
+        help_msg = "Will list the plugins in execution order"
+        settings.register_option(
+            section="plugins",
+            key="ordered_list",
+            default=False,
+            key_type=bool,
+            action="store_true",
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--ordered",
+            short_arg="-o",
+        )
 
     def run(self, config):
         plugin_types = [
-            (dispatcher.InitDispatcher(),
-             'Plugins that always need to be initialized (init): '),
-            (dispatcher.CLICmdDispatcher(),
-             'Plugins that add new commands (cli.cmd):'),
-            (dispatcher.CLIDispatcher(),
-             'Plugins that add new options to commands (cli):'),
-            (dispatcher.JobPrePostDispatcher(),
-             'Plugins that run before/after the execution of jobs (job.prepost):'),
-            (dispatcher.TestPreDispatcher(),
-             'Plugins that run before the execution of each test (test.pre):'),
-            (dispatcher.ResultDispatcher(),
-             'Plugins that generate job result in different formats (result):'),
-            (dispatcher.ResultEventsDispatcher(config),
-             ('Plugins that generate job result based on job/test events '
-              '(result_events):')),
-            (dispatcher.VarianterDispatcher(),
-             'Plugins that generate test variants (varianter): '),
-            (Resolver(),
-             'Plugins that resolve test references (resolver): '),
-            (dispatcher.RunnerDispatcher(),
-             'Plugins that run test suites on a job (runners): '),
-            (dispatcher.SpawnerDispatcher(),
-             'Plugins that spawn tasks and know about their status (spawner): '),
-            (dispatcher.RunnableRunnerDispatcher(),
-             'Plugins that run runnables (under a task and spawner) (runnable.runner): '),
+            (
+                dispatcher.InitDispatcher(),
+                "Plugins that always need to be initialized (init): ",
+            ),
+            (dispatcher.CLICmdDispatcher(), "Plugins that add new commands (cli.cmd):"),
+            (
+                dispatcher.CLIDispatcher(),
+                "Plugins that add new options to commands (cli):",
+            ),
+            (
+                dispatcher.JobPrePostDispatcher(),
+                "Plugins that run before/after the execution of jobs (job.prepost):",
+            ),
+            (
+                dispatcher.TestPreDispatcher(),
+                "Plugins that run before the execution of each test (test.pre):",
+            ),
+            (
+                dispatcher.ResultDispatcher(),
+                "Plugins that generate job result in different formats (result):",
+            ),
+            (
+                dispatcher.ResultEventsDispatcher(config),
+                (
+                    "Plugins that generate job result based on job/test events "
+                    "(result_events):"
+                ),
+            ),
+            (
+                dispatcher.VarianterDispatcher(),
+                "Plugins that generate test variants (varianter): ",
+            ),
+            (Resolver(), "Plugins that resolve test references (resolver): "),
+            (
+                dispatcher.RunnerDispatcher(),
+                "Plugins that run test suites on a job (runners): ",
+            ),
+            (
+                dispatcher.SpawnerDispatcher(),
+                "Plugins that spawn tasks and know about their status (spawner): ",
+            ),
+            (
+                dispatcher.RunnableRunnerDispatcher(),
+                "Plugins that run runnables (under a task and spawner) (runnable.runner): ",
+            ),
         ]
         for plugins_active, msg in plugin_types:
             LOG_UI.info(msg)
             plugin_matrix = []
-            if config.get('plugins.ordered_list'):
+            if config.get("plugins.ordered_list"):
                 sorted_plugins = plugins_active.get_extentions_by_priority()
             else:
                 sorted_plugins = plugins_active.get_extentions_by_name()

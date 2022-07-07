@@ -8,13 +8,13 @@ from avocado.core.plugin_interfaces import Spawner
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 from avocado.core.teststatus import STATUSES_NOT_OK
 
-ENVIRONMENT_TYPE = 'local'
+ENVIRONMENT_TYPE = "local"
 ENVIRONMENT = socket.gethostname()
 
 
 class ProcessSpawner(Spawner, SpawnerMixin):
 
-    description = 'Process based spawner'
+    description = "Process based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
     async def _collect_task(self, task_handle):
@@ -30,12 +30,12 @@ class ProcessSpawner(Spawner, SpawnerMixin):
         self.create_task_output_dir(runtime_task)
         task = runtime_task.task
         runner = task.runnable.runner_command()
-        args = runner[1:] + ['task-run'] + task.get_command_args()
+        args = runner[1:] + ["task-run"] + task.get_command_args()
         runner = runner[0]
         # When running Avocado Python modules, the interpreter on the new
         # process needs to know where Avocado can be found.
         env = os.environ.copy()
-        env['PYTHONPATH'] = ':'.join(p for p in sys.path)
+        env["PYTHONPATH"] = ":".join(p for p in sys.path)
 
         # pylint: disable=E1133
         try:
@@ -44,7 +44,8 @@ class ProcessSpawner(Spawner, SpawnerMixin):
                 *args,
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL,
-                env=env)
+                env=env
+            )
         except (FileNotFoundError, PermissionError):
             return False
         asyncio.ensure_future(self._collect_task(runtime_task.spawner_handle))
@@ -74,29 +75,21 @@ class ProcessSpawner(Spawner, SpawnerMixin):
     @staticmethod
     async def update_requirement_cache(runtime_task, result):
         kind = runtime_task.task.runnable.kind
-        name = runtime_task.task.runnable.kwargs.get('name')
+        name = runtime_task.task.runnable.kwargs.get("name")
         cache.set_requirement(ENVIRONMENT_TYPE, ENVIRONMENT, kind, name)
         if result in STATUSES_NOT_OK:
             cache.delete_requirement(ENVIRONMENT_TYPE, ENVIRONMENT, kind, name)
             return
-        cache.update_requirement_status(ENVIRONMENT_TYPE,
-                                        ENVIRONMENT,
-                                        kind,
-                                        name,
-                                        True)
+        cache.update_requirement_status(ENVIRONMENT_TYPE, ENVIRONMENT, kind, name, True)
 
     @staticmethod
     async def is_requirement_in_cache(runtime_task):
         kind = runtime_task.task.runnable.kind
-        name = runtime_task.task.runnable.kwargs.get('name')
-        return cache.is_requirement_in_cache(ENVIRONMENT_TYPE,
-                                             ENVIRONMENT,
-                                             kind,
-                                             name)
+        name = runtime_task.task.runnable.kwargs.get("name")
+        return cache.is_requirement_in_cache(ENVIRONMENT_TYPE, ENVIRONMENT, kind, name)
 
     @staticmethod
     async def save_requirement_in_cache(runtime_task):
         kind = runtime_task.task.runnable.kind
-        name = runtime_task.task.runnable.kwargs.get('name')
-        cache.set_requirement(ENVIRONMENT_TYPE, ENVIRONMENT, kind, name,
-                              False)
+        name = runtime_task.task.runnable.kwargs.get("name")
+        cache.set_requirement(ENVIRONMENT_TYPE, ENVIRONMENT, kind, name, False)

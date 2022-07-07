@@ -20,18 +20,20 @@ class PythonModuleSelf(unittest.TestCase):
         self.assertEqual(self.module.imported_symbols, {})
 
     def test_add_imported_symbols_from_module(self):
-        import_stm = ast.ImportFrom(module='foo', names=[ast.Name(name='bar',
-                                                                  asname=None)])
+        import_stm = ast.ImportFrom(
+            module="foo", names=[ast.Name(name="bar", asname=None)]
+        )
         self.module.add_imported_symbol(import_stm)
-        self.assertEqual(self.module.imported_symbols['bar'].module_path, 'foo')
-        self.assertEqual(self.module.imported_symbols['bar'].symbol, 'bar')
+        self.assertEqual(self.module.imported_symbols["bar"].module_path, "foo")
+        self.assertEqual(self.module.imported_symbols["bar"].symbol, "bar")
 
     def test_add_imported_object_from_module_asname(self):
-        import_stm = ast.ImportFrom(module='foo', names=[ast.Name(name='bar',
-                                                                  asname='baz')])
+        import_stm = ast.ImportFrom(
+            module="foo", names=[ast.Name(name="bar", asname="baz")]
+        )
         self.module.add_imported_symbol(import_stm)
-        self.assertEqual(self.module.imported_symbols['baz'].module_path, 'foo')
-        self.assertEqual(self.module.imported_symbols['baz'].symbol, 'bar')
+        self.assertEqual(self.module.imported_symbols["baz"].module_path, "foo")
+        self.assertEqual(self.module.imported_symbols["baz"].symbol, "bar")
 
     def test_is_not_avocado_test(self):
         self.assertFalse(self.module.is_matching_klass(ast.ClassDef()))
@@ -47,7 +49,7 @@ class PythonModuleTest(unittest.TestCase):
     """
 
     def test_is_avocado_test(self):
-        passtest_path = os.path.join(BASEDIR, 'examples', 'tests', 'passtest.py')
+        passtest_path = os.path.join(BASEDIR, "examples", "tests", "passtest.py")
         passtest_module = PythonModule(passtest_path)
         classes = [klass for klass in passtest_module.iter_classes()]
         # there's only one class and one *worthy* Test import in passtest.py
@@ -63,16 +65,16 @@ class PythonModuleTest(unittest.TestCase):
         This specific source file imports unittest.mock, and we want to
         make sure that unittest is accounted for.
         """
-        path = os.path.join(BASEDIR, 'selftests', 'unit', 'test_loader.py')
-        module = PythonModule(path, 'unittest', 'TestCase')
+        path = os.path.join(BASEDIR, "selftests", "unit", "test_loader.py")
+        module = PythonModule(path, "unittest", "TestCase")
         for _ in module.iter_classes():
             pass
-        self.assertIn('unittest', module.mod_imports)
+        self.assertIn("unittest", module.mod_imports)
 
     def test_import_relative(self):
         """Tests if relative imports are tracked on the module object."""
-        path = os.path.join(BASEDIR, 'selftests', 'functional', 'test_basic.py')
+        path = os.path.join(BASEDIR, "selftests", "functional", "test_basic.py")
         module = PythonModule(path)
         for _ in module.iter_classes():
             pass
-        self.assertIn('TestCaseTmpDir', module.imported_symbols)
+        self.assertIn("TestCaseTmpDir", module.imported_symbols)

@@ -12,7 +12,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-__all__ = ['MAJOR', 'MINOR', 'VERSION']
+__all__ = ["MAJOR", "MINOR", "VERSION"]
 
 import pkg_resources
 
@@ -21,4 +21,4 @@ try:
 except pkg_resources.DistributionNotFound:
     VERSION = "unknown.unknown"
 
-MAJOR, MINOR = VERSION.split('.')
+MAJOR, MINOR = VERSION.split(".")

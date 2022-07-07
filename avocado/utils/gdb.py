@@ -16,7 +16,7 @@
 Module that provides communication with GDB via its GDB/MI interpreter
 """
 
-__all__ = ['GDB', 'GDBServer', 'GDBRemote']
+__all__ = ["GDB", "GDBServer", "GDBRemote"]
 
 
 import fcntl
@@ -49,22 +49,22 @@ GDB_PATH = None
 #: Path to the gdbserver binary
 GDBSERVER_PATH = None
 
-GDB_PROMPT = b'(gdb)'
-GDB_EXIT = b'^exit'
+GDB_PROMPT = b"(gdb)"
+GDB_EXIT = b"^exit"
 GDB_BREAK_CONDITIONS = [GDB_PROMPT, GDB_EXIT]
 
 #: How the remote protocol signals a transmission success (in ACK mode)
-REMOTE_TRANSMISSION_SUCCESS = '+'
+REMOTE_TRANSMISSION_SUCCESS = "+"
 
 #: How the remote protocol signals a transmission failure (in ACK mode)
-REMOTE_TRANSMISSION_FAILURE = '-'
+REMOTE_TRANSMISSION_FAILURE = "-"
 
 #: How the remote protocol flags the start of a packet
-REMOTE_PREFIX = b'$'
+REMOTE_PREFIX = b"$"
 
 #: How the remote protocol flags the end of the packet payload, and that the
 #: two digits checksum follow
-REMOTE_DELIMITER = b'#'
+REMOTE_DELIMITER = b"#"
 
 #: Rather conservative default maximum packet size for clients using the
 #: remote protocol. Individual connections can ask (and do so by default)
@@ -110,7 +110,7 @@ def parse_mi(line):
     :type line: str
     :returns: a parsed GDB/MI response
     """
-    if not line.endswith('\n'):
+    if not line.endswith("\n"):
         line = f"{line}\n"
     return gdbmi_parser.session().process(line)
 
@@ -128,60 +128,69 @@ def encode_mi_cli(command):
 
 
 def is_stopped_exit(parsed_mi_msg):
-    return (hasattr(parsed_mi_msg, 'class_') and
-            (parsed_mi_msg.class_ == 'stopped') and
-            hasattr(parsed_mi_msg, 'result') and
-            hasattr(parsed_mi_msg.result, 'reason') and
-            (parsed_mi_msg.result.reason == "exited"))
+    return (
+        hasattr(parsed_mi_msg, "class_")
+        and (parsed_mi_msg.class_ == "stopped")
+        and hasattr(parsed_mi_msg, "result")
+        and hasattr(parsed_mi_msg.result, "reason")
+        and (parsed_mi_msg.result.reason == "exited")
+    )
 
 
 def is_thread_group_exit(parsed_mi_msg):
-    return (hasattr(parsed_mi_msg, 'class_') and
-            (parsed_mi_msg.class_ == 'thread-group-exited'))
+    return hasattr(parsed_mi_msg, "class_") and (
+        parsed_mi_msg.class_ == "thread-group-exited"
+    )
 
 
 def is_exit(parsed_mi_msg):
-    return (is_stopped_exit(parsed_mi_msg) or
-            is_thread_group_exit(parsed_mi_msg))
+    return is_stopped_exit(parsed_mi_msg) or is_thread_group_exit(parsed_mi_msg)
 
 
 def is_break_hit(parsed_mi_msg):
-    return (hasattr(parsed_mi_msg, 'class_') and
-            (parsed_mi_msg.class_ == 'stopped') and
-            hasattr(parsed_mi_msg, 'result') and
-            hasattr(parsed_mi_msg.result, 'reason') and
-            (parsed_mi_msg.result.reason == "breakpoint-hit"))
+    return (
+        hasattr(parsed_mi_msg, "class_")
+        and (parsed_mi_msg.class_ == "stopped")
+        and hasattr(parsed_mi_msg, "result")
+        and hasattr(parsed_mi_msg.result, "reason")
+        and (parsed_mi_msg.result.reason == "breakpoint-hit")
+    )
 
 
 def is_sigsegv(parsed_mi_msg):
-    return (hasattr(parsed_mi_msg, 'class_') and
-            (parsed_mi_msg.class_ == 'stopped') and
-            hasattr(parsed_mi_msg, 'result') and
-            hasattr(parsed_mi_msg.result, 'signal_name') and
-            (parsed_mi_msg.result.reason == "SIGSEGV"))
+    return (
+        hasattr(parsed_mi_msg, "class_")
+        and (parsed_mi_msg.class_ == "stopped")
+        and hasattr(parsed_mi_msg, "result")
+        and hasattr(parsed_mi_msg.result, "signal_name")
+        and (parsed_mi_msg.result.reason == "SIGSEGV")
+    )
 
 
 def is_sigabrt_stopped(parsed_mi_msg):
-    return (hasattr(parsed_mi_msg, 'class_') and
-            (parsed_mi_msg.class_ == 'stopped') and
-            hasattr(parsed_mi_msg, 'record_type') and
-            (parsed_mi_msg.record_type == 'result') and
-            (parsed_mi_msg.result.reason == 'signal-received') and
-            (parsed_mi_msg.result.signal_name == 'SIGABRT'))
+    return (
+        hasattr(parsed_mi_msg, "class_")
+        and (parsed_mi_msg.class_ == "stopped")
+        and hasattr(parsed_mi_msg, "record_type")
+        and (parsed_mi_msg.record_type == "result")
+        and (parsed_mi_msg.result.reason == "signal-received")
+        and (parsed_mi_msg.result.signal_name == "SIGABRT")
+    )
 
 
 def is_sigabrt_console(parsed_mi_msg):
-    return (hasattr(parsed_mi_msg, 'record_type') and
-            (parsed_mi_msg.record_type == 'stream') and
-            hasattr(parsed_mi_msg, 'type') and
-            (parsed_mi_msg.type == 'console') and
-            hasattr(parsed_mi_msg, 'value') and
-            parsed_mi_msg.value == 'SIGABRT, Aborted.\n')
+    return (
+        hasattr(parsed_mi_msg, "record_type")
+        and (parsed_mi_msg.record_type == "stream")
+        and hasattr(parsed_mi_msg, "type")
+        and (parsed_mi_msg.type == "console")
+        and hasattr(parsed_mi_msg, "value")
+        and parsed_mi_msg.value == "SIGABRT, Aborted.\n"
+    )
 
 
 def is_sigabrt(parsed_mi_msg):
-    return (is_sigabrt_stopped(parsed_mi_msg) or
-            is_sigabrt_console(parsed_mi_msg))
+    return is_sigabrt_stopped(parsed_mi_msg) or is_sigabrt_console(parsed_mi_msg)
 
 
 def is_fatal_signal(parsed_mi_msg):
@@ -253,10 +262,9 @@ class GDB:
     Wraps a GDB subprocess for easier manipulation
     """
 
-    REQUIRED_ARGS = ['--interpreter=mi',
-                     '--quiet']
+    REQUIRED_ARGS = ["--interpreter=mi", "--quiet"]
 
-    DEFAULT_BREAK = 'main'
+    DEFAULT_BREAK = "main"
 
     def __init__(self, path=None, *extra_args):  # pylint: disable=W1113
         if path is None:
@@ -267,11 +275,13 @@ class GDB:
         args += extra_args
 
         try:
-            self.process = subprocess.Popen(args,
-                                            stdin=subprocess.PIPE,
-                                            stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE,
-                                            close_fds=True)
+            self.process = subprocess.Popen(
+                args,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                close_fds=True,
+            )
         except OSError as details:
             if details.errno == 2:
                 exc = OSError(f"File '{args[0]}' not found")
@@ -280,8 +290,7 @@ class GDB:
             else:
                 raise
 
-        fcntl.fcntl(self.process.stdout.fileno(),
-                    fcntl.F_SETFL, os.O_NONBLOCK)
+        fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         self.read_until_break()
 
         # If this instance is connected to another target. If so, what
@@ -350,7 +359,7 @@ class GDB:
         :type command: str
         :returns: None
         """
-        if not command.endswith('\n'):
+        if not command.endswith("\n"):
             command = f"{command}\n"
         self.process.stdin.write(command.encode())
         self.process.stdin.flush()
@@ -379,10 +388,12 @@ class GDB:
                 cmd.application_output.append(line)
                 continue
 
-            if (parsed_response.type == 'console' and
-                    parsed_response.record_type == 'stream'):
+            if (
+                parsed_response.type == "console"
+                and parsed_response.record_type == "stream"
+            ):
                 cmd.stream_messages.append(parsed_response)
-            elif parsed_response.type == 'result':
+            elif parsed_response.type == "result":
                 if result_response_received:
                     # raise an exception here, because no two result
                     # responses should come from a single command AFAIK
@@ -417,7 +428,7 @@ class GDB:
         """
         gdb_info_command = f"-info-gdb-mi-command {command[1:]}"
         r = self.cmd(gdb_info_command)
-        return r.result.result.command.exists == 'true'
+        return r.result.result.command.exists == "true"
 
     def set_file(self, path):
         """
@@ -430,13 +441,13 @@ class GDB:
         """
         cmd = f"-file-exec-and-symbols {path}"
         r = self.cmd(cmd)
-        if not r.result.class_ == 'done':
+        if not r.result.class_ == "done":
             raise UnexpectedResponseError
 
         if self.connected_to is not None:
-            cmd = f'set remote exec-file {path}'
+            cmd = f"set remote exec-file {path}"
             r = self.cmd(cmd)
-            if not r.result.class_ == 'done':
+            if not r.result.class_ == "done":
                 raise UnexpectedResponseError
         return r
 
@@ -451,7 +462,7 @@ class GDB:
         """
         cmd = f"-break-insert {location}"
         r = self.cmd(cmd)
-        if not r.result.class_ == 'done':
+        if not r.result.class_ == "done":
             if not ignore_error:
                 raise UnexpectedResponseError
         return r
@@ -467,7 +478,7 @@ class GDB:
         """
         cmd = f"-break-delete {number}"
         r = self.cmd(cmd)
-        if not r.result.class_ == 'done':
+        if not r.result.class_ == "done":
             raise UnexpectedResponseError
         return r
 
@@ -482,14 +493,14 @@ class GDB:
         :rtype: :class:`CommandResult`
         """
         if args:
-            args_text = ' '.join(args)
-            cmd = f'-exec-arguments {args_text}'
+            args_text = " ".join(args)
+            cmd = f"-exec-arguments {args_text}"
             r = self.cmd(cmd)
-            if not r.result.class_ == 'done':
+            if not r.result.class_ == "done":
                 raise UnexpectedResponseError
 
-        r = self.cmd('-exec-run')
-        if not r.result.class_ == 'running':
+        r = self.cmd("-exec-run")
+        if not r.result.class_ == "running":
             raise UnexpectedResponseError
         return r
 
@@ -504,9 +515,9 @@ class GDB:
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
         """
-        cmd = f'-target-select extended-remote :{port}'
+        cmd = f"-target-select extended-remote :{port}"
         r = self.cmd(cmd)
-        if not r.result.class_ == 'connected':
+        if not r.result.class_ == "connected":
             raise UnexpectedResponseError
         self.connected_to = port
         return r
@@ -518,9 +529,9 @@ class GDB:
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
         """
-        cmd = '-target-disconnect'
+        cmd = "-target-disconnect"
         r = self.cmd(cmd)
-        if not r.result.class_ == 'done':
+        if not r.result.class_ == "done":
             raise UnexpectedResponseError
         self.connected_to = None
         return r
@@ -544,7 +555,7 @@ class GDBServer:
     """
 
     #: The default arguments used when starting the GDB server process
-    REQUIRED_ARGS = ['--multi']
+    REQUIRED_ARGS = ["--multi"]
 
     #: The range from which a port to GDB server will try to be allocated from
     PORT_RANGE = (20000, 20999)
@@ -553,8 +564,14 @@ class GDBServer:
     #: ready to accept new connections
     INIT_TIMEOUT = 5.0
 
-    def __init__(self, path=None, port=None,  # pylint: disable=W0613, W1113
-                 wait_until_running=True, *extra_args):
+    # pylint: disable=W0613, W1113
+    def __init__(
+        self,
+        path=None,
+        port=None,
+        wait_until_running=True,
+        *extra_args,
+    ):
         """
         Initializes a new gdbserver instance
 
@@ -581,18 +598,20 @@ class GDBServer:
             self.port = port
         args.append(f":{self.port}")
 
-        prefix = f'avocado_gdbserver_{self.port}_'
-        _, self.stdout_path = tempfile.mkstemp(prefix=prefix + 'stdout_')
-        self.stdout = open(self.stdout_path, 'w', encoding='utf-8')
-        _, self.stderr_path = tempfile.mkstemp(prefix=prefix + 'stderr_')
-        self.stderr = open(self.stderr_path, 'w', encoding='utf-8')
+        prefix = f"avocado_gdbserver_{self.port}_"
+        _, self.stdout_path = tempfile.mkstemp(prefix=prefix + "stdout_")
+        self.stdout = open(self.stdout_path, "w", encoding="utf-8")
+        _, self.stderr_path = tempfile.mkstemp(prefix=prefix + "stderr_")
+        self.stderr = open(self.stderr_path, "w", encoding="utf-8")
 
         try:
-            self.process = subprocess.Popen(args,
-                                            stdin=subprocess.PIPE,
-                                            stdout=self.stdout,
-                                            stderr=self.stderr,
-                                            close_fds=True)
+            self.process = subprocess.Popen(
+                args,
+                stdin=subprocess.PIPE,
+                stdout=self.stdout,
+                stderr=self.stderr,
+                close_fds=True,
+            )
         except OSError as details:
             if details.errno == 2:
                 exc = OSError(f"File '{args[0]}' not found")
@@ -654,7 +673,6 @@ class GDBServer:
 
 
 class GDBRemote:
-
     def __init__(self, host, port, no_ack_mode=True, extended_mode=True):
         """
         Initializes a new GDBRemote object.
@@ -708,7 +726,7 @@ class GDBRemote:
             total += i
         result = total % 256
 
-        return b'%02x' % result
+        return b"%02x" % result
 
     @staticmethod
     def encode(data):
@@ -724,7 +742,7 @@ class GDBRemote:
         :returns: the encoded command, ready to be sent to a remote GDB
         :rtype: bytes
         """
-        return b'$%b#%b' % (data, GDBRemote.checksum(data))
+        return b"$%b#%b" % (data, GDBRemote.checksum(data))
 
     @staticmethod
     def decode(data):
@@ -747,8 +765,8 @@ class GDBRemote:
         payload = data[1:-3]
         checksum = data[-2:]
 
-        if payload == b'':
-            expected_checksum = b'00'
+        if payload == b"":
+            expected_checksum = b"00"
         else:
             expected_checksum = GDBRemote.checksum(payload)
 

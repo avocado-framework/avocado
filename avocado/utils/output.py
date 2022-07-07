@@ -32,7 +32,7 @@ def display_data_size(size):
     :type size: int
     :return: Human readable string with data size, using SI prefixes.
     """
-    prefixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+    prefixes = ["B", "KB", "MB", "GB", "TB", "PB"]
     factor = float(1000)
     i = 0
     while size >= factor:
@@ -41,7 +41,7 @@ def display_data_size(size):
         size /= factor
         i += 1
 
-    return f'{size:.2f} {prefixes[i]}'
+    return f"{size:.2f} {prefixes[i]}"
 
 
 class ProgressBar:
@@ -52,7 +52,7 @@ class ProgressBar:
     Inspired/adapted from https://gist.github.com/t0xicCode/3306295
     """
 
-    def __init__(self, minimum=0, maximum=100, width=75, title=''):
+    def __init__(self, minimum=0, maximum=100, width=75, title=""):
         """
         Initializes a new progress bar
 
@@ -65,8 +65,8 @@ class ProgressBar:
         """
         assert maximum > minimum
 
-        self.prog_bar = ''
-        self.old_prog_bar = ''
+        self.prog_bar = ""
+        self.old_prog_bar = ""
 
         if title:
             width -= len(title)
@@ -122,16 +122,15 @@ class ProgressBar:
         elif hashes == all_full:
             screen_text = f"[{'=' * all_full}]"
         else:
-            screen_text = \
-                f"[{'=' * (hashes - 1)}>{' ' * (all_full - hashes)}]"
+            screen_text = f"[{'=' * (hashes - 1)}>{' ' * (all_full - hashes)}]"
 
         percent_string = str(done) + "%"
 
         # slice the percentage into the bar
-        screen_text = ' '.join([screen_text, percent_string])
+        screen_text = " ".join([screen_text, percent_string])
 
         if self.title:
-            screen_text = f'{self.title}: {screen_text}'
+            screen_text = f"{self.title}: {screen_text}"
         self.prog_bar = screen_text
 
     def draw(self):
@@ -140,7 +139,7 @@ class ProgressBar:
         """
         if self.prog_bar != self.old_prog_bar:
             self.old_prog_bar = self.prog_bar
-            sys.stdout.write('\r' + self.prog_bar)
+            sys.stdout.write("\r" + self.prog_bar)
             sys.stdout.flush()
 
     def __str__(self):

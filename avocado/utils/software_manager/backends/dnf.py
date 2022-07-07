@@ -3,7 +3,7 @@ import logging
 from avocado.utils import process
 from avocado.utils.software_manager.backends.yum import YumBackend
 
-log = logging.getLogger('avocado.utils.software_manager')
+log = logging.getLogger("avocado.utils.software_manager")
 
 
 class DnfBackend(YumBackend):
@@ -18,7 +18,7 @@ class DnfBackend(YumBackend):
         """
         Initializes the base command and the DNF package repository.
         """
-        super().__init__(cmd='dnf')
+        super().__init__(cmd="dnf")
 
     def build_dep(self, name):  # pylint: disable=W0221
         """
@@ -29,8 +29,7 @@ class DnfBackend(YumBackend):
         :return True: If build dependencies are installed properly
         """
         try:
-            process.system(f'{self.base_command} builddep {name}',
-                           sudo=True)
+            process.system(f"{self.base_command} builddep {name}", sudo=True)
             return True
         except process.CmdError as details:
             log.error(details)

@@ -15,25 +15,27 @@
 
 from setuptools import find_packages, setup
 
-VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
+VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 
-setup(name='avocado-framework-plugin-result-html',
-      description='Avocado HTML Report for Jobs',
-      version=VERSION,
-      author='Avocado Developers',
-      author_email='avocado-devel@redhat.com',
-      url='http://avocado-framework.github.io/',
-      packages=find_packages(),
-      include_package_data=True,
-      install_requires=[f'avocado-framework=={VERSION}', 'jinja2'],
-      entry_points={
-          'avocado.plugins.cli': [
-              'html = avocado_result_html:HTML',
-          ],
-          'avocado.plugins.init': [
-              'html = avocado_result_html:HTMLInit',
-          ],
-          'avocado.plugins.result': [
-              'html = avocado_result_html:HTMLResult',
-          ]}
-      )
+setup(
+    name="avocado-framework-plugin-result-html",
+    description="Avocado HTML Report for Jobs",
+    version=VERSION,
+    author="Avocado Developers",
+    author_email="avocado-devel@redhat.com",
+    url="http://avocado-framework.github.io/",
+    packages=find_packages(),
+    include_package_data=True,
+    install_requires=[f"avocado-framework=={VERSION}", "jinja2"],
+    entry_points={
+        "avocado.plugins.cli": [
+            "html = avocado_result_html:HTML",
+        ],
+        "avocado.plugins.init": [
+            "html = avocado_result_html:HTMLInit",
+        ],
+        "avocado.plugins.result": [
+            "html = avocado_result_html:HTMLResult",
+        ],
+    },
+)

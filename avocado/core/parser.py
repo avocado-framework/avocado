@@ -23,13 +23,12 @@ from glob import glob
 from avocado.core import exit_codes
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.output import LOG_UI
-from avocado.core.resolver import (ReferenceResolution,
-                                   ReferenceResolutionResult)
+from avocado.core.resolver import ReferenceResolution, ReferenceResolutionResult
 from avocado.core.settings import ConfigFileNotFound, SettingsError, settings
 from avocado.core.version import VERSION
 
-PROG = 'avocado'
-DESCRIPTION = 'Avocado Test Runner'
+PROG = "avocado"
+DESCRIPTION = "Avocado Test Runner"
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -42,8 +41,10 @@ class ArgumentParser(argparse.ArgumentParser):
         LOG_UI.debug(self.format_help())
         LOG_UI.error("%s: error: %s", self.prog, message)
         if "unrecognized arguments" in message:
-            LOG_UI.warning("Perhaps a plugin is missing; run 'avocado"
-                           " plugins' to list the installed ones")
+            LOG_UI.warning(
+                "Perhaps a plugin is missing; run 'avocado"
+                " plugins' to list the installed ones"
+            )
         self.exit(exit_codes.AVOCADO_FAIL)
 
     def _get_option_tuples(self, option_string):
@@ -57,16 +58,18 @@ class FileOrStdoutAction(argparse.Action):
     """
 
     def __call__(self, parser, namespace, values, option_string=None):
-        if values == '-':
-            stdout_claimed_by = getattr(namespace, 'stdout_claimed_by', None)
+        if values == "-":
+            stdout_claimed_by = getattr(namespace, "stdout_claimed_by", None)
             if stdout_claimed_by is not None:
-                msg = (f'Options {stdout_claimed_by} {option_string} '
-                       f'are trying to use stdout simultaneously.'
-                       f' Please set at least one of them to a file to avoid '
-                       f'conflicts')
+                msg = (
+                    f"Options {stdout_claimed_by} {option_string} "
+                    f"are trying to use stdout simultaneously."
+                    f" Please set at least one of them to a file to avoid "
+                    f"conflicts"
+                )
                 raise argparse.ArgumentError(self, msg)
             else:
-                setattr(namespace, 'stdout_claimed_by', option_string)
+                setattr(namespace, "stdout_claimed_by", option_string)
         setattr(namespace, self.dest, values)
 
 
@@ -80,39 +83,49 @@ class Parser:
         self.args = argparse.Namespace()
         self.config = {}
         self.subcommands = None
-        self.application = ArgumentParser(prog=PROG,
-                                          add_help=False,  # see parent parsing
-                                          description=DESCRIPTION)
-        self.application.add_argument('-v', '--version', action='version',
-                                      version=f'Avocado {VERSION}')
-        self.application.add_argument('--config', metavar='CONFIG_FILE',
-                                      nargs='?',
-                                      help='Use custom configuration from a file')
+        self.application = ArgumentParser(
+            prog=PROG, add_help=False, description=DESCRIPTION  # see parent parsing
+        )
+        self.application.add_argument(
+            "-v", "--version", action="version", version=f"Avocado {VERSION}"
+        )
+        self.application.add_argument(
+            "--config",
+            metavar="CONFIG_FILE",
+            nargs="?",
+            help="Use custom configuration from a file",
+        )
 
-        help_msg = 'Turn the paginator on. Useful when output is too long.'
-        settings.register_option(section='core',
-                                 key='paginator',
-                                 help_msg=help_msg,
-                                 key_type=bool,
-                                 default=False,
-                                 action='store_true',
-                                 parser=self.application,
-                                 long_arg='--enable-paginator')
+        help_msg = "Turn the paginator on. Useful when output is too long."
+        settings.register_option(
+            section="core",
+            key="paginator",
+            help_msg=help_msg,
+            key_type=bool,
+            default=False,
+            action="store_true",
+            parser=self.application,
+            long_arg="--enable-paginator",
+        )
 
-        help_msg = ('Some commands can produce more information. This option '
-                    'will enable the verbosity when applicable.')
-        settings.register_option(section='core',
-                                 key='verbose',
-                                 help_msg=help_msg,
-                                 default=False,
-                                 key_type=bool,
-                                 parser=self.application,
-                                 long_arg='--verbose',
-                                 short_arg='-V')
+        help_msg = (
+            "Some commands can produce more information. This option "
+            "will enable the verbosity when applicable."
+        )
+        settings.register_option(
+            section="core",
+            key="verbose",
+            help_msg=help_msg,
+            default=False,
+            key_type=bool,
+            parser=self.application,
+            long_arg="--verbose",
+            short_arg="-V",
+        )
 
-        settings.add_argparser_to_option(namespace='core.show',
-                                         parser=self.application,
-                                         long_arg='--show')
+        settings.add_argparser_to_option(
+            namespace="core.show", parser=self.application, long_arg="--show"
+        )
 
     def start(self):
         """
@@ -128,16 +141,17 @@ class Parser:
             settings.process_config_path(self.args.config)
 
         # Use parent parsing to avoid breaking the output of --help option
-        self.application = ArgumentParser(prog=PROG,
-                                          description=DESCRIPTION,
-                                          parents=[self.application])
+        self.application = ArgumentParser(
+            prog=PROG, description=DESCRIPTION, parents=[self.application]
+        )
 
         # Subparsers where Avocado subcommands are plugged
         self.subcommands = self.application.add_subparsers(
-            title='subcommands',
-            description='valid subcommands',
-            help='subcommand help',
-            dest='subcommand')
+            title="subcommands",
+            description="valid subcommands",
+            help="subcommand help",
+            dest="subcommand",
+        )
         # On Python 2, required doesn't make a difference because a
         # subparser is considered an unconsumed positional arguments,
         # and not providing one will error with a "too few arguments"
@@ -157,7 +171,7 @@ class Parser:
         if extra:
             msg = f"unrecognized arguments: {' '.join(extra)}"
             for sub in self.application._subparsers._actions:  # pylint: disable=W0212
-                if sub.dest == 'subcommand':
+                if sub.dest == "subcommand":
                     sub.choices[self.args.subcommand].error(msg)
 
             self.application.error(msg)
@@ -174,20 +188,20 @@ class HintParser:
 
     def _get_args_from_section(self, section):
         try:
-            args = self.config.get(section, 'args')
-            if args == '$testpath':
+            args = self.config.get(section, "args")
+            if args == "$testpath":
                 return [args]
-            return args.split(',')
+            return args.split(",")
         except NoOptionError:
             return []
 
     def _get_kwargs_from_section(self, section):
         result = {}
-        kwargs = self.config.get(section, 'kwargs', fallback='')
-        for kwarg in kwargs.split(','):
-            if kwarg == '':
+        kwargs = self.config.get(section, "kwargs", fallback="")
+        for kwarg in kwargs.split(","):
+            if kwarg == "":
                 continue
-            key, value = kwarg.split('=')
+            key, value = kwarg.split("=")
             result[key] = value
         return result
 
@@ -197,29 +211,31 @@ class HintParser:
         resolutions = []
         success = ReferenceResolutionResult.SUCCESS
 
-        config = {'uri': self._get_uri_from_section(kind),
-                  'args': self._get_args_from_section(kind),
-                  'kwargs': self._get_kwargs_from_section(kind)}
+        config = {
+            "uri": self._get_uri_from_section(kind),
+            "args": self._get_args_from_section(kind),
+            "kwargs": self._get_kwargs_from_section(kind),
+        }
         for path in paths:
-            uri = config.get('uri')
-            args = config.get('args')
-            kwargs = config.get('kwargs')
-            if uri == '$testpath':
+            uri = config.get("uri")
+            args = config.get("args")
+            kwargs = config.get("kwargs")
+            if uri == "$testpath":
                 uri = path
-            if '$testpath' in args:
-                args = [item.replace('$testpath', path) for item in args]
-            if '$testpath' in kwargs.values():
-                kwargs = {k: v.replace('$testpath', path)
-                          for k, v in kwargs.items()}
+            if "$testpath" in args:
+                args = [item.replace("$testpath", path) for item in args]
+            if "$testpath" in kwargs.values():
+                kwargs = {k: v.replace("$testpath", path) for k, v in kwargs.items()}
             runnable = Runnable(kind, uri, *args, **kwargs)
-            resolutions.append(ReferenceResolution(reference=path,
-                                                   result=success,
-                                                   resolutions=[runnable],
-                                                   origin=path))
+            resolutions.append(
+                ReferenceResolution(
+                    reference=path, result=success, resolutions=[runnable], origin=path
+                )
+            )
         return resolutions
 
     def _get_uri_from_section(self, section):
-        return self.config.get(section, 'uri')
+        return self.config.get(section, "uri")
 
     def _parse(self):
         self.config = ConfigParser()
@@ -230,10 +246,9 @@ class HintParser:
     def get_resolutions(self):
         """Return a list of resolutions based on the file definitions."""
         resolutions = []
-        for kind in self.config['kinds']:
-            files = self.config.get('kinds', kind)
-            resolutions.extend(self._get_resolutions_by_kind(kind,
-                                                             glob(files)))
+        for kind in self.config["kinds"]:
+            files = self.config.get("kinds", kind)
+            resolutions.extend(self._get_resolutions_by_kind(kind, glob(files)))
         return resolutions
 
     def validate_kind_section(self, kind):
@@ -245,7 +260,7 @@ class HintParser:
         :param kind: a string with the specific section.
         """
         if kind not in self.config:
-            msg = 'Section {} is not defined. Please check your hint file.'
+            msg = "Section {} is not defined. Please check your hint file."
             raise SettingsError(msg.format(kind))
 
         uri = self._get_uri_from_section(kind)

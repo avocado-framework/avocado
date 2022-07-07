@@ -6,7 +6,6 @@ from avocado.utils import path as utils_path
 
 
 class TestStdOutput(unittest.TestCase):
-
     def setUp(self):
         """Preserve sys.std{out,err} so we can restore them in tearDown"""
         self.stdout = sys.stdout
@@ -19,13 +18,14 @@ class TestStdOutput(unittest.TestCase):
     def test_paginator_not_available(self):
         """Check that without paginator command we proceed without changes"""
         std = output.StdOutput()
-        with unittest.mock.patch('avocado.utils.path.find_command',
-                                 side_effect=utils_path.CmdNotFoundError('just',
-                                                                         ['mocking'])):
+        with unittest.mock.patch(
+            "avocado.utils.path.find_command",
+            side_effect=utils_path.CmdNotFoundError("just", ["mocking"]),
+        ):
             std.enable_paginator()
         self.assertEqual(self.stdout, sys.stdout)
         self.assertEqual(self.stderr, sys.stderr)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

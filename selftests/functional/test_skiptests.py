@@ -258,7 +258,7 @@ class AvocadoSkipTests(avocado.Test):
 class Base(TestCaseTmpDir):
 
     FILE_NAME_CONTENT_MAP = {}
-    SCRIPT_TO_EXEC = 'script_to_exec.py'
+    SCRIPT_TO_EXEC = "script_to_exec.py"
 
     def setUp(self):
         super().setUp()
@@ -271,14 +271,16 @@ class Base(TestCaseTmpDir):
         return scr_obj
 
     def _get_json_result(self):
-        cmd_line = [AVOCADO,
-                    'run',
-                    '--disable-sysinfo',
-                    '--job-results-dir',
-                    f'{self.tmpdir.name}',
-                    f'{os.path.join(self.tmpdir.name, self.SCRIPT_TO_EXEC)}',
-                    '--json -']
-        result = process.run(' '.join(cmd_line), ignore_status=True)
+        cmd_line = [
+            AVOCADO,
+            "run",
+            "--disable-sysinfo",
+            "--job-results-dir",
+            f"{self.tmpdir.name}",
+            f"{os.path.join(self.tmpdir.name, self.SCRIPT_TO_EXEC)}",
+            "--json -",
+        ]
+        result = process.run(" ".join(cmd_line), ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         json_results = json.loads(result.stdout_text)
         return json_results
@@ -297,18 +299,18 @@ class Base(TestCaseTmpDir):
             self.assertEqual(json_results[status], number_of_occurrences)
 
     def check_content(self, json_results):
-        debuglog = json_results['debuglog']
+        debuglog = json_results["debuglog"]
         debuglog_contents = genio.read_file(debuglog)
-        self.assertFalse('setup executed' in debuglog_contents)
-        self.assertFalse('test executed' in debuglog_contents)
-        self.assertFalse('teardown executed' in debuglog_contents)
+        self.assertFalse("setup executed" in debuglog_contents)
+        self.assertFalse("test executed" in debuglog_contents)
+        self.assertFalse("teardown executed" in debuglog_contents)
 
 
 class Skip(Base):
 
     FILE_NAME_CONTENT_MAP = {
-        'lib_skip_decorators.py': AVOCADO_TEST_SKIP_LIB,
-        'script_to_exec.py': AVOCADO_TEST_SKIP_DECORATORS
+        "lib_skip_decorators.py": AVOCADO_TEST_SKIP_LIB,
+        "script_to_exec.py": AVOCADO_TEST_SKIP_DECORATORS,
     }
 
     def test_skip_decorators(self):
@@ -318,19 +320,19 @@ class Skip(Base):
 class NotSkip(Base):
 
     FILE_NAME_CONTENT_MAP = {
-        'lib_skip_decorators.py': AVOCADO_TEST_SKIP_LIB,
-        'script_to_exec.py': AVOCADO_TEST_NOT_SKIP_DECORATORS
+        "lib_skip_decorators.py": AVOCADO_TEST_SKIP_LIB,
+        "script_to_exec.py": AVOCADO_TEST_NOT_SKIP_DECORATORS,
     }
 
     def test(self):
-        self.check_status(**{'pass': 6, 'skip': 0})
+        self.check_status(**{"pass": 6, "skip": 0})
 
 
 class SkipClass(Base):
 
     FILE_NAME_CONTENT_MAP = {
-        'lib_skip_decorators.py': AVOCADO_TEST_SKIP_LIB,
-        'script_to_exec.py': AVOCADO_TEST_SKIP_CLASS_DECORATORS
+        "lib_skip_decorators.py": AVOCADO_TEST_SKIP_LIB,
+        "script_to_exec.py": AVOCADO_TEST_SKIP_CLASS_DECORATORS,
     }
 
     def test_skip_class_decorators(self):
@@ -340,30 +342,28 @@ class SkipClass(Base):
 class SkipIfClass(Base):
 
     FILE_NAME_CONTENT_MAP = {
-        'lib_skip_decorators.py': AVOCADO_TEST_SKIP_LIB,
-        'script_to_exec.py': AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS
+        "lib_skip_decorators.py": AVOCADO_TEST_SKIP_LIB,
+        "script_to_exec.py": AVOCADO_TEST_SKIP_IF_CLASS_DECORATORS,
     }
 
     def test_skipIf_class_decorators(self):
-        self.check_status(**{'skip': 3, 'pass': 3})
+        self.check_status(**{"skip": 3, "pass": 3})
 
 
 class SkipUnlessClass(Base):
 
     FILE_NAME_CONTENT_MAP = {
-        'lib_skip_decorators.py': AVOCADO_TEST_SKIP_LIB,
-        'script_to_exec.py': AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS
+        "lib_skip_decorators.py": AVOCADO_TEST_SKIP_LIB,
+        "script_to_exec.py": AVOCADO_TEST_SKIP_UNLESS_CLASS_DECORATORS,
     }
 
     def test_skipUnless_class_decorators(self):
-        self.check_status(**{'skip': 3, 'pass': 3})
+        self.check_status(**{"skip": 3, "pass": 3})
 
 
 class SkipSetup(Base):
 
-    FILE_NAME_CONTENT_MAP = {
-        'script_to_exec.py': AVOCADO_SKIP_DECORATOR_SETUP
-    }
+    FILE_NAME_CONTENT_MAP = {"script_to_exec.py": AVOCADO_SKIP_DECORATOR_SETUP}
 
     def test_skip_setup(self):
         self.check_status(skip=1)
@@ -371,19 +371,19 @@ class SkipSetup(Base):
 
 class SkipTearDown(Base):
 
-    FILE_NAME_CONTENT_MAP = {
-        'script_to_exec.py': AVOCADO_SKIP_DECORATOR_TEARDOWN
-    }
+    FILE_NAME_CONTENT_MAP = {"script_to_exec.py": AVOCADO_SKIP_DECORATOR_TEARDOWN}
 
     def _get_json_result(self):
-        cmd_line = [AVOCADO,
-                    'run',
-                    '--disable-sysinfo',
-                    '--job-results-dir',
-                    f'{self.tmpdir.name}',
-                    f'{os.path.join(self.tmpdir.name, self.SCRIPT_TO_EXEC)}',
-                    '--json -']
-        result = process.run(' '.join(cmd_line), ignore_status=True)
+        cmd_line = [
+            AVOCADO,
+            "run",
+            "--disable-sysinfo",
+            "--job-results-dir",
+            f"{self.tmpdir.name}",
+            f"{os.path.join(self.tmpdir.name, self.SCRIPT_TO_EXEC)}",
+            "--json -",
+        ]
+        result = process.run(" ".join(cmd_line), ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
         json_results = json.loads(result.stdout_text)
         return json_results
@@ -392,5 +392,5 @@ class SkipTearDown(Base):
         self.check_status(errors=1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

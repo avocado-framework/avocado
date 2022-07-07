@@ -46,7 +46,10 @@ class CombinationRow:
                 self.covered_more_than_ones += 1
             self.hash_table[tuple(key)] += 1
 
-        return self.uncovered - old_uncovered, self.covered_more_than_ones - old_covered_more_than_ones
+        return (
+            self.uncovered - old_uncovered,
+            self.covered_more_than_ones - old_covered_more_than_ones,
+        )
 
     def uncover_cell(self, key):
         """
@@ -66,7 +69,10 @@ class CombinationRow:
                 self.covered_more_than_ones -= 1
             self.hash_table[tuple(key)] -= 1
 
-        return self.uncovered - old_uncovered, self.covered_more_than_ones - old_covered_more_than_ones
+        return (
+            self.uncovered - old_uncovered,
+            self.covered_more_than_ones - old_covered_more_than_ones,
+        )
 
     def completely_uncover(self):
         """
@@ -122,5 +128,8 @@ class CombinationRow:
         return combinations
 
     def __eq__(self, other):
-        return (self.covered_more_than_ones == other.covered_more_than_ones and self.uncovered == other.uncovered and
-                self.hash_table == other.hash_table)
+        return (
+            self.covered_more_than_ones == other.covered_more_than_ones
+            and self.uncovered == other.uncovered
+            and self.hash_table == other.hash_table
+        )

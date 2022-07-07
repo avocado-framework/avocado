@@ -95,7 +95,7 @@ these days a framework) to perform automated testing.
 
 %build
 %if 0%{?rhel}
-sed -e "s/'PyYAML>=4.2b2'/'PyYAML>=3.12'/" -i optional_plugins/varianter_yaml_to_mux/setup.py
+sed -e 's/"PyYAML>=4.2b2"/"PyYAML>=3.12"/' -i optional_plugins/varianter_yaml_to_mux/setup.py
 %endif
 %py3_build
 pushd optional_plugins/html

@@ -28,7 +28,7 @@ class Parameter:
         self.name = name
         self.size = len(values)
         self._constrained_values_number = 0
-        self.constraints = [None]*self.size
+        self.constraints = [None] * self.size
 
     def add_constraint(self, constraint, value, index):
         """
@@ -92,7 +92,8 @@ class Solver:
         for constraint in self.constraints:
             for index, pair in enumerate(constraint):
                 self.parameters[pair[self.CON_NAME]].add_constraint(
-                    constraint, pair[self.CON_VAL], index)
+                    constraint, pair[self.CON_VAL], index
+                )
 
     def compute_constraints(self):
         for p in self.parameters:
@@ -106,8 +107,9 @@ class Solver:
                     for c in range(len(constraint)):
                         for pair in range(len(constraint[c])):
                             constraint_array.add(constraint[c][pair])
-                    constraint_array = sorted(constraint_array,
-                                              key=lambda x: int(x[self.CON_NAME]))
+                    constraint_array = sorted(
+                        constraint_array, key=lambda x: int(x[self.CON_NAME])
+                    )
 
                     has_subset = False
                     remove = set()
@@ -183,6 +185,7 @@ class Solver:
         :return: all possible values for the given parameter
         :rtype: list
         """
+
         def is_permitted_value(one_value_constraints):
             if one_value_constraints is None:
                 return True
@@ -199,5 +202,8 @@ class Solver:
                     return False
             return True
 
-        return [i for i, c in enumerate(self.parameters[parameter].constraints)
-                if is_permitted_value(c)]
+        return [
+            i
+            for i, c in enumerate(self.parameters[parameter].constraints)
+            if is_permitted_value(c)
+        ]

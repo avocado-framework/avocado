@@ -21,4 +21,4 @@ class FailOnException(avocado.Test):
         to override this behavior, and turn your generic exceptions into
         errors.
         """
-        raise ValueError('This raises a ValueError and should end as a FAIL')
+        raise ValueError("This raises a ValueError and should end as a FAIL")

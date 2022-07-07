@@ -13,4 +13,4 @@ class ErrorTest(Test):
         """
         This should end with ERROR.
         """
-        self.error('This should end with ERROR.')
+        self.error("This should end with ERROR.")
