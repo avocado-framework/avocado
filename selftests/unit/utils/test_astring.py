@@ -55,8 +55,8 @@ class AstringUtilsTest(unittest.TestCase):
         self.assertEqual(astring.tabular_output(matrix, header),
                          "0 1  2   3    4\n"
                          "a an dog word last\n"
-                         "[94ma [0man cc[91mc "
-                         "[91md[92md[94md[90md[0m last")
+                         "\x1B[94ma \x1B[0man cc\x1B[91mc "
+                         "\x1B[91md\x1B[92md\x1B[94md\x1B[90md\x1B[0m last")
 
     def test_tabular_output_different_no_cols(self):
         matrix = [[], [1], [2, 2], [333, 333, 333], [4, 4, 4, 4444]]
