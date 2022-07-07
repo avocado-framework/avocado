@@ -471,10 +471,6 @@ class Job:
             base_logdir = self.config.get('run.results_dir')
             if base_logdir is not None:
                 try:
-                    FileNotFoundError
-                except NameError:
-                    FileNotFoundError = OSError   # pylint: disable=W0622
-                try:
                     shutil.rmtree(base_logdir)
                 except FileNotFoundError:
                     pass
