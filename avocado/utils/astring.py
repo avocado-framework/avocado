@@ -41,8 +41,7 @@ ENCODING = locale.getpreferredencoding()
 FS_UNSAFE_CHARS = '<>:"/\\|?*;'
 
 # Translate table to replace fs-unfriendly chars
-_FS_TRANSLATE = bytes.maketrans(bytes(FS_UNSAFE_CHARS, "ascii"),
-                                b'__________')
+_FS_TRANSLATE = bytes.maketrans(bytes(FS_UNSAFE_CHARS, "ascii"), b"__________")
 
 
 def bitlist_to_string(data):
@@ -60,7 +59,7 @@ def bitlist_to_string(data):
             result.append(c)
             c = 0
         pos += 1
-    return ''.join([chr(c) for c in result])
+    return "".join([chr(c) for c in result])
 
 
 def string_to_bitlist(data):
@@ -96,9 +95,9 @@ def shell_escape(command):
     See also: http://www.tldp.org/LDP/abs/html/escapingsection.html
     """
     command = command.replace("\\", "\\\\")
-    command = command.replace("$", r'\$')
-    command = command.replace('"', r'\"')
-    command = command.replace('`', r'\`')
+    command = command.replace("$", r"\$")
+    command = command.replace('"', r"\"")
+    command = command.replace("`", r"\`")
     return command
 
 
@@ -122,7 +121,7 @@ def strip_console_codes(output, custom_codes=None):
     old_word = ""
     return_str = ""
     index = 0
-    output = f"[m{output}"
+    output = f"\x1B[m{output}"
     console_codes = "%[G@8]|\\[[@A-HJ-MPXa-hl-nqrsu\\`]"
     console_codes += "|\\[[\\d;]+[HJKgqnrm]|#8|\\([B0UK]|\\)"
     if custom_codes is not None and custom_codes not in console_codes:
@@ -130,8 +129,7 @@ def strip_console_codes(output, custom_codes=None):
     while index < len(output):
         tmp_index = 0
         tmp_word = ""
-        while (len(re.findall("\x1b", tmp_word)) < 2 and
-               index + tmp_index < len(output)):
+        while len(re.findall("\x1b", tmp_word)) < 2 and index + tmp_index < len(output):
             tmp_word += output[index + tmp_index]
             tmp_index += 1
 
@@ -143,13 +141,15 @@ def strip_console_codes(output, custom_codes=None):
             special_code = re.findall(console_codes, tmp_word)[0]
         except IndexError:
             if index + tmp_index < len(output):
-                raise ValueError(f"{tmp_word} is not included in the known "
-                                 f"console codes list {console_codes}")
+                raise ValueError(
+                    f"{tmp_word} is not included in the known "
+                    f"console codes list {console_codes}"
+                )
             continue
         if special_code == tmp_word:
             continue
         old_word = tmp_word
-        return_str += tmp_word[len(special_code):]
+        return_str += tmp_word[len(special_code) :]
     return return_str
 
 
@@ -165,6 +165,7 @@ def iter_tabular_output(matrix, header=None, strip=False):
     :param header: Optional tuple or list with header elements to be displayed.
     :param strip:  Optionally remove trailing whitespace from each row.
     """
+
     def _get_matrix_with_header():
         return itertools.chain([header], matrix)
 
@@ -198,19 +199,23 @@ def iter_tabular_output(matrix, header=None, strip=False):
         len_matrix[-1] = len_matrix[-1][:-1]
 
     if strip:
-        def str_out(x): return " ".join(x).rstrip()
+
+        def str_out(x):
+            return " ".join(x).rstrip()
+
     else:
-        def str_out(x): return " ".join(x)
+
+        def str_out(x):
+            return " ".join(x)
 
     for row, row_lens in zip(str_matrix, len_matrix):
         out = []
-        padding = [" " * (lengths[i] - row_lens[i])
-                   for i in range(len(row_lens))]
+        padding = [" " * (lengths[i] - row_lens[i]) for i in range(len(row_lens))]
         out = ["%s%s" % line for line in zip(row, padding)]  # pylint: disable=C0209
         try:
             out.append(row[-1])
         except IndexError:
-            continue    # Skip empty rows
+            continue  # Skip empty rows
         yield str_out(out)
 
 
@@ -303,7 +308,7 @@ def is_text(data):
     return isinstance(data, str)
 
 
-def to_text(data, encoding=ENCODING, errors='strict'):
+def to_text(data, encoding=ENCODING, errors="strict"):
     """
     Convert anything to text decoded text
 

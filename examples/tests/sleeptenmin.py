@@ -20,13 +20,13 @@ class SleepTenMin(Test):
         """
         Sleep for length seconds.
         """
-        cycles = int(self.params.get('sleep_cycles', default=1))
-        length = int(self.params.get('sleep_length', default=600))
-        method = self.params.get('sleep_method', default='builtin')
+        cycles = int(self.params.get("sleep_cycles", default=1))
+        length = int(self.params.get("sleep_length", default=600))
+        method = self.params.get("sleep_method", default="builtin")
 
         for _ in range(0, cycles):
             self.log.debug("Sleeping for %.2f seconds", length)
-            if method == 'builtin':
+            if method == "builtin":
                 time.sleep(length)
-            elif method == 'shell':
+            elif method == "shell":
                 os.system(f"sleep {length}")

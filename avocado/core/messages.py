@@ -19,7 +19,7 @@ from avocado.core.nrunner.task import TASK_DEFAULT_CATEGORY
 from avocado.core.output import LOG_UI
 from avocado.core.test_id import TestID
 
-DEFAULT_LOG_FILE = 'debug.log'
+DEFAULT_LOG_FILE = "debug.log"
 
 
 class BaseMessageHandler:
@@ -59,12 +59,14 @@ class MessageHandler(BaseMessageHandler):
     """Entry point for handling messages."""
 
     def __init__(self):
-        self._handlers = {'started': [StartMessageHandler()],
-                          'finished': [FinishMessageHandler()],
-                          'running': [RunningMessageHandler()]}
+        self._handlers = {
+            "started": [StartMessageHandler()],
+            "finished": [FinishMessageHandler()],
+            "running": [RunningMessageHandler()],
+        }
 
     def process_message(self, message, task, job):
-        for handler in self._handlers.get(message.get('status'), []):
+        for handler in self._handlers.get(message.get("status"), []):
             handler.process_message(message, task, job)
 
 
@@ -72,15 +74,17 @@ class RunningMessageHandler(BaseMessageHandler):
     """Entry point for handling running messages."""
 
     def __init__(self):
-        self._handlers = {'log': [LogMessageHandler()],
-                          'stdout': [StdoutMessageHandler()],
-                          'stderr': [StderrMessageHandler()],
-                          'whiteboard': [WhiteboardMessageHandler()],
-                          'output': [OutputMessageHandler()],
-                          'file': [FileMessageHandler()]}
+        self._handlers = {
+            "log": [LogMessageHandler()],
+            "stdout": [StdoutMessageHandler()],
+            "stderr": [StderrMessageHandler()],
+            "whiteboard": [WhiteboardMessageHandler()],
+            "output": [OutputMessageHandler()],
+            "file": [FileMessageHandler()],
+        }
 
     def process_message(self, message, task, job):
-        for handler in self._handlers.get(message.get('type'), []):
+        for handler in self._handlers.get(message.get("type"), []):
             handler.process_message(message, task, job)
 
 
@@ -109,24 +113,27 @@ class StartMessageHandler(BaseMessageHandler):
         params = []
         if task.runnable.variant is not None:
             # convert variant into the list of parameters
-            params = [param for params in
-                      task.runnable.variant.get('variant', [])
-                      for param in params[1]]
+            params = [
+                param
+                for params in task.runnable.variant.get("variant", [])
+                for param in params[1]
+            ]
 
-        open(logfile, 'w', encoding='utf-8').close()
-        metadata = {'job_logdir': job.logdir,
-                    'job_unique_id': job.unique_id,
-                    'base_path': base_path,
-                    'logfile':  logfile,
-                    'task_path': task_path,
-                    'time_start': message['time'],
-                    'actual_time_start': time.time(),
-                    'name': task_id,
-                    'params': params}
+        open(logfile, "w", encoding="utf-8").close()
+        metadata = {
+            "job_logdir": job.logdir,
+            "job_unique_id": job.unique_id,
+            "base_path": base_path,
+            "logfile": logfile,
+            "task_path": task_path,
+            "time_start": message["time"],
+            "actual_time_start": time.time(),
+            "name": task_id,
+            "params": params,
+        }
         if task.category == TASK_DEFAULT_CATEGORY:
             job.result.start_test(metadata)
-            job.result_events_dispatcher.map_method('start_test', job.result,
-                                                    metadata)
+            job.result_events_dispatcher.map_method("start_test", job.result, metadata)
         task.metadata.update(metadata)
 
 
@@ -152,32 +159,31 @@ class FinishMessageHandler(BaseMessageHandler):
 
     def handle(self, message, task, job):
         message.update(task.metadata)
-        message['name'] = TestID.from_identifier(task.identifier)
-        message['status'] = message.get('result').upper()
+        message["name"] = TestID.from_identifier(task.identifier)
+        message["status"] = message.get("result").upper()
 
-        time_start = message['time_start']
-        time_end = message['time']
+        time_start = message["time_start"]
+        time_end = message["time"]
         time_elapsed = time_end - time_start
-        message['time_end'] = time_end
-        message['actual_time_end'] = time.time()
-        message['time_elapsed'] = time_elapsed
+        message["time_end"] = time_end
+        message["actual_time_end"] = time.time()
+        message["time_elapsed"] = time_elapsed
 
-        message['logdir'] = task.metadata['task_path']
-        message['tags'] = task.runnable.get_serializable_tags()
+        message["logdir"] = task.metadata["task_path"]
+        message["tags"] = task.runnable.get_serializable_tags()
 
-        if task.category == 'test':
+        if task.category == "test":
             job.result.check_test(message)
-            job.result_events_dispatcher.map_method('end_test', job.result,
-                                                    message)
+            job.result_events_dispatcher.map_method("end_test", job.result, message)
 
 
 class BaseRunningMessageHandler(BaseMessageHandler):
     """Base interface for resolving running messages."""
 
-    _tag = b''
+    _tag = b""
 
     def __init__(self):
-        self.line_buffer = b''
+        self.line_buffer = b""
 
     def _split_complete_lines(self, data):
         """
@@ -194,13 +200,13 @@ class BaseRunningMessageHandler(BaseMessageHandler):
         :return: list of lines
         """
         data_lines = data.splitlines(True)
-        if len(data_lines) <= 1 and not data.endswith(b'\n'):
+        if len(data_lines) <= 1 and not data.endswith(b"\n"):
             self.line_buffer += data
             return []
         else:
             data_lines[0] = self.line_buffer + data_lines[0]
-            self.line_buffer = b''
-            if not data.endswith(b'\n'):
+            self.line_buffer = b""
+            if not data.endswith(b"\n"):
                 self.line_buffer = data_lines.pop()
             return data_lines
 
@@ -217,15 +223,16 @@ class BaseRunningMessageHandler(BaseMessageHandler):
         :type task: :class:`avocado.core.nrunner.Task`
         """
 
-        if message.get('encoding'):
-            data = message.get('log', b'').splitlines(True)
+        if message.get("encoding"):
+            data = message.get("log", b"").splitlines(True)
         else:
-            data = self._split_complete_lines(message.get('log', b''))
+            data = self._split_complete_lines(message.get("log", b""))
 
         if data:
             data = self._tag + self._tag.join(data)
-            self._save_message_to_file(DEFAULT_LOG_FILE, data, task,
-                                       message.get('encoding'))
+            self._save_message_to_file(
+                DEFAULT_LOG_FILE, data, task, message.get("encoding")
+            )
 
     @staticmethod
     def _message_to_line(message, encoding):
@@ -270,7 +277,7 @@ class BaseRunningMessageHandler(BaseMessageHandler):
             with open(file_name, mode) as fp:  # pylint: disable=W1514
                 fp.write(buff)
 
-        file = os.path.join(task.metadata['task_path'], filename)
+        file = os.path.join(task.metadata["task_path"], filename)
         if encoding:
             buff = BaseRunningMessageHandler._message_to_line(buff, encoding)
             _save_to_file(file, "a")
@@ -295,7 +302,7 @@ class LogMessageHandler(BaseRunningMessageHandler):
              'time': 18405.55351474}
     """
 
-    _tag = b'[stdlog] '
+    _tag = b"[stdlog] "
 
     def handle(self, message, task, job):
         """Logs a textual message to a file.
@@ -303,9 +310,10 @@ class LogMessageHandler(BaseRunningMessageHandler):
         This assumes that the log message will not contain a newline, and thus
         one is explicitly added here.
         """
-        if task.metadata.get('logfile') is None:
-            task.metadata['logfile'] = os.path.join(task.metadata['task_path'],
-                                                    'debug.log')
+        if task.metadata.get("logfile") is None:
+            task.metadata["logfile"] = os.path.join(
+                task.metadata["task_path"], "debug.log"
+            )
         self._save_to_default_file(message, task)
 
 
@@ -328,12 +336,13 @@ class StdoutMessageHandler(BaseRunningMessageHandler):
              'time': 18405.55351474}
     """
 
-    _tag = b'[stdout] '
+    _tag = b"[stdout] "
 
     def handle(self, message, task, job):
         self._save_to_default_file(message, task)
-        self._save_message_to_file('stdout', message['log'], task,
-                                   message.get('encoding', None))
+        self._save_message_to_file(
+            "stdout", message["log"], task, message.get("encoding", None)
+        )
 
 
 class StderrMessageHandler(BaseRunningMessageHandler):
@@ -355,12 +364,13 @@ class StderrMessageHandler(BaseRunningMessageHandler):
              'time': 18405.55351474}
     """
 
-    _tag = b'[stderr] '
+    _tag = b"[stderr] "
 
     def handle(self, message, task, job):
         self._save_to_default_file(message, task)
-        self._save_message_to_file('stderr', message['log'], task,
-                                   message.get('encoding', None))
+        self._save_message_to_file(
+            "stderr", message["log"], task, message.get("encoding", None)
+        )
 
 
 class WhiteboardMessageHandler(BaseRunningMessageHandler):
@@ -383,14 +393,11 @@ class WhiteboardMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        encoding = message.get('encoding', 'utf-8')
-        whiteboard = task.metadata.get('whiteboard', '')
-        whiteboard += message['log'].decode(encoding)
-        task.metadata['whiteboard'] = whiteboard
-        self._save_message_to_file('whiteboard',
-                                   message['log'],
-                                   task,
-                                   encoding)
+        encoding = message.get("encoding", "utf-8")
+        whiteboard = task.metadata.get("whiteboard", "")
+        whiteboard += message["log"].decode(encoding)
+        task.metadata["whiteboard"] = whiteboard
+        self._save_message_to_file("whiteboard", message["log"], task, encoding)
 
 
 class FileMessageHandler(BaseRunningMessageHandler):
@@ -418,12 +425,13 @@ class FileMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        filename = os.path.relpath(os.path.join("/", message['path']), "/")
-        file = os.path.join(task.metadata['task_path'], filename)
+        filename = os.path.relpath(os.path.join("/", message["path"]), "/")
+        file = os.path.join(task.metadata["task_path"], filename)
         if not os.path.exists(file):
             os.makedirs(os.path.dirname(file), exist_ok=True)
-        self._save_message_to_file(filename, message['log'], task,
-                                   message.get('encoding', None))
+        self._save_message_to_file(
+            filename, message["log"], task, message.get("encoding", None)
+        )
 
 
 class OutputMessageHandler(BaseRunningMessageHandler):
@@ -446,8 +454,8 @@ class OutputMessageHandler(BaseRunningMessageHandler):
     """
 
     def handle(self, message, task, job):
-        encoding = message.get('encoding', 'utf-8')
-        output = message['log'].decode(encoding)
+        encoding = message.get("encoding", "utf-8")
+        output = message["log"].decode(encoding)
         task_id = TestID.from_identifier(task.identifier)
         output = f"{task_id}: {output}"
         LOG_UI.debug(output)

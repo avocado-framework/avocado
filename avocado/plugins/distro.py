@@ -43,11 +43,13 @@ class SoftwarePackage:
         """
         Returns the representation as a dictionary
         """
-        return {'name': self.name,
-                'version': self.version,
-                'release': self.release,
-                'checksum': self.checksum,
-                'arch': self.arch}
+        return {
+            "name": self.name,
+            "version": self.version,
+            "release": self.release,
+            "checksum": self.checksum,
+            "arch": self.arch,
+        }
 
     def to_json(self):
         """
@@ -74,21 +76,23 @@ class DistroDef(utils_distro.LinuxDistro):
         self.software_packages = []
 
         #: A simple text that denotes the software type that makes this distro
-        self.software_packages_type = 'unknown'
+        self.software_packages_type = "unknown"
 
     def to_dict(self):
         """
         Returns the representation as a dictionary
         """
-        d = {'name': self.name,
-             'version': self.version,
-             'release': self.release,
-             'arch': self.arch,
-             'software_packages_type': self.software_packages_type,
-             'software_packages': []}
+        d = {
+            "name": self.name,
+            "version": self.version,
+            "release": self.release,
+            "arch": self.arch,
+            "software_packages_type": self.software_packages_type,
+            "software_packages": [],
+        }
 
         for package in self.software_packages:
-            d['software_packages'].append(package.to_dict())
+            d["software_packages"].append(package.to_dict())
 
         return d
 
@@ -170,7 +174,7 @@ class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
     def __init__(self, path):
         super().__init__(path)
         try:
-            utils_path.find_command('rpm')
+            utils_path.find_command("rpm")
             self.capable = True
         except utils_path.CmdNotFoundError:
             self.capable = False
@@ -181,13 +185,13 @@ class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
         information on package files. If the rpm binary is not available
         on this system, we simply ignore the rpm files found
         """
-        return self.capable and path.endswith('.rpm')
+        return self.capable and path.endswith(".rpm")
 
     def get_package_info(self, path):
         cmd = "rpm -qp --qf '%{NAME} %{VERSION} %{RELEASE} %{SIGMD5} %{ARCH}' "
         cmd += path
         info = process.system_output(cmd, ignore_status=True)
-        info = tuple(info.split(' '))
+        info = tuple(info.split(" "))
         return info
 
 
@@ -200,27 +204,24 @@ class DistroPkgInfoLoaderDeb(DistroPkgInfoLoader):
     def __init__(self, path):
         super().__init__(path)
         try:
-            utils_path.find_command('dpkg-deb')
+            utils_path.find_command("dpkg-deb")
             self.capable = True
         except utils_path.CmdNotFoundError:
             self.capable = False
 
     def is_software_package(self, path):
-        return self.capable and (path.endswith('.deb') or
-                                 path.endswith('.udeb'))
+        return self.capable and (path.endswith(".deb") or path.endswith(".udeb"))
 
     def get_package_info(self, path):
-        cmd = ("dpkg-deb --showformat '${Package} ${Version} ${Architecture}' "
-               "--show ")
+        cmd = "dpkg-deb --showformat '${Package} ${Version} ${Architecture}' --show "
         cmd += path
         info = process.system_output(cmd, ignore_status=True)
-        name, version, arch = info.split(' ')
-        return (name, version, '', '', arch)
+        name, version, arch = info.split(" ")
+        return (name, version, "", "", arch)
 
 
 #: the type of distro that will determine what loader will be used
-DISTRO_PKG_INFO_LOADERS = {'rpm': DistroPkgInfoLoaderRpm,
-                           'deb': DistroPkgInfoLoaderDeb}
+DISTRO_PKG_INFO_LOADERS = {"rpm": DistroPkgInfoLoaderRpm, "deb": DistroPkgInfoLoaderDeb}
 
 
 def save_distro(linux_distro, path):
@@ -233,9 +234,9 @@ def save_distro(linux_distro, path):
     :type path: str
     :return: None
     """
-    with open(path, 'wb') as output:
+    with open(path, "wb") as output:
         buff = linux_distro.to_json()
-        output.write(bz2.compress(buff.encode('utf-8')))
+        output.write(bz2.compress(buff.encode("utf-8")))
 
 
 def load_distro(path):
@@ -247,7 +248,7 @@ def load_distro(path):
     :return: a dict with the distro definition data
     :rtype: dict
     """
-    with open(path, 'rb') as distro_file:
+    with open(path, "rb") as distro_file:
         json_data = json.loads(bz2.decompress(distro_file.read()))
     return json_data
 
@@ -287,8 +288,9 @@ def load_from_tree(name, version, release, arch, package_type, path):
     loader_class = DISTRO_PKG_INFO_LOADERS.get(package_type, None)
     if loader_class is not None:
         loader = loader_class(path)
-        distro_def.software_packages = [SoftwarePackage(*args)
-                                        for args in loader.get_packages_info()]
+        distro_def.software_packages = [
+            SoftwarePackage(*args) for args in loader.get_packages_info()
+        ]
         distro_def.software_packages_type = package_type
     return distro_def
 
@@ -299,75 +301,89 @@ class Distro(CLICmd):
     Implements the avocado 'distro' subcommand
     """
 
-    name = 'distro'
-    description = 'Shows detected Linux distribution'
+    name = "distro"
+    description = "Shows detected Linux distribution"
 
     def configure(self, parser):
         parser = super().configure(parser)
 
-        help_msg = 'Creates a distro definition file based on the path given.'
-        settings.register_option(section='distro',
-                                 key='distro_def_create',
-                                 default=False,
-                                 help_msg=help_msg,
-                                 key_type=bool,
-                                 parser=parser,
-                                 long_arg='--distro-def-create')
+        help_msg = "Creates a distro definition file based on the path given."
+        settings.register_option(
+            section="distro",
+            key="distro_def_create",
+            default=False,
+            help_msg=help_msg,
+            key_type=bool,
+            parser=parser,
+            long_arg="--distro-def-create",
+        )
 
-        help_msg = 'Distribution short name'
-        settings.register_option(section='distro',
-                                 key='distro_def_name',
-                                 default='',
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--distro-def-name',
-                                 metavar='DISTRO_DEF_NAME')
+        help_msg = "Distribution short name"
+        settings.register_option(
+            section="distro",
+            key="distro_def_name",
+            default="",
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--distro-def-name",
+            metavar="DISTRO_DEF_NAME",
+        )
 
-        help_msg = 'Distribution major version name'
-        settings.register_option(section='distro',
-                                 key='distro_def_version',
-                                 default='',
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--distro-def-version',
-                                 metavar='DISTRO_DEF_VERSION')
+        help_msg = "Distribution major version name"
+        settings.register_option(
+            section="distro",
+            key="distro_def_version",
+            default="",
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--distro-def-version",
+            metavar="DISTRO_DEF_VERSION",
+        )
 
-        help_msg = 'Distribution release version number'
-        settings.register_option(section='distro',
-                                 key='distro_def_release',
-                                 default='',
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--distro-def-release',
-                                 metavar='DISTRO_DEF_RELEASE')
+        help_msg = "Distribution release version number"
+        settings.register_option(
+            section="distro",
+            key="distro_def_release",
+            default="",
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--distro-def-release",
+            metavar="DISTRO_DEF_RELEASE",
+        )
 
-        help_msg = 'Primary architecture that the distro targets'
-        settings.register_option(section='distro',
-                                 key='distro_def_arch',
-                                 default='',
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--distro-def-arch',
-                                 metavar='DISTRO_DEF_ARCH')
+        help_msg = "Primary architecture that the distro targets"
+        settings.register_option(
+            section="distro",
+            key="distro_def_arch",
+            default="",
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--distro-def-arch",
+            metavar="DISTRO_DEF_ARCH",
+        )
 
-        help_msg = 'Top level directory of the distro installation files'
-        settings.register_option(section='distro',
-                                 key='distro_def_path',
-                                 default='',
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--distro-def-path')
+        help_msg = "Top level directory of the distro installation files"
+        settings.register_option(
+            section="distro",
+            key="distro_def_path",
+            default="",
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--distro-def-path",
+        )
 
         type_choices = tuple(DISTRO_PKG_INFO_LOADERS.keys())
-        type_choices_hlp = ', '.join(type_choices)
-        help_msg = f'Distro type (one of: {type_choices_hlp})'
-        settings.register_option(section='distro',
-                                 key='distro_def_type',
-                                 default='',
-                                 help_msg=help_msg,
-                                 choices=type_choices,
-                                 parser=parser,
-                                 long_arg='--distro-def-type')
+        type_choices_hlp = ", ".join(type_choices)
+        help_msg = f"Distro type (one of: {type_choices_hlp})"
+        settings.register_option(
+            section="distro",
+            key="distro_def_type",
+            default="",
+            help_msg=help_msg,
+            choices=type_choices,
+            parser=parser,
+            long_arg="--distro-def-type",
+        )
 
     @staticmethod
     def _get_output_file_name(name, version, arch, release=None):
@@ -378,39 +394,42 @@ class Distro(CLICmd):
         adapt the output file name to that
         """
         if release:
-            return f'{name}-{version}.{release}-{arch}.distro'
+            return f"{name}-{version}.{release}-{arch}.distro"
         else:
-            return f'{name}-{version}-{arch}.distro'
+            return f"{name}-{version}-{arch}.distro"
 
     def run(self, config):
-        name = config.get('distro.distro_def_name')
-        version = config.get('distro.distro_def_version')
-        release = config.get('distro.distro_def_release')
-        arch = config.get('distro.distro_def_arch')
-        distro_type = config.get('distro.distro_def_type')
-        path = config.get('distro.distro_def_path')
-        if config.get('distro.distro_def_create'):
+        name = config.get("distro.distro_def_name")
+        version = config.get("distro.distro_def_version")
+        release = config.get("distro.distro_def_release")
+        arch = config.get("distro.distro_def_arch")
+        distro_type = config.get("distro.distro_def_type")
+        path = config.get("distro.distro_def_path")
+        if config.get("distro.distro_def_create"):
             if not (name and version and arch and distro_type and path):
-                LOG_UI.error('Required arguments: name, version, arch, type '
-                             'and path')
+                LOG_UI.error(
+                    "Required arguments: name, version, arch, type " "and path"
+                )
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
-            output_file_name = self._get_output_file_name(name, version,
-                                                          arch, release)
+            output_file_name = self._get_output_file_name(name, version, arch, release)
             if os.path.exists(output_file_name):
-                error_msg = ('Output file "%s" already exists, will not '
-                             'overwrite it', output_file_name)
+                error_msg = (
+                    'Output file "%s" already exists, will not overwrite it',
+                    output_file_name,
+                )
                 LOG_UI.error(error_msg)
             else:
-                LOG_UI.debug("Loading distro information from tree... "
-                             "Please wait...")
-                distro = load_from_tree(name, version, release, arch,
-                                        distro_type, path)
+                LOG_UI.debug("Loading distro information from tree... Please wait...")
+                distro = load_from_tree(name, version, release, arch, distro_type, path)
                 save_distro(distro, output_file_name)
-                LOG_UI.debug('Distro information saved to "%s"',
-                             output_file_name)
+                LOG_UI.debug('Distro information saved to "%s"', output_file_name)
         else:
             detected = utils_distro.detect()
-            LOG_UI.debug('Detected distribution: %s (%s) version %s release '
-                         '%s', detected.name, detected.arch, detected.version,
-                         detected.release)
+            LOG_UI.debug(
+                "Detected distribution: %s (%s) version %s release " "%s",
+                detected.name,
+                detected.arch,
+                detected.version,
+                detected.release,
+            )

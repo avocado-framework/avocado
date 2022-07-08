@@ -48,7 +48,7 @@ def get_disk_blocksize(path):
     return fs_stats.f_bsize
 
 
-def create_loop_device(size, blocksize=4096, directory='./'):
+def create_loop_device(size, blocksize=4096, directory="./"):
     """
     Creates a loop device of size and blocksize specified.
 
@@ -64,13 +64,13 @@ def create_loop_device(size, blocksize=4096, directory='./'):
     :rtype: str
     """
     cmd = "losetup --find"
-    loop = process.run(cmd, ignore_status=True,
-                       sudo=True).stdout_text.strip('\n')
+    loop = process.run(cmd, ignore_status=True, sudo=True).stdout_text.strip("\n")
 
-    loop_file = os.path.join(directory,
-                             f"tmp_{loop.split('/')[-1]}.img")
-    cmd = (f"dd if=/dev/zero of={loop_file} bs={blocksize} "
-           f"count={int(size / blocksize)}")
+    loop_file = os.path.join(directory, f"tmp_{loop.split('/')[-1]}.img")
+    cmd = (
+        f"dd if=/dev/zero of={loop_file} bs={blocksize} "
+        f"count={int(size / blocksize)}"
+    )
     if process.system(cmd, ignore_status=True, sudo=True) != 0:
         raise DiskError("Unable to create backing file for loop device")
 
@@ -91,12 +91,11 @@ def delete_loop_device(device):
     :rtype: bool
     """
     cmd = "losetup -aJl"
-    loop_dic = json.loads(process.run(cmd, ignore_status=True,
-                                      sudo=True).stdout_text)
-    loop_file = ''
-    for loop_dev in loop_dic['loopdevices']:
-        if device == loop_dev['name']:
-            loop_file = loop_dev['back-file']
+    loop_dic = json.loads(process.run(cmd, ignore_status=True, sudo=True).stdout_text)
+    loop_file = ""
+    for loop_dev in loop_dic["loopdevices"]:
+        if device == loop_dev["name"]:
+            loop_file = loop_dev["back-file"]
     if not loop_file:
         raise DiskError("Unable to find backing file for loop device")
     cmd = f"losetup -d {device}"
@@ -119,9 +118,9 @@ def get_disks():
     :returns: a list of paths to the physical disks on the system
     :rtype: list of str
     """
-    json_result = process.run('lsblk --json --paths --inverse')
+    json_result = process.run("lsblk --json --paths --inverse")
     json_data = json.loads(json_result.stdout_text)
-    return [str(disk['name']) for disk in json_data['blockdevices']]
+    return [str(disk["name"]) for disk in json_data["blockdevices"]]
 
 
 def get_available_filesystems():
@@ -132,13 +131,13 @@ def get_available_filesystems():
     :rtype: list of str
     """
     filesystems = set()
-    with open('/proc/filesystems') as proc_fs:  # pylint: disable=W1514
+    with open("/proc/filesystems") as proc_fs:  # pylint: disable=W1514
         for proc_fs_line in proc_fs.readlines():
-            filesystems.add(re.sub(r'(nodev)?\s*', '', proc_fs_line))
+            filesystems.add(re.sub(r"(nodev)?\s*", "", proc_fs_line))
     return list(filesystems)
 
 
-def get_filesystem_type(mount_point='/'):
+def get_filesystem_type(mount_point="/"):
     """
     Returns the type of the filesystem of mount point informed.
     The default mount point considered when none is informed
@@ -150,7 +149,7 @@ def get_filesystem_type(mount_point='/'):
     :returns: filesystem type
     :rtype: str
     """
-    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+    with open("/proc/mounts") as mounts:  # pylint: disable=W1514
         for mount_line in mounts.readlines():
             _, fs_file, fs_vfstype, _, _, _ = mount_line.split()
             if fs_file == mount_point:
@@ -169,8 +168,8 @@ def is_root_device(device):
     cmd = "lsblk --j -o MOUNTPOINT,PKNAME"
     output = process.run(cmd)
     result = json.loads(output.stdout_text)
-    for item in result['blockdevices']:
-        if item['mountpoint'] == "/" and device == str(item['pkname']):
+    for item in result["blockdevices"]:
+        if item["mountpoint"] == "/" and device == str(item["pkname"]):
             return True
     return False
 
@@ -185,7 +184,7 @@ def is_disk_mounted(device):
     :returns: True if the device/disk is mounted else False
     :rtype: bool
     """
-    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+    with open("/proc/mounts") as mounts:  # pylint: disable=W1514
         for mount_line in mounts.readlines():
             dev, _, _, _, _, _ = mount_line.split()
             if dev == device:
@@ -203,7 +202,7 @@ def is_dir_mounted(dir_path):
     :returns: True if the given director is mounted else False
     :rtype: bool
     """
-    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+    with open("/proc/mounts") as mounts:  # pylint: disable=W1514
         for mount_line in mounts.readlines():
             _, fs_dir, _, _, _, _ = mount_line.split()
             if fs_dir == dir_path:
@@ -221,10 +220,9 @@ def fs_exists(device):
     :returns: returns True if filesystem exists on the give disk else False
     :rtype: bool
     """
-    cmd = f'blkid -o value -s TYPE {device}'
-    out = process.system_output(cmd, shell=True,
-                                ignore_status=True).decode("utf-8")
-    fs_list = ['ext2', 'ext3', 'ext4', 'xfs', 'btrfs']
+    cmd = f"blkid -o value -s TYPE {device}"
+    out = process.system_output(cmd, shell=True, ignore_status=True).decode("utf-8")
+    fs_list = ["ext2", "ext3", "ext4", "xfs", "btrfs"]
     if out in fs_list:
         return True
     return False
@@ -240,7 +238,7 @@ def get_dir_mountpoint(dir_path):
     :returns: returns disk name which mounted on given dir_path
     :rtype: str
     """
-    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+    with open("/proc/mounts") as mounts:  # pylint: disable=W1514
         for mount_line in mounts.readlines():
             dev, fs_dir, _, _, _, _ = mount_line.split()
             if fs_dir == dir_path:
@@ -258,7 +256,7 @@ def get_disk_mountpoint(device):
     :return: return directory name on which disk is mounted
     :rtype: str
     """
-    with open('/proc/mounts') as mounts:  # pylint: disable=W1514
+    with open("/proc/mounts") as mounts:  # pylint: disable=W1514
         for mount_line in mounts.readlines():
             dev, fs_dir, _, _, _, _ = mount_line.split()
             if dev == device:

@@ -36,7 +36,7 @@ def get_svc_name():
     """
     Gets the multipath service name based on distro.
     """
-    if distro.detect().name == 'Ubuntu':
+    if distro.detect().name == "Ubuntu":
         return "multipath-tools"
     return "multipathd"
 
@@ -49,7 +49,7 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
     :param defaults_extra: Extra entry in conf file in defaults section.
     """
     conf_file = "/etc/multipath.conf"
-    with open(conf_file, "w", encoding='utf-8') as mpath_fp:
+    with open(conf_file, "w", encoding="utf-8") as mpath_fp:
         mpath_fp.write("defaults {\n")
         mpath_fp.write("    find_multipaths yes\n")
         mpath_fp.write("    user_friendly_names yes\n")
@@ -60,7 +60,7 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
             mpath_fp.write("blacklist {\n")
             mpath_fp.write(f"    {blacklist}\n")
             mpath_fp.write("}\n")
-    LOG.debug(open(conf_file, "r", encoding='utf-8').read())
+    LOG.debug(open(conf_file, "r", encoding="utf-8").read())
     # The reason for sleep here is to give some time for change in
     # multipath.conf file to take effect.
     time.sleep(5)
@@ -78,8 +78,7 @@ def device_exists(mpath):
     :rtype: bool
     """
     cmd = "multipath -ll"
-    out = process.run(cmd, ignore_status=True, sudo=True,
-                      shell=True).stdout_text
+    out = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     if mpath in out:
         return True
     return False
@@ -95,8 +94,7 @@ def get_mpath_name(wwid):
     """
     if device_exists(wwid):
         cmd = f"multipath -l {wwid}"
-        return process.run(cmd,
-                           sudo=True).stdout_text.split()[0]
+        return process.run(cmd, sudo=True).stdout_text.split()[0]
 
 
 def get_multipath_wwids():
@@ -107,8 +105,7 @@ def get_multipath_wwids():
     :rtype: list of str
     """
     cmd = "egrep -v '^($|#)' /etc/multipath/wwids"
-    wwids = process.run(cmd, ignore_status=True,
-                        sudo=True, shell=True).stdout_text
+    wwids = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     wwids = wwids.strip("\n").replace("/", "").split("\n")
     return wwids
 
@@ -122,8 +119,7 @@ def get_multipath_wwid(mpath):
     """
     cmd = "multipathd show maps format '%n %w'"
     try:
-        wwids = process.run(cmd, ignore_status=True,
-                            sudo=True, shell=True).stdout_text
+        wwids = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     except process.CmdError as ex:
         raise MPException(f"Multipathd Command Failed : {ex} ")
     for wwid in wwids.splitlines():
@@ -140,11 +136,10 @@ def is_mpath_dev(mpath):
     """
     cmd = "multipath -l -v 1"
     try:
-        mpaths = process.run(cmd, ignore_status=True,
-                             sudo=True, shell=True).stdout_text
+        mpaths = process.run(cmd, ignore_status=True, sudo=True, shell=True).stdout_text
     except process.CmdError as ex:
         raise MPException(f"Multipath Command Failed : {ex} ")
-    if mpath in mpaths.strip('\n').split("\n"):
+    if mpath in mpaths.strip("\n").split("\n"):
         return True
     return False
 
@@ -159,11 +154,10 @@ def get_paths(wwid):
     if not device_exists(wwid):
         return
     cmd = f"multipath -ll {wwid}"
-    lines = process.run(cmd,
-                        sudo=True).stdout_text.strip("\n")
+    lines = process.run(cmd, sudo=True).stdout_text.strip("\n")
     paths = []
     for line in lines.split("\n"):
-        if not (('size' in line) or ('policy' in line) or (wwid in line)):
+        if not (("size" in line) or ("policy" in line) or (wwid in line)):
             paths.append(line.split()[-5])
     return paths
 
@@ -179,11 +173,12 @@ def get_multipath_details():
     :return: Dictionary of multipath output in json format
     :rtype: dict
     """
-    mpath_op = process.run("multipathd show maps json",
-                           sudo=True, verbose=False).stdout_text
-    if 'multipath-tools v' in mpath_op:
-        return ''
-    mpath_op = ast.literal_eval(mpath_op.replace("\n", '').replace(' ', ''))
+    mpath_op = process.run(
+        "multipathd show maps json", sudo=True, verbose=False
+    ).stdout_text
+    if "multipath-tools v" in mpath_op:
+        return ""
+    mpath_op = ast.literal_eval(mpath_op.replace("\n", "").replace(" ", ""))
     return mpath_op
 
 
@@ -194,8 +189,9 @@ def is_path_a_multipath(disk_path):
     :param disk_path: disk path. Example: sda, sdb.
     :return: True if part of multipath, else False.
     """
-    if not process.system(f"multipath -c /dev/{disk_path}", sudo=True,
-                          ignore_status=True, shell=True):
+    if not process.system(
+        f"multipath -c /dev/{disk_path}", sudo=True, ignore_status=True, shell=True
+    ):
         return True
     return False
 
@@ -209,12 +205,12 @@ def get_path_status(disk_path):
     """
     mpath_op = get_multipath_details()
     if not mpath_op:
-        return ('', '', '')
-    for maps in mpath_op['maps']:
-        for path_groups in maps['path_groups']:
-            for paths in path_groups['paths']:
-                if paths['dev'] == disk_path:
-                    return(paths['dm_st'], paths['dev_st'], paths['chk_st'])
+        return ("", "", "")
+    for maps in mpath_op["maps"]:
+        for path_groups in maps["path_groups"]:
+            for paths in path_groups["paths"]:
+                if paths["dev"] == disk_path:
+                    return (paths["dm_st"], paths["dev_st"], paths["chk_st"])
 
 
 def fail_path(path):
@@ -225,9 +221,10 @@ def fail_path(path):
     :return: True if succeeded, False otherwise
     :rtype: bool
     """
+
     def is_failed():
         path_stat = get_path_status(path)
-        if path_stat[0] == 'failed' and path_stat[2] == 'faulty':
+        if path_stat[0] == "failed" and path_stat[2] == "faulty":
             return True
         return False
 
@@ -244,11 +241,13 @@ def reinstate_path(path):
     :param str path: disk path. Example: sda, sdb.
     :return: True if succeeded, False otherwise
     """
+
     def is_reinstated():
         path_stat = get_path_status(path)
-        if path_stat[0] == 'active' and path_stat[2] == 'ready':
+        if path_stat[0] == "active" and path_stat[2] == "ready":
             return True
         return False
+
     cmd = f'multipathd -k"reinstate path {path}"'
     if process.system(cmd) == 0:
         return wait.wait_for(is_reinstated, timeout=10) or False
@@ -266,7 +265,7 @@ def get_policy(wwid):
         cmd = f"multipath -ll {wwid}"
         lines = process.run(cmd, sudo=True).stdout_text.strip("\n")
         for line in lines.split("\n"):
-            if 'policy' in line:
+            if "policy" in line:
                 return line.split("'")[1].split()[0]
 
 
@@ -281,7 +280,7 @@ def get_size(wwid):
         cmd = f"multipath -ll {wwid}"
         lines = process.run(cmd, sudo=True).stdout_text.strip("\n")
         for line in lines.split("\n"):
-            if 'size' in line:
+            if "size" in line:
                 return line.split("=")[1].split()[0]
 
 
@@ -316,8 +315,9 @@ def suspend_mpath(mpath):
     :param mpath: mpath names. Example: mpatha, mpathb.
     :return: True or False
     """
+
     def is_mpath_suspended():
-        if get_mpath_status(mpath) == 'suspend':
+        if get_mpath_status(mpath) == "suspend":
             return True
         return False
 
@@ -334,8 +334,9 @@ def resume_mpath(mpath):
     :param mpath_name: mpath names. Example: mpatha, mpathb.
     :return: True or False
     """
+
     def is_mpath_resumed():
-        if get_mpath_status(mpath) == 'active':
+        if get_mpath_status(mpath) == "active":
             return True
         return False
 
@@ -352,6 +353,7 @@ def remove_mpath(mpath):
     :param mpath_name: mpath names. Example: mpatha, mpathb.
     :return: True or False
     """
+
     def is_mpath_removed():
         if device_exists(mpath):
             return False
@@ -370,6 +372,7 @@ def add_mpath(mpath):
     :param mpath_name: mpath names. Example: mpatha, mpathb.
     :return: True or False
     """
+
     def is_mpath_added():
         if device_exists(mpath):
             return True
@@ -388,6 +391,7 @@ def remove_path(path):
     :param disk_path: disk path. Example: sda, sdb.
     :return: True or False
     """
+
     def is_path_removed():
         if get_path_status(path) is None:
             return True
@@ -406,6 +410,7 @@ def add_path(path):
     :param str path: disk path. Example: sda, sdb.
     :return: True or False
     """
+
     def is_path_added():
         if get_path_status(path) is None:
             return False

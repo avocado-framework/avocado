@@ -20,27 +20,29 @@ from setuptools import setup
 try:
     from setuptools import find_namespace_packages
 except ImportError:
-    packages = ['avocado_varianter_cit']
+    packages = ["avocado_varianter_cit"]
 else:
-    packages = find_namespace_packages(include=['avocado_varianter_cit'])
+    packages = find_namespace_packages(include=["avocado_varianter_cit"])
 
-VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
+VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 
-setup(name='avocado-framework-plugin-varianter-cit',
-      description='Varianter with combinatorial capabilities',
-      version=open("VERSION", "r", encoding='utf-8').read().strip(),
-      author='Avocado Developers',
-      author_email='avocado-devel@redhat.com',
-      url='http://avocado-framework.github.io/',
-      packages=packages,
-      include_package_data=True,
-      install_requires=[f'avocado-framework=={VERSION}'],
-      test_suite='tests',
-      entry_points={
-          'avocado.plugins.cli': [
-              'varianter_cit = avocado_varianter_cit.varianter_cit:VarianterCitCLI',
-          ],
-          "avocado.plugins.varianter": [
-              "varianter_cit = avocado_varianter_cit.varianter_cit:VarianterCit",
-          ]}
-      )
+setup(
+    name="avocado-framework-plugin-varianter-cit",
+    description="Varianter with combinatorial capabilities",
+    version=open("VERSION", "r", encoding="utf-8").read().strip(),
+    author="Avocado Developers",
+    author_email="avocado-devel@redhat.com",
+    url="http://avocado-framework.github.io/",
+    packages=packages,
+    include_package_data=True,
+    install_requires=[f"avocado-framework=={VERSION}"],
+    test_suite="tests",
+    entry_points={
+        "avocado.plugins.cli": [
+            "varianter_cit = avocado_varianter_cit.varianter_cit:VarianterCitCLI",
+        ],
+        "avocado.plugins.varianter": [
+            "varianter_cit = avocado_varianter_cit.varianter_cit:VarianterCit",
+        ],
+    },
+)

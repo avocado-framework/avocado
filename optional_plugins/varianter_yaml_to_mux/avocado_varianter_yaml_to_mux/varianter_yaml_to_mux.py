@@ -44,11 +44,11 @@ YAML_MUX = 102
 YAML_FILTER_ONLY = 103
 YAML_FILTER_OUT = 104
 
-__RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
-__RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
+__RE_FILE_SPLIT = re.compile(r"(?<!\\):")  # split by ':' but not '\\:'
+__RE_FILE_SUBS = re.compile(r"(?<!\\)\\:")  # substitute '\\:' but not '\\\\:'
 
 
-class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
+class ListOfNodeObjects(list):  # Few methods pylint: disable=R0903
 
     """
     Used to mark list as list of objects from whose node is going to be created
@@ -66,8 +66,8 @@ def _normalize_path(path):
     """
     if not path:
         return
-    if path[-1] != '/':
-        path += '/'
+    if path[-1] != "/":
+        path += "/"
     return path
 
 
@@ -87,12 +87,13 @@ def _handle_control_tag(path, node, value):
         if not os.path.isabs(ypath):
             ypath = os.path.join(os.path.dirname(path), ypath)
         if not os.path.exists(ypath):
-            raise ValueError(f"File '{ypath}' included from '{path}' "
-                             f"does not exist.")
-        node.merge(_create_from_yaml('/:' + ypath))
+            raise ValueError(
+                f"File '{ypath}' included from '{path}' " f"does not exist."
+            )
+        node.merge(_create_from_yaml("/:" + ypath))
     elif value[0].code in (YAML_REMOVE_NODE, YAML_REMOVE_VALUE):
-        value[0].value = value[1]   # set the name
-        node.ctrl.append(value[0])    # add "blue pill" of death
+        value[0].value = value[1]  # set the name
+        node.ctrl.append(value[0])  # add "blue pill" of death
     elif value[0].code == YAML_MUX:
         node.multiplex = True
     elif value[0].code == YAML_FILTER_ONLY:
@@ -118,12 +119,11 @@ def _handle_control_tag_using(path, name, using, value):
     :param value: the value of the node
     """
     if using:
-        raise ValueError(f"!using can be used only once "
-                         f"per node! ({path}:{name})")
+        raise ValueError(f"!using can be used only once " f"per node! ({path}:{name})")
     using = value
-    if using[0] == '/':
+    if using[0] == "/":
         using = using[1:]
-    if using[-1] == '/':
+    if using[-1] == "/":
         using = using[:-1]
     return using
 
@@ -139,18 +139,18 @@ def _apply_using(name, using, node):
     :param node: the node in which to handle control tags
     :type node: instance of :class:`avocado.core.tree.TreeNode` or similar
     """
-    if name != '':
-        for name in using.split('/')[::-1]:
+    if name != "":
+        for name in using.split("/")[::-1]:
             node = mux.MuxTreeNode(name, children=[node])
     else:
-        using = using.split('/')[::-1]
+        using = using.split("/")[::-1]
         node.name = using.pop()
         while True:
             if not using:
                 break
             name = using.pop()  # 'using' is list pylint: disable=E1101
             node = mux.MuxTreeNode(name, children=[node])
-        node = mux.MuxTreeNode('', children=[node])
+        node = mux.MuxTreeNode("", children=[node])
     return node
 
 
@@ -165,10 +165,9 @@ def _node_content_from_node(path, node, values, using):
             else:
                 _handle_control_tag(path, node, value)
         elif isinstance(value[1], collections.OrderedDict):
-            child = _tree_node_from_values(path,
-                                           astring.to_text(value[0]),
-                                           value[1],
-                                           using)
+            child = _tree_node_from_values(
+                path, astring.to_text(value[0]), value[1], using
+            )
             node.add_child(child)
         else:
             node.value[value[0]] = value[1]
@@ -183,10 +182,9 @@ def _node_content_from_dict(path, node, values, using):
                 using = _handle_control_tag_using(path, node.name, using, value)
             else:
                 _handle_control_tag(path, node, [key, value])
-        elif (isinstance(value, collections.OrderedDict) or
-              value is None):
+        elif isinstance(value, collections.OrderedDict) or value is None:
             node.add_child(_tree_node_from_values(path, key, value, using))
-        elif value == 'null':
+        elif value == "null":
             node.value[key] = None
         else:
             node.value[key] = value
@@ -199,7 +197,7 @@ def _tree_node_from_values(path, name, values, using):
     node = mux.MuxTreeNode(astring.to_text(name))
     if not values:
         return node
-    using = ''
+    using = ""
 
     # Fill the node content from parsed values
     if isinstance(values, dict):
@@ -218,7 +216,7 @@ def _mapping_to_tree_loader(loader, node, looks_like_node=False):
     _value = []
     for key_node, value_node in node.value:
         # Allow only strings as dict keys
-        if key_node.tag.startswith('!'):    # reflect tags everywhere
+        if key_node.tag.startswith("!"):  # reflect tags everywhere
             key = loader.construct_object(key_node)
         else:
             key = loader.construct_scalar(key_node)
@@ -237,14 +235,15 @@ def _mapping_to_tree_loader(loader, node, looks_like_node=False):
 
     objects = ListOfNodeObjects()
     for name, values in _value:
-        if isinstance(values, ListOfNodeObjects):   # New node from list
-            objects.append(_tree_node_from_values(loader.path, name,
-                                                  values, loader.using))
-        elif values is None:            # Empty node
+        if isinstance(values, ListOfNodeObjects):  # New node from list
+            objects.append(
+                _tree_node_from_values(loader.path, name, values, loader.using)
+            )
+        elif values is None:  # Empty node
             objects.append(mux.MuxTreeNode(astring.to_text(name)))
-        elif values == 'null':
+        elif values == "null":
             objects.append((name, None))
-        else:                           # Values
+        else:  # Values
             objects.append((name, values))
     return objects
 
@@ -255,7 +254,7 @@ def _mux_loader(loader, node):
     """
     if not isinstance(node, yaml.ScalarNode):
         objects = _mapping_to_tree_loader(loader, node, looks_like_node=True)
-    else:   # This means it's empty node. Don't call mapping_to_tree_loader
+    else:  # This means it's empty node. Don't call mapping_to_tree_loader
         objects = ListOfNodeObjects()
     objects.append((mux.Control(YAML_MUX), None))
     return objects
@@ -267,23 +266,21 @@ class _BaseLoader(SafeLoader):
     YAML loader with additional features related to mux
     """
 
-    SafeLoader.add_constructor('!include',
-                               lambda *_: mux.Control(YAML_INCLUDE))
-    SafeLoader.add_constructor('!using',
-                               lambda *_: mux.Control(YAML_USING))
-    SafeLoader.add_constructor('!remove_node',
-                               lambda *_: mux.Control(YAML_REMOVE_NODE))
-    SafeLoader.add_constructor('!remove_value',
-                               lambda *_: mux.Control(YAML_REMOVE_VALUE))
-    SafeLoader.add_constructor('!filter-only',
-                               lambda *_: mux.Control(YAML_FILTER_ONLY))
-    SafeLoader.add_constructor('!filter-out',
-                               lambda *_: mux.Control(YAML_FILTER_OUT))
-    SafeLoader.add_constructor('tag:yaml.org,2002:python/dict',
-                               SafeLoader.construct_yaml_map)
-    SafeLoader.add_constructor('!mux', _mux_loader)
-    SafeLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                               _mapping_to_tree_loader)
+    SafeLoader.add_constructor("!include", lambda *_: mux.Control(YAML_INCLUDE))
+    SafeLoader.add_constructor("!using", lambda *_: mux.Control(YAML_USING))
+    SafeLoader.add_constructor("!remove_node", lambda *_: mux.Control(YAML_REMOVE_NODE))
+    SafeLoader.add_constructor(
+        "!remove_value", lambda *_: mux.Control(YAML_REMOVE_VALUE)
+    )
+    SafeLoader.add_constructor("!filter-only", lambda *_: mux.Control(YAML_FILTER_ONLY))
+    SafeLoader.add_constructor("!filter-out", lambda *_: mux.Control(YAML_FILTER_OUT))
+    SafeLoader.add_constructor(
+        "tag:yaml.org,2002:python/dict", SafeLoader.construct_yaml_map
+    )
+    SafeLoader.add_constructor("!mux", _mux_loader)
+    SafeLoader.add_constructor(
+        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _mapping_to_tree_loader
+    )
 
 
 def _create_from_yaml(path):
@@ -292,14 +289,14 @@ def _create_from_yaml(path):
     # Parse file name ([$using:]$path)
     path = __RE_FILE_SPLIT.split(path, 1)
     if len(path) == 1:
-        path = __RE_FILE_SUBS.sub(':', path[0])
+        path = __RE_FILE_SUBS.sub(":", path[0])
         using = ["run"]
     else:
-        nodes = __RE_FILE_SUBS.sub(':', path[0]).strip('/').split('/')
+        nodes = __RE_FILE_SUBS.sub(":", path[0]).strip("/").split("/")
         using = [node for node in nodes if node]
-        if not path[0].startswith('/'):  # relative path, put into /run
-            using.insert(0, 'run')
-        path = __RE_FILE_SUBS.sub(':', path[1])
+        if not path[0].startswith("/"):  # relative path, put into /run
+            using.insert(0, "run")
+        path = __RE_FILE_SUBS.sub(":", path[1])
 
     # For loader instance needs different "path" and "using" values
     class Loader(_BaseLoader):
@@ -307,12 +304,12 @@ def _create_from_yaml(path):
         _BaseLoader.using = using
 
     # Load the tree
-    with open(path, encoding='utf-8') as stream:
+    with open(path, encoding="utf-8") as stream:
         loaded_tree = yaml.load(stream, Loader)  # nosec
         if loaded_tree is None:
             return
 
-        loaded_tree = _tree_node_from_values(path, '', loaded_tree, using)
+        loaded_tree = _tree_node_from_values(path, "", loaded_tree, using)
 
     # Add prefix
     if using:
@@ -321,7 +318,7 @@ def _create_from_yaml(path):
             if not using:
                 break
             loaded_tree = mux.MuxTreeNode(using.pop(), children=[loaded_tree])
-        loaded_tree = mux.MuxTreeNode('', children=[loaded_tree])
+        loaded_tree = mux.MuxTreeNode("", children=[loaded_tree])
     return loaded_tree
 
 
@@ -332,6 +329,7 @@ def create_from_yaml(paths):
     :raise SyntaxError: When yaml-file is corrupted
     :return: Root of the created tree structure
     """
+
     def _merge(data, path):
         """Normal run"""
         tmp = _create_from_yaml(path)
@@ -345,10 +343,11 @@ def create_from_yaml(paths):
             _merge(data, path)
     # Yaml can raise IndexError on some files
     except (yaml.YAMLError, IndexError) as details:
-        if ('mapping values are not allowed in this context' in
-                astring.to_text(details)):
-            details = (f"{details}\nMake sure !tags and colons are separated "
-                       f"by a space (eg. !include :)")
+        if "mapping values are not allowed in this context" in astring.to_text(details):
+            details = (
+                f"{details}\nMake sure !tags and colons are separated "
+                f"by a space (eg. !include :)"
+            )
         msg = f"Invalid multiplex file '{path}': {details}"
         raise IOError(2, msg, path)
     return data
@@ -360,46 +359,52 @@ class YamlToMuxInit(Init):
     YamlToMux initialization plugin
     """
 
-    name = 'yaml_to_mux'
+    name = "yaml_to_mux"
     description = "YamlToMux initialization plugin"
 
     def initialize(self):
-        help_msg = ("Location of one or more Avocado multiplex (.yaml) "
-                    "FILE(s) (order dependent)")
-        settings.register_option(section=self.name,
-                                 key='files',
-                                 default=[],
-                                 key_type=list,
-                                 help_msg=help_msg)
+        help_msg = (
+            "Location of one or more Avocado multiplex (.yaml) "
+            "FILE(s) (order dependent)"
+        )
+        settings.register_option(
+            section=self.name, key="files", default=[], key_type=list, help_msg=help_msg
+        )
 
-        help_msg = 'Filter only path(s) from multiplexing'
-        settings.register_option(section=self.name,
-                                 key='filter_only',
-                                 default=[],
-                                 key_type=list,
-                                 help_msg=help_msg)
+        help_msg = "Filter only path(s) from multiplexing"
+        settings.register_option(
+            section=self.name,
+            key="filter_only",
+            default=[],
+            key_type=list,
+            help_msg=help_msg,
+        )
 
-        help_msg = 'Filter out path(s) from multiplexing'
-        settings.register_option(section=self.name,
-                                 key='filter_out',
-                                 default=[],
-                                 help_msg=help_msg)
+        help_msg = "Filter out path(s) from multiplexing"
+        settings.register_option(
+            section=self.name, key="filter_out", default=[], help_msg=help_msg
+        )
 
-        help_msg = ("List of default paths used to determine path priority "
-                    "when querying for parameters")
-        settings.register_option(section=self.name,
-                                 key='parameter_paths',
-                                 default=['/run/*'],
-                                 key_type=list,
-                                 help_msg=help_msg)
+        help_msg = (
+            "List of default paths used to determine path priority "
+            "when querying for parameters"
+        )
+        settings.register_option(
+            section=self.name,
+            key="parameter_paths",
+            default=["/run/*"],
+            key_type=list,
+            help_msg=help_msg,
+        )
 
-        help_msg = ("Inject [path:]key:node values into the final "
-                    "multiplex tree.")
-        settings.register_option(section=self.name,
-                                 key='inject',
-                                 default=[],
-                                 help_msg=help_msg,
-                                 key_type=list)
+        help_msg = "Inject [path:]key:node values into the final multiplex tree."
+        settings.register_option(
+            section=self.name,
+            key="inject",
+            default=[],
+            help_msg=help_msg,
+            key_type=list,
+        )
 
 
 class YamlToMuxCLI(CLI):
@@ -408,7 +413,7 @@ class YamlToMuxCLI(CLI):
     Defines arguments for YamlToMux plugin
     """
 
-    name = 'yaml_to_mux'
+    name = "yaml_to_mux"
     description = "YamlToMux options for the 'run' subcommand"
 
     def configure(self, parser):
@@ -423,43 +428,48 @@ class YamlToMuxCLI(CLI):
             settings.add_argparser_to_option(
                 namespace=f"{self.name}.{'files'}",
                 parser=agroup,
-                long_arg='--mux-yaml',
-                short_arg='-m',
-                metavar='FILE',
-                nargs='+',
-                allow_multiple=True)
+                long_arg="--mux-yaml",
+                short_arg="-m",
+                metavar="FILE",
+                nargs="+",
+                allow_multiple=True,
+            )
 
             settings.add_argparser_to_option(
                 namespace=f"{self.name}.{'filter_only'}",
                 parser=agroup,
-                long_arg='--mux-filter-only',
-                nargs='+',
+                long_arg="--mux-filter-only",
+                nargs="+",
                 allow_multiple=True,
-                metavar='FILTER')
+                metavar="FILTER",
+            )
 
             settings.add_argparser_to_option(
                 namespace=f"{self.name}.{'filter_out'}",
                 parser=agroup,
-                long_arg='--mux-filter-out',
-                nargs='+',
+                long_arg="--mux-filter-out",
+                nargs="+",
                 allow_multiple=True,
-                metavar='FILTER')
+                metavar="FILTER",
+            )
 
             settings.add_argparser_to_option(
                 namespace=f"{self.name}.{'parameter_paths'}",
                 parser=agroup,
-                long_arg='--mux-path',
-                nargs='+',
+                long_arg="--mux-path",
+                nargs="+",
                 allow_multiple=True,
-                metavar='PATH')
+                metavar="PATH",
+            )
 
             settings.add_argparser_to_option(
                 namespace=f"{self.name}.{'inject'}",
                 parser=agroup,
-                long_arg='--mux-inject',
-                nargs='+',
+                long_arg="--mux-inject",
+                nargs="+",
                 allow_multiple=True,
-                metavar='PATH_KEY_NODE')
+                metavar="PATH_KEY_NODE",
+            )
 
     def run(self, config):
         """
@@ -473,11 +483,11 @@ class YamlToMux(mux.MuxPlugin, Varianter):
     Processes the mux options into varianter plugin
     """
 
-    name = 'yaml_to_mux'
-    description = 'Multiplexer plugin to parse yaml files to params'
+    name = "yaml_to_mux"
+    description = "Multiplexer plugin to parse yaml files to params"
 
     def initialize(self, config):
-        subcommand = config.get('subcommand')
+        subcommand = config.get("subcommand")
         data = None
 
         # Merge the multiplex
@@ -489,19 +499,18 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             except IOError as details:
                 error_msg = f"{details.strerror} : {details.filename}"
                 LOG_UI.error(error_msg)
-                if subcommand == 'run':
+                if subcommand == "run":
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
                     sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Extend default multiplex tree of --mux-inject values
         for inject in config.get("yaml_to_mux.inject"):
-            entry = inject.split(':', 2)
+            entry = inject.split(":", 2)
             if len(entry) < 2:
-                raise ValueError(f"key:entry pairs required, "
-                                 f"found only {entry}")
-            elif len(entry) == 2:   # key, entry
-                entry.insert(0, '')  # add path='' (root)
+                raise ValueError(f"key:entry pairs required, " f"found only {entry}")
+            elif len(entry) == 2:  # key, entry
+                entry.insert(0, "")  # add path='' (root)
             # We try to maintain the data type of the provided value
             try:
                 entry[2] = ast.literal_eval(entry[2])
@@ -512,8 +521,8 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             data.get_node(entry[0], True).value[entry[1]] = entry[2]
 
         if data is not None:
-            mux_filter_only = config.get('yaml_to_mux.filter_only')
-            mux_filter_out = config.get('yaml_to_mux.filter_out')
+            mux_filter_only = config.get("yaml_to_mux.filter_only")
+            mux_filter_out = config.get("yaml_to_mux.filter_out")
             data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
             paths = config.get("yaml_to_mux.parameter_paths")
             self.initialize_mux(data, paths)

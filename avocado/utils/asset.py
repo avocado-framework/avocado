@@ -38,16 +38,18 @@ from avocado.utils.filelock import FileLock
 
 LOG = logging.getLogger(__name__)
 #: The default hash algorithm to use on asset cache operations
-DEFAULT_HASH_ALGORITHM = 'sha1'
+DEFAULT_HASH_ALGORITHM = "sha1"
 
 #: The default timeout for the downloading of assets
 DOWNLOAD_TIMEOUT = 300
 
-SUPPORTED_OPERATORS = {'==': operator.eq,
-                       '<': operator.lt,
-                       '>': operator.gt,
-                       '<=': operator.le,
-                       '>=': operator.ge}
+SUPPORTED_OPERATORS = {
+    "==": operator.eq,
+    "<": operator.lt,
+    ">": operator.gt,
+    "<=": operator.le,
+    ">=": operator.ge,
+}
 
 
 class UnsupportedProtocolError(OSError):
@@ -61,8 +63,16 @@ class Asset:
     Try to fetch/verify an asset file from multiple locations.
     """
 
-    def __init__(self, name=None, asset_hash=None, algorithm=None,
-                 locations=None, cache_dirs=None, expire=None, metadata=None):
+    def __init__(
+        self,
+        name=None,
+        asset_hash=None,
+        algorithm=None,
+        locations=None,
+        cache_dirs=None,
+        expire=None,
+        metadata=None,
+    ):
         """Initialize the Asset() class.
 
         :param name: the asset filename. url is also supported. Default is ''.
@@ -73,7 +83,7 @@ class Asset:
         :param expire: time in seconds for the asset to expire
         :param metadata: metadata which will be saved inside metadata file
         """
-        self.name = name or ''
+        self.name = name or ""
         self.asset_hash = asset_hash
 
         if isinstance(locations, str):
@@ -100,8 +110,8 @@ class Asset:
         result = crypto.hash_file(asset_path, algorithm=self.algorithm)
         hash_file = self._get_hash_file(asset_path)
         with FileLock(hash_file, 30):
-            with open(hash_file, 'w', encoding='utf-8') as fp:
-                fp.write(f'{self.algorithm} {result}\n')
+            with open(hash_file, "w", encoding="utf-8") as fp:
+                fp.write(f"{self.algorithm} {result}\n")
 
     def _create_metadata_file(self, asset_file):
         """
@@ -114,7 +124,7 @@ class Asset:
         if self.metadata is not None:
             basename = os.path.splitext(asset_file)[0]
             metadata_path = f"{basename}_metadata.json"
-            with open(metadata_path, "w", encoding='utf-8') as metadata_file:
+            with open(metadata_path, "w", encoding="utf-8") as metadata_file:
                 json.dump(self.metadata, metadata_file)
 
     def _download(self, url_obj, asset_path, timeout=None):
@@ -131,7 +141,7 @@ class Asset:
         timeout = timeout or DOWNLOAD_TIMEOUT
         try:
             # Temporary unique name to use while downloading
-            temp = f'{asset_path}.{str(uuid.uuid4())}'
+            temp = f"{asset_path}.{str(uuid.uuid4())}"
 
             # To avoid parallel downloads of the same asset, and errors during
             # the write after download, let's get the lock before start the
@@ -154,8 +164,10 @@ class Asset:
             try:
                 os.remove(temp)
             except FileNotFoundError:
-                LOG.info("Temporary asset file unavailable due to failed"
-                         " download attempt.")
+                LOG.info(
+                    "Temporary asset file unavailable due to failed"
+                    " download attempt."
+                )
 
     @staticmethod
     def _get_hash_file(asset_path):
@@ -166,7 +178,7 @@ class Asset:
         :returns: the CHECKSUM path
         :rtype: str
         """
-        return f'{asset_path}-CHECKSUM'
+        return f"{asset_path}-CHECKSUM"
 
     def _get_hash_from_file(self, asset_path):
         """
@@ -193,15 +205,15 @@ class Asset:
         """
         try:
             with FileLock(filename, 30):
-                with open(filename, 'r', encoding='utf-8') as hash_file:
+                with open(filename, "r", encoding="utf-8") as hash_file:
                     for line in hash_file:
                         # md5 is 32 chars big and sha512 is 128 chars big.
                         # others supported algorithms are between those.
-                        if re.match('^.* [a-f0-9]{32,128}', line):
+                        if re.match("^.* [a-f0-9]{32,128}", line):
                             return line.split()
         except Exception:  # pylint: disable=W0703
             exc_type, exc_value = sys.exc_info()[:2]
-            LOG.error('%s: %s', exc_type.__name__, exc_value)
+            LOG.error("%s: %s", exc_type.__name__, exc_value)
             return [None, None]
 
     def _get_local_file(self, url_obj, asset_path, _):
@@ -247,16 +259,14 @@ class Asset:
         :returns: target location of asset the file.
         :rtype: str
         """
-        if (not self.name_scheme and
-                (self.asset_hash or len(self.locations) > 1)):
-            return 'by_name'
+        if not self.name_scheme and (self.asset_hash or len(self.locations) > 1):
+            return "by_name"
 
         # check if the URI is located on self.locations or self.parsed_name
         if self.locations:
             # if it is on self.locations, we need to check if it has the
             # asset name on it or a trailing '/'
-            if ((self.asset_name in self.locations[0]) or
-                    (self.locations[0][-1] == '/')):
+            if (self.asset_name in self.locations[0]) or (self.locations[0][-1] == "/"):
                 base_url = os.path.dirname(self.locations[0])
             else:
                 # here, self.locations is a pure conformant URI
@@ -264,16 +274,19 @@ class Asset:
         else:
             # the URI is on self.parsed_name
             if self.parsed_name.query:
-                base_url = (f"{self.parsed_name.scheme}://"
-                            f"{self.parsed_name.netloc}"
-                            f"{self.parsed_name.path}")
+                base_url = (
+                    f"{self.parsed_name.scheme}://"
+                    f"{self.parsed_name.netloc}"
+                    f"{self.parsed_name.path}"
+                )
             else:
                 base_url = os.path.dirname(self.parsed_name.geturl())
 
-        base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
-                                    base_url.encode(astring.ENCODING))
+        base_url_hash = hashlib.new(
+            DEFAULT_HASH_ALGORITHM, base_url.encode(astring.ENCODING)
+        )
 
-        return os.path.join('by_location', base_url_hash.hexdigest())
+        return os.path.join("by_location", base_url_hash.hexdigest())
 
     def _get_writable_cache_dir(self):
         """
@@ -317,8 +330,7 @@ class Asset:
         If asset_hash is None then will consider a valid asset.
         """
         if asset_hash is None:
-            LOG.debug("No hash provided. Cannot check the asset file"
-                      " integrity.")
+            LOG.debug("No hash provided. Cannot check the asset file" " integrity.")
             return True
 
         hash_path = cls._get_hash_file(asset_path)
@@ -371,19 +383,19 @@ class Asset:
             if url is None:
                 continue
             urlobj = urlparse(url)
-            if urlobj.scheme in ['http', 'https', 'ftp']:
+            if urlobj.scheme in ["http", "https", "ftp"]:
                 fetch = self._download
-            elif urlobj.scheme == 'file':
+            elif urlobj.scheme == "file":
                 fetch = self._get_local_file
             # We are assuming that everything starting with './' or '/' are a
             # file too.
-            elif url.startswith(('/', './')):
+            elif url.startswith(("/", "./")):
                 fetch = self._get_local_file
             else:
-                raise UnsupportedProtocolError(f"Unsupported protocol: "
-                                               f"{urlobj.scheme}")
-            asset_file = os.path.join(cache_dir,
-                                      self.relative_dir)
+                raise UnsupportedProtocolError(
+                    f"Unsupported protocol: " f"{urlobj.scheme}"
+                )
+            asset_file = os.path.join(cache_dir, self.relative_dir)
             dirname = os.path.dirname(asset_file)
             if not os.path.isdir(dirname):
                 os.makedirs(dirname, exist_ok=True)
@@ -395,7 +407,7 @@ class Asset:
                     return asset_file
             except Exception:  # pylint: disable=W0703
                 exc_type, exc_value = sys.exc_info()[:2]
-                LOG.error('%s: %s', exc_type.__name__, exc_value)
+                LOG.error("%s: %s", exc_type.__name__, exc_value)
                 error = exc_value
 
         raise OSError(f"Failed to fetch {self.asset_name} ({error}).")
@@ -452,7 +464,7 @@ class Asset:
         basename = os.path.splitext(asset_file)[0]
         metadata_file = f"{basename}_metadata.json"
         if os.path.isfile(metadata_file):
-            with open(metadata_file, "r", encoding='utf-8') as f:
+            with open(metadata_file, "r", encoding="utf-8") as f:
                 metadata = json.load(f)
                 return metadata
 
@@ -470,14 +482,13 @@ class Asset:
             expanded = os.path.expanduser(cache_dir)
             for root, _, files in os.walk(expanded):
                 for f in files:
-                    if not f.endswith('-CHECKSUM') and \
-                       not f.endswith('_metadata.json'):
+                    if not f.endswith("-CHECKSUM") and not f.endswith("_metadata.json"):
                         assets.append(os.path.join(root, f))
         if sort:
             assets = {a: os.stat(a).st_atime for a in assets}
-            return [a[0] for a in sorted(assets.items(),
-                                         key=lambda x: x[1],
-                                         reverse=True)]
+            return [
+                a[0] for a in sorted(assets.items(), key=lambda x: x[1], reverse=True)
+            ]
         return assets
 
     @classmethod
@@ -501,9 +512,7 @@ class Asset:
         """
 
         for cache_dir in cache_dirs:
-            asset_file = os.path.join(os.path.expanduser(cache_dir),
-                                      'by_name',
-                                      name)
+            asset_file = os.path.join(os.path.expanduser(cache_dir), "by_name", name)
 
             # Ignore non-files
             if not os.path.isfile(asset_file):
@@ -550,18 +559,22 @@ class Asset:
         :param cache_dirs: list of directories to use during the search.
         """
         try:
-            op = re.match('^(\\D+)(\\d+)$', size_filter).group(1)
-            value = int(re.match('^(\\D+)(\\d+)$', size_filter).group(2))
+            op = re.match("^(\\D+)(\\d+)$", size_filter).group(1)
+            value = int(re.match("^(\\D+)(\\d+)$", size_filter).group(2))
         except (AttributeError, ValueError):
-            msg = ("Invalid syntax. You need to pass an comparison operatator",
-                   " and a value. Ex: '>=200'")
+            msg = (
+                "Invalid syntax. You need to pass an comparison operatator",
+                " and a value. Ex: '>=200'",
+            )
             raise OSError(msg)
 
         try:
             method = SUPPORTED_OPERATORS[op]
         except KeyError:
-            msg = ("Operator not supported. Currented valid values are: ",
-                   ", ".join(SUPPORTED_OPERATORS))
+            msg = (
+                "Operator not supported. Currented valid values are: ",
+                ", ".join(SUPPORTED_OPERATORS),
+            )
             raise OSError(msg)
 
         result = []

@@ -40,7 +40,7 @@ def configure(path, configure=None):  # pylint: disable=W0621
         if configure is not None:
             return process.run(os.path.join(path, configure)).exit_status
 
-        candidates = ['autogen.sh', 'configure']
+        candidates = ["autogen.sh", "configure"]
         for configure in candidates:
             if os.access(configure, os.R_OK | os.X_OK):
                 return process.run(os.path.join(path, configure)).exit_status
@@ -48,7 +48,9 @@ def configure(path, configure=None):  # pylint: disable=W0621
         os.chdir(cwd)
 
 
-def run_make(path, make='make', extra_args='', process_kwargs=None):  # pylint: disable=W0621
+def run_make(
+    path, make="make", extra_args="", process_kwargs=None
+):  # pylint: disable=W0621
     """
     Run make, adding MAKEOPTS to the list of options.
 
@@ -66,28 +68,35 @@ def run_make(path, make='make', extra_args='', process_kwargs=None):  # pylint: 
     if process_kwargs is None:
         process_kwargs = {}
     # Set default number of jobs as ncpus + 1
-    os_makeflags = os.environ.get('MAKEFLAGS', '')
-    if process_kwargs.get('env') is None:
-        process_kwargs['env'] = {}
-    args_makeflags = process_kwargs['env'].get('MAKEFLAGS', '')
+    os_makeflags = os.environ.get("MAKEFLAGS", "")
+    if process_kwargs.get("env") is None:
+        process_kwargs["env"] = {}
+    args_makeflags = process_kwargs["env"].get("MAKEFLAGS", "")
 
-    if '-j' not in os_makeflags and '-j' not in args_makeflags:
-        args_makeflags += f' -j{multiprocessing.cpu_count() + 1}'
-        process_kwargs['env'].update({'MAKEFLAGS': args_makeflags})
+    if "-j" not in os_makeflags and "-j" not in args_makeflags:
+        args_makeflags += f" -j{multiprocessing.cpu_count() + 1}"
+        process_kwargs["env"].update({"MAKEFLAGS": args_makeflags})
 
-    makeopts = os.environ.get('MAKEOPTS', '')
+    makeopts = os.environ.get("MAKEOPTS", "")
     if makeopts:
-        cmd += f' {makeopts}'
+        cmd += f" {makeopts}"
     if extra_args:
-        cmd += f' {extra_args}'
+        cmd += f" {extra_args}"
 
     make_process = process.run(cmd, **process_kwargs)
     os.chdir(cwd)
     return make_process
 
 
-def make(path, make='make', env=None, extra_args='', ignore_status=None,  # pylint: disable=W0621
-         process_kwargs=None):
+# pylint: disable=W0621
+def make(
+    path,
+    make="make",
+    env=None,
+    extra_args="",
+    ignore_status=None,
+    process_kwargs=None,
+):
     """
     Run make, adding MAKEOPTS to the list of options.
 
@@ -98,8 +107,7 @@ def make(path, make='make', env=None, extra_args='', ignore_status=None,  # pyli
     :returns: exit status of the make process
     """
 
-    kwargs = dict(env=env,
-                  ignore_status=ignore_status)
+    kwargs = dict(env=env, ignore_status=ignore_status)
     if process_kwargs is not None:
         kwargs.update(process_kwargs)
     result = run_make(path, make, extra_args, kwargs)

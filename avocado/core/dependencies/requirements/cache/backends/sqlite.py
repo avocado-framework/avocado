@@ -22,35 +22,43 @@ import sqlite3
 from avocado.core.data_dir import get_datafile_path
 
 #: The location of the requirements cache database
-CACHE_DATABASE_PATH = get_datafile_path('cache', 'requirements.sqlite')
+CACHE_DATABASE_PATH = get_datafile_path("cache", "requirements.sqlite")
 
 sqlite3.register_adapter(bool, int)
 sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
 
 #: The definition of the database schema
 SCHEMA = [
-    'CREATE TABLE IF NOT EXISTS requirement_type (requirement_type TEXT UNIQUE)',
-    'CREATE TABLE IF NOT EXISTS environment_type (environment_type TEXT UNIQUE)',
-    ('CREATE TABLE IF NOT EXISTS environment ('
-     'environment_type TEXT,'
-     'environment TEXT,'
-     'FOREIGN KEY(environment_type) REFERENCES '
-     'environment_type(environment_type)'
-     ')'),
-    ('CREATE UNIQUE INDEX IF NOT EXISTS '
-     'environment_idx ON environment (environment, environment_type)'),
-    ('CREATE TABLE IF NOT EXISTS requirement ('
-     'environment_type TEXT,'
-     'environment TEXT,'
-     'requirement_type TEXT,'
-     'requirement TEXT,'
-     'saved BOOLEAN,'
-     'FOREIGN KEY(environment_type) REFERENCES environment(environment_type),'
-     'FOREIGN KEY(environment) REFERENCES environment(environment),'
-     'FOREIGN KEY(requirement_type) REFERENCES requirement_type(requirement_type)'
-     ')'),
-    ('CREATE UNIQUE INDEX IF NOT EXISTS requirement_idx ON requirement '
-     '(environment_type, environment, requirement_type, requirement)')
+    "CREATE TABLE IF NOT EXISTS requirement_type (requirement_type TEXT UNIQUE)",
+    "CREATE TABLE IF NOT EXISTS environment_type (environment_type TEXT UNIQUE)",
+    (
+        "CREATE TABLE IF NOT EXISTS environment ("
+        "environment_type TEXT,"
+        "environment TEXT,"
+        "FOREIGN KEY(environment_type) REFERENCES "
+        "environment_type(environment_type)"
+        ")"
+    ),
+    (
+        "CREATE UNIQUE INDEX IF NOT EXISTS "
+        "environment_idx ON environment (environment, environment_type)"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS requirement ("
+        "environment_type TEXT,"
+        "environment TEXT,"
+        "requirement_type TEXT,"
+        "requirement TEXT,"
+        "saved BOOLEAN,"
+        "FOREIGN KEY(environment_type) REFERENCES environment(environment_type),"
+        "FOREIGN KEY(environment) REFERENCES environment(environment),"
+        "FOREIGN KEY(requirement_type) REFERENCES requirement_type(requirement_type)"
+        ")"
+    ),
+    (
+        "CREATE UNIQUE INDEX IF NOT EXISTS requirement_idx ON requirement "
+        "(environment_type, environment, requirement_type, requirement)"
+    ),
 ]
 
 
@@ -63,46 +71,52 @@ def _create_requirement_cache_db():
         conn.commit()
 
 
-def set_requirement(environment_type, environment,
-                    requirement_type, requirement, saved=True):
+def set_requirement(
+    environment_type, environment, requirement_type, requirement, saved=True
+):
     if not os.path.exists(CACHE_DATABASE_PATH):
         _create_requirement_cache_db()
 
     with sqlite3.connect(CACHE_DATABASE_PATH) as conn:
         cursor = conn.cursor()
         sql = "INSERT OR IGNORE INTO environment_type VALUES (?)"
-        cursor.execute(sql, (environment_type, ))
+        cursor.execute(sql, (environment_type,))
         sql = "INSERT OR IGNORE INTO environment VALUES (?, ?)"
         cursor.execute(sql, (environment_type, environment))
         sql = "INSERT OR IGNORE INTO requirement_type VALUES (?)"
-        cursor.execute(sql, (requirement_type, ))
+        cursor.execute(sql, (requirement_type,))
         sql = "INSERT OR IGNORE INTO requirement VALUES (?, ?, ?, ?, ?)"
-        cursor.execute(sql, (environment_type, environment,
-                             requirement_type, requirement, saved))
+        cursor.execute(
+            sql, (environment_type, environment, requirement_type, requirement, saved)
+        )
         conn.commit()
 
 
-def is_requirement_in_cache(environment_type, environment,
-                            requirement_type, requirement):
+def is_requirement_in_cache(
+    environment_type, environment, requirement_type, requirement
+):
     """Checks if requirement is in cache.
 
-       :rtype: True if requirement is in cache
-               False if requirement is not in cache
-               None if requirement is in cache but it is not saved yet.
+    :rtype: True if requirement is in cache
+            False if requirement is not in cache
+            None if requirement is in cache but it is not saved yet.
     """
     if not os.path.exists(CACHE_DATABASE_PATH):
         return False
 
-    sql = ("SELECT r.saved FROM requirement r WHERE ("
-           "environment_type = ? AND "
-           "environment = ? AND "
-           "requirement_type = ? AND "
-           "requirement = ?)")
+    sql = (
+        "SELECT r.saved FROM requirement r WHERE ("
+        "environment_type = ? AND "
+        "environment = ? AND "
+        "requirement_type = ? AND "
+        "requirement = ?)"
+    )
 
     with sqlite3.connect(CACHE_DATABASE_PATH) as conn:
         cursor = conn.cursor()
-        result = cursor.execute(sql, (environment_type, environment,
-                                      requirement_type, requirement))
+        result = cursor.execute(
+            sql, (environment_type, environment, requirement_type, requirement)
+        )
         row = result.fetchone()
         if row is not None:
             if row[0]:
@@ -117,13 +131,16 @@ def is_environment_prepared(environment):
     if not os.path.exists(CACHE_DATABASE_PATH):
         return False
 
-    sql = ("SELECT COUNT(*) FROM requirement r JOIN "
-           "environment e ON e.environment = r.environment "
-           "WHERE (r.environment = ? AND "
-           "r.saved = 0)")
+    sql = (
+        "SELECT COUNT(*) FROM requirement r JOIN "
+        "environment e ON e.environment = r.environment "
+        "WHERE (r.environment = ? AND "
+        "r.saved = 0)"
+    )
 
-    with sqlite3.connect(CACHE_DATABASE_PATH,
-                         detect_types=sqlite3.PARSE_DECLTYPES) as conn:
+    with sqlite3.connect(
+        CACHE_DATABASE_PATH, detect_types=sqlite3.PARSE_DECLTYPES
+    ) as conn:
         cursor = conn.cursor()
         result = cursor.execute(sql, (environment,))
 
@@ -154,23 +171,27 @@ def update_environment(environment_type, old_environment, new_environment):
         sql = "INSERT OR IGNORE INTO environment VALUES (?, ?)"
         cursor.execute(sql, (environment_type, new_environment))
 
-        sql = ("UPDATE requirement SET environment = ? WHERE ("
-               "environment_type = ? AND "
-               "environment = ? )")
+        sql = (
+            "UPDATE requirement SET environment = ? WHERE ("
+            "environment_type = ? AND "
+            "environment = ? )"
+        )
 
-        cursor.execute(sql, (new_environment, environment_type,
-                             old_environment))
+        cursor.execute(sql, (new_environment, environment_type, old_environment))
 
-        sql = ("DELETE FROM environment WHERE ("
-               "environment_type = ? AND "
-               "environment = ? )")
+        sql = (
+            "DELETE FROM environment WHERE ("
+            "environment_type = ? AND "
+            "environment = ? )"
+        )
 
         cursor.execute(sql, (environment_type, old_environment))
         conn.commit()
 
 
-def update_requirement_status(environment_type, environment, requirement_type,
-                              requirement, new_status):
+def update_requirement_status(
+    environment_type, environment, requirement_type, requirement, new_status
+):
     """Updates status of selected requirement in cache.
 
     The status has two values, save=True or not_save=False.
@@ -190,16 +211,20 @@ def update_requirement_status(environment_type, environment, requirement_type,
     if not os.path.exists(CACHE_DATABASE_PATH):
         return False
 
-    sql = ("UPDATE requirement SET saved = ? WHERE ("
-           "environment_type = ? AND "
-           "environment = ? AND "
-           "requirement_type = ? AND "
-           "requirement = ?)")
+    sql = (
+        "UPDATE requirement SET saved = ? WHERE ("
+        "environment_type = ? AND "
+        "environment = ? AND "
+        "requirement_type = ? AND "
+        "requirement = ?)"
+    )
 
     with sqlite3.connect(CACHE_DATABASE_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(sql, (new_status, environment_type, environment,
-                             requirement_type, requirement))
+        cursor.execute(
+            sql,
+            (new_status, environment_type, environment, requirement_type, requirement),
+        )
         conn.commit()
 
     return True
@@ -218,20 +243,23 @@ def delete_environment(environment_type, environment):
         return False
 
     with sqlite3.connect(CACHE_DATABASE_PATH) as conn:
-        sql = ("DELETE FROM requirement WHERE ("
-               "environment_type = ? AND "
-               "environment = ? )")
+        sql = (
+            "DELETE FROM requirement WHERE ("
+            "environment_type = ? AND "
+            "environment = ? )"
+        )
         cursor = conn.cursor()
         cursor.execute(sql, (environment_type, environment))
-        sql = ("DELETE FROM environment WHERE ("
-               "environment_type = ? AND "
-               "environment = ? )")
+        sql = (
+            "DELETE FROM environment WHERE ("
+            "environment_type = ? AND "
+            "environment = ? )"
+        )
         cursor.execute(sql, (environment_type, environment))
         conn.commit()
 
 
-def delete_requirement(environment_type, environment, requirement_type,
-                       requirement):
+def delete_requirement(environment_type, environment, requirement_type, requirement):
     """Deletes requirement from cache.
 
     :param environment_type: Type of environment
@@ -248,19 +276,23 @@ def delete_requirement(environment_type, environment, requirement_type,
         return False
 
     with sqlite3.connect(CACHE_DATABASE_PATH) as conn:
-        sql = ("DELETE FROM requirement WHERE ("
-               "environment_type = ? AND "
-               "environment = ? AND "
-               "requirement_type = ? AND "
-               "requirement = ?)")
+        sql = (
+            "DELETE FROM requirement WHERE ("
+            "environment_type = ? AND "
+            "environment = ? AND "
+            "requirement_type = ? AND "
+            "requirement = ?)"
+        )
         cursor = conn.cursor()
-        cursor.execute(sql, (environment_type, environment, requirement_type,
-                             requirement))
+        cursor.execute(
+            sql, (environment_type, environment, requirement_type, requirement)
+        )
         conn.commit()
 
 
-def get_all_environments_with_requirement(environment_type, requirement_type,
-                                          requirement):
+def get_all_environments_with_requirement(
+    environment_type, requirement_type, requirement
+):
     """Fetches all environments with selected requirement from cache.
 
     :param environment_type: Type of fetched environment
@@ -276,21 +308,24 @@ def get_all_environments_with_requirement(environment_type, requirement_type,
     if not os.path.exists(CACHE_DATABASE_PATH):
         return requirements
 
-    environment_select = ("SELECT e.environment FROM requirement r JOIN "
-                          "environment e ON e.environment = r.environment "
-                          "WHERE (r.environment_type = ? AND "
-                          "r.requirement_type = ? AND "
-                          "r.requirement = ?)")
-    sql = (f"SELECT r.environment, r.requirement_type, r.requirement "
-           f"FROM requirement AS r, ({environment_select}) AS e "
-           f"WHERE r.environment = e.environment")
+    environment_select = (
+        "SELECT e.environment FROM requirement r JOIN "
+        "environment e ON e.environment = r.environment "
+        "WHERE (r.environment_type = ? AND "
+        "r.requirement_type = ? AND "
+        "r.requirement = ?)"
+    )
+    sql = (
+        f"SELECT r.environment, r.requirement_type, r.requirement "
+        f"FROM requirement AS r, ({environment_select}) AS e "
+        f"WHERE r.environment = e.environment"
+    )
 
-    with sqlite3.connect(CACHE_DATABASE_PATH,
-                         detect_types=sqlite3.PARSE_DECLTYPES) as conn:
+    with sqlite3.connect(
+        CACHE_DATABASE_PATH, detect_types=sqlite3.PARSE_DECLTYPES
+    ) as conn:
         cursor = conn.cursor()
-        result = cursor.execute(sql, (environment_type,
-                                      requirement_type,
-                                      requirement))
+        result = cursor.execute(sql, (environment_type, requirement_type, requirement))
 
         for row in result.fetchall():
             if row[0] in requirements:

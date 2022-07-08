@@ -11,7 +11,7 @@ class StaticallyNotAvocadoTest(Test):
 # This import should not make the previous import to be
 # internally evaluated as "avocado.Test", because it happens
 # after the previous class definition
-from avocado import Test    # pylint: disable=W0404
+from avocado import Test  # pylint: disable=W0404
 
 
 # On recursive discovery this should be imported from

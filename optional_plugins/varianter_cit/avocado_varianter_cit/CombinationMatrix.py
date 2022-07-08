@@ -41,7 +41,9 @@ class CombinationMatrix:
             for i in key:
                 val.append(row[i])
 
-            uncovered_difference, covered_more_than_ones_difference = value.cover_cell(val)
+            uncovered_difference, covered_more_than_ones_difference = value.cover_cell(
+                val
+            )
             # Deleting covered row from uncovered rows
             if value.uncovered == 0:
                 self.uncovered_rows.pop(key, None)
@@ -66,12 +68,17 @@ class CombinationMatrix:
                     for i in key:
                         val.append(row[i])
 
-                    uncovered_difference, covered_more_than_ones_difference = value.cover_cell(val)
+                    (
+                        uncovered_difference,
+                        covered_more_than_ones_difference,
+                    ) = value.cover_cell(val)
                     # Deleting covered row from uncovered rows
                     if value.uncovered == 0:
                         self.uncovered_rows.pop(key, None)
                     self.total_uncovered += uncovered_difference
-                    self.total_covered_more_than_ones += covered_more_than_ones_difference
+                    self.total_covered_more_than_ones += (
+                        covered_more_than_ones_difference
+                    )
                     break
         return self.total_uncovered
 
@@ -88,7 +95,10 @@ class CombinationMatrix:
             for i in key:
                 val.append(row[i])
 
-            uncovered_difference, covered_more_than_ones_difference = value.uncover_cell(val)
+            (
+                uncovered_difference,
+                covered_more_than_ones_difference,
+            ) = value.uncover_cell(val)
             # Adding uncovered row to uncovered rows
             if value.uncovered != 0:
                 self.uncovered_rows[key] = key
@@ -113,12 +123,17 @@ class CombinationMatrix:
                     for i in key:
                         val.append(row[i])
 
-                    uncovered_difference, covered_more_than_ones_difference = value.uncover_cell(val)
+                    (
+                        uncovered_difference,
+                        covered_more_than_ones_difference,
+                    ) = value.uncover_cell(val)
                     # Adding uncovered row to uncovered rows
                     if value.uncovered != 0:
                         self.uncovered_rows[key] = key
                     self.total_uncovered += uncovered_difference
-                    self.total_covered_more_than_ones += covered_more_than_ones_difference
+                    self.total_covered_more_than_ones += (
+                        covered_more_than_ones_difference
+                    )
                     break
         return self.total_uncovered
 
@@ -189,6 +204,8 @@ class CombinationMatrix:
         return self.hash_table[tuple(key)]
 
     def __eq__(self, other):
-        return (self.total_uncovered == other.total_uncovered and
-                self.total_covered_more_than_ones == other.total_covered_more_than_ones and
-                self.hash_table == other.hash_table)
+        return (
+            self.total_uncovered == other.total_uncovered
+            and self.total_covered_more_than_ones == other.total_covered_more_than_ones
+            and self.hash_table == other.hash_table
+        )

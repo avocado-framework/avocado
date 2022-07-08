@@ -12,7 +12,6 @@ LOG.setLevel(logging.INFO)
 
 
 class Cit:
-
     def __init__(self, input_data, t_value, constraints):
         """
         Creation of CombinationMatrix from user input
@@ -42,7 +41,10 @@ class Cit:
         self.final_matrix = [self.create_random_row_with_constraints()]
         self.combination_matrix.cover_solution_row(self.final_matrix[0])
         while self.combination_matrix.total_uncovered != 0:
-            if self.combination_matrix.total_uncovered < self.combination_matrix.total_covered_more_than_ones:
+            if (
+                self.combination_matrix.total_uncovered
+                < self.combination_matrix.total_covered_more_than_ones
+            ):
                 new_row = self.compute_row()
             else:
                 new_row = self.compute_row_using_hamming_distance()
@@ -69,19 +71,22 @@ class Cit:
                 delete_row = matrix.pop(random.randint(0, len(matrix) - 1))
                 self.combination_matrix.uncover_solution_row(delete_row)
                 deleted_rows.append(delete_row)
-            LOG.debug("I'm trying solution with size %s and %s iterations",
-                      len(matrix), iterations)
+            LOG.debug(
+                "I'm trying solution with size %s and %s iterations",
+                len(matrix),
+                iterations,
+            )
             matrix, is_better_solution = self.find_better_solution(iterations, matrix)
             if is_better_solution:
                 self.final_matrix = matrix[:]
                 deleted_rows = []
                 step_size *= 2
-                LOG.debug("-----solution with size %s was found-----\n",
-                          len(matrix))
+                LOG.debug("-----solution with size %s was found-----\n", len(matrix))
                 iterations = ITERATIONS_SIZE
             else:
-                LOG.debug("-----solution with size %s was not found-----\n",
-                          len(matrix))
+                LOG.debug(
+                    "-----solution with size %s was not found-----\n", len(matrix)
+                )
                 for i in range(step_size):
                     self.combination_matrix.cover_solution_row(deleted_rows[i])
                     matrix.append(deleted_rows[i])
@@ -141,11 +146,19 @@ class Cit:
             row = [-1] * len(self.data)
             while len(possible_parameters) != 0:
                 # finding uncovered combination
-                combination_parameters_index = random.randint(0, len(possible_parameters) - 1)
-                combination_parameters = possible_parameters[combination_parameters_index]
+                combination_parameters_index = random.randint(
+                    0, len(possible_parameters) - 1
+                )
+                combination_parameters = possible_parameters[
+                    combination_parameters_index
+                ]
                 del possible_parameters[combination_parameters_index]
-                combination_row = self.combination_matrix.get_row(combination_parameters)
-                possible_combinations = list(combination_row.get_all_uncovered_combinations())
+                combination_row = self.combination_matrix.get_row(
+                    combination_parameters
+                )
+                possible_combinations = list(
+                    combination_row.get_all_uncovered_combinations()
+                )
                 combination_index = random.randint(0, len(possible_combinations) - 1)
                 combination = possible_combinations[combination_index]
                 is_parameter_used = False
@@ -190,7 +203,9 @@ class Cit:
             for index, item in enumerate(parameters):
                 solution[item] = combination[index]
             if self.combination_matrix.is_valid_combination(solution, parameters):
-                self.combination_matrix.uncover_combination(matrix[row_index], parameters)
+                self.combination_matrix.uncover_combination(
+                    matrix[row_index], parameters
+                )
                 self.combination_matrix.cover_combination(solution, parameters)
                 if self.combination_matrix.total_uncovered < best_uncover:
                     best_uncover = self.combination_matrix.total_uncovered
@@ -231,7 +246,9 @@ class Cit:
         best_row_index = 0
         for row_index in range(len(matrix)):
             try:
-                solution, row_index, parameters = self.change_one_value(matrix, row_index, column_index)
+                solution, row_index, parameters = self.change_one_value(
+                    matrix, row_index, column_index
+                )
             except ValueError:
                 continue
             self.combination_matrix.uncover_combination(matrix[row_index], parameters)
@@ -264,7 +281,8 @@ class Cit:
             is_cell_chosen = False
             column_index = random.randint(0, len(row) - 1)
         possible_numbers = list(range(0, row[column_index])) + list(
-            range(row[column_index] + 1, self.data[column_index]))
+            range(row[column_index] + 1, self.data[column_index])
+        )
         row[column_index] = random.choice(possible_numbers)
         while not self.combination_matrix.is_valid_combination(row, [column_index]):
             possible_numbers.remove(row[column_index])
@@ -275,7 +293,8 @@ class Cit:
                 row_index = random.randint(0, len(matrix) - 1)
                 row = [x for x in matrix[row_index]]
                 possible_numbers = list(range(0, row[column_index])) + list(
-                    range(row[column_index] + 1, self.data[column_index]))
+                    range(row[column_index] + 1, self.data[column_index])
+                )
             row[column_index] = random.choice(possible_numbers)
         return row, row_index, [column_index]
 
@@ -309,7 +328,7 @@ class Cit:
         :rtype: list
         """
         data_size = len(self.data)
-        row = [-1]*data_size
+        row = [-1] * data_size
 
         for parameter in random.sample(range(data_size), data_size):
             possible_values = self.solver.get_possible_values(row, parameter)

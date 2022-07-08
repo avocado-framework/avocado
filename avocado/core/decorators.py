@@ -27,6 +27,7 @@ def deco_factory(behavior, signal):
     :param behavior: expected test result behavior.
     :param signal: delegating exception.
     """
+
     def signal_on(exceptions=None):
         """
         {0} the test when decorated function produces exception of the
@@ -53,13 +54,16 @@ def deco_factory(behavior, signal):
                     raise exc
                 except exceptions as details:
                     raise signal(repr(details)) from details
+
             return wrapper
+
         return decorate(func) if func else decorate
 
     name = f"{behavior}_on"
     signal_on.__name__ = signal_on.__qualname__ = name
-    signal_on.__doc__ = signal_on.__doc__.format(behavior.capitalize(),
-                                                 behavior.upper())
+    signal_on.__doc__ = signal_on.__doc__.format(
+        behavior.capitalize(), behavior.upper()
+    )
     return signal_on
 
 
@@ -71,6 +75,7 @@ cancel_on = deco_factory("cancel", core_exceptions.TestCancel)
 
 def _skip_method_decorator(function, message, condition, negate):
     """Creates a skip decorator for a method."""
+
     @wraps(function)
     def wrapper(obj, *args, **kwargs):  # pylint: disable=W0613
         if negate:
@@ -88,6 +93,7 @@ def _skip_method_decorator(function, message, condition, negate):
                 if condition:
                     raise core_exceptions.TestSkipError(message)
         return function(obj, *args, **kwargs)
+
     wrapper.__skip_test_condition__ = condition
     wrapper.__skip_test_condition_negate__ = negate
     return wrapper
@@ -96,20 +102,23 @@ def _skip_method_decorator(function, message, condition, negate):
 def _skip_class_decorator(cls, message, condition, negate):
     """Creates a skip decorator for a class."""
     for key in cls.__dict__:
-        if key.startswith('test') and callable(getattr(cls, key)):
-            wrapped = _skip_method_decorator(getattr(cls, key),
-                                             message, condition, negate)
+        if key.startswith("test") and callable(getattr(cls, key)):
+            wrapped = _skip_method_decorator(
+                getattr(cls, key), message, condition, negate
+            )
             setattr(cls, key, wrapped)
     return cls
 
 
 def _get_skip_method_or_class_decorator(message, condition, negate):
     """Returns a method or class decorator, according to decorated type."""
+
     def decorator(obj):
         if isinstance(obj, type):
             return _skip_class_decorator(obj, message, condition, negate)
         else:
             return _skip_method_decorator(obj, message, condition, negate)
+
     return decorator
 
 

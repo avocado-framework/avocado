@@ -17,8 +17,10 @@ from enum import Enum
 from uuid import uuid4
 
 from avocado.core.dispatcher import RunnerDispatcher
-from avocado.core.exceptions import (JobTestSuiteReferenceResolutionError,
-                                     OptionValidationError)
+from avocado.core.exceptions import (
+    JobTestSuiteReferenceResolutionError,
+    OptionValidationError,
+)
 from avocado.core.parser import HintParser
 from avocado.core.resolver import ReferenceResolutionResult, resolve
 from avocado.core.settings import settings
@@ -64,24 +66,30 @@ def resolutions_to_runnables(resolutions, config):
     result = []
     filter_by_tags = config.get("filter.by_tags.tags")
     include_empty = config.get("filter.by_tags.include_empty")
-    include_empty_key = config.get('filter.by_tags.include_empty_key')
+    include_empty_key = config.get("filter.by_tags.include_empty_key")
     for resolution in resolutions:
         if resolution.result != ReferenceResolutionResult.SUCCESS:
             continue
         for runnable in resolution.resolutions:
             if filter_by_tags:
-                if not filter_test_tags_runnable(runnable,
-                                                 filter_by_tags,
-                                                 include_empty,
-                                                 include_empty_key):
+                if not filter_test_tags_runnable(
+                    runnable, filter_by_tags, include_empty, include_empty_key
+                ):
                     continue
             result.append(runnable)
     return result
 
 
 class TestSuite:
-    def __init__(self, name, config=None, tests=None, job_config=None,
-                 resolutions=None, enabled=True):
+    def __init__(
+        self,
+        name,
+        config=None,
+        tests=None,
+        job_config=None,
+        resolutions=None,
+        enabled=True,
+    ):
         self.name = name
         self.tests = tests
         self.resolutions = resolutions
@@ -102,7 +110,7 @@ class TestSuite:
 
         self._check_both_parameters_and_variants()
 
-        if self.config.get('run.dry_run.enabled'):
+        if self.config.get("run.dry_run.enabled"):
             self._convert_to_dry_run()
 
         if self.size == 0:
@@ -119,10 +127,12 @@ class TestSuite:
 
     def _check_both_parameters_and_variants(self):
         if self._has_both_parameters_and_variants():
-            err_msg = ('Specifying test parameters (with config entry '
-                       '"run.test_parameters" or command line "-p") along with '
-                       'any varianter plugin (run "avocado plugins" for a list)'
-                       ' is not yet supported. Please use one or the other.')
+            err_msg = (
+                "Specifying test parameters (with config entry "
+                '"run.test_parameters" or command line "-p") along with '
+                'any varianter plugin (run "avocado plugins" for a list)'
+                " is not yet supported. Please use one or the other."
+            )
             raise TestSuiteError(err_msg)
 
     def __len__(self):
@@ -134,23 +144,22 @@ class TestSuite:
         return self.size
 
     def _convert_to_dry_run(self):
-        if self.config.get('run.test_runner') == 'nrunner':
+        if self.config.get("run.test_runner") == "nrunner":
             for runnable in self.tests:
-                runnable.kind = 'dry-run'
+                runnable.kind = "dry-run"
 
     @classmethod
     def _from_config_with_resolver(cls, config, name=None):
-        ignore_missing = config.get('run.ignore_missing_references')
-        references = config.get('resolver.references')
+        ignore_missing = config.get("run.ignore_missing_references")
+        references = config.get("resolver.references")
         try:
             hint = None
-            hint_filepath = '.avocado.hint'
+            hint_filepath = ".avocado.hint"
             if os.path.exists(hint_filepath):
                 hint = HintParser(hint_filepath)
-            resolutions = resolve(references,
-                                  hint=hint,
-                                  ignore_missing=ignore_missing,
-                                  config=config)
+            resolutions = resolve(
+                references, hint=hint, ignore_missing=ignore_missing, config=config
+            )
         except JobTestSuiteReferenceResolutionError as details:
             raise TestSuiteError(details)
 
@@ -158,8 +167,7 @@ class TestSuite:
 
         if name is None:
             name = str(uuid4())
-        return cls(name=name, config=config, tests=runnables,
-                   resolutions=resolutions)
+        return cls(name=name, config=config, tests=runnables, resolutions=resolutions)
 
     def _get_stats_from_nrunner(self):
         stats = {}
@@ -187,13 +195,13 @@ class TestSuite:
     @property
     def references(self):
         if self._references is None:
-            self._references = self.config.get('resolver.references')
+            self._references = self.config.get("resolver.references")
         return self._references
 
     @property
     def runner(self):
         if self._runner is None:
-            runner_name = self.config.get('run.test_runner')
+            runner_name = self.config.get("run.test_runner")
             try:
                 runner_extension = RunnerDispatcher()[runner_name]
                 self._runner = runner_extension.obj
@@ -211,8 +219,8 @@ class TestSuite:
     @property
     def stats(self):
         """Return a statistics dict with the current tests."""
-        runner_name = self.config.get('run.test_runner')
-        if runner_name == 'nrunner':
+        runner_name = self.config.get("run.test_runner")
+        if runner_name == "nrunner":
             return self._get_stats_from_nrunner()
         return {}
 
@@ -230,8 +238,8 @@ class TestSuite:
     @property
     def tags_stats(self):
         """Return a statistics dict with the current tests tags."""
-        runner_name = self.config.get('run.test_runner')
-        if runner_name == 'nrunner':
+        runner_name = self.config.get("run.test_runner")
+        if runner_name == "nrunner":
             return self._get_tags_stats_from_nrunner()
         return {}
 
@@ -243,9 +251,10 @@ class TestSuite:
         (run.test_parameters).
         """
         if self._test_parameters is None:
-            self._test_parameters = {name: value for name, value
-                                     in self.config.get('run.test_parameters',
-                                                        [])}
+            self._test_parameters = {
+                name: value
+                for name, value in self.config.get("run.test_parameters", [])
+            }
         return self._test_parameters
 
     @property
@@ -256,8 +265,9 @@ class TestSuite:
                 try:
                     variants.parse(self.config)
                 except (IOError, ValueError) as details:
-                    raise OptionValidationError(f"Unable to parse variant: "
-                                                f"{details}")
+                    raise OptionValidationError(
+                        f"Unable to parse variant: " f"{details}"
+                    )
             self._variants = variants
         return self._variants
 
@@ -265,26 +275,28 @@ class TestSuite:
         """Computes test variants based on the parameters"""
 
         if self.test_parameters:
-            paths = ['/']
+            paths = ["/"]
             tree_nodes = TreeNode().get_node(paths[0], True)
             tree_nodes.value = self.test_parameters
-            variant = {"variant": tree_nodes,
-                       "variant_id": None,
-                       "paths": paths}
+            variant = {"variant": tree_nodes, "variant_id": None, "paths": paths}
             test_variant = [(test, variant) for test in self.tests]
 
         else:
             # let's use variants when parameters are not available
             # define execution order
-            execution_order = self.config.get('run.execution_order')
+            execution_order = self.config.get("run.execution_order")
             if execution_order == "variants-per-test":
-                test_variant = [(test, variant)
-                                for test in self.tests
-                                for variant in self.variants.itertests()]
+                test_variant = [
+                    (test, variant)
+                    for test in self.tests
+                    for variant in self.variants.itertests()
+                ]
             elif execution_order == "tests-per-variant":
-                test_variant = [(test, variant)
-                                for variant in self.variants.itertests()
-                                for test in self.tests]
+                test_variant = [
+                    (test, variant)
+                    for variant in self.variants.itertests()
+                    for test in self.tests
+                ]
         return test_variant
 
     def run(self, job):
@@ -322,17 +334,20 @@ class TestSuite:
         if job_config:
             config.update(job_config)
         config.update(suite_config)
-        runner = config.get('run.test_runner')
-        if runner == 'nrunner':
+        runner = config.get("run.test_runner")
+        if runner == "nrunner":
             suite = cls._from_config_with_resolver(config, name)
         else:
-            raise TestSuiteError(f'Suite creation for runner "{runner}" '
-                                 f'is not supported')
+            raise TestSuiteError(
+                f'Suite creation for runner "{runner}" ' f"is not supported"
+            )
 
-        if not config.get('run.ignore_missing_references'):
+        if not config.get("run.ignore_missing_references"):
             if not suite.tests:
-                msg = ("Test Suite could not be created. No test references "
-                       "provided nor any other arguments resolved into tests")
+                msg = (
+                    "Test Suite could not be created. No test references "
+                    "provided nor any other arguments resolved into tests"
+                )
                 raise TestSuiteError(msg)
 
         return suite

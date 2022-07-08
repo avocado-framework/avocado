@@ -24,14 +24,16 @@ import re
 
 LOGGER = logging.getLogger(__name__)
 
-__all__ = ['LinuxDistro',
-           'UNKNOWN_DISTRO_NAME',
-           'UNKNOWN_DISTRO_VERSION',
-           'UNKNOWN_DISTRO_RELEASE',
-           'UNKNOWN_DISTRO_ARCH',
-           'Probe',
-           'register_probe',
-           'detect']
+__all__ = [
+    "LinuxDistro",
+    "UNKNOWN_DISTRO_NAME",
+    "UNKNOWN_DISTRO_VERSION",
+    "UNKNOWN_DISTRO_RELEASE",
+    "UNKNOWN_DISTRO_ARCH",
+    "Probe",
+    "register_probe",
+    "detect",
+]
 
 
 # pylint: disable=R0903
@@ -73,21 +75,25 @@ class LinuxDistro:
         self.arch = arch
 
     def __repr__(self):
-        return (f'<LinuxDistro: name={self.name}, version={self.version}, '
-                f'release={self.release}, arch={self.arch}>')
+        return (
+            f"<LinuxDistro: name={self.name}, version={self.version}, "
+            f"release={self.release}, arch={self.arch}>"
+        )
 
 
-UNKNOWN_DISTRO_NAME = 'unknown'
+UNKNOWN_DISTRO_NAME = "unknown"
 UNKNOWN_DISTRO_VERSION = 0
 UNKNOWN_DISTRO_RELEASE = 0
-UNKNOWN_DISTRO_ARCH = 'unknown'
+UNKNOWN_DISTRO_ARCH = "unknown"
 
 
 #: The distribution that is used when the exact one could not be found
-UNKNOWN_DISTRO = LinuxDistro(UNKNOWN_DISTRO_NAME,
-                             UNKNOWN_DISTRO_VERSION,
-                             UNKNOWN_DISTRO_RELEASE,
-                             UNKNOWN_DISTRO_ARCH)
+UNKNOWN_DISTRO = LinuxDistro(
+    UNKNOWN_DISTRO_NAME,
+    UNKNOWN_DISTRO_VERSION,
+    UNKNOWN_DISTRO_RELEASE,
+    UNKNOWN_DISTRO_ARCH,
+)
 
 
 class Probe:
@@ -97,6 +103,7 @@ class Probe:
     If given an avocado.utils.ssh.Session object representing another machine, Probe
     will attempt to detect another machine's distro via an ssh connection.
     """
+
     #: Points to a file that can determine if this machine is running a given
     #: Linux Distribution. This servers a first check that enables the extra
     #: checks to carry on.
@@ -186,10 +193,12 @@ class Probe:
         if self.check_name_for_file_contains():
             check_file = None
             if self.check_for_remote_file(self.CHECK_FILE):
-                check_file = self.session.cmd(f"cat {self.CHECK_FILE}").stdout_text.split('/n')
+                check_file = self.session.cmd(
+                    f"cat {self.CHECK_FILE}"
+                ).stdout_text.split("/n")
             elif os.path.exists(self.CHECK_FILE):
                 try:
-                    check_file = open(self.CHECK_FILE, encoding='utf-8')
+                    check_file = open(self.CHECK_FILE, encoding="utf-8")
                 except IOError as err:
                     LOGGER.debug("Could not open %s", self.CHECK_FILE)
                     LOGGER.debug("Exception: %s", str(err))
@@ -227,10 +236,14 @@ class Probe:
 
             version_file_content = None
             if self.session:
-                version_file_content = self.session.cmd(f"cat {self.CHECK_FILE}").stdout_text
+                version_file_content = self.session.cmd(
+                    f"cat {self.CHECK_FILE}"
+                ).stdout_text
             else:
                 try:
-                    version_file_content = open(self.CHECK_FILE, encoding='utf-8').read()
+                    version_file_content = open(
+                        self.CHECK_FILE, encoding="utf-8"
+                    ).read()
                 except IOError as err:
                     LOGGER.debug("Could not open %s", self.CHECK_FILE)
                     LOGGER.debug("Exception: %s", str(err))
@@ -253,8 +266,7 @@ class Probe:
         """
         Checks if this has the conditions met to look for the release number
         """
-        return (self.check_version() and
-                self.CHECK_VERSION_REGEX.groups > 1)
+        return self.check_version() and self.CHECK_VERSION_REGEX.groups > 1
 
     def release(self):
         """
@@ -315,11 +327,13 @@ class RedHatProbe(Probe):
     """
     Probe with version checks for Red Hat Enterprise Linux systems
     """
-    CHECK_FILE = '/etc/redhat-release'
-    CHECK_FILE_CONTAINS = 'Red Hat Enterprise Linux'
-    CHECK_FILE_DISTRO_NAME = 'rhel'
-    CHECK_VERSION_REGEX = re.compile(r'Red Hat Enterprise Linux\s+\w*\s*release\s+'
-                                     r'(\d{1,2})\.(\d{1,2}).*')
+
+    CHECK_FILE = "/etc/redhat-release"
+    CHECK_FILE_CONTAINS = "Red Hat Enterprise Linux"
+    CHECK_FILE_DISTRO_NAME = "rhel"
+    CHECK_VERSION_REGEX = re.compile(
+        r"Red Hat Enterprise Linux\s+\w*\s*release\s+" r"(\d{1,2})\.(\d{1,2}).*"
+    )
 
 
 class CentosProbe(RedHatProbe):
@@ -327,11 +341,11 @@ class CentosProbe(RedHatProbe):
     """
     Probe with version checks for CentOS systems
     """
-    CHECK_FILE = '/etc/redhat-release'
-    CHECK_FILE_CONTAINS = 'CentOS'
-    CHECK_FILE_DISTRO_NAME = 'centos'
-    CHECK_VERSION_REGEX = re.compile(r'CentOS.* release '
-                                     r'(\d{1,2})\.(\d{1,2}).*')
+
+    CHECK_FILE = "/etc/redhat-release"
+    CHECK_FILE_CONTAINS = "CentOS"
+    CHECK_FILE_DISTRO_NAME = "centos"
+    CHECK_VERSION_REGEX = re.compile(r"CentOS.* release " r"(\d{1,2})\.(\d{1,2}).*")
 
 
 class FedoraProbe(RedHatProbe):
@@ -339,10 +353,11 @@ class FedoraProbe(RedHatProbe):
     """
     Probe with version checks for Fedora systems
     """
-    CHECK_FILE = '/etc/fedora-release'
-    CHECK_FILE_CONTAINS = 'Fedora'
-    CHECK_FILE_DISTRO_NAME = 'fedora'
-    CHECK_VERSION_REGEX = re.compile(r'Fedora release (\d{1,2}).*')
+
+    CHECK_FILE = "/etc/fedora-release"
+    CHECK_FILE_CONTAINS = "Fedora"
+    CHECK_FILE_DISTRO_NAME = "fedora"
+    CHECK_VERSION_REGEX = re.compile(r"Fedora release (\d{1,2}).*")
 
 
 class AmazonLinuxProbe(Probe):
@@ -351,11 +366,12 @@ class AmazonLinuxProbe(Probe):
     Probe for Amazon Linux systems
     """
 
-    CHECK_FILE = '/etc/os-release'
-    CHECK_FILE_CONTAINS = 'Amazon Linux'
-    CHECK_FILE_DISTRO_NAME = 'amzn'
-    CHECK_VERSION_REGEX = re.compile(r'.*VERSION=\"(\d+)\.(\d+)\".*',
-                                     re.MULTILINE | re.DOTALL)
+    CHECK_FILE = "/etc/os-release"
+    CHECK_FILE_CONTAINS = "Amazon Linux"
+    CHECK_FILE_DISTRO_NAME = "amzn"
+    CHECK_VERSION_REGEX = re.compile(
+        r".*VERSION=\"(\d+)\.(\d+)\".*", re.MULTILINE | re.DOTALL
+    )
 
 
 class DebianProbe(Probe):
@@ -363,9 +379,10 @@ class DebianProbe(Probe):
     """
     Simple probe with file checks for Debian systems
     """
-    CHECK_FILE = '/etc/debian_version'
-    CHECK_FILE_DISTRO_NAME = 'debian'
-    CHECK_VERSION_REGEX = re.compile(r'(\d+)\.(\d+)')
+
+    CHECK_FILE = "/etc/debian_version"
+    CHECK_FILE_DISTRO_NAME = "debian"
+    CHECK_VERSION_REGEX = re.compile(r"(\d+)\.(\d+)")
 
 
 class UbuntuProbe(Probe):
@@ -374,11 +391,12 @@ class UbuntuProbe(Probe):
     Simple probe for Ubuntu systems in general
     """
 
-    CHECK_FILE = '/etc/os-release'
-    CHECK_FILE_CONTAINS = 'ubuntu'
-    CHECK_FILE_DISTRO_NAME = 'Ubuntu'
-    CHECK_VERSION_REGEX = re.compile(r'.*VERSION_ID=\"(\d+)\.(\d+)\".*',
-                                     re.MULTILINE | re.DOTALL)
+    CHECK_FILE = "/etc/os-release"
+    CHECK_FILE_CONTAINS = "ubuntu"
+    CHECK_FILE_DISTRO_NAME = "Ubuntu"
+    CHECK_VERSION_REGEX = re.compile(
+        r".*VERSION_ID=\"(\d+)\.(\d+)\".*", re.MULTILINE | re.DOTALL
+    )
 
 
 class SUSEProbe(Probe):
@@ -387,11 +405,11 @@ class SUSEProbe(Probe):
     Simple probe for SUSE systems in general
     """
 
-    CHECK_FILE = '/etc/os-release'
-    CHECK_FILE_CONTAINS = 'SUSE'
+    CHECK_FILE = "/etc/os-release"
+    CHECK_FILE_CONTAINS = "SUSE"
     # this is the (incorrect) spelling used in python's platform
     # and tests are looking for it in distro.name. So keep using it
-    CHECK_FILE_DISTRO_NAME = 'SuSE'
+    CHECK_FILE_DISTRO_NAME = "SuSE"
 
     def get_distro(self):
         distro = super().get_distro()
@@ -409,14 +427,14 @@ class SUSEProbe(Probe):
         version_id_re = re.compile(r'VERSION_ID="([\d\.]*)"')
         version_id = None
 
-        with open(self.CHECK_FILE, encoding='utf-8') as check_file:
+        with open(self.CHECK_FILE, encoding="utf-8") as check_file:
             for line in check_file:
                 match = version_id_re.match(line)
                 if match:
                     version_id = match.group(1)
 
         if version_id:
-            version_parts = version_id.split('.')
+            version_parts = version_id.split(".")
             distro.version = int(version_parts[0])
             if len(version_parts) > 1:
                 distro.release = int(version_parts[1])
@@ -430,10 +448,10 @@ class OpenEulerProbe(Probe):
     Simple probe for openEuler systems in general
     """
 
-    CHECK_FILE = '/etc/openEuler-release'
-    CHECK_FILE_CONTAINS = 'openEuler release'
-    CHECK_FILE_DISTRO_NAME = 'openEuler'
-    CHECK_VERSION_REGEX = re.compile(r'openEuler release (\d+)\.(\d+).*')
+    CHECK_FILE = "/etc/openEuler-release"
+    CHECK_FILE_CONTAINS = "openEuler release"
+    CHECK_FILE_DISTRO_NAME = "openEuler"
+    CHECK_VERSION_REGEX = re.compile(r"openEuler release (\d+)\.(\d+).*")
 
 
 class UnionTechProbe(Probe):
@@ -442,10 +460,10 @@ class UnionTechProbe(Probe):
     Simple probe for UnionTech systems in general
     """
 
-    CHECK_FILE = '/etc/os-version'
-    CHECK_FILE_CONTAINS = 'uos release'
-    CHECK_FILE_DISTRO_NAME = 'uos'
-    CHECK_VERSION_REGEX = re.compile(r'uos release (\d+)\.(\d+).*')
+    CHECK_FILE = "/etc/os-version"
+    CHECK_FILE_CONTAINS = "uos release"
+    CHECK_FILE_DISTRO_NAME = "uos"
+    CHECK_VERSION_REGEX = re.compile(r"uos release (\d+)\.(\d+).*")
 
 
 #: the complete list of probes that have been registered

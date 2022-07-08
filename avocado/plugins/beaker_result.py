@@ -25,71 +25,71 @@ class BeakerResult(ResultEvents):
     send test results to beaker test harness api
     """
 
-    name = 'beaker'
-    description = 'report results to beaker'
+    name = "beaker"
+    description = "report results to beaker"
 
     beaker_url = None
     job_id = None
 
     def __init__(self, config=None):  # pylint: disable=W0613
-        baseurl = os.environ.get('BEAKER_LAB_CONTROLLER_URL')
-        recipeid = os.environ.get('RSTRNT_RECIPEID')
-        taskid = os.environ.get('RSTRNT_TASKID')
+        baseurl = os.environ.get("BEAKER_LAB_CONTROLLER_URL")
+        recipeid = os.environ.get("RSTRNT_RECIPEID")
+        taskid = os.environ.get("RSTRNT_TASKID")
         if not all([baseurl, recipeid, taskid]):
             return
-        baseurl = baseurl.rstrip('/')
-        self.beaker_url = baseurl + '/recipes/' + recipeid + '/tasks/' + taskid
+        baseurl = baseurl.rstrip("/")
+        self.beaker_url = baseurl + "/recipes/" + recipeid + "/tasks/" + taskid
         LOG_UI.info("beaker: using API at %s (R:%s T:%s)", baseurl, recipeid, taskid)
 
     def send_request(self, req):
-        LOG_UI.debug('beaker: %s %s ...', req.method, req.full_url)
+        LOG_UI.debug("beaker: %s %s ...", req.method, req.full_url)
         try:
             res = urllib.request.urlopen(req)  # nosec
             return res
         except urllib.error.URLError as err:
-            LOG_UI.info('beaker: %s %s failed: %s', req.method, req.full_url, err)
+            LOG_UI.info("beaker: %s %s failed: %s", req.method, req.full_url, err)
             return None
         except Exception as err:
             # should not happen
-            LOG_UI.info('beaker: Oops: %s', err)
+            LOG_UI.info("beaker: Oops: %s", err)
             return None
 
     def post_result(self, state):
         reqdict = {
-            'path': f"{self.job_id}/{state.get('name')}",
+            "path": f"{self.job_id}/{state.get('name')}",
         }
 
-        result = state.get('status').lower().capitalize()
-        if result == 'Cancel':
-            result = 'Skip'
-        if result not in ['Pass', 'Fail', 'Skip']:
-            result = 'Fail'
-        reqdict['result'] = result
+        result = state.get("status").lower().capitalize()
+        if result == "Cancel":
+            result = "Skip"
+        if result not in ["Pass", "Fail", "Skip"]:
+            result = "Fail"
+        reqdict["result"] = result
 
-        reason = state.get('fail_reason')
+        reason = state.get("fail_reason")
         if reason is not None:
-            reqdict['message'] = reason
+            reqdict["message"] = reason
 
-        secs = state.get('time_elapsed')
+        secs = state.get("time_elapsed")
         if secs is not None:
-            reqdict['score'] = str(int(secs))
+            reqdict["score"] = str(int(secs))
 
-        reqdata = urllib.parse.urlencode(reqdict).encode('utf-8')
-        url = self.beaker_url + '/results/'
-        req = urllib.request.Request(url, method='POST', data=reqdata)
+        reqdata = urllib.parse.urlencode(reqdict).encode("utf-8")
+        url = self.beaker_url + "/results/"
+        req = urllib.request.Request(url, method="POST", data=reqdata)
         res = self.send_request(req)
         if res is None:
             return None
-        return res.getheader('Location')
+        return res.getheader("Location")
 
     def put_data(self, location, name, content):
-        url = location + '/logs/' + name
-        req = urllib.request.Request(url, method='PUT', data=content)
+        url = location + "/logs/" + name
+        req = urllib.request.Request(url, method="PUT", data=content)
         self.send_request(req)
 
     def put_file(self, location, name, filename):
-        file = open(filename, encoding='utf-8')
-        content = file.read().encode('utf-8')
+        file = open(filename, encoding="utf-8")
+        content = file.read().encode("utf-8")
         file.close()
         self.put_data(location, name, content)
 
@@ -117,20 +117,20 @@ class BeakerResult(ResultEvents):
         if location is None:
             return
 
-        logfile = state.get('logfile')
-        self.put_file(location, 'logfile', logfile)
+        logfile = state.get("logfile")
+        self.put_file(location, "logfile", logfile)
 
-        ppstate = pprint.pformat(state).encode('utf8')
-        self.put_data(location, 'state', ppstate)
+        ppstate = pprint.pformat(state).encode("utf8")
+        self.put_data(location, "state", ppstate)
 
-        pattern = os.path.join(state.get('logdir'), '*')
+        pattern = os.path.join(state.get("logdir"), "*")
         filelist = [f for f in glob.glob(pattern) if f != logfile]
-        self.put_file_list(location, '', filelist)
+        self.put_file_list(location, "", filelist)
 
     def post_tests(self, job):
         if self.beaker_url is None:
             return
 
-        pattern = os.path.join(job.logdir, '*')
+        pattern = os.path.join(job.logdir, "*")
         filelist = glob.glob(pattern)
-        self.put_file_list(self.beaker_url, self.job_id + '-', filelist)
+        self.put_file_list(self.beaker_url, self.job_id + "-", filelist)

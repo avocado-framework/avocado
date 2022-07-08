@@ -24,12 +24,19 @@ import tempfile
 from avocado.utils import path as utils_path
 
 #: What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
-DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
-                stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
-                stat.S_IROTH | stat.S_IXOTH)
+DEFAULT_MODE = (
+    stat.S_IRUSR
+    | stat.S_IWUSR
+    | stat.S_IXUSR
+    | stat.S_IRGRP
+    | stat.S_IWGRP
+    | stat.S_IXGRP
+    | stat.S_IROTH
+    | stat.S_IXOTH
+)
 
 #: What is commonly known as "0444" or "u=r,g=r,o=r"
-READ_ONLY_MODE = (stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+READ_ONLY_MODE = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
 
 
 class Script:
@@ -38,7 +45,7 @@ class Script:
     Class that represents a script.
     """
 
-    def __init__(self, path, content, mode=DEFAULT_MODE, open_mode='w'):
+    def __init__(self, path, content, mode=DEFAULT_MODE, open_mode="w"):
         """
         Creates an instance of :class:`Script`.
 
@@ -56,8 +63,9 @@ class Script:
         self.open_mode = open_mode
 
     def __repr__(self):
-        return (f'{self.__class__.__name__}(path="{self.path}", '
-                f'stored={self.stored})')
+        return (
+            f'{self.__class__.__name__}(path="{self.path}", ' f"stored={self.stored})"
+        )
 
     def __str__(self):
         return self.path
@@ -103,7 +111,9 @@ class TemporaryScript(Script):
     Class that represents a temporary script.
     """
 
-    def __init__(self, name, content, prefix='avocado_script', mode=DEFAULT_MODE, open_mode='w'):
+    def __init__(
+        self, name, content, prefix="avocado_script", mode=DEFAULT_MODE, open_mode="w"
+    ):
         """
         Creates an instance of :class:`TemporaryScript`.
 
@@ -119,8 +129,7 @@ class TemporaryScript(Script):
         :param mode: set file mode, default to 0775.
         """
         tmpdir = tempfile.mkdtemp(prefix=prefix)
-        super().__init__(os.path.join(tmpdir, name),
-                         content, mode, open_mode)
+        super().__init__(os.path.join(tmpdir, name), content, mode, open_mode)
 
     def __del__(self):
         self.remove()
@@ -145,7 +154,7 @@ def make_script(path, content, mode=DEFAULT_MODE):
     return scpt.path
 
 
-def make_temp_script(name, content, prefix='avocado_script', mode=DEFAULT_MODE):
+def make_temp_script(name, content, prefix="avocado_script", mode=DEFAULT_MODE):
     """
     Creates a new temporary script stored in the file system.
 

@@ -25,6 +25,7 @@ class JobBaseException(Exception):
     You should be never raising this, but just in case, we'll set its
     status' as FAIL.
     """
+
     status = "FAIL"
 
 
@@ -33,6 +34,7 @@ class JobError(JobBaseException):
     """
     A generic error happened during a job execution.
     """
+
     status = "ERROR"
 
 
@@ -41,6 +43,7 @@ class JobTestSuiteError(JobBaseException):
     """
     Generic error happened during the creation of a job's test suite
     """
+
     status = "ERROR"
 
 
@@ -49,6 +52,7 @@ class JobTestSuiteEmptyError(JobTestSuiteError):
     """
     Error raised when the creation of a test suite results in an empty suite
     """
+
     status = "ERROR"
 
 
@@ -57,6 +61,7 @@ class JobTestSuiteDuplicateNameError(JobTestSuiteError):
     """
     Error raised when a test suite name is not unique in a job
     """
+
     status = "ERROR"
 
 
@@ -65,6 +70,7 @@ class JobTestSuiteReferenceResolutionError(JobTestSuiteError):
     """
     Test References did not produce a valid reference by any resolver
     """
+
     status = "ERROR"
 
 
@@ -73,6 +79,7 @@ class OptionValidationError(Exception):
     """
     An invalid option was passed to the test runner
     """
+
     status = "ERROR"
 
 
@@ -84,6 +91,7 @@ class TestBaseException(Exception):
     You should be never raising this, but just in case, we'll set its
     status' as FAIL.
     """
+
     status = "FAIL"
 
 
@@ -92,6 +100,7 @@ class TestSetupFail(TestBaseException):
     """
     Indicates an error during a setup or cleanup procedure.
     """
+
     status = "ERROR"
 
 
@@ -104,6 +113,7 @@ class TestError(TestBaseException):
     executed and could not complete due to a setup, configuration,
     or another fatal condition.
     """
+
     status = "ERROR"
 
 
@@ -112,6 +122,7 @@ class TestNotFoundError(TestBaseException):
     """
     Indicates that the test was not found in the test directory.
     """
+
     status = "ERROR"
 
 
@@ -120,6 +131,7 @@ class TestTimeoutInterrupted(TestBaseException):
     """
     Indicates that the test did not finish before the timeout specified.
     """
+
     status = "INTERRUPTED"
 
 
@@ -128,6 +140,7 @@ class TestInterruptedError(TestBaseException):
     """
     Indicates that the test was interrupted by the user (Ctrl+C)
     """
+
     status = "INTERRUPTED"
 
 
@@ -136,6 +149,7 @@ class TestAbortError(TestBaseException):
     """
     Indicates that the test was prematurely aborted.
     """
+
     status = "ERROR"
 
 
@@ -148,6 +162,7 @@ class TestSkipError(TestBaseException):
     inappropriate. For example, inappropriate architecture, wrong OS version,
     program being tested does not have the expected capability (older version).
     """
+
     status = "SKIP"
 
 
@@ -160,6 +175,7 @@ class TestFail(TestBaseException, AssertionError):
     with vanilla python unittests (they only consider failures the ones
     deriving from AssertionError).
     """
+
     status = "FAIL"
 
 
@@ -171,6 +187,7 @@ class TestFailFast(TestBaseException):
     Should be thrown when a test has failed and failfast is enabled. This will
     indicate that other tests will be skipped.
     """
+
     status = "SKIP"
 
 
@@ -180,6 +197,7 @@ class TestWarn(TestBaseException):
     Indicates that bad things (may) have happened, but not an explicit
     failure.
     """
+
     status = "WARN"
 
 
@@ -189,4 +207,5 @@ class TestCancel(TestBaseException):
 
     Should be thrown when the cancel() test method is used.
     """
+
     status = "CANCEL"

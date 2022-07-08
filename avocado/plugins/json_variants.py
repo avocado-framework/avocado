@@ -25,15 +25,14 @@ _NO_VARIANTS = -1
 
 class JsonVariantsInit(Init):
 
-    name = 'json_variants'
+    name = "json_variants"
     description = "JSON serialized based varianter initialization"
 
     def initialize(self):
-        help_msg = 'Load the Variants from a JSON serialized file'
-        settings.register_option(section='json.variants',
-                                 key='load',
-                                 default=None,
-                                 help_msg=help_msg)
+        help_msg = "Load the Variants from a JSON serialized file"
+        settings.register_option(
+            section="json.variants", key="load", default=None, help_msg=help_msg
+        )
 
 
 class JsonVariantsCLI(CLI):
@@ -42,23 +41,24 @@ class JsonVariantsCLI(CLI):
     Serialized based Varianter options
     """
 
-    name = 'json variants'
-    description = "JSON serialized based Varianter options for the 'run' " \
-                  "subcommand"
+    name = "json variants"
+    description = "JSON serialized based Varianter options for the 'run' subcommand"
 
     def configure(self, parser):
         for name in ("run", "variants"):  # intentionally omitting "multiplex"
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
                 continue
-            sparser = subparser.add_argument_group('JSON serialized based '
-                                                   'varianter options')
+            sparser = subparser.add_argument_group(
+                "JSON serialized based " "varianter options"
+            )
             settings.add_argparser_to_option(
-                namespace='json.variants.load',
+                namespace="json.variants.load",
                 parser=sparser,
-                long_arg='--json-variants-load',
+                long_arg="--json-variants-load",
                 allow_multiple=True,
-                metavar='FILE')
+                metavar="FILE",
+            )
 
     def run(self, config):
         pass
@@ -70,23 +70,25 @@ class JsonVariants(Varianter):
     Processes the serialized file into variants
     """
 
-    name = 'json variants'
+    name = "json variants"
     description = "JSON serialized based Varianter"
     variants = None
 
     def initialize(self, config):
-        load_variants = config.get('json.variants.load')
+        load_variants = config.get("json.variants.load")
 
         if load_variants is None:
             self.variants = _NO_VARIANTS
             return
         try:
-            with open(load_variants, 'r', encoding='utf-8') as var_file:
+            with open(load_variants, "r", encoding="utf-8") as var_file:
                 self.variants = varianter.Varianter(state=json.load(var_file))
         except IOError:
-            LOG_UI.error("JSON serialized file '%s' could not be found or "
-                         "is not readable", load_variants)
-            if config.get('subcommand') == 'run':
+            LOG_UI.error(
+                "JSON serialized file '%s' could not be found or " "is not readable",
+                load_variants,
+            )
+            if config.get("subcommand") == "run":
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
                 sys.exit(exit_codes.AVOCADO_FAIL)
@@ -95,8 +97,9 @@ class JsonVariants(Varianter):
         if self.variants == _NO_VARIANTS:
             return
         elif self.variants is None:
-            raise RuntimeError("Iterating Varianter before initialization is"
-                               "not supported")
+            raise RuntimeError(
+                "Iterating Varianter before initialization is" "not supported"
+            )
 
         for variant in self.variants.itertests():
             yield variant
@@ -105,8 +108,9 @@ class JsonVariants(Varianter):
         if self.variants == _NO_VARIANTS:
             return 0
         elif self.variants is None:
-            raise RuntimeError("Calling Varianter __len__ before"
-                               "initialization is not supported")
+            raise RuntimeError(
+                "Calling Varianter __len__ before" "initialization is not supported"
+            )
 
         return len(self.variants)
 
@@ -134,11 +138,12 @@ class JsonVariants(Varianter):
         if variants:
             out.append(f"JSON Serialized Variants ({len(self)}):")
             for variant in self:
-                paths = ', '.join([x.path for x in variant["variant"]])
+                paths = ", ".join([x.path for x in variant["variant"]])
 
-                out.append('%sVariant %s:    %s' % ('\n' if verbose else '',
-                                                    variant["variant_id"],
-                                                    paths))
+                out.append(
+                    "%sVariant %s:    %s"
+                    % ("\n" if verbose else "", variant["variant_id"], paths)
+                )
                 if not verbose:
                     continue
                 env = set()
@@ -148,7 +153,9 @@ class JsonVariants(Varianter):
                         env.add((f"{origin}:{key}", str(value)))
                 if not env:
                     return out
-                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])  # pylint: disable=C0209
+                fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
+                    [len(_[0]) for _ in env]
+                )
                 for record in sorted(env):
                     out.append(fmt % record)
 

@@ -23,30 +23,37 @@ from avocado.core.extension_manager import PluginPriority
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.plugin_interfaces import Resolver
 from avocado.core.references import reference_split
-from avocado.core.resolver import (ReferenceResolution,
-                                   ReferenceResolutionResult, check_file)
+from avocado.core.resolver import (
+    ReferenceResolution,
+    ReferenceResolutionResult,
+    check_file,
+)
 from avocado.core.safeloader import find_avocado_tests, find_python_unittests
 
 
 class ExecTestResolver(Resolver):
 
-    name = 'exec-test'
-    description = 'Test resolver for executable files to be handled as tests'
+    name = "exec-test"
+    description = "Test resolver for executable files to be handled as tests"
     priority = PluginPriority.VERY_LOW
 
     def resolve(self, reference):
 
-        criteria_check = check_file(reference, reference, suffix=None,
-                                    type_name='executable file',
-                                    access_check=os.R_OK | os.X_OK,
-                                    access_name='executable')
+        criteria_check = check_file(
+            reference,
+            reference,
+            suffix=None,
+            type_name="executable file",
+            access_check=os.R_OK | os.X_OK,
+            access_name="executable",
+        )
         if criteria_check is not True:
             return criteria_check
 
-        runnable = Runnable('exec-test', reference)
-        return ReferenceResolution(reference,
-                                   ReferenceResolutionResult.SUCCESS,
-                                   [runnable])
+        runnable = Runnable("exec-test", reference)
+        return ReferenceResolution(
+            reference, ReferenceResolutionResult.SUCCESS, [runnable]
+        )
 
 
 def python_resolver(name, reference, find_tests):
@@ -67,23 +74,19 @@ def python_resolver(name, reference, find_tests):
             if tests_filter is not None and not tests_filter.search(klass_method):
                 continue
             uri = f"{module_path}:{klass_method}"
-            runnables.append(Runnable(name,
-                                      uri=uri,
-                                      tags=tags,
-                                      dependencies=depens))
+            runnables.append(Runnable(name, uri=uri, tags=tags, dependencies=depens))
     if runnables:
-        return ReferenceResolution(reference,
-                                   ReferenceResolutionResult.SUCCESS,
-                                   runnables)
+        return ReferenceResolution(
+            reference, ReferenceResolutionResult.SUCCESS, runnables
+        )
 
-    return ReferenceResolution(reference,
-                               ReferenceResolutionResult.NOTFOUND)
+    return ReferenceResolution(reference, ReferenceResolutionResult.NOTFOUND)
 
 
 class PythonUnittestResolver(Resolver):
 
-    name = 'python-unittest'
-    description = 'Test resolver for Python Unittests'
+    name = "python-unittest"
+    description = "Test resolver for Python Unittests"
 
     @staticmethod
     def _find_compat(module_path):
@@ -91,39 +94,43 @@ class PythonUnittestResolver(Resolver):
         return find_python_unittests(module_path), None
 
     def resolve(self, reference):
-        return python_resolver(PythonUnittestResolver.name,
-                               reference,
-                               PythonUnittestResolver._find_compat)
+        return python_resolver(
+            PythonUnittestResolver.name, reference, PythonUnittestResolver._find_compat
+        )
 
 
 class AvocadoInstrumentedResolver(Resolver):
 
-    name = 'avocado-instrumented'
-    description = 'Test resolver for Avocado Instrumented tests'
+    name = "avocado-instrumented"
+    description = "Test resolver for Avocado Instrumented tests"
     priority = PluginPriority.HIGH
 
     def resolve(self, reference):
-        return python_resolver(AvocadoInstrumentedResolver.name,
-                               reference,
-                               find_avocado_tests)
+        return python_resolver(
+            AvocadoInstrumentedResolver.name, reference, find_avocado_tests
+        )
 
 
 class TapResolver(Resolver):
 
-    name = 'tap'
-    description = 'Test resolver for executable files to be handled as TAP tests'
+    name = "tap"
+    description = "Test resolver for executable files to be handled as TAP tests"
     priority = PluginPriority.LAST_RESORT
 
     def resolve(self, reference):
 
-        criteria_check = check_file(reference, reference, suffix=None,
-                                    type_name='executable file',
-                                    access_check=os.R_OK | os.X_OK,
-                                    access_name='executable')
+        criteria_check = check_file(
+            reference,
+            reference,
+            suffix=None,
+            type_name="executable file",
+            access_check=os.R_OK | os.X_OK,
+            access_name="executable",
+        )
         if criteria_check is not True:
             return criteria_check
 
-        runnable = Runnable('tap', reference)
-        return ReferenceResolution(reference,
-                                   ReferenceResolutionResult.SUCCESS,
-                                   [runnable])
+        runnable = Runnable("tap", reference)
+        return ReferenceResolution(
+            reference, ReferenceResolutionResult.SUCCESS, [runnable]
+        )

@@ -23,11 +23,12 @@ class DependencyResolver(PreTest):
     `:avocado: dependency=` definition inside the test’s docstring.
 
     """
-    name = 'dependency'
-    description = 'Dependency resolver for tests with dependencies'
+
+    name = "dependency"
+    description = "Dependency resolver for tests with dependencies"
 
     @staticmethod
-    def pre_test_runnables(test_runnable):
+    def pre_test_runnables(test_runnable):  # pylint: disable=W0221
         if not test_runnable.dependencies:
             return []
         dependency_runnables = []
@@ -35,10 +36,9 @@ class DependencyResolver(PreTest):
             # make a copy to change the dictionary and do not affect the
             # original `dependencies` dictionary from the test
             dependency_copy = dependency.copy()
-            kind = dependency_copy.pop('type')
-            dependency_runnable = Runnable(kind,
-                                           None,
-                                           config=test_runnable.config,
-                                           **dependency_copy)
+            kind = dependency_copy.pop("type")
+            dependency_runnable = Runnable(
+                kind, None, config=test_runnable.config, **dependency_copy
+            )
             dependency_runnables.append(dependency_runnable)
         return dependency_runnables

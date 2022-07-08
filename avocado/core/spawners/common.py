@@ -11,6 +11,7 @@ from avocado.utils.astring import string_to_safe_path
 
 class SpawnMethod(enum.Enum):
     """The method employed to spawn a runnable or task."""
+
     #: Spawns by running executing Python code, that is, having access to
     #: a runnable or task instance, it calls its run() method.
     PYTHON_CLASS = object()
@@ -37,8 +38,9 @@ class SpawnerMixin:
     def task_output_dir(self, runtime_task):
         if self._job is None:
             raise SpawnerException("Job wasn't set properly")
-        return os.path.join(self._job.test_results_path,
-                            runtime_task.task.identifier.str_filesystem)
+        return os.path.join(
+            self._job.test_results_path, runtime_task.task.identifier.str_filesystem
+        )
 
     @staticmethod
     def bytes_from_file(filename):
@@ -50,7 +52,7 @@ class SpawnerMixin:
         feel free to use this method.
         """
         # This could be optimized in the future.
-        with open(filename, 'rb', 0) as fp:
+        with open(filename, "rb", 0) as fp:
             with mmap(fp.fileno(), 0, access=ACCESS_READ) as stream:
                 yield stream.read()
 
@@ -68,8 +70,8 @@ class SpawnerMixin:
         """
         results_dir = get_job_results_dir(job_id)
         task_id = string_to_safe_path(task_id)
-        data_pointer = f'{results_dir}/test-results/{task_id}/data'
-        src = open(data_pointer, 'r', encoding='utf-8').readline().rstrip()
+        data_pointer = f"{results_dir}/test-results/{task_id}/data"
+        src = open(data_pointer, "r", encoding="utf-8").readline().rstrip()
         try:
             for path in Path(src).expanduser().iterdir():
                 if path.is_file() and path.stat().st_size != 0:

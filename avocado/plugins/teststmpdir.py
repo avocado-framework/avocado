@@ -25,8 +25,8 @@ from avocado.core.plugin_interfaces import JobPost, JobPre
 
 class TestsTmpDir(JobPre, JobPost):
 
-    name = 'teststmpdir'
-    description = 'Creates a temporary directory for tests consumption'
+    name = "teststmpdir"
+    description = "Creates a temporary directory for tests consumption"
 
     def __init__(self):
         self._varname = test.COMMON_TMPDIR_NAME
@@ -34,12 +34,11 @@ class TestsTmpDir(JobPre, JobPost):
 
     def pre(self, job):
         if os.environ.get(self._varname) is None:
-            self._dirname = tempfile.mkdtemp(prefix='avocado_')
+            self._dirname = tempfile.mkdtemp(prefix="avocado_")
             os.environ[self._varname] = self._dirname
 
     def post(self, job):
-        if (self._dirname is not None and
-                os.environ.get(self._varname) == self._dirname):
+        if self._dirname is not None and os.environ.get(self._varname) == self._dirname:
             try:
                 shutil.rmtree(self._dirname)
                 del os.environ[self._varname]

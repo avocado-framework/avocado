@@ -24,7 +24,7 @@ import sys
 
 from avocado.core import data_dir
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.stderr.write("Please inform the Job ID.\n")
         sys.exit(-1)
@@ -34,4 +34,4 @@ if __name__ == '__main__':
         sys.stderr.write(f"Can't find job results directory for '{sys.argv[1]}'\n")
         sys.exit(-1)
 
-    sys.stdout.write(f'{resultsdir}\n')
+    sys.stdout.write(f"{resultsdir}\n")

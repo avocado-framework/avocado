@@ -23,31 +23,30 @@ import re
 
 from avocado.core.nrunner.runnable import Runnable
 from avocado.core.plugin_interfaces import Resolver
-from avocado.core.resolver import (ReferenceResolution,
-                                   ReferenceResolutionResult)
+from avocado.core.resolver import ReferenceResolution, ReferenceResolutionResult
 from avocado.utils import path as utils_path
 
 try:
-    GO_BIN = utils_path.find_command('go')
+    GO_BIN = utils_path.find_command("go")
 except utils_path.CmdNotFoundError:
     GO_BIN = None
 
 
-TEST_RE = re.compile(r'^func\s(Test|Example)[A-Z]')
+TEST_RE = re.compile(r"^func\s(Test|Example)[A-Z]")
 
 
 def find_tests(test_path):
     test_suite = []
-    with open(test_path, 'r', encoding='utf-8') as test_file_fd:
+    with open(test_path, "r", encoding="utf-8") as test_file_fd:
         for line in test_file_fd.readlines():
             if TEST_RE.match(line):
-                test_suite.append(line.split()[1].split('(')[0])
+                test_suite.append(line.split()[1].split("(")[0])
 
     return test_suite
 
 
 def find_files(path, recursive=True):
-    pattern = '*_test.go'
+    pattern = "*_test.go"
     if recursive:
         matches = []
         for root, _, filenames in os.walk(path):
@@ -62,23 +61,25 @@ def find_files(path, recursive=True):
 
 class GolangResolver(Resolver):
 
-    name = 'golang'
-    description = 'Test resolver for Go language tests'
+    name = "golang"
+    description = "Test resolver for Go language tests"
 
     @staticmethod
-    def resolve(reference):
+    def resolve(reference):  # pylint: disable=W0221
 
         if GO_BIN is None:
-            return ReferenceResolution(reference,
-                                       ReferenceResolutionResult.NOTFOUND,
-                                       info="go binary not found")
+            return ReferenceResolution(
+                reference,
+                ReferenceResolutionResult.NOTFOUND,
+                info="go binary not found",
+            )
 
         package_paths = []
         test_files = []
-        go_path = os.environ.get('GOPATH')
+        go_path = os.environ.get("GOPATH")
         if go_path is not None:
             for directory in go_path.split(os.pathsep):
-                pkg_path = os.path.join(os.path.expanduser(directory), 'src')
+                pkg_path = os.path.join(os.path.expanduser(directory), "src")
                 package_paths.append(pkg_path)
 
         for package_path in package_paths:
@@ -92,16 +93,14 @@ class GolangResolver(Resolver):
         for package_path, test_files_list in test_files:
             for test_file in test_files_list:
                 for item in find_tests(test_file):
-                    common_prefix = os.path.commonprefix([package_path,
-                                                          test_file])
+                    common_prefix = os.path.commonprefix([package_path, test_file])
                     match_package = os.path.relpath(test_file, common_prefix)
                     test_name = f"{os.path.dirname(match_package)}:{item}"
-                    runnables.append(Runnable('golang', uri=test_name))
+                    runnables.append(Runnable("golang", uri=test_name))
 
         if runnables:
-            return ReferenceResolution(reference,
-                                       ReferenceResolutionResult.SUCCESS,
-                                       runnables)
+            return ReferenceResolution(
+                reference, ReferenceResolutionResult.SUCCESS, runnables
+            )
 
-        return ReferenceResolution(reference,
-                                   ReferenceResolutionResult.NOTFOUND)
+        return ReferenceResolution(reference, ReferenceResolutionResult.NOTFOUND)

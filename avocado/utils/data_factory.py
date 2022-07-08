@@ -27,8 +27,7 @@ _RAND_POOL = random.SystemRandom()
 LOG = logging.getLogger(__name__)
 
 
-def generate_random_string(length, ignore=string.punctuation,
-                           convert=""):
+def generate_random_string(length, ignore=string.punctuation, convert=""):
     """
     Generate a random string using alphanumeric characters.
 
@@ -57,7 +56,7 @@ def generate_random_string(length, ignore=string.punctuation,
     return result
 
 
-def make_dir_and_populate(basedir='/tmp'):
+def make_dir_and_populate(basedir="/tmp"):
     """
     Create a directory in basedir and populate with a number of files.
 
@@ -69,8 +68,7 @@ def make_dir_and_populate(basedir='/tmp'):
     :rtype: str
     """
     try:
-        path = tempfile.mkdtemp(prefix='avocado_' + __name__,
-                                dir=basedir)
+        path = tempfile.mkdtemp(prefix="avocado_" + __name__, dir=basedir)
         n_files = _RAND_POOL.randint(100, 150)
         for _ in range(n_files):
             fd, _ = tempfile.mkstemp(dir=path, text=True)

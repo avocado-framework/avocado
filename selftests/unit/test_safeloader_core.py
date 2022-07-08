@@ -4,15 +4,14 @@ import unittest
 import unittest.mock
 from collections import OrderedDict
 
-from avocado.core.safeloader.core import (find_avocado_tests,
-                                          find_python_unittests)
+from avocado.core.safeloader.core import find_avocado_tests, find_python_unittests
 from avocado.utils import script
 from selftests.utils import TestCaseTmpDir, setup_avocado_loggers
 
 setup_avocado_loggers()
 
 
-KEEP_METHODS_ORDER = '''
+KEEP_METHODS_ORDER = """
 from avocado import Test
 from collections.abs import Sequence
 
@@ -34,9 +33,9 @@ class MyClass(Test):
 
     def test(self):
         pass
-'''
+"""
 
-IMPORT_NOT_NOT_PARENT_TEST = '''
+IMPORT_NOT_NOT_PARENT_TEST = """
 from avocado import Test
 class SomeClass(Test):
     def test_something(self): pass
@@ -44,7 +43,7 @@ class SomeClass(Test):
 from logging import Logger, LogRecord
 class Anyclass(LogRecord): pass
 class Anyclass(Logger): pass
-'''
+"""
 
 RECURSIVE_DISCOVERY_TEST1 = """
 # skip is not used, but stresses the safeloader
@@ -156,13 +155,14 @@ class BaseL2(BaseL0):
 
 def get_this_file():
     this_file = __file__
-    if this_file.endswith('.py'):
+    if this_file.endswith(".py"):
         return this_file
-    elif (this_file.endswith('.pyc') or this_file.endswith('.pyo')):
+    elif this_file.endswith(".pyc") or this_file.endswith(".pyo"):
         return this_file[:-1]
     else:
-        raise ValueError("Could not find the Python file associated with this "
-                         "module")
+        raise ValueError(
+            "Could not find the Python file associated with this " "module"
+        )
 
 
 class UnlimitedDiff(unittest.TestCase):
@@ -177,162 +177,186 @@ class UnlimitedDiff(unittest.TestCase):
 
 
 class FindClassAndMethods(UnlimitedDiff):
-
     def test_self(self):
-        reference = OrderedDict({
-            'UnlimitedDiff': [],
-
-            'FindClassAndMethods': [('test_self', {}, []),
-                                    ('test_methods_order', {}, []),
-                                    ('test_import_not_on_parent', {}, []),
-                                    ('test_recursive_discovery', {}, []),
-                                    ('test_recursive_discovery_python_unittest', {}, [])],
-
-            'MultiLevel': [('test_base_level0', {}, []),
-                           ('test_relative_level0_name_from_level1', {}, []),
-                           ('test_relative_level0_from_level1', {}, []),
-                           ('test_relative_level0_name_from_level2', {}, []),
-                           ('test_relative_level0_from_level2', {}, []),
-                           ('test_non_relative_level0_from_level2', {}, [])]
-             })
+        reference = OrderedDict(
+            {
+                "UnlimitedDiff": [],
+                "FindClassAndMethods": [
+                    ("test_self", {}, []),
+                    ("test_methods_order", {}, []),
+                    ("test_import_not_on_parent", {}, []),
+                    ("test_recursive_discovery", {}, []),
+                    ("test_recursive_discovery_python_unittest", {}, []),
+                ],
+                "MultiLevel": [
+                    ("test_base_level0", {}, []),
+                    ("test_relative_level0_name_from_level1", {}, []),
+                    ("test_relative_level0_from_level1", {}, []),
+                    ("test_relative_level0_name_from_level2", {}, []),
+                    ("test_relative_level0_from_level2", {}, []),
+                    ("test_non_relative_level0_from_level2", {}, []),
+                ],
+            }
+        )
         found = find_python_unittests(get_this_file())
         self.assertEqual(reference, found)
 
     def test_methods_order(self):
         avocado_keep_methods_order = script.TemporaryScript(
-            'keepmethodsorder.py',
-            KEEP_METHODS_ORDER)
+            "keepmethodsorder.py", KEEP_METHODS_ORDER
+        )
         avocado_keep_methods_order.save()
-        expected_order = ['test2', 'testA', 'test1', 'testZZZ', 'test']
+        expected_order = ["test2", "testA", "test1", "testZZZ", "test"]
         tests = find_avocado_tests(avocado_keep_methods_order.path)[0]
-        methods = [method[0] for method in tests['MyClass']]
+        methods = [method[0] for method in tests["MyClass"]]
         self.assertEqual(expected_order, methods)
         avocado_keep_methods_order.remove()
 
     def test_import_not_on_parent(self):
         avocado_test = script.TemporaryScript(
-            'import_not_not_parent_test.py',
-            IMPORT_NOT_NOT_PARENT_TEST)
+            "import_not_not_parent_test.py", IMPORT_NOT_NOT_PARENT_TEST
+        )
         avocado_test.save()
-        expected = ['test_something']
+        expected = ["test_something"]
         tests = find_avocado_tests(avocado_test.path)[0]
-        methods = [method[0] for method in tests['SomeClass']]
+        methods = [method[0] for method in tests["SomeClass"]]
         self.assertEqual(expected, methods)
         avocado_test.remove()
 
     def test_recursive_discovery(self):
         avocado_recursive_discovery_test1 = script.TemporaryScript(
-            'recursive_discovery_test1.py',
-            RECURSIVE_DISCOVERY_TEST1)
+            "recursive_discovery_test1.py", RECURSIVE_DISCOVERY_TEST1
+        )
         avocado_recursive_discovery_test1.save()
         avocado_recursive_discovery_test2 = script.TemporaryScript(
-            'recursive_discovery_test2.py',
-            RECURSIVE_DISCOVERY_TEST2)
+            "recursive_discovery_test2.py", RECURSIVE_DISCOVERY_TEST2
+        )
         avocado_recursive_discovery_test2.save()
 
         sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
         tests = find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
-        expected = {'ThirdChild': [('test_third_child', {}, []),
-                                   ('test_second_child', {}, []),
-                                   ('test_first_child', {}, []),
-                                   ('test_basic', {}, [])]}
+        expected = {
+            "ThirdChild": [
+                ("test_third_child", {}, []),
+                ("test_second_child", {}, []),
+                ("test_first_child", {}, []),
+                ("test_basic", {}, []),
+            ]
+        }
         self.assertEqual(expected, tests)
 
     def test_recursive_discovery_python_unittest(self):
         temp_test = script.TemporaryScript(
-            'recursive_discovery_python_unittest.py',
-            RECURSIVE_DISCOVERY_PYTHON_UNITTEST)
+            "recursive_discovery_python_unittest.py",
+            RECURSIVE_DISCOVERY_PYTHON_UNITTEST,
+        )
         temp_test.save()
         tests = find_python_unittests(temp_test.path)
-        expected = {'BaseClass': [('test_maybe_replaced_by_child',
-                                   {'base-tag': None,
-                                    'base.tag': None},
-                                   []),
-                                  ('test_basic',
-                                   {'base-tag': None,
-                                    'base.tag': None}, [])],
-                    'Child': [('test_maybe_replaced_by_child',
-                               {'child-tag': None,
-                                'child.tag': None},
-                               []),
-                              ('test_child', {'child-tag': None,
-                                              'child.tag': None},
-                               []),
-                              ('test_basic', {'base-tag': None,
-                                              'base.tag': None},
-                               [])]}
+        expected = {
+            "BaseClass": [
+                (
+                    "test_maybe_replaced_by_child",
+                    {"base-tag": None, "base.tag": None},
+                    [],
+                ),
+                ("test_basic", {"base-tag": None, "base.tag": None}, []),
+            ],
+            "Child": [
+                (
+                    "test_maybe_replaced_by_child",
+                    {"child-tag": None, "child.tag": None},
+                    [],
+                ),
+                ("test_child", {"child-tag": None, "child.tag": None}, []),
+                ("test_basic", {"base-tag": None, "base.tag": None}, []),
+            ],
+        }
         self.assertEqual(expected, tests)
 
 
 class MultiLevel(TestCaseTmpDir):
-
     def setUp(self):
         super().setUp()
-        init = script.Script(os.path.join(self.tmpdir.name, '__init__.py'),
-                             '', mode=script.READ_ONLY_MODE)
+        init = script.Script(
+            os.path.join(self.tmpdir.name, "__init__.py"),
+            "",
+            mode=script.READ_ONLY_MODE,
+        )
         init.save()
-        l0 = script.Script(os.path.join(self.tmpdir.name, 'l0lib.py'),
-                           L0_LIB, mode=script.READ_ONLY_MODE)
+        l0 = script.Script(
+            os.path.join(self.tmpdir.name, "l0lib.py"),
+            L0_LIB,
+            mode=script.READ_ONLY_MODE,
+        )
         l0.save()
 
-        l1_dir = os.path.join(self.tmpdir.name, 'l1')
+        l1_dir = os.path.join(self.tmpdir.name, "l1")
         os.mkdir(l1_dir)
-        l11 = script.Script(os.path.join(l1_dir, 'l1lib1.py'),
-                            L1_LIB1, mode=script.READ_ONLY_MODE)
+        l11 = script.Script(
+            os.path.join(l1_dir, "l1lib1.py"), L1_LIB1, mode=script.READ_ONLY_MODE
+        )
         l11.save()
-        l12 = script.Script(os.path.join(l1_dir, 'l1lib2.py'),
-                            L1_LIB2, mode=script.READ_ONLY_MODE)
+        l12 = script.Script(
+            os.path.join(l1_dir, "l1lib2.py"), L1_LIB2, mode=script.READ_ONLY_MODE
+        )
         l12.save()
 
-        l2_dir = os.path.join(l1_dir, 'l2')
+        l2_dir = os.path.join(l1_dir, "l2")
         os.mkdir(l2_dir)
-        l21 = script.Script(os.path.join(l2_dir, 'l2lib1.py'),
-                            L2_LIB1, mode=script.READ_ONLY_MODE)
+        l21 = script.Script(
+            os.path.join(l2_dir, "l2lib1.py"), L2_LIB1, mode=script.READ_ONLY_MODE
+        )
         l21.save()
-        l22 = script.Script(os.path.join(l2_dir, 'l2lib2.py'),
-                            L2_LIB2, mode=script.READ_ONLY_MODE)
+        l22 = script.Script(
+            os.path.join(l2_dir, "l2lib2.py"), L2_LIB2, mode=script.READ_ONLY_MODE
+        )
         l22.save()
-        l23 = script.Script(os.path.join(l2_dir, 'l2lib3.py'),
-                            L2_LIB3, mode=script.READ_ONLY_MODE)
+        l23 = script.Script(
+            os.path.join(l2_dir, "l2lib3.py"), L2_LIB3, mode=script.READ_ONLY_MODE
+        )
         l23.save()
 
     def test_base_level0(self):
-        path = os.path.join(self.tmpdir.name, 'l0lib.py')
-        self.assertEqual(find_avocado_tests(path)[0],
-                         {'BaseL0': [('test_l0', {}, [])]})
+        path = os.path.join(self.tmpdir.name, "l0lib.py")
+        self.assertEqual(find_avocado_tests(path)[0], {"BaseL0": [("test_l0", {}, [])]})
 
     def test_relative_level0_name_from_level1(self):
-        path = os.path.join(self.tmpdir.name, 'l1', 'l1lib1.py')
-        self.assertEqual(find_avocado_tests(path)[0],
-                         {'BaseL1': [('test_l1', {}, []),
-                                     ('test_l0', {}, [])]})
+        path = os.path.join(self.tmpdir.name, "l1", "l1lib1.py")
+        self.assertEqual(
+            find_avocado_tests(path)[0],
+            {"BaseL1": [("test_l1", {}, []), ("test_l0", {}, [])]},
+        )
 
     def test_relative_level0_from_level1(self):
-        path = os.path.join(self.tmpdir.name, 'l1', 'l1lib2.py')
-        self.assertEqual(find_avocado_tests(path)[0],
-                         {'BaseL1': [('test_l1', {}, []),
-                                     ('test_l0', {}, [])]})
+        path = os.path.join(self.tmpdir.name, "l1", "l1lib2.py")
+        self.assertEqual(
+            find_avocado_tests(path)[0],
+            {"BaseL1": [("test_l1", {}, []), ("test_l0", {}, [])]},
+        )
 
     def test_relative_level0_name_from_level2(self):
-        path = os.path.join(self.tmpdir.name, 'l1', 'l2', 'l2lib1.py')
-        self.assertEqual(find_avocado_tests(path)[0],
-                         {'BaseL2': [('test_l2', {}, []),
-                                     ('test_l0', {}, [])]})
+        path = os.path.join(self.tmpdir.name, "l1", "l2", "l2lib1.py")
+        self.assertEqual(
+            find_avocado_tests(path)[0],
+            {"BaseL2": [("test_l2", {}, []), ("test_l0", {}, [])]},
+        )
 
     def test_relative_level0_from_level2(self):
-        path = os.path.join(self.tmpdir.name, 'l1', 'l2', 'l2lib2.py')
-        self.assertEqual(find_avocado_tests(path)[0],
-                         {'BaseL2': [('test_l2', {}, []),
-                                     ('test_l0', {}, [])]})
+        path = os.path.join(self.tmpdir.name, "l1", "l2", "l2lib2.py")
+        self.assertEqual(
+            find_avocado_tests(path)[0],
+            {"BaseL2": [("test_l2", {}, []), ("test_l0", {}, [])]},
+        )
 
     def test_non_relative_level0_from_level2(self):
-        path = os.path.join(self.tmpdir.name, 'l1', 'l2', 'l2lib3.py')
+        path = os.path.join(self.tmpdir.name, "l1", "l2", "l2lib3.py")
         sys_path = sys.path + [self.tmpdir.name]
-        with unittest.mock.patch('sys.path', sys_path):
-            self.assertEqual(find_avocado_tests(path)[0],
-                             {'BaseL2': [('test_l3', {}, []),
-                                         ('test_l0', {}, [])]})
+        with unittest.mock.patch("sys.path", sys_path):
+            self.assertEqual(
+                find_avocado_tests(path)[0],
+                {"BaseL2": [("test_l3", {}, []), ("test_l0", {}, [])]},
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

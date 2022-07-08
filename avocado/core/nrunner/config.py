@@ -10,8 +10,8 @@ class ConfigDecoder(json.JSONDecoder):
     def decode_set(config_dict):
         for k, v in config_dict.items():
             if isinstance(v, dict):
-                if '__encoded_set__' in v:
-                    config_dict[k] = set(v['__encoded_set__'])
+                if "__encoded_set__" in v:
+                    config_dict[k] = set(v["__encoded_set__"])
         return config_dict
 
     def decode(self, config_str):  # pylint: disable=W0221
@@ -26,7 +26,7 @@ class ConfigEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, set):
-            return {'__encoded_set__': list(o)}
+            return {"__encoded_set__": list(o)}
         try:
             return json.JSONEncoder.default(self, o)
         except TypeError:

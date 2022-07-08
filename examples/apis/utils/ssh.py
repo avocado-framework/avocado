@@ -3,10 +3,10 @@ import time
 from avocado.utils.process import SubProcess
 from avocado.utils.ssh import Session
 
-with Session('host', user='root', key='/path/to/key') as s:
-    print('connected')
+with Session("host", user="root", key="/path/to/key") as s:
+    print("connected")
     procs = []
-    cmd = s.get_raw_ssh_command('sleep 5')
+    cmd = s.get_raw_ssh_command("sleep 5")
     for i in range(10):
         p = SubProcess(cmd)
         print(p.start())
@@ -17,10 +17,10 @@ with Session('host', user='root', key='/path/to/key') as s:
             proc.poll()
 
         if all([p.result.exit_status is not None for p in procs]):
-            print('all finished')
+            print("all finished")
             break
 
         time.sleep(1)
-        print('working...')
+        print("working...")
 
-print('session closed')
+print("session closed")

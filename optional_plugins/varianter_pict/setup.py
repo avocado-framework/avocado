@@ -19,26 +19,28 @@ from setuptools import setup
 try:
     from setuptools import find_namespace_packages
 except ImportError:
-    packages = ['avocado_varianter_pict']
+    packages = ["avocado_varianter_pict"]
 else:
-    packages = find_namespace_packages(include=['avocado_varianter_pict'])
+    packages = find_namespace_packages(include=["avocado_varianter_pict"])
 
-VERSION = open("VERSION", "r", encoding='utf-8').read().strip()
+VERSION = open("VERSION", "r", encoding="utf-8").read().strip()
 
-setup(name='avocado-framework-plugin-varianter-pict',
-      description='Varianter with combinatorial capabilities by PICT',
-      version=VERSION,
-      author='Avocado Developers',
-      author_email='avocado-devel@redhat.com',
-      url='http://avocado-framework.github.io/',
-      packages=packages,
-      include_package_data=True,
-      install_requires=[f'avocado-framework=={VERSION}'],
-      entry_points={
-          'avocado.plugins.cli': [
-              'varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPictCLI',
-          ],
-          "avocado.plugins.varianter": [
-              "varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPict",
-          ]}
-      )
+setup(
+    name="avocado-framework-plugin-varianter-pict",
+    description="Varianter with combinatorial capabilities by PICT",
+    version=VERSION,
+    author="Avocado Developers",
+    author_email="avocado-devel@redhat.com",
+    url="http://avocado-framework.github.io/",
+    packages=packages,
+    include_package_data=True,
+    install_requires=[f"avocado-framework=={VERSION}"],
+    entry_points={
+        "avocado.plugins.cli": [
+            "varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPictCLI",
+        ],
+        "avocado.plugins.varianter": [
+            "varianter_pict = avocado_varianter_pict.varianter_pict:VarianterPict",
+        ],
+    },
+)

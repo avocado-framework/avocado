@@ -74,10 +74,13 @@ class ReferenceResolution:
         self.origin = origin
 
     def __repr__(self):
-        fmt = ('<ReferenceResolution reference="{}" result="{}" '
-               'resolutions="{}" info="{}" origin="{}">')
-        return fmt.format(self.reference, self.result, self.resolutions,
-                          self.info, self.origin)
+        fmt = (
+            '<ReferenceResolution reference="{}" result="{}" '
+            'resolutions="{}" info="{}" origin="{}">'
+        )
+        return fmt.format(
+            self.reference, self.result, self.resolutions, self.info, self.origin
+        )
 
 
 class Resolver(EnabledExtensionManager):
@@ -92,12 +95,11 @@ class Resolver(EnabledExtensionManager):
     DEFAULT_POLICY = {
         ReferenceResolutionResult.SUCCESS: ReferenceResolutionAction.RETURN,
         ReferenceResolutionResult.NOTFOUND: ReferenceResolutionAction.CONTINUE,
-        ReferenceResolutionResult.ERROR: ReferenceResolutionAction.CONTINUE
+        ReferenceResolutionResult.ERROR: ReferenceResolutionAction.CONTINUE,
     }
 
     def __init__(self, config=None):
-        super().__init__('avocado.plugins.resolver',
-                         invoke_kwds={'config': config})
+        super().__init__("avocado.plugins.resolver", invoke_kwds={"config": config})
 
     def resolve(self, reference):
         resolution = []
@@ -107,13 +109,16 @@ class Resolver(EnabledExtensionManager):
                 if not result.origin:
                     result.origin = ext.name
             except Exception as exc:  # pylint: disable=W0703
-                result = ReferenceResolution(reference,
-                                             ReferenceResolutionResult.ERROR,
-                                             info=exc,
-                                             origin=ext.name)
+                result = ReferenceResolution(
+                    reference,
+                    ReferenceResolutionResult.ERROR,
+                    info=exc,
+                    origin=ext.name,
+                )
             resolution.append(result)
-            action = self.DEFAULT_POLICY.get(result.result,
-                                             ReferenceResolutionAction.CONTINUE)
+            action = self.DEFAULT_POLICY.get(
+                result.result, ReferenceResolutionAction.CONTINUE
+            )
             if action == ReferenceResolutionAction.RETURN:
                 break
         return resolution
@@ -129,8 +134,7 @@ class Discoverer(EnabledExtensionManager):
     """
 
     def __init__(self, config=None):
-        super().__init__('avocado.plugins.discoverer',
-                         invoke_kwds={'config': config})
+        super().__init__("avocado.plugins.discoverer", invoke_kwds={"config": config})
 
     def discover(self):
         resolutions = []
@@ -138,10 +142,11 @@ class Discoverer(EnabledExtensionManager):
             try:
                 results = ext.obj.discover()
             except Exception as exc:  # pylint: disable=W0703
-                results = [ReferenceResolution('',
-                                               ReferenceResolutionResult.ERROR,
-                                               info=exc,
-                                               origin=ext.name)]
+                results = [
+                    ReferenceResolution(
+                        "", ReferenceResolutionResult.ERROR, info=exc, origin=ext.name
+                    )
+                ]
             for result in results:
                 if not result.origin:
                     result.origin = ext.name
@@ -150,27 +155,36 @@ class Discoverer(EnabledExtensionManager):
         return resolutions
 
 
-def check_file(path, reference, suffix='.py',
-               type_check=os.path.isfile, type_name='regular file',
-               access_check=os.R_OK, access_name='readable'):
+def check_file(
+    path,
+    reference,
+    suffix=".py",
+    type_check=os.path.isfile,
+    type_name="regular file",
+    access_check=os.R_OK,
+    access_name="readable",
+):
     if suffix is not None:
         if not path.endswith(suffix):
             return ReferenceResolution(
                 reference,
                 ReferenceResolutionResult.NOTFOUND,
-                info=f'File "{path}" does not end with "{suffix}"')
+                info=f'File "{path}" does not end with "{suffix}"',
+            )
 
     if not type_check(path):
         return ReferenceResolution(
             reference,
             ReferenceResolutionResult.NOTFOUND,
-            info=f'File "{path}" does not exist or is not a {type_name}')
+            info=f'File "{path}" does not exist or is not a {type_name}',
+        )
 
     if not os.access(path, access_check):
         return ReferenceResolution(
             reference,
             ReferenceResolutionResult.NOTFOUND,
-            info=f'File "{path}" does not exist or is not {access_name}')
+            info=f'File "{path}" does not exist or is not {access_name}',
+        )
 
     return True
 
@@ -184,7 +198,7 @@ def _extend_directory(path):
         dirs.sort()
         for file_name in sorted(filenames):
             # does it make sense to ignore hidden files here?
-            if file_name.startswith('.'):
+            if file_name.startswith("."):
                 continue
             pth = os.path.join(dirpath, file_name)
             paths.append(pth)
@@ -229,8 +243,7 @@ def resolve(references, hint=None, ignore_missing=True, config=None):
     if not ignore_missing:
         missing = []
         for reference in references:
-            results = [res.result for res in resolutions if
-                       res.reference == reference]
+            results = [res.result for res in resolutions if res.reference == reference]
             if ReferenceResolutionResult.SUCCESS not in results:
                 missing.append(reference)
         # directories are automatically expanded, and thus they can

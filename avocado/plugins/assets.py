@@ -37,7 +37,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
     Handles the parsing of instrumented tests for `fetch_asset` statements.
     """
 
-    PATTERN = 'fetch_asset'
+    PATTERN = "fetch_asset"
 
     def __init__(self, file_name, klass=None, method=None):
         self.file_name = file_name
@@ -45,7 +45,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.klass = klass
         # we need to make sure we cover the setUp method when fetching
         # assets for a specific test
-        self.methods = [method, 'setUp']
+        self.methods = [method, "setUp"]
         self.asgmts = {}
         self.calls = []
 
@@ -60,7 +60,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
         self.tests = safeloader.find_avocado_tests(self.file_name)[0]
 
         # create Abstract Syntax Tree from test source file
-        with open(self.file_name, encoding='utf-8') as source_file:
+        with open(self.file_name, encoding="utf-8") as source_file:
             self.tree = ast.parse(source_file.read(), self.file_name)
 
         # build list of keyword arguments from calls that match pattern
@@ -161,7 +161,7 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
     def _ast_list_to_list(node):
         result = []
         for item in node.value.elts:
-            if hasattr(item, 'value'):
+            if hasattr(item, "value"):
                 result.append(item.value)
         return result
 
@@ -191,7 +191,9 @@ class FetchAssetHandler(ast.NodeVisitor):  # pylint: disable=R0902
                 if isinstance(node.value, ast.Str):
                     self.asgmts[cur_klass][cur_method][name] = node.value.s
                 elif isinstance(node.value, ast.List):
-                    self.asgmts[cur_klass][cur_method][name] = self._ast_list_to_list(node)
+                    self.asgmts[cur_klass][cur_method][name] = self._ast_list_to_list(
+                        node
+                    )
 
         self.generic_visit(node)
 
@@ -218,23 +220,22 @@ def fetch_assets(test_file, klass=None, method=None, logger=None):
     :returns: list of names that were successfully fetched and list of
               fails.
     """
-    cache_dirs = settings.as_dict().get('datadir.paths.cache_dirs')
-    timeout = settings.as_dict().get('assets.fetch.timeout')
+    cache_dirs = settings.as_dict().get("datadir.paths.cache_dirs")
+    timeout = settings.as_dict().get("assets.fetch.timeout")
     success = []
     fail = []
     handler = FetchAssetHandler(test_file, klass, method)
     for call in handler.calls:
-        expire = call.pop('expire', None)
+        expire = call.pop("expire", None)
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
 
         try:
             asset_obj = Asset(**call, cache_dirs=cache_dirs, expire=expire)
             if logger is not None:
-                logger.info('Fetching asset from %s:%s.%s',
-                            test_file, klass, method)
+                logger.info("Fetching asset from %s:%s.%s", test_file, klass, method)
             asset_obj.fetch(timeout)
-            success.append(call['name'])
+            success.append(call["name"])
         except (OSError, ValueError) as failed:
             fail.append(failed)
     return success, fail
@@ -247,6 +248,7 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
     INSTRUMENTED', but it runs during the test execution, before the actual
     test starts.
     """
+
     name = "fetchasset"
     description = "Fetch assets before the test run"
 
@@ -254,7 +256,7 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
         pass
 
     def pre_tests(self, job):
-        if not job.config.get('stdout_claimed_by', None):
+        if not job.config.get("stdout_claimed_by", None):
             logger = job.log
         else:
             logger = None
@@ -266,17 +268,15 @@ class FetchAssetJob(JobPreTests):  # pylint: disable=R0903
                 # benefit from the parsing of "fetch_asset()" calls just like
                 # the legacy runner.
                 if isinstance(test, Runnable):
-                    if test.kind == 'avocado-instrumented':
-                        module_path, klass_method = test.uri.split(':', 1)
-                        klass, method = klass_method.split('.', 1)
+                    if test.kind == "avocado-instrumented":
+                        module_path, klass_method = test.uri.split(":", 1)
+                        klass, method = klass_method.split(".", 1)
                         candidate = (module_path, klass, method)
                         candidates.append(candidate)
 
                 # fetch assets only on instrumented tests
                 elif isinstance(test[0], str):
-                    candidate = (test[1]['modulePath'],
-                                 test[0],
-                                 test[1]['methodName'])
+                    candidate = (test[1]["modulePath"], test[0], test[1]["methodName"])
                     if candidate not in candidates:
                         candidates.append(candidate)
 
@@ -288,15 +288,18 @@ class Assets(CLICmd):
     """
     Implements the avocado 'assets' subcommand
     """
-    name = 'assets'
-    description = 'Manage assets'
+
+    name = "assets"
+    description = "Manage assets"
 
     @staticmethod
     def _count_filter_args(config):
-        sub_command = config.get('assets_subcommand')
-        args = [config.get(f"assets.{sub_command}.days"),
-                config.get(f"assets.{sub_command}.size_filter"),
-                config.get(f"assets.{sub_command}.overall_limit")]
+        sub_command = config.get("assets_subcommand")
+        args = [
+            config.get(f"assets.{sub_command}.days"),
+            config.get(f"assets.{sub_command}.size_filter"),
+            config.get(f"assets.{sub_command}.overall_limit"),
+        ]
         return len([a for a in args if a is not None])
 
     def configure(self, parser):
@@ -305,138 +308,161 @@ class Assets(CLICmd):
         :param parser: The Avocado command line application parser
         :type parser: :class:`avocado.core.parser.ArgumentParser`
         """
+
         def register_filter_options(subparser, section):
-            help_msg = ("Apply action based on a size filter (comparison "
-                        "operator + value) in bytes. Ex '>20', '<=200'. "
-                        "Supported operators: " +
-                        ", ".join(SUPPORTED_OPERATORS))
-            settings.register_option(section=section,
-                                     key='size_filter',
-                                     help_msg=help_msg,
-                                     default=None,
-                                     metavar="FILTER",
-                                     key_type=str,
-                                     long_arg='--by-size-filter',
-                                     parser=subparser)
+            help_msg = (
+                "Apply action based on a size filter (comparison "
+                "operator + value) in bytes. Ex '>20', '<=200'. "
+                "Supported operators: " + ", ".join(SUPPORTED_OPERATORS)
+            )
+            settings.register_option(
+                section=section,
+                key="size_filter",
+                help_msg=help_msg,
+                default=None,
+                metavar="FILTER",
+                key_type=str,
+                long_arg="--by-size-filter",
+                parser=subparser,
+            )
 
             help_msg = "How old (in days) should Avocado look for assets?"
-            settings.register_option(section=section,
-                                     key='days',
-                                     help_msg=help_msg,
-                                     default=None,
-                                     key_type=int,
-                                     metavar="DAYS",
-                                     long_arg='--by-days',
-                                     parser=subparser)
+            settings.register_option(
+                section=section,
+                key="days",
+                help_msg=help_msg,
+                default=None,
+                key_type=int,
+                metavar="DAYS",
+                long_arg="--by-days",
+                parser=subparser,
+            )
 
-            help_msg = ("Filter will be based on a overall system limit "
-                        "threshold in bytes (with assets ordered by last "
-                        "access) or with a suffix unit. Valid suffixes are: ")
-            help_msg += ','.join(DataSize.MULTIPLIERS.keys())
+            help_msg = (
+                "Filter will be based on a overall system limit "
+                "threshold in bytes (with assets ordered by last "
+                "access) or with a suffix unit. Valid suffixes are: "
+            )
+            help_msg += ",".join(DataSize.MULTIPLIERS.keys())
 
-            settings.register_option(section=section,
-                                     key='overall_limit',
-                                     help_msg=help_msg,
-                                     default=None,
-                                     key_type=str,
-                                     metavar="LIMIT",
-                                     long_arg='--by-overall-limit',
-                                     parser=subparser)
+            settings.register_option(
+                section=section,
+                key="overall_limit",
+                help_msg=help_msg,
+                default=None,
+                key_type=str,
+                metavar="LIMIT",
+                long_arg="--by-overall-limit",
+                parser=subparser,
+            )
 
         parser = super().configure(parser)
 
-        subcommands = parser.add_subparsers(dest='assets_subcommand')
+        subcommands = parser.add_subparsers(dest="assets_subcommand")
         subcommands.required = True
 
         fetch_subcommand_parser = subcommands.add_parser(
-            'fetch',
-            help='Fetch assets from test source or config file if it\'s not'
-            ' already in the cache')
+            "fetch",
+            help="Fetch assets from test source or config file if it's not"
+            " already in the cache",
+        )
         help_msg = "Path to avocado instrumented test"
-        settings.register_option(section='assets.fetch',
-                                 key='references',
-                                 help_msg=help_msg,
-                                 default=[],
-                                 metavar='AVOCADO_INSTRUMENTED',
-                                 key_type=list,
-                                 nargs='+',
-                                 parser=fetch_subcommand_parser,
-                                 positional_arg=True)
+        settings.register_option(
+            section="assets.fetch",
+            key="references",
+            help_msg=help_msg,
+            default=[],
+            metavar="AVOCADO_INSTRUMENTED",
+            key_type=list,
+            nargs="+",
+            parser=fetch_subcommand_parser,
+            positional_arg=True,
+        )
 
         help_msg = "always return success for the fetch command."
-        settings.register_option(section='assets.fetch',
-                                 key='ignore_errors',
-                                 help_msg=help_msg,
-                                 default=False,
-                                 key_type=bool,
-                                 parser=fetch_subcommand_parser,
-                                 long_arg='--ignore-errors')
+        settings.register_option(
+            section="assets.fetch",
+            key="ignore_errors",
+            help_msg=help_msg,
+            default=False,
+            key_type=bool,
+            parser=fetch_subcommand_parser,
+            long_arg="--ignore-errors",
+        )
 
         help_msg = "Timeout to be used when download an asset."
-        settings.register_option(section='assets.fetch',
-                                 key='timeout',
-                                 help_msg=help_msg,
-                                 default=300,
-                                 key_type=int,
-                                 metavar="TIMEOUT",
-                                 parser=fetch_subcommand_parser,
-                                 long_arg='--timeout')
+        settings.register_option(
+            section="assets.fetch",
+            key="timeout",
+            help_msg=help_msg,
+            default=300,
+            key_type=int,
+            metavar="TIMEOUT",
+            parser=fetch_subcommand_parser,
+            long_arg="--timeout",
+        )
 
         register_subcommand_parser = subcommands.add_parser(
-                'register',
-                help='Register an asset directly to the cacche')
+            "register", help="Register an asset directly to the cacche"
+        )
 
         help_msg = "Unique name to associate with this asset."
-        settings.register_option(section='assets.register',
-                                 key='name',
-                                 help_msg=help_msg,
-                                 default=None,
-                                 key_type=str,
-                                 parser=register_subcommand_parser,
-                                 positional_arg=True)
+        settings.register_option(
+            section="assets.register",
+            key="name",
+            help_msg=help_msg,
+            default=None,
+            key_type=str,
+            parser=register_subcommand_parser,
+            positional_arg=True,
+        )
 
         help_msg = "Path to asset that you would like to register manually."
-        settings.register_option(section='assets.register',
-                                 key='url',
-                                 help_msg=help_msg,
-                                 default=None,
-                                 key_type=str,
-                                 parser=register_subcommand_parser,
-                                 positional_arg=True)
+        settings.register_option(
+            section="assets.register",
+            key="url",
+            help_msg=help_msg,
+            default=None,
+            key_type=str,
+            parser=register_subcommand_parser,
+            positional_arg=True,
+        )
 
         help_msg = "SHA1 hash of this asset."
-        settings.register_option(section='assets.register',
-                                 key='sha1_hash',
-                                 help_msg=help_msg,
-                                 default=None,
-                                 key_type=str,
-                                 metavar="SHA1",
-                                 long_arg='--hash',
-                                 parser=register_subcommand_parser)
+        settings.register_option(
+            section="assets.register",
+            key="sha1_hash",
+            help_msg=help_msg,
+            default=None,
+            key_type=str,
+            metavar="SHA1",
+            long_arg="--hash",
+            parser=register_subcommand_parser,
+        )
 
         purge_subcommand_parser = subcommands.add_parser(
-                'purge',
-                help='Removes assets cached locally.')
-        register_filter_options(purge_subcommand_parser, 'assets.purge')
+            "purge", help="Removes assets cached locally."
+        )
+        register_filter_options(purge_subcommand_parser, "assets.purge")
 
-        help_msg = 'List all cached assets.'
-        list_subcommand_parser = subcommands.add_parser(
-                'list',
-                help=help_msg)
-        register_filter_options(list_subcommand_parser, 'assets.list')
+        help_msg = "List all cached assets."
+        list_subcommand_parser = subcommands.add_parser("list", help=help_msg)
+        register_filter_options(list_subcommand_parser, "assets.list")
 
     def handle_purge(self, config):
-        days = config.get('assets.purge.days')
-        size_filter = config.get('assets.purge.size_filter')
-        overall_limit = config.get('assets.purge.overall_limit')
+        days = config.get("assets.purge.days")
+        size_filter = config.get("assets.purge.size_filter")
+        overall_limit = config.get("assets.purge.overall_limit")
 
         if self._count_filter_args(config) != 1:
-            msg = ("You should choose --by-size-filter or --by-days. "
-                   "For help, run: avocado assets purge --help")
+            msg = (
+                "You should choose --by-size-filter or --by-days. "
+                "For help, run: avocado assets purge --help"
+            )
             LOG_UI.error(msg)
             return exit_codes.AVOCADO_FAIL
 
-        cache_dirs = config.get('datadir.paths.cache_dirs')
+        cache_dirs = config.get("datadir.paths.cache_dirs")
         try:
             if days is not None:
                 Asset.remove_assets_by_unused_for_days(days, cache_dirs)
@@ -459,15 +485,17 @@ class Assets(CLICmd):
         return exit_codes.AVOCADO_ALL_OK
 
     def handle_list(self, config):
-        days = config.get('assets.list.days')
-        size_filter = config.get('assets.list.size_filter')
+        days = config.get("assets.list.days")
+        size_filter = config.get("assets.list.size_filter")
         if self._count_filter_args(config) == 2:
-            msg = ("You should choose --by-size-filter or --by-days. "
-                   "For help, run: avocado assets list --help")
+            msg = (
+                "You should choose --by-size-filter or --by-days. "
+                "For help, run: avocado assets list --help"
+            )
             LOG_UI.error(msg)
             return exit_codes.AVOCADO_FAIL
 
-        cache_dirs = config.get('datadir.paths.cache_dirs')
+        cache_dirs = config.get("datadir.paths.cache_dirs")
         try:
             assets = None
             if days is not None:
@@ -487,10 +515,14 @@ class Assets(CLICmd):
             hash_path = f"{asset}-CHECKSUM"
             atime = datetime.fromtimestamp(stat.st_atime)
             _, checksum = Asset.read_hash_from_file(hash_path)
-            matrix.append((basename,
-                           str(checksum or "unknown")[:10],
-                           atime.strftime('%Y-%m-%d %H:%M:%S'),
-                           display_data_size(stat.st_size)))
+            matrix.append(
+                (
+                    basename,
+                    str(checksum or "unknown")[:10],
+                    atime.strftime("%Y-%m-%d %H:%M:%S"),
+                    display_data_size(stat.st_size),
+                )
+            )
         header = ("asset", "checksum", "atime", "size")
         output = list(iter_tabular_output(matrix, header))
         if len(output) == 1:
@@ -503,41 +535,43 @@ class Assets(CLICmd):
     def handle_fetch(config):
         exitcode = exit_codes.AVOCADO_ALL_OK
         # fetch assets from instrumented tests
-        for test_file in config.get('assets.fetch.references'):
-            if os.path.isfile(test_file) and test_file.endswith('.py'):
-                LOG_UI.debug('Fetching assets from %s.', test_file)
+        for test_file in config.get("assets.fetch.references"):
+            if os.path.isfile(test_file) and test_file.endswith(".py"):
+                LOG_UI.debug("Fetching assets from %s.", test_file)
                 success, fail = fetch_assets(test_file)
 
                 for asset_file in success:
-                    LOG_UI.debug('  File %s fetched or already on'
-                                 ' cache.', asset_file)
+                    LOG_UI.debug(
+                        "  File %s fetched or already on" " cache.", asset_file
+                    )
                 for asset_file in fail:
                     LOG_UI.error(asset_file)
 
                 if fail:
                     exitcode |= exit_codes.AVOCADO_FAIL
             else:
-                LOG_UI.warning('No such file or file not supported: %s',
-                               test_file)
+                LOG_UI.warning("No such file or file not supported: %s", test_file)
                 exitcode |= exit_codes.AVOCADO_FAIL
 
         # check if we should ignore the errors
-        if config.get('assets.fetch.ignore_errors'):
+        if config.get("assets.fetch.ignore_errors"):
             return exit_codes.AVOCADO_ALL_OK
         return exitcode
 
     @staticmethod
     def handle_register(config):
-        cache_dirs = config.get('datadir.paths.cache_dirs')
-        name = config.get('assets.register.name')
-        asset_hash = config.get('assets.register.sha1_hash')
-        location = config.get('assets.register.url')
+        cache_dirs = config.get("datadir.paths.cache_dirs")
+        name = config.get("assets.register.name")
+        asset_hash = config.get("assets.register.sha1_hash")
+        location = config.get("assets.register.url")
         # Adding a twice the location is a small hack due the current logic to
         # return "by_name". This needs to be improved soon.
-        asset = Asset(name=name,
-                      asset_hash=asset_hash,
-                      locations=[location, location],
-                      cache_dirs=cache_dirs)
+        asset = Asset(
+            name=name,
+            asset_hash=asset_hash,
+            locations=[location, location],
+            cache_dirs=cache_dirs,
+        )
 
         try:
             asset.find_asset_file()
@@ -553,15 +587,15 @@ class Assets(CLICmd):
                 return exit_codes.AVOCADO_FAIL
 
     def run(self, config):
-        subcommand = config.get('assets_subcommand')
+        subcommand = config.get("assets_subcommand")
 
-        if subcommand == 'fetch':
+        if subcommand == "fetch":
             return self.handle_fetch(config)
-        elif subcommand == 'register':
+        elif subcommand == "register":
             return self.handle_register(config)
-        elif subcommand == 'purge':
+        elif subcommand == "purge":
             return self.handle_purge(config)
-        elif subcommand == 'list':
+        elif subcommand == "list":
             return self.handle_list(config)
         else:
             return exit_codes.UTILITY_FAIL

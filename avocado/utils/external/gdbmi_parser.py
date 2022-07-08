@@ -97,94 +97,94 @@ class GdbMiScannerBase(spark.GenericScanner):
         return self.rv
 
     def t_nl(self, s):  # pylint: disable=W0613
-        r'\n|\r\n'
-        self.rv.append(Token('nl'))
+        r"\n|\r\n"
+        self.rv.append(Token("nl"))
 
     def t_whitespace(self, s):  # pylint: disable=W0613
-        r'[ \t\f\v]+'
+        r"[ \t\f\v]+"
 
     def t_symbol(self, s):
-        r',|\{|\}|\[|\]|\='
+        r",|\{|\}|\[|\]|\="
         self.rv.append(Token(s, s))
 
     def t_result_type(self, s):
-        r'\*|\+|\^'
-        self.rv.append(Token('result_type', s))
+        r"\*|\+|\^"
+        self.rv.append(Token("result_type", s))
 
     def t_stream_type(self, s):
-        r'\@|\&|\~'
-        self.rv.append(Token('stream_type', s))
+        r"\@|\&|\~"
+        self.rv.append(Token("stream_type", s))
 
     def t_string(self, s):
-        r'[\w-]+'
-        self.rv.append(Token('string', s))
+        r"[\w-]+"
+        self.rv.append(Token("string", s))
 
     def t_c_string(self, s):
-        r'\".*?(?<![\\\\])\"'
-        inner = self.__unescape(s[1:len(s)-1])
-        self.rv.append(Token('c_string', inner))
+        r"\".*?(?<![\\\\])\" "
+        inner = self.__unescape(s[1 : len(s) - 1])
+        self.rv.append(Token("c_string", inner))
 
-    def t_default(self, s):
-        r'( . | \n )+'
+    def t_default(self, s):  # pylint: disable=W0221
+        r"( . | \n )+"
         raise Exception(f"Specification error: unmatched input for '{s}'")
 
     @staticmethod
     def __unescape(s):
-        s = re.sub(r'\\r', r'\r', s)
-        s = re.sub(r'\\n', r'\n', s)
-        s = re.sub(r'\\t', r'\t', s)
-        return re.sub(r'\\(.)', r'\1', s)
+        s = re.sub(r"\\r", r"\r", s)
+        s = re.sub(r"\\n", r"\n", s)
+        s = re.sub(r"\\t", r"\t", s)
+        return re.sub(r"\\(.)", r"\1", s)
 
 
 class GdbMiScanner(GdbMiScannerBase):
     def t_token(self, s):
-        r'\d+'
-        self.rv.append(Token('token', s))
+        r"\d+"
+        self.rv.append(Token("token", s))
 
 
 class GdbMiParser(spark.GenericASTBuilder):
     def __init__(self):
-        spark.GenericASTBuilder.__init__(self, AST, 'output')
+        spark.GenericASTBuilder.__init__(self, AST, "output")
 
     def p_output(self, args):
-        '''
-                output ::= record_list
-                record_list ::= generic_record
-                record_list ::= generic_record record_list
-                generic_record ::= result_record
-                generic_record ::= stream_record
-                result_record ::= result_header result_list nl
-                result_record ::= result_header nl
-                result_header ::= token result_type class
-                result_header ::= result_type class
-                result_header ::= token = class
-                result_header ::= = class
-                stream_record ::= stream_type c_string nl
-                result_list ::= , result result_list
-                result_list ::= , result
-                result_list ::= , tuple
-                result ::= variable = value
-                class ::= string
-                variable ::= string
-                value ::= const
-                value ::= tuple
-                value ::= list
-                value_list ::= , value
-                value_list ::= , value value_list
-                const ::= c_string
-                tuple ::= { }
-                tuple ::= { result }
-                tuple ::= { result result_list }
-                list ::= [ ]
-                list ::= [ value ]
-                list ::= [ value value_list ]
-                list ::= [ result ]
-                list ::= [ result result_list ]
-                list ::= { value }
-                list ::= { value value_list }
-        '''
+        """
+        output ::= record_list
+        record_list ::= generic_record
+        record_list ::= generic_record record_list
+        generic_record ::= result_record
+        generic_record ::= stream_record
+        result_record ::= result_header result_list nl
+        result_record ::= result_header nl
+        result_header ::= token result_type class
+        result_header ::= result_type class
+        result_header ::= token = class
+        result_header ::= = class
+        stream_record ::= stream_type c_string nl
+        result_list ::= , result result_list
+        result_list ::= , result
+        result_list ::= , tuple
+        result ::= variable = value
+        class ::= string
+        variable ::= string
+        value ::= const
+        value ::= tuple
+        value ::= list
+        value_list ::= , value
+        value_list ::= , value value_list
+        const ::= c_string
+        tuple ::= { }
+        tuple ::= { result }
+        tuple ::= { result result_list }
+        list ::= [ ]
+        list ::= [ value ]
+        list ::= [ value value_list ]
+        list ::= [ result ]
+        list ::= [ result result_list ]
+        list ::= { value }
+        list ::= { value value_list }
+        """
 
-    def terminal(self, token):
+    def terminal(self, token):  # pylint: disable=W0221
         #  Homogeneous AST.
         rv = AST(token.type)
         rv.value = token.value  # pylint: disable=W0201
@@ -192,17 +192,14 @@ class GdbMiParser(spark.GenericASTBuilder):
 
     def nonterminal(self, token_type, args):
         #  Flatten AST a bit by not making nodes if there's only one child.
-        exclude = [
-            'record_list'
-        ]
+        exclude = ["record_list"]
         if len(args) == 1 and token_type not in exclude:
             return args[0]
         return spark.GenericASTBuilder.nonterminal(self, token_type, args)
 
     def error(self, token, i=0, tokens=None):  # pylint: disable=W0221
         if i > 2:
-            print(f'{tokens[i - 3]} {tokens[i - 2]} '
-                  f'{tokens[i - 1]} {tokens[i]}')
+            print(f"{tokens[i - 3]} {tokens[i - 2]} " f"{tokens[i - 1]} {tokens[i]}")
         raise Exception(f"Syntax error at or near {int(i)}:'{token}' token")
 
 
@@ -214,13 +211,13 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
     @staticmethod
     def __translate_type(token_type):
         table = {
-            '^': 'result',
-            '=': 'notify',
-            '+': 'status',
-            '*': 'exec',
-            '~': 'console',
-            '@': 'target',
-            '&': 'log'
+            "^": "result",
+            "=": "notify",
+            "+": "status",
+            "*": "exec",
+            "~": "console",
+            "@": "target",
+            "&": "log",
         }
         return table[token_type]
 
@@ -252,7 +249,7 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
                     else:
                         node.value[n] = v
         else:
-            raise Exception('Invalid tuple')
+            raise Exception("Invalid tuple")
         # print 'tuple: %s' % node.value
 
     @staticmethod
@@ -296,7 +293,7 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
         node.value = node[0].value
         if len(node) == 3:
             # result_record ::= result_header result_list nl
-            node.value['results'] = node[1].value
+            node.value["results"] = node[1].value
         elif len(node) == 2:
             # result_record ::= result_header nl
             pass
@@ -306,26 +303,26 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
         if len(node) == 3:
             # result_header ::= token result_type class
             node.value = {
-                    'token': node[0].value,
-                    'type': self.__translate_type(node[1].value),
-                    'class_': node[2].value,
-                    'record_type': 'result'
+                "token": node[0].value,
+                "type": self.__translate_type(node[1].value),
+                "class_": node[2].value,
+                "record_type": "result",
             }
         elif len(node) == 2:
             # result_header ::= result_type class
             node.value = {
-                    'token': None,
-                    'type': self.__translate_type(node[0].value),
-                    'class_': node[1].value,
-                    'record_type': 'result'
+                "token": None,
+                "type": self.__translate_type(node[0].value),
+                "class_": node[1].value,
+                "record_type": "result",
             }
 
     def n_stream_record(self, node):
         # stream_record ::= stream_type c_string nl
         node.value = {
-            'type': self.__translate_type(node[0].value),
-            'value': node[1].value,
-            'record_type': 'stream'
+            "type": self.__translate_type(node[0].value),
+            "value": node[1].value,
+            "record_type": "stream",
         }
         # print 'stream_record: %s' % node.value
 
@@ -340,7 +337,7 @@ class GdbMiInterpreter(spark.GenericASTTraversal):
         # print 'record_list: %s' % node.value
 
     # def default(self, node):
-        # print 'default: ' + node.type
+    # print 'default: ' + node.type
 
 
 class GdbDynamicObject:
@@ -360,13 +357,13 @@ class GdbDynamicObject:
             raise IndexError
 
     def __getattr__(self, name):
-        if name.startswith('__'):
+        if name.startswith("__"):
             raise AttributeError
         return None
 
     def graft(self, dict_):
         for name, value in list(dict_.items()):
-            name = name.replace('-', '_')
+            name = name.replace("-", "_")
             if isinstance(value, dict):
                 value = GdbDynamicObject(value)
             elif isinstance(value, list):
@@ -383,8 +380,8 @@ class GdbMiRecord:
     def __init__(self, record):
         self.result = None
         for name, value in list(record[0].items()):
-            name = name.replace('-', '_')
-            if name == 'results':
+            name = name.replace("-", "_")
+            if name == "results":
                 for result in value:
                     if not self.result:
                         self.result = GdbDynamicObject(result)

@@ -35,7 +35,7 @@ def get_proc_sys(key):
     :param key: A location under /proc/sys
     :return: The single-line sysctl value as a string.
     """
-    path = os.path.join('/proc/sys/%s', key)
+    path = os.path.join("/proc/sys/%s", key)
     return genio.read_one_line(path)
 
 
@@ -48,7 +48,7 @@ def set_proc_sys(key, value):
 
     :return: The single-line sysctl value as a string.
     """
-    path = os.path.join('/proc/sys/%s', key)
+    path = os.path.join("/proc/sys/%s", key)
     genio.write_one_line(path, value)
     return get_proc_sys(key)
 
@@ -57,7 +57,7 @@ def is_selinux_enforcing():
     """
     Returns True if SELinux is in enforcing mode, False if permissive/disabled.
     """
-    if '1' in genio.read_one_line('/sys/fs/selinux/enforce'):
+    if "1" in genio.read_one_line("/sys/fs/selinux/enforce"):
         return True
     return False
 
@@ -68,7 +68,7 @@ def enable_selinux_enforcing():
 
     :return: True if SELinux enable in enforcing mode, False if not enabled
     """
-    genio.write_one_line('/sys/fs/selinux/enforce', '1')
+    genio.write_one_line("/sys/fs/selinux/enforce", "1")
     if is_selinux_enforcing():
         return True
     return False

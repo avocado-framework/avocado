@@ -3,7 +3,9 @@ import re
 
 #: Gets the docstring directive value from a string. Used to tweak
 #: test behavior in various ways
-DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(dependency={.*}))\s*$'
+DOCSTRING_DIRECTIVE_RE_RAW = (
+    r"\s*:avocado:[ \t]+(([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=\-\.]*)|(dependency={.*}))\s*$"
+)
 # the RE will match `:avocado: tags=category` or `:avocado: dependency={}`
 DOCSTRING_DIRECTIVE_RE = re.compile(DOCSTRING_DIRECTIVE_RE_RAW)
 
@@ -48,13 +50,13 @@ def get_docstring_directives_tags(docstring):
     """
     result = {}
     for item in get_docstring_directives(docstring):
-        if item.startswith('tags='):
-            _, comma_tags = item.split('tags=', 1)
-            for tag in comma_tags.split(','):
+        if item.startswith("tags="):
+            _, comma_tags = item.split("tags=", 1)
+            for tag in comma_tags.split(","):
                 if not tag:
                     continue
-                if ':' in tag:
-                    key, val = tag.split(':', 1)
+                if ":" in tag:
+                    key, val = tag.split(":", 1)
                     if key in result:
                         result[key].add(val)
                     else:
@@ -73,8 +75,8 @@ def get_docstring_directives_dependencies(docstring):
     """
     dependencies = []
     for item in get_docstring_directives(docstring):
-        if item.startswith('dependency='):
-            _, dependency_str = item.split('dependency=', 1)
+        if item.startswith("dependency="):
+            _, dependency_str = item.split("dependency=", 1)
             try:
                 dependencies.append(json.loads(dependency_str))
             except json.decoder.JSONDecodeError:

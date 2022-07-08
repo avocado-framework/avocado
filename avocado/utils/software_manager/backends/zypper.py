@@ -5,7 +5,7 @@ from avocado.utils import path as utils_path
 from avocado.utils import process
 from avocado.utils.software_manager.backends.rpm import RpmBackend
 
-log = logging.getLogger('avocado.utils.software_manager')
+log = logging.getLogger("avocado.utils.software_manager")
 
 
 class ZypperBackend(RpmBackend):
@@ -21,17 +21,16 @@ class ZypperBackend(RpmBackend):
         Initializes the base command and the yum package repository.
         """
         super().__init__()
-        self.base_command = utils_path.find_command('zypper') + ' -n'
-        z_cmd = self.base_command + ' --version'
-        cmd_result = process.run(z_cmd, ignore_status=True,
-                                 verbose=False)
+        self.base_command = utils_path.find_command("zypper") + " -n"
+        z_cmd = self.base_command + " --version"
+        cmd_result = process.run(z_cmd, ignore_status=True, verbose=False)
         out = cmd_result.stdout_text.strip()
         try:
-            ver = re.findall(r'\d.\d*.\d*', out)[0]
+            ver = re.findall(r"\d.\d*.\d*", out)[0]
         except IndexError:
             ver = out
         self.pm_version = ver
-        log.debug('Zypper version: %s', self.pm_version)
+        log.debug("Zypper version: %s", self.pm_version)
 
     def install(self, name):
         """
@@ -39,7 +38,7 @@ class ZypperBackend(RpmBackend):
 
         :param name: Package Name.
         """
-        i_cmd = self.base_command + ' install -l ' + name
+        i_cmd = self.base_command + " install -l " + name
         try:
             process.system(i_cmd, sudo=True)
             return True
@@ -52,7 +51,7 @@ class ZypperBackend(RpmBackend):
 
         :param url: URL for the package repository.
         """
-        ar_cmd = self.base_command + ' addrepo ' + url
+        ar_cmd = self.base_command + " addrepo " + url
         try:
             process.system(ar_cmd, sudo=True)
             return True
@@ -65,7 +64,7 @@ class ZypperBackend(RpmBackend):
 
         :param url: URL for the package repository.
         """
-        rr_cmd = self.base_command + ' removerepo ' + url
+        rr_cmd = self.base_command + " removerepo " + url
         try:
             process.system(rr_cmd, sudo=True)
             return True
@@ -76,7 +75,7 @@ class ZypperBackend(RpmBackend):
         """
         Removes package [name].
         """
-        r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
+        r_cmd = self.base_command + " " + "erase" + " " + name
 
         try:
             process.system(r_cmd, sudo=True)
@@ -94,9 +93,9 @@ class ZypperBackend(RpmBackend):
         :type name: str
         """
         if not name:
-            u_cmd = self.base_command + ' update -l'
+            u_cmd = self.base_command + " update -l"
         else:
-            u_cmd = self.base_command + ' ' + 'update' + ' ' + name
+            u_cmd = self.base_command + " " + "update" + " " + name
 
         try:
             process.system(u_cmd, sudo=True)
@@ -110,12 +109,12 @@ class ZypperBackend(RpmBackend):
 
         :param name: File path.
         """
-        p_cmd = self.base_command + ' what-provides ' + name
+        p_cmd = self.base_command + " what-provides " + name
         list_provides = []
         try:
-            p_output = process.system_output(p_cmd).split('\n')[4:]
+            p_output = process.system_output(p_cmd).split("\n")[4:]
             for line in p_output:
-                line = [a.strip() for a in line.split('|')]
+                line = [a.strip() for a in line.split("|")]
                 try:
                     # state, pname, type, version, arch, repository = line
                     pname = line[1]
@@ -124,8 +123,9 @@ class ZypperBackend(RpmBackend):
                 except IndexError:
                     pass
             if len(list_provides) > 1:
-                log.warning('More than one package found, '
-                            'opting by the first queue result')
+                log.warning(
+                    "More than one package found, " "opting by the first queue result"
+                )
             if list_provides:
                 log.info("Package %s provides %s", list_provides[0], name)
                 return list_provides[0]
@@ -139,13 +139,13 @@ class ZypperBackend(RpmBackend):
         Keyword argument:
         name -- name of the package
         """
-        s_cmd = f'{self.base_command} source-install -d {name}'
+        s_cmd = f"{self.base_command} source-install -d {name}"
 
         try:
             process.system(s_cmd, sudo=True)
             return True
         except process.CmdError:
-            log.error('Installing dependencies failed')
+            log.error("Installing dependencies failed")
             return False
 
     def _source_install(self, name):
@@ -157,14 +157,14 @@ class ZypperBackend(RpmBackend):
 
         :return path: path of the spec file
         """
-        s_cmd = f'{self.base_command} source-install {name}'
+        s_cmd = f"{self.base_command} source-install {name}"
 
         try:
             process.system(s_cmd, sudo=True)
             if self.build_dep(name):
-                return f'/usr/src/packages/SPECS/{name}.spec'
+                return f"/usr/src/packages/SPECS/{name}.spec"
         except process.CmdError:
-            log.error('Installing source failed')
+            log.error("Installing source failed")
             return ""
 
     def get_source(self, name, dest_path):
@@ -179,9 +179,11 @@ class ZypperBackend(RpmBackend):
         """
         if not self.check_installed("rpm-build"):
             if not self.install("rpm-build"):
-                log.error("SoftwareManager (RpmBackend) can't get packages"
-                          "with dependency resolution: Package 'rpm-build'"
-                          "could not be installed")
+                log.error(
+                    "SoftwareManager (RpmBackend) can't get packages"
+                    "with dependency resolution: Package 'rpm-build'"
+                    "could not be installed"
+                )
                 return ""
         try:
             spec_path = self._source_install(name)

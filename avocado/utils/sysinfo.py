@@ -118,11 +118,11 @@ class Logfile(Collectible):
             try:
                 yield from self._read_file(self.path)
             except IOError:
-                raise CollectibleException(f"Not logging {self.path} "
-                                           f"(lack of permissions)")
+                raise CollectibleException(
+                    f"Not logging {self.path} " f"(lack of permissions)"
+                )
         else:
-            raise CollectibleException(f"Not logging {self.path} "
-                                       f"(file not found)")
+            raise CollectibleException(f"Not logging {self.path} " f"(file not found)")
 
 
 class Command(Collectible):
@@ -135,7 +135,7 @@ class Command(Collectible):
     :param locale: Force LANG for sysinfo collection
     """
 
-    def __init__(self, cmd, timeout=-1, locale='C'):
+    def __init__(self, cmd, timeout=-1, locale="C"):
         super().__init__(cmd)
         self._name = self.log_path
         self.cmd = cmd
@@ -172,20 +172,23 @@ class Command(Collectible):
         if int(self.timeout) <= 0:
             self.timeout = None
         try:
-            result = process.run(self.cmd,
-                                 timeout=self.timeout,
-                                 verbose=False,
-                                 ignore_status=True,
-                                 shell=True,
-                                 env=env)
+            result = process.run(
+                self.cmd,
+                timeout=self.timeout,
+                verbose=False,
+                ignore_status=True,
+                shell=True,
+                env=env,
+            )
             yield result.stdout
         except FileNotFoundError as exc_fnf:
-            raise CollectibleException(f"Not logging '{self.cmd}' "
-                                       f"(command '{exc_fnf.filename}' "
-                                       f"was not found)")
+            raise CollectibleException(
+                f"Not logging '{self.cmd}' "
+                f"(command '{exc_fnf.filename}' "
+                f"was not found)"
+            )
         except Exception as exc:  # pylint: disable=W0703, W0612
-            raise CollectibleException(f'Could not execute "{self.cmd}": '
-                                       '{exc}')
+            raise CollectibleException(f'Could not execute "{self.cmd}": ' "{exc}")
 
 
 class Daemon(Command):
@@ -236,13 +239,16 @@ class Daemon(Command):
         stdout = open(logf_path, "w")  # pylint: disable=W1514
 
         try:
-            self.daemon_process = subprocess.Popen(shlex.split(self.cmd),
-                                                   stdin=stdin, stdout=stdout,
-                                                   stderr=subprocess.STDOUT,
-                                                   shell=False, env=env)
+            self.daemon_process = subprocess.Popen(
+                shlex.split(self.cmd),
+                stdin=stdin,
+                stdout=stdout,
+                stderr=subprocess.STDOUT,
+                shell=False,
+                env=env,
+            )
         except OSError as os_err:
-            raise CollectibleException(f'Could not execute "{self.cmd}": '
-                                       f'{os_err}')
+            raise CollectibleException(f'Could not execute "{self.cmd}": ' f"{os_err}")
 
     def collect(self):
         """
@@ -257,9 +263,11 @@ class Daemon(Command):
                 for line in self.temp_file.readlines():
                     yield line
             else:
-                raise OSError(f"Daemon process '{self.cmd}' "
-                              f"(pid {int(self.daemon_process.pid)}) "
-                              f"terminated abnormally (code {int(retcode)})")
+                raise OSError(
+                    f"Daemon process '{self.cmd}' "
+                    f"(pid {int(self.daemon_process.pid)}) "
+                    f"terminated abnormally (code {int(retcode)})"
+                )
 
 
 class JournalctlWatcher(Collectible):
@@ -272,7 +280,7 @@ class JournalctlWatcher(Collectible):
 
     def __init__(self, log_path=None):
         if not log_path:
-            log_path = 'journalctl.gz'
+            log_path = "journalctl.gz"
 
         super().__init__(log_path)
         self.cursor = self._get_cursor()
@@ -295,13 +303,12 @@ class JournalctlWatcher(Collectible):
     @staticmethod
     def _get_cursor():
         try:
-            cmd = 'journalctl --quiet --lines 1 --output json'
+            cmd = "journalctl --quiet --lines 1 --output json"
             result = process.system_output(cmd, verbose=False)
             last_record = json.loads(astring.to_text(result, "utf-8"))
-            return last_record['__CURSOR']
+            return last_record["__CURSOR"]
         except Exception as detail:  # pylint: disable=W0703
-            raise CollectibleException(f"Journalctl collection failed: "
-                                       f"{detail}")
+            raise CollectibleException(f"Journalctl collection failed: " f"{detail}")
 
     def collect(self):
         """
@@ -310,12 +317,13 @@ class JournalctlWatcher(Collectible):
         """
         if self.cursor:
             try:
-                cmd = f'journalctl --quiet --after-cursor {self.cursor}'
+                cmd = f"journalctl --quiet --after-cursor {self.cursor}"
                 log_diff = process.system_output(cmd, verbose=False)
                 yield log_diff
             except Exception as detail:  # pylint: disable=W0703
-                raise CollectibleException(f"Journalctl collection failed: "
-                                           f"{detail}")
+                raise CollectibleException(
+                    f"Journalctl collection failed: " f"{detail}"
+                )
 
 
 class LogWatcher(Collectible):
@@ -346,8 +354,9 @@ class LogWatcher(Collectible):
             self.size = stat.st_size
             self.inode = stat.st_ino
         except (IOError, OSError):
-            raise CollectibleException(f"Not logging {self.path} "
-                                       f"(lack of permissions)")
+            raise CollectibleException(
+                f"Not logging {self.path} " f"(lack of permissions)"
+            )
 
     def __repr__(self):
         r = "LogWatcher(%r, %r)"
@@ -381,5 +390,6 @@ class LogWatcher(Collectible):
         try:
             yield from self._read_file(self.path, bytes_to_skip)
         except (IOError, OSError):
-            raise CollectibleException(f"Not logging {self.path} "
-                                       f"(lack of permissions)")
+            raise CollectibleException(
+                f"Not logging {self.path} " f"(lack of permissions)"
+            )

@@ -9,20 +9,23 @@ from avocado.core.varianter import dump_variant
 
 
 class RuntimeTaskStatus(Enum):
-    WAIT_DEPENDENCIES = 'WAITING DEPENDENCIES'
-    WAIT = 'WAITING'
-    FINISHED = 'FINISHED'
-    TIMEOUT = 'FINISHED TIMEOUT'
-    IN_CACHE = 'FINISHED IN CACHE'
-    FAILFAST = 'FINISHED FAILFAST'
-    FAIL_TRIAGE = 'FAILED ON TRIAGE'
-    FAIL_START = 'FAILED ON START'
-    STARTED = 'STARTED'
+    WAIT_DEPENDENCIES = "WAITING DEPENDENCIES"
+    WAIT = "WAITING"
+    FINISHED = "FINISHED"
+    TIMEOUT = "FINISHED TIMEOUT"
+    IN_CACHE = "FINISHED IN CACHE"
+    FAILFAST = "FINISHED FAILFAST"
+    FAIL_TRIAGE = "FAILED ON TRIAGE"
+    FAIL_START = "FAILED ON START"
+    STARTED = "STARTED"
 
     @staticmethod
     def finished_statuses():
-        return [status for _, status in RuntimeTaskStatus.__members__.items()
-                if "FINISHED" in status.value]
+        return [
+            status
+            for _, status in RuntimeTaskStatus.__members__.items()
+            if "FINISHED" in status.value
+        ]
 
 
 class RuntimeTask:
@@ -62,8 +65,10 @@ class RuntimeTask:
         if self.status is None:
             return f'<RuntimeTask Task Identifier: "{self.task.identifier}">'
         else:
-            return (f'<RuntimeTask Task Identifier: "{self.task.identifier}"'
-                    f'Status: "{self.status}">')
+            return (
+                f'<RuntimeTask Task Identifier: "{self.task.identifier}"'
+                f'Status: "{self.status}">'
+            )
 
     def __hash__(self):
         return hash(self.task.identifier)
@@ -81,22 +86,32 @@ class RuntimeTask:
 
     def get_finished_dependencies(self):
         """Returns all dependencies which already finished."""
-        return [dep for dep in self.dependencies if
-                dep.status in RuntimeTaskStatus.finished_statuses()]
+        return [
+            dep
+            for dep in self.dependencies
+            if dep.status in RuntimeTaskStatus.finished_statuses()
+        ]
 
     def can_run(self):
         if not self.are_dependencies_finished():
             return False
 
         for dependency in self.dependencies:
-            if dependency.result != 'pass':
+            if dependency.result != "pass":
                 return False
         return True
 
     @classmethod
-    def from_runnable(cls, runnable, no_digits, index, variant,
-                      test_suite_name=None, status_server_uri=None,
-                      job_id=None):
+    def from_runnable(
+        cls,
+        runnable,
+        no_digits,
+        index,
+        variant,
+        test_suite_name=None,
+        status_server_uri=None,
+        job_id=None,
+    ):
         """Creates runtime task for test from runnable
 
         :param runnable: the "description" of what the task should run.
@@ -122,25 +137,22 @@ class RuntimeTask:
             prefix = f"{test_suite_name}-{index}"
         else:
             prefix = index
-        test_id = TestID(prefix,
-                         runnable.identifier,
-                         variant,
-                         no_digits)
+        test_id = TestID(prefix, runnable.identifier, variant, no_digits)
         # inject variant on runnable
         runnable.variant = dump_variant(variant)
 
         # handles the test task
-        task = Task(runnable,
-                    identifier=test_id,
-                    status_uris=status_server_uri,
-                    job_id=job_id)
+        task = Task(
+            runnable, identifier=test_id, status_uris=status_server_uri, job_id=job_id
+        )
         return cls(task)
 
 
 class PreRuntimeTask(RuntimeTask):
-
     @classmethod
-    def from_runnable(cls, pre_runnable, status_server_uri=None, job_id=None):  # pylint: disable=W0221
+    def from_runnable(
+        cls, pre_runnable, status_server_uri=None, job_id=None
+    ):  # pylint: disable=W0221
         """Creates runtime task for pre_test plugin from runnable
 
         :param pre_runnable: the "description" of what the task should run.
@@ -160,16 +172,17 @@ class PreRuntimeTask(RuntimeTask):
         # use it to name Task
         task_id = TestID(prefix, name)
         # creates the dependency task
-        task = Task(pre_runnable,
-                    identifier=task_id,
-                    status_uris=status_server_uri,
-                    category='pre_test',
-                    job_id=job_id)
+        task = Task(
+            pre_runnable,
+            identifier=task_id,
+            status_uris=status_server_uri,
+            category="pre_test",
+            job_id=job_id,
+        )
         return cls(task)
 
     @classmethod
-    def get_pre_tasks_from_runnable(cls, runnable, status_server_uri=None,
-                                    job_id=None):
+    def get_pre_tasks_from_runnable(cls, runnable, status_server_uri=None, job_id=None):
         """Creates runtime tasks for preTest task from runnable
 
         :param runnable: the "description" of what the task should run.
@@ -185,14 +198,16 @@ class PreRuntimeTask(RuntimeTask):
         :rtype: list
         """
 
-        pre_runnables = list(chain.from_iterable(
-            TestPreDispatcher().map_method_with_return('pre_test_runnables',
-                                                       runnable)))
+        pre_runnables = list(
+            chain.from_iterable(
+                TestPreDispatcher().map_method_with_return(
+                    "pre_test_runnables", runnable
+                )
+            )
+        )
         pre_test_tasks = []
         for pre_runnable in pre_runnables:
-            pre_task = cls.from_runnable(pre_runnable,
-                                         status_server_uri,
-                                         job_id)
+            pre_task = cls.from_runnable(pre_runnable, status_server_uri, job_id)
             pre_test_tasks.append(pre_task)
         return pre_test_tasks
 
@@ -223,20 +238,22 @@ class RuntimeTaskGraph:
         no_digits = len(str(len(tests)))
         for index, (runnable, variant) in enumerate(tests, start=1):
             runnable = deepcopy(runnable)
-            runtime_test = RuntimeTask.from_runnable(runnable,
-                                                     no_digits,
-                                                     index, variant,
-                                                     test_suite_name,
-                                                     status_server_uri,
-                                                     job_id)
+            runtime_test = RuntimeTask.from_runnable(
+                runnable,
+                no_digits,
+                index,
+                variant,
+                test_suite_name,
+                status_server_uri,
+                job_id,
+            )
             self.graph[runtime_test] = runtime_test
 
             # with --dry-run we don't want to run dependencies
-            if runnable.kind != 'dry-run':
+            if runnable.kind != "dry-run":
                 pre_tasks = PreRuntimeTask.get_pre_tasks_from_runnable(
-                    runnable,
-                    status_server_uri,
-                    job_id)
+                    runnable, status_server_uri, job_id
+                )
                 if pre_tasks:
                     pre_tasks.append(runtime_test)
                     self._connect_tasks(pre_tasks)
@@ -253,6 +270,7 @@ class RuntimeTaskGraph:
         :returns: runtime tasks in topological order
         :rtype: list
         """
+
         def topological_order_util(vertex, visited, topological_order):
             visited[vertex] = True
             for v in vertex.dependencies:

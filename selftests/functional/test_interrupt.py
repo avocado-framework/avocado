@@ -6,19 +6,25 @@ import time
 import unittest
 
 from avocado.utils import data_factory, process, script, wait
-from selftests.utils import (AVOCADO, BASEDIR, TestCaseTmpDir,
-                             skipOnLevelsInferiorThan)
+from selftests.utils import AVOCADO, BASEDIR, TestCaseTmpDir, skipOnLevelsInferiorThan
 
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
-DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
-                stat.S_IRGRP | stat.S_IXGRP |
-                stat.S_IROTH | stat.S_IXOTH)
+DEFAULT_MODE = (
+    stat.S_IRUSR
+    | stat.S_IWUSR
+    | stat.S_IXUSR
+    | stat.S_IRGRP
+    | stat.S_IXGRP
+    | stat.S_IROTH
+    | stat.S_IXOTH
+)
 
 BAD_TEST = """#!/usr/bin/env python
 import multiprocessing
@@ -55,7 +61,6 @@ if __name__ == "__main__":
 
 @unittest.skipUnless(PSUTIL_AVAILABLE, "psutil module not available")
 class InterruptTest(TestCaseTmpDir):
-
     @staticmethod
     def has_children(proc):
         return len(psutil.Process(proc.pid).children()) > 0
@@ -102,9 +107,11 @@ class InterruptTest(TestCaseTmpDir):
         super().setUp()
         self.test_module = None
 
-    @unittest.skip('Skip until '
-                   'https://github.com/avocado-framework/avocado/issues/4994 '
-                   'is implemented')
+    @unittest.skip(
+        "Skip until "
+        "https://github.com/avocado-framework/avocado/issues/4994 "
+        "is implemented"
+    )
     @skipOnLevelsInferiorThan(2)
     def test_badly_behaved_sigint(self):
         """
@@ -112,23 +119,24 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        bad_test_basename = \
-            f'wontquit-{data_factory.generate_random_string(5)}'
-        bad_test = script.TemporaryScript(bad_test_basename, BAD_TEST,
-                                          'avocado_interrupt_test',
-                                          mode=DEFAULT_MODE)
+        bad_test_basename = f"wontquit-{data_factory.generate_random_string(5)}"
+        bad_test = script.TemporaryScript(
+            bad_test_basename, BAD_TEST, "avocado_interrupt_test", mode=DEFAULT_MODE
+        )
         bad_test.save()
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
-        cmd = (f'{AVOCADO} run {self.test_module} --disable-sysinfo '
-               f'--job-results-dir {self.tmpdir.name}')
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
+        cmd = (
+            f"{AVOCADO} run {self.test_module} --disable-sysinfo "
+            f"--job-results-dir {self.tmpdir.name}"
+        )
+        proc = subprocess.Popen(
+            cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
 
         if not wait.wait_for(lambda: self.has_children(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail('Avocado did not start the test process.')
+            self.fail("Avocado did not start the test process.")
 
         # This test will ignore SIGINT, so it should terminate
         # when we send the second SIGINT.
@@ -140,18 +148,22 @@ class InterruptTest(TestCaseTmpDir):
 
         if not wait.wait_for(lambda: self.is_finished(proc), timeout=30):
             process.kill_process_tree(proc.pid)
-            self.fail('Avocado was still running after receiving SIGINT '
-                      'twice.')
+            self.fail("Avocado was still running after receiving SIGINT " "twice.")
 
-        self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                                      timeout=10), 'Avocado left processes behind.')
+        self.assertTrue(
+            wait.wait_for(self._no_test_in_process_table, timeout=10),
+            "Avocado left processes behind.",
+        )
 
         output = proc.stdout.read()
         # Make sure the Interrupted requested sentence is there
-        self.assertIn(b'Interrupt requested. Waiting 2 seconds for test to '
-                      b'finish (ignoring new Ctrl+C until then)', output)
+        self.assertIn(
+            b"Interrupt requested. Waiting 2 seconds for test to "
+            b"finish (ignoring new Ctrl+C until then)",
+            output,
+        )
         # Make sure the Killing test subprocess message did appear
-        self.assertIn(b'Killing test subprocess', output)
+        self.assertIn(b"Killing test subprocess", output)
 
     @skipOnLevelsInferiorThan(2)
     def test_badly_behaved_sigterm(self):
@@ -160,23 +172,24 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        bad_test_basename = \
-            f'wontquit-{data_factory.generate_random_string(5)}'
-        bad_test = script.TemporaryScript(bad_test_basename, BAD_TEST,
-                                          'avocado_interrupt_test',
-                                          mode=DEFAULT_MODE)
+        bad_test_basename = f"wontquit-{data_factory.generate_random_string(5)}"
+        bad_test = script.TemporaryScript(
+            bad_test_basename, BAD_TEST, "avocado_interrupt_test", mode=DEFAULT_MODE
+        )
         bad_test.save()
         self.test_module = bad_test.path
         os.chdir(BASEDIR)
-        cmd = (f'{AVOCADO} run {self.test_module} --disable-sysinfo '
-               f'--job-results-dir {self.tmpdir.name} ')
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
+        cmd = (
+            f"{AVOCADO} run {self.test_module} --disable-sysinfo "
+            f"--job-results-dir {self.tmpdir.name} "
+        )
+        proc = subprocess.Popen(
+            cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
 
         if not wait.wait_for(lambda: self.has_children(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail('Avocado did not start the test process.')
+            self.fail("Avocado did not start the test process.")
 
         # This test should be terminated when the main process
         # receives a SIGTERM, even if the test process ignores SIGTERM.
@@ -184,18 +197,21 @@ class InterruptTest(TestCaseTmpDir):
 
         if not wait.wait_for(lambda: self.is_finished(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail('Avocado was still running after receiving SIGINT '
-                      'twice.')
+            self.fail("Avocado was still running after receiving SIGINT " "twice.")
 
-        self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                                      timeout=10), 'Avocado left processes behind.')
+        self.assertTrue(
+            wait.wait_for(self._no_test_in_process_table, timeout=10),
+            "Avocado left processes behind.",
+        )
 
         # Make sure the Interrupted test sentence is there
-        self.assertIn(b'Terminated\n', proc.stdout.read())
+        self.assertIn(b"Terminated\n", proc.stdout.read())
 
-    @unittest.skip('Skip until '
-                   'https://github.com/avocado-framework/avocado/issues/4994 '
-                   'is implemented')
+    @unittest.skip(
+        "Skip until "
+        "https://github.com/avocado-framework/avocado/issues/4994 "
+        "is implemented"
+    )
     @skipOnLevelsInferiorThan(2)
     def test_well_behaved_sigint(self):
         """
@@ -203,23 +219,24 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        good_test_basename = \
-            f'goodtest-{data_factory.generate_random_string(5)}.py'
-        good_test = script.TemporaryScript(good_test_basename, GOOD_TEST,
-                                           'avocado_interrupt_test',
-                                           mode=DEFAULT_MODE)
+        good_test_basename = f"goodtest-{data_factory.generate_random_string(5)}.py"
+        good_test = script.TemporaryScript(
+            good_test_basename, GOOD_TEST, "avocado_interrupt_test", mode=DEFAULT_MODE
+        )
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = (f'{AVOCADO} run {self.test_module} '
-               f'--disable-sysinfo --job-results-dir {self.tmpdir.name} ')
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
+        cmd = (
+            f"{AVOCADO} run {self.test_module} "
+            f"--disable-sysinfo --job-results-dir {self.tmpdir.name} "
+        )
+        proc = subprocess.Popen(
+            cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
 
         if not wait.wait_for(lambda: self.has_children(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail('Avocado did not start the test process.')
+            self.fail("Avocado did not start the test process.")
 
         # This test will not ignore SIGINT, so it should
         # terminate right away.
@@ -227,18 +244,22 @@ class InterruptTest(TestCaseTmpDir):
 
         if not wait.wait_for(lambda: self.is_finished(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail('Avocado was still running after receiving SIGINT '
-                      'twice.')
+            self.fail("Avocado was still running after receiving SIGINT " "twice.")
 
-        self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                                      timeout=10), 'Avocado left processes behind.')
+        self.assertTrue(
+            wait.wait_for(self._no_test_in_process_table, timeout=10),
+            "Avocado left processes behind.",
+        )
 
         output = proc.stdout.read()
         # Make sure the Interrupted requested sentence is there
-        self.assertIn(b'Interrupt requested. Waiting 2 seconds for test to '
-                      b'finish (ignoring new Ctrl+C until then)', output)
+        self.assertIn(
+            b"Interrupt requested. Waiting 2 seconds for test to "
+            b"finish (ignoring new Ctrl+C until then)",
+            output,
+        )
         # Make sure the Killing test subprocess message is not there
-        self.assertNotIn(b'Killing test subprocess', output)
+        self.assertNotIn(b"Killing test subprocess", output)
 
     @skipOnLevelsInferiorThan(2)
     def test_well_behaved_sigterm(self):
@@ -247,23 +268,24 @@ class InterruptTest(TestCaseTmpDir):
 
         :avocado: tags=parallel:1
         """
-        good_test_basename = \
-            f'goodtest-{data_factory.generate_random_string(5)}.py'
-        good_test = script.TemporaryScript(good_test_basename, GOOD_TEST,
-                                           'avocado_interrupt_test',
-                                           mode=DEFAULT_MODE)
+        good_test_basename = f"goodtest-{data_factory.generate_random_string(5)}.py"
+        good_test = script.TemporaryScript(
+            good_test_basename, GOOD_TEST, "avocado_interrupt_test", mode=DEFAULT_MODE
+        )
         good_test.save()
         self.test_module = good_test.path
         os.chdir(BASEDIR)
-        cmd = (f'{AVOCADO} run {self.test_module} --disable-sysinfo '
-               f'--job-results-dir {self.tmpdir.name} ')
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
+        cmd = (
+            f"{AVOCADO} run {self.test_module} --disable-sysinfo "
+            f"--job-results-dir {self.tmpdir.name} "
+        )
+        proc = subprocess.Popen(
+            cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
 
         if not wait.wait_for(lambda: self.has_children(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail('Avocado did not start the test process.')
+            self.fail("Avocado did not start the test process.")
 
         # This test should be terminated when the main process
         # receives a SIGTERM.
@@ -271,15 +293,16 @@ class InterruptTest(TestCaseTmpDir):
 
         if not wait.wait_for(lambda: self.is_finished(proc), timeout=10):
             process.kill_process_tree(proc.pid)
-            self.fail('Avocado was still running after receiving SIGINT '
-                      'twice.')
+            self.fail("Avocado was still running after receiving SIGINT " "twice.")
 
-        self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                                      timeout=10), 'Avocado left processes behind.')
+        self.assertTrue(
+            wait.wait_for(self._no_test_in_process_table, timeout=10),
+            "Avocado left processes behind.",
+        )
 
         # Make sure the Interrupted test sentence is there
-        self.assertIn(b'Terminated\n', proc.stdout.read())
+        self.assertIn(b"Terminated\n", proc.stdout.read())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -26,20 +26,17 @@ class StatusServer:
         return self._uri
 
     async def create_server(self):
-        limit = settings.as_dict().get('nrunner.status_server_buffer_size')
-        if ':' in self._uri:
-            host, port = self._uri.split(':')
+        limit = settings.as_dict().get("nrunner.status_server_buffer_size")
+        if ":" in self._uri:
+            host, port = self._uri.split(":")
             port = int(port)
             self._server_task = await asyncio.start_server(
-                self.cb,
-                host=host,
-                port=port,
-                limit=limit)
+                self.cb, host=host, port=port, limit=limit
+            )
         else:
             self._server_task = await asyncio.start_unix_server(
-                self.cb,
-                path=self._uri,
-                limit=limit)
+                self.cb, path=self._uri, limit=limit
+            )
 
     async def serve_forever(self):
         if self._server_task is None:

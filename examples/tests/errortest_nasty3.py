@@ -3,7 +3,7 @@ from avocado import Test
 
 class NastyException:
 
-    """ Please never use something like this!!! (old-style exception) """
+    """Please never use something like this!!! (old-style exception)"""
 
     def __init__(self, msg):
         self.msg = msg
@@ -25,4 +25,4 @@ class FailTest(Test):
         """
         Avocado should report this as TestError.
         """
-        raise NastyException("Nasty-string-like-exception")   # pylint: disable=E0710
+        raise NastyException("Nasty-string-like-exception")  # pylint: disable=E0710

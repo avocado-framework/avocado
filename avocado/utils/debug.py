@@ -31,17 +31,19 @@ def measure_duration(func):
     Use this as decorator to measure duration of the function execution.
     The output is "Function $name: ($current_duration, $accumulated_duration)"
     """
+
     def wrapper(*args, **kwargs):
-        """ Wrapper function """
+        """Wrapper function"""
         start = time.monotonic()
         try:
             return func(*args, **kwargs)
         finally:
             duration = time.monotonic() - start
-            __MEASURE_DURATION[func] = (__MEASURE_DURATION.get(func, 0) +
-                                        duration)
-            LOGGER.debug("PERF: %s: (%.9fs, %.9fs)", func, duration,
-                         __MEASURE_DURATION[func])
+            __MEASURE_DURATION[func] = __MEASURE_DURATION.get(func, 0) + duration
+            LOGGER.debug(
+                "PERF: %s: (%.9fs, %.9fs)", func, duration, __MEASURE_DURATION[func]
+            )
+
     return wrapper
 
 
@@ -50,12 +52,13 @@ def log_calls_class(length=None):
     Use this as decorator to log the function methods' calls.
     :param length: Max message length
     """
+
     def wrap(orig_cls):
         for key, attr in orig_cls.__dict__.items():
             if callable(attr):
-                setattr(orig_cls, key,
-                        _log_calls(attr, length, orig_cls.__name__))
+                setattr(orig_cls, key, _log_calls(attr, length, orig_cls.__name__))
         return orig_cls
+
     return wrap
 
 
@@ -63,18 +66,26 @@ def _log_calls(func, length=None, cls_name=None):
     """
     log_calls wrapper function
     """
+
     def wrapper(*args, **kwargs):
-        """ Wrapper function """
-        msg = ("CALL: %s:%s%s(%s, %s)"  # pylint: disable=C0209
-               % (os.path.relpath(func.__code__.co_filename),
-                  cls_name, func.__name__,
-                  ", ".join([str(_) for _ in args]),
-                  ", ".join([f"{key}={value}"  # pylint: disable=C0209
-                             for key, value in kwargs.items()])))
+        """Wrapper function"""
+        msg = "CALL: %s:%s%s(%s, %s)" % (  # pylint: disable=C0209
+            os.path.relpath(func.__code__.co_filename),
+            cls_name,
+            func.__name__,
+            ", ".join([str(_) for _ in args]),
+            ", ".join(
+                [
+                    f"{key}={value}"  # pylint: disable=C0209
+                    for key, value in kwargs.items()
+                ]
+            ),
+        )
         if length:
             msg = msg[:length]
         LOGGER.debug(msg)
         return func(*args, **kwargs)
+
     if cls_name:
         cls_name = cls_name + "."
     return wrapper
@@ -86,6 +97,8 @@ def log_calls(length=None, cls_name=None):
     :param length: Max message length
     :param cls_name: Optional class name prefix
     """
+
     def wrap(func):
         return _log_calls(func, length, cls_name)
+
     return wrap

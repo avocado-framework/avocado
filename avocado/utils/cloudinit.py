@@ -76,8 +76,15 @@ phone_home:
 """
 
 
-def iso(output_path, instance_id, username=None, password=None,
-        phone_home_host=None, phone_home_port=None, authorized_key=None):
+def iso(
+    output_path,
+    instance_id,
+    username=None,
+    password=None,
+    phone_home_host=None,
+    phone_home_port=None,
+    authorized_key=None,
+):
     """
     Generates an ISO image with cloudinit configuration
 
@@ -110,12 +117,15 @@ def iso(output_path, instance_id, username=None, password=None,
     # The only supported method to create/write in an ISO today is via pycdlib
     out = iso9660.iso9660(output_path, ["create", "write"])
     if out is None:
-        msg = ("The system lacks support for creating ISO images. ",
-               "Please install pycdlib dependency and run again.")
+        msg = (
+            "The system lacks support for creating ISO images. ",
+            "Please install pycdlib dependency and run again.",
+        )
         raise RuntimeError(msg)
-    out.create(flags={"interchange_level": 3, "joliet": 3, "vol_ident": 'cidata'})
-    metadata = METADATA_TEMPLATE.format(instance_id,
-                                        instance_id).encode(astring.ENCODING)
+    out.create(flags={"interchange_level": 3, "joliet": 3, "vol_ident": "cidata"})
+    metadata = METADATA_TEMPLATE.format(instance_id, instance_id).encode(
+        astring.ENCODING
+    )
     out.write("/meta-data", metadata)
     userdata = USERDATA_HEADER
     if username:
@@ -141,7 +151,7 @@ class PhoneHomeServerHandler(BaseHTTPRequestHandler):
         Respond with status 200 if the instance phoned back.
         """
         path = self.path[1:]
-        if path[-1] == '/':
+        if path[-1] == "/":
             path = path[:-1]
         if path == self.server.instance_id:
             self.server.instance_phoned_back = True
@@ -213,7 +223,11 @@ def wait_for_phone_home(address, instance_id):
 
     Please use :meth:`.PhoneHomeServer.set_up_and_wait_for_phone_home`.
     """
-    warnings.warn(("wait_for_phone_home is deprecated. Please use "
-                   "PhoneHomeServer.set_up_and_wait_for_phone_home()"),
-                  DeprecationWarning)
+    warnings.warn(
+        (
+            "wait_for_phone_home is deprecated. Please use "
+            "PhoneHomeServer.set_up_and_wait_for_phone_home()"
+        ),
+        DeprecationWarning,
+    )
     PhoneHomeServer.set_up_and_wait_for_phone_home(address, instance_id)

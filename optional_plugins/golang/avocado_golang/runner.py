@@ -27,8 +27,8 @@ class GolangRunner(BaseRunner):
                            uri='countavocados:ExampleContainers')
     """
 
-    name = 'golang'
-    description = 'Runner for Golang tests'
+    name = "golang"
+    description = "Runner for Golang tests"
 
     def run(self, runnable):
         # pylint: disable=W0201
@@ -41,44 +41,44 @@ class GolangRunner(BaseRunner):
             error_msgs.append("an empty URI was given")
 
         if error_msgs:
-            yield self.prepare_status('finished',
-                                      {'result': 'error',
-                                       'output': "and , ".join(error_msgs)})
+            yield self.prepare_status(
+                "finished", {"result": "error", "output": "and , ".join(error_msgs)}
+            )
             return
 
         yield messages.StartedMessage.get()
-        module_test = self.runnable.uri.split(':', 1)
+        module_test = self.runnable.uri.split(":", 1)
         module = module_test[0]
         try:
             test = module_test[1]
         except IndexError:
             test = None
 
-        cmd = [GO_BIN, 'test', '-v', module]
+        cmd = [GO_BIN, "test", "-v", module]
         if test is not None:
-            cmd += ['-run', f'{test}$']
+            cmd += ["-run", f"{test}$"]
 
         process = subprocess.Popen(
             cmd,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE,
+        )
 
         while process.poll() is None:
             time.sleep(RUNNER_RUN_STATUS_INTERVAL)
             yield messages.RunningMessage.get()
 
-        result = 'pass' if process.returncode == 0 else 'fail'
+        result = "pass" if process.returncode == 0 else "fail"
         yield messages.StdoutMessage.get(process.stdout.read())
         yield messages.StderrMessage.get(process.stderr.read())
-        yield messages.FinishedMessage.get(result,
-                                           returncode=process.returncode)
+        yield messages.FinishedMessage.get(result, returncode=process.returncode)
 
 
 class RunnerApp(BaseRunnerApp):
-    PROG_NAME = 'avocado-runner-golang'
-    PROG_DESCRIPTION = 'nrunner application for golang tests'
-    RUNNABLE_KINDS_CAPABLE = ['golang']
+    PROG_NAME = "avocado-runner-golang"
+    PROG_DESCRIPTION = "nrunner application for golang tests"
+    RUNNABLE_KINDS_CAPABLE = ["golang"]
 
 
 def main():
@@ -86,5 +86,5 @@ def main():
     app.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

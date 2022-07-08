@@ -27,12 +27,12 @@ from avocado.core.varianter import VARIANTS_FILENAME
 from avocado.utils.astring import string_to_safe_path
 from avocado.utils.path import init_dir
 
-JOB_DATA_DIR = 'jobdata'
-CONFIG_FILENAME = 'config'
-TEST_REFERENCES_FILENAME = 'test_references'
-PWD_FILENAME = 'pwd'
-JOB_CONFIG_FILENAME = 'args.json'
-CMDLINE_FILENAME = 'cmdline'
+JOB_DATA_DIR = "jobdata"
+CONFIG_FILENAME = "config"
+TEST_REFERENCES_FILENAME = "test_references"
+PWD_FILENAME = "pwd"
+JOB_CONFIG_FILENAME = "args.json"
+CMDLINE_FILENAME = "cmdline"
 
 
 def json_bad_variants_obj(item):
@@ -42,7 +42,7 @@ def json_bad_variants_obj(item):
 
 
 def record_suite_variant(path_variants, suite):
-    with open(path_variants, 'w', encoding='utf-8') as variants_file:
+    with open(path_variants, "w", encoding="utf-8") as variants_file:
         variants = []
         variants += suite.variants.dump()
         json.dump(variants, variants_file, default=json_bad_variants_obj)
@@ -61,14 +61,14 @@ def record(job, cmdline=None):
     path_job_config = os.path.join(base_dir, JOB_CONFIG_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
-    references = job.config.get('resolver.references')
+    references = job.config.get("resolver.references")
     if references:
-        with open(path_references, 'w', encoding='utf-8') as references_file:
-            references_file.write(f'{references}')
+        with open(path_references, "w", encoding="utf-8") as references_file:
+            references_file.write(f"{references}")
             references_file.flush()
             os.fsync(references_file)
 
-    with open(path_cfg, 'w', encoding='utf-8') as config_file:
+    with open(path_cfg, "w", encoding="utf-8") as config_file:
         settings.config.write(config_file)
         config_file.flush()
         os.fsync(config_file)
@@ -82,19 +82,18 @@ def record(job, cmdline=None):
         path_suite_variant = os.path.join(base_dir, suite_var_name)
         record_suite_variant(path_suite_variant, suite)
 
-    with open(path_pwd, 'w', encoding='utf-8') as pwd_file:
-        pwd_file.write(f'{os.getcwd()}')
+    with open(path_pwd, "w", encoding="utf-8") as pwd_file:
+        pwd_file.write(f"{os.getcwd()}")
         pwd_file.flush()
         os.fsync(pwd_file)
 
-    with open(path_job_config, 'w', encoding='utf-8') as job_config_file:
-        json.dump(job.config, job_config_file,
-                  cls=ConfigEncoder)
+    with open(path_job_config, "w", encoding="utf-8") as job_config_file:
+        json.dump(job.config, job_config_file, cls=ConfigEncoder)
         job_config_file.flush()
         os.fsync(job_config_file)
 
-    with open(path_cmdline, 'w', encoding='utf-8') as cmdline_file:
-        cmdline_file.write(f'{cmdline}')
+    with open(path_cmdline, "w", encoding="utf-8") as cmdline_file:
+        cmdline_file.write(f"{cmdline}")
         cmdline_file.flush()
         os.fsync(cmdline_file)
 
@@ -113,7 +112,7 @@ def retrieve_pwd(resultsdir):
     recorded_pwd = _retrieve(resultsdir, PWD_FILENAME)
     if recorded_pwd is None:
         return None
-    with open(recorded_pwd, 'r', encoding='utf-8') as pwd_file:
+    with open(recorded_pwd, "r", encoding="utf-8") as pwd_file:
         return pwd_file.read()
 
 
@@ -124,7 +123,7 @@ def retrieve_references(resultsdir):
     recorded_references = _retrieve(resultsdir, TEST_REFERENCES_FILENAME)
     if recorded_references is None:
         return None
-    with open(recorded_references, 'r', encoding='utf-8') as references_file:
+    with open(recorded_references, "r", encoding="utf-8") as references_file:
         return ast.literal_eval(references_file.read())
 
 
@@ -141,7 +140,7 @@ def retrieve_job_config(resultsdir):
     """
     recorded_job_config = _retrieve(resultsdir, JOB_CONFIG_FILENAME)
     if recorded_job_config:
-        with open(recorded_job_config, 'r', encoding='utf-8') as job_config_file:
+        with open(recorded_job_config, "r", encoding="utf-8") as job_config_file:
             return json.load(job_config_file, cls=ConfigDecoder)
 
 
@@ -163,16 +162,22 @@ def retrieve_cmdline(resultsdir):
     if recorded_cmdline is None:
         # Attempt to restore cmdline from log
         try:
-            with open(os.path.join(resultsdir, "job.log"), "r", encoding='utf-8') as log:
+            with open(
+                os.path.join(resultsdir, "job.log"), "r", encoding="utf-8"
+            ) as log:
                 import re
-                cmd = re.search(r"# \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} "
-                                r"\w{17}\w\d{4} INFO | Command line: (.*)",
-                                log.read())
+
+                cmd = re.search(
+                    r"# \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} "
+                    r"\w{17}\w\d{4} INFO | Command line: (.*)",
+                    log.read(),
+                )
                 if cmd:
                     import shlex
+
                     return shlex.split(cmd.group(1))
         except IOError:
             pass
         return None
-    with open(recorded_cmdline, 'r', encoding='utf-8') as cmdline_file:
+    with open(recorded_cmdline, "r", encoding="utf-8") as cmdline_file:
         return ast.literal_eval(cmdline_file.read())

@@ -5,8 +5,8 @@ from avocado.core.plugin_interfaces import CLICmd
 
 class HelloWorld(CLICmd):
 
-    name = 'hello'
-    description = 'The classical Hello World! plugin example.'
+    name = "hello"
+    description = "The classical Hello World! plugin example."
     priority = PluginPriority.HIGH
 
     def run(self, config):

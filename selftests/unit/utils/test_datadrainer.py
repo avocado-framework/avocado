@@ -6,7 +6,6 @@ from avocado.utils import datadrainer
 
 
 class Base(unittest.TestCase):
-
     def test_instantiate(self):
         with self.assertRaises(TypeError):
             # pylint: disable=E0110
@@ -15,10 +14,11 @@ class Base(unittest.TestCase):
 
 class Magic(datadrainer.BaseDrainer):
 
-    name = 'test_utils_datadrainer.Magic'
-    magic = 'MAGIC_magic_MAGIC'
+    name = "test_utils_datadrainer.Magic"
+    magic = "MAGIC_magic_MAGIC"
 
-    def data_available(self):
+    @staticmethod
+    def data_available():
         return True
 
     def read(self):
@@ -30,7 +30,6 @@ class Magic(datadrainer.BaseDrainer):
 
 
 class Custom(unittest.TestCase):
-
     def test(self):
         magic = Magic(None)
         magic.start()
@@ -40,7 +39,7 @@ class Custom(unittest.TestCase):
 
 class Socket(datadrainer.FDDrainer):
 
-    name = 'test_utils_datadrainer.Socket'
+    name = "test_utils_datadrainer.Socket"
 
     def __init__(self, source):
         super().__init__(source)
@@ -55,18 +54,17 @@ class Socket(datadrainer.FDDrainer):
 
 
 class CustomSocket(unittest.TestCase):
-
     def setUp(self):
         self.socket1, self.socket2 = socket.socketpair(socket.AF_UNIX)
 
     def test(self):
         socket_drainer = Socket(self.socket2.fileno())
         socket_drainer.start()
-        self.socket1.send(b'1')
-        self.socket1.send(b'2')
-        self.socket1.send(b'3')
+        self.socket1.send(b"1")
+        self.socket1.send(b"2")
+        self.socket1.send(b"3")
         socket_drainer.wait()
-        self.assertEqual(socket_drainer.data_buffer.getvalue(), b'123')
+        self.assertEqual(socket_drainer.data_buffer.getvalue(), b"123")
 
     def tearDown(self):
         self.socket1.close()
@@ -75,7 +73,7 @@ class CustomSocket(unittest.TestCase):
 
 class SocketBuffer(datadrainer.BufferFDDrainer):
 
-    name = 'test_utils_datadrainer.SocketBuffer'
+    name = "test_utils_datadrainer.SocketBuffer"
 
     def __init__(self, source):
         super().__init__(source)
@@ -83,18 +81,17 @@ class SocketBuffer(datadrainer.BufferFDDrainer):
 
 
 class CustomSocketBuffer(unittest.TestCase):
-
     def setUp(self):
         self.socket1, self.socket2 = socket.socketpair(socket.AF_UNIX)
 
     def test(self):
         socket_drainer = SocketBuffer(self.socket2.fileno())
         socket_drainer.start()
-        self.socket1.send(b'1')
-        self.socket1.send(b'2')
-        self.socket1.send(b'3')
+        self.socket1.send(b"1")
+        self.socket1.send(b"2")
+        self.socket1.send(b"3")
         socket_drainer.wait()
-        self.assertEqual(socket_drainer.data, b'123')
+        self.assertEqual(socket_drainer.data, b"123")
 
     def tearDown(self):
         self.socket1.close()

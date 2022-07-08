@@ -26,7 +26,7 @@ import os
 from avocado.core import dispatcher, output, tree
 from avocado.utils import astring
 
-VARIANTS_FILENAME = 'variants.json'
+VARIANTS_FILENAME = "variants.json"
 
 
 def is_empty_variant(variant):
@@ -47,6 +47,7 @@ def generate_variant_id(variant):
     :return: String compounded of ordered node names and a hash of all
              values.
     """
+
     def get_variant_name(variant):
         """
         To get the variant full name string
@@ -59,7 +60,7 @@ def generate_variant_id(variant):
             var_str = []
             while node:
                 var_str.append(node.name)
-                node = node.parent if hasattr(node, 'parent') else None
+                node = node.parent if hasattr(node, "parent") else None
             try:
                 # Let's drop repeated node names and empty string
                 full_name.extend([x for x in var_str[::-1][1:] if x not in full_name])
@@ -69,8 +70,11 @@ def generate_variant_id(variant):
 
     variant = sorted(variant, key=lambda x: x.path)
     fingerprint = "\n".join(_.fingerprint() for _ in variant)
-    return (get_variant_name(variant) + '-' +
-            hashlib.sha1(fingerprint.encode(astring.ENCODING)).hexdigest()[:4])
+    return (
+        get_variant_name(variant)
+        + "-"
+        + hashlib.sha1(fingerprint.encode(astring.ENCODING)).hexdigest()[:4]
+    )
 
 
 def variant_to_str(variant, verbosity, out_args=None, debug=False):
@@ -86,15 +90,20 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
     del out_args
     out = []
     if not debug:
-        paths = ', '.join([x.path for x in variant["variant"]])
+        paths = ", ".join([x.path for x in variant["variant"]])
     else:
         color = output.TERM_SUPPORT.LOWLIGHT
         cend = output.TERM_SUPPORT.ENDC
-        paths = ', '.join([f"{_.name}{color}@{getattr(_, 'yaml', 'Unknown')}{cend}"
-                           for _ in variant["variant"]])
-    out.append('%sVariant %s:    %s' % ('\n' if verbosity else '',
-                                        variant["variant_id"],
-                                        paths))
+        paths = ", ".join(
+            [
+                f"{_.name}{color}@{getattr(_, 'yaml', 'Unknown')}{cend}"
+                for _ in variant["variant"]
+            ]
+        )
+    out.append(
+        "%sVariant %s:    %s"
+        % ("\n" if verbosity else "", variant["variant_id"], paths)
+    )
     if verbosity:
         env = set()
         for node in variant["variant"]:
@@ -103,7 +112,9 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
                 env.add((f"{origin}:{key}", astring.to_text(value)))
         if not env:
             return out
-        fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])  # pylint: disable=C0209
+        fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
+            [len(_[0]) for _ in env]
+        )
         for record in sorted(env):
             out.append(fmt % record)
     return out
@@ -115,21 +126,27 @@ def dump_variant(variant):
     :param variant: Valid variant (list of TreeNode-like objects)
     :return: json-serializable representation
     """
+
     def dump_tree_node(node):
         """
         Turns TreeNode-like object into tuple(path, env_representation)
         """
-        return (astring.to_text(node.path),
-                [(astring.to_text(node.environment.origin[key].path),
-                  astring.to_text(key), value)
-                 for key, value in node.environment.items()])
+        return (
+            astring.to_text(node.path),
+            [
+                (
+                    astring.to_text(node.environment.origin[key].path),
+                    astring.to_text(key),
+                    value,
+                )
+                for key, value in node.environment.items()
+            ],
+        )
 
     safe_variant = {}
-    safe_variant["paths"] = [astring.to_text(pth)
-                             for pth in variant.get("paths")]
+    safe_variant["paths"] = [astring.to_text(pth) for pth in variant.get("paths")]
     safe_variant["variant_id"] = variant.get("variant_id")
-    safe_variant["variant"] = [dump_tree_node(_)
-                               for _ in variant.get("variant", [])]
+    safe_variant["variant"] = [dump_tree_node(_) for _ in variant.get("variant", [])]
     return safe_variant
 
 
@@ -152,8 +169,9 @@ class FakeVariantDispatcher:
 
     def __init__(self, state):
         for variant in state:
-            variant["variant"] = [tree.TreeNodeEnvOnly(path, env)
-                                  for path, env in variant["variant"]]
+            variant["variant"] = [
+                tree.TreeNodeEnvOnly(path, env) for path, env in variant["variant"]
+            ]
         self.variants = state
 
     def map_method_with_return(self, method, *args, **kwargs):
@@ -170,7 +188,7 @@ class FakeVariantDispatcher:
             return ""
         out = []
         for variant in self.variants:
-            paths = ', '.join([x.path for x in variant["variant"]])
+            paths = ", ".join([x.path for x in variant["variant"]])
             out.append(f"\nVariant {variant['variant_id']}:    {paths}")
             env = set()
             for node in variant["variant"]:
@@ -179,7 +197,9 @@ class FakeVariantDispatcher:
                     env.add((f"{origin}:{key}", astring.to_text(value)))
             if not env:
                 continue
-            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])  # pylint: disable=C0209
+            fmt = "    %%-%ds => %%s" % max(  # pylint: disable=C0209
+                [len(_[0]) for _ in env]
+            )
             for record in sorted(env):
                 out.append(fmt % record)
         return "\n".join(out)
@@ -244,11 +264,13 @@ class Varianter:
         if self._no_variants == 0:  # No variants
             return ""
 
-        out = [item for item in self._variant_plugins.map_method_with_return("to_str",
-                                                                             summary,
-                                                                             variants,
-                                                                             **kwargs)
-               if item]
+        out = [
+            item
+            for item in self._variant_plugins.map_method_with_return(
+                "to_str", summary, variants, **kwargs
+            )
+            if item
+        ]
 
         return "\n\n".join(out)
 
@@ -291,8 +313,9 @@ class Varianter:
         :return: loadable Varianter representation
         """
         if not self.is_parsed():
-            raise NotImplementedError("Dumping Varianter state before "
-                                      "multiplexation is not supported.")
+            raise NotImplementedError(
+                "Dumping Varianter state before " "multiplexation is not supported."
+            )
         return dump_ivariants(self.itertests)
 
     def load(self, state):
@@ -325,15 +348,19 @@ class Varianter:
         """
         if self._no_variants:  # Copy template and modify it's params
             plugins_variants = self._variant_plugins.map_method_with_return("__iter__")
-            iter_variants = (variant
-                             for plugin_variants in plugins_variants
-                             for variant in plugin_variants)
+            iter_variants = (
+                variant
+                for plugin_variants in plugins_variants
+                for variant in plugin_variants
+            )
             for variant in iter(iter_variants):
                 yield variant
-        else:   # No real variants, but currently *something* needs to be returned
-            yield {"variant": self.node_class('').get_leaves(),
-                   "variant_id": None,
-                   "paths": ["/run/*"]}
+        else:  # No real variants, but currently *something* needs to be returned
+            yield {
+                "variant": self.node_class("").get_leaves(),
+                "variant_id": None,
+                "paths": ["/run/*"],
+            }
 
     @classmethod
     def from_resultsdir(cls, resultsdir):
@@ -343,12 +370,12 @@ class Varianter:
         This will return a list of variants since a Job can have multiple
         suites and the variants is per suite.
         """
-        path = os.path.join(resultsdir, 'jobdata', VARIANTS_FILENAME)
+        path = os.path.join(resultsdir, "jobdata", VARIANTS_FILENAME)
         if not os.path.exists(path):
             return None
 
         variants = []
-        with open(path, 'r', encoding='utf-8') as variants_file:
+        with open(path, "r", encoding="utf-8") as variants_file:
             for variant in json.load(variants_file):
                 variants.append(cls(state=variant))
         return variants

@@ -32,17 +32,17 @@ class ResultsdbResultEvent(ResultEvents):
     ResultsDB output class
     """
 
-    name = 'resultsdb'
-    description = 'Resultsdb result support'
+    name = "resultsdb"
+    description = "Resultsdb result support"
 
     def __init__(self, config):
         self.rdbapi = None
-        resultsdb_api_url = config.get('plugins.resultsdb.api_url')
+        resultsdb_api_url = config.get("plugins.resultsdb.api_url")
         if resultsdb_api_url is not None:
             self.rdbapi = resultsdb_api.ResultsDBapi(resultsdb_api_url)
 
-        self.rdblogs = config.get('plugins.resultsdb.logs_url')
-        self.rdbnote_limit = config.get('plugins.resultsdb.note_size_limit')
+        self.rdblogs = config.get("plugins.resultsdb.logs_url")
+        self.rdbnote_limit = config.get("plugins.resultsdb.note_size_limit")
         self.job_id = None
         self.job_logdir = None
 
@@ -58,7 +58,7 @@ class ResultsdbResultEvent(ResultEvents):
 
         ref_url = None
         if self.rdblogs is not None:
-            ref_url = f'{self.rdblogs}/{self.job_logdir}'
+            ref_url = f"{self.rdblogs}/{self.job_logdir}"
 
         self.rdbapi.create_group(self.job_id, ref_url, self.job_logdir)
 
@@ -73,40 +73,39 @@ class ResultsdbResultEvent(ResultEvents):
         if self.rdbapi is None:
             return
 
-        outcome = self._status_map(state['status'])
-        name = state['name'].name
-        if state['name'].variant is not None:
+        outcome = self._status_map(state["status"])
+        name = state["name"].name
+        if state["name"].variant is not None:
             name += f";{state['name'].variant}"
         group = [self.job_id]
 
         note = None
-        if state['fail_reason'] is not None:
-            note = str(state['fail_reason'])
+        if state["fail_reason"] is not None:
+            note = str(state["fail_reason"])
             if self.rdbnote_limit > 0 and len(note) > self.rdbnote_limit:
-                note = note[0:self.rdbnote_limit] + '...'
+                note = note[0 : self.rdbnote_limit] + "..."
 
         ref_url = None
         if self.rdblogs is not None:
-            logdir = os.path.basename(state['logdir'])
-            ref_url = (f'{self.rdblogs}/{self.job_logdir}/'
-                       f'test-results/{logdir}')
+            logdir = os.path.basename(state["logdir"])
+            ref_url = f"{self.rdblogs}/{self.job_logdir}/" f"test-results/{logdir}"
 
-        local_time_start = time.localtime(state['time_start'])
-        local_time_end = time.localtime(state['time_end'])
-        data = {'time_elapsed': f"{state['time_elapsed']:.2f} s",
-                'time_start': time.strftime("%Y-%m-%d %H:%M:%S",
-                                            local_time_start),
-                'time_end': time.strftime("%Y-%m-%d %H:%M:%S",
-                                          local_time_end),
-                'logdir': state['logdir'],
-                'logfile': state['logfile'],
-                'whiteboard': state['whiteboard'],
-                'status': state['status']}
+        local_time_start = time.localtime(state["time_start"])
+        local_time_end = time.localtime(state["time_end"])
+        data = {
+            "time_elapsed": f"{state['time_elapsed']:.2f} s",
+            "time_start": time.strftime("%Y-%m-%d %H:%M:%S", local_time_start),
+            "time_end": time.strftime("%Y-%m-%d %H:%M:%S", local_time_end),
+            "logdir": state["logdir"],
+            "logfile": state["logfile"],
+            "whiteboard": state["whiteboard"],
+            "status": state["status"],
+        }
 
         params = {}
-        if state['params']:
-            for path, key, value in state['params']:
-                params[f'param {key}'] = f'{value} (path: {path})'
+        if state["params"]:
+            for path, key, value in state["params"]:
+                params[f"param {key}"] = f"{value} (path: {path})"
             data.update(params)
 
         self.rdbapi.create_result(outcome, name, group, note, ref_url, **data)
@@ -127,17 +126,19 @@ class ResultsdbResultEvent(ResultEvents):
          - INFO (treat as PASSED and flag for human review)
          - NEEDS_INSPECTION (treat as FAILED and flag for human review)
         """
-        mapping = {'PASS': 'PASSED',
-                   'FAIL': 'FAILED',
-                   'SKIP': 'INFO',
-                   'CANCEL': 'INFO',
-                   'INTERRUPTED': 'INFO',
-                   'WARN': 'INFO'}
+        mapping = {
+            "PASS": "PASSED",
+            "FAIL": "FAILED",
+            "SKIP": "INFO",
+            "CANCEL": "INFO",
+            "INTERRUPTED": "INFO",
+            "WARN": "INFO",
+        }
 
         if status in mapping:
             return mapping[status]
 
-        return 'NEEDS_INSPECTION'
+        return "NEEDS_INSPECTION"
 
 
 class ResultsdbResult(Result):
@@ -146,17 +147,15 @@ class ResultsdbResult(Result):
     ResultsDB render class
     """
 
-    name = 'resultsdb'
-    description = 'Resultsdb result support'
+    name = "resultsdb"
+    description = "Resultsdb result support"
 
     def render(self, result, job):
-        resultsdb_logs = job.config.get('plugins.resultsdb.logs_url')
-        stdout_claimed_by = job.config.get('stdout_claimed_by')
-        if (resultsdb_logs is not None and stdout_claimed_by is None):
+        resultsdb_logs = job.config.get("plugins.resultsdb.logs_url")
+        stdout_claimed_by = job.config.get("stdout_claimed_by")
+        if resultsdb_logs is not None and stdout_claimed_by is None:
             log_msg = "JOB URL    : %s/%s"
-            LOG_UI.info(log_msg,
-                        resultsdb_logs,
-                        os.path.basename(job.logdir))
+            LOG_UI.info(log_msg, resultsdb_logs, os.path.basename(job.logdir))
 
 
 class ResultsdbCLI(CLI):
@@ -165,43 +164,49 @@ class ResultsdbCLI(CLI):
     Propagate Job results to Resultsdb
     """
 
-    name = 'resultsdb'
+    name = "resultsdb"
     description = "Resultsdb options for 'run' subcommand"
 
     def configure(self, parser):
-        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        run_subcommand_parser = parser.subcommands.choices.get("run", None)
         if run_subcommand_parser is None:
             return
 
-        msg = 'resultsdb options'
+        msg = "resultsdb options"
         parser = run_subcommand_parser.add_argument_group(msg)
-        help_msg = 'Specify the resultsdb API url'
-        settings.register_option(section='plugins.resultsdb',
-                                 key='api_url',
-                                 default=None,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--resultsdb-api',
-                                 metavar='API_URL')
+        help_msg = "Specify the resultsdb API url"
+        settings.register_option(
+            section="plugins.resultsdb",
+            key="api_url",
+            default=None,
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--resultsdb-api",
+            metavar="API_URL",
+        )
 
-        help_msg = 'Specify the URL where the logs are published'
-        settings.register_option(section='plugins.resultsdb',
-                                 key='logs_url',
-                                 default=None,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--resultsdb-logs',
-                                 metavar='LOGS_URL')
+        help_msg = "Specify the URL where the logs are published"
+        settings.register_option(
+            section="plugins.resultsdb",
+            key="logs_url",
+            default=None,
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--resultsdb-logs",
+            metavar="LOGS_URL",
+        )
 
-        help_msg = 'Maximum note size limit'
-        settings.register_option(section='plugins.resultsdb',
-                                 key='note_size_limit',
-                                 default=0,
-                                 key_type=int,
-                                 help_msg=help_msg,
-                                 parser=parser,
-                                 long_arg='--resultsdb-note-limit',
-                                 metavar='SIZE_LIMIT')
+        help_msg = "Maximum note size limit"
+        settings.register_option(
+            section="plugins.resultsdb",
+            key="note_size_limit",
+            default=0,
+            key_type=int,
+            help_msg=help_msg,
+            parser=parser,
+            long_arg="--resultsdb-note-limit",
+            metavar="SIZE_LIMIT",
+        )
 
     def run(self, config):
         pass

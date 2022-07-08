@@ -3,7 +3,7 @@ import sys
 
 from avocado.core.job import Job
 
-job_config = {'resolver.references': ['examples/tests/passtest.py:PassTest.test']}
+job_config = {"resolver.references": ["examples/tests/passtest.py:PassTest.test"]}
 
 # Automatic helper method (Avocado will try to discovery things from config
 # dicts. Since there is magic here, we don't need to pass suite names or suites,

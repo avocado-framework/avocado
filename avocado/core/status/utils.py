@@ -8,7 +8,7 @@ class StatusMsgInvalidJSONError(Exception):
 
 def json_base64_decode(dct):
     """base64 decode object hook for custom JSON encoding."""
-    key_name = '__base64_encoded__'
+    key_name = "__base64_encoded__"
     if key_name in dct:
         return base64.b64decode(dct[key_name])
     return dct
