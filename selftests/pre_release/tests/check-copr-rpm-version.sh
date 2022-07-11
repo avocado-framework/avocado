@@ -12,12 +12,11 @@ VERSION=$(python setup.py --version 2>/dev/null)
 COMMIT_DATE=$(git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
 SHORT_COMMIT=$(git rev-parse --short=9 $ORIGIN/master)
 RPM_RELEASE_NUMBER=$(grep -E '^Release:\s([0-9]+)' python-avocado.spec | sed -E 's/Release:\s([0-9]+).*/\1/')
-DISTRO=fedora
-DISTRO_VERSION=34
+DISTRO_VERSION=36
 
 RPM_NVR="python3-avocado-${VERSION}-${RPM_RELEASE_NUMBER}.${COMMIT_DATE}git${SHORT_COMMIT}.fc${DISTRO_VERSION}"
 
 PODMAN=$(which podman)
-PODMAN_IMAGE="${DISTRO}:${DISTRO_VERSION}"
+PODMAN_IMAGE=quay.io/avocado-framework/check-copr-rpm-version
 
-$PODMAN run --rm -ti $PODMAN_IMAGE /bin/bash -c "dnf -y module disable avocado && dnf -y install 'dnf-command(copr)' && dnf -y copr enable @avocado/avocado-latest && dnf -y install ${RPM_NVR}"
+$PODMAN run --rm -ti $PODMAN_IMAGE /bin/bash -c "dnf -y install ${RPM_NVR}"
