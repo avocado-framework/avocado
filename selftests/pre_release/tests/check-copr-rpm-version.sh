@@ -9,7 +9,7 @@ git fetch $ORIGIN
 
 ORIGIN_MASTER_COMMIT=$(git log --pretty=format:'%h' -n 1 $ORIGIN/master)
 VERSION=$(python setup.py --version 2>/dev/null)
-COMMIT_DATE=$(git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
+COMMIT_DATE=$(git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1 $ORIGIN/master)
 SHORT_COMMIT=$(git rev-parse --short=9 $ORIGIN/master)
 RPM_RELEASE_NUMBER=$(grep -E '^Release:\s([0-9]+)' python-avocado.spec | sed -E 's/Release:\s([0-9]+).*/\1/')
 DISTRO_VERSION=36
