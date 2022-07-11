@@ -16,7 +16,7 @@ DISTRO_VERSION=36
 
 RPM_NVR="python3-avocado-${VERSION}-${RPM_RELEASE_NUMBER}.${COMMIT_DATE}git${SHORT_COMMIT}.fc${DISTRO_VERSION}"
 
-PODMAN=$(which podman)
+PODMAN=$(which podman 2>/dev/null || which docker)
 PODMAN_IMAGE=quay.io/avocado-framework/check-copr-rpm-version
 
 $PODMAN run --rm -ti $PODMAN_IMAGE /bin/bash -c "dnf -y install ${RPM_NVR}"
