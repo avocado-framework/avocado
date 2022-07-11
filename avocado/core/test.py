@@ -33,6 +33,7 @@ from avocado.core import exceptions, parameters
 from avocado.core.output import LOG_JOB
 from avocado.core.settings import settings
 from avocado.core.test_id import TestID
+from avocado.core.teststatus import STATUSES_NOT_OK
 from avocado.core.version import VERSION
 from avocado.utils import asset, astring, data_structures, genio
 from avocado.utils import path as utils_path
@@ -678,7 +679,7 @@ class Test(unittest.TestCase, TestData):
         """Wrapper around test methods for catching and logging failures."""
         try:
             method()
-            if self.__log_warn_used:
+            if self.__log_warn_used and self.__status not in STATUSES_NOT_OK:
                 raise exceptions.TestWarn(
                     "Test passed but there were warnings "
                     "during execution. Check the log for "
