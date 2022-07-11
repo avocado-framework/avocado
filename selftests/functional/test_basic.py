@@ -334,6 +334,19 @@ class RunnerOperationTest(TestCaseTmpDir):
             f"Avocado did not return rc {expected_rc}:\n{result}",
         )
 
+    def test_runner_test_fail_with_warning(self):
+        cmd_line = (
+            f"{AVOCADO} run --disable-sysinfo --job-results-dir "
+            f"{self.tmpdir.name} examples/tests/failtest_with_warning.py"
+        )
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(
+            result.exit_status,
+            expected_rc,
+            f"Avocado did not return rc {expected_rc}:\n{result}",
+        )
+
     def test_runner_nonexistent_test(self):
         cmd_line = (
             f"{AVOCADO} run --disable-sysinfo --job-results-dir "
