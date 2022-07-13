@@ -104,7 +104,18 @@ class StartMessageHandler(BaseMessageHandler):
     example: {'status': 'started', 'time': 16444.819830573}
     """
 
-    def handle(self, message, task, job):
+    @staticmethod
+    def prepare_metadata(task, job, start_time):
+        """
+        Creates metadata for task.
+
+        :param task: runtime_task which message is related to
+        :type task: :class:`avocado.core.nrunner.Task`
+        :param job: job which task is related to
+        :type job: :class:`avocado.core.job.Job`
+        :param start_time: time when the task started
+        :type start_time: float
+        """
         task_id = TestID.from_identifier(task.identifier)
         base_path = job.test_results_path
         task_path = os.path.join(base_path, task_id.str_filesystem)
@@ -126,11 +137,15 @@ class StartMessageHandler(BaseMessageHandler):
             "base_path": base_path,
             "logfile": logfile,
             "task_path": task_path,
-            "time_start": message["time"],
+            "time_start": start_time,
             "actual_time_start": time.time(),
             "name": task_id,
             "params": params,
         }
+        return metadata
+
+    def handle(self, message, task, job):
+        metadata = self.prepare_metadata(task, job, message["time"])
         if task.category == TASK_DEFAULT_CATEGORY:
             job.result.start_test(metadata)
             job.result_events_dispatcher.map_method("start_test", job.result, metadata)
@@ -158,6 +173,10 @@ class FinishMessageHandler(BaseMessageHandler):
     """
 
     def handle(self, message, task, job):
+        if not task.metadata:
+            task.metadata.update(
+                StartMessageHandler.prepare_metadata(task, job, message["time"])
+            )
         message.update(task.metadata)
         message["name"] = TestID.from_identifier(task.identifier)
         message["status"] = message.get("result").upper()
