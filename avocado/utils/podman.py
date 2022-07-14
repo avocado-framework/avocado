@@ -129,7 +129,9 @@ class Podman:
         :rtype: dict
         """
         try:
-            _, stdout, _ = await self.execute("ps", "--all", "--format=json")
+            _, stdout, _ = await self.execute(
+                "ps", "--all", "--format=json", "--filter", f"id={container_id}"
+            )
         except PodmanException as ex:
             raise PodmanException(
                 f"Failed getting information about container:" f" {container_id}."
