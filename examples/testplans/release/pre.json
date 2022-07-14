@@ -13,7 +13,7 @@
         {"name": "Run GitHub Action 'Pre-release tests'",
          "description": "Run the GitHub Action 'Pre-release tests' on the master branch at https://github.com/avocado-framework/avocado/actions/workflows/prerelease.yml and check all the tests pass. Make at least a quick visual check to the logs."},
 
-        {"name": "Avocado Remote Machine HTML report",
+        {"name": "Avocado HTML report",
          "description": "Run the simple test with `$ avocado run examples/tests/passtest.py --html /tmp/report.html`  and, on a web browser, open the HTML report in `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`) or `debug.log` point to valid locations."},
 
         {"name": "Paginator",
