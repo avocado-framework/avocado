@@ -27,8 +27,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-avocado
-Version: 97.0
-Release: 2%{?gitrel}%{?dist}
+Version: 98.0
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2+ and GPLv2 and MIT
 URL: https://avocado-framework.github.io/
 %if 0%{?rel_build}
@@ -378,6 +378,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Jul 14 2022 Cleber Rosa <crosa@redhat.com> - 98.0-1
+- New release
+
 * Thu Jul  7 2022 Cleber Rosa <crosa@redhat.com> - 97.0-2
 - Add build requirements for python3-elementpath and
   python3-xmlschema, used on some tests
