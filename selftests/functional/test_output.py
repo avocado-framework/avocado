@@ -176,22 +176,6 @@ def missing_binary(binary):
 
 class OutputTest(TestCaseTmpDir):
 
-    @unittest.skipIf(missing_binary('cc'),
-                     "C compiler is required by the underlying doublefree.py test")
-    def test_output_doublefree(self):
-        cmd_line = ('%s run --job-results-dir %s --disable-sysinfo '
-                    'doublefree.py' % (AVOCADO, self.tmpdir.name))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        output = result.stdout + result.stderr
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        bad_string = b'double free or corruption'
-        self.assertNotIn(bad_string, output,
-                         "Libc double free can be seen in avocado "
-                         "doublefree output:\n%s" % output)
-
     def test_print_to_std(self):
         def _check_output(path, exps, name):
             i = 0
