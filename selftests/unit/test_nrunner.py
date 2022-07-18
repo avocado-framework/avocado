@@ -252,9 +252,13 @@ class Runner(unittest.TestCase):
         runner_klass = runnable.pick_runner_class()
         runner = runner_klass(runnable)
         results = [status for status in runner.run()]
+        if sys.version_info < (3, 11):
+            case_name = 'unittest.case.TestCase'
+        else:
+            case_name = 'unittest.case.TestCase.fail'
         output1 = ('============================================================='
-                   '=========\nFAIL: fail (unittest.case.TestCase)'
-                   '\nFail immediately, with the given message.')
+                   '=========\nFAIL: fail (%s)'
+                   '\nFail immediately, with the given message.' % case_name)
         output2 = '\n\nFAILED (failures=1)\n'
         result = results[-1]
         self.assertEqual(result['status'], 'finished')
