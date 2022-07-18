@@ -26,3 +26,8 @@ netifaces
 # For tests that validate the produced XUnit output
 elementpath==1.1.8
 xmlschema==1.0.11
+
+# resultsdb plugin uses requests, which in turn uses one
+# available char detection module.  Thin makes the one to be
+# used more predictable and works on more Python versions
+chardet==4.0.0
