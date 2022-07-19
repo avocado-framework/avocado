@@ -305,7 +305,6 @@ output might look like this::
     INSTRUMENTED /usr/share/doc/avocado/tests/abort.py
     INSTRUMENTED /usr/share/doc/avocado/tests/datadir.py
     INSTRUMENTED /usr/share/doc/avocado/tests/doublefail.py
-    INSTRUMENTED /usr/share/doc/avocado/tests/doublefree.py
     INSTRUMENTED /usr/share/doc/avocado/tests/errortest.py
     INSTRUMENTED /usr/share/doc/avocado/tests/failtest.py
     INSTRUMENTED /usr/share/doc/avocado/tests/fiotest.py
