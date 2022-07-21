@@ -180,7 +180,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
             mount_status_server_socket = True
             runtime_task.task.status_services[0].uri = mounted_status_server_socket
 
-        _, _, python_binary = await self.python_version
+        major, minor, python_binary = await self.python_version
         entry_point_args = [python_binary, "-m", "avocado.core.nrunner", "task-run"]
 
         extra_opts = ()
@@ -196,7 +196,6 @@ class PodmanSpawner(Spawner, SpawnerMixin):
                 extra_opts += ("-v", f"{os.path.abspath(test_path)}:{to}:ro")
 
         # Make all the eggs available to the container inside /tmp/
-        major, minor, _ = await self.python_version
         for egg, to in self.get_eggs_paths(major, minor):
             extra_opts += ("-v", f"{os.path.abspath(egg)}:{to}:ro")
 
