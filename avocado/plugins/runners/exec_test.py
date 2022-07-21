@@ -153,27 +153,9 @@ class ExecTestRunner(BaseRunner):
             env=self._get_env(runnable),
         )
 
-    def run(self, runnable):
-        try:
-            process = self._run_proc(runnable)
-        except Exception as e:
-            yield self.prepare_status("started")
-            yield self.prepare_status(
-                "finished", {"result": "error", "fail_reason": str(e)}
-            )
-            self._cleanup(runnable)
-            return
-
-        yield self.prepare_status("started")
+    def _running_loop(self, condition):
         most_current_execution_state_time = None
-        timeout = RUNNER_RUN_CHECK_INTERVAL
-        while process.returncode is None:
-            time.sleep(timeout)
-            try:
-                stdout, stderr = process.communicate(timeout=timeout)
-            except subprocess.TimeoutExpired:
-                # Let's just try again at the next loop
-                pass
+        while not condition():
             now = time.monotonic()
             if most_current_execution_state_time is not None:
                 next_execution_state_mark = (
@@ -185,6 +167,28 @@ class ExecTestRunner(BaseRunner):
             ):
                 most_current_execution_state_time = now
                 yield self.prepare_status("running")
+            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
+
+    def run(self, runnable):
+        try:
+            process = self._run_proc(runnable)
+        except Exception as e:
+            yield self.prepare_status("started")
+            yield self.prepare_status(
+                "finished", {"result": "error", "fail_reason": str(e)}
+            )
+            self._cleanup(runnable)
+            return
+
+        def poll_proc():
+            return process.poll() is not None
+
+        yield self.prepare_status("started")
+        yield from self._running_loop(poll_proc)
+
+        stdout = process.stdout.read()
+        stderr = process.stderr.read()
+
         yield self.prepare_status("running", {"type": "stdout", "log": stdout})
         yield self.prepare_status("running", {"type": "stderr", "log": stderr})
         yield self._process_final_status(process, runnable, stdout, stderr)
