@@ -6,21 +6,21 @@ class PodmanTest(Test):
     async def test_python_version(self):
         """
         :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
-        :avocado: dependency={"type": "podman-image", "uri": "fedora:34"}
+        :avocado: dependency={"type": "podman-image", "uri": "fedora:36"}
         :avocado: tags=slow
         """
         podman = Podman()
-        result = await podman.get_python_version("fedora:34")
-        self.assertEqual(result, (3, 9, "/usr/bin/python3"))
+        result = await podman.get_python_version("fedora:36")
+        self.assertEqual(result, (3, 10, "/usr/bin/python3"))
 
     async def test_container_info(self):
         """
         :avocado: dependency={"type": "package", "name": "podman", "action": "check"}
-        :avocado: dependency={"type": "podman-image", "uri": "fedora:34"}
+        :avocado: dependency={"type": "podman-image", "uri": "fedora:36"}
         :avocado: tags=slow
         """
         podman = Podman()
-        _, stdout, _ = await podman.execute("create", "fedora:34", "/bin/bash")
+        _, stdout, _ = await podman.execute("create", "fedora:36", "/bin/bash")
         container_id = stdout.decode().strip()
         result = await podman.get_container_info(container_id)
         self.assertEqual(result["Id"], container_id)
