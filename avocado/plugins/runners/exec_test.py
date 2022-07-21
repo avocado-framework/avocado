@@ -116,7 +116,7 @@ class ExecTestRunner(BaseRunner):
             return True
         return False
 
-    def run(self, runnable):
+    def _get_env(self, runnable):
         env = dict(os.environ)
         if runnable.kwargs:
             env.update(runnable.kwargs)
@@ -142,14 +142,20 @@ class ExecTestRunner(BaseRunner):
         if self._is_uri_a_file_on_cwd(runnable.uri):
             env["PATH"] += f":{os.getcwd()}"
 
+        return env
+
+    def _run_proc(self, runnable):
+        return subprocess.Popen(
+            [runnable.uri] + list(runnable.args),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=self._get_env(runnable),
+        )
+
+    def run(self, runnable):
         try:
-            process = subprocess.Popen(
-                [runnable.uri] + list(runnable.args),
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=env,
-            )
+            process = self._run_proc(runnable)
         except Exception as e:
             yield self.prepare_status("started")
             yield self.prepare_status(
