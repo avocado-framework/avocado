@@ -2,16 +2,11 @@ import os
 import shutil
 import subprocess
 import tempfile
-import time
 
 import pkg_resources
 
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.nrunner.runner import (
-    RUNNER_RUN_CHECK_INTERVAL,
-    RUNNER_RUN_STATUS_INTERVAL,
-    BaseRunner,
-)
+from avocado.core.nrunner.runner import BaseRunner
 
 
 class ExecTestRunner(BaseRunner):
@@ -153,22 +148,6 @@ class ExecTestRunner(BaseRunner):
             env=self._get_env(runnable),
         )
 
-    def _running_loop(self, condition):
-        most_current_execution_state_time = None
-        while not condition():
-            now = time.monotonic()
-            if most_current_execution_state_time is not None:
-                next_execution_state_mark = (
-                    most_current_execution_state_time + RUNNER_RUN_STATUS_INTERVAL
-                )
-            if (
-                most_current_execution_state_time is None
-                or now > next_execution_state_mark
-            ):
-                most_current_execution_state_time = now
-                yield self.prepare_status("running")
-            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-
     def run(self, runnable):
         yield self.prepare_status("started")
 
@@ -184,7 +163,7 @@ class ExecTestRunner(BaseRunner):
         def poll_proc():
             return process.poll() is not None
 
-        yield from self._running_loop(poll_proc)
+        yield from self.running_loop(poll_proc)
 
         stdout = process.stdout.read()
         stderr = process.stderr.read()

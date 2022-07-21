@@ -1,10 +1,9 @@
 import subprocess
-import time
 
 from avocado_golang.golang import GO_BIN
 
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.nrunner.runner import RUNNER_RUN_STATUS_INTERVAL, BaseRunner
+from avocado.core.nrunner.runner import BaseRunner
 from avocado.core.utils import messages
 
 
@@ -65,9 +64,11 @@ class GolangRunner(BaseRunner):
             stderr=subprocess.PIPE,
         )
 
-        while process.poll() is None:
-            time.sleep(RUNNER_RUN_STATUS_INTERVAL)
-            yield messages.RunningMessage.get()
+        def poll_proc():
+            return process.poll() is not None
+
+        yield self.prepare_status("started")
+        yield from self.running_loop(poll_proc)
 
         result = "pass" if process.returncode == 0 else "fail"
         yield messages.StdoutMessage.get(process.stdout.read())

@@ -19,16 +19,11 @@ Avocado nrunner for Robot Framework tests
 import io
 import multiprocessing
 import tempfile
-import time
 
 from robot import run
 
 from avocado.core.nrunner.app import BaseRunnerApp
-from avocado.core.nrunner.runner import (
-    RUNNER_RUN_CHECK_INTERVAL,
-    RUNNER_RUN_STATUS_INTERVAL,
-    BaseRunner,
-)
+from avocado.core.nrunner.runner import BaseRunner
 from avocado.core.utils import messages
 
 
@@ -100,21 +95,7 @@ class RobotRunner(BaseRunner):
         )
         process.start()
         yield messages.StartedMessage.get()
-
-        most_current_execution_state_time = None
-        while queue.empty():
-            time.sleep(RUNNER_RUN_CHECK_INTERVAL)
-            now = time.monotonic()
-            if most_current_execution_state_time is not None:
-                next_execution_state_mark = (
-                    most_current_execution_state_time + RUNNER_RUN_STATUS_INTERVAL
-                )
-            if (
-                most_current_execution_state_time is None
-                or now > next_execution_state_mark
-            ):
-                most_current_execution_state_time = now
-                yield messages.RunningMessage.get()
+        yield from self.running_loop(lambda: not queue.empty())
 
         status = queue.get()
         yield messages.StdoutMessage.get(status["stdout"])
