@@ -100,6 +100,7 @@ class PodmanSpawner(Spawner, SpawnerMixin):
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
 
     _PYTHON_VERSIONS_CACHE = {}
+    _PYTHON_VERSIONS_CACHE_LOCK = asyncio.Lock()
 
     def __init__(self, config=None, job=None):
         SpawnerMixin.__init__(self, config, job)
@@ -168,9 +169,10 @@ class PodmanSpawner(Spawner, SpawnerMixin):
     @property
     async def python_version(self):
         image = self.config.get("spawner.podman.image")
-        if image not in self._PYTHON_VERSIONS_CACHE:
-            result = await self.podman.get_python_version(image)
-            self._PYTHON_VERSIONS_CACHE[image] = result
+        async with self._PYTHON_VERSIONS_CACHE_LOCK:
+            if image not in self._PYTHON_VERSIONS_CACHE:
+                result = await self.podman.get_python_version(image)
+                self._PYTHON_VERSIONS_CACHE[image] = result
         return self._PYTHON_VERSIONS_CACHE[image]
 
     async def _create_container_for_task(
