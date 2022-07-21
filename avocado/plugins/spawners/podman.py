@@ -6,7 +6,7 @@ import subprocess
 import uuid
 
 from avocado.core.dependencies.requirements import cache
-from avocado.core.plugin_interfaces import CLI, DeploymentSpawner, Init
+from avocado.core.plugin_interfaces import CLI, Init, Spawner
 from avocado.core.settings import settings
 from avocado.core.spawners.common import SpawnerMixin, SpawnMethod
 from avocado.core.teststatus import STATUSES_NOT_OK
@@ -94,7 +94,7 @@ class PodmanCLI(CLI):
         pass
 
 
-class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
+class PodmanSpawner(Spawner, SpawnerMixin):
 
     description = "Podman (container) based spawner"
     METHODS = [SpawnMethod.STANDALONE_EXECUTABLE]
@@ -169,17 +169,6 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             self._PYTHON_VERSIONS_CACHE[image] = result
         return self._PYTHON_VERSIONS_CACHE[image]
 
-    async def deploy_artifacts(self):
-        pass
-
-    async def deploy_avocado(self, where):
-        # Deploy all the eggs to container inside /tmp/
-        major, minor, _ = await self.python_version
-        eggs = self.get_eggs_paths(major, minor)
-
-        for egg, to in eggs:
-            await self.podman.copy_to_container(where, egg, to)
-
     async def _create_container_for_task(
         self, runtime_task, env_args, test_output=None
     ):
@@ -194,7 +183,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         _, _, python_binary = await self.python_version
         entry_point_args = [python_binary, "-m", "avocado.core.nrunner", "task-run"]
 
-        test_opts = ()
+        extra_opts = ()
         if runtime_task.task.category == "test":
             runnable_uri = runtime_task.task.runnable.uri
             try:
@@ -204,7 +193,12 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
             if os.path.exists(test_path):
                 to = os.path.join("/tmp", test_path)
                 runtime_task.task.runnable.uri = os.path.join("/tmp", runnable_uri)
-                test_opts = ("-v", f"{os.path.abspath(test_path)}:{to}:ro")
+                extra_opts += ("-v", f"{os.path.abspath(test_path)}:{to}:ro")
+
+        # Make all the eggs available to the container inside /tmp/
+        major, minor, _ = await self.python_version
+        for egg, to in self.get_eggs_paths(major, minor):
+            extra_opts += ("-v", f"{os.path.abspath(egg)}:{to}:ro")
 
         task = runtime_task.task
         entry_point_args.extend(task.get_command_args())
@@ -239,7 +233,7 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
                 "create",
                 *status_server_opts,
                 *output_opts,
-                *test_opts,
+                *extra_opts,
                 entry_point_arg,
                 *envs,
                 image,
@@ -272,8 +266,6 @@ class PodmanSpawner(DeploymentSpawner, SpawnerMixin):
         )
 
         runtime_task.spawner_handle = container_id
-
-        await self.deploy_avocado(container_id)
 
         try:
             # pylint: disable=W0201
